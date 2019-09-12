@@ -1,0 +1,16 @@
+TODO: Things to do list:
+- enable pinch to zoom and have it work on front end and photo taking (crop image)
+- move strings to strings.xml for internationalization
+- Scan QR code to enter hospitals, region, upload server, public key
+
+
+- App crashes when readings is null: not restored after state change / activity killed.
+- debug permissions tab not showing help in release version.
+
+Possible Features:
+- implement LMP
+- mention to user how to get memory reading from CRADLE:
+  when CRADLE is off, press and hold power button until it shows a reading plus "M" icon.
+- Give guide to error codes (p8 of manual)
+- cleanup photos for canceled, overwritten results
+- move photos to private storage?

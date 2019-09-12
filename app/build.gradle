@@ -1,0 +1,90 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        // Update this every build
+        versionCode 16
+        versionName "Beta 0.016"
+
+        applicationId "com.cradletrial.cradlevhtapp"
+        minSdkVersion 17    // Android 4.2
+        targetSdkVersion 28
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        vectorDrawables.useSupportLibrary = true
+
+
+        // Blur-Effect library
+        renderscriptTargetApi 24
+        renderscriptSupportModeEnabled true
+
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    aaptOptions {
+        noCompress "tflite"
+    }
+
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
+    buildToolsVersion = '28.0.3'
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    implementation 'com.android.support:design:28.0.0'
+    implementation 'android.arch.lifecycle:extensions:1.1.1'
+    implementation 'com.android.support:support-v4:28.0.0'
+    implementation 'com.android.support:support-vector-drawable:28.0.0'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+
+    // Dagger: Dependency Injection framework.
+    implementation 'com.google.dagger:dagger-android:2.20'
+    implementation 'com.google.dagger:dagger-android-support:2.20'
+    annotationProcessor 'com.google.dagger:dagger-android-processor:2.20'
+    annotationProcessor 'com.google.dagger:dagger-compiler:2.20'
+    implementation 'com.android.support:recyclerview-v7:28.0.0'
+
+    // Time: Backport of Java 8's interfaces for Android
+    // https://github.com/JakeWharton/ThreeTenABP
+    implementation 'com.jakewharton.threetenabp:threetenabp:1.2.0'
+
+    // GSON
+    implementation 'com.google.code.gson:gson:2.8.5'
+
+    // Preferences
+    implementation 'com.android.support:preference-v7:28.0.0'
+
+    // Material Design
+    implementation 'com.android.support:design:28.0.0'
+
+    // TensorFlow (for OCR of CRADLE screen)
+//    implementation 'org.tensorflow:tensorflow-lite:0.0.0-nightly'
+    implementation 'org.tensorflow:tensorflow-lite:1.14.0'
+
+    // Blur
+    implementation 'com.wonderkiln:blurkit:1.0.0'
+
+    // Volley (networking)
+    implementation 'com.android.volley:volley:1.1.1'
+}
+
+// TensorFlow Lite: select only the ABI's we (likely) need
+android {
+    defaultConfig {
+        ndk {
+            // x86 just for emulator
+            abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86_64', 'x86'
+        }
+    }
+}

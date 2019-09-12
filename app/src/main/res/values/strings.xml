@@ -1,0 +1,193 @@
+<resources>
+    <string name="app_name">CRADLE VSA Support</string>
+    <string name="action_settings">Settings</string>
+
+
+    <!-- Intro Wizard -->
+    <string name="intro_tab_welcome">CRADLE VSA Support App</string>
+    <string name="intro_tab_permissions">Permissions</string>
+    <string name="intro_tab_privacy_policy">Privacy Policy</string>
+    <string name="done">I ACCEPT</string>
+    <string name="intro_permission_description">
+        <![CDATA[
+        <p>App requires some permissions:</p>
+        <h3>Camera</h3>
+        <p>App uses the camera to take a photo of the CRADLE VSA\'s screen after it measures vitals.</p>
+
+        <h3>Storage</h3>
+        <p>App stores photos and collected data on your phone.</p>
+        ]]>
+    </string>
+
+
+
+    <string name="title_activity_readings">Readings</string>
+    <string name="title_activity_patients">Patients</string>
+    <string name="title_activity_help">Help</string>
+    <string name="title_activity_upload">Upload To Server</string>
+
+    <!-- Navigation Menu Options-->
+    <string name="menu_readings">Readings</string>
+    <string name="menu_patients">Patients</string>
+    <string name="menu_upload">Upload</string>
+    <string name="menu_help">Help</string>
+
+
+    <!-- Patient Reading - Tab Interface -->
+    <string name="save">SAVE</string>
+    <string name="next">NEXT</string>
+    <string name="title_activity_reading">Patient Reading</string>
+    <string name="reading_tab_patient_info">Patient</string>
+    <string name="reading_tab_symptoms">Symptoms</string>
+    <string name="reading_tab_camera">Photo</string>
+    <string name="reading_tab_confirm_data">Vitals</string>
+    <string name="reading_tab_summary">Summary</string>
+    <string name="reading_tab_empty_state">
+        <![CDATA[
+        <h2>No readings yet</h2>
+        <p>First, <b>set your name and region in settings</b> (gear icon top right).</p>
+
+        <p>Taking your first CRADLE VSA reading:</p>
+        <ol>
+        <li><b>Tap the \'+\' button</b> (below) and enter patient\'s info.</li>
+        <li><b>Check your patient\'s vitals</b> with CRADLE VSA.</li>
+        <li>Use app to <b>take photo of CRADLE VSA\'s screen</b> to capture patient vitals.</li>
+        <li><b>Refer patient to health centre</b> or mark for later <b>follow-up</b> when needed.</li>
+        </ol>
+
+        <p>See Help tab (bottom) for CRADLE VSA training videos (accessible offline).</p>
+        ]]>
+    </string>
+
+    <!-- Readings Patient Info-->
+    <string-array name="reading_symptoms">
+        <item>No Symptoms (patient healthy)</item>
+        <item>Headache</item>
+        <item>Blurred vision</item>
+        <item>Abdominal pain</item>
+        <item>Bleeding</item>
+        <item>Feverish</item>
+        <item>Unwell</item>
+    </string-array>
+    <string-array name="reading_ga_units">
+        <item>Weeks</item>
+        <item>Months</item>
+        <!--TODO: re-add this: <item>Last menstrual period</item> -->
+        <item>Not pregnant</item>
+    </string-array>
+
+
+    <!-- Reading Descriptions -->
+    <string name="reading_name_and_id">%1$s (#%2$s)</string>
+    <string name="reading_recheck_vitals_now">Recheck vitals now</string>
+    <string name="reading_recheck_vitals_in_one_minute">Recheck vitals in 1 minute</string>
+    <string name="reading_recheck_vitals_in_minutes">Recheck vitals in %1$d minutes</string>
+    <string name="reading_recheck_vitals_button">Take new reading</string>
+    <string name="reading_referred_to_health_centre">Referred to %1$s</string>
+    <string name="reading_referred_to_health_centre_unknown">Referred to a health centre</string>
+
+    <!-- Readings Details -->
+    <string name="reading_name_age_ga">%1$s, %2$dy @ %3$s</string>
+    <string name="reading_gestational_age_in_weeks_and_days">%1$dw +%2$dd</string>
+    <string name="reading_gestational_age_not_pregnant">Not pregnant</string>
+    <string name="reading_time_summary">%1$s: %2$s</string>
+    <string name="reading_blood_pressure">BP: %1$d/%2$d</string>
+    <string name="reading_heart_rate">HR: %1$d</string>
+    <string name="reading_referral_sent">Referral sent to %1$s on %2$s</string>
+    <string name="reading_referral_notsent">Not referred</string>
+    <string name="reading_not_applicable">N/A</string>
+    <string name="reading_patient_id">#%1$s</string>
+    <string name="reading_uploaded_to_server">Reading uploaded to a server on %1$s.</string>
+    <string name="reading_not_uploaded_to_server">Reading NOT yet uploaded to a server.</string>
+
+    <!-- Analysis of BP / Shock-Index: a brief summary of the state of a single reading -->
+    <string name="analysis_none">No vital signs entered</string>
+    <string name="analysis_green">Patient is likely healthy</string>
+    <string name="analysis_yellow_up">Raised BP</string>
+    <string name="analysis_yellow_down">Low BP</string>
+    <string name="analysis_red_up">Very raised BP</string>
+    <string name="analysis_red_down">In severe shock</string>
+
+
+    <!-- Brief Advice (shown on Reading Summary screen as brief advice based on currentReading(s) -->
+    <string name="brief_advice_retest_now">Recommend rechecking vitals immediately to confirm reading.</string>
+    <string name="brief_advice_retest_after15">Recommend rechecking vitals in 15 minutes to confirm reading.</string>
+    <!--<string name="brief_advice_retest_differ">Readings are different; retest the patient immediately.</string>-->
+    <string name="brief_advice_none">Go to Photo tab and take picture of CRADLE VSA. Then go to Vitals tab and confirm data.</string>
+    <string name="brief_advice_green">Continue normal care.</string>
+    <string name="brief_advice_yellow_up">Monitor for preeclampsia. Transfer to health centre within 24h.</string>
+    <string name="brief_advice_yellow_down">Common but assess for infection, bleeding, anaemia, and dehydration.</string>
+    <string name="brief_advice_red_up">Urgent action needed. Transfer to health centre within 4h. Monitor baby.</string>
+    <string name="brief_advice_red_down">Urgent action needed. Get help and assess mother. Immediately transfer to health centre within 1h.</string>
+
+    <!-- Confirm dialog -->
+    <string name="discard_dialog_discard">Discard</string>
+    <string name="discard_dialog_cancel">Cancel</string>
+    <string name="discard_dialog_new_reading">Discard this new reading?</string>
+    <string name="discard_dialog_rechecking">Discard this rechecking reading?</string>
+    <string name="discard_dialog_changes">Discard your changes?</string>
+    <string name="missing_info_title">Missing Information</string>
+    <string name="missing_info_body">Some required fields from PATIENT or CONFIRM VITALS tabs are missing. Please enter this data before saving.</string>
+
+
+    <!-- SMS Text Message Referral -->
+    <string name="send_text_message">Send Text Message</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- SMS Text Message Referral - SMS content-->
+    <!-- NOTE: May not want to translate, as sent to doctors -->
+    <string name="sms_message_header">CRADLE VSA REFERRAL:</string>
+    <string name="sms_message_patient">Patient %1$s (#%2$s)</string>
+    <string name="sms_message_patient_age_pregnant">   Age %1$dy, GA %2$dw+%3$dd</string>
+    <string name="sms_message_patient_age_not_pregnant">   Age %1$dy, Not pregnant</string>
+    <string name="sms_message_reading_date">Reading @ %1$s</string>
+    <string name="sms_message_reading_results">BP %1$d/%2$d, HR %3$d\n  = %4$s</string>
+    <string name="sms_message_referral">Referring to %1$s</string>
+    <string name="sms_message_by_vht">by %1$s</string>
+    <string name="sms_message_repeat_referral_warning">NOTE: Patient previously referred for this reading to %1$s on %2$s</string>
+
+    <!-- Settings -->
+    <string-array name="settings_work_locations">
+        <item>In Community</item>
+        <item>In health centre</item>
+    </string-array>
+
+    <!-- Settings: Health Centres -->
+
+
+    <!-- Default Settings Values-->
+    <!-- (should be removed once app able to read settings from a 2D barcode -->
+    <!--  **  Home server and settings **-->
+    <!--<string name="settings_default_server_url">http://192.168.86.204:8086/unhcr/upload.php</string>-->
+    <!--<string name="settings_default_server_username">user</string>-->
+    <!--<string name="settings_default_server_password">just4testing</string>-->
+    <!--<string name="settings_default_server_rsa">-->
+        <!-- -&#45;&#45;&#45;&#45;BEGIN PUBLIC KEY-&#45;&#45;&#45;&#45;                                      \n-->
+        <!--MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA8/2NBuEDyLiClu+wkHCP\n-->
+        <!--BVGxgwDj8PDLBah7Ge9bYgmM7Jcmc5F15VVQG/RWSFnxD/+/rTGYRju6JYxtnw6G\n-->
+        <!--JT0ZyzmoRQ4pArIfAvqwUYcQ08fDyA6mhqbny9FAOwhm643gg+0bnqUw7gPd6z58\n-->
+        <!--gW70abOJUfy81EZ2Q7CmuSh5WwMQKu6/q9umvn5iGC6rcxcrg/kqs6cW6E3tMZU8\n-->
+        <!--XzVRYK0ctV1m45LitL286h2cflTmIkyeGRPM7quBYuQ2PAN2QMdMaZGXyHJz9AqX\n-->
+        <!--w1wKQF+cc9G+pKNNWJDerGTKtmARge2N/3IpT6yQNhVpf6iezISnWrDgcj1jvemR\n-->
+        <!--3QIDAQAB                                                        \n-->
+        <!-- -&#45;&#45;&#45;&#45;END PUBLIC KEY-&#45;&#45;&#45;&#45;-->
+    <!--</string>-->
+<!--    <string name="settings_default_server_url">https://cmpt276-1177-bf.cmpt.sfu.ca/unhcr/upload.php</string>-->
+    <string name="settings_default_server_url">https://bfraser-srv01.cmpt.sfu.ca/unhcr/upload.php</string>
+    <string name="settings_default_server_username">user</string>
+    <string name="settings_default_server_password">just4testing</string>
+    <string name="settings_default_server_rsa">
+        -----BEGIN PUBLIC KEY-----                                      \n
+        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA8/2NBuEDyLiClu+wkHCP\n
+        BVGxgwDj8PDLBah7Ge9bYgmM7Jcmc5F15VVQG/RWSFnxD/+/rTGYRju6JYxtnw6G\n
+        JT0ZyzmoRQ4pArIfAvqwUYcQ08fDyA6mhqbny9FAOwhm643gg+0bnqUw7gPd6z58\n
+        gW70abOJUfy81EZ2Q7CmuSh5WwMQKu6/q9umvn5iGC6rcxcrg/kqs6cW6E3tMZU8\n
+        XzVRYK0ctV1m45LitL286h2cflTmIkyeGRPM7quBYuQ2PAN2QMdMaZGXyHJz9AqX\n
+        w1wKQF+cc9G+pKNNWJDerGTKtmARge2N/3IpT6yQNhVpf6iezISnWrDgcj1jvemR\n
+        3QIDAQAB                                                        \n
+        -----END PUBLIC KEY-----
+    </string>
+
+
+
+</resources>

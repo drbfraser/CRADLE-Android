@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/sectionDataAnalysis"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/txtReadingHeading"
+            style="@style/SubSubHeading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="11:15am: In severe shock" />
+
+        <TextView
+            android:id="@+id/txtBloodPressure"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:inputType="textMultiLine"
+            app:layout_constraintStart_toStartOf="@+id/txtReadingHeading"
+            app:layout_constraintTop_toBottomOf="@+id/txtReadingHeading"
+            tools:text="BP: 135/78" />
+
+        <TextView
+            android:id="@+id/txtHeartRate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@+id/txtBloodPressure"
+            app:layout_constraintTop_toBottomOf="@+id/txtBloodPressure"
+            tools:text="HR: 49" />
+
+        <TextView
+            android:id="@+id/txtReadingErrors"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorAccent"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@+id/txtHeartRate"
+            app:layout_constraintTop_toBottomOf="@+id/txtHeartRate"
+            tools:text="ERROR: Missing patient vitals: \n- heart rate" />
+
+
+        <ImageView
+            android:id="@+id/imageCircle"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            app:layout_constraintEnd_toStartOf="@+id/imageArrow"
+            app:layout_constraintTop_toTopOf="@+id/txtBloodPressure"
+            app:srcCompat="@drawable/status_green" />
+
+        <ImageView
+            android:id="@+id/imageArrow"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/imageCircle"
+            app:srcCompat="@drawable/arrow_up" />
+
+    </android.support.constraint.ConstraintLayout>
+
+</android.support.constraint.ConstraintLayout>

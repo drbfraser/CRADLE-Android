@@ -1,0 +1,30 @@
+CRADLE VSA Support Application Privacy Policy
+Last Update: July 14, 2019
+
+This app may use the following information:
+   - user's name
+   - name and phone number for hospitals and health centres
+   - patient's initials (2 characters) and ID number
+   - patient's age and gestational age
+   - patient's vitals (blood pressure and heart rate)
+   - date, time, GPS location of a vital sign measurements
+   - information about if the patient was referred to a health centre
+   - photo of the CRADLE VSA measurement device's display
+   - app development support (did user correct OCR results, etc)
+   - phone manufacturer and model number (for troubleshooting)
+
+Collected data will be used for the following purposes:
+1. Support the user taking vital sign measurements of patients. 
+   * Photos of CRADLE VSA measurement device used for OCR to automatically transfer data from CRADLE into the app.
+
+2. Send patient's information and vital reading via SMS to a hospital or health centre when user refers the patient for further treatment.
+   * SMS message sent only when user explicitly refers a patient.
+   * User has full control over which number(s) the message is sent to.
+
+3. Data will later be uploaded to a server to support research goals.
+   * Data will be encrypted during upload.
+   * Uploaded data will include all data listed above.
+   * Uploaded data will be used to:
+      - Analyze use of the CRADLE VSA vital measurement device for improving patient outcomes.
+      - Analyze use of the CRADLE VSA by field personnel to improve effectiveness of health care delivery programs.
+      - App improvement such as use photos to train and test a better optical character recognition (OCR) algorithm.
