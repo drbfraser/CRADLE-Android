@@ -36,11 +36,12 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
     @Override
     public void onBindViewHolder(@NonNull PatientViewHolder patientViewHolder, int i) {
         Patient patient = patientList.get(i);
-        patientViewHolder.patientVillage.setText(patient.villageNumber);
+
+        patientViewHolder.patientVillage.setText("Village: "+patient.villageNumber);
         patientViewHolder.patientSex.setText(patient.patientSex+ " ");
         patientViewHolder.patientName.setText(patient.patientName);
-        patientViewHolder.patientDOB.setText(patient.ageYears);
-        patientViewHolder.patientId.setText(patient.patientId);
+        patientViewHolder.patientDOB.setText("Age: "+patient.ageYears+"");
+        patientViewHolder.patientId.setText("ID: "+ patient.patientId);
 
     }
 

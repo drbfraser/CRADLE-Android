@@ -4,15 +4,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.widget.Button;
 import android.widget.Toast;
 
 import com.cradletrial.cradlevhtapp.R;
 import com.cradletrial.cradlevhtapp.dagger.MyApp;
+import com.cradletrial.cradlevhtapp.model.Patient.Patient;
 import com.cradletrial.cradlevhtapp.model.Reading;
 import com.cradletrial.cradlevhtapp.model.ReadingManager;
 import com.cradletrial.cradlevhtapp.model.Settings;
+import com.cradletrial.cradlevhtapp.viewmodel.PatientsViewAdapter;
 
 import org.threeten.bp.ZonedDateTime;
 import org.threeten.bp.temporal.ChronoUnit;
@@ -35,6 +40,9 @@ public class PatientsActivity extends TabActivityBase {
     @Inject
     Settings settings;
 
+    private RecyclerView patientRecyclerview;
+    private PatientsViewAdapter patientsViewAdapter;
+
 
     public static Intent makeIntent(Context context) {
         return new Intent(context, PatientsActivity.class);
@@ -54,6 +62,8 @@ public class PatientsActivity extends TabActivityBase {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_patients);
         Toolbar toolbar = findViewById(R.id.toolbar);
+        patientRecyclerview = findViewById(R.id.patientListRecyclerview);
+        setupPatientRecyclerview();
         setSupportActionBar(toolbar);
 
         // bottom bar nav in base class
@@ -67,6 +77,21 @@ public class PatientsActivity extends TabActivityBase {
         setupSettingsClear();
     }
 
+    private void setupPatientRecyclerview() {
+        List<Patient> patients = new ArrayList<>();
+        for(int i =0;i<25;i++){
+            Patient patient = new Patient(i*1000000+"","Patient "+i,i+20,
+                    Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS," ??",
+                    30+i+"", Patient.PATIENTSEX.F);
+            patients.add(patient);
+        }
+        PatientsViewAdapter patientsViewAdapter = new PatientsViewAdapter(patients,this);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
+        patientRecyclerview.setAdapter(patientsViewAdapter);
+        patientRecyclerview.setLayoutManager(layoutManager);
+        patientRecyclerview.addItemDecoration(new DividerItemDecoration(this,DividerItemDecoration.VERTICAL));
+        patientsViewAdapter.notifyDataSetChanged();
+    }
 
 
     private void setupAddSampleDataButton() {
