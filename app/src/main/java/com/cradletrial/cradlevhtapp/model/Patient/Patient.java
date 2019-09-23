@@ -14,6 +14,7 @@ public class Patient {
 
     public static enum PATIENTSEX {M, F, I}
 
+    // TODO: 22/09/19 encapsulate these class members
     // patient info
     public String patientId;
     public String patientName;
