@@ -3,6 +3,7 @@ package com.cradletrial.cradlevhtapp.viewmodel;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -26,11 +27,20 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
     @NonNull
     @Override
     public PatientViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-        return null;
+        View v = LayoutInflater.from(viewGroup.getContext())
+                .inflate(R.layout.patient_view_layout, viewGroup, false);
+        return new PatientViewHolder(v);
+
     }
 
     @Override
     public void onBindViewHolder(@NonNull PatientViewHolder patientViewHolder, int i) {
+        Patient patient = patientList.get(i);
+        patientViewHolder.patientVillage.setText(patient.villageNumber);
+        patientViewHolder.patientSex.setText(patient.patientSex+ " ");
+        patientViewHolder.patientName.setText(patient.patientName);
+        patientViewHolder.patientDOB.setText(patient.ageYears);
+        patientViewHolder.patientId.setText(patient.patientId);
 
     }
 
