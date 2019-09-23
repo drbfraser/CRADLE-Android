@@ -9,12 +9,14 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
 import com.cradletrial.cradlevhtapp.R;
 import com.cradletrial.cradlevhtapp.dagger.MyApp;
+import com.cradletrial.cradlevhtapp.model.Patient.Patient;
 import com.cradletrial.cradlevhtapp.model.Reading;
 import com.cradletrial.cradlevhtapp.model.ReadingManager;
 import com.cradletrial.cradlevhtapp.utilitiles.GsonUtil;
@@ -23,6 +25,8 @@ import com.cradletrial.cradlevhtapp.view.ui.reading.BaseFragment;
 import com.cradletrial.cradlevhtapp.view.ui.reading.MyFragmentInteractionListener;
 import com.cradletrial.cradlevhtapp.view.ui.reading.SectionsPagerAdapter;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.threeten.bp.ZonedDateTime;
 
 import javax.inject.Inject;
@@ -340,6 +344,8 @@ public class ReadingActivity
         // called from:
         // - activity's SAVE button(s)
         // - fragment's saving data as needed (send SMS)
+
+        Log.d("Json", Patient.toJSon(currentReading.patient));
 
         callOnMyBeingHiddenForCurrentTab();
 

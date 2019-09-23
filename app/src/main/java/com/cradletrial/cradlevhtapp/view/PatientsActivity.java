@@ -79,9 +79,9 @@ public class PatientsActivity extends TabActivityBase {
             for (int i = 0; i < 30; i++ ) {
                 int makeNeg = (i % 2 == 0) ? 1 : -1;
                 Reading r = new Reading();
-                r.patientName = "P" + (char)('A' + i);
-                r.patientId = String.valueOf(48300027400L + i + ((i * new Random().nextLong() % 10000000L)* 1000));
-                r.ageYears = 20 + i;
+                r.patient.patientName = "P" + (char)('A' + i);
+                r.patient.patientId = String.valueOf(48300027400L + i + ((i * new Random().nextLong() % 10000000L)* 1000));
+                r.patient.ageYears = 20 + i;
                 r.dateTimeTaken = ZonedDateTime.now().minus(timeDelta, ChronoUnit.MINUTES);
                 r.bpSystolic = 120 + (i * 15) * makeNeg;
                 r.bpDiastolic = 80 + (i * 5) * makeNeg;
@@ -104,15 +104,15 @@ public class PatientsActivity extends TabActivityBase {
                 }
 
                 if (i % 3 == 0) {
-                    r.gestationalAgeUnit = Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS;
-                    r.gestationalAgeValue = "" + (i % 45);
+                    r.patient.gestationalAgeUnit = Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS;
+                    r.patient.gestationalAgeValue = "" + (i % 45);
                 }
                 if (i % 3 == 1) {
-                    r.gestationalAgeUnit = Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS;
-                    r.gestationalAgeValue = "" + (i % 11);
+                    r.patient.gestationalAgeUnit = Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS;
+                    r.patient.gestationalAgeValue = "" + (i % 11);
                 }
                 if (i % 3 == 2) {
-                    r.gestationalAgeUnit = Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_NONE;
+                    r.patient.gestationalAgeUnit = Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_NONE;
                 }
 
 

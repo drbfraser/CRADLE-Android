@@ -3,9 +3,11 @@ package com.cradletrial.cradlevhtapp.model;
 import android.os.Build;
 
 import com.cradletrial.cradlevhtapp.BuildConfig;
+import com.cradletrial.cradlevhtapp.model.Patient.Patient;
 import com.cradletrial.cradlevhtapp.utilitiles.Util;
-import com.google.gson.Gson;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.threeten.bp.ZonedDateTime;
 import org.threeten.bp.temporal.ChronoUnit;
 
@@ -59,12 +61,14 @@ public class Reading {
     public ZonedDateTime dateLastSaved;
 
     // patient info
-    public String patientId;
-    public String patientName;
-    public Integer ageYears;
-    public List<String> symptoms = new ArrayList<>();
-    public GestationalAgeUnit gestationalAgeUnit;
-    public String gestationalAgeValue;
+//    public String patientId;
+//    public String patientName;
+//    public Integer ageYears;
+//    public List<String> symptoms = new ArrayList<>();
+//    public GestationalAgeUnit gestationalAgeUnit;
+//    public String gestationalAgeValue;
+    public Patient patient = new Patient();
+
 
     // reading
     public String pathToPhoto;
@@ -102,6 +106,8 @@ public class Reading {
      */
     public Reading() {
         // for JSON only
+
+
     }
 
     public static Reading makeNewReading(ZonedDateTime now) {
@@ -116,16 +122,16 @@ public class Reading {
     public static Reading makeToConfirmReading(Reading source, ZonedDateTime now) {
         // copy fields
         Reading r = Reading.makeNewReading(now);
-        r.patientId = source.patientId;
-        r.patientName = source.patientName;
-        r.ageYears = source.ageYears;
-        r.symptoms = new ArrayList<>();
-        r.symptoms.addAll(source.symptoms);
-        r.gestationalAgeUnit = source.gestationalAgeUnit;
-        r.gestationalAgeValue = source.gestationalAgeValue;
-
+//        r.patientId = source.patientId;
+//        r.patientName = source.patientName;
+//        r.ageYears = source.ageYears;
+//        r.symptoms = new ArrayList<>();
+//        r.symptoms.addAll(source.symptoms);
+//        r.gestationalAgeUnit = source.gestationalAgeUnit;
+//        r.gestationalAgeValue = source.gestationalAgeValue;
+        r.patient = source.patient;
         // don't require user to re-check the 'no symptoms' box
-        if (r.symptoms.isEmpty()) {
+        if (r.patient.symptoms.isEmpty()) {
             r.userHasSelectedNoSymptoms = true;
         }
 
@@ -134,27 +140,26 @@ public class Reading {
         return r;
     }
 
-
     /**
      * Accessors
      */
     public WeeksAndDays getGestationalAgeInWeeksAndDays() {
         // Handle not set:
-        if (gestationalAgeUnit == null || gestationalAgeValue == null
-            || gestationalAgeValue.trim().length() == 0)
+        if (patient.gestationalAgeUnit == null || patient.gestationalAgeValue == null
+            || patient.gestationalAgeValue.trim().length() == 0)
         {
             return null;
         }
 
-        switch (gestationalAgeUnit) {
+        switch (patient.gestationalAgeUnit) {
             case GESTATIONAL_AGE_UNITS_MONTHS:
-                int months = Util.stringToIntOr0(gestationalAgeValue);
+                int months = Util.stringToIntOr0(patient.gestationalAgeValue);
                 int days = DAYS_PER_MONTH * months;
                 return new WeeksAndDays(
                         days / DAYS_PER_WEEK,
                         days % DAYS_PER_WEEK);
             case GESTATIONAL_AGE_UNITS_WEEKS:
-                int weeks = Util.stringToIntOr0(gestationalAgeValue);
+                int weeks = Util.stringToIntOr0(patient.gestationalAgeValue);
                 return new WeeksAndDays(weeks,0);
             case GESTATIONAL_AGE_UNITS_NONE:
                 return null;
@@ -227,7 +232,7 @@ public class Reading {
     // symptoms
     public String getSymptomsString() {
         String description = "";
-        for (String symptom : symptoms) {
+        for (String symptom : patient.symptoms) {
             // clean up
             symptom = symptom.trim();
             if (symptom.length() == 0) {
@@ -257,12 +262,13 @@ public class Reading {
     // check for required data
     public boolean isMissingRequiredData() {
         boolean missing = false;
-        missing |= patientId == null;
-        missing |= patientName == null;
-        missing |= ageYears == null;
-        missing |= gestationalAgeUnit == null;
-        missing |= (gestationalAgeValue == null
-                    && gestationalAgeUnit != GestationalAgeUnit.GESTATIONAL_AGE_UNITS_NONE);
+        missing |= patient == null;
+        missing |= patient.patientId == null;
+        missing |= patient.patientName == null;
+        missing |= patient.ageYears == null;
+        missing |= patient.gestationalAgeUnit == null;
+        missing |= (patient.gestationalAgeValue == null
+                    && patient.gestationalAgeUnit != GestationalAgeUnit.GESTATIONAL_AGE_UNITS_NONE);
         missing |= heartRateBPM == null;
         missing |= bpDiastolic == null;
         missing |= bpSystolic == null;
@@ -271,7 +277,7 @@ public class Reading {
     }
 
     public boolean isMissingRequiredSymptoms() {
-        return symptoms.isEmpty() && !userHasSelectedNoSymptoms && dateLastSaved == null;
+        return patient.symptoms.isEmpty() && !userHasSelectedNoSymptoms && dateLastSaved == null;
     }
 
     public static class ComparatorByDateReverse implements Comparator <Reading>{

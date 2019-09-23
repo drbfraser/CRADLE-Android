@@ -29,12 +29,15 @@ import android.widget.Toast;
 
 import com.cradletrial.cradlevhtapp.R;
 import com.cradletrial.cradlevhtapp.dagger.MyApp;
+import com.cradletrial.cradlevhtapp.model.Patient.Patient;
 import com.cradletrial.cradlevhtapp.model.Reading;
 import com.cradletrial.cradlevhtapp.model.ReadingAnalysis;
 import com.cradletrial.cradlevhtapp.model.Settings;
 import com.cradletrial.cradlevhtapp.utilitiles.DateUtil;
 import com.cradletrial.cradlevhtapp.view.ui.settings.SettingsActivity;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.threeten.bp.ZonedDateTime;
 
 import java.util.ArrayList;
@@ -158,6 +161,18 @@ public class ReferralDialogFragment extends DialogFragment {
         composeMmsMessage(smsTextMessage, selectedHealthCentreSmsPhoneNumber);
         onFinishedSendingSMS(dialog);
 
+        // Json for comments
+        try {
+            JSONObject referralObject = new JSONObject();
+            referralObject.put("comments", enteredComment);
+            referralObject.put("healthCenter", "Future feature not available");
+            referralObject.put("VHT", "Future feature not available");
+
+            Patient.toJSon(currentReading.patient, referralObject);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 //
 //        // prep UI
 //        // TODO: put in XML
@@ -388,19 +403,19 @@ public class ReferralDialogFragment extends DialogFragment {
 
         // patient
         String patient = getString(R.string.sms_message_patient,
-                currentReading.patientName,
-                currentReading.patientId
+                currentReading.patient.patientName,
+                currentReading.patient.patientId
         );
         Reading.WeeksAndDays ga = currentReading.getGestationalAgeInWeeksAndDays();
         String patientAge;
         if (ga != null) {
             patientAge = getString(R.string.sms_message_patient_age_pregnant,
-                    currentReading.ageYears,
+                    currentReading.patient.ageYears,
                     ga.weeks,
                     ga.days);
         } else {
             patientAge = getString(R.string.sms_message_patient_age_not_pregnant,
-                    currentReading.ageYears);
+                    currentReading.patient.ageYears);
         }
 
         // vitals

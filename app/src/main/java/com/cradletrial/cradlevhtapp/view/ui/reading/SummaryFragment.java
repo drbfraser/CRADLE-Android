@@ -103,14 +103,14 @@ public class SummaryFragment extends BaseFragment {
         String errorMessage = "";
 
         // name
-        String name = currentReading.patientName;
+        String name = currentReading.patient.patientName;
         if (Util.isNullOrEmpty(name)) {
             name = "No name";
             errorMessage += "- patient initials" + "\n";
         }
 
         // age
-        Integer age = currentReading.ageYears;
+        Integer age = currentReading.patient.ageYears;
         if (Util.isNullOrZero(age)) {
             age = 0;
             errorMessage += "- patient age" + "\n";
@@ -119,7 +119,7 @@ public class SummaryFragment extends BaseFragment {
         // gestational age
         String ga;
         Reading.WeeksAndDays gaStruct = currentReading.getGestationalAgeInWeeksAndDays();
-        if (currentReading.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_NONE) {
+        if (currentReading.patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_NONE) {
             ga = getString(R.string.reading_gestational_age_not_pregnant);
         } else if (gaStruct == null) {
             ga = "No gestational age";
@@ -134,8 +134,8 @@ public class SummaryFragment extends BaseFragment {
 
         // patient id
         tv = getView().findViewById(R.id.txtPatientId);
-        if (!Util.isNullOrEmpty(currentReading.patientId)) {
-            tv.setText(getString(R.string.reading_patient_id, currentReading.patientId));
+        if (!Util.isNullOrEmpty(currentReading.patient.patientId)) {
+            tv.setText(getString(R.string.reading_patient_id, currentReading.patient.patientId));
             tv.setVisibility(View.VISIBLE);
         } else {
             tv.setVisibility(View.GONE);
