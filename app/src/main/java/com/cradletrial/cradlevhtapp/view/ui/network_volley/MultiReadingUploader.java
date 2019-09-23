@@ -133,7 +133,7 @@ public class MultiReadingUploader {
 
         // 2. JSON of reading data
         File jsonFile = new File(context.getCacheDir(),
-                "reading_" + reading.patientId + "@" + DateUtil.getISODateForFilename(ZonedDateTime.now()) + ".json");
+                "reading_" + reading.patient.patientId + "@" + DateUtil.getISODateForFilename(ZonedDateTime.now()) + ".json");
         String jsonData = GsonUtil.getJsonForSyncingToServer(reading, settings);
         try (FileWriter writer = new FileWriter(jsonFile)) {
             writer.write(jsonData);

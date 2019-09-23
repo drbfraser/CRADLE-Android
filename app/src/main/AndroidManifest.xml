@@ -2,14 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.cradletrial.cradlevhtapp">
     <!-- Use "old" Camera API for support for devices running < v5.0. -->
-    <uses-permission android:name="android.permission.CAMERA" />
-
-    <!--Removed autofocus because preventing install on some older phones.-->
+    <uses-permission android:name="android.permission.CAMERA" /> <!-- Removed autofocus because preventing install on some older phones. -->
     <uses-feature android:name="android.hardware.camera" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
@@ -20,10 +17,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-
-        android:usesCleartextTraffic="true"
-        >
-
+        android:usesCleartextTraffic="true">
+        <activity android:name=".view.ui.PatientsList"></activity>
         <activity
             android:name=".view.IntroActivity"
             android:label="@string/app_name"
@@ -31,16 +26,15 @@
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".view.ReadingsListActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity
             android:name=".view.PatientsActivity"
             android:label="@string/title_activity_patients"
@@ -56,24 +50,17 @@
             android:label="@string/title_activity_help"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
-
-
         <activity
             android:name=".view.ReadingActivity"
             android:label="@string/title_activity_reading"
-            android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustResize" >
-        </activity>
-
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize"></activity>
         <activity
             android:name=".view.ui.settings.SettingsActivity"
             android:label="Settings"
-            android:screenOrientation="portrait"
-            >
-        </activity>
-        <activity android:name=".view.ui.settings.SettingNamedPairsActivity"></activity>
-
+            android:screenOrientation="portrait"></activity>
+        <activity android:name=".view.ui.settings.SettingNamedPairsActivity" />
     </application>
 
 </manifest>

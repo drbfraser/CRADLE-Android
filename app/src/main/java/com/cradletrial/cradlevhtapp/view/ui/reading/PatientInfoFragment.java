@@ -17,6 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 
 import com.cradletrial.cradlevhtapp.R;
+import com.cradletrial.cradlevhtapp.model.Patient.Patient;
 import com.cradletrial.cradlevhtapp.model.Reading;
 import com.cradletrial.cradlevhtapp.model.Settings;
 import com.cradletrial.cradlevhtapp.utilitiles.Util;
@@ -57,6 +58,7 @@ public class PatientInfoFragment extends BaseFragment {
         mView = view;
 
         setupGASpinner(view);
+        setupSexSpinner(view);
     }
 
     @Override
@@ -79,6 +81,7 @@ public class PatientInfoFragment extends BaseFragment {
         if (mView == null) {
             return true;
         }
+        updateSex_ModelFromUI(mView);
         updateText_ModelFromUi(mView);
         updateGA_ModelFromUi(mView);
         return true;
@@ -91,16 +94,16 @@ public class PatientInfoFragment extends BaseFragment {
         EditText et;
         // id
         et = mView.findViewById(R.id.etPatientId);
-        et.setText(currentReading.patientId);
+        et.setText(currentReading.patient.patientId);
 
         // initials
         et = mView.findViewById(R.id.etPatientName);
-        et.setText(currentReading.patientName);
+        et.setText(currentReading.patient.patientName);
 
         // age
         et = mView.findViewById(R.id.etPatientAge);
-        if (currentReading.ageYears != null) {
-            et.setText(Integer.toString(currentReading.ageYears));
+        if (currentReading.patient.ageYears != null) {
+            et.setText(Integer.toString(currentReading.patient.ageYears));
         } else {
             et.setText("");
         }
@@ -109,18 +112,22 @@ public class PatientInfoFragment extends BaseFragment {
         EditText et;
         // id
         et = mView.findViewById(R.id.etPatientId);
-        currentReading.patientId = et.getText().toString();
+        currentReading.patient.patientId = et.getText().toString();
 
         // initials
         et = mView.findViewById(R.id.etPatientName);
-        currentReading.patientName = et.getText().toString();
+        currentReading.patient.patientName = et.getText().toString();
 
         // age
         et = mView.findViewById(R.id.etPatientAge);
         String ageStr = et.getText().toString().trim();
         if (ageStr.length() > 0) {
-            currentReading.ageYears = Util.stringToIntOr0(ageStr);
+            currentReading.patient.ageYears = Util.stringToIntOr0(ageStr);
         }
+
+        // village number
+        et = mView.findViewById(R.id.etVillageNumber);
+        currentReading.patient.villageNumber = et.getText().toString();
     }
 
 
@@ -163,8 +170,8 @@ public class PatientInfoFragment extends BaseFragment {
 
         int selection = 0;
 
-        if (currentReading.gestationalAgeUnit != null) {
-            switch (currentReading.gestationalAgeUnit) {
+        if (currentReading.patient.gestationalAgeUnit != null) {
+            switch (currentReading.patient.gestationalAgeUnit) {
                 case GESTATIONAL_AGE_UNITS_NONE:
                     selection = GA_UNIT_INDEX_NONE;
                     break;
@@ -181,7 +188,7 @@ public class PatientInfoFragment extends BaseFragment {
 
         // Set UI state
         spin.setSelection(selection);
-        etValue.setText(currentReading.gestationalAgeValue);
+        etValue.setText(currentReading.patient.gestationalAgeValue);
 
         updateGA_onSpinnerChange(v);
     }
@@ -191,20 +198,20 @@ public class PatientInfoFragment extends BaseFragment {
 
         switch (spin.getSelectedItemPosition()) {
             case GA_UNIT_INDEX_NONE:
-                currentReading.gestationalAgeUnit = Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_NONE;
+                currentReading.patient.gestationalAgeUnit = Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_NONE;
                 break;
             case GA_UNIT_INDEX_WEEKS:
-                currentReading.gestationalAgeUnit = Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS;
+                currentReading.patient.gestationalAgeUnit = Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS;
                 break;
             case GA_UNIT_INDEX_MOTHS:
-                currentReading.gestationalAgeUnit = Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS;
+                currentReading.patient.gestationalAgeUnit = Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS;
                 break;
             default:
                 Util.ensure(false);
         }
 
         // save value
-        currentReading.gestationalAgeValue = etValue.getText().toString();
+        currentReading.patient.gestationalAgeValue = etValue.getText().toString();
     }
     private void updateGA_onSpinnerChange(View v) {
         Spinner spin = v.findViewById(R.id.spinnerGestationalAgeUnits);
@@ -239,5 +246,58 @@ public class PatientInfoFragment extends BaseFragment {
         etValue.setInputType(valueInputType);
         etValue.setText(value);
     }
+
+    /*
+        Patient Sex
+     */
+
+    private void setupSexSpinner(View v) {
+        Spinner spin = v.findViewById(R.id.spinnerPatientSex);
+
+        // set options
+        Resources res = getResources();
+        String[] optionsArray = res.getStringArray(R.array.sex);
+        List<String> options = Arrays.asList(optionsArray);
+        ArrayAdapter<String> dataAdapter =
+                new ArrayAdapter<>(v.getContext(), android.R.layout.simple_spinner_item, options);
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spin.setAdapter(dataAdapter);
+
+        spin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                // updateGA_onSpinnerChange(mView);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
+    }
+
+    private static final int PATIENT_SEX_MALE = 0;
+    private static final int PATIENT_SEX_FEMALE = 1;
+    private static final int PATIENT_SEX_INTERSEX  = 2;
+    private void updateSex_ModelFromUI(View v) {
+        Spinner spin = v.findViewById(R.id.spinnerPatientSex);
+
+        switch (spin.getSelectedItemPosition()) {
+            case PATIENT_SEX_MALE :
+                currentReading.patient.patientSex = Patient.PATIENTSEX.M;
+                break;
+            case PATIENT_SEX_FEMALE :
+                currentReading.patient.patientSex = Patient.PATIENTSEX.F;
+                break;
+            case PATIENT_SEX_INTERSEX  :
+                currentReading.patient.patientSex = Patient.PATIENTSEX.I;
+                break;
+            default:
+                Util.ensure(false);
+        }
+
+    }
+
 
 }

@@ -19,7 +19,7 @@ public class ReadingDB {
         SQLiteDatabase database = new ReadingSQLiteDBHelper(context).getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(ReadingSQLiteDBHelper.READING_COLUMN_PATIENT_ID, reading.patientId);
+        values.put(ReadingSQLiteDBHelper.READING_COLUMN_PATIENT_ID, reading.patient.patientId);
         values.put(ReadingSQLiteDBHelper.READING_COLUMN_JSON, GsonUtil.getJson(reading));
 
         long newRowId = database.insert(ReadingSQLiteDBHelper.READING_TABLE_NAME, null, values);
@@ -32,7 +32,7 @@ public class ReadingDB {
 
         ContentValues values = new ContentValues();
         values.put(ReadingSQLiteDBHelper.READING_COLUMN_DBID, reading.readingId);
-        values.put(ReadingSQLiteDBHelper.READING_COLUMN_PATIENT_ID, reading.patientId);
+        values.put(ReadingSQLiteDBHelper.READING_COLUMN_PATIENT_ID, reading.patient.patientId);
         values.put(ReadingSQLiteDBHelper.READING_COLUMN_JSON, GsonUtil.getJson(reading));
 
         String whereClause = ReadingSQLiteDBHelper.READING_COLUMN_DBID + " = ?";
@@ -125,7 +125,7 @@ public class ReadingDB {
             readings.add(r);
 
             // Double check that the data we are reading is consistent
-            Util.ensure(patientId == r.patientId || patientId.equals(r.patientId));
+            Util.ensure(patientId == r.patient.patientId || patientId.equals(r.patient.patientId));
         }
         return readings;
     }

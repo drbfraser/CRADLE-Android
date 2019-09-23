@@ -159,14 +159,14 @@ public class SymptomsFragment extends BaseFragment {
 
         String otherSymptomsStr = "";
         // TODO: [IMPORTANT] App crashes here if you navigate away and come back: currentReading could be null
-        if (currentReading.symptoms.size() == 0) {
+        if (currentReading.patient.symptoms.size() == 0) {
             // no symptoms
             if (currentReading.dateLastSaved != null || currentReading.userHasSelectedNoSymptoms) {
                 noSymptomsCheckBox.setChecked(true);
             }
         } else {
             // some symptoms
-            for (String patientSymptom : currentReading.symptoms) {
+            for (String patientSymptom : currentReading.patient.symptoms) {
                 // find the symptom and check UI box
                 boolean found = false;
                 for (int i = 0; i < symptomsFromRes.length; i++) {
@@ -191,19 +191,19 @@ public class SymptomsFragment extends BaseFragment {
         otherSymptoms.setText(otherSymptomsStr);
     }
     private void updateSymptoms_ModelFromUi(View v) {
-        currentReading.symptoms.clear();
+        currentReading.patient.symptoms.clear();
 
         // checkboxes
         for (CheckBox cb : checkBoxes) {
             if (cb.isChecked() && cb != noSymptomsCheckBox) {
-                currentReading.symptoms.add(cb.getText().toString());
+                currentReading.patient.symptoms.add(cb.getText().toString());
             }
         }
 
         // other
         String otherSymptomsStr = otherSymptoms.getText().toString().trim();
         if (otherSymptomsStr.length() > 0) {
-            currentReading.symptoms.add(otherSymptomsStr);
+            currentReading.patient.symptoms.add(otherSymptomsStr);
         }
     }
 }

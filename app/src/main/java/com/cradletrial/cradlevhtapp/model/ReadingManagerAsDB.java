@@ -14,7 +14,7 @@ public class ReadingManagerAsDB implements ReadingManager {
         // update other records for this patient: done rechecking vitals
         List<Reading> readings = getReadings(context);
         for (Reading r : readings) {
-            if (r.patientId.equals(reading.patientId) && r.readingId != reading.readingId) {
+            if (r.patient.patientId.equals(reading.patient.patientId) && r.readingId != reading.readingId) {
                 if (r.isNeedRecheckVitals()) {
                     r.dateRecheckVitalsNeeded = null;
                     updateReading(context, r);

@@ -112,7 +112,7 @@ public class ReadingViewAdapter extends RecyclerView.Adapter<ReadingViewAdapter.
 
         // populate: name & date
         TextView tvName = v.findViewById(R.id.tvName);
-        String nameAndId = v.getContext().getString(R.string.reading_name_and_id, r.patientName, r.patientId);
+        String nameAndId = v.getContext().getString(R.string.reading_name_and_id, r.patient.patientName, r.patient.patientId);
         tvName.setText(nameAndId);
 
         TextView tvDate = v.findViewById(R.id.date);
