@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/patientName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="Patient Name"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/patientID"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="12345678975"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="@+id/patientName"
+        app:layout_constraintTop_toBottomOf="@+id/patientName" />
+
+    <TextView
+        android:id="@+id/patientDOB"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:text="BirthDate"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/patientName" />
+
+    <TextView
+        android:id="@+id/patientSex"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Female"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="@+id/patientDOB"
+        app:layout_constraintTop_toBottomOf="@+id/patientDOB" />
+
+    <TextView
+        android:id="@+id/patientVillage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Village"
+        app:layout_constraintEnd_toStartOf="@+id/patientDOB"
+        app:layout_constraintStart_toEndOf="@+id/patientName"
+        app:layout_constraintTop_toTopOf="@+id/patientName" />
+
+</android.support.constraint.ConstraintLayout>
