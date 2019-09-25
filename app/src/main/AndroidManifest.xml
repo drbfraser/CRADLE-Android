@@ -18,7 +18,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".view.ui.PatientsList"></activity>
+        <activity android:name=".view.PatientProfileActivity"></activity>
+        <activity android:name=".view.ui.PatientsList" />
         <activity
             android:name=".view.IntroActivity"
             android:label="@string/app_name"
@@ -34,7 +35,7 @@
             android:name=".view.ReadingsListActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".view.PatientsActivity"
             android:label="@string/title_activity_patients"
@@ -55,11 +56,11 @@
             android:label="@string/title_activity_reading"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="adjustResize"></activity>
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".view.ui.settings.SettingsActivity"
             android:label="Settings"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait" />
         <activity android:name=".view.ui.settings.SettingNamedPairsActivity" />
     </application>
 

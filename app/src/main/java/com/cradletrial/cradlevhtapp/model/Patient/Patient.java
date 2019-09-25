@@ -37,6 +37,21 @@ public class Patient {
         patientSex = mSex;
     }
 
+    public String genSymptomString()
+    {
+        String symptomsString = "None";
+        if (symptoms.size() > 0) {
+            symptomsString = symptoms.get(0);
+            if (symptoms.size() > 1) {
+                for (int i = 1; i < symptoms.size(); i++) {
+                    symptomsString += ",";
+                    symptomsString += symptoms.get(i);
+                }
+            }
+        }
+        return symptomsString;
+    }
+
     public static String toJSon(Patient person) {
         try {
             JSONObject parent = new JSONObject();
@@ -54,17 +69,7 @@ public class Patient {
             patientInfoObject.put("villageNumber", person.villageNumber.toString() );
             patientInfoObject.put("patientSex", person.patientSex.toString() );
 
-            String symptomsString = "None";
-            if (person.symptoms.size() > 0) {
-                symptomsString = person.symptoms.get(0);
-                if (person.symptoms.size() > 1) {
-                    for (int i = 1; i < person.symptoms.size(); i++) {
-                        symptomsString += ",";
-                        symptomsString += person.symptoms.get(i);
-                    }
-                }
-            }
-
+            String symptomsString = person.genSymptomString();
             patientInfoObject.put("symptoms", symptomsString);
 
             parent.put("referral", referralObject);
@@ -103,17 +108,7 @@ public class Patient {
             patientInfoObject.put("villageNumber", person.villageNumber.toString() );
             patientInfoObject.put("patientSex", person.patientSex.toString() );
 
-            String symptomsString = "None";
-            if (person.symptoms.size() > 0) {
-                symptomsString = person.symptoms.get(0);
-                if (person.symptoms.size() > 1) {
-                    for (int i = 1; i < person.symptoms.size(); i++) {
-                        symptomsString += ",";
-                        symptomsString += person.symptoms.get(i);
-                    }
-                }
-            }
-
+            String symptomsString = person.genSymptomString();
             patientInfoObject.put("symptoms", symptomsString);
 
             parent.put("referral", referralObject);
