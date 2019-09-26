@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.widget.TextView;
 
 import com.cradletrial.cradlevhtapp.R;
+import com.cradletrial.cradlevhtapp.dagger.MyApp;
 import com.cradletrial.cradlevhtapp.model.Patient.Patient;
 
 import org.w3c.dom.Text;
@@ -15,6 +16,9 @@ public class PatientProfileActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_patient_profile);
+
+        // uncomment when receiving patient object from patients activity
+//        populatePatientInfo((Patient) getIntent().getSerializableExtra(PatientsActivity.EXTRA_PATIENT));
     }
 
     void populatePatientInfo(Patient patient)
