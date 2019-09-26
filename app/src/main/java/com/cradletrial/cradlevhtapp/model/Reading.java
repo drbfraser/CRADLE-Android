@@ -110,6 +110,34 @@ public class Reading {
 
     }
 
+    @Override
+    public String toString() {
+        return "Reading{" +
+                "readingId=" + readingId +
+                ", dateLastSaved=" + dateLastSaved +
+                ", patient=" + patient +
+                ", pathToPhoto='" + pathToPhoto + '\'' +
+                ", bpSystolic=" + bpSystolic +
+                ", bpDiastolic=" + bpDiastolic +
+                ", heartRateBPM=" + heartRateBPM +
+                ", dateTimeTaken=" + dateTimeTaken +
+                ", gpsLocationOfReading='" + gpsLocationOfReading + '\'' +
+                ", dateUploadedToServer=" + dateUploadedToServer +
+                ", retestOfPreviousReadingIds=" + retestOfPreviousReadingIds +
+                ", dateRecheckVitalsNeeded=" + dateRecheckVitalsNeeded +
+                ", isFlaggedForFollowup=" + isFlaggedForFollowup +
+                ", referralMessageSendTime=" + referralMessageSendTime +
+                ", referralHealthCentre='" + referralHealthCentre + '\'' +
+                ", referralComment='" + referralComment + '\'' +
+                ", appVersion='" + appVersion + '\'' +
+                ", deviceInfo='" + deviceInfo + '\'' +
+                ", totalOcrSeconds=" + totalOcrSeconds +
+                ", manuallyChangeOcrResults=" + manuallyChangeOcrResults +
+                ", temporaryFlags=" + temporaryFlags +
+                ", userHasSelectedNoSymptoms=" + userHasSelectedNoSymptoms +
+                '}';
+    }
+
     public static Reading makeNewReading(ZonedDateTime now) {
         // setup basic info
         Reading r = new Reading();

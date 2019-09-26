@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.android.volley.NetworkResponse;
 import com.android.volley.Response;
+import com.cradletrial.cradlevhtapp.model.Patient.Patient;
 import com.cradletrial.cradlevhtapp.model.Reading;
 import com.cradletrial.cradlevhtapp.model.Settings;
 import com.cradletrial.cradlevhtapp.utilitiles.DateUtil;
@@ -13,6 +14,7 @@ import com.cradletrial.cradlevhtapp.utilitiles.GsonUtil;
 import com.cradletrial.cradlevhtapp.utilitiles.HybridFileEncrypter;
 import com.cradletrial.cradlevhtapp.utilitiles.Util;
 import com.cradletrial.cradlevhtapp.utilitiles.Zipper;
+import com.google.gson.Gson;
 
 import org.threeten.bp.ZonedDateTime;
 
@@ -161,13 +163,22 @@ public class MultiReadingUploader {
             // generate zip of encrypted data
             String encryptedZipFileFolder = context.getCacheDir().getAbsolutePath();
             encryptedZip = HybridFileEncrypter.hybridEncryptFile(zipFile, encryptedZipFileFolder, settings.getRsaPubKey());
+//
+//            // start upload
+//            Uploader uploader = new Uploader(
+//                    settings.getServerUrl(),
+//                    settings.getServerUserName(),
+//                    settings.getServerPassword());
+//            uploader.doUpload(encryptedZip.getAbsolutePath(), getSuccessCallback(), getErrorCallback());
 
-            // start upload
-            Uploader uploader = new Uploader(
-                    settings.getServerUrl(),
-                    settings.getServerUserName(),
-                    settings.getServerPassword());
-            uploader.doUpload(encryptedZip.getAbsolutePath(), getSuccessCallback(), getErrorCallback());
+            Uploader patientUploader = new Uploader("http://cradle-platform.herokuapp.com/","","");
+            Gson gson = new Gson();
+            Reading reading = readings.get(0);
+            Patient patient = readings.get(0).patient;
+            String jsonFIle = gson.toJson(patient);
+
+            Log.d("bugg","patient: "+jsonFIle.toString()+ " reading size: "+ readings.size());
+            patientUploader.doUpload(jsonFIle,getSuccessCallback(),getErrorCallback());
 
         } catch (IOException | GeneralSecurityException ex) {
             Log.e(TAG, "Exception with encrypting and transmitting data!", ex);
