@@ -9,6 +9,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
@@ -30,6 +31,7 @@ import org.threeten.bp.ZonedDateTime;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
@@ -192,9 +194,27 @@ public class MultiReadingUploader {
             JSONObject jsonObject = new JSONObject(jsonFIle);
             RequestQueue requestQueue = Volley.newRequestQueue(context);
             String url = "http://cradle-platform.herokuapp.com/patient";
-            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, jsonObject,
-                    response -> Log.d("bbb"," onResponse: "+response.toString()),
-                    error -> Log.d("bbb"," error: "+error.getCause()));
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, jsonObject, new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    Log.d("aaa","response: "+response.toString());
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.d("aaa","error: "+error.getMessage());
+                    Log.d("aaa","error1  "+error.networkResponse.statusCode);
+                    try {
+                        String json = new String(error.networkResponse.data, HttpHeaderParser.parseCharset(error.networkResponse.headers));
+                        Log.d("aaa","error2  "+json);
+
+                    } catch (UnsupportedEncodingException e) {
+                        Log.d("aaa",e.getMessage()+ "   eeeee");
+                    }
+
+                }
+            });
+
             requestQueue.add(jsonObjectRequest);
             Log.d("bbb","patient: "+jsonFIle.toString()+ " reading size: "+ readings.size());
             //patientUploader.doUpload(jsonFIle,getSuccessCallback(),getErrorCallback());
