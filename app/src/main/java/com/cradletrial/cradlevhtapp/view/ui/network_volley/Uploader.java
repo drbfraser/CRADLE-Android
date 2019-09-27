@@ -50,7 +50,7 @@ public class Uploader {
             dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
 
             // pass to multipart body
-            multipartBody = fileNameToUpload.getBytes();
+            multipartBody = bos.toByteArray();
 
         } catch (IOException e) {
             e.printStackTrace();

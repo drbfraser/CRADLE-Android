@@ -28,6 +28,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.threeten.bp.ZonedDateTime;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -171,6 +172,7 @@ public class MultiReadingUploader {
 
         File zipFile = null;
         File encryptedZip = null;
+        File file = null;
         try {
             // zip data
             zipFile = zipReading(readings.get(0));
@@ -178,58 +180,48 @@ public class MultiReadingUploader {
             // generate zip of encrypted data
             String encryptedZipFileFolder = context.getCacheDir().getAbsolutePath();
             encryptedZip = HybridFileEncrypter.hybridEncryptFile(zipFile, encryptedZipFileFolder, settings.getRsaPubKey());
-//
-//            // start upload
-//            Uploader uploader = new Uploader(
-//                    settings.getServerUrl(),
-//                    settings.getServerUserName(),
-//                    settings.getServerPassword());
-//            uploader.doUpload(encryptedZip.getAbsolutePath(), getSuccessCallback(), getErrorCallback());
 
-            Uploader patientUploader = new Uploader("http://cradle-platform.herokuapp.com/patient","","");
             Gson gson = new Gson();
             Reading reading = readings.get(0);
             Patient patient = readings.get(0).patient;
-            String jsonFIle = gson.toJson(patient);
-            JSONObject jsonObject = new JSONObject(jsonFIle);
-            RequestQueue requestQueue = Volley.newRequestQueue(context);
-            String url = "http://cradle-platform.herokuapp.com/patient";
-            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, jsonObject, new Response.Listener<JSONObject>() {
-                @Override
-                public void onResponse(JSONObject response) {
-                    Log.d("aaa","response: "+response.toString());
-                }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    Log.d("aaa","error: "+error.getMessage());
-                    Log.d("aaa","error1  "+error.networkResponse.statusCode);
-                    try {
-                        String json = new String(error.networkResponse.data, HttpHeaderParser.parseCharset(error.networkResponse.headers));
-                        Log.d("aaa","error2  "+json);
+            String json = gson.toJson(patient);
 
-                    } catch (UnsupportedEncodingException e) {
-                        Log.d("aaa",e.getMessage()+ "   eeeee");
-                    }
-
-                }
-            });
-
-            requestQueue.add(jsonObjectRequest);
-            Log.d("bbb","patient: "+jsonFIle.toString()+ " reading size: "+ readings.size());
-            //patientUploader.doUpload(jsonFIle,getSuccessCallback(),getErrorCallback());
+            File jsonFile = new File(context.getCacheDir(),
+                    "reading_" + readings.get(0).patient.patientId + "@" + DateUtil.getISODateForFilename(ZonedDateTime.now()) + ".json");
+            file = writeToFile(json,jsonFile,context);
+            Log.d("bugg","file path: "+ file.getAbsolutePath());
+            // start upload
+            Uploader uploader = new Uploader(
+                    "http://cradle-platform.herokuapp.com/patient",
+                    settings.getServerUserName(),
+                    settings
+                            .getServerPassword());
+            uploader.doUpload(file.getAbsolutePath(), getSuccessCallback(), getErrorCallback());
 
         } catch (IOException | GeneralSecurityException ex) {
             Log.e(TAG, "Exception with encrypting and transmitting data!", ex);
             state = State.PAUSED;
             progressCallback.uploadPausedOnError("Encrypting data for upload failed (" + ex.getMessage() + ")");
-        } catch (JSONException e) {
-            e.printStackTrace();
         } finally {
             // cleanup
             Util.deleteFile(encryptedZip);
             Util.deleteFile(zipFile);
+            Util.deleteFile(file);
         }
+
+    }
+    private File writeToFile(String data, File file,Context context) {
+        try {
+            file.createNewFile();
+            FileWriter fileWriter = new FileWriter(file.getAbsolutePath());
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+            bufferedWriter.write(data);
+            bufferedWriter.close();
+            return file;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
 
     }
     private Response.Listener<NetworkResponse> getSuccessCallback() {
