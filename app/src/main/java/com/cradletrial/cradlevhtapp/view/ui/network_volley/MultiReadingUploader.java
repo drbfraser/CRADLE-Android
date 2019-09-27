@@ -5,7 +5,14 @@ import android.os.SystemClock;
 import android.util.Log;
 
 import com.android.volley.NetworkResponse;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.cradletrial.cradlevhtapp.R;
 import com.cradletrial.cradlevhtapp.model.Patient.Patient;
 import com.cradletrial.cradlevhtapp.model.Reading;
 import com.cradletrial.cradlevhtapp.model.Settings;
@@ -16,6 +23,8 @@ import com.cradletrial.cradlevhtapp.utilitiles.Util;
 import com.cradletrial.cradlevhtapp.utilitiles.Zipper;
 import com.google.gson.Gson;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.threeten.bp.ZonedDateTime;
 
 import java.io.File;
@@ -25,7 +34,11 @@ import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static java.net.Proxy.Type.HTTP;
 
 /**
  * Handle uploading multiple readings to the server.
@@ -171,19 +184,27 @@ public class MultiReadingUploader {
 //                    settings.getServerPassword());
 //            uploader.doUpload(encryptedZip.getAbsolutePath(), getSuccessCallback(), getErrorCallback());
 
-            Uploader patientUploader = new Uploader("http://cradle-platform.herokuapp.com/","","");
+            Uploader patientUploader = new Uploader("http://cradle-platform.herokuapp.com/patient","","");
             Gson gson = new Gson();
             Reading reading = readings.get(0);
             Patient patient = readings.get(0).patient;
             String jsonFIle = gson.toJson(patient);
-
-            Log.d("bugg","patient: "+jsonFIle.toString()+ " reading size: "+ readings.size());
-            patientUploader.doUpload(jsonFIle,getSuccessCallback(),getErrorCallback());
+            JSONObject jsonObject = new JSONObject(jsonFIle);
+            RequestQueue requestQueue = Volley.newRequestQueue(context);
+            String url = "http://cradle-platform.herokuapp.com/patient";
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, jsonObject,
+                    response -> Log.d("bbb"," onResponse: "+response.toString()),
+                    error -> Log.d("bbb"," error: "+error.getCause()));
+            requestQueue.add(jsonObjectRequest);
+            Log.d("bbb","patient: "+jsonFIle.toString()+ " reading size: "+ readings.size());
+            //patientUploader.doUpload(jsonFIle,getSuccessCallback(),getErrorCallback());
 
         } catch (IOException | GeneralSecurityException ex) {
             Log.e(TAG, "Exception with encrypting and transmitting data!", ex);
             state = State.PAUSED;
             progressCallback.uploadPausedOnError("Encrypting data for upload failed (" + ex.getMessage() + ")");
+        } catch (JSONException e) {
+            e.printStackTrace();
         } finally {
             // cleanup
             Util.deleteFile(encryptedZip);
