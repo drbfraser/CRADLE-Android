@@ -172,7 +172,6 @@ public class MultiReadingUploader {
 
         File zipFile = null;
         File encryptedZip = null;
-        File file = null;
         try {
             // zip data
             zipFile = zipReading(readings.get(0));
@@ -181,22 +180,13 @@ public class MultiReadingUploader {
             String encryptedZipFileFolder = context.getCacheDir().getAbsolutePath();
             encryptedZip = HybridFileEncrypter.hybridEncryptFile(zipFile, encryptedZipFileFolder, settings.getRsaPubKey());
 
-            Gson gson = new Gson();
-            Reading reading = readings.get(0);
-            Patient patient = readings.get(0).patient;
-            String json = gson.toJson(patient);
-
-            File jsonFile = new File(context.getCacheDir(),
-                    "reading_" + readings.get(0).patient.patientId + "@" + DateUtil.getISODateForFilename(ZonedDateTime.now()) + ".json");
-            file = writeToFile(json,jsonFile,context);
-            Log.d("bugg","file path: "+ file.getAbsolutePath());
+            String readingJson = Reading.getJsonObj(readings.get(0));
             // start upload
             Uploader uploader = new Uploader(
                     "http://cradle-platform.herokuapp.com/patient",
                     settings.getServerUserName(),
-                    settings
-                            .getServerPassword());
-            uploader.doUpload(file.getAbsolutePath(), getSuccessCallback(), getErrorCallback());
+                    settings.getServerPassword());
+            uploader.doUpload(readingJson, getSuccessCallback(), getErrorCallback());
 
         } catch (IOException | GeneralSecurityException ex) {
             Log.e(TAG, "Exception with encrypting and transmitting data!", ex);
@@ -206,7 +196,6 @@ public class MultiReadingUploader {
             // cleanup
             Util.deleteFile(encryptedZip);
             Util.deleteFile(zipFile);
-            Util.deleteFile(file);
         }
 
     }

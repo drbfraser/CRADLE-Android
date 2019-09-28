@@ -60,7 +60,7 @@ public class Uploader {
                 urlString,
                 null,
                 mimeType,
-                multipartBody,
+                fileNameToUpload,
                 callbackOk, callbackFail);
 
         // add to volley queue

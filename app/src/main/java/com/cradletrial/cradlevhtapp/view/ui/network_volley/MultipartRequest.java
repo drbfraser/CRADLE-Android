@@ -9,24 +9,23 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
+import com.android.volley.toolbox.JsonRequest;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
-class MultipartRequest extends Request<NetworkResponse> {
+class MultipartRequest extends JsonRequest<NetworkResponse> {
     private final Response.Listener<NetworkResponse> mListener;
     private final Response.ErrorListener mErrorListener;
     private final Map<String, String> mHeaders;
     private final String mMimeType;
-    private final byte[] mMultipartBody;
 
-    public MultipartRequest(String url, Map<String, String> headers, String mimeType, byte[] multipartBody, Response.Listener<NetworkResponse> listener, Response.ErrorListener errorListener) {
-        super(Method.POST, url, errorListener);
+    public MultipartRequest(String url, Map<String, String> headers, String mimeType, String multipartBody, Response.Listener<NetworkResponse> listener, Response.ErrorListener errorListener) {
+        super(Method.POST,url,multipartBody,listener,errorListener);
         this.mListener = listener;
         this.mErrorListener = errorListener;
         this.mHeaders = headers;
         this.mMimeType = mimeType;
-        this.mMultipartBody = multipartBody;
     }
 
     @Override
@@ -34,15 +33,7 @@ class MultipartRequest extends Request<NetworkResponse> {
         return (mHeaders != null) ? mHeaders : super.getHeaders();
     }
 
-    @Override
-    public String getBodyContentType() {
-        return mMimeType;
-    }
 
-    @Override
-    public byte[] getBody() throws AuthFailureError {
-        return mMultipartBody;
-    }
 
     @Override
     protected Response<NetworkResponse> parseNetworkResponse(NetworkResponse response) {

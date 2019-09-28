@@ -110,6 +110,74 @@ public class Reading {
 
     }
 
+
+    /*
+     "patientId": "153",
+        "patientName": "we",
+        "patientAge": "54",
+        "gestationalAgeUnit": "GESTATIONAL_AGE_UNITS_WEEKS",
+        "gestationalAgeValue": "23",
+        "villageNumber": null,
+        "patientSex": "M",
+        "isPregnant": true
+     */
+    //todo add is ispregnant to paiteint
+
+
+    /*
+     "reading" : {
+        "dateLastSaved" : "2019-09-25T19:00:43.002-07:00[America/Vancouver]",
+        "bpSystolic" : 133,
+        "bpDiastolic" : 70,
+        "heartRateBPM" : 60,
+        "dateRecheckVitalsNeeded" : "2019-09-25T19:15:38.032-07:00[America/Vancouver]",
+        "isFlaggedForFollowup" : false,
+        "symptoms": "Headache,Blurred vision,Bleeding,sleepy"
+    }
+     */
+    public static String getJsonObj(Reading reading){
+        JSONObject patientVal = new JSONObject();
+        Patient patient = reading.patient;
+        try {
+
+            patientVal.put("patientId", patient.patientId);
+            patientVal.put("patientName", patient.patientName);
+            patientVal.put("patientAge", patient.ageYears);
+            patientVal.put("gestationalAgeUnit", patient.gestationalAgeUnit);
+            patientVal.put("gestationalAgeValue", patient.gestationalAgeValue);
+            patientVal.put("villageNumber", patient.villageNumber);
+            patientVal.put("patientSex", patient.patientSex);
+            patientVal.put("isPregnant", "false");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+         JSONObject readingVal = new JSONObject();
+        try {
+
+            readingVal.put("dateLastSaved", reading.dateLastSaved);
+            readingVal.put("bpSystolic", reading.bpSystolic);
+            readingVal.put("bpDiastolic", reading.bpDiastolic);
+            readingVal.put("heartRateBPM", reading.heartRateBPM);
+            readingVal.put("dateRecheckVitalsNeeded", reading.dateRecheckVitalsNeeded);
+            readingVal.put("isFlaggedForFollowup", reading.isFlaggedForFollowup);
+            readingVal.put("symptoms", reading.getSymptomsString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+        JSONObject mainObj = new JSONObject();
+        try {
+
+            mainObj.put("patient", patientVal);
+            mainObj.put("reading", readingVal);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return mainObj.toString();
+    }
+
     @Override
     public String toString() {
         return "Reading{" +
