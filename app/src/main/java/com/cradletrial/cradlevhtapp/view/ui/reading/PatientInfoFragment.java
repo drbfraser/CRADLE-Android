@@ -128,6 +128,18 @@ public class PatientInfoFragment extends BaseFragment {
         // village number
         et = mView.findViewById(R.id.etVillageNumber);
         currentReading.patient.villageNumber = et.getText().toString();
+
+        // zone no
+        et = mView.findViewById(R.id.etZone);
+        currentReading.patient.zone = et.getText().toString();
+
+        // tank no
+        et = mView.findViewById(R.id.etTankNumber);
+        currentReading.patient.tankNo = et.getText().toString();
+
+        // house number
+        et = mView.findViewById(R.id.etHouseNumber);
+        currentReading.patient.houseNumber = et.getText().toString();
     }
 
 

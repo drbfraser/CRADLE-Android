@@ -23,8 +23,11 @@ public class Patient implements Serializable {
     public List<String> symptoms = new ArrayList<>();
     public Reading.GestationalAgeUnit gestationalAgeUnit;
     public String gestationalAgeValue;
-    public String villageNumber;
     public PATIENTSEX patientSex;
+    public String zone;
+    public String tankNo;
+    public String villageNumber;
+    public String houseNumber;
 
     public Patient() {}
     public Patient(String mPatientId, String mPatientName,Integer mAgeYears, Reading.GestationalAgeUnit mGestationalAgeUnit,

@@ -13,6 +13,23 @@
         tools:context=".view.PatientInfoOLDActivity">
 
         <!-- ID -->
+        <Spinner
+            android:id="@+id/spinnerPatientSex"
+            android:layout_width="163dp"
+            android:layout_height="31dp"
+            android:layout_marginTop="12dp"
+            app:layout_constraintStart_toStartOf="@+id/spinnerGestationalAgeUnits"
+            app:layout_constraintTop_toBottomOf="@+id/spinnerGestationalAgeUnits" />
+
+        <Spinner
+            android:id="@+id/spinnerGestationalAgeUnits"
+            android:layout_width="163dp"
+            android:layout_height="31dp"
+            android:layout_marginStart="8dp"
+            app:layout_constraintBottom_toBottomOf="@+id/txtGestationalAge"
+            app:layout_constraintStart_toEndOf="@+id/txtGestationalAge"
+            app:layout_constraintTop_toTopOf="@+id/txtGestationalAge" />
+
         <android.support.design.widget.TextInputLayout
             android:id="@+id/txtPatientId"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -21,7 +38,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
-            android:hint="ID number"
+            android:hint="@string/id_number"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
@@ -42,7 +59,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:hint="Initials"
+            android:hint="@string/initials"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/txtPatientId">
 
@@ -61,7 +78,7 @@
             android:layout_width="140dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:hint="Age"
+            android:hint="@string/age"
             app:layout_constraintStart_toEndOf="@+id/txtPatientName"
             app:layout_constraintTop_toTopOf="@+id/txtPatientName">
 
@@ -81,7 +98,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:hint="Gestational Age"
+            android:hint="@string/gestational_age"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/txtPatientAge">
 
@@ -92,32 +109,99 @@
                 android:inputType="numberDecimal" />
         </android.support.design.widget.TextInputLayout>
 
-
-        <Spinner
-            android:id="@+id/spinnerGestationalAgeUnits"
-            android:layout_width="163dp"
-            android:layout_height="31dp"
-            android:layout_marginStart="8dp"
-            app:layout_constraintBottom_toBottomOf="@+id/txtGestationalAge"
-            app:layout_constraintStart_toEndOf="@+id/txtGestationalAge"
-            app:layout_constraintTop_toTopOf="@+id/txtGestationalAge" />
-
-        <Spinner
-            android:id="@+id/spinnerPatientSex"
-            android:layout_width="163dp"
-            android:layout_height="31dp"
-            android:layout_marginTop="12dp"
-            app:layout_constraintStart_toStartOf="@+id/spinnerGestationalAgeUnits"
-            app:layout_constraintTop_toBottomOf="@+id/spinnerGestationalAgeUnits" />
-
-        <android.support.design.widget.TextInputEditText
-            android:id="@+id/etVillageNumber"
-            android:layout_width="wrap_content"
+        <!-- Village number -->
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/txtVillageNumber"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="140dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
             android:hint="@string/village_number"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/txtGestationalAge" />
+            app:layout_constraintTop_toBottomOf="@+id/txtTankNumber">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/etVillageNumber"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+        </android.support.design.widget.TextInputLayout>
+
+        <!-- Zone -->
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/txtZone"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="140dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:hint="@string/zone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txtGestationalAge">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/etZone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textNoSuggestions|text|textCapCharacters" />
+        </android.support.design.widget.TextInputLayout>
+
+        <!-- Block number -->
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/txtBlockNumber"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="140dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:hint="@string/block_no"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txtZone">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/etBlockNumber"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+        </android.support.design.widget.TextInputLayout>
+
+        <!-- Tank number -->
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/txtTankNumber"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="140dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:hint="@string/tank_no"
+            app:layout_constraintStart_toEndOf="@+id/txtBlockNumber"
+            app:layout_constraintTop_toTopOf="@+id/txtBlockNumber">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/etTankNumber"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+        </android.support.design.widget.TextInputLayout>
+
+        <!-- House number -->
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/txtHouseNumber"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="140dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:hint="@string/house_number"
+            app:layout_constraintStart_toEndOf="@+id/txtVillageNumber"
+            app:layout_constraintTop_toTopOf="@+id/txtVillageNumber">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/etHouseNumber"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+        </android.support.design.widget.TextInputLayout>
+
 
     </android.support.constraint.ConstraintLayout>
 </ScrollView>
