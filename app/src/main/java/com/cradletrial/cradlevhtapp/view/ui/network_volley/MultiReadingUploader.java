@@ -182,8 +182,9 @@ public class MultiReadingUploader {
 
             String readingJson = Reading.getJsonObj(readings.get(0));
             // start upload
+            Log.d("bugg","server: "+settings.getServerUrl());
             Uploader uploader = new Uploader(
-                    "http://cradle-platform.herokuapp.com/patient",
+                    settings.getServerUrl(),
                     settings.getServerUserName(),
                     settings.getServerPassword());
             uploader.doUpload(readingJson, getSuccessCallback(), getErrorCallback());
