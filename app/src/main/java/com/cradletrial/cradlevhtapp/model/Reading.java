@@ -110,6 +110,83 @@ public class Reading {
 
     }
 
+
+    /**
+     * This functions puts Reading into a json object which we can use to send to the server
+     * @param reading reading to put into json object.
+     * @return a json string
+     */
+    public static String getJsonObj(Reading reading){
+        JSONObject patientVal = new JSONObject();
+        Patient patient = reading.patient;
+        try {
+
+            patientVal.put("patientId", patient.patientId);
+            patientVal.put("patientName", patient.patientName);
+            patientVal.put("patientAge", patient.ageYears);
+            patientVal.put("gestationalAgeUnit", patient.gestationalAgeUnit);
+            patientVal.put("gestationalAgeValue", patient.gestationalAgeValue);
+            patientVal.put("villageNumber", patient.villageNumber);
+            patientVal.put("patientSex", patient.patientSex);
+            patientVal.put("isPregnant", "false");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+         JSONObject readingVal = new JSONObject();
+        try {
+
+            readingVal.put("dateLastSaved", reading.dateLastSaved);
+            readingVal.put("bpSystolic", reading.bpSystolic);
+            readingVal.put("bpDiastolic", reading.bpDiastolic);
+            readingVal.put("heartRateBPM", reading.heartRateBPM);
+            readingVal.put("dateRecheckVitalsNeeded", reading.dateRecheckVitalsNeeded);
+            readingVal.put("isFlaggedForFollowup", reading.isFlaggedForFollowup);
+            readingVal.put("symptoms", reading.getSymptomsString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+        JSONObject mainObj = new JSONObject();
+        try {
+
+            mainObj.put("patient", patientVal);
+            mainObj.put("reading", readingVal);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return mainObj.toString();
+    }
+
+    @Override
+    public String toString() {
+        return "Reading{" +
+                "readingId=" + readingId +
+                ", dateLastSaved=" + dateLastSaved +
+                ", patient=" + patient +
+                ", pathToPhoto='" + pathToPhoto + '\'' +
+                ", bpSystolic=" + bpSystolic +
+                ", bpDiastolic=" + bpDiastolic +
+                ", heartRateBPM=" + heartRateBPM +
+                ", dateTimeTaken=" + dateTimeTaken +
+                ", gpsLocationOfReading='" + gpsLocationOfReading + '\'' +
+                ", dateUploadedToServer=" + dateUploadedToServer +
+                ", retestOfPreviousReadingIds=" + retestOfPreviousReadingIds +
+                ", dateRecheckVitalsNeeded=" + dateRecheckVitalsNeeded +
+                ", isFlaggedForFollowup=" + isFlaggedForFollowup +
+                ", referralMessageSendTime=" + referralMessageSendTime +
+                ", referralHealthCentre='" + referralHealthCentre + '\'' +
+                ", referralComment='" + referralComment + '\'' +
+                ", appVersion='" + appVersion + '\'' +
+                ", deviceInfo='" + deviceInfo + '\'' +
+                ", totalOcrSeconds=" + totalOcrSeconds +
+                ", manuallyChangeOcrResults=" + manuallyChangeOcrResults +
+                ", temporaryFlags=" + temporaryFlags +
+                ", userHasSelectedNoSymptoms=" + userHasSelectedNoSymptoms +
+                '}';
+    }
+
     public static Reading makeNewReading(ZonedDateTime now) {
         // setup basic info
         Reading r = new Reading();
