@@ -182,7 +182,6 @@ public class MultiReadingUploader {
 
             String readingJson = Reading.getJsonObj(readings.get(0));
             // start upload
-            Log.d("bugg","server: "+settings.getServerUrl());
             Uploader uploader = new Uploader(
                     settings.getServerUrl(),
                     settings.getServerUserName(),
@@ -200,20 +199,7 @@ public class MultiReadingUploader {
         }
 
     }
-    private File writeToFile(String data, File file,Context context) {
-        try {
-            file.createNewFile();
-            FileWriter fileWriter = new FileWriter(file.getAbsolutePath());
-            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-            bufferedWriter.write(data);
-            bufferedWriter.close();
-            return file;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
 
-    }
     private Response.Listener<NetworkResponse> getSuccessCallback() {
         return response -> {
             // handle aborted upload:

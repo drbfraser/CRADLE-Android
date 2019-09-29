@@ -111,29 +111,10 @@ public class Reading {
     }
 
 
-    /*
-     "patientId": "153",
-        "patientName": "we",
-        "patientAge": "54",
-        "gestationalAgeUnit": "GESTATIONAL_AGE_UNITS_WEEKS",
-        "gestationalAgeValue": "23",
-        "villageNumber": null,
-        "patientSex": "M",
-        "isPregnant": true
-     */
-    //todo add is ispregnant to paiteint
-
-
-    /*
-     "reading" : {
-        "dateLastSaved" : "2019-09-25T19:00:43.002-07:00[America/Vancouver]",
-        "bpSystolic" : 133,
-        "bpDiastolic" : 70,
-        "heartRateBPM" : 60,
-        "dateRecheckVitalsNeeded" : "2019-09-25T19:15:38.032-07:00[America/Vancouver]",
-        "isFlaggedForFollowup" : false,
-        "symptoms": "Headache,Blurred vision,Bleeding,sleepy"
-    }
+    /**
+     * This functions puts Reading into a json object which we can use to send to the server
+     * @param reading reading to put into json object.
+     * @return a json string
      */
     public static String getJsonObj(Reading reading){
         JSONObject patientVal = new JSONObject();

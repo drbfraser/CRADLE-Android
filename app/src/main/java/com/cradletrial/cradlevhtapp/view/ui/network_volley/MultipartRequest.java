@@ -55,10 +55,10 @@ class MultipartRequest extends JsonRequest<NetworkResponse> {
     public void deliverError(VolleyError error) {
         try {
             String json = new String(error.networkResponse.data, HttpHeaderParser.parseCharset(error.networkResponse.headers));
-            Log.d("bugg","error2  "+json+ "     code: "+ error.networkResponse.statusCode);
+            Log.d("bugg","Delivery error: "+json);
 
         } catch (UnsupportedEncodingException e) {
-            Log.d("bugg",e.getMessage()+ "   eeeee");
+            Log.d("bugg",e.getMessage());
         }
 
         mErrorListener.onErrorResponse(error);
