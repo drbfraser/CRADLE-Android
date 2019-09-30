@@ -77,7 +77,7 @@
             android:key="settings_upload_server"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:defaultValue="@string/settings_default_server_url"
+            android:defaultValue="@string/settings_reading_server_url"
             />
         <EditTextPreference
             android:title="User name on server"
