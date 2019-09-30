@@ -24,6 +24,7 @@ public class Patient implements Serializable {
     public Reading.GestationalAgeUnit gestationalAgeUnit;
     public String gestationalAgeValue;
     public PATIENTSEX patientSex;
+    public boolean isPregnant;
     public String zone;
     public String tankNo;
     public String villageNumber;
@@ -31,7 +32,8 @@ public class Patient implements Serializable {
 
     public Patient() {}
     public Patient(String mPatientId, String mPatientName,Integer mAgeYears, Reading.GestationalAgeUnit mGestationalAgeUnit,
-                   String mGestationalAgeValue, String mVillageNumber, PATIENTSEX mSex) {
+                   String mGestationalAgeValue, String mVillageNumber, PATIENTSEX mSex,
+                   String zone,String tankNo,String houseNumber,boolean isPregnant) {
         patientId = mPatientId ;
         patientName = mPatientName;
         ageYears = mAgeYears;
@@ -39,6 +41,10 @@ public class Patient implements Serializable {
         gestationalAgeValue = mGestationalAgeValue;
         villageNumber = mVillageNumber;
         patientSex = mSex;
+        this.zone = zone;
+        this.tankNo = tankNo;
+        this.houseNumber = houseNumber;
+        this.isPregnant = isPregnant;
     }
 
     public String genSymptomString()

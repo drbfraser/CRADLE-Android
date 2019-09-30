@@ -131,7 +131,7 @@ public class Reading {
             patientVal.put("gestationalAgeValue", patient.gestationalAgeValue);
             patientVal.put("villageNumber", patient.villageNumber);
             patientVal.put("patientSex", patient.patientSex);
-            patientVal.put("isPregnant", "false");
+            patientVal.put("isPregnant", patient.isPregnant);
         } catch (JSONException e) {
             e.printStackTrace();
         }

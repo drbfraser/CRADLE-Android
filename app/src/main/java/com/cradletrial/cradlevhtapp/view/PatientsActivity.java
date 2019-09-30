@@ -82,7 +82,7 @@ public class PatientsActivity extends TabActivityBase {
         for(int i =0;i<25;i++){
             Patient patient = new Patient(i*1000000+"","Patient "+i,i+20,
                     Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS," ??",
-                    30+i+"", Patient.PATIENTSEX.F);
+                    30+i+"", Patient.PATIENTSEX.F,"ZONE "+i,"tank "+i,"HN "+i,false);
             patients.add(patient);
         }
         PatientsViewAdapter patientsViewAdapter = new PatientsViewAdapter(patients,this);
