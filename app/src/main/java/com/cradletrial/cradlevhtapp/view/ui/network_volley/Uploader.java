@@ -33,7 +33,7 @@ public class Uploader {
         this.userPassword = userPassword;
     }
 
-    public void doUpload(String fileNameToUpload, Response.Listener<NetworkResponse> callbackOk, Response.ErrorListener callbackFail) {
+    public void doUpload(String jsonStringForBody, Response.Listener<NetworkResponse> callbackOk, Response.ErrorListener callbackFail) {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(bos);
         try {
@@ -44,7 +44,7 @@ public class Uploader {
 
             // the file
             // do this on the main thread because client may delete file immediately on return
-            buildFilePart(dos, fileNameToUpload);
+            buildFilePart(dos, jsonStringForBody);
 
             // send multipart form data necessary after file data
             dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
@@ -60,7 +60,7 @@ public class Uploader {
                 urlString,
                 null,
                 mimeType,
-                fileNameToUpload,
+                jsonStringForBody,
                 callbackOk, callbackFail);
 
         // add to volley queue

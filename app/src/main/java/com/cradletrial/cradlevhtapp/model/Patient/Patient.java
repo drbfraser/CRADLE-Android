@@ -96,45 +96,6 @@ public class Patient implements Serializable {
         return null;
     }
 
-    public static String toJSon(Patient person, JSONObject referralObject) {
-        try {
-            JSONObject parent = new JSONObject();
-            JSONObject patientInfoObject = new JSONObject();
-            JSONObject readingObject = new JSONObject();
-            JSONObject filloutObject = new JSONObject();
-
-            parent.put("personal-info", patientInfoObject);
-            patientInfoObject.put("patientId", person.patientId.toString() );
-            patientInfoObject.put("patientName", person.patientName.toString() );
-            patientInfoObject.put("patientAge", person.ageYears.toString() );
-            patientInfoObject.put("gestationalAgeUnit", person.gestationalAgeUnit.toString() );
-            patientInfoObject.put("gestationalAgeValue", person.gestationalAgeValue.toString() );
-            patientInfoObject.put("villageNumber", person.villageNumber.toString() );
-            patientInfoObject.put("patientSex", person.patientSex.toString() );
-
-            String symptomsString = person.genSymptomString();
-            patientInfoObject.put("symptoms", symptomsString);
-
-            parent.put("referral", referralObject);
-            patientInfoObject.put("key", "string");
-
-            parent.put("reading", readingObject);
-            patientInfoObject.put("key", "string");
-
-            parent.put("fillout", filloutObject);
-            patientInfoObject.put("key", "string");
-
-            Log.d("Json", parent.toString(2));
-
-            return parent.toString();
-
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
 
 
 }

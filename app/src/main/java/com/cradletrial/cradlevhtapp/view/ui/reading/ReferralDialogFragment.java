@@ -16,6 +16,7 @@ import android.support.v7.app.AlertDialog;
 import android.telephony.SmsManager;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -23,6 +24,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -153,26 +155,17 @@ public class ReferralDialogFragment extends DialogFragment {
         if (settings.getHealthCentreNames().size() == 0) {
             tvSendingStatus.setText("ERROR: No known health centres.\nPlease go to settings to enter them.");
             tvSendingStatus.setVisibility(View.VISIBLE);
-            return;
+           // return;
         }
 
         // Must send SMS via intent to default SMS program due to PlayStore policy preventing
         // apps from sending SMS directly.
-        composeMmsMessage(smsTextMessage, selectedHealthCentreSmsPhoneNumber);
-        onFinishedSendingSMS(dialog);
+        //composeMmsMessage(smsTextMessage, selectedHealthCentreSmsPhoneNumber);
+        //onFinishedSendingSMS(dialog);
 
         // Json for comments
-        try {
-            JSONObject referralObject = new JSONObject();
-            referralObject.put("comments", enteredComment);
-            referralObject.put("healthCenter", "Future feature not available");
-            referralObject.put("VHT", "Future feature not available");
+        String json = getReferralJson();
 
-            Patient.toJSon(currentReading.patient, referralObject);
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
 //
 //        // prep UI
 //        // TODO: put in XML
@@ -458,6 +451,52 @@ public class ReferralDialogFragment extends DialogFragment {
                         + addLf(secondReferralWarning)
                         + comments;
         return message;
+    }
+    private String getReferralJson (){
+        JSONObject patientVal = new JSONObject();
+        Patient patient = currentReading.patient;
+        try {
+
+            patientVal.put("patientId", patient.patientId);
+            patientVal.put("patientName", patient.patientName);
+            patientVal.put("patientAge", patient.ageYears);
+            patientVal.put("gestationalAgeUnit", patient.gestationalAgeUnit);
+            patientVal.put("gestationalAgeValue", patient.gestationalAgeValue);
+            patientVal.put("villageNumber", patient.villageNumber);
+            patientVal.put("patientSex", patient.patientSex);
+            patientVal.put("isPregnant", "false");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        JSONObject readingVal = new JSONObject();
+        try {
+            readingVal.put("readingId",currentReading.serverReadingId);
+            readingVal.put("dateLastSaved", currentReading.dateLastSaved);
+            readingVal.put("bpSystolic", currentReading.bpSystolic);
+            readingVal.put("bpDiastolic", currentReading.bpDiastolic);
+            readingVal.put("heartRateBPM", currentReading.heartRateBPM);
+            readingVal.put("dateRecheckVitalsNeeded", currentReading.dateRecheckVitalsNeeded);
+            readingVal.put("isFlaggedForFollowup", currentReading.isFlaggedForFollowup());
+            readingVal.put("symptoms", currentReading.getSymptomsString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+        JSONObject mainObj = new JSONObject();
+        try {
+
+            mainObj.put("patient", patientVal);
+            mainObj.put("reading", readingVal);
+            mainObj.put("comment",enteredComment);
+            mainObj.put("heathFacilityName",this.selectedHealthCentreName);
+            mainObj.put("dateReferred", ZonedDateTime.now().toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return mainObj.toString();
+
     }
     private String addLf(String str) {
         if (str.trim().length() > 0) {
