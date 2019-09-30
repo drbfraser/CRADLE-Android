@@ -191,6 +191,23 @@
         3QIDAQAB                                                        \n
         -----END PUBLIC KEY-----
     </string>
-    <string name="village_number">Village Number</string>
+    <string name="village_number">Village Number:</string>
+    <string name="name">Name:</string>
+    <string name="age">Age:</string>
+    <string name="sex">Sex:</string>
+    <string name="village_number_input">Village Number</string>
+    <string name="last_reading">Last Reading:</string>
+    <string name="last_reading_input">Last Reading</string>
+    <string name="symptoms">Symptoms:</string>
+    <string name="symptoms_input">Symptoms</string>
+    <string name="gestational_age">Gestational Age:</string>
+    <string name="gestational_age_input">Gestational Age</string>
+    <string name="units">Units</string>
+    <string name="id">ID:</string>
+    <string name="id_input">ID</string>
+    <string name="profile">Profile</string>
+    <string name="age_input">Age</string>
+    <string name="sex_input">Sex</string>
+    <string name="name_input">name</string>
 
 </resources>

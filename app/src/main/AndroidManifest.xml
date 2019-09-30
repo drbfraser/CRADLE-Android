@@ -61,6 +61,7 @@
             android:name=".view.ui.settings.SettingsActivity"
             android:label="Settings"
             android:screenOrientation="portrait" />
+
         <activity android:name=".view.ui.settings.SettingNamedPairsActivity" />
     </application>
 

@@ -7,10 +7,11 @@ import com.cradletrial.cradlevhtapp.model.Reading;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Patient {
+public class Patient implements Serializable {
 
     public static enum PATIENTSEX {M, F, I}
 

@@ -1,6 +1,7 @@
 package com.cradletrial.cradlevhtapp.viewmodel;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -10,12 +11,14 @@ import android.widget.TextView;
 
 import com.cradletrial.cradlevhtapp.R;
 import com.cradletrial.cradlevhtapp.model.Patient.Patient;
+import com.cradletrial.cradlevhtapp.view.PatientProfileActivity;
 
 import org.w3c.dom.Text;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapter.PatientViewHolder> {
+public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapter.PatientViewHolder> implements Serializable{
     private List<Patient> patientList;
     private Context context;
 
@@ -43,6 +46,13 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
         patientViewHolder.patientDOB.setText("Age: "+patient.ageYears+"");
         patientViewHolder.patientId.setText("ID: "+ patient.patientId);
 
+        patientViewHolder.itemView.setOnClickListener(view -> {
+
+            Intent intent = new Intent(context, PatientProfileActivity.class);
+            Patient p = patientList.get(i);
+            intent.putExtra("key", p);
+            context.startActivity(intent);
+        });
     }
 
     @Override
