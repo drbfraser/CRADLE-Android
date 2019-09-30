@@ -15,10 +15,9 @@ import com.cradletrial.cradlevhtapp.view.PatientProfileActivity;
 
 import org.w3c.dom.Text;
 
-import java.io.Serializable;
 import java.util.List;
 
-public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapter.PatientViewHolder> implements Serializable{
+public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapter.PatientViewHolder> {
     private List<Patient> patientList;
     private Context context;
 

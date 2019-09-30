@@ -10,11 +10,28 @@ import com.cradletrial.cradlevhtapp.model.Patient.Patient;
 
 public class PatientProfileActivity extends AppCompatActivity {
 
+    TextView patientID;
+    TextView patientName;
+    TextView patientAge;
+    TextView patientSex;
+    TextView villageNo;
+    TextView symptomsTemp;
+    TextView gestationalValTemp;
+    TextView gestationalUnitTemp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_patient_profile);
+
+        patientID = (TextView) findViewById(R.id.tvEnteredID);
+        patientName = (TextView) findViewById(R.id.tvEnteredPatientName);
+        patientAge = (TextView) findViewById(R.id.tvEnteredAge);
+        patientSex = (TextView) findViewById(R.id.tvEnteredSex);
+        villageNo = (TextView) findViewById(R.id.tvEnteredVillageNumber);
+        symptomsTemp = (TextView) findViewById(R.id.tvEnteredSymptoms);
+        gestationalValTemp = (TextView) findViewById(R.id.tvEnteredGestationalAge);
+        gestationalUnitTemp = (TextView) findViewById(R.id.tvEnteredGestationalAgeUnit);
 
         Patient mPatient = (Patient) getIntent().getSerializableExtra("key");
         populatePatientInfo(mPatient);
@@ -23,15 +40,6 @@ public class PatientProfileActivity extends AppCompatActivity {
 
     void populatePatientInfo(Patient patient)
     {
-        TextView patientID = (TextView) findViewById(R.id.tvEnteredID);
-        TextView patientName = (TextView) findViewById(R.id.tvEnteredPatientName);
-        TextView patientAge = (TextView) findViewById(R.id.tvEnteredAge);
-        TextView patientSex = (TextView) findViewById(R.id.tvEnteredSex);
-        TextView villageNo = (TextView) findViewById(R.id.tvEnteredVillageNumber);
-        TextView symptomsTemp = (TextView) findViewById(R.id.tvEnteredSymptoms);
-        TextView gestationalValTemp = (TextView) findViewById(R.id.tvEnteredGestationalAge);
-        TextView gestationalUnitTemp = (TextView) findViewById(R.id.tvEnteredGestationalAgeUnit);
-
         patientID.setText(patient.patientId);
         patientName.setText(patient.patientName);
         patientAge.setText(patient.ageYears.toString());
