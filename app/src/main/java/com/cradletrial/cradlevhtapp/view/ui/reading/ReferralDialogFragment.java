@@ -515,7 +515,7 @@ public class ReferralDialogFragment extends DialogFragment {
             mainObj.put("patient", patientVal);
             mainObj.put("reading", readingVal);
             mainObj.put("comment",enteredComment);
-            mainObj.put("heathFacilityName",this.selectedHealthCentreName);
+            mainObj.put("healthFacilityName",this.selectedHealthCentreName);
             mainObj.put("dateReferred", ZonedDateTime.now().toString());
         } catch (JSONException e) {
             e.printStackTrace();
