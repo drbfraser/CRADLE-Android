@@ -15,6 +15,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.Switch;
 
 import com.cradletrial.cradlevhtapp.R;
 import com.cradletrial.cradlevhtapp.model.Patient.Patient;
@@ -128,6 +129,18 @@ public class PatientInfoFragment extends BaseFragment {
         // village number
         et = mView.findViewById(R.id.etVillageNumber);
         currentReading.patient.villageNumber = et.getText().toString();
+
+        // zone no
+        et = mView.findViewById(R.id.etZone);
+        currentReading.patient.zone = et.getText().toString();
+
+        // tank no
+        et = mView.findViewById(R.id.etTankNumber);
+        currentReading.patient.tankNo = et.getText().toString();
+
+        // house number
+        et = mView.findViewById(R.id.etHouseNumber);
+        currentReading.patient.houseNumber = et.getText().toString();
     }
 
 
@@ -282,16 +295,20 @@ public class PatientInfoFragment extends BaseFragment {
     private static final int PATIENT_SEX_INTERSEX  = 2;
     private void updateSex_ModelFromUI(View v) {
         Spinner spin = v.findViewById(R.id.spinnerPatientSex);
-
+        Switch isPregnant = v.findViewById(R.id.pregnantSwitch);
         switch (spin.getSelectedItemPosition()) {
             case PATIENT_SEX_MALE :
                 currentReading.patient.patientSex = Patient.PATIENTSEX.M;
+                isPregnant.setChecked(false);
+                currentReading.patient.isPregnant= false;
                 break;
             case PATIENT_SEX_FEMALE :
                 currentReading.patient.patientSex = Patient.PATIENTSEX.F;
+                currentReading.patient.isPregnant = isPregnant.isChecked();
                 break;
             case PATIENT_SEX_INTERSEX  :
                 currentReading.patient.patientSex = Patient.PATIENTSEX.I;
+                currentReading.patient.isPregnant = isPregnant.isChecked();
                 break;
             default:
                 Util.ensure(false);

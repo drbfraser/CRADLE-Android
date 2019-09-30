@@ -14,6 +14,7 @@ import org.threeten.bp.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Basic data about a currentReading.
@@ -56,9 +57,11 @@ public class Reading {
     /**
      * Stored Values
      */
-    // db
+    // offline db
     public Long readingId;
     public ZonedDateTime dateLastSaved;
+    //todo later change the reading Id to be same for offline and online
+    public String serverReadingId;
 
     // patient info
 //    public String patientId;
@@ -128,13 +131,13 @@ public class Reading {
             patientVal.put("gestationalAgeValue", patient.gestationalAgeValue);
             patientVal.put("villageNumber", patient.villageNumber);
             patientVal.put("patientSex", patient.patientSex);
-            patientVal.put("isPregnant", "false");
+            patientVal.put("isPregnant", patient.isPregnant);
         } catch (JSONException e) {
             e.printStackTrace();
         }
          JSONObject readingVal = new JSONObject();
         try {
-
+            readingVal.put("readingId",reading.serverReadingId);
             readingVal.put("dateLastSaved", reading.dateLastSaved);
             readingVal.put("bpSystolic", reading.bpSystolic);
             readingVal.put("bpDiastolic", reading.bpDiastolic);
@@ -190,10 +193,15 @@ public class Reading {
     public static Reading makeNewReading(ZonedDateTime now) {
         // setup basic info
         Reading r = new Reading();
+        r.generateServerReadingId();
         r.dateTimeTaken = now;
         r.appVersion = String.format("%s = %s", BuildConfig.VERSION_CODE, BuildConfig.VERSION_NAME);
         r.deviceInfo = Build.MANUFACTURER + ", " + Build.MODEL;
         return r;
+    }
+
+    private void generateServerReadingId() {
+        serverReadingId = UUID.randomUUID().toString();
     }
 
     public static Reading makeToConfirmReading(Reading source, ZonedDateTime now) {

@@ -5,16 +5,7 @@ import android.os.SystemClock;
 import android.util.Log;
 
 import com.android.volley.NetworkResponse;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.HttpHeaderParser;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
-import com.cradletrial.cradlevhtapp.R;
-import com.cradletrial.cradlevhtapp.model.Patient.Patient;
 import com.cradletrial.cradlevhtapp.model.Reading;
 import com.cradletrial.cradlevhtapp.model.Settings;
 import com.cradletrial.cradlevhtapp.utilitiles.DateUtil;
@@ -22,26 +13,17 @@ import com.cradletrial.cradlevhtapp.utilitiles.GsonUtil;
 import com.cradletrial.cradlevhtapp.utilitiles.HybridFileEncrypter;
 import com.cradletrial.cradlevhtapp.utilitiles.Util;
 import com.cradletrial.cradlevhtapp.utilitiles.Zipper;
-import com.google.gson.Gson;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.threeten.bp.ZonedDateTime;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import static java.net.Proxy.Type.HTTP;
 
 /**
  * Handle uploading multiple readings to the server.
@@ -183,7 +165,7 @@ public class MultiReadingUploader {
             String readingJson = Reading.getJsonObj(readings.get(0));
             // start upload
             Uploader uploader = new Uploader(
-                    settings.getServerUrl(),
+                    settings.getReadingServerUrl(),
                     settings.getServerUserName(),
                     settings.getServerPassword());
             uploader.doUpload(readingJson, getSuccessCallback(), getErrorCallback());

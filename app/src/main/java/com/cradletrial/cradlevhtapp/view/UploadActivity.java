@@ -172,7 +172,7 @@ public class UploadActivity extends TabActivityBase {
             return;
         }
         // ensure settings OK
-        if (settings.getServerUrl() == null || settings.getServerUrl().length() == 0) {
+        if (settings.getReadingServerUrl() == null || settings.getReadingServerUrl().length() == 0) {
             Toast.makeText(this, "Error: Must set server URL in settings", Toast.LENGTH_LONG).show();
             return;
         }

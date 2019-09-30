@@ -177,7 +177,9 @@
     <!-- -&#45;&#45;&#45;&#45;END PUBLIC KEY-&#45;&#45;&#45;&#45;-->
     <!--</string>-->
     <!--    <string name="settings_default_server_url">https://cmpt276-1177-bf.cmpt.sfu.ca/unhcr/upload.php</string>-->
-    <string name="settings_default_server_url">http://cradle-platform.herokuapp.com/patient</string>
+    <string name="settings_reading_server_url">http://cradle-platform.herokuapp.com/patient/reading</string>
+    <string name="settings_referral_server_url">http://cradle-platform.herokuapp.com/patient/referral</string>
+
     <string name="settings_default_server_username">user</string>
     <string name="settings_default_server_password">just4testing</string>
     <string name="settings_default_server_rsa">
@@ -192,6 +194,12 @@
         -----END PUBLIC KEY-----
     </string>
     <string name="village_number">Village Number:</string>
+    <string name="house_number">House Number</string>
+    <string name="tank_no">Tank No</string>
+    <string name="block_no">Block No</string>
+    <string name="zone">Zone</string>
+    <string name="id_number">ID number</string>
+    <string name="initials">Initials</string>
     <string name="name">Name:</string>
     <string name="age">Age:</string>
     <string name="sex">Sex:</string>

@@ -18,7 +18,7 @@ public class Settings {
     // Temporary Upload Defaults:
     // todo: remove temporary upload defaults once 2D bar-code reading in place for settings.
     private static String LINEFEED = "\r\n";
-    public static String DEFAULT_SERVER_URL = "http://cradle-platform.herokuapp.com/patient";
+    public static String DEFAULT_SERVER_URL = "http://cradle-platform.herokuapp.com/";
     public static String DEFAULT_SERVER_USERNAME = "user";
     public static String DEFAULT_SERVER_USERPASSWORD = "just4testing";
     public static String DEFAULT_SERVER_RSA = "-----BEGIN PUBLIC KEY-----                                      " + LINEFEED +
@@ -80,7 +80,8 @@ public class Settings {
     private boolean communityHealthOfficerGetsReferrals = false;
     private String communityHealthOfficerPhoneNumber;
 
-    private String serverUrl;
+    private String readingServerUrl = "http://cradle-platform.herokuapp.com/";
+    private String referallServerUrl= "http://cradle-platform.herokuapp.com/";
     private String serverUserName;
     private String serverPassword;
     private String rsaPubKey;
@@ -128,7 +129,7 @@ public class Settings {
 
         // upload
         // TODO: defaults should be removed from here
-        serverUrl = sharedPref.getString(PREF_KEY_SERVER_URL, DEFAULT_SERVER_URL);
+        //readingServerUrl = sharedPref.getString(PREF_KEY_SERVER_URL, DEFAULT_SERVER_URL);
         serverUserName = sharedPref.getString(PREF_KEY_SERVER_USERNAME, DEFAULT_SERVER_USERNAME);
         serverPassword = sharedPref.getString(PREF_KEY_SERVER_PASSWORD, DEFAULT_SERVER_USERPASSWORD);
         rsaPubKey = sharedPref.getString(PREF_KEY_RSAPUBKEY, DEFAULT_SERVER_RSA);
@@ -179,8 +180,8 @@ public class Settings {
 
 
     // upload
-    public String getServerUrl() {
-        return serverUrl;
+    public String getReadingServerUrl() {
+        return readingServerUrl;
     }
     public String getServerUserName() {
         if (serverUserName == null) {
@@ -196,6 +197,11 @@ public class Settings {
             return serverPassword;
         }
     }
+
+    public String getReferallServerUrl() {
+        return referallServerUrl;
+    }
+
     public String getRsaPubKey() {
         return rsaPubKey;
     }

@@ -1,21 +1,17 @@
 package com.cradletrial.cradlevhtapp.view.ui.reading;
 
-import android.app.Activity;
 import android.app.Dialog;
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
-import android.content.Context;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
-import android.telephony.SmsManager;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -27,6 +23,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.HttpHeaderParser;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.cradletrial.cradlevhtapp.R;
 import com.cradletrial.cradlevhtapp.dagger.MyApp;
 import com.cradletrial.cradlevhtapp.model.Patient.Patient;
@@ -40,6 +40,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.threeten.bp.ZonedDateTime;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 import javax.inject.Inject;
@@ -153,26 +154,44 @@ public class ReferralDialogFragment extends DialogFragment {
         if (settings.getHealthCentreNames().size() == 0) {
             tvSendingStatus.setText("ERROR: No known health centres.\nPlease go to settings to enter them.");
             tvSendingStatus.setVisibility(View.VISIBLE);
-            return;
+           // return;
         }
 
         // Must send SMS via intent to default SMS program due to PlayStore policy preventing
         // apps from sending SMS directly.
-        composeMmsMessage(smsTextMessage, selectedHealthCentreSmsPhoneNumber);
-        onFinishedSendingSMS(dialog);
+        //composeMmsMessage(smsTextMessage, selectedHealthCentreSmsPhoneNumber);
+        //onFinishedSendingSMS(dialog);
 
         // Json for comments
-        try {
-            JSONObject referralObject = new JSONObject();
-            referralObject.put("comments", enteredComment);
-            referralObject.put("healthCenter", "Future feature not available");
-            referralObject.put("VHT", "Future feature not available");
+        ProgressDialog  progressDialog = new ProgressDialog(getActivity());
+        progressDialog.setTitle("Uploading Referral" );
+        progressDialog.setCancelable(false);
+        progressDialog.show();
 
-            Patient.toJSon(currentReading.patient, referralObject);
+        RequestQueue queue = Volley.newRequestQueue(getActivity());
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(JsonObjectRequest.Method.POST, settings.getReferallServerUrl(), getReferralJson(),
+                response -> {
+                    Log.d("bugg","delivered "+response.toString()+ "   server: "+settings.getReferallServerUrl());
+                    progressDialog.cancel();
+                    Toast.makeText(getActivity(),"Referral sent to "+settings.getReferallServerUrl(),Toast.LENGTH_LONG).show();
 
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+
+                }, error -> {
+            String json = null;
+            try {
+                if(error.networkResponse!=null) {
+                    json = new String(error.networkResponse.data, HttpHeaderParser.parseCharset(error.networkResponse.headers));
+                }
+                progressDialog.cancel();
+                Log.d("bugg","referal error: "+json);
+                Toast.makeText(getActivity(),"json: "+json,Toast.LENGTH_LONG).show();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            Log.d("bugg","Delivery error: "+json);
+
+        });
+        queue.add(jsonObjectRequest);
 //
 //        // prep UI
 //        // TODO: put in XML
@@ -458,6 +477,52 @@ public class ReferralDialogFragment extends DialogFragment {
                         + addLf(secondReferralWarning)
                         + comments;
         return message;
+    }
+    private JSONObject getReferralJson (){
+        JSONObject patientVal = new JSONObject();
+        Patient patient = currentReading.patient;
+        try {
+
+            patientVal.put("patientId", patient.patientId);
+            patientVal.put("patientName", patient.patientName);
+            patientVal.put("patientAge", patient.ageYears);
+            patientVal.put("gestationalAgeUnit", patient.gestationalAgeUnit);
+            patientVal.put("gestationalAgeValue", patient.gestationalAgeValue);
+            patientVal.put("villageNumber", patient.villageNumber);
+            patientVal.put("patientSex", patient.patientSex);
+            patientVal.put("isPregnant", "false");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        JSONObject readingVal = new JSONObject();
+        try {
+            readingVal.put("readingId",currentReading.serverReadingId);
+            readingVal.put("dateLastSaved", currentReading.dateLastSaved);
+            readingVal.put("bpSystolic", currentReading.bpSystolic);
+            readingVal.put("bpDiastolic", currentReading.bpDiastolic);
+            readingVal.put("heartRateBPM", currentReading.heartRateBPM);
+            readingVal.put("dateRecheckVitalsNeeded", currentReading.dateRecheckVitalsNeeded);
+            readingVal.put("isFlaggedForFollowup", currentReading.isFlaggedForFollowup());
+            readingVal.put("symptoms", currentReading.getSymptomsString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+        JSONObject mainObj = new JSONObject();
+        try {
+
+            mainObj.put("patient", patientVal);
+            mainObj.put("reading", readingVal);
+            mainObj.put("comment",enteredComment);
+            mainObj.put("healthFacilityName",this.selectedHealthCentreName);
+            mainObj.put("dateReferred", ZonedDateTime.now().toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return mainObj;
+
     }
     private String addLf(String str) {
         if (str.trim().length() > 0) {
