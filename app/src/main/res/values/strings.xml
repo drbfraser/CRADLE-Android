@@ -177,7 +177,7 @@
     <!-- -&#45;&#45;&#45;&#45;END PUBLIC KEY-&#45;&#45;&#45;&#45;-->
     <!--</string>-->
     <!--    <string name="settings_default_server_url">https://cmpt276-1177-bf.cmpt.sfu.ca/unhcr/upload.php</string>-->
-    <string name="settings_default_server_url">http://cradle-platform.herokuapp.com/patient</string>
+    <string name="settings_default_server_url">http://cradle-platform.herokuapp.com/</string>
     <string name="settings_default_server_username">user</string>
     <string name="settings_default_server_password">just4testing</string>
     <string name="settings_default_server_rsa">

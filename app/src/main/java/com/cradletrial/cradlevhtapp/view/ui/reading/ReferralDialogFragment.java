@@ -3,6 +3,7 @@ package com.cradletrial.cradlevhtapp.view.ui.reading;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -19,16 +20,25 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.HttpHeaderParser;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.cradletrial.cradlevhtapp.R;
 import com.cradletrial.cradlevhtapp.dagger.MyApp;
 import com.cradletrial.cradlevhtapp.model.Patient.Patient;
@@ -42,6 +52,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.threeten.bp.ZonedDateTime;
 
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 import javax.inject.Inject;
@@ -164,8 +176,35 @@ public class ReferralDialogFragment extends DialogFragment {
         //onFinishedSendingSMS(dialog);
 
         // Json for comments
-        String json = getReferralJson();
+        ProgressDialog  progressDialog = new ProgressDialog(getActivity());
+        progressDialog.setTitle("Uploading Referral" );
+        progressDialog.setCancelable(false);
+        progressDialog.show();
 
+        RequestQueue queue = Volley.newRequestQueue(getActivity());
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(JsonObjectRequest.Method.POST, settings.getServerUrl(), getReferralJson(),
+                response -> {
+                    Log.d("bugg","delivered "+response.toString()+ "   server: "+settings.getServerUrl());
+                    progressDialog.cancel();
+                    Toast.makeText(getActivity(),"Referral sent to "+settings.getServerUrl(),Toast.LENGTH_LONG).show();
+
+
+                }, error -> {
+            String json = null;
+            try {
+                if(error.networkResponse!=null) {
+                    json = new String(error.networkResponse.data, HttpHeaderParser.parseCharset(error.networkResponse.headers));
+                }
+                progressDialog.cancel();
+                Log.d("bugg","referal error: "+json);
+                Toast.makeText(getActivity(),"json: "+json,Toast.LENGTH_LONG).show();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            Log.d("bugg","Delivery error: "+json);
+
+        });
+        queue.add(jsonObjectRequest);
 //
 //        // prep UI
 //        // TODO: put in XML
@@ -452,7 +491,7 @@ public class ReferralDialogFragment extends DialogFragment {
                         + comments;
         return message;
     }
-    private String getReferralJson (){
+    private JSONObject getReferralJson (){
         JSONObject patientVal = new JSONObject();
         Patient patient = currentReading.patient;
         try {
@@ -495,7 +534,7 @@ public class ReferralDialogFragment extends DialogFragment {
             e.printStackTrace();
         }
 
-        return mainObj.toString();
+        return mainObj;
 
     }
     private String addLf(String str) {
