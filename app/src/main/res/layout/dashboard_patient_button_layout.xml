@@ -14,21 +14,21 @@
             android:id="@+id/imageView3"
             android:layout_width="150dp"
             android:layout_height="150dp"
-            android:adjustViewBounds="false"
-            android:background="#DF2039"
+            android:adjustViewBounds="true"
+            android:background="#5CDF25"
             android:cropToPadding="false"
             android:scaleType="fitXY"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_add_white_24dp" />
+            app:srcCompat="@drawable/ic_people_green_24dp" />
 
         <TextView
             android:id="@+id/textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="serif"
-            android:text="Referrals"
+            android:text="Patients"
             android:textAlignment="center"
             android:textColor="@color/black"
             android:textSize="18sp"

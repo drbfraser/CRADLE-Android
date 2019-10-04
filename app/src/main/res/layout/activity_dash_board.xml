@@ -18,7 +18,7 @@
 
     <include
         android:id="@+id/include1"
-        layout="@layout/dashboard_referral_button_layout"
+        layout="@layout/dashboard_patient_button_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
