@@ -143,7 +143,8 @@ public class IntroActivity
         sharedPreferences.edit().putLong(LAST_VERSION_TO_COMPLETE_WIZARD, verCode).apply();
 
 
-        Intent intent = ReadingsListActivity.makeIntent(IntroActivity.this);
+        //Intent intent = ReadingsListActivity.makeIntent(IntroActivity.this);
+        Intent intent = new Intent(this,DashBoardActivity.class);
         startActivity(intent);
         finish();
     }
