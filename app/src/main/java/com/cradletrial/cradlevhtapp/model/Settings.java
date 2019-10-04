@@ -80,8 +80,8 @@ public class Settings {
     private boolean communityHealthOfficerGetsReferrals = false;
     private String communityHealthOfficerPhoneNumber;
 
-    private String readingServerUrl = "http://cradle-platform.herokuapp.com/";
-    private String referallServerUrl= "http://cradle-platform.herokuapp.com/";
+    private String readingServerUrl = "http://cmpt373.csil.sfu.ca:8088/api/patient/reading";
+    private String referallServerUrl= "http://cmpt373.csil.sfu.ca:8088/api/referral";
     private String serverUserName;
     private String serverPassword;
     private String rsaPubKey;
@@ -119,6 +119,8 @@ public class Settings {
 
         // health centres
         healthCentres.clear();
+        NamedPair namedPair = new NamedPair("Neptune's 5 star care", "778-555-555");
+        healthCentres.add(namedPair);
         int numHealthCentres = sharedPref.getInt(PREF_KEY_NUM_HEALTH_CENTRES, 0);
         for (int i = 0; i < numHealthCentres; i++) {
             String name = sharedPref.getString(PREF_KEY_HEALTH_CENTRE_NAME_ + i, "no name");

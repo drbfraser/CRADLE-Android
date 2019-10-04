@@ -174,7 +174,8 @@ public class ReferralDialogFragment extends DialogFragment {
                     Log.d("bugg","delivered "+response.toString()+ "   server: "+settings.getReferallServerUrl());
                     progressDialog.cancel();
                     Toast.makeText(getActivity(),"Referral sent to "+settings.getReferallServerUrl(),Toast.LENGTH_LONG).show();
-
+                    onFinishedSendingSMS(dialog);
+                    dismiss();
 
                 }, error -> {
             String json = null;
@@ -289,9 +290,9 @@ public class ReferralDialogFragment extends DialogFragment {
 //    }
 
     private void onFinishedSendingSMS(Dialog dialog) {
-        currentReading.setReferredToHealthCentre(selectedHealthCentreName, ZonedDateTime.now());
-        currentReading.referralComment = enteredComment;
-        callback.sentTextMessage(smsTextMessage);
+        //currentReading.setReferredToHealthCentre(selectedHealthCentreName, ZonedDateTime.now());
+       // currentReading.referralComment = enteredComment;
+       // callback.sentTextMessage(smsTextMessage);
         dialog.dismiss();
     }
 
@@ -516,7 +517,7 @@ public class ReferralDialogFragment extends DialogFragment {
             mainObj.put("reading", readingVal);
             mainObj.put("comment",enteredComment);
             mainObj.put("healthFacilityName",this.selectedHealthCentreName);
-            mainObj.put("dateReferred", ZonedDateTime.now().toString());
+            mainObj.put("date", ZonedDateTime.now().toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
