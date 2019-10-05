@@ -15,10 +15,7 @@ import static com.cradletrial.cradlevhtapp.view.TabActivityBase.TAB_ACTIVITY_BAS
 
 public class DashBoardActivity extends AppCompatActivity  implements View.OnClickListener {
 
-    View patientCard;
-    View helpCard ;
-    View referralCard ;
-    View statCard;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,10 +27,12 @@ public class DashBoardActivity extends AppCompatActivity  implements View.OnClic
 
     }
     private void setupOnClickListner(){
-         patientCard = findViewById(R.id.patientLayout);
-         helpCard = findViewById(R.id.helpLayout);
-         referralCard = findViewById(R.id.readingLayout);
-         statCard = findViewById(R.id.statLayout);
+       View  patientCard = findViewById(R.id.patientLayout);
+        View helpCard = findViewById(R.id.helpLayout);
+        View referralCard = findViewById(R.id.readingLayout);
+        View statCard = findViewById(R.id.statLayout);
+        View uploadCard = findViewById(R.id.uploadlayout);
+        uploadCard.setOnClickListener(this);
         patientCard.setOnClickListener(this::onClick);
         helpCard.setOnClickListener(this::onClick);
         statCard.setOnClickListener(this);
@@ -71,7 +70,7 @@ public class DashBoardActivity extends AppCompatActivity  implements View.OnClic
             case R.id.patientLayout:
                 startActivity(PatientsActivity.makeIntent(this));
                 break;
-            case R.id.statLayout:
+            case R.id.uploadlayout:
                 startActivity(UploadActivity.makeIntent(this));
                 break;
             case R.id.helpLayout:
