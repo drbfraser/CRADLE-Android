@@ -16,5 +16,6 @@
     <color name="reading_button">#DF2039</color>
     <color name="stat_button">#ffc107</color>
     <color name="upload_button">#f50057</color>
+    <color name="referral_button">#d50000</color>
 
 </resources>

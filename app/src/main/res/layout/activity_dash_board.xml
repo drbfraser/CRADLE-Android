@@ -32,7 +32,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="@+id/patientLayout"
-                app:layout_constraintTop_toTopOf="@+id/statLayout" />
+                app:layout_constraintTop_toTopOf="@+id/uploadlayout" />
 
             <include
                 android:id="@+id/patientLayout"
@@ -54,7 +54,7 @@
 
             <include
                 android:id="@+id/readingLayout"
-                layout="@layout/dashboard_referral_button_layout"
+                layout="@layout/dashboard_reading_button_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
@@ -72,6 +72,15 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="@+id/readingLayout"
                 app:layout_constraintTop_toBottomOf="@+id/statLayout" />
+
+            <include
+                android:id="@+id/referralLayout"
+                layout="@layout/dashboard_referral_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/statLayout"
+                app:layout_constraintTop_toTopOf="@+id/statLayout" />
         </android.support.constraint.ConstraintLayout>
     </ScrollView>
 </android.support.constraint.ConstraintLayout>

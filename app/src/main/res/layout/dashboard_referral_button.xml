@@ -19,20 +19,20 @@
             android:layout_width="150dp"
             android:layout_height="150dp"
             android:adjustViewBounds="false"
-            android:background="@color/upload_button"
+            android:background="@color/referral_button"
             android:cropToPadding="true"
             android:scaleType="fitCenter"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_cloud_upload_white_24dp" />
+            app:srcCompat="@drawable/ic_local_pharmacy_black_24dp" />
 
         <TextView
             android:id="@+id/textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="serif"
-            android:text="Upload "
+            android:text="Referrals"
             android:textAlignment="center"
             android:textColor="@color/black"
             android:textSize="18sp"
