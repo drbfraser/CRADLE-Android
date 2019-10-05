@@ -74,7 +74,7 @@ public class ReadingsListActivity extends TabActivityBase {
         this.setTitle(R.string.title_activity_readings);
 
         // bottom bar nav
-        setupBottomBarNavigation();
+        //setupBottomBarNavigation();
 
         // floating action bar: create new currentReading
         FloatingActionButton fab = findViewById(R.id.fab);
