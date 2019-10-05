@@ -6,43 +6,56 @@
     android:layout_height="match_parent"
     tools:context=".view.DashBoardActivity">
 
-    <include
-        android:id="@+id/include4"
-        layout="@layout/dashboard_help_button_layout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/include1"
-        app:layout_constraintTop_toTopOf="@+id/include2" />
-
-    <include
-        android:id="@+id/include1"
-        layout="@layout/dashboard_patient_button_layout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/include3"
-        app:layout_constraintTop_toTopOf="@+id/include3" />
-
-    <include
-        android:id="@+id/include2"
-        layout="@layout/dashboard_statistic_button_layout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/include3"
-        app:layout_constraintTop_toBottomOf="@+id/include3"
-        app:layout_constraintVertical_bias="0.22000003" />
-
-    <include
-        android:id="@+id/include3"
-        layout="@layout/dashboard_referral_button_layout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="64dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <include
+            android:id="@+id/helpLayout"
+            layout="@layout/dashboard_help_button_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="@+id/patientLayout"
+            app:layout_constraintTop_toTopOf="@+id/statLayout" />
+
+        <include
+            android:id="@+id/patientLayout"
+            layout="@layout/dashboard_patient_button_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/referallLayout"
+            app:layout_constraintTop_toTopOf="@+id/referallLayout" />
+
+        <include
+            android:id="@+id/statLayout"
+            layout="@layout/dashboard_statistic_button_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="64dp"
+            android:layout_marginBottom="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/referallLayout"
+            app:layout_constraintTop_toBottomOf="@+id/referallLayout"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <include
+            android:id="@+id/referallLayout"
+            layout="@layout/dashboard_referral_button_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="32dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </android.support.constraint.ConstraintLayout>
 
 </android.support.constraint.ConstraintLayout>
