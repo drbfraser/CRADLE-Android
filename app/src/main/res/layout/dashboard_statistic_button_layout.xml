@@ -19,7 +19,7 @@
             android:layout_width="150dp"
             android:layout_height="150dp"
             android:adjustViewBounds="false"
-            android:background="#ffc107"
+            android:background="@color/stat_button"
             android:cropToPadding="false"
             android:scaleType="fitXY"
             app:layout_constraintEnd_toEndOf="parent"

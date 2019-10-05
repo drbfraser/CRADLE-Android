@@ -19,7 +19,7 @@
             android:layout_width="150dp"
             android:layout_height="150dp"
             android:adjustViewBounds="false"
-            android:background="#e3074d"
+            android:background="@color/upload_button"
             android:cropToPadding="true"
             android:scaleType="fitCenter"
             app:layout_constraintEnd_toEndOf="parent"
