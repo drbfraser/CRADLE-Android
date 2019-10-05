@@ -26,12 +26,19 @@ public class HelpActivity extends TabActivityBase {
         setContentView(R.layout.activity_help);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        if(getSupportActionBar()!=null){
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
         // setup UI components
        // setupBottomBarNavigation();
         setupHelpVideo();
     }
 
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
+    }
     private void setupHelpVideo() {
         Uri uri = Uri.parse("android.resource://"+getPackageName()+"/"+R.raw.cradle_vsa_tutorial_for_health_care);
 

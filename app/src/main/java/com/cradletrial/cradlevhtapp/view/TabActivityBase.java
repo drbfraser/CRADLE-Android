@@ -1,15 +1,22 @@
 package com.cradletrial.cradlevhtapp.view;
 
 import android.content.Intent;
+import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toolbar;
 
 import com.cradletrial.cradlevhtapp.BuildConfig;
 import com.cradletrial.cradlevhtapp.R;
 import com.cradletrial.cradlevhtapp.view.ui.settings.SettingsActivity;
+
+import java.util.Objects;
 
 abstract public class TabActivityBase extends AppCompatActivity {
     protected static final int TAB_ACTIVITY_BASE_SETTINGS_DONE = 948;
