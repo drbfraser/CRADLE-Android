@@ -67,7 +67,7 @@ public class PatientsActivity extends TabActivityBase {
         setSupportActionBar(toolbar);
 
         // bottom bar nav in base class
-        setupBottomBarNavigation();
+        //setupBottomBarNavigation();
 
         // buttons
         setupAddSampleDataButton();

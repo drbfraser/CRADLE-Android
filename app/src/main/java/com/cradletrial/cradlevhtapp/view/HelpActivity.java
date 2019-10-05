@@ -28,7 +28,7 @@ public class HelpActivity extends TabActivityBase {
         setSupportActionBar(toolbar);
 
         // setup UI components
-        setupBottomBarNavigation();
+       // setupBottomBarNavigation();
         setupHelpVideo();
     }
 

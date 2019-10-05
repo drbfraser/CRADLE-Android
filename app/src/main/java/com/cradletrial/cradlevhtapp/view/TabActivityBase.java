@@ -49,11 +49,11 @@ abstract public class TabActivityBase extends AppCompatActivity {
      * Bottom Bar Navigation
      */
     public void setupBottomBarNavigation() {
-        BottomNavigationView navView = findViewById(R.id.bottom_bar_nav);
-        navView.setOnNavigationItemSelectedListener(this::onNavigationItemSelected);
-
-        String title = String.format("%s (%s)", getTitle(), BuildConfig.VERSION_NAME);
-        setTitle(title);
+//        BottomNavigationView navView = findViewById(R.id.bottom_bar_nav);
+//        navView.setOnNavigationItemSelectedListener(this::onNavigationItemSelected);
+//
+//        String title = String.format("%s (%s)", getTitle(), BuildConfig.VERSION_NAME);
+//        setTitle(title);
     }
     private boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Do nothing if we are already there

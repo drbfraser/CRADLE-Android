@@ -63,7 +63,7 @@ public class UploadActivity extends TabActivityBase {
         setSupportActionBar(toolbar);
 
         // bottom bar nav in base class
-        setupBottomBarNavigation();
+       // setupBottomBarNavigation();
 
         // buttons
         setupUploadDataButton();

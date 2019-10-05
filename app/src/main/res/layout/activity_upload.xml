@@ -37,18 +37,6 @@
         </android.support.design.widget.CoordinatorLayout>
 
         <!-- Bottom Bar Navigation -->
-        <android.support.design.widget.BottomNavigationView
-            android:id="@+id/bottom_bar_nav"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="start"
-            android:foregroundGravity="bottom"
-            android:visibility="visible"
-            app:itemBackground="@color/colorPrimary"
-            app:itemIconTint="@color/white"
-            app:itemTextColor="@color/white"
-            app:labelVisibilityMode="labeled"
-            app:menu="@menu/menu_app_bottom_bar_nav" />
 
     </LinearLayout>
 
