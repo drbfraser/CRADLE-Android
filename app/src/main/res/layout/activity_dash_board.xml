@@ -58,7 +58,7 @@
                 layout="@layout/dashboard_reading_button_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="24dp"
+                android:layout_marginStart="32dp"
                 android:layout_marginTop="32dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -79,6 +79,7 @@
                 layout="@layout/dashboard_referral_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/statLayout"
                 app:layout_constraintTop_toTopOf="@+id/statLayout" />
