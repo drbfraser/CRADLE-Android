@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/readingLayout"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
     <android.support.v7.widget.CardView
 
-        android:id="@+id/patientCardview"
+        android:id="@+id/readingCardView"
         android:layout_width="@dimen/dashboard_card_height"
         android:layout_height="@dimen/dashboard_card_width"
         android:layout_marginTop="32dp"
@@ -32,8 +31,8 @@
         android:cropToPadding="true"
         android:elevation="4dp"
         android:scaleType="fitXY"
-        app:layout_constraintEnd_toEndOf="@+id/patientCardview"
-        app:layout_constraintStart_toStartOf="@+id/patientCardview"
+        app:layout_constraintEnd_toEndOf="@+id/readingCardView"
+        app:layout_constraintStart_toStartOf="@+id/readingCardView"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_reading" />
 

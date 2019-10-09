@@ -15,7 +15,7 @@
         android:id="@+id/mainTitleDashBoard"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="64dp"
+        android:layout_marginTop="48dp"
         android:text="Cradle"
         android:textColor="@color/white"
         android:textSize="64sp"
@@ -24,18 +24,18 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <include
-        android:id="@+id/include4"
+        android:id="@+id/patientLayout"
         layout="@layout/dashboard_patient_button_layout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/include2"
+        app:layout_constraintStart_toEndOf="@+id/readingLayout"
         app:layout_constraintTop_toBottomOf="@+id/mainTitleDashBoard" />
 
     <include
-        android:id="@+id/include2"
+        android:id="@+id/readingLayout"
         layout="@layout/dashboard_reading_button_layout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -45,28 +45,28 @@
         app:layout_constraintTop_toBottomOf="@+id/mainTitleDashBoard" />
 
     <include
-        android:id="@+id/include3"
+        android:id="@+id/statLayout"
         layout="@layout/dashboard_statistic_button_layout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/include2"
-        app:layout_constraintTop_toBottomOf="@+id/include2"
+        app:layout_constraintStart_toStartOf="@+id/readingLayout"
+        app:layout_constraintTop_toBottomOf="@+id/readingLayout"
         app:layout_constraintVertical_bias="0.072" />
 
     <include
-        android:id="@+id/include5"
+        android:id="@+id/uploadlayout"
         layout="@layout/dashboard_upload_button_layout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/include3"
-        app:layout_constraintTop_toTopOf="@+id/include3" />
+        app:layout_constraintStart_toEndOf="@+id/statLayout"
+        app:layout_constraintTop_toTopOf="@+id/statLayout" />
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/floatingActionButton"
+        android:id="@+id/fabHelpDashboard"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="64dp"
@@ -76,7 +76,7 @@
         app:backgroundTint="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/include5"
+        app:layout_constraintTop_toBottomOf="@+id/uploadlayout"
         app:maxImageSize="67dp"
         app:srcCompat="@drawable/ic_help_black_24dp" />
 </android.support.constraint.ConstraintLayout>

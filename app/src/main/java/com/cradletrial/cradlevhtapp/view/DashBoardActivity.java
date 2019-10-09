@@ -1,8 +1,11 @@
 package com.cradletrial.cradlevhtapp.view;
 
 import android.content.Intent;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.CardView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,21 +23,31 @@ public class DashBoardActivity extends AppCompatActivity  implements View.OnClic
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dash_board);
         setupOnClickListner();
-        //getSupportActionBar().setDisplayShowHomeEnabled(true);
-        //getSupportActionBar().setDisplayUseLogoEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setDisplayUseLogoEnabled(true);
+        getSupportActionBar().setTitle("");
         //getSupportActionBar().setLogo(getResources().getDrawable(R.drawable.upload));
 
     }
     private void setupOnClickListner(){
-         View  patientCard = findViewById(R.id.patientLayout);
-         View statCard = findViewById(R.id.statLayout);
+        View  patientview = findViewById(R.id.patientLayout);
+        CardView patientCardView = patientview.findViewById(R.id.patientCardview);
+
+        View statView = findViewById(R.id.statLayout);
+        CardView statCardview = statView.findViewById(R.id.statCardView);
+
         View uploadCard = findViewById(R.id.uploadlayout);
+        CardView syncCardview = uploadCard.findViewById(R.id.syncCardView);
+
         View readingLayout = findViewById(R.id.readingLayout);
-//        uploadCard.setOnClickListener(this);
-//        patientCard.setOnClickListener(this::onClick);
-//        helpCard.setOnClickListener(this::onClick);
-//        statCard.setOnClickListener(this);
-//        referralCard.setOnClickListener(this::onClick);
+        CardView readingCardView = readingLayout.findViewById(R.id.readingCardView);
+
+        FloatingActionButton helpButton = findViewById(R.id.fabHelpDashboard);
+        readingCardView.setOnClickListener(this);
+        syncCardview.setOnClickListener(this);
+        patientCardView.setOnClickListener(this);
+        statCardview.setOnClickListener(this);
+        helpButton.setOnClickListener(this);
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -61,20 +74,26 @@ public class DashBoardActivity extends AppCompatActivity  implements View.OnClic
 
     @Override
     public void onClick(View v) {
-//        switch (v.getId()){
-//            case R.id.readingLayout:
-//                startActivity(ReadingsListActivity.makeIntent(this));
-//                break;
-//            case R.id.patientLayout:
-//                startActivity(PatientsActivity.makeIntent(this));
-//                break;
-//            case R.id.uploadlayout:
-//                startActivity(UploadActivity.makeIntent(this));
-//                break;
-//            case R.id.helpLayout:
-//                startActivity(HelpActivity.makeIntent(this));
-//                break;
-//
-//        }
+        switch (v.getId()){
+            case R.id.readingCardView:
+                Log.d("bugg","reading clicked");
+                startActivity(ReadingsListActivity.makeIntent(this));
+                break;
+            case R.id.patientCardview:
+                Log.d("bugg","patient clicked");
+                startActivity(PatientsActivity.makeIntent(this));
+                break;
+            case R.id.syncCardView:
+                Log.d("bugg","upload clicked");
+
+                startActivity(UploadActivity.makeIntent(this));
+                break;
+            case R.id.fabHelpDashboard:
+                Log.d("bugg","fab clicked");
+
+                startActivity(HelpActivity.makeIntent(this));
+                break;
+
+        }
     }
 }
