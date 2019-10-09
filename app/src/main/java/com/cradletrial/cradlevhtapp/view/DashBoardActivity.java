@@ -27,16 +27,16 @@ public class DashBoardActivity extends AppCompatActivity  implements View.OnClic
 
     }
     private void setupOnClickListner(){
-       View  patientCard = findViewById(R.id.patientLayout);
-        View helpCard = findViewById(R.id.helpLayout);
-        View referralCard = findViewById(R.id.readingLayout);
-        View statCard = findViewById(R.id.statLayout);
-        View uploadCard = findViewById(R.id.uploadlayout);
-        uploadCard.setOnClickListener(this);
-        patientCard.setOnClickListener(this::onClick);
-        helpCard.setOnClickListener(this::onClick);
-        statCard.setOnClickListener(this);
-        referralCard.setOnClickListener(this::onClick);
+//       View  patientCard = findViewById(R.id.patientLayout);
+//        View helpCard = findViewById(R.id.helpLayout);
+//        View referralCard = findViewById(R.id.readingLayout);
+//        View statCard = findViewById(R.id.statLayout);
+//        View uploadCard = findViewById(R.id.uploadlayout);
+//        uploadCard.setOnClickListener(this);
+//        patientCard.setOnClickListener(this::onClick);
+//        helpCard.setOnClickListener(this::onClick);
+//        statCard.setOnClickListener(this);
+//        referralCard.setOnClickListener(this::onClick);
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -63,20 +63,20 @@ public class DashBoardActivity extends AppCompatActivity  implements View.OnClic
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
-            case R.id.readingLayout:
-                startActivity(ReadingsListActivity.makeIntent(this));
-                break;
-            case R.id.patientLayout:
-                startActivity(PatientsActivity.makeIntent(this));
-                break;
-            case R.id.uploadlayout:
-                startActivity(UploadActivity.makeIntent(this));
-                break;
-            case R.id.helpLayout:
-                startActivity(HelpActivity.makeIntent(this));
-                break;
-
-        }
+//        switch (v.getId()){
+//            case R.id.readingLayout:
+//                startActivity(ReadingsListActivity.makeIntent(this));
+//                break;
+//            case R.id.patientLayout:
+//                startActivity(PatientsActivity.makeIntent(this));
+//                break;
+//            case R.id.uploadlayout:
+//                startActivity(UploadActivity.makeIntent(this));
+//                break;
+//            case R.id.helpLayout:
+//                startActivity(HelpActivity.makeIntent(this));
+//                break;
+//
+//        }
     }
 }

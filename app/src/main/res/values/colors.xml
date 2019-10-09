@@ -17,5 +17,7 @@
     <color name="stat_button">#ffc107</color>
     <color name="upload_button">#7b1fa2</color>
     <color name="referral_button">#d32f2f</color>
+    <color name="dashboard_card_background">#f2f5fa</color>
+
 
 </resources>

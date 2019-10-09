@@ -8,15 +8,23 @@
     tools:context=".view.DashBoardActivity" >
 
     <TextView
-
         android:id="@+id/mainTitleDashBoard"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="64dp"
+        android:text="Cradle"
         android:textColor="@color/white"
         android:textSize="64sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="Cradle" />
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <include
+        layout="@layout/dashboard_patient_button_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/mainTitleDashBoard" />
 </android.support.constraint.ConstraintLayout>
