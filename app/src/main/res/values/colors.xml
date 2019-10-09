@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <color name="colorPrimary">#7b1fa2</color>
-    <color name="colorPrimaryDark">#38006b</color>
+    <color name="colorPrimary">#15152b</color>
+    <color name="colorPrimaryDark">#15152b</color>
     <color name="colorAccent">#D81B60</color>
 
     <color name="white">#FFFFFF</color>
@@ -18,6 +18,7 @@
     <color name="upload_button">#7b1fa2</color>
     <color name="referral_button">#d32f2f</color>
     <color name="dashboard_card_background">#f2f5fa</color>
+    <color name="dashboard_help">#606060</color>
 
 
 </resources>
