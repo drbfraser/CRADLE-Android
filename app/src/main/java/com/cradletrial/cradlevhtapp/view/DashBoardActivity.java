@@ -3,7 +3,6 @@ package com.cradletrial.cradlevhtapp.view;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,11 +26,10 @@ public class DashBoardActivity extends AppCompatActivity  implements View.OnClic
 
     }
     private void setupOnClickListner(){
-//       View  patientCard = findViewById(R.id.patientLayout);
-//        View helpCard = findViewById(R.id.helpLayout);
-//        View referralCard = findViewById(R.id.readingLayout);
-//        View statCard = findViewById(R.id.statLayout);
-//        View uploadCard = findViewById(R.id.uploadlayout);
+         View  patientCard = findViewById(R.id.patientLayout);
+         View statCard = findViewById(R.id.statLayout);
+        View uploadCard = findViewById(R.id.uploadlayout);
+        View readingLayout = findViewById(R.id.readingLayout);
 //        uploadCard.setOnClickListener(this);
 //        patientCard.setOnClickListener(this::onClick);
 //        helpCard.setOnClickListener(this::onClick);
