@@ -1,15 +1,26 @@
 package com.cradletrial.cradlevhtapp.view;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.Toolbar;
 
 import com.cradletrial.cradlevhtapp.BuildConfig;
 import com.cradletrial.cradlevhtapp.R;
 import com.cradletrial.cradlevhtapp.view.ui.settings.SettingsActivity;
+
+import java.util.Objects;
 
 abstract public class TabActivityBase extends AppCompatActivity {
     protected static final int TAB_ACTIVITY_BASE_SETTINGS_DONE = 948;
@@ -19,41 +30,27 @@ abstract public class TabActivityBase extends AppCompatActivity {
         this.myTabButtonId = tabButtonId;
     }
 
-    /**
-     * Toolbar (settings)
-     */
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        if (id == R.id.action_settings) {
-            Intent intent = SettingsActivity.makeLaunchIntent(this);
-            startActivityForResult(intent, TAB_ACTIVITY_BASE_SETTINGS_DONE);
-            return true;
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        //changing the color for all the activity status bar.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Window window = getWindow();
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            window.setStatusBarColor(Color.BLACK);
         }
-
-        return super.onOptionsItemSelected(item);
     }
 
     /**
      * Bottom Bar Navigation
      */
     public void setupBottomBarNavigation() {
-        BottomNavigationView navView = findViewById(R.id.bottom_bar_nav);
-        navView.setOnNavigationItemSelectedListener(this::onNavigationItemSelected);
-
-        String title = String.format("%s (%s)", getTitle(), BuildConfig.VERSION_NAME);
-        setTitle(title);
+//        BottomNavigationView navView = findViewById(R.id.bottom_bar_nav);
+//        navView.setOnNavigationItemSelectedListener(this::onNavigationItemSelected);
+//
+//        String title = String.format("%s (%s)", getTitle(), BuildConfig.VERSION_NAME);
+//        setTitle(title);
     }
     private boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Do nothing if we are already there

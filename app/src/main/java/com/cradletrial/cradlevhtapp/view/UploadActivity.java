@@ -61,9 +61,12 @@ public class UploadActivity extends TabActivityBase {
         setContentView(R.layout.activity_upload);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        if(getSupportActionBar()!=null){
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
 
         // bottom bar nav in base class
-        setupBottomBarNavigation();
+       // setupBottomBarNavigation();
 
         // buttons
         setupUploadDataButton();
@@ -71,6 +74,11 @@ public class UploadActivity extends TabActivityBase {
         updateReadingUploadLabels();
     }
 
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
+    }
 
     @Override
     protected void onPause() {

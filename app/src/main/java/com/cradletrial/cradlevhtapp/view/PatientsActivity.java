@@ -65,9 +65,11 @@ public class PatientsActivity extends TabActivityBase {
         patientRecyclerview = findViewById(R.id.patientListRecyclerview);
         setupPatientRecyclerview();
         setSupportActionBar(toolbar);
-
+        if(getSupportActionBar()!=null){
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
         // bottom bar nav in base class
-        setupBottomBarNavigation();
+        //setupBottomBarNavigation();
 
         // buttons
         setupAddSampleDataButton();
@@ -75,6 +77,12 @@ public class PatientsActivity extends TabActivityBase {
         setupPretendToUnUploadToServer();
         setupSettingsAddFake();
         setupSettingsClear();
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 
     private void setupPatientRecyclerview() {
