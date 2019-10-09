@@ -29,6 +29,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
                     android:background="?attr/colorPrimary"
+                    app:titleTextColor="@color/white"
                     app:popupTheme="@style/AppTheme.PopupOverlay" />
                     <!--app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />-->
                     <!--app:layout_scrollFlags="scroll|enterAlways|snap" />-->
@@ -38,7 +39,9 @@
                     android:id="@+id/tabs"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="?attr/colorPrimary" />
+                    android:background="?attr/colorPrimary"
+                    app:tabIndicatorColor="@color/colorPrimaryLight"
+                    app:tabTextColor="@color/white" />
             </android.support.design.widget.AppBarLayout>
 
 
