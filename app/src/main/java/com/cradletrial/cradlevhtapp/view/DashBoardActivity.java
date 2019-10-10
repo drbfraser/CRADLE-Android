@@ -30,8 +30,8 @@ public class DashBoardActivity extends AppCompatActivity  implements View.OnClic
 
     }
     private void setupOnClickListner(){
-        View  patientview = findViewById(R.id.patientLayout);
-        CardView patientCardView = patientview.findViewById(R.id.patientCardview);
+        View  patientView = findViewById(R.id.patientLayout);
+        CardView patientCardView = patientView.findViewById(R.id.patientCardview);
 
         View statView = findViewById(R.id.statLayout);
         CardView statCardview = statView.findViewById(R.id.statCardView);

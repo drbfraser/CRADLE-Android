@@ -217,5 +217,6 @@
     <string name="age_input">Age</string>
     <string name="sex_input">Sex</string>
     <string name="name_input">name</string>
+    <string name="patients">Patients</string>
 
 </resources>

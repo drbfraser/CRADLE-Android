@@ -16,7 +16,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="48dp"
-        android:text="Cradle"
+        android:text="@string/app_name"
         android:textColor="@color/white"
         android:textSize="64sp"
         app:layout_constraintEnd_toEndOf="parent"
