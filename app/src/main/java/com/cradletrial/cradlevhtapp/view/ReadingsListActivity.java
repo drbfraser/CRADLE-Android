@@ -78,8 +78,6 @@ public class ReadingsListActivity extends TabActivityBase {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        // bottom bar nav
-        //setupBottomBarNavigation();
 
         // floating action bar: create new currentReading
         FloatingActionButton fab = findViewById(R.id.fab);
