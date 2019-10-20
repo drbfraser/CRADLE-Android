@@ -13,7 +13,7 @@ import java.util.List;
 
 public class Patient implements Serializable {
 
-    public static enum PATIENTSEX {M, F, I}
+    public static enum PATIENTSEX {MALE, FEMALE, OTHERS}
 
     // TODO: 22/09/19 encapsulate these class members
     // patient info
