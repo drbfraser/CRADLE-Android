@@ -298,16 +298,16 @@ public class PatientInfoFragment extends BaseFragment {
         Switch isPregnant = v.findViewById(R.id.pregnantSwitch);
         switch (spin.getSelectedItemPosition()) {
             case PATIENT_SEX_MALE :
-                currentReading.patient.patientSex = Patient.PATIENTSEX.M;
+                currentReading.patient.patientSex = Patient.PATIENTSEX.MALE;
                 isPregnant.setChecked(false);
                 currentReading.patient.isPregnant= false;
                 break;
             case PATIENT_SEX_FEMALE :
-                currentReading.patient.patientSex = Patient.PATIENTSEX.F;
+                currentReading.patient.patientSex = Patient.PATIENTSEX.FEMALE;
                 currentReading.patient.isPregnant = isPregnant.isChecked();
                 break;
             case PATIENT_SEX_INTERSEX  :
-                currentReading.patient.patientSex = Patient.PATIENTSEX.I;
+                currentReading.patient.patientSex = Patient.PATIENTSEX.OTHERS;
                 currentReading.patient.isPregnant = isPregnant.isChecked();
                 break;
             default:

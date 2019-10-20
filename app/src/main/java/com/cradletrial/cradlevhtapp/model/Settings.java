@@ -81,7 +81,8 @@ public class Settings {
     private String communityHealthOfficerPhoneNumber;
 
     private String readingServerUrl = "http://cmpt373.csil.sfu.ca:8088/api/patient/reading";
-    private String referallServerUrl= "http://cmpt373.csil.sfu.ca:8088/api/referral";
+//    private String referallServerUrl= "http://cmpt373.csil.sfu.ca:8088/api/referral";
+    private String referallServerUrl= "http://10.0.2.2:5000/api/referral";
     private String serverUserName;
     private String serverPassword;
     private String rsaPubKey;
