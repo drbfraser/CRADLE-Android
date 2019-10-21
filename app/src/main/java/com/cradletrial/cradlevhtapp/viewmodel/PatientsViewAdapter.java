@@ -30,7 +30,7 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
     @Override
     public PatientViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         View v = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.patient_view_layout, viewGroup, false);
+                .inflate(R.layout.patient_card, viewGroup, false);
         return new PatientViewHolder(v);
 
     }
@@ -39,11 +39,9 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
     public void onBindViewHolder(@NonNull PatientViewHolder patientViewHolder, int i) {
         Patient patient = patientList.get(i);
 
-        patientViewHolder.patientVillage.setText("Village: "+patient.villageNumber);
-        patientViewHolder.patientSex.setText(patient.patientSex+ " ");
+        patientViewHolder.patientVillage.setText(patient.villageNumber);
         patientViewHolder.patientName.setText(patient.patientName);
-        patientViewHolder.patientDOB.setText("Age: "+patient.ageYears+"");
-        patientViewHolder.patientId.setText("ID: "+ patient.patientId);
+        patientViewHolder.patientId.setText(patient.patientId);
 
         patientViewHolder.itemView.setOnClickListener(view -> {
 
@@ -60,13 +58,11 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
     }
 
     static class PatientViewHolder extends RecyclerView.ViewHolder {
-        TextView patientName, patientDOB, patientSex, patientVillage, patientId;
+        TextView patientName, patientVillage, patientId;
         public PatientViewHolder(@NonNull View itemView) {
             super(itemView);
             patientId = itemView.findViewById(R.id.patientID);
-            patientDOB = itemView.findViewById(R.id.patientDOB);
             patientName = itemView.findViewById(R.id.patientName);
-            patientSex = itemView.findViewById(R.id.patientSex);
             patientVillage = itemView.findViewById(R.id.patientVillage);
         }
     }
