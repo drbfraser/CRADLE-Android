@@ -6,6 +6,7 @@
     android:layout_height="wrap_content">
 
     <android.support.v7.widget.CardView
+        android:id="@+id/patientCardview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -14,6 +15,7 @@
         android:clickable="true"
         android:clipChildren="false"
         android:clipToPadding="false"
+        android:foreground="?android:attr/selectableItemBackground"
         app:cardBackgroundColor="@color/dashboard_card_background"
         app:cardCornerRadius="8dp"
         app:cardElevation="4dp"

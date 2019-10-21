@@ -3,6 +3,7 @@ package com.cradletrial.cradlevhtapp.viewmodel;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -43,7 +44,7 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
         patientViewHolder.patientName.setText(patient.patientName);
         patientViewHolder.patientId.setText(patient.patientId);
 
-        patientViewHolder.itemView.setOnClickListener(view -> {
+        patientViewHolder.patientCardview.setOnClickListener(view -> {
 
             Intent intent = new Intent(context, PatientProfileActivity.class);
             Patient p = patientList.get(i);
@@ -59,8 +60,10 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
 
     static class PatientViewHolder extends RecyclerView.ViewHolder {
         TextView patientName, patientVillage, patientId;
+        CardView patientCardview;
         public PatientViewHolder(@NonNull View itemView) {
             super(itemView);
+            patientCardview = itemView.findViewById(R.id.patientCardview);
             patientId = itemView.findViewById(R.id.patientID);
             patientName = itemView.findViewById(R.id.patientName);
             patientVillage = itemView.findViewById(R.id.patientVillage);
