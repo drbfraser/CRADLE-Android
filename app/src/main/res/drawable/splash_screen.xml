@@ -4,8 +4,8 @@
     <item android:drawable="@color/colorPrimary" />
 
     <item>
-        <bitmap android:src="@drawable/cradle_for_icon_512x512"
-            android:gravity="center" />
+        <bitmap android:src="@drawable/splashimageee"
+            android:gravity="fill" />
 
     </item>
 
