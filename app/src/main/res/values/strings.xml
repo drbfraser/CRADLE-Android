@@ -223,5 +223,7 @@
     <string name="village_colon">VILLAGE:</string>
     <string name="medical_information">Personal Information</string>
     <string name="pregnant">Pregnant:</string>
+    <string name="patient_summary">Patient Summary</string>
+    <string name="patient">Patient:</string>
 
 </resources>

@@ -2,6 +2,7 @@ package com.cradletrial.cradlevhtapp.view;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.widget.TextView;
 
 import com.cradletrial.cradlevhtapp.R;
@@ -25,23 +26,30 @@ public class PatientProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_patient_profile);
 
         patientID = (TextView) findViewById(R.id.patientId);
-       // patientName = (TextView) findViewById(R.id.tvEnteredPatientName);
+        patientName = (TextView) findViewById(R.id.patientName);
         patientAge = (TextView) findViewById(R.id.patientAge);
         patientSex = (TextView) findViewById(R.id.patientSex);
         villageNo = (TextView) findViewById(R.id.patientVillage);
-        //symptomsTemp = (TextView) findViewById(R.id.tvEnteredSymptoms);
-        //gestationalValTemp = (TextView) findViewById(R.id.tvEnteredGestationalAge);
-        //gestationalUnitTemp = (TextView) findViewById(R.id.tvEnteredGestationalAgeUnit);
 
         Patient mPatient = (Patient) getIntent().getSerializableExtra("key");
         populatePatientInfo(mPatient);
 
+        if(getSupportActionBar()!=null){
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle(R.string.patient_summary);
+        }
+
+    }
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 
     void populatePatientInfo(Patient patient)
     {
         patientID.setText(patient.patientId);
-       // patientName.setText(patient.patientName);
+        patientName.setText(patient.patientName);
         patientAge.setText(patient.ageYears.toString());
         patientSex.setText(patient.patientSex.toString());
         villageNo.setText(patient.villageNumber);
