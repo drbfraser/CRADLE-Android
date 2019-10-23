@@ -209,6 +209,8 @@ public class Reading {
                  "\nBlood Pressure Diastolic = " + bpDiastolic +
                  "\nHeart Rate BPM = " + heartRateBPM +
                  "\nSymptoms = " + getSymptomsString();
+
+         return message;
     }
 
     public static Reading makeNewReading(ZonedDateTime now) {
