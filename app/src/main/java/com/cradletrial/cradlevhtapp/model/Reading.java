@@ -9,6 +9,7 @@ import com.cradletrial.cradlevhtapp.utilitiles.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.threeten.bp.ZonedDateTime;
+import org.threeten.bp.format.DateTimeFormatter;
 import org.threeten.bp.temporal.ChronoUnit;
 
 import java.util.ArrayList;
@@ -203,8 +204,8 @@ public class Reading {
                      "\nGestational Age = " + patient.gestationalAgeValue + " " + patient.gestationalAgeUnit;
          }
 
-
-         message += "\nDate and Location =" + dateTimeTaken +
+         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy - HH:mm:ss z");
+         message += "\nDate and Location =" + dateTimeTaken.format(formatter) +
                  "\n\nBlood Pressure Systolic = " + bpSystolic +
                  "\nBlood Pressure Diastolic = " + bpDiastolic +
                  "\nHeart Rate BPM = " + heartRateBPM +
