@@ -33,7 +33,7 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
-                android:id="@+id/textView16"
+                android:id="@+id/readingDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
@@ -44,21 +44,21 @@
                 app:layout_constraintTop_toBottomOf="@+id/textView14" />
 
             <ImageView
-                android:id="@+id/imageView3"
+                android:id="@+id/readingTrafficLight"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
-                app:layout_constraintStart_toStartOf="@+id/textView16"
-                app:layout_constraintTop_toBottomOf="@+id/textView16"
+                app:layout_constraintStart_toStartOf="@+id/readingDate"
+                app:layout_constraintTop_toBottomOf="@+id/readingDate"
                 app:srcCompat="@drawable/status_yellow" />
 
             <ImageView
-                android:id="@+id/imageView6"
+                android:id="@+id/readingArrow"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                app:layout_constraintStart_toEndOf="@+id/imageView3"
-                app:layout_constraintTop_toTopOf="@+id/imageView3"
+                app:layout_constraintStart_toEndOf="@+id/readingTrafficLight"
+                app:layout_constraintTop_toTopOf="@+id/readingTrafficLight"
                 app:srcCompat="@drawable/arrow_down" />
 
             <TextView
@@ -70,13 +70,14 @@
                 android:textColor="@color/black"
                 android:textSize="12sp"
                 android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="@+id/imageView3"
-                app:layout_constraintTop_toBottomOf="@+id/imageView3" />
+                app:layout_constraintStart_toStartOf="@+id/readingTrafficLight"
+                app:layout_constraintTop_toBottomOf="@+id/readingTrafficLight" />
 
             <TextView
                 android:id="@+id/textView19"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
                 android:text="@string/diastolic_blood_pressure"
                 android:textColor="@color/black"
                 android:textSize="12sp"
@@ -88,6 +89,7 @@
                 android:id="@+id/textView20"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
                 android:text="@string/heart_rate"
                 android:textColor="@color/black"
                 android:textSize="12sp"
@@ -96,7 +98,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/textView19" />
 
             <TextView
-                android:id="@+id/textView26"
+                android:id="@+id/sysBP"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
@@ -105,31 +107,30 @@
                 app:layout_constraintTop_toTopOf="@+id/textView18" />
 
             <TextView
-                android:id="@+id/textView27"
+                android:id="@+id/diaBP"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="2dp"
                 android:text="100"
                 app:layout_constraintBottom_toBottomOf="@+id/textView19"
                 app:layout_constraintStart_toEndOf="@+id/textView19"
-                app:layout_constraintTop_toBottomOf="@+id/textView18" />
+                app:layout_constraintTop_toTopOf="@+id/textView19" />
 
             <TextView
-                android:id="@+id/textView31"
+                android:id="@+id/readingHeartRate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="10"
                 app:layout_constraintBottom_toBottomOf="@+id/textView20"
                 app:layout_constraintStart_toEndOf="@+id/textView20"
-                app:layout_constraintTop_toBottomOf="@+id/textView19" />
+                app:layout_constraintTop_toTopOf="@+id/textView20" />
 
             <View
                 android:id="@+id/view"
                 android:layout_width="2dp"
                 android:layout_height="0dp"
                 android:background="@color/colorPrimaryLight"
-                app:layout_constraintBottom_toBottomOf="@+id/textView31"
+                app:layout_constraintBottom_toBottomOf="@+id/readingHeartRate"
                 app:layout_constraintTop_toBottomOf="@+id/textView14"
                 tools:layout_editor_absoluteX="221dp" />
 
@@ -158,7 +159,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/textView33" />
 
             <TextView
-                android:id="@+id/textView35"
+                android:id="@+id/assessmentDate"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="32dp"
@@ -177,13 +178,14 @@
                 android:textColor="@color/black"
                 android:textSize="12sp"
                 android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="@+id/textView35"
+                app:layout_constraintStart_toStartOf="@+id/assessmentDate"
                 tools:layout_editor_absoluteY="109dp" />
 
             <TextView
                 android:id="@+id/textView38"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
                 android:text="@string/treatment"
                 android:textColor="@color/black"
                 android:textSize="12sp"
@@ -195,6 +197,7 @@
                 android:id="@+id/textView39"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
                 android:text="@string/other"
                 android:textColor="@color/black"
                 android:textSize="12sp"
@@ -203,7 +206,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/textView38" />
 
             <TextView
-                android:id="@+id/textView40"
+                android:id="@+id/readingdiagnosis"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
@@ -216,7 +219,7 @@
                 app:layout_constraintTop_toTopOf="@+id/textView37" />
 
             <TextView
-                android:id="@+id/textView41"
+                android:id="@+id/readingTreatment"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
@@ -227,10 +230,10 @@
                 android:textSize="12sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/textView38"
-                app:layout_constraintTop_toBottomOf="@+id/textView37" />
+                app:layout_constraintTop_toTopOf="@+id/textView38" />
 
             <TextView
-                android:id="@+id/textView42"
+                android:id="@+id/readingOther"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
@@ -245,14 +248,14 @@
                 android:id="@+id/button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="8dp"
                 android:layout_marginBottom="8dp"
                 android:text="@string/take_new_reading"
                 android:textSize="12sp"
                 app:backgroundTint="@color/colorPrimaryLight"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@+id/textView16"
+                app:layout_constraintStart_toStartOf="@+id/readingDate"
                 app:layout_constraintTop_toBottomOf="@+id/textView20" />
 
         </android.support.constraint.ConstraintLayout>
