@@ -312,7 +312,7 @@ public class ReferralDialogFragment extends DialogFragment  {
     private String buildSMSMessage()
     {
         String message = currentReading.getReferralString();
-        message += "\n\nComment: ";
+        message += "\n\nVHT Comment: ";
         message += enteredComment;
 
         return message;

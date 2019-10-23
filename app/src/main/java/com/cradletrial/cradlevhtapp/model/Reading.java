@@ -191,12 +191,20 @@ public class Reading {
     }
 
     public String getReferralString() {
-         return "New Referral for " + referralHealthCentre + ":\n" +
-                 "\nPatient =" + patient +
-                 "\nReading Id = " + readingId +
-                 "\nDate Last Saved = " + dateLastSaved +
-                 "\nDate Time Taken=" + dateTimeTaken +
-                 "\nGPS Location = " + gpsLocationOfReading + '\'' +
+         String message = "New Referral for " + referralHealthCentre + ":\n" +
+                 "\nPatient ID = " + patient.patientId +
+                 "\nPatient Name = " + patient.patientName +
+                 "\nPatient Sex = " + patient.patientSex +
+                 "\nPatient Age = " + patient.ageYears;
+
+         if(patient.isPregnant)
+         {
+             message += "Patient Pregnancy Information:\n" +
+                     "\nGestational Age = " + patient.gestationalAgeValue + " " + patient.gestationalAgeUnit +
+         }
+
+
+         message += "\nDate and Location =" + dateTimeTaken +
                  "\n\nBlood Pressure Systolic = " + bpSystolic +
                  "\nBlood Pressure Diastolic = " + bpDiastolic +
                  "\nHeart Rate BPM = " + heartRateBPM +
