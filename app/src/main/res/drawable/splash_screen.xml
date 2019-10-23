@@ -4,8 +4,8 @@
     <item android:drawable="@color/colorPrimary" />
 
     <item>
-        <bitmap android:src="@drawable/splashimageee"
-            android:gravity="fill" />
+        <bitmap android:src="@drawable/splash_screen_4"
+            android:gravity="center_horizontal" />
 
     </item>
 
