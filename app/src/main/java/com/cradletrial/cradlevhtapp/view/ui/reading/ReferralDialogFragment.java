@@ -2,6 +2,7 @@ package com.cradletrial.cradlevhtapp.view.ui.reading;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -45,7 +46,17 @@ import java.util.ArrayList;
 
 import javax.inject.Inject;
 
-public class ReferralDialogFragment extends DialogFragment {
+import java.io.IOException;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
+
+public class ReferralDialogFragment extends DialogFragment  {
     // Data Model
     @Inject
     Settings settings;
@@ -63,6 +74,13 @@ public class ReferralDialogFragment extends DialogFragment {
     private String smsTextMessage = "";
     private String selectedHealthCentreSmsPhoneNumber = "";
     private String selectedHealthCentreName = "";
+
+    // SMS elements
+    private EditText mTo;
+    private EditText mBody;
+    private Button mSend;
+    private OkHttpClient mClient = new OkHttpClient();
+    private Context mContext;
 
     public interface DoneCallback {
         void sentTextMessage(String message);
@@ -103,7 +121,34 @@ public class ReferralDialogFragment extends DialogFragment {
             @Override
             public void onShow(DialogInterface dialogInterface) {
                 Button button = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
-                button.setOnClickListener(view -> sendSMSMessage(dialog));
+                button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        try {
+                            post("https://smsneptuneapp.herokuapp.com/sms", new  Callback(){
+
+                                @Override
+                                public void onFailure(Call call, IOException e) {
+                                    e.printStackTrace();
+                                }
+
+                                @Override
+                                public void onResponse(Call call, Response response) throws IOException {
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            mTo.setText("");
+                                            mBody.setText("");
+//                                            Toast.makeText(getApplicationContext(),"SMS Sent!", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                                }
+                            });
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
             }
         });
 
@@ -148,51 +193,62 @@ public class ReferralDialogFragment extends DialogFragment {
     }
 
     private void sendSMSMessage(Dialog dialog) {
-        // source: https://mobiforge.com/design-development/sms-messaging-android
+        Log.d("MySms","sending message");
 
-        // check for data errors:
-        if (settings.getHealthCentreNames().size() == 0) {
-            tvSendingStatus.setText("ERROR: No known health centres.\nPlease go to settings to enter them.");
-            tvSendingStatus.setVisibility(View.VISIBLE);
-           // return;
-        }
 
-        // Must send SMS via intent to default SMS program due to PlayStore policy preventing
-        // apps from sending SMS directly.
-        //composeMmsMessage(smsTextMessage, selectedHealthCentreSmsPhoneNumber);
-        //onFinishedSendingSMS(dialog);
 
-        // Json for comments
-        ProgressDialog  progressDialog = new ProgressDialog(getActivity());
-        progressDialog.setTitle("Uploading Referral" );
-        progressDialog.setCancelable(false);
-        progressDialog.show();
 
-        RequestQueue queue = Volley.newRequestQueue(getActivity());
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(JsonObjectRequest.Method.POST, settings.getReferallServerUrl(), getReferralJson(),
-                response -> {
-                    Log.d("bugg","delivered "+response.toString()+ "   server: "+settings.getReferallServerUrl());
-                    progressDialog.cancel();
-                    Toast.makeText(getActivity(),"Referral sent to "+settings.getReferallServerUrl(),Toast.LENGTH_LONG).show();
-                    onFinishedSendingSMS(dialog);
-                    dismiss();
 
-                }, error -> {
-            String json = null;
-            try {
-                if(error.networkResponse!=null) {
-                    json = new String(error.networkResponse.data, HttpHeaderParser.parseCharset(error.networkResponse.headers));
-                }
-                progressDialog.cancel();
-                Log.d("bugg","referal error: "+json);
-                Toast.makeText(getActivity(),"json: "+json,Toast.LENGTH_LONG).show();
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-            Log.d("bugg","Delivery error: "+json);
 
-        });
-        queue.add(jsonObjectRequest);
+
+
+
+
+//        // source: https://mobiforge.com/design-development/sms-messaging-android
+//
+//        // check for data errors:
+//        if (settings.getHealthCentreNames().size() == 0) {
+//            tvSendingStatus.setText("ERROR: No known health centres.\nPlease go to settings to enter them.");
+//            tvSendingStatus.setVisibility(View.VISIBLE);
+//           // return;
+//        }
+//
+//        // Must send SMS via intent to default SMS program due to PlayStore policy preventing
+//        // apps from sending SMS directly.
+//        //composeMmsMessage(smsTextMessage, selectedHealthCentreSmsPhoneNumber);
+//        //onFinishedSendingSMS(dialog);
+//
+//        // Json for comments
+//        ProgressDialog  progressDialog = new ProgressDialog(getActivity());
+//        progressDialog.setTitle("Uploading Referral" );
+//        progressDialog.setCancelable(false);
+//        progressDialog.show();
+//
+//        RequestQueue queue = Volley.newRequestQueue(getActivity());
+//        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(JsonObjectRequest.Method.POST, settings.getReferallServerUrl(), getReferralJson(),
+//                response -> {
+//                    Log.d("bugg","delivered "+response.toString()+ "   server: "+settings.getReferallServerUrl());
+//                    progressDialog.cancel();
+//                    Toast.makeText(getActivity(),"Referral sent to "+settings.getReferallServerUrl(),Toast.LENGTH_LONG).show();
+//                    onFinishedSendingSMS(dialog);
+//                    dismiss();
+//
+//                }, error -> {
+//            String json = null;
+//            try {
+//                if(error.networkResponse!=null) {
+//                    json = new String(error.networkResponse.data, HttpHeaderParser.parseCharset(error.networkResponse.headers));
+//                }
+//                progressDialog.cancel();
+//                Log.d("bugg","referal error: "+json);
+//                Toast.makeText(getActivity(),"json: "+json,Toast.LENGTH_LONG).show();
+//            } catch (UnsupportedEncodingException e) {
+//                e.printStackTrace();
+//            }
+//            Log.d("bugg","Delivery error: "+json);
+//
+//        });
+//        queue.add(jsonObjectRequest);
 //
 //        // prep UI
 //        // TODO: put in XML
@@ -251,6 +307,23 @@ public class ReferralDialogFragment extends DialogFragment {
 //
 //        // send
 //        sms.sendMultipartTextMessage(selectedHealthCentreSmsPhoneNumber, null, parts, sentPIs, deliveredPIs);
+    }
+
+    Call post(String url, Callback callback) throws IOException {
+        RequestBody formBody = new FormBody.Builder()
+//                .add("To", mTo.getText().toString())
+//                .add("Body", mBody.getText().toString())
+                .add("To", "17785528410")
+                .add("Body", "Testing from cradle")
+
+                .build();
+        Request request = new Request.Builder()
+                .url(url)
+                .post(formBody)
+                .build();
+        Call response = mClient.newCall(request);
+        response.enqueue(callback);
+        return response;
     }
 
 //    private void onReceiveSMSSentCallback(Dialog dialog, int resultCode) {

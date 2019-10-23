@@ -77,6 +77,9 @@ dependencies {
 
     // Volley (networking)
     implementation 'com.android.volley:volley:1.1.1'
+
+    // SMS
+    implementation 'com.squareup.okhttp3:okhttp:3.2.0'
 }
 
 // TensorFlow Lite: select only the ABI's we (likely) need
