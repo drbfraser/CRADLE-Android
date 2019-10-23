@@ -221,7 +221,9 @@
     <string name="patients">Patients</string>
     <string name="village">VILLAGE</string>
     <string name="village_colon">Village:</string>
-    <string name="medical_information">Personal Information</string>
+    <string name="personal_information">Personal Information</string>
+    <string name="medical_information">Medical Information</string>
+
     <string name="pregnant">Pregnant:</string>
     <string name="patient_summary">Patient Summary</string>
     <string name="patient">Patient:</string>
@@ -236,5 +238,7 @@
     <string name="diagnosis">Diagnosis:</string>
     <string name="treatment">Treatment:</string>
     <string name="other">Other:</string>
+    <string name="medical_history">Medical History</string>
+    <string name="drug_history">Drug History</string>
 
 </resources>
