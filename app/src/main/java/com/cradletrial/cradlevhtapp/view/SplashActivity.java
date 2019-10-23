@@ -9,7 +9,7 @@ import com.cradletrial.cradlevhtapp.R;
 
 public class SplashActivity extends AppCompatActivity {
 
-    private final int DELAY = 500;
+    private final int DELAY = 100;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

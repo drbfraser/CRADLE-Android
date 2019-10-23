@@ -194,10 +194,10 @@
         -----END PUBLIC KEY-----
     </string>
     <string name="village_number">Village Number:</string>
-    <string name="house_number">House Number</string>
-    <string name="tank_no">Tank No</string>
-    <string name="block_no">Block No</string>
-    <string name="zone">Zone</string>
+    <string name="house_number">House Number:</string>
+    <string name="tank_no">Tank No:</string>
+    <string name="block_no">Block No:</string>
+    <string name="zone">Zone:</string>
     <string name="id_number">ID number</string>
     <string name="initials">Initials</string>
     <string name="name">Name:</string>
@@ -211,12 +211,35 @@
     <string name="gestational_age">Gestational Age:</string>
     <string name="gestational_age_input">Gestational Age</string>
     <string name="units">Units</string>
-    <string name="id">ID:</string>
+    <string name="id">ID</string>
+    <string name="id_colon">ID:</string>
     <string name="id_input">ID</string>
     <string name="profile">Profile</string>
-    <string name="age_input">Age</string>
-    <string name="sex_input">Sex</string>
+    <string name="age_input">Age:</string>
+    <string name="sex_input">Sex:</string>
     <string name="name_input">name</string>
     <string name="patients">Patients</string>
+    <string name="village">VILLAGE</string>
+    <string name="village_colon">Village:</string>
+    <string name="personal_information">Personal Information</string>
+    <string name="medical_information">Medical Information</string>
+
+    <string name="pregnant">Pregnant:</string>
+    <string name="patient_summary">Patient Summary</string>
+    <string name="patient">Patient:</string>
+    <string name="reading">Reading </string>
+    <string name="Systolic_blood_pressure">Systolic Blood Pressure:</string>
+    <string name="diastolic_blood_pressure">Diastolic Blood Pressure:</string>
+    <string name="heart_rate">Heart Rate (BPM):</string>
+    <string name="symptom">Symptoms:</string>
+    <string name="referral_pending">Referral Pending</string>
+    <string name="created">Created:</string>
+    <string name="assessment">Assessment</string>
+    <string name="diagnosis">Diagnosis:</string>
+    <string name="treatment">Treatment:</string>
+    <string name="other">Other:</string>
+    <string name="medical_history">Medical History</string>
+    <string name="drug_history">Drug History</string>
+    <string name="take_new_reading">Take New Reading</string>
 
 </resources>

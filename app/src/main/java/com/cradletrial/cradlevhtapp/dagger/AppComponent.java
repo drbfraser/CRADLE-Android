@@ -2,6 +2,7 @@ package com.cradletrial.cradlevhtapp.dagger;
 
 import com.cradletrial.cradlevhtapp.view.HelpActivity;
 import com.cradletrial.cradlevhtapp.view.IntroActivity;
+import com.cradletrial.cradlevhtapp.view.PatientProfileActivity;
 import com.cradletrial.cradlevhtapp.view.PatientsActivity;
 import com.cradletrial.cradlevhtapp.view.ReadingActivity;
 import com.cradletrial.cradlevhtapp.view.ReadingsListActivity;
@@ -32,6 +33,7 @@ public interface AppComponent {
     void inject(SettingNamedPairsFragment fragment);
     void inject(IntroActivity activity);
     void inject(ConfirmDataFragment activity);
+    void inject(PatientProfileActivity activity);
 
     // void inject(MyFragment fragment);
     // void inject(MyService service);
