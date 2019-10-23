@@ -220,12 +220,12 @@
     <string name="name_input">name</string>
     <string name="patients">Patients</string>
     <string name="village">VILLAGE</string>
-    <string name="village_colon">VILLAGE:</string>
+    <string name="village_colon">Village:</string>
     <string name="medical_information">Personal Information</string>
     <string name="pregnant">Pregnant:</string>
     <string name="patient_summary">Patient Summary</string>
     <string name="patient">Patient:</string>
-    <string name="reading">Reading Id:</string>
+    <string name="reading">Reading ID:</string>
     <string name="Systolic_blood_pressure">Systolic Blood Pressure:</string>
     <string name="diastolic_blood_pressure">Diastolic Blood Pressure:</string>
     <string name="heart_rate">Heart Rate (BPM):</string>
