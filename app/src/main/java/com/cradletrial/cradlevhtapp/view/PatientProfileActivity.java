@@ -67,7 +67,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         Patient mPatient = (Patient) getIntent().getSerializableExtra("key");
         populatePatientInfo(mPatient);
         setupReadingsRecyclerView();
-        if(getSupportActionBar()!=null){
+        if(getSupportActionBar() != null){
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle(R.string.patient_summary);
         }
