@@ -36,7 +36,7 @@ public class PatientProfileActivity extends AppCompatActivity {
     TextView patientSex;
     TextView villageNo;
     RecyclerView readingRecyclerview;
-
+    Patient currPatient;
     // Data Model
     @Inject
     ReadingManager readingManager;
@@ -64,8 +64,8 @@ public class PatientProfileActivity extends AppCompatActivity {
         villageNo = (TextView) findViewById(R.id.patientVillage);
         readingRecyclerview = findViewById(R.id.readingRecyclerview);
 
-        Patient mPatient = (Patient) getIntent().getSerializableExtra("key");
-        populatePatientInfo(mPatient);
+        currPatient = (Patient) getIntent().getSerializableExtra("key");
+        populatePatientInfo(currPatient);
         setupReadingsRecyclerView();
         if(getSupportActionBar() != null){
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -103,9 +103,14 @@ public class PatientProfileActivity extends AppCompatActivity {
         // get content & sort
         List<Reading> readings = readingManager.getReadings(this);
         Collections.sort(readings, new Reading.ComparatorByDateReverse());
-
-        // set adapter
-        listAdapter = new ReadingRecyclerViewAdapter(readings,this);
+        List<Reading> myReadings = new ArrayList<>();
+        for (Reading reading: readings){
+            Patient patient = reading.patient;
+            if(patient.patientId.equals(currPatient.patientId)){
+                myReadings.add(reading);
+            }
+        }        // set adapter
+        listAdapter = new ReadingRecyclerViewAdapter(myReadings,this);
 
         readingRecyclerview.setAdapter(listAdapter);
         listAdapter.notifyDataSetChanged();
