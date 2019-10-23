@@ -24,14 +24,14 @@ public class PatientProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_patient_profile);
 
-        patientID = (TextView) findViewById(R.id.tvEnteredID);
-        patientName = (TextView) findViewById(R.id.tvEnteredPatientName);
-        patientAge = (TextView) findViewById(R.id.tvEnteredAge);
-        patientSex = (TextView) findViewById(R.id.tvEnteredSex);
-        villageNo = (TextView) findViewById(R.id.tvEnteredVillageNumber);
-        symptomsTemp = (TextView) findViewById(R.id.tvEnteredSymptoms);
-        gestationalValTemp = (TextView) findViewById(R.id.tvEnteredGestationalAge);
-        gestationalUnitTemp = (TextView) findViewById(R.id.tvEnteredGestationalAgeUnit);
+        patientID = (TextView) findViewById(R.id.patientId);
+       // patientName = (TextView) findViewById(R.id.tvEnteredPatientName);
+        patientAge = (TextView) findViewById(R.id.patientAge);
+        patientSex = (TextView) findViewById(R.id.patientSex);
+        villageNo = (TextView) findViewById(R.id.patientVillage);
+        //symptomsTemp = (TextView) findViewById(R.id.tvEnteredSymptoms);
+        //gestationalValTemp = (TextView) findViewById(R.id.tvEnteredGestationalAge);
+        //gestationalUnitTemp = (TextView) findViewById(R.id.tvEnteredGestationalAgeUnit);
 
         Patient mPatient = (Patient) getIntent().getSerializableExtra("key");
         populatePatientInfo(mPatient);
@@ -41,19 +41,19 @@ public class PatientProfileActivity extends AppCompatActivity {
     void populatePatientInfo(Patient patient)
     {
         patientID.setText(patient.patientId);
-        patientName.setText(patient.patientName);
+       // patientName.setText(patient.patientName);
         patientAge.setText(patient.ageYears.toString());
         patientSex.setText(patient.patientSex.toString());
         villageNo.setText(patient.villageNumber);
-        symptomsTemp.setText(patient.genSymptomString());
-        gestationalValTemp.setText(patient.gestationalAgeValue);
-
-        if (patient.gestationalAgeUnit.toString().equals("GESTATIONAL_AGE_UNITS_MONTHS")) {
-            gestationalUnitTemp.setText("Months");
-        } else if (patient.gestationalAgeUnit.toString().equals("GESTATIONAL_AGE_UNITS_WEEKS")){
-            gestationalUnitTemp.setText("Weeks");
-        } else if (patient.gestationalAgeUnit.toString().equals("GESTATIONAL_AGE_UNITS_NONE")){
-            gestationalUnitTemp.setText("None");
-        }
+      //  symptomsTemp.setText(patient.genSymptomString());
+        //gestationalValTemp.setText(patient.gestationalAgeValue);
+//
+//        if (patient.gestationalAgeUnit.toString().equals("GESTATIONAL_AGE_UNITS_MONTHS")) {
+//            gestationalUnitTemp.setText("Months");
+//        } else if (patient.gestationalAgeUnit.toString().equals("GESTATIONAL_AGE_UNITS_WEEKS")){
+//            gestationalUnitTemp.setText("Weeks");
+//        } else if (patient.gestationalAgeUnit.toString().equals("GESTATIONAL_AGE_UNITS_NONE")){
+//            gestationalUnitTemp.setText("None");
+//        }
     }
 }

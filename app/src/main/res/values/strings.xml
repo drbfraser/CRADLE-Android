@@ -194,10 +194,10 @@
         -----END PUBLIC KEY-----
     </string>
     <string name="village_number">Village Number:</string>
-    <string name="house_number">House Number</string>
-    <string name="tank_no">Tank No</string>
-    <string name="block_no">Block No</string>
-    <string name="zone">Zone</string>
+    <string name="house_number">House Number:</string>
+    <string name="tank_no">Tank No:</string>
+    <string name="block_no">Block No:</string>
+    <string name="zone">Zone:</string>
     <string name="id_number">ID number</string>
     <string name="initials">Initials</string>
     <string name="name">Name:</string>
@@ -211,13 +211,17 @@
     <string name="gestational_age">Gestational Age:</string>
     <string name="gestational_age_input">Gestational Age</string>
     <string name="units">Units</string>
-    <string name="id">ID:</string>
+    <string name="id">ID</string>
+    <string name="id_colon">ID:</string>
     <string name="id_input">ID</string>
     <string name="profile">Profile</string>
-    <string name="age_input">Age</string>
-    <string name="sex_input">Sex</string>
+    <string name="age_input">Age:</string>
+    <string name="sex_input">Sex:</string>
     <string name="name_input">name</string>
     <string name="patients">Patients</string>
     <string name="village">VILLAGE</string>
+    <string name="village_colon">VILLAGE:</string>
+    <string name="medical_information">Personal Information</string>
+    <string name="pregnant">Pregnant:</string>
 
 </resources>
