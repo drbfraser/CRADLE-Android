@@ -38,7 +38,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
     @Override
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         View v = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.reading_card_assesment, viewGroup, false);
+                .inflate(R.layout.reading_card_no_or_pending_assessment, viewGroup, false);
         return new MyViewHolder(v);
     }
 
