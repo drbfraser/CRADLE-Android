@@ -86,7 +86,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         patientID.setText(patient.patientId);
         patientName.setText(patient.patientName);
         patientAge.setText(patient.ageYears.toString());
-        patientSex.setText(patient.patientSex.toString());
+        patientSex.setText(patient.patientSex+"");
         villageNo.setText(patient.villageNumber);
 
     }
