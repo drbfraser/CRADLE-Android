@@ -9,6 +9,7 @@ import com.cradletrial.cradlevhtapp.utilitiles.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.threeten.bp.ZonedDateTime;
+import org.threeten.bp.format.DateTimeFormatter;
 import org.threeten.bp.temporal.ChronoUnit;
 
 import java.util.ArrayList;
@@ -188,6 +189,29 @@ public class Reading {
                 ", temporaryFlags=" + temporaryFlags +
                 ", userHasSelectedNoSymptoms=" + userHasSelectedNoSymptoms +
                 '}';
+    }
+
+    public String getReferralString() {
+         String message = "New Referral for " + referralHealthCentre + ":\n" +
+                 "\nPatient ID = " + patient.patientId +
+                 "\nPatient Name = " + patient.patientName +
+                 "\nPatient Sex = " + patient.patientSex +
+                 "\nPatient Age = " + patient.ageYears;
+
+         if(patient.isPregnant)
+         {
+             message += "Patient Pregnancy Information:\n" +
+                     "\nGestational Age = " + patient.gestationalAgeValue + " " + patient.gestationalAgeUnit;
+         }
+
+         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy - HH:mm:ss z");
+         message += "\nDate = " + dateTimeTaken.format(formatter) +
+                 "\n\nBlood Pressure Systolic = " + bpSystolic +
+                 "\nBlood Pressure Diastolic = " + bpDiastolic +
+                 "\nHeart Rate BPM = " + heartRateBPM +
+                 "\nSymptoms = " + getSymptomsString();
+
+         return message;
     }
 
     public static Reading makeNewReading(ZonedDateTime now) {
