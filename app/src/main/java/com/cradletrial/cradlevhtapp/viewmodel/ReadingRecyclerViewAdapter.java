@@ -1,6 +1,7 @@
 package com.cradletrial.cradlevhtapp.viewmodel;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -15,13 +16,16 @@ import com.cradletrial.cradlevhtapp.R;
 import com.cradletrial.cradlevhtapp.model.Reading;
 import com.cradletrial.cradlevhtapp.model.ReadingAnalysis;
 import com.cradletrial.cradlevhtapp.utilitiles.DateUtil;
+import com.cradletrial.cradlevhtapp.view.PatientProfileActivity;
+import com.cradletrial.cradlevhtapp.view.ReadingActivity;
 
 import java.util.List;
+
+import static com.cradletrial.cradlevhtapp.view.ReadingsListActivity.READING_ACTIVITY_DONE;
 
 public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecyclerViewAdapter.MyViewHolder> {
     private List<Reading> readings;
     private Context context;
-
 
     public ReadingRecyclerViewAdapter(List<Reading> readings, Context context) {
         this.readings = readings;
@@ -44,13 +48,12 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         ReadingAnalysis analysis = ReadingAnalysis.analyze(currReading);
 
         myViewHolder.readingDate.setText(DateUtil.getConciseDateString(currReading.dateTimeTaken));
-        myViewHolder.sysBP.setText(currReading.bpSystolic);
-        myViewHolder.diaBP.setText(currReading.bpDiastolic);
-        myViewHolder.heartRate.setText(currReading.heartRateBPM);
+        myViewHolder.sysBP.setText(currReading.bpSystolic+"");
+        myViewHolder.diaBP.setText(currReading.bpDiastolic+"");
+        myViewHolder.heartRate.setText(currReading.heartRateBPM+"");
 
         if(currReading.isNeedRecheckVitals()){
             myViewHolder.readingDate.setVisibility(View.VISIBLE);
-            //todo: set on click listner here
         }
         myViewHolder.trafficLight.setImageResource(ReadingAnalysisViewSupport.getColorCircleImageId(analysis));
         myViewHolder.arrow.setImageResource(ReadingAnalysisViewSupport.getArrowImageId(analysis));
@@ -62,16 +65,16 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
 
     @Override
     public int getItemCount() {
-        return 0;
+        return readings.size();
     }
 
-    public static class MyViewHolder extends RecyclerView.ViewHolder {
+     static class MyViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
         TextView readingDate, assessmentDate, sysBP, diaBP,heartRate,diagnosis,treatment,other;
         ImageView trafficLight, arrow;
         Button retakeVitalButton;
         CardView readingCardView;
-        public MyViewHolder(View v) {
+         MyViewHolder(View v) {
             super(v);
             readingDate = v.findViewById(R.id.readingDate);
             assessmentDate =v.findViewById(R.id.assessmentDate);

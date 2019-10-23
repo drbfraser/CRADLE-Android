@@ -9,6 +9,9 @@
         android:id="@+id/readingCardview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
         app:cardCornerRadius="8dp"
         app:cardElevation="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -130,10 +133,11 @@
                 android:id="@+id/view"
                 android:layout_width="2dp"
                 android:layout_height="0dp"
+                android:layout_marginStart="8dp"
                 android:background="@color/colorPrimaryLight"
                 app:layout_constraintBottom_toBottomOf="@+id/readingHeartRate"
-                app:layout_constraintTop_toBottomOf="@+id/textView14"
-                tools:layout_editor_absoluteX="221dp" />
+                app:layout_constraintStart_toEndOf="@+id/sysBP"
+                app:layout_constraintTop_toBottomOf="@+id/textView14" />
 
             <TextView
                 android:id="@+id/textView33"
@@ -175,12 +179,13 @@
                 android:id="@+id/textView37"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:text="@string/diagnosis"
                 android:textColor="@color/black"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="@+id/assessmentDate"
-                tools:layout_editor_absoluteY="109dp" />
+                app:layout_constraintTop_toBottomOf="@+id/assessmentDate" />
 
             <TextView
                 android:id="@+id/textView38"
