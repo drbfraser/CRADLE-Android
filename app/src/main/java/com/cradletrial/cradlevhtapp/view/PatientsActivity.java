@@ -25,6 +25,7 @@ import org.threeten.bp.temporal.ChronoUnit;
 import java.sql.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -91,19 +92,17 @@ public class PatientsActivity extends TabActivityBase {
     }
 
     private void setupPatientRecyclerview() {
-        Set<Patient> patients = new HashSet<>();
+
+        HashMap<String, Patient> patientHashMap = new HashMap<>();
         List<Reading> allReadings = readingManager.getReadings(this);
         for(Reading reading: allReadings){
-            patients.add(reading.patient);
+
+            patientHashMap.put(reading.patient.patientId,reading.patient);
         }
-        Patient[] parray = new Patient[patients.size()];
-        int i =0;
-        for (Iterator<Patient> it = patients.iterator(); it.hasNext(); ) {
-            Patient patient = it.next();
-            parray[i] = patient;
-            i++;
-        }
-        PatientsViewAdapter patientsViewAdapter = new PatientsViewAdapter(Arrays.asList(parray),this);
+        List<Patient> patients = new ArrayList<>(patientHashMap.values());
+
+
+        PatientsViewAdapter patientsViewAdapter = new PatientsViewAdapter(patients,this);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         patientRecyclerview.setAdapter(patientsViewAdapter);
         patientRecyclerview.setLayoutManager(layoutManager);

@@ -53,7 +53,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         myViewHolder.heartRate.setText(currReading.heartRateBPM+"");
 
         if(currReading.isNeedRecheckVitals()){
-            myViewHolder.readingDate.setVisibility(View.VISIBLE);
+            myViewHolder.retakeVitalButton.setVisibility(View.VISIBLE);
         }
         myViewHolder.trafficLight.setImageResource(ReadingAnalysisViewSupport.getColorCircleImageId(analysis));
         myViewHolder.arrow.setImageResource(ReadingAnalysisViewSupport.getArrowImageId(analysis));
