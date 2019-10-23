@@ -190,6 +190,19 @@ public class Reading {
                 '}';
     }
 
+    public String getReferralString() {
+         return "New Referral for " + referralHealthCentre + ":\n" +
+                 "\nPatient =" + patient +
+                 "\nReading Id = " + readingId +
+                 "\nDate Last Saved = " + dateLastSaved +
+                 "\nDate Time Taken=" + dateTimeTaken +
+                 "\nGPS Location = " + gpsLocationOfReading + '\'' +
+                 "\n\nBlood Pressure Systolic = " + bpSystolic +
+                 "\nBlood Pressure Diastolic = " + bpDiastolic +
+                 "\nHeart Rate BPM = " + heartRateBPM +
+                 "\nSymptoms = " + getSymptomsString();
+    }
+
     public static Reading makeNewReading(ZonedDateTime now) {
         // setup basic info
         Reading r = new Reading();

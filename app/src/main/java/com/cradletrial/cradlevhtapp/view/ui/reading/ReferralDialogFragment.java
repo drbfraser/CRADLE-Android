@@ -309,12 +309,21 @@ public class ReferralDialogFragment extends DialogFragment  {
 //        sms.sendMultipartTextMessage(selectedHealthCentreSmsPhoneNumber, null, parts, sentPIs, deliveredPIs);
     }
 
+    private String buildSMSMessage()
+    {
+        String message = currentReading.getReferralString();
+        message += "\n\nComment: ";
+        message += enteredComment;
+
+        return message;
+    }
+
     Call post(String url, Callback callback) throws IOException {
         RequestBody formBody = new FormBody.Builder()
 //                .add("To", mTo.getText().toString())
 //                .add("Body", mBody.getText().toString())
                 .add("To", "17785528410")
-                .add("Body", "Testing from cradle")
+                .add("Body", buildSMSMessage())
 
                 .build();
         Request request = new Request.Builder()
