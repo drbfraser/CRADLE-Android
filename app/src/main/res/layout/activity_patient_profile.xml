@@ -215,7 +215,7 @@
         app:layout_constraintTop_toTopOf="@+id/textView30" />
 
     <include
-        layout="@layout/reading_card"
+        layout="@layout/reading_card_no_or_pending_assessment"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"

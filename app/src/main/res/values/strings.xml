@@ -225,12 +225,16 @@
     <string name="pregnant">Pregnant:</string>
     <string name="patient_summary">Patient Summary</string>
     <string name="patient">Patient:</string>
-    <string name="reading">Reading ID:</string>
+    <string name="reading">Reading </string>
     <string name="Systolic_blood_pressure">Systolic Blood Pressure:</string>
     <string name="diastolic_blood_pressure">Diastolic Blood Pressure:</string>
     <string name="heart_rate">Heart Rate (BPM):</string>
     <string name="symptom">Symptoms:</string>
     <string name="referral_pending">Referral Pending</string>
     <string name="created">Created:</string>
+    <string name="assessment">Assessment</string>
+    <string name="diagnosis">Diagnosis:</string>
+    <string name="treatment">Treatment:</string>
+    <string name="other">Other:</string>
 
 </resources>
