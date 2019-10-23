@@ -205,7 +205,7 @@ public class Reading {
          }
 
          DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy - HH:mm:ss z");
-         message += "\nDate and Location =" + dateTimeTaken.format(formatter) +
+         message += "\nDate = " + dateTimeTaken.format(formatter) +
                  "\n\nBlood Pressure Systolic = " + bpSystolic +
                  "\nBlood Pressure Diastolic = " + bpDiastolic +
                  "\nHeart Rate BPM = " + heartRateBPM +
