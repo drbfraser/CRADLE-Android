@@ -2,6 +2,7 @@ package com.cradletrial.cradlevhtapp.view;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.widget.TextView;
 
@@ -16,9 +17,7 @@ public class PatientProfileActivity extends AppCompatActivity {
     TextView patientAge;
     TextView patientSex;
     TextView villageNo;
-    TextView symptomsTemp;
-    TextView gestationalValTemp;
-    TextView gestationalUnitTemp;
+    RecyclerView readingRecyclerview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +29,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         patientAge = (TextView) findViewById(R.id.patientAge);
         patientSex = (TextView) findViewById(R.id.patientSex);
         villageNo = (TextView) findViewById(R.id.patientVillage);
+        readingRecyclerview = findViewById(R.id.readingRecyclerview);
 
         Patient mPatient = (Patient) getIntent().getSerializableExtra("key");
         populatePatientInfo(mPatient);
@@ -53,15 +53,6 @@ public class PatientProfileActivity extends AppCompatActivity {
         patientAge.setText(patient.ageYears.toString());
         patientSex.setText(patient.patientSex.toString());
         villageNo.setText(patient.villageNumber);
-      //  symptomsTemp.setText(patient.genSymptomString());
-        //gestationalValTemp.setText(patient.gestationalAgeValue);
-//
-//        if (patient.gestationalAgeUnit.toString().equals("GESTATIONAL_AGE_UNITS_MONTHS")) {
-//            gestationalUnitTemp.setText("Months");
-//        } else if (patient.gestationalAgeUnit.toString().equals("GESTATIONAL_AGE_UNITS_WEEKS")){
-//            gestationalUnitTemp.setText("Weeks");
-//        } else if (patient.gestationalAgeUnit.toString().equals("GESTATIONAL_AGE_UNITS_NONE")){
-//            gestationalUnitTemp.setText("None");
-//        }
+
     }
 }

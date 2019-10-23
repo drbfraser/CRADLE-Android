@@ -96,20 +96,6 @@
                 app:layout_constraintTop_toBottomOf="@+id/textView19" />
 
             <TextView
-                android:id="@+id/textView25"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
-                android:text="@string/symptoms"
-                android:textColor="@color/black"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="@+id/textView20"
-                app:layout_constraintTop_toBottomOf="@+id/textView20" />
-
-            <TextView
                 android:id="@+id/textView26"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -138,27 +124,14 @@
                 app:layout_constraintStart_toEndOf="@+id/textView20"
                 app:layout_constraintTop_toBottomOf="@+id/textView19" />
 
-            <TextView
-                android:id="@+id/textView32"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:width="120dp"
-                android:maxLines="5"
-                android:text="Headache, Blurred vision, abdominal pain, bleeding, feverish , unwell"
-                app:layout_constraintBottom_toBottomOf="@+id/textView25"
-                app:layout_constraintStart_toEndOf="@+id/textView25"
-                app:layout_constraintTop_toTopOf="@+id/textView25" />
-
             <View
                 android:id="@+id/view"
                 android:layout_width="2dp"
                 android:layout_height="0dp"
-                android:layout_marginStart="128dp"
                 android:background="@color/colorPrimaryLight"
-                app:layout_constraintBottom_toBottomOf="@+id/textView25"
-                app:layout_constraintStart_toStartOf="@+id/textView32"
-                app:layout_constraintTop_toBottomOf="@+id/textView14" />
+                app:layout_constraintBottom_toBottomOf="@+id/textView20"
+                app:layout_constraintTop_toBottomOf="@+id/textView14"
+                tools:layout_editor_absoluteX="221dp" />
 
             <TextView
                 android:id="@+id/textView33"
@@ -170,10 +143,10 @@
                 android:textColor="@color/black"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintBottom_toBottomOf="@+id/view"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/view"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="@+id/view" />
 
             <TextView
                 android:id="@+id/textView34"
@@ -208,6 +181,18 @@
                 app:layout_constraintBottom_toBottomOf="@+id/textView14"
                 app:layout_constraintStart_toEndOf="@+id/textView14"
                 app:layout_constraintTop_toTopOf="@+id/textView14" />
+
+            <Button
+                android:id="@+id/button2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/take_new_reading"
+                android:textSize="12dp"
+                app:backgroundTint="@color/colorPrimaryLight"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/textView14"
+                app:layout_constraintTop_toBottomOf="@+id/textView20" />
 
         </android.support.constraint.ConstraintLayout>
     </android.support.v7.widget.CardView>

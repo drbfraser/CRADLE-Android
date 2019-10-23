@@ -240,5 +240,6 @@
     <string name="other">Other:</string>
     <string name="medical_history">Medical History</string>
     <string name="drug_history">Drug History</string>
+    <string name="take_new_reading">Take New Reading</string>
 
 </resources>
