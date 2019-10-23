@@ -200,7 +200,7 @@ public class Reading {
          if(patient.isPregnant)
          {
              message += "Patient Pregnancy Information:\n" +
-                     "\nGestational Age = " + patient.gestationalAgeValue + " " + patient.gestationalAgeUnit +
+                     "\nGestational Age = " + patient.gestationalAgeValue + " " + patient.gestationalAgeUnit;
          }
 
 
