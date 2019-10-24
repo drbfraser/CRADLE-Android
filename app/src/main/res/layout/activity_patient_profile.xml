@@ -73,7 +73,7 @@
                     android:layout_marginTop="8dp"
                     android:text="@string/id_colon"
                     android:textColor="@color/black"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="@+id/textView"
                     app:layout_constraintTop_toBottomOf="@+id/textView" />
@@ -85,7 +85,7 @@
                     android:layout_marginStart="8dp"
                     android:text="123345678"
                     android:textColor="@color/black"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     app:layout_constraintStart_toEndOf="@+id/textView12"
                     app:layout_constraintTop_toTopOf="@+id/textView12" />
 
@@ -95,7 +95,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/age"
                     android:textColor="@color/black"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="@+id/textView12"
                     app:layout_constraintTop_toBottomOf="@+id/textView12" />
@@ -107,7 +107,7 @@
                     android:layout_marginStart="8dp"
                     android:text="50"
                     android:textColor="@color/black"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     app:layout_constraintStart_toEndOf="@+id/textView15"
                     app:layout_constraintTop_toTopOf="@+id/textView15" />
 
@@ -117,7 +117,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/sex"
                     android:textColor="@color/black"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="@+id/textView15"
                     app:layout_constraintTop_toBottomOf="@+id/textView15" />
@@ -129,7 +129,7 @@
                     android:layout_marginStart="8dp"
                     android:text="Female"
                     android:textColor="@color/black"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     app:layout_constraintStart_toEndOf="@+id/textView17"
                     app:layout_constraintTop_toBottomOf="@+id/patientAge" />
 
@@ -140,7 +140,7 @@
                     android:layout_marginStart="128dp"
                     android:text="@string/village_colon"
                     android:textColor="@color/black"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="@+id/textView12"
                     app:layout_constraintTop_toTopOf="@+id/textView12" />
@@ -151,7 +151,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/zone"
                     android:textColor="@color/black"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="@+id/textView21"
                     app:layout_constraintTop_toBottomOf="@+id/textView21" />
@@ -164,7 +164,7 @@
                     android:layout_marginBottom="8dp"
                     android:text="@string/house_number"
                     android:textColor="@color/black"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="@+id/textView17"
@@ -176,7 +176,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/tank_no"
                     android:textColor="@color/black"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="@+id/textView22"
                     app:layout_constraintTop_toBottomOf="@+id/textView22" />
@@ -188,7 +188,7 @@
                     android:layout_marginStart="8dp"
                     android:text="123GFF"
                     android:textColor="@color/black"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     app:layout_constraintStart_toEndOf="@+id/textView21"
                     app:layout_constraintTop_toTopOf="@+id/textView21" />
 
@@ -199,7 +199,7 @@
                     android:layout_marginStart="8dp"
                     android:text="45H"
                     android:textColor="@color/black"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     app:layout_constraintStart_toEndOf="@+id/textView22"
                     app:layout_constraintTop_toBottomOf="@+id/textView21" />
 
@@ -210,7 +210,7 @@
                     android:layout_marginStart="8dp"
                     android:text="88"
                     android:textColor="@color/black"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     app:layout_constraintStart_toEndOf="@+id/textView24"
                     app:layout_constraintTop_toTopOf="@+id/textView24" />
 
@@ -221,7 +221,7 @@
                     android:layout_marginStart="8dp"
                     android:text="33"
                     android:textColor="@color/black"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     app:layout_constraintStart_toEndOf="@+id/textView23"
                     app:layout_constraintTop_toTopOf="@+id/textView23" />
             </android.support.constraint.ConstraintLayout>
@@ -263,6 +263,7 @@
                     android:layout_marginTop="8dp"
                     android:text="@string/pregnant"
                     android:textColor="@color/black"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="@+id/textView43"
                     app:layout_constraintTop_toBottomOf="@+id/textView43" />
@@ -274,7 +275,7 @@
                     android:layout_marginStart="8dp"
                     android:text="No"
                     android:textColor="@color/black"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     app:layout_constraintStart_toEndOf="@+id/textView19"
                     app:layout_constraintTop_toTopOf="@+id/textView19" />
 
@@ -284,7 +285,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/gestational_age"
                     android:textColor="@color/black"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="@+id/textView19"
                     app:layout_constraintTop_toBottomOf="@+id/textView19" />
@@ -296,7 +297,7 @@
                     android:layout_marginStart="8dp"
                     android:text="133"
                     android:textColor="@color/black"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     app:layout_constraintBottom_toBottomOf="@+id/textView44"
                     app:layout_constraintStart_toEndOf="@+id/textView44"
                     app:layout_constraintTop_toTopOf="@+id/textView44" />
@@ -308,7 +309,7 @@
                     android:layout_marginStart="4dp"
                     android:text="weeks"
                     android:textColor="@color/black"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     app:layout_constraintBottom_toBottomOf="@+id/textView45"
                     app:layout_constraintStart_toEndOf="@+id/textView45"
                     app:layout_constraintTop_toTopOf="@+id/textView45" />
@@ -320,7 +321,7 @@
                     android:layout_marginTop="8dp"
                     android:text="@string/medical_history"
                     android:textColor="@color/black"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="@+id/textView44"
                     app:layout_constraintTop_toBottomOf="@+id/textView44" />
@@ -333,7 +334,7 @@
                     android:layout_marginEnd="8dp"
                     android:text="NONE"
                     android:textColor="@color/black"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     app:layout_constraintBottom_toBottomOf="@+id/textView47"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/textView47" />
@@ -344,7 +345,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/drug_history"
                     android:textColor="@color/black"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="@+id/textView47"
                     app:layout_constraintTop_toBottomOf="@+id/textView47" />
@@ -358,7 +359,7 @@
                     android:layout_marginBottom="8dp"
                     android:text="None"
                     android:textColor="@color/black"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/textView49"
