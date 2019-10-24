@@ -113,7 +113,5 @@ public class PatientProfileActivity extends AppCompatActivity {
         listAdapter = new ReadingRecyclerViewAdapter(myReadings,this);
 
         readingRecyclerview.setAdapter(listAdapter);
-        listAdapter.notifyDataSetChanged();
-        Log.d("bugg","LIST SIZE: "+ readings.size());
     }
 }
