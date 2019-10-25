@@ -37,27 +37,16 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
 
             }
 
-    @Override
-    public int getItemViewType(int position) {
-        Reading reading = readings.get(position);
-        if(reading.isReferredToHealthCentre()){
-            return VIEWTYPE_ASSESSMENT;
-        }
-        return VIEWTYPE_NO_ASSESSMENT;
-    }
+
 
     @NonNull
     @Override
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-        if(i==VIEWTYPE_ASSESSMENT) {
-            View v = LayoutInflater.from(viewGroup.getContext())
-                    .inflate(R.layout.reading_card_assesment, viewGroup, false);
-            return new MyViewHolder(v);
-        } else {
-            View v = LayoutInflater.from(viewGroup.getContext())
-                    .inflate(R.layout.reading_card_no_or_pending_assessment, viewGroup, false);
-            return new MyViewHolder(v);
-        }
+
+        View v = LayoutInflater.from(viewGroup.getContext())
+                .inflate(R.layout.reading_card_no_or_pending_assessment, viewGroup, false);
+        return new MyViewHolder(v);
+
     }
 
     @Override
