@@ -1,5 +1,6 @@
 package com.cradletrial.cradlevhtapp.view.ui;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -49,7 +50,11 @@ public class LoginActivity extends AppCompatActivity {
                 if (emailET.getText().equals("")){
                     Toast.makeText(LoginActivity.this,"Empty email",Toast.LENGTH_SHORT);
                     return;
-                }                // add to volley queue
+                }// add to volley queue
+                ProgressDialog progressDialog = new ProgressDialog(LoginActivity.this);
+                progressDialog.setTitle("Logging In");
+                progressDialog.setCancelable(false);
+                progressDialog.show();
                 RequestQueue queue = Volley.newRequestQueue(MyApp.getInstance());
                 JSONObject jsonObject = new JSONObject();
                 try {
@@ -59,14 +64,15 @@ public class LoginActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
                 JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Settings.authServerUrl, jsonObject, response -> {
+                    progressDialog.cancel();
                     Toast.makeText(LoginActivity.this,"LOGIN",Toast.LENGTH_LONG).show();
-
                     Intent intent = new Intent(LoginActivity.this, IntroActivity.class);
                     startActivity(intent);
                     finish();
                 }, error -> {
                     Toast.makeText(LoginActivity.this," Invalid credentials",Toast.LENGTH_LONG).show();
                     passwordET.setText("");
+                    progressDialog.cancel();
                 });
                 queue.add(jsonObjectRequest);
             }
