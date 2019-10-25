@@ -18,18 +18,22 @@ import com.cradletrial.cradlevhtapp.R;
 import com.cradletrial.cradlevhtapp.model.Reading;
 import com.cradletrial.cradlevhtapp.model.ReadingAnalysis;
 import com.cradletrial.cradlevhtapp.utilitiles.DateUtil;
-import com.cradletrial.cradlevhtapp.view.PatientProfileActivity;
-import com.cradletrial.cradlevhtapp.view.ReadingActivity;
 
 import java.util.List;
 
-import static com.cradletrial.cradlevhtapp.view.ReadingsListActivity.READING_ACTIVITY_DONE;
 
 public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecyclerViewAdapter.MyViewHolder> {
-    private static final int VIEWTYPE_ASSESSMENT =0;
-    private static final int VIEWTYPE_NO_ASSESSMENT=1;
+
     private List<Reading> readings;
     private Context context;
+
+    public interface OnClickElement {
+        void onClick(long readingId);
+        // Return true if click handled
+        boolean onLongClick(long readingId);
+        void onClickRecheckReading(long readingId);
+    }
+    private OnClickElement onClickElementListener;
 
     public ReadingRecyclerViewAdapter(List<Reading> readings, Context context) {
         this.readings = readings;
@@ -37,7 +41,6 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         this.context = context;
 
             }
-
 
 
     @NonNull
@@ -122,6 +125,10 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
     @Override
     public int getItemCount() {
         return readings.size();
+    }
+
+    public void setOnClickElementListener(OnClickElement obs) {
+        onClickElementListener = obs;
     }
 
      static class MyViewHolder extends RecyclerView.ViewHolder {

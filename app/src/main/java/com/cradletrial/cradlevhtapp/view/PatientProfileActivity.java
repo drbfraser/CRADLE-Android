@@ -2,6 +2,7 @@ package com.cradletrial.cradlevhtapp.view;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -112,6 +113,41 @@ public class PatientProfileActivity extends AppCompatActivity {
         }        // set adapter
         listAdapter = new ReadingRecyclerViewAdapter(myReadings,this);
 
+        listAdapter.setOnClickElementListener(new ReadingRecyclerViewAdapter.OnClickElement() {
+            @Override
+            public void onClick(long readingId) {
+                Intent intent = ReadingActivity.makeIntentForEdit(PatientProfileActivity.this, readingId);
+                startActivityForResult(intent, READING_ACTIVITY_DONE);
+            }
+
+            @Override
+            public boolean onLongClick(long readingId) {
+                //askToDeleteReading(readingId);
+                return true;
+            }
+
+            @Override
+            public void onClickRecheckReading(long readingId) {
+                Intent intent = ReadingActivity.makeIntentForRecheck(PatientProfileActivity.this, readingId);
+                startActivityForResult(intent, READING_ACTIVITY_DONE);
+            }
+        });
         readingRecyclerview.setAdapter(listAdapter);
+
     }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == READING_ACTIVITY_DONE) {
+            updateUi();
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void updateUi() {
+       // setupEmptyState();
+        setupReadingsRecyclerView();
+    }
+
 }
