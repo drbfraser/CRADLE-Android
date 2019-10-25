@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,18 +39,22 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void setupLogin() {
+        EditText emailET = findViewById(R.id.emailEditText);
+        EditText passwordET = findViewById(R.id.passwordEditText);
         Button loginbuttoon = findViewById(R.id.loginButton);
         loginbuttoon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //todo change it so that we authenticate the user first and than go to the intro page.
-
-                // add to volley queue
+                if (emailET.getText().equals("")){
+                    Toast.makeText(LoginActivity.this,"Empty email",Toast.LENGTH_SHORT);
+                    return;
+                }                // add to volley queue
                 RequestQueue queue = Volley.newRequestQueue(MyApp.getInstance());
                 JSONObject jsonObject = new JSONObject();
                 try {
-                    jsonObject.put("email","email");
-                    jsonObject.put("password","*****");
+                    jsonObject.put("email",emailET.getText());
+                    jsonObject.put("password",passwordET.getText());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -60,7 +65,8 @@ public class LoginActivity extends AppCompatActivity {
                     startActivity(intent);
                     finish();
                 }, error -> {
-                    Toast.makeText(LoginActivity.this,error+" unable to log in",Toast.LENGTH_LONG).show();
+                    Toast.makeText(LoginActivity.this," Invalid credentials",Toast.LENGTH_LONG).show();
+                    passwordET.setText("");
                 });
                 queue.add(jsonObjectRequest);
             }
