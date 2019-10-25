@@ -7,7 +7,7 @@
 
     <android.support.v7.widget.CardView
         android:id="@+id/readingCardview"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
@@ -23,8 +23,111 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <android.support.constraint.ConstraintLayout
+            android:id="@+id/readingLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/imgNotUploaded"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="8dp"
+                android:visibility="visible"
+                app:layout_constraintStart_toEndOf="@+id/view"
+                app:layout_constraintTop_toBottomOf="@+id/textView33"
+                app:srcCompat="@drawable/upload"
+                tools:visibility="visible" />
+
+            <TextView
+                android:id="@+id/tvNotUploaded"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:text="Not yet uploaded to server"
+                android:textSize="12sp"
+                android:visibility="visible"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/imgNotUploaded"
+                app:layout_constraintTop_toTopOf="@+id/imgNotUploaded"
+                tools:visibility="visible" />
+
+            <ImageView
+                android:id="@+id/imgReferred"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginTop="8dp"
+                android:visibility="visible"
+                app:layout_constraintStart_toStartOf="@+id/imgNotUploaded"
+                app:layout_constraintTop_toBottomOf="@+id/tvNotUploaded"
+                app:srcCompat="@drawable/hospital"
+                tools:visibility="visible" />
+
+            <TextView
+                android:id="@+id/txtReferred"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:textSize="12sp"
+                android:visibility="visible"
+                app:layout_constraintEnd_toEndOf="@+id/tvNotUploaded"
+                app:layout_constraintStart_toEndOf="@+id/imgReferred"
+                app:layout_constraintTop_toTopOf="@+id/imgReferred"
+                tools:text="Referred to {{Health Centre}}"
+                tools:visibility="visible" />
+
+            <ImageView
+                android:id="@+id/imgFollowUp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginTop="8dp"
+                android:visibility="visible"
+                app:layout_constraintStart_toStartOf="@+id/imgReferred"
+                app:layout_constraintTop_toBottomOf="@+id/txtReferred"
+                app:srcCompat="@mipmap/followup"
+                tools:visibility="visible" />
+
+            <TextView
+                android:id="@+id/txtFollowUp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Follow-up needed"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:visibility="visible"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/imgFollowUp"
+                app:layout_constraintTop_toTopOf="@+id/imgFollowUp"
+                tools:visibility="visible" />
+
+            <ImageView
+                android:id="@+id/imgRecheckVitals"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginTop="8dp"
+                android:visibility="visible"
+                app:layout_constraintStart_toStartOf="@+id/imgFollowUp"
+                app:layout_constraintTop_toBottomOf="@+id/txtFollowUp"
+                app:srcCompat="@drawable/clock"
+                tools:visibility="visible" />
+
+            <TextView
+                android:id="@+id/txtRecheckVitals"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="4dp"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:visibility="visible"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/imgRecheckVitals"
+                app:layout_constraintTop_toTopOf="@+id/imgRecheckVitals"
+                tools:text="Recheck vitals {{when to recheck}}"
+                tools:visibility="visible" />
 
             <TextView
                 android:id="@+id/textView14"
@@ -35,7 +138,7 @@
                 android:text="@string/reading"
                 android:textColor="@color/black"
                 android:textSize="24sp"
-                android:textStyle="bold"
+                android:visibility="visible"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -84,7 +187,7 @@
                 android:id="@+id/textView19"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="8dp"
                 android:text="@string/diastolic_blood_pressure"
                 android:textColor="@color/black"
                 android:textSize="12sp"
@@ -96,12 +199,13 @@
                 android:id="@+id/textView20"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="8dp"
                 android:text="@string/heart_rate"
                 android:textColor="@color/black"
                 android:textSize="12sp"
+                android:paddingBottom="16dp"
                 android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="@+id/textView18"
+                app:layout_constraintStart_toStartOf="@+id/textView19"
                 app:layout_constraintTop_toBottomOf="@+id/textView19" />
 
             <TextView
@@ -128,7 +232,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="10"
-                app:layout_constraintBottom_toBottomOf="@+id/textView20"
                 app:layout_constraintStart_toEndOf="@+id/textView20"
                 app:layout_constraintTop_toTopOf="@+id/textView20" />
 
@@ -136,9 +239,9 @@
                 android:id="@+id/view"
                 android:layout_width="2dp"
                 android:layout_height="0dp"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="16dp"
                 android:background="@color/colorPrimaryLight"
-                app:layout_constraintBottom_toBottomOf="@+id/readingHeartRate"
+                app:layout_constraintBottom_toBottomOf="@+id/textView20"
                 app:layout_constraintStart_toEndOf="@+id/sysBP"
                 app:layout_constraintTop_toBottomOf="@+id/textView14" />
 
@@ -147,7 +250,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:layout_marginTop="32dp"
+                android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
                 android:text="No Referral"
                 android:textColor="@color/black"
@@ -162,7 +265,6 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:layout_marginTop="8dp"
                 android:layout_marginEnd="16dp"
                 android:text="@string/take_new_reading"
                 android:textSize="12sp"
@@ -170,7 +272,8 @@
                 app:backgroundTint="@color/colorPrimaryLight"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/view"
-                app:layout_constraintTop_toBottomOf="@+id/textView33" />
+                app:layout_constraintTop_toBottomOf="@+id/txtRecheckVitals" />
+
 
         </android.support.constraint.ConstraintLayout>
     </android.support.v7.widget.CardView>
