@@ -22,9 +22,15 @@ import com.cradletrial.cradlevhtapp.viewmodel.PatientsViewAdapter;
 import org.threeten.bp.ZonedDateTime;
 import org.threeten.bp.temporal.ChronoUnit;
 
+import java.sql.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -86,13 +92,16 @@ public class PatientsActivity extends TabActivityBase {
     }
 
     private void setupPatientRecyclerview() {
-        List<Patient> patients = new ArrayList<>();
-        for(int i = 0; i < 25; i++){
-            Patient patient = new Patient(i*1000000+"","P"+i,i+20,
-                    Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS," ??",
-                    30+i+"", Patient.PATIENTSEX.FEMALE,"ZONE "+i,"tank "+i,"HN "+i,false);
-            patients.add(patient);
+
+        HashMap<String, Patient> patientHashMap = new HashMap<>();
+        List<Reading> allReadings = readingManager.getReadings(this);
+        for(Reading reading: allReadings){
+
+            patientHashMap.put(reading.patient.patientId,reading.patient);
         }
+        List<Patient> patients = new ArrayList<>(patientHashMap.values());
+
+
         PatientsViewAdapter patientsViewAdapter = new PatientsViewAdapter(patients,this);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         patientRecyclerview.setAdapter(patientsViewAdapter);

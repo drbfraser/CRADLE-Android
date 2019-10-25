@@ -39,6 +39,7 @@ import com.cradletrial.cradlevhtapp.view.ui.settings.SettingsActivity;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.threeten.bp.LocalDateTime;
 import org.threeten.bp.ZonedDateTime;
 
 import java.io.UnsupportedEncodingException;
@@ -124,29 +125,31 @@ public class ReferralDialogFragment extends DialogFragment  {
                 button.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        try {
-                            post("https://smsneptuneapp.herokuapp.com/sms", new  Callback(){
-
-                                @Override
-                                public void onFailure(Call call, IOException e) {
-                                    e.printStackTrace();
-                                }
-
-                                @Override
-                                public void onResponse(Call call, Response response) throws IOException {
-                                    getActivity().runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            mTo.setText("");
-                                            mBody.setText("");
-//                                            Toast.makeText(getApplicationContext(),"SMS Sent!", Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                                }
-                            });
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                        //todo remove this from here and only call when http call is a success. Just for testing
+                        currentReading.setReferredToHealthCentre("Neptune 5 Star",ZonedDateTime.now());
+//                        try {
+//                            post("https://smsneptuneapp.herokuapp.com/sms", new  Callback(){
+//
+//                                @Override
+//                                public void onFailure(Call call, IOException e) {
+//                                    e.printStackTrace();
+//                                }
+//
+//                                @Override
+//                                public void onResponse(Call call, Response response) throws IOException {
+//                                    getActivity().runOnUiThread(new Runnable() {
+//                                        @Override
+//                                        public void run() {
+//                                            mTo.setText("");
+//                                            mBody.setText("");
+////                                            Toast.makeText(getApplicationContext(),"SMS Sent!", Toast.LENGTH_SHORT).show();
+//                                        }
+//                                    });
+//                                }
+//                            });
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
                     }
                 });
             }
