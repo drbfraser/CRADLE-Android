@@ -57,7 +57,7 @@
                 android:id="@+id/imgReferred"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="8dp"
                 android:visibility="visible"
                 app:layout_constraintStart_toStartOf="@+id/imgNotUploaded"
                 app:layout_constraintTop_toBottomOf="@+id/tvNotUploaded"
@@ -82,7 +82,7 @@
                 android:id="@+id/imgFollowUp"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="8dp"
                 android:visibility="visible"
                 app:layout_constraintStart_toStartOf="@+id/imgReferred"
                 app:layout_constraintTop_toBottomOf="@+id/txtReferred"
@@ -107,7 +107,7 @@
                 android:id="@+id/imgRecheckVitals"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="8dp"
                 android:visibility="visible"
                 app:layout_constraintStart_toStartOf="@+id/imgFollowUp"
                 app:layout_constraintTop_toBottomOf="@+id/txtFollowUp"
@@ -138,7 +138,6 @@
                 android:text="@string/reading"
                 android:textColor="@color/black"
                 android:textSize="24sp"
-                android:textStyle="bold"
                 android:visibility="visible"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -200,14 +199,13 @@
                 android:id="@+id/textView20"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:layout_marginBottom="8dp"
+                android:layout_marginTop="8dp"
                 android:text="@string/heart_rate"
                 android:textColor="@color/black"
                 android:textSize="12sp"
+                android:paddingBottom="16dp"
                 android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="@+id/textView18"
+                app:layout_constraintStart_toStartOf="@+id/textView19"
                 app:layout_constraintTop_toBottomOf="@+id/textView19" />
 
             <TextView
@@ -234,7 +232,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="10"
-                app:layout_constraintBottom_toBottomOf="@+id/textView20"
                 app:layout_constraintStart_toEndOf="@+id/textView20"
                 app:layout_constraintTop_toTopOf="@+id/textView20" />
 
@@ -273,7 +270,6 @@
                 android:textSize="12sp"
                 android:visibility="gone"
                 app:backgroundTint="@color/colorPrimaryLight"
-                app:layout_constraintBottom_toBottomOf="@+id/view"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/view"
                 app:layout_constraintTop_toBottomOf="@+id/txtRecheckVitals" />

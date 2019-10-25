@@ -111,7 +111,7 @@ public class PatientProfileActivity extends AppCompatActivity {
                 myReadings.add(reading);
             }
         }        // set adapter
-        listAdapter = new ReadingRecyclerViewAdapter(myReadings,this);
+        listAdapter = new ReadingRecyclerViewAdapter(myReadings);
 
         listAdapter.setOnClickElementListener(new ReadingRecyclerViewAdapter.OnClickElement() {
             @Override

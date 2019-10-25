@@ -25,7 +25,7 @@ import java.util.List;
 public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecyclerViewAdapter.MyViewHolder> {
 
     private List<Reading> readings;
-    private Context context;
+    private RecyclerView recyclerView;
 
     public interface OnClickElement {
         void onClick(long readingId);
@@ -35,11 +35,8 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
     }
     private OnClickElement onClickElementListener;
 
-    public ReadingRecyclerViewAdapter(List<Reading> readings, Context context) {
+    public ReadingRecyclerViewAdapter(List<Reading> readings) {
         this.readings = readings;
-        Log.d("bugg","size of listL "+readings.size());
-        this.context = context;
-
             }
 
 
@@ -56,7 +53,6 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder myViewHolder, int i) {
         Reading currReading = readings.get(i);
-        Log.d("bugg", "onbind referral: " + currReading.isReferredToHealthCentre() + " " + currReading.readingId + " " + i);
 
         ReadingAnalysis analysis = ReadingAnalysis.analyze(currReading);
 
@@ -67,11 +63,14 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
 
         if (currReading.isNeedRecheckVitals()) {
             myViewHolder.retakeVitalButton.setVisibility(View.VISIBLE);
+            myViewHolder.retakeVitalButton.setOnClickListener(view -> onClickElementListener.onClickRecheckReading(currReading.readingId));
         }
         myViewHolder.trafficLight.setImageResource(ReadingAnalysisViewSupport.getColorCircleImageId(analysis));
         myViewHolder.arrow.setImageResource(ReadingAnalysisViewSupport.getArrowImageId(analysis));
 
-        ConstraintLayout v = myViewHolder.layout;
+        View v = myViewHolder.view;
+        myViewHolder.cardView.setOnClickListener(view -> onClickElementListener.onClick(currReading.readingId));
+
         //upload button
         setVisibilityForImageAndText(v, R.id.imgNotUploaded, R.id.tvNotUploaded, !currReading.isUploaded());
 
@@ -121,6 +120,12 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         TextView tv = v.findViewById(textViewId);
         tv.setVisibility( show ? View.VISIBLE : View.GONE);
     }
+    // Store ref to recycler
+    @Override
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        this.recyclerView = recyclerView;
+    }
 
     @Override
     public int getItemCount() {
@@ -131,13 +136,20 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         onClickElementListener = obs;
     }
 
+    private void onClick(View view) {
+        int itemPosition = recyclerView.getChildLayoutPosition(view);
+        long readingId = readings.get(itemPosition).readingId;
+        if (onClickElementListener != null) {
+            onClickElementListener.onClick(readingId);
+        }
+    }
      static class MyViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
         TextView readingDate, assessmentDate, sysBP, diaBP,heartRate,diagnosis,treatment,other;
         ImageView trafficLight, arrow;
         Button retakeVitalButton;
-        CardView readingCardView;
-        ConstraintLayout layout;
+        View view;
+        CardView cardView;
          MyViewHolder(View v) {
             super(v);
             readingDate = v.findViewById(R.id.readingDate);
@@ -151,8 +163,8 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             trafficLight = v.findViewById(R.id.readingTrafficLight);
             arrow = v.findViewById(R.id.readingArrow);
             retakeVitalButton = v.findViewById(R.id.newReadingButton);
-            readingCardView = v.findViewById(R.id.readingCardview);
-            layout = v.findViewById(R.id.readingLayout);
+            view = v;
+            cardView = v.findViewById(R.id.readingCardview);
         }
     }
 }
