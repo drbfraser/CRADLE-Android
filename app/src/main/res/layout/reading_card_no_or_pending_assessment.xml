@@ -23,104 +23,111 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <android.support.constraint.ConstraintLayout
+            android:id="@+id/readingLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <ImageView
-                android:id="@+id/imgNotUploaded2"
+                android:id="@+id/imgNotUploaded"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="8dp"
+                android:visibility="visible"
                 app:layout_constraintStart_toEndOf="@+id/view"
                 app:layout_constraintTop_toBottomOf="@+id/textView33"
                 app:srcCompat="@drawable/upload"
-                tools:visibility="gone" />
+                tools:visibility="visible" />
 
             <TextView
-                android:id="@+id/tvNotUploaded2"
+                android:id="@+id/tvNotUploaded"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
                 android:text="Not yet uploaded to server"
                 android:textSize="12sp"
-                app:layout_constraintBottom_toBottomOf="@+id/imgNotUploaded"
+                android:visibility="visible"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/imgNotUploaded2"
-                app:layout_constraintTop_toTopOf="@+id/imgNotUploaded2"
-                app:layout_constraintVertical_bias="1.0"
-                tools:visibility="gone" />
+                app:layout_constraintStart_toEndOf="@+id/imgNotUploaded"
+                app:layout_constraintTop_toTopOf="@+id/imgNotUploaded"
+                tools:visibility="visible" />
 
             <ImageView
-                android:id="@+id/imgReferred2"
+                android:id="@+id/imgReferred"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
-                android:layout_marginTop="8dp"
-                app:layout_constraintStart_toStartOf="@+id/imgNotUploaded2"
-                app:layout_constraintTop_toBottomOf="@+id/tvNotUploaded2"
+                android:layout_marginTop="4dp"
+                android:visibility="visible"
+                app:layout_constraintStart_toStartOf="@+id/imgNotUploaded"
+                app:layout_constraintTop_toBottomOf="@+id/tvNotUploaded"
                 app:srcCompat="@drawable/hospital"
-                tools:visibility="gone" />
+                tools:visibility="visible" />
 
             <TextView
-                android:id="@+id/txtReferred2"
-                android:layout_width="wrap_content"
+                android:id="@+id/txtReferred"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
                 android:textSize="12sp"
-                app:layout_constraintBottom_toBottomOf="@+id/imgReferred"
-                app:layout_constraintEnd_toEndOf="@+id/tvNotUploaded2"
-                app:layout_constraintStart_toEndOf="@+id/imgReferred2"
-                app:layout_constraintTop_toTopOf="@+id/imgReferred2"
-                app:layout_constraintVertical_bias="1.0"
+                android:visibility="visible"
+                app:layout_constraintEnd_toEndOf="@+id/tvNotUploaded"
+                app:layout_constraintStart_toEndOf="@+id/imgReferred"
+                app:layout_constraintTop_toTopOf="@+id/imgReferred"
                 tools:text="Referred to {{Health Centre}}"
-                tools:visibility="gone" />
+                tools:visibility="visible" />
 
             <ImageView
-                android:id="@+id/imgFollowUp2"
+                android:id="@+id/imgFollowUp"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
-                android:layout_marginTop="8dp"
-                app:layout_constraintStart_toEndOf="@+id/view"
-                app:layout_constraintTop_toBottomOf="@+id/txtReferred2"
+                android:layout_marginTop="4dp"
+                android:visibility="visible"
+                app:layout_constraintStart_toStartOf="@+id/imgReferred"
+                app:layout_constraintTop_toBottomOf="@+id/txtReferred"
                 app:srcCompat="@mipmap/followup"
-                tools:visibility="gone" />
+                tools:visibility="visible" />
 
             <TextView
-                android:id="@+id/txtFollowUp2"
-                android:layout_width="wrap_content"
+                android:id="@+id/txtFollowUp"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="Follow-up needed"
                 android:textSize="12sp"
                 android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="@+id/imgFollowUp"
-                app:layout_constraintStart_toEndOf="@+id/imgFollowUp2"
-                app:layout_constraintTop_toTopOf="@+id/imgFollowUp2"
-                app:layout_constraintVertical_bias="1.0"
-                tools:visibility="gone" />
+                android:visibility="visible"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/imgFollowUp"
+                app:layout_constraintTop_toTopOf="@+id/imgFollowUp"
+                tools:visibility="visible" />
 
             <ImageView
-                android:id="@+id/imgRecheckVitals2"
+                android:id="@+id/imgRecheckVitals"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
-                android:layout_marginTop="8dp"
-                app:layout_constraintStart_toStartOf="@+id/imgFollowUp2"
-                app:layout_constraintTop_toBottomOf="@+id/txtFollowUp2"
+                android:layout_marginTop="4dp"
+                android:visibility="visible"
+                app:layout_constraintStart_toStartOf="@+id/imgFollowUp"
+                app:layout_constraintTop_toBottomOf="@+id/txtFollowUp"
                 app:srcCompat="@drawable/clock"
-                tools:visibility="gone" />
+                tools:visibility="visible" />
 
             <TextView
-                android:id="@+id/txtRecheckVitals2"
+                android:id="@+id/txtRecheckVitals"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="4dp"
                 android:textSize="12sp"
                 android:textStyle="bold"
+                android:visibility="visible"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/imgRecheckVitals2"
-                app:layout_constraintTop_toTopOf="@+id/imgRecheckVitals2"
+                app:layout_constraintStart_toEndOf="@+id/imgRecheckVitals"
+                app:layout_constraintTop_toTopOf="@+id/imgRecheckVitals"
                 tools:text="Recheck vitals {{when to recheck}}"
-                tools:visibility="gone" />
+                tools:visibility="visible" />
 
             <TextView
                 android:id="@+id/textView14"
@@ -132,6 +139,7 @@
                 android:textColor="@color/black"
                 android:textSize="24sp"
                 android:textStyle="bold"
+                android:visibility="visible"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -268,8 +276,7 @@
                 app:layout_constraintBottom_toBottomOf="@+id/view"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/view"
-                app:layout_constraintTop_toBottomOf="@+id/txtRecheckVitals2" />
-
+                app:layout_constraintTop_toBottomOf="@+id/txtRecheckVitals" />
 
 
         </android.support.constraint.ConstraintLayout>

@@ -3,6 +3,7 @@ package com.cradletrial.cradlevhtapp.viewmodel;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -52,24 +53,70 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder myViewHolder, int i) {
         Reading currReading = readings.get(i);
-        Log.d("bugg","onbind referral: "+currReading.isReferredToHealthCentre()+ " "+currReading.readingId + " "+ i);
+        Log.d("bugg", "onbind referral: " + currReading.isReferredToHealthCentre() + " " + currReading.readingId + " " + i);
 
         ReadingAnalysis analysis = ReadingAnalysis.analyze(currReading);
 
         myViewHolder.readingDate.setText(DateUtil.getConciseDateString(currReading.dateTimeTaken));
-        myViewHolder.sysBP.setText(currReading.bpSystolic+"");
-        myViewHolder.diaBP.setText(currReading.bpDiastolic+"");
-        myViewHolder.heartRate.setText(currReading.heartRateBPM+"");
+        myViewHolder.sysBP.setText(currReading.bpSystolic + "");
+        myViewHolder.diaBP.setText(currReading.bpDiastolic + "");
+        myViewHolder.heartRate.setText(currReading.heartRateBPM + "");
 
-        if(currReading.isNeedRecheckVitals()){
+        if (currReading.isNeedRecheckVitals()) {
             myViewHolder.retakeVitalButton.setVisibility(View.VISIBLE);
         }
         myViewHolder.trafficLight.setImageResource(ReadingAnalysisViewSupport.getColorCircleImageId(analysis));
         myViewHolder.arrow.setImageResource(ReadingAnalysisViewSupport.getArrowImageId(analysis));
 
+        ConstraintLayout v = myViewHolder.layout;
+        //upload button
+        setVisibilityForImageAndText(v, R.id.imgNotUploaded, R.id.tvNotUploaded, !currReading.isUploaded());
+
+        //referral
+        setVisibilityForImageAndText(v, R.id.imgReferred, R.id.txtReferred, currReading.isReferredToHealthCentre());
+        if (currReading.isReferredToHealthCentre()) {
+            String message;
+            if (currReading.referralHealthCentre != null && currReading.referralHealthCentre.length() > 0) {
+                message = v.getContext().getString(R.string.reading_referred_to_health_centre, currReading.referralHealthCentre);
+            } else {
+                message = v.getContext().getString(R.string.reading_referred_to_health_centre_unknown);
+            }
+
+            TextView tv = v.findViewById(R.id.txtReferred);
+            tv.setText(message);
+        }
+
+
+        // populate: follow-up
+        setVisibilityForImageAndText(v, R.id.imgFollowUp, R.id.txtFollowUp, currReading.isFlaggedForFollowup());
+
+        // populate: recheck vitals
+        setVisibilityForImageAndText(v, R.id.imgRecheckVitals, R.id.txtRecheckVitals, currReading.isNeedRecheckVitals());
+        if (currReading.isNeedRecheckVitals()) {
+            String message;
+            if (currReading.isNeedRecheckVitalsNow()) {
+                message = v.getContext().getString(R.string.reading_recheck_vitals_now);
+            } else {
+                long minutes = currReading.getMinutesUntilNeedRecheckVitals();
+                if (minutes == 1) {
+                    message = v.getContext().getString(R.string.reading_recheck_vitals_in_one_minute);
+                } else {
+                    message = v.getContext().getString(R.string.reading_recheck_vitals_in_minutes, minutes);
+                }
+            }
+
+            TextView tvRecheckVitals = v.findViewById(R.id.txtRecheckVitals);
+            tvRecheckVitals.setText(message);
+        }
         //todo: setup on click listner for cardview and open the summary page
 
+    }
+    private void setVisibilityForImageAndText(View v, int imageViewId, int textViewId, boolean show) {
+        ImageView iv = v.findViewById(imageViewId);
+        iv.setVisibility( show ? View.VISIBLE : View.GONE);
 
+        TextView tv = v.findViewById(textViewId);
+        tv.setVisibility( show ? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -83,6 +130,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         ImageView trafficLight, arrow;
         Button retakeVitalButton;
         CardView readingCardView;
+        ConstraintLayout layout;
          MyViewHolder(View v) {
             super(v);
             readingDate = v.findViewById(R.id.readingDate);
@@ -97,6 +145,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             arrow = v.findViewById(R.id.readingArrow);
             retakeVitalButton = v.findViewById(R.id.newReadingButton);
             readingCardView = v.findViewById(R.id.readingCardview);
+            layout = v.findViewById(R.id.readingLayout);
         }
     }
 }
