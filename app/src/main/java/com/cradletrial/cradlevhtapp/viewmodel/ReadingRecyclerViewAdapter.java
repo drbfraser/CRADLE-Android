@@ -57,9 +57,9 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         ReadingAnalysis analysis = ReadingAnalysis.analyze(currReading);
 
         myViewHolder.readingDate.setText(DateUtil.getConciseDateString(currReading.dateTimeTaken));
-        myViewHolder.sysBP.setText(currReading.bpSystolic + "");
-        myViewHolder.diaBP.setText(currReading.bpDiastolic + "");
-        myViewHolder.heartRate.setText(currReading.heartRateBPM + "");
+        myViewHolder.sysBP.setText(new StringBuilder().append(currReading.bpSystolic).append("").toString());
+        myViewHolder.diaBP.setText(new StringBuilder().append(currReading.bpDiastolic).append("").toString());
+        myViewHolder.heartRate.setText(new StringBuilder().append(currReading.heartRateBPM).append("").toString());
 
         if (currReading.isNeedRecheckVitals()) {
             myViewHolder.retakeVitalButton.setVisibility(View.VISIBLE);
