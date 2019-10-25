@@ -109,6 +109,7 @@ public class ReferralDialogFragment extends DialogFragment  {
         // Get the layout inflater
         LayoutInflater inflater = requireActivity().getLayoutInflater();
 
+
         // Use the Builder class for convenient dialog construction
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setView(inflater.inflate(R.layout.referral_dialog, null))
@@ -126,30 +127,31 @@ public class ReferralDialogFragment extends DialogFragment  {
                     @Override
                     public void onClick(View v) {
                         //todo remove this from here and only call when http call is a success. Just for testing
-                        currentReading.setReferredToHealthCentre("Neptune 5 Star",ZonedDateTime.now());
-//                        try {
-//                            post("https://smsneptuneapp.herokuapp.com/sms", new  Callback(){
-//
-//                                @Override
-//                                public void onFailure(Call call, IOException e) {
-//                                    e.printStackTrace();
-//                                }
-//
-//                                @Override
-//                                public void onResponse(Call call, Response response) throws IOException {
-//                                    getActivity().runOnUiThread(new Runnable() {
-//                                        @Override
-//                                        public void run() {
-//                                            mTo.setText("");
-//                                            mBody.setText("");
-////                                            Toast.makeText(getApplicationContext(),"SMS Sent!", Toast.LENGTH_SHORT).show();
-//                                        }
-//                                    });
-//                                }
-//                            });
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
+                       // currentReading.setReferredToHealthCentre("Neptune 5 Star",ZonedDateTime.now());
+                        try {
+                            post("https://smsneptuneapp.herokuapp.com/sms", new  Callback(){
+
+                                @Override
+                                public void onFailure(Call call, IOException e) {
+                                    e.printStackTrace();
+                                }
+
+                                @Override
+                                public void onResponse(Call call, Response response) throws IOException {
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                          //  mTo.setText("");
+                                           // mBody.setText("");
+                                            Log.d("buggg",response.message());
+                                            Toast.makeText(getContext(),"SMS Sent!", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                                }
+                            });
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 });
             }
@@ -323,9 +325,7 @@ public class ReferralDialogFragment extends DialogFragment  {
 
     Call post(String url, Callback callback) throws IOException {
         RequestBody formBody = new FormBody.Builder()
-//                .add("To", mTo.getText().toString())
-//                .add("Body", mBody.getText().toString())
-                .add("To", "17785528410")
+                .add("To", selectedHealthCentreSmsPhoneNumber)
                 .add("Body", buildSMSMessage())
 
                 .build();
