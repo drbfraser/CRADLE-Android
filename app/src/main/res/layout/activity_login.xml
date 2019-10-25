@@ -12,11 +12,13 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="64dp"
+        android:layout_marginTop="48dp"
         android:layout_marginEnd="32dp"
-        android:layout_marginBottom="64dp"
-        app:cardCornerRadius="32dp"
+        android:layout_marginBottom="48dp"
+        app:cardCornerRadius="16dp"
         app:cardElevation="4dp"
+        app:cardPreventCornerOverlap="true"
+        app:cardUseCompatPadding="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -45,12 +47,14 @@
                 android:id="@+id/textView25"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="64dp"
-                android:layout_marginTop="72dp"
+                android:layout_marginTop="64dp"
+                android:layout_marginEnd="72dp"
                 android:text="Log In"
                 android:textColor="@color/black"
-                android:textSize="36sp"
+                android:textSize="30sp"
                 android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.39"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textView16" />
 
@@ -61,7 +65,7 @@
                 android:layout_marginTop="32dp"
                 android:text="Email"
                 android:textColor="@color/black"
-                android:textSize="18sp"
+                android:textSize="14sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="@+id/textView25"
                 app:layout_constraintTop_toBottomOf="@+id/textView25" />
@@ -73,28 +77,31 @@
                 android:layout_marginTop="32dp"
                 android:text="Password"
                 android:textColor="@color/black"
-                android:textSize="18sp"
+                android:textSize="14sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="@+id/editText"
                 app:layout_constraintTop_toBottomOf="@+id/editText" />
 
-            <EditText
+            <android.support.v7.widget.AppCompatEditText
                 android:id="@+id/editText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:ems="10"
+                android:backgroundTint="@color/colorPrimaryLight"
+                android:textCursorDrawable="@null"
                 android:hint="bfraser@sfu.ca"
                 android:inputType="textEmailAddress"
                 android:singleLine="true"
                 app:layout_constraintStart_toStartOf="@+id/textView26"
                 app:layout_constraintTop_toBottomOf="@+id/textView26" />
 
-            <EditText
+            <android.support.v7.widget.AppCompatEditText
                 android:id="@+id/editText2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:ems="10"
+                android:backgroundTint="@color/colorPrimaryLight"
                 android:hint="*********"
                 android:inputType="textPassword"
                 android:singleLine="true"
@@ -102,13 +109,12 @@
                 app:layout_constraintTop_toBottomOf="@+id/textView27" />
 
             <Button
-                android:id="@+id/button"
+                android:id="@+id/loginButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@color/colorPrimaryLight"
                 android:text="Go"
                 app:backgroundTint="@color/colorPrimaryLight"
-                app:cornerRadius="8dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="@+id/editText2"
                 app:layout_constraintTop_toBottomOf="@+id/editText2" />
