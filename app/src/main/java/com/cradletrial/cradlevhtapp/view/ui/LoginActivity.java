@@ -2,8 +2,11 @@ package com.cradletrial.cradlevhtapp.view.ui;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -42,6 +45,7 @@ public class LoginActivity extends AppCompatActivity {
     private void setupLogin() {
         EditText emailET = findViewById(R.id.emailEditText);
         EditText passwordET = findViewById(R.id.passwordEditText);
+        TextView errorText = findViewById(R.id.invalidLoginText);
         Button loginbuttoon = findViewById(R.id.loginButton);
         loginbuttoon.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -71,7 +75,7 @@ public class LoginActivity extends AppCompatActivity {
                     finish();
                 }, error -> {
                     Toast.makeText(LoginActivity.this," Invalid credentials",Toast.LENGTH_LONG).show();
-                    passwordET.setText("");
+                    errorText.setVisibility(View.VISIBLE);
                     progressDialog.cancel();
                 });
                 queue.add(jsonObjectRequest);
