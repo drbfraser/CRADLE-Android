@@ -17,19 +17,19 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        setupLogin();
+       // setupLogin();
     }
 
-    private void setupLogin() {
-        TextView loginbuttoon = findViewById(R.id.loginButton);
-        loginbuttoon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                Intent intent = new Intent(LoginActivity.this, IntroActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        });
-    }
+//    private void setupLogin() {
+//        TextView loginbuttoon = findViewById(R.id.loginButton);
+//        loginbuttoon.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                //todo change it so that we authenticate the user first and than go to the intro page.
+//                Intent intent = new Intent(LoginActivity.this, IntroActivity.class);
+//                startActivity(intent);
+//                finish();
+//            }
+//        });
+//    }
 }
