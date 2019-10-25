@@ -12,7 +12,7 @@
         android:layout_marginTop="32dp"
         android:clickable="true"
         android:foreground="?android:attr/selectableItemBackground"
-        app:cardBackgroundColor="@color/dashboard_card_background"
+        app:cardBackgroundColor="@color/colorOffWhite"
         app:cardCornerRadius="8dp"
         app:cardElevation="4dp"
         app:layout_constraintBottom_toBottomOf="parent"

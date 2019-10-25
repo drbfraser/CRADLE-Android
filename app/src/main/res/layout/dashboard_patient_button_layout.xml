@@ -6,14 +6,13 @@
     android:layout_height="wrap_content">
 
     <android.support.v7.widget.CardView
-
         android:id="@+id/patientCardview"
         android:layout_width="@dimen/dashboard_card_height"
         android:layout_height="@dimen/dashboard_card_width"
         android:layout_marginTop="32dp"
         android:clickable="true"
         android:foreground="?android:attr/selectableItemBackground"
-        app:cardBackgroundColor="@color/dashboard_card_background"
+        app:cardBackgroundColor="@color/colorOffWhite"
         app:cardCornerRadius="8dp"
         app:cardElevation="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -42,9 +41,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:elevation="4dp"
-        android:fontFamily="sans-serif"
+        style="@style/DashboardCardText"
         android:text="@string/patients"
-        android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageButton" />
