@@ -42,7 +42,7 @@
         android:layout_height="wrap_content"
         android:elevation="4dp"
         android:fontFamily="sans-serif"
-        android:text="Readings"
+        android:text="New"
         android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
