@@ -241,5 +241,9 @@
     <string name="medical_history">Medical History</string>
     <string name="drug_history">Drug History</string>
     <string name="take_new_reading">Take New Reading</string>
+    <string name="log_in">Log In</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="go">Go</string>
 
 </resources>
