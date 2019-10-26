@@ -6,7 +6,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import com.cradletrial.cradlevhtapp.R;
-import com.cradletrial.cradlevhtapp.view.ui.LoginActivity;
 
 public class SplashActivity extends AppCompatActivity {
 

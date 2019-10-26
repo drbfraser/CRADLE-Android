@@ -190,12 +190,12 @@ public class UploadActivity extends TabActivityBase {
         }
         // do a small sanity check on key
         // note: Many errors in key will seem valid here! No way to validate.
-        try {
-            HybridFileEncrypter.convertRsaPemToPublicKey(settings.getRsaPubKey());
-        } catch (Exception e) {
-            Toast.makeText(this, "Error: Invalid public key in settings: \r\n" + e.getMessage(), Toast.LENGTH_LONG).show();
-            return;
-        }
+//        try {
+//            HybridFileEncrypter.convertRsaPemToPublicKey(settings.getRsaPubKey());
+//        } catch (Exception e) {
+//            Toast.makeText(this, "Error: Invalid public key in settings: \r\n" + e.getMessage(), Toast.LENGTH_LONG).show();
+//            return;
+//        }
 
         // discover un-uploaded readings
         List<Reading> readingsToUpload = getReadingsToUpload();
