@@ -20,7 +20,7 @@
         <item name="android:textSize">64sp</item>
     </style>
 
-    <style name="DashboardCardText" parent="AppTheme">
+    <style name="DashboardCardText">
         <item name="android:fontFamily">sans-serif</item>
         <item name="android:textSize">24sp</item>
     </style>
@@ -45,12 +45,6 @@
 
     <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="android:windowBackground">@drawable/splash_screen</item>
-    </style>
-
-
-    <style name="PrimaryFontTitle" parent="@android:style/TextAppearance.Small">
-        <item name="android:textSize">50sp</item>
-        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
     </style>
 
 </resources>
