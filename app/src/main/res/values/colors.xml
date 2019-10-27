@@ -3,8 +3,9 @@
 
     <color name="colorPrimary">#15152b</color>
     <color name="colorPrimaryDark">#15152b</color>
-    <color name="colorAccent">#D81B60</color>
+    <color name="colorAccent">#84ced4</color>
     <color name="colorPrimaryLight">#84ced4</color>
+    <color name="error">#D81B60</color>
 
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>

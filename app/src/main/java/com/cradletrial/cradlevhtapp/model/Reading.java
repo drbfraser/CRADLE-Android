@@ -140,6 +140,7 @@ public class Reading {
         try {
             readingVal.put("readingId",reading.serverReadingId);
             readingVal.put("dateLastSaved", reading.dateLastSaved);
+            readingVal.put("dateTimeTaken",reading.dateTimeTaken);
             readingVal.put("bpSystolic", reading.bpSystolic);
             readingVal.put("bpDiastolic", reading.bpDiastolic);
             readingVal.put("heartRateBPM", reading.heartRateBPM);

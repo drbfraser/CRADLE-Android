@@ -18,7 +18,7 @@ public class Settings {
     // Temporary Upload Defaults:
     // todo: remove temporary upload defaults once 2D bar-code reading in place for settings.
     private static String LINEFEED = "\r\n";
-    public static String DEFAULT_SERVER_URL = "http://cradle-platform.herokuapp.com/";
+    public static String DEFAULT_SERVER_URL = "http://cmpt373.csil.sfu.ca:8088/";
     public static String DEFAULT_SERVER_USERNAME = "user";
     public static String DEFAULT_SERVER_USERPASSWORD = "just4testing";
     public static String DEFAULT_SERVER_RSA = "-----BEGIN PUBLIC KEY-----                                      " + LINEFEED +
@@ -83,6 +83,7 @@ public class Settings {
     private String readingServerUrl = "http://cmpt373.csil.sfu.ca:8088/api/patient/reading";
 //    private String referallServerUrl= "http://cmpt373.csil.sfu.ca:8088/api/referral";
     private String referallServerUrl= "http://10.0.2.2:5000/api/referral";
+    public static String authServerUrl = "http://cmpt373.csil.sfu.ca:8088/api/user/auth";
     private String serverUserName;
     private String serverPassword;
     private String rsaPubKey;
@@ -199,6 +200,10 @@ public class Settings {
         } else {
             return serverPassword;
         }
+    }
+
+    public String getAuthServerUrl() {
+        return authServerUrl;
     }
 
     public String getReferallServerUrl() {

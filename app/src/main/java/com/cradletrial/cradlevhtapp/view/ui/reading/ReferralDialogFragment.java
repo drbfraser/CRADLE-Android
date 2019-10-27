@@ -109,6 +109,7 @@ public class ReferralDialogFragment extends DialogFragment  {
         // Get the layout inflater
         LayoutInflater inflater = requireActivity().getLayoutInflater();
 
+
         // Use the Builder class for convenient dialog construction
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setView(inflater.inflate(R.layout.referral_dialog, null))
@@ -122,11 +123,16 @@ public class ReferralDialogFragment extends DialogFragment  {
             @Override
             public void onShow(DialogInterface dialogInterface) {
                 Button button = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
-                button.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        //todo remove this from here and only call when http call is a success. Just for testing
-                        currentReading.setReferredToHealthCentre("Neptune 5 Star",ZonedDateTime.now());
+
+                // brians code
+                button.setOnClickListener(view -> sendSMSMessage(dialog));
+
+                // matts code
+//                button.setOnClickListener(new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        //todo remove this from here and only call when http call is a success. Just for testing
+//                       // currentReading.setReferredToHealthCentre("Neptune 5 Star",ZonedDateTime.now());
 //                        try {
 //                            post("https://smsneptuneapp.herokuapp.com/sms", new  Callback(){
 //
@@ -140,9 +146,10 @@ public class ReferralDialogFragment extends DialogFragment  {
 //                                    getActivity().runOnUiThread(new Runnable() {
 //                                        @Override
 //                                        public void run() {
-//                                            mTo.setText("");
-//                                            mBody.setText("");
-////                                            Toast.makeText(getApplicationContext(),"SMS Sent!", Toast.LENGTH_SHORT).show();
+//                                          //  mTo.setText("");
+//                                           // mBody.setText("");
+//                                            Log.d("buggg",response.message());
+//                                            Toast.makeText(getContext(),"SMS Sent!", Toast.LENGTH_SHORT).show();
 //                                        }
 //                                    });
 //                                }
@@ -150,8 +157,8 @@ public class ReferralDialogFragment extends DialogFragment  {
 //                        } catch (IOException e) {
 //                            e.printStackTrace();
 //                        }
-                    }
-                });
+//                    }
+//                });
             }
         });
 
@@ -198,61 +205,52 @@ public class ReferralDialogFragment extends DialogFragment  {
     private void sendSMSMessage(Dialog dialog) {
         Log.d("MySms","sending message");
 
-
-
-
-
-
-
-
-
-
 //        // source: https://mobiforge.com/design-development/sms-messaging-android
 //
 //        // check for data errors:
-//        if (settings.getHealthCentreNames().size() == 0) {
-//            tvSendingStatus.setText("ERROR: No known health centres.\nPlease go to settings to enter them.");
-//            tvSendingStatus.setVisibility(View.VISIBLE);
-//           // return;
-//        }
+        if (settings.getHealthCentreNames().size() == 0) {
+            tvSendingStatus.setText("ERROR: No known health centres.\nPlease go to settings to enter them.");
+            tvSendingStatus.setVisibility(View.VISIBLE);
+           // return;
+        }
 //
 //        // Must send SMS via intent to default SMS program due to PlayStore policy preventing
 //        // apps from sending SMS directly.
-//        //composeMmsMessage(smsTextMessage, selectedHealthCentreSmsPhoneNumber);
-//        //onFinishedSendingSMS(dialog);
+        composeMmsMessage(smsTextMessage, selectedHealthCentreSmsPhoneNumber);
+        onFinishedSendingSMS(dialog);
 //
 //        // Json for comments
-//        ProgressDialog  progressDialog = new ProgressDialog(getActivity());
-//        progressDialog.setTitle("Uploading Referral" );
-//        progressDialog.setCancelable(false);
-//        progressDialog.show();
-//
-//        RequestQueue queue = Volley.newRequestQueue(getActivity());
-//        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(JsonObjectRequest.Method.POST, settings.getReferallServerUrl(), getReferralJson(),
-//                response -> {
-//                    Log.d("bugg","delivered "+response.toString()+ "   server: "+settings.getReferallServerUrl());
-//                    progressDialog.cancel();
-//                    Toast.makeText(getActivity(),"Referral sent to "+settings.getReferallServerUrl(),Toast.LENGTH_LONG).show();
-//                    onFinishedSendingSMS(dialog);
-//                    dismiss();
-//
-//                }, error -> {
-//            String json = null;
-//            try {
-//                if(error.networkResponse!=null) {
-//                    json = new String(error.networkResponse.data, HttpHeaderParser.parseCharset(error.networkResponse.headers));
-//                }
-//                progressDialog.cancel();
-//                Log.d("bugg","referal error: "+json);
-//                Toast.makeText(getActivity(),"json: "+json,Toast.LENGTH_LONG).show();
-//            } catch (UnsupportedEncodingException e) {
-//                e.printStackTrace();
-//            }
-//            Log.d("bugg","Delivery error: "+json);
-//
-//        });
-//        queue.add(jsonObjectRequest);
-//
+        ProgressDialog  progressDialog = new ProgressDialog(getActivity());
+        progressDialog.setTitle("Uploading Referral" );
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+
+        RequestQueue queue = Volley.newRequestQueue(getActivity());
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(JsonObjectRequest.Method.POST, settings.getReferallServerUrl(), getReferralJson(),
+                response -> {
+                    Log.d("bugg","delivered "+response.toString()+ "   server: "+settings.getReferallServerUrl());
+                    progressDialog.cancel();
+                    Toast.makeText(getActivity(),"Referral sent to "+settings.getReferallServerUrl(),Toast.LENGTH_LONG).show();
+                    onFinishedSendingSMS(dialog);
+                    dismiss();
+
+                }, error -> {
+            String json = null;
+            try {
+                if(error.networkResponse!=null) {
+                    json = new String(error.networkResponse.data, HttpHeaderParser.parseCharset(error.networkResponse.headers));
+                }
+                progressDialog.cancel();
+                Log.d("bugg","referal error: "+json);
+                Toast.makeText(getActivity(),"json: "+json,Toast.LENGTH_LONG).show();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            Log.d("bugg","Delivery error: "+json);
+
+        });
+        queue.add(jsonObjectRequest);
+
 //        // prep UI
 //        // TODO: put in XML
 //        tvSendingStatus.setText("Sending referral.\nPlease wait...");
@@ -323,9 +321,7 @@ public class ReferralDialogFragment extends DialogFragment  {
 
     Call post(String url, Callback callback) throws IOException {
         RequestBody formBody = new FormBody.Builder()
-//                .add("To", mTo.getText().toString())
-//                .add("Body", mBody.getText().toString())
-                .add("To", "17785528410")
+                .add("To", selectedHealthCentreSmsPhoneNumber)
                 .add("Body", buildSMSMessage())
 
                 .build();
@@ -375,9 +371,9 @@ public class ReferralDialogFragment extends DialogFragment  {
 //    }
 
     private void onFinishedSendingSMS(Dialog dialog) {
-        //currentReading.setReferredToHealthCentre(selectedHealthCentreName, ZonedDateTime.now());
-       // currentReading.referralComment = enteredComment;
-       // callback.sentTextMessage(smsTextMessage);
+        currentReading.setReferredToHealthCentre(selectedHealthCentreName, ZonedDateTime.now());
+        currentReading.referralComment = enteredComment;
+        callback.sentTextMessage(smsTextMessage);
         dialog.dismiss();
     }
 

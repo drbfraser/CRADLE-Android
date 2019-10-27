@@ -14,7 +14,7 @@ import com.android.volley.toolbox.JsonRequest;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
-class MultipartRequest extends JsonRequest<NetworkResponse> {
+public class MultipartRequest extends JsonRequest<NetworkResponse> {
     private final Response.Listener<NetworkResponse> mListener;
     private final Response.ErrorListener mErrorListener;
     private final Map<String, String> mHeaders;

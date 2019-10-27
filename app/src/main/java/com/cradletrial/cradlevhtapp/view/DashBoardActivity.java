@@ -13,6 +13,7 @@ import android.view.View;
 import com.cradletrial.cradlevhtapp.R;
 import com.cradletrial.cradlevhtapp.view.ui.settings.SettingsActivity;
 
+import static com.cradletrial.cradlevhtapp.view.ReadingsListActivity.READING_ACTIVITY_DONE;
 import static com.cradletrial.cradlevhtapp.view.TabActivityBase.TAB_ACTIVITY_BASE_SETTINGS_DONE;
 
 public class DashBoardActivity extends AppCompatActivity  implements View.OnClickListener {
@@ -77,8 +78,8 @@ public class DashBoardActivity extends AppCompatActivity  implements View.OnClic
         switch (v.getId()){
             case R.id.readingCardView:
                 Log.d("bugg","reading clicked");
-                startActivity(ReadingsListActivity.makeIntent(this));
-                break;
+                Intent intent = ReadingActivity.makeIntentForNewReading(DashBoardActivity.this);
+                startActivityForResult(intent, READING_ACTIVITY_DONE);                break;
             case R.id.patientCardview:
                 Log.d("bugg","patient clicked");
                 startActivity(PatientsActivity.makeIntent(this));
