@@ -62,39 +62,25 @@ public class Patient implements Serializable {
         return symptomsString;
     }
 
-    public static String toJSon(Patient person) {
+    public JSONObject getPatientInfoJSon() {
         try {
-            JSONObject parent = new JSONObject();
             JSONObject patientInfoObject = new JSONObject();
-            JSONObject referralObject = new JSONObject();
-            JSONObject readingObject = new JSONObject();
-            JSONObject filloutObject = new JSONObject();
+            patientInfoObject.put("patientId", patientId );
+            patientInfoObject.put("patientName", patientName );
+            patientInfoObject.put("patientAge", ageYears.toString() );
+            patientInfoObject.put("gestationalAgeUnit", gestationalAgeUnit.toString() );
+            patientInfoObject.put("gestationalAgeValue", gestationalAgeValue );
+            patientInfoObject.put("villageNumber", villageNumber );
+            patientInfoObject.put("patientSex", patientSex.toString() );
 
-            parent.put("personal-info", patientInfoObject);
-            patientInfoObject.put("patientId", person.patientId.toString() );
-            patientInfoObject.put("patientName", person.patientName.toString() );
-            patientInfoObject.put("patientAge", person.ageYears.toString() );
-            patientInfoObject.put("gestationalAgeUnit", person.gestationalAgeUnit.toString() );
-            patientInfoObject.put("gestationalAgeValue", person.gestationalAgeValue.toString() );
-            patientInfoObject.put("villageNumber", person.villageNumber.toString() );
-            patientInfoObject.put("patientSex", person.patientSex.toString() );
-
-            String symptomsString = person.genSymptomString();
-            patientInfoObject.put("symptoms", symptomsString);
-
-            parent.put("referral", referralObject);
-            patientInfoObject.put("key", "string");
-
-            parent.put("reading", readingObject);
-            patientInfoObject.put("key", "string");
-
-            parent.put("fillout", filloutObject);
-            patientInfoObject.put("key", "string");
-
-            Log.d("Json", parent.toString(2));
-
-            return parent.toString();
-
+            String isPregnantString = "false";
+            if(isPregnant) {
+                isPregnantString = "true";
+            }
+            patientInfoObject.put("isPregnant", isPregnantString);
+//
+//            String symptomsString = genSymptomString();
+//            patientInfoObject.put("symptoms", symptomsString);
 
         } catch (JSONException e) {
             e.printStackTrace();

@@ -310,29 +310,29 @@ public class ReferralDialogFragment extends DialogFragment  {
 //        sms.sendMultipartTextMessage(selectedHealthCentreSmsPhoneNumber, null, parts, sentPIs, deliveredPIs);
     }
 
-    private String buildSMSMessage()
-    {
-        String message = currentReading.getReferralString();
-        message += "\n\nVHT Comment: ";
-        message += enteredComment;
+//    private String buildSMSMessage()
+//    {
+//        String message = currentReading.getReferralString();
+//        message += "\n\nVHT Comment: ";
+//        message += enteredComment;
+//
+//        return message;
+//    }
 
-        return message;
-    }
-
-    Call post(String url, Callback callback) throws IOException {
-        RequestBody formBody = new FormBody.Builder()
-                .add("To", selectedHealthCentreSmsPhoneNumber)
-                .add("Body", buildSMSMessage())
-
-                .build();
-        Request request = new Request.Builder()
-                .url(url)
-                .post(formBody)
-                .build();
-        Call response = mClient.newCall(request);
-        response.enqueue(callback);
-        return response;
-    }
+//    Call post(String url, Callback callback) throws IOException {
+//        RequestBody formBody = new FormBody.Builder()
+//                .add("To", selectedHealthCentreSmsPhoneNumber)
+//                .add("Body", buildSMSMessage())
+//
+//                .build();
+//        Request request = new Request.Builder()
+//                .url(url)
+//                .post(formBody)
+//                .build();
+//        Call response = mClient.newCall(request);
+//        response.enqueue(callback);
+//        return response;
+//    }
 
 //    private void onReceiveSMSSentCallback(Dialog dialog, int resultCode) {
 //        String message = null;
@@ -561,21 +561,21 @@ public class ReferralDialogFragment extends DialogFragment  {
         return message;
     }
     private JSONObject getReferralJson (){
-        JSONObject patientVal = new JSONObject();
-        Patient patient = currentReading.patient;
-        try {
-
-            patientVal.put("patientId", patient.patientId);
-            patientVal.put("patientName", patient.patientName);
-            patientVal.put("patientAge", patient.ageYears);
-            patientVal.put("gestationalAgeUnit", patient.gestationalAgeUnit);
-            patientVal.put("gestationalAgeValue", patient.gestationalAgeValue);
-            patientVal.put("villageNumber", patient.villageNumber);
-            patientVal.put("patientSex", patient.patientSex);
-            patientVal.put("isPregnant", "false");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        JSONObject patientVal = currentReading.patient.getPatientInfoJSon();
+//        Patient patient = currentReading.patient;
+//        try {
+//
+//            patientVal.put("patientId", patient.patientId);
+//            patientVal.put("patientName", patient.patientName);
+//            patientVal.put("patientAge", patient.ageYears);
+//            patientVal.put("gestationalAgeUnit", patient.gestationalAgeUnit);
+//            patientVal.put("gestationalAgeValue", patient.gestationalAgeValue);
+//            patientVal.put("villageNumber", patient.villageNumber);
+//            patientVal.put("patientSex", patient.patientSex);
+//            patientVal.put("isPregnant", "false");
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
         JSONObject readingVal = new JSONObject();
         try {
             readingVal.put("readingId",currentReading.serverReadingId);
