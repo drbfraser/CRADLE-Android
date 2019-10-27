@@ -58,6 +58,8 @@ import okhttp3.Response;
 
 
 public class ReferralDialogFragment extends DialogFragment  {
+
+    public static final String TWILIO_PHONE_NUMBER = "19389999452";
     // Data Model
     @Inject
     Settings settings;
@@ -216,7 +218,7 @@ public class ReferralDialogFragment extends DialogFragment  {
 //
 //        // Must send SMS via intent to default SMS program due to PlayStore policy preventing
 //        // apps from sending SMS directly.
-        composeMmsMessage(smsTextMessage, selectedHealthCentreSmsPhoneNumber);
+        composeMmsMessage(smsTextMessage, TWILIO_PHONE_NUMBER);
         onFinishedSendingSMS(dialog);
 //
 //        // Json for comments
