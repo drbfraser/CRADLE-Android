@@ -27,6 +27,7 @@ public class LoginActivity extends AppCompatActivity {
 
     public static final String LOGIN_EMAIL = "loginEmail";
     public static final String LOGIN_PASSWORD = "loginPassword";
+    private int loginCount =3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +60,13 @@ public class LoginActivity extends AppCompatActivity {
         Button loginbuttoon = findViewById(R.id.loginButton);
 
         loginbuttoon.setOnClickListener(v -> {
+
+            //todo remove this from final version
+            if(loginCount <=0){
+                startIntroActivity();
+                return;
+            }
+            loginCount--;
             if (emailET.getText().equals("")) {
                 Toast.makeText(LoginActivity.this, "Empty Email", Toast.LENGTH_SHORT).show();
                 return;
