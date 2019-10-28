@@ -24,8 +24,8 @@
 
     <ImageButton
         android:id="@+id/imageButton"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="90dp"
+        android:layout_height="90dp"
         android:adjustViewBounds="true"
         android:background="@drawable/round_background"
         android:cropToPadding="true"
