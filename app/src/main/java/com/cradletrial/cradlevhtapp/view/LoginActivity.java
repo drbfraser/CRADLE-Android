@@ -60,6 +60,8 @@ public class LoginActivity extends AppCompatActivity {
         Button loginbuttoon = findViewById(R.id.loginButton);
 
         loginbuttoon.setOnClickListener(v -> {
+
+            //todo remove this from final version
             if(LOGIN_COUNT <=0){
                 startIntroActivity();
                 return;
