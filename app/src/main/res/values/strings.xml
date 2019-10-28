@@ -246,5 +246,6 @@
     <string name="password">Password</string>
     <string name="go">Go</string>
     <string name="login_error">Invalid Email or Password.</string>
+    <string name="empty_text_for_patient">You dont have any patients right now.\n Go to the dashboard to create a new reading.</string>
 
 </resources>
