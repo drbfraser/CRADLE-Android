@@ -8,7 +8,9 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cradletrial.cradlevhtapp.R;
@@ -74,8 +76,6 @@ public class PatientsActivity extends TabActivityBase {
         if(getSupportActionBar()!=null){
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
-        // bottom bar nav in base class
-        //setupBottomBarNavigation();
 
         // buttons
         setupAddSampleDataButton();
@@ -100,7 +100,13 @@ public class PatientsActivity extends TabActivityBase {
             patientHashMap.put(reading.patient.patientId,reading.patient);
         }
         List<Patient> patients = new ArrayList<>(patientHashMap.values());
+        TextView textView = findViewById(R.id.emptyView);
+        if(patients.size() == 0){
+            textView.setVisibility(View.VISIBLE);
+        } else {
+            textView.setVisibility(View.GONE);
 
+        }
 
         PatientsViewAdapter patientsViewAdapter = new PatientsViewAdapter(patients,this);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
