@@ -1,8 +1,5 @@
 package com.cradletrial.cradlevhtapp.view.ui.intro;
 
-import com.cradletrial.cradlevhtapp.model.Reading;
-import com.cradletrial.cradlevhtapp.model.ReadingManager;
-
 /**
  * For INTRO wizard
  * This interface must be implemented by activities that contain this

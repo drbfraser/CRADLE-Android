@@ -37,11 +37,6 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity
-            android:name=".view.ReadingsListActivity"
-            android:label="@string/app_name"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
             android:name=".view.PatientsActivity"
             android:label="@string/title_activity_patients"
             android:screenOrientation="portrait"

@@ -7,7 +7,7 @@ import com.cradletrial.cradlevhtapp.model.ReadingAnalysis;
 import com.cradletrial.cradlevhtapp.utilitiles.Util;
 
 /**
- *  Get UI related info about an analysis
+ * Get UI related info about an analysis
  */
 public class ReadingAnalysisViewSupport {
     public static int getColorTextId(ReadingAnalysis analysis) {
@@ -27,6 +27,7 @@ public class ReadingAnalysisViewSupport {
                 return Color.BLUE;
         }
     }
+
     public static int getColorCircleImageId(ReadingAnalysis analysis) {
         switch (analysis) {
             case NONE:

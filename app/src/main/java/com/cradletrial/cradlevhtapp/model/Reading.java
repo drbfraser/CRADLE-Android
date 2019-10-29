@@ -9,7 +9,6 @@ import com.cradletrial.cradlevhtapp.utilitiles.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.threeten.bp.ZonedDateTime;
-import org.threeten.bp.format.DateTimeFormatter;
 import org.threeten.bp.temporal.ChronoUnit;
 
 import java.util.ArrayList;
@@ -19,42 +18,19 @@ import java.util.UUID;
 
 /**
  * Basic data about a currentReading.
- *
+ * <p>
  * For format and processing ideas, see: https://www.hl7.org/fhir/overview-dev.html
  */
 public class Reading {
 
+    public static final int MANUAL_USER_ENTRY_SYSTOLIC = 1;
+    public static final int MANUAL_USER_ENTRY_DIASTOLIC = 2;
+    public static final int MANUAL_USER_ENTRY_HEARTRATE = 4;
     /**
      * Constants
      */
     private static final int DAYS_PER_MONTH = 30;
     private static final int DAYS_PER_WEEK = 7;
-
-    public static final int MANUAL_USER_ENTRY_SYSTOLIC = 1;
-    public static final int MANUAL_USER_ENTRY_DIASTOLIC = 2;
-    public static final int MANUAL_USER_ENTRY_HEARTRATE = 4;
-
-
-
-    /**
-     * Types
-     */
-    public enum GestationalAgeUnit {
-        GESTATIONAL_AGE_UNITS_NONE,
-        GESTATIONAL_AGE_UNITS_WEEKS,
-        GESTATIONAL_AGE_UNITS_MONTHS,
-//        GESTATIONAL_AGE_UNITS_LASTMENSTRUALPERIOD,
-    }
-    public class WeeksAndDays {
-        public final int weeks;
-        public final int days;
-
-        public WeeksAndDays(int weeks, int days) {
-            this.weeks = weeks;
-            this.days = days;
-        }
-    }
-
     /**
      * Stored Values
      */
@@ -63,7 +39,6 @@ public class Reading {
     public ZonedDateTime dateLastSaved;
     //todo later change the reading Id to be same for offline and online
     public String serverReadingId;
-
     // patient info
 //    public String patientId;
 //    public String patientName;
@@ -72,38 +47,30 @@ public class Reading {
 //    public GestationalAgeUnit gestationalAgeUnit;
 //    public String gestationalAgeValue;
     public Patient patient = new Patient();
-
-
     // reading
     public String pathToPhoto;
     public Integer bpSystolic;  // first number (top)
     public Integer bpDiastolic; // second number (bottom)
     public Integer heartRateBPM;
-
     public ZonedDateTime dateTimeTaken;
     public String gpsLocationOfReading;
     public ZonedDateTime dateUploadedToServer;
-
     // retest & follow-up
     public List<Long> retestOfPreviousReadingIds;   // oldest first
     public ZonedDateTime dateRecheckVitalsNeeded;
-    private Boolean isFlaggedForFollowup;
-
     // referrals
     public ZonedDateTime referralMessageSendTime;
     public String referralHealthCentre;
     public String referralComment;
-
     // app metrics
     public String appVersion;
     public String deviceInfo;
     public float totalOcrSeconds;
+    transient public boolean userHasSelectedNoSymptoms;
+    private Boolean isFlaggedForFollowup;
     private int manuallyChangeOcrResults; // constants above
-
     // temporary values
     transient private long temporaryFlags = 0;
-    transient public boolean userHasSelectedNoSymptoms;
-
 
     /**
      * Constructors & Factories
@@ -114,13 +81,13 @@ public class Reading {
 
     }
 
-
     /**
      * This functions puts Reading into a json object which we can use to send to the server
+     *
      * @param reading reading to put into json object.
      * @return a json string
      */
-    public static String getJsonObj(Reading reading){
+    public static String getJsonObj(Reading reading) {
         JSONObject patientVal = new JSONObject();
         Patient patient = reading.patient;
         try {
@@ -136,11 +103,11 @@ public class Reading {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-         JSONObject readingVal = new JSONObject();
+        JSONObject readingVal = new JSONObject();
         try {
-            readingVal.put("readingId",reading.serverReadingId);
+            readingVal.put("readingId", reading.serverReadingId);
             readingVal.put("dateLastSaved", reading.dateLastSaved);
-            readingVal.put("dateTimeTaken",reading.dateTimeTaken);
+            readingVal.put("dateTimeTaken", reading.dateTimeTaken);
             readingVal.put("bpSystolic", reading.bpSystolic);
             readingVal.put("bpDiastolic", reading.bpDiastolic);
             readingVal.put("heartRateBPM", reading.heartRateBPM);
@@ -162,6 +129,37 @@ public class Reading {
         }
 
         return mainObj.toString();
+    }
+
+    public static Reading makeNewReading(ZonedDateTime now) {
+        // setup basic info
+        Reading r = new Reading();
+        r.generateServerReadingId();
+        r.dateTimeTaken = now;
+        r.appVersion = String.format("%s = %s", BuildConfig.VERSION_CODE, BuildConfig.VERSION_NAME);
+        r.deviceInfo = Build.MANUFACTURER + ", " + Build.MODEL;
+        return r;
+    }
+
+    public static Reading makeToConfirmReading(Reading source, ZonedDateTime now) {
+        // copy fields
+        Reading r = Reading.makeNewReading(now);
+//        r.patientId = source.patientId;
+//        r.patientName = source.patientName;
+//        r.ageYears = source.ageYears;
+//        r.symptoms = new ArrayList<>();
+//        r.symptoms.addAll(source.symptoms);
+//        r.gestationalAgeUnit = source.gestationalAgeUnit;
+//        r.gestationalAgeValue = source.gestationalAgeValue;
+        r.patient = source.patient;
+        // don't require user to re-check the 'no symptoms' box
+        if (r.patient.symptoms.isEmpty()) {
+            r.userHasSelectedNoSymptoms = true;
+        }
+
+        // record it's a retest
+        r.addIdToRetestOfPreviousReadings(source.retestOfPreviousReadingIds, source.readingId);
+        return r;
     }
 
     @Override
@@ -215,39 +213,8 @@ public class Reading {
 //         return message;
 //    }
 
-    public static Reading makeNewReading(ZonedDateTime now) {
-        // setup basic info
-        Reading r = new Reading();
-        r.generateServerReadingId();
-        r.dateTimeTaken = now;
-        r.appVersion = String.format("%s = %s", BuildConfig.VERSION_CODE, BuildConfig.VERSION_NAME);
-        r.deviceInfo = Build.MANUFACTURER + ", " + Build.MODEL;
-        return r;
-    }
-
     private void generateServerReadingId() {
         serverReadingId = UUID.randomUUID().toString();
-    }
-
-    public static Reading makeToConfirmReading(Reading source, ZonedDateTime now) {
-        // copy fields
-        Reading r = Reading.makeNewReading(now);
-//        r.patientId = source.patientId;
-//        r.patientName = source.patientName;
-//        r.ageYears = source.ageYears;
-//        r.symptoms = new ArrayList<>();
-//        r.symptoms.addAll(source.symptoms);
-//        r.gestationalAgeUnit = source.gestationalAgeUnit;
-//        r.gestationalAgeValue = source.gestationalAgeValue;
-        r.patient = source.patient;
-        // don't require user to re-check the 'no symptoms' box
-        if (r.patient.symptoms.isEmpty()) {
-            r.userHasSelectedNoSymptoms = true;
-        }
-
-        // record it's a retest
-        r.addIdToRetestOfPreviousReadings(source.retestOfPreviousReadingIds, source.readingId);
-        return r;
     }
 
     /**
@@ -256,8 +223,7 @@ public class Reading {
     public WeeksAndDays getGestationalAgeInWeeksAndDays() {
         // Handle not set:
         if (patient.gestationalAgeUnit == null || patient.gestationalAgeValue == null
-            || patient.gestationalAgeValue.trim().length() == 0)
-        {
+                || patient.gestationalAgeValue.trim().length() == 0) {
             return null;
         }
 
@@ -270,7 +236,7 @@ public class Reading {
                         days % DAYS_PER_WEEK);
             case GESTATIONAL_AGE_UNITS_WEEKS:
                 int weeks = Util.stringToIntOr0(patient.gestationalAgeValue);
-                return new WeeksAndDays(weeks,0);
+                return new WeeksAndDays(weeks, 0);
             case GESTATIONAL_AGE_UNITS_NONE:
                 return null;
             default:
@@ -279,11 +245,11 @@ public class Reading {
         }
     }
 
-
     // referred
     public boolean isReferredToHealthCentre() {
         return referralMessageSendTime != null;
     }
+
     public void setReferredToHealthCentre(String healthCentre, ZonedDateTime time) {
         referralHealthCentre = healthCentre;
         referralMessageSendTime = time;
@@ -293,6 +259,7 @@ public class Reading {
     public boolean isFlaggedForFollowup() {
         return Util.isTrue(isFlaggedForFollowup);
     }
+
     public void setFlaggedForFollowup(Boolean flaggedForFollowup) {
         isFlaggedForFollowup = flaggedForFollowup;
     }
@@ -306,6 +273,7 @@ public class Reading {
     public boolean isRetestOfPreviousReading() {
         return retestOfPreviousReadingIds != null && retestOfPreviousReadingIds.size() > 0;
     }
+
     public void addIdToRetestOfPreviousReadings(List<Long> retestOfPreviousReadingIds, Long readingId) {
         if (this.retestOfPreviousReadingIds == null) {
             this.retestOfPreviousReadingIds = new ArrayList<>();
@@ -319,13 +287,16 @@ public class Reading {
         // dd most recent
         this.retestOfPreviousReadingIds.add(readingId);
     }
+
     public boolean isNeedRecheckVitals() {
         return dateRecheckVitalsNeeded != null;
     }
+
     public boolean isNeedRecheckVitalsNow() {
         return isNeedRecheckVitals()
                 && dateRecheckVitalsNeeded.isBefore(ZonedDateTime.now());
     }
+
     public long getMinutesUntilNeedRecheckVitals() {
         if (!isNeedRecheckVitals()) {
             throw new UnsupportedOperationException("No number of minutes for no recheck");
@@ -362,9 +333,11 @@ public class Reading {
     public void clearManualChangeOcrResultsFlags() {
         manuallyChangeOcrResults = 0;
     }
+
     public void setAManualChangeOcrResultsFlags(int flagMask) {
         manuallyChangeOcrResults |= flagMask;
     }
+
     public int getManualChangeOcrResults() {
         return manuallyChangeOcrResults;
     }
@@ -378,7 +351,7 @@ public class Reading {
         missing |= patient.ageYears == null;
         missing |= patient.gestationalAgeUnit == null;
         missing |= (patient.gestationalAgeValue == null
-                    && patient.gestationalAgeUnit != GestationalAgeUnit.GESTATIONAL_AGE_UNITS_NONE);
+                && patient.gestationalAgeUnit != GestationalAgeUnit.GESTATIONAL_AGE_UNITS_NONE);
         missing |= heartRateBPM == null;
         missing |= bpDiastolic == null;
         missing |= bpSystolic == null;
@@ -390,26 +363,49 @@ public class Reading {
         return patient.symptoms.isEmpty() && !userHasSelectedNoSymptoms && dateLastSaved == null;
     }
 
-    public static class ComparatorByDateReverse implements Comparator <Reading>{
-        @Override
-        public int compare(Reading r1, Reading r2) {
-            return r2.dateTimeTaken.compareTo(r1.dateTimeTaken);
-        }
-    }
-
     /**
      * Temporary Flags
      */
     public void setATemporaryFlag(long flagMask) {
         temporaryFlags |= flagMask;
     }
+
     public void clearATemporaryFlag(long flagMask) {
         temporaryFlags &= ~flagMask;
     }
+
     public boolean isATemporaryFlagSet(long flagMask) {
         return (temporaryFlags & flagMask) != 0;
     }
+
     public void clearAllTemporaryFlags() {
         temporaryFlags = 0;
+    }
+
+    /**
+     * Types
+     */
+    public enum GestationalAgeUnit {
+        GESTATIONAL_AGE_UNITS_NONE,
+        GESTATIONAL_AGE_UNITS_WEEKS,
+        GESTATIONAL_AGE_UNITS_MONTHS,
+//        GESTATIONAL_AGE_UNITS_LASTMENSTRUALPERIOD,
+    }
+
+    public static class ComparatorByDateReverse implements Comparator<Reading> {
+        @Override
+        public int compare(Reading r1, Reading r2) {
+            return r2.dateTimeTaken.compareTo(r1.dateTimeTaken);
+        }
+    }
+
+    public class WeeksAndDays {
+        public final int weeks;
+        public final int days;
+
+        public WeeksAndDays(int weeks, int days) {
+            this.weeks = weeks;
+            this.days = days;
+        }
     }
 }

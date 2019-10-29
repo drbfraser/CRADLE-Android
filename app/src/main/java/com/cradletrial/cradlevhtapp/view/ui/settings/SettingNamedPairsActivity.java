@@ -2,9 +2,9 @@ package com.cradletrial.cradlevhtapp.view.ui.settings;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.MenuItem;
 
 import com.cradletrial.cradlevhtapp.R;
@@ -12,20 +12,14 @@ import com.cradletrial.cradlevhtapp.view.ui.settings.ui.settingnamedpairs.Settin
 
 
 public class SettingNamedPairsActivity extends AppCompatActivity {
-    public enum SelectPair {
-        SELECT_PAIR_HEALTH_CENTRES,
-        SELECT_PAIR_UPLOAD_SERVERS
-    }
+    private static final String EXTRA_SELECT = "pick which named pairs to select";
+    private SelectPair selectedPair;
 
     public static Intent makeLaunchIntent(Context context, SelectPair selectPair) {
         Intent intent = new Intent(context, SettingNamedPairsActivity.class);
         intent.putExtra(EXTRA_SELECT, selectPair);
         return intent;
     }
-
-    private SelectPair selectedPair;
-
-    private static final String EXTRA_SELECT = "pick which named pairs to select";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,5 +52,10 @@ public class SettingNamedPairsActivity extends AppCompatActivity {
 
     public SelectPair getSelectedPair() {
         return selectedPair;
+    }
+
+    public enum SelectPair {
+        SELECT_PAIR_HEALTH_CENTRES,
+        SELECT_PAIR_UPLOAD_SERVERS
     }
 }

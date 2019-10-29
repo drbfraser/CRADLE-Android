@@ -1,6 +1,5 @@
 package com.cradletrial.cradlevhtapp.utilitiles;
 
-import com.cradletrial.cradlevhtapp.model.Reading;
 import com.cradletrial.cradlevhtapp.model.Settings;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -19,6 +18,21 @@ import org.threeten.bp.format.DateTimeFormatter;
 import java.lang.reflect.Type;
 
 public class GsonUtil {
+    // Serialize/deserialize ZonedDateTime
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
+    private static final JsonDeserializer<ZonedDateTime> ZDT_DESERIALIZER = new JsonDeserializer<ZonedDateTime>() {
+        @Override
+        public ZonedDateTime deserialize(final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) throws JsonParseException {
+            return FORMATTER.parse(json.getAsString(), ZonedDateTime::from);
+        }
+    };
+    private static final JsonSerializer<ZonedDateTime> ZDT_SERIALIZER = new JsonSerializer<ZonedDateTime>() {
+        @Override
+        public JsonElement serialize(ZonedDateTime src, Type typeOfSrc, JsonSerializationContext context) {
+            return new JsonPrimitive(FORMATTER.format(src));
+        }
+    };
+
     public static <T> T cloneViaGson(T source, Class<T> sourceType) {
         Gson gson = makeGson();
         String json = gson.toJson(source);
@@ -39,21 +53,6 @@ public class GsonUtil {
                 .registerTypeAdapter(ZonedDateTime.class, ZDT_SERIALIZER)
                 .create();
     }
-
-    // Serialize/deserialize ZonedDateTime
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
-    private static final JsonDeserializer<ZonedDateTime> ZDT_DESERIALIZER = new JsonDeserializer<ZonedDateTime>() {
-        @Override
-        public ZonedDateTime deserialize(final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) throws JsonParseException {
-            return FORMATTER.parse(json.getAsString(), ZonedDateTime::from);
-        }
-    };
-    private static final JsonSerializer<ZonedDateTime> ZDT_SERIALIZER = new JsonSerializer<ZonedDateTime>() {
-        @Override
-        public JsonElement serialize(ZonedDateTime src, Type typeOfSrc, JsonSerializationContext context) {
-            return new JsonPrimitive(FORMATTER.format(src));
-        }
-    };
 
     public static <T> String getJson(T obj) {
         Gson gson = makeGson();

@@ -74,8 +74,10 @@ public class SettingNamedPairsFragment extends Fragment {
                             public void ok(Settings.NamedPair pair) {
                                 writePairToPrefs(pair);
                             }
+
                             @Override
-                            public void delete(Settings.NamedPair pair) {}
+                            public void delete(Settings.NamedPair pair) {
+                            }
                         }
                 );
                 newFragment.show(getFragmentManager(), "Settings");
@@ -102,7 +104,7 @@ public class SettingNamedPairsFragment extends Fragment {
     }
 
     /**
-     *  List View
+     * List View
      */
     private void setupReadingsRecyclerView() {
         recyclerView = getView().findViewById(R.id.list_pair_items);
@@ -137,6 +139,7 @@ public class SettingNamedPairsFragment extends Fragment {
                             public void ok(Settings.NamedPair pair) {
                                 writePairToPrefs(pair, position);
                             }
+
                             @Override
                             public void delete(Settings.NamedPair pair) {
                                 removePairFromPrefs(position);
@@ -156,7 +159,6 @@ public class SettingNamedPairsFragment extends Fragment {
     }
 
 
-
     /**
      * Access Shared Prefs
      */
@@ -164,6 +166,7 @@ public class SettingNamedPairsFragment extends Fragment {
         int numValues = settings.getHealthCentreNames().size();
         writePairToPrefs(pair, numValues);
     }
+
     private void writePairToPrefs(Settings.NamedPair pair, int position) {
         String spNumVals = Settings.PREF_KEY_NUM_HEALTH_CENTRES;
         String spNameBase = Settings.PREF_KEY_HEALTH_CENTRE_NAME_;
@@ -199,7 +202,7 @@ public class SettingNamedPairsFragment extends Fragment {
         SharedPreferences.Editor edit = sharedPreferences.edit();
 
         // shift ones after:
-        for (int targetIdx = position; targetIdx < numValues - 1; targetIdx ++) {
+        for (int targetIdx = position; targetIdx < numValues - 1; targetIdx++) {
             int sourceIdx = targetIdx + 1;
             String sourceName = sharedPreferences.getString(spNameBase + sourceIdx, "");
             String sourceValue = sharedPreferences.getString(spValueBase + sourceIdx, "");

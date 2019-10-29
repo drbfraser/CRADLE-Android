@@ -26,45 +26,29 @@ import java.util.List;
 /**
  * Perform object detection (7-Seg Digits) on a background thread.
  * Offers functions to:
- *   - put bounding boxes on an image overlay
- *   - return the number found in the 7-seg display
+ * - put bounding boxes on an image overlay
+ * - return the number found in the 7-seg display
  */
 public class OcrDigitDetector {
 
-    private static final String TAG = "OcrDigitDetector";
     public static final float FILTER_RESULT_BY_CENTER_PERCENT = 0.15f;
-    private Activity activity;
-    private Classifier detector;
-
+    private static final String TAG = "OcrDigitDetector";
     // Configuration values for the SSD model.
     private static final int NN_INPUT_SIZE = 200; //300;
     private static final boolean TF_OD_API_IS_QUANTIZED = true; // false; // true
     private static final String TF_OD_API_MODEL_FILE = "seven_seg_ssd.tflite";
     private static final String TF_OD_API_LABELS_FILE = "file:///android_asset/seven_seg_labelmap.txt";
-
     // Minimum detection confidence to track a detection.
     private static final float MINIMUM_CONFIDENCE = 0.5f;
     private static final boolean MAINTAIN_ASPECT = true;        // false
-
+    public static int g_blurRadiusREVISIT = 1;
+    private Activity activity;
+    private Classifier detector;
     // multi-threaded support:
     private Handler handler;
-
     // Resizing
     private Matrix frameToCropTransform;
     private Matrix cropToFrameTransform;
-
-    public static int g_blurRadiusREVISIT = 1;
-
-
-    public interface OnProcessImageDone {
-        void notifyOfExtractedText(String extractedText);
-        void notifyOfBoundingBoxes(List<Classifier.Recognition> recognitions);
-
-        // DEBUG ONLY
-        void notifyOfRawBoundingBoxes(Bitmap inputToNeuralNetBmp, List<Classifier.Recognition> recognitions);
-    }
-
-
 
 
     public OcrDigitDetector(Activity activity, int inputImageWidth, int inputImageHeight) {
@@ -79,7 +63,7 @@ public class OcrDigitDetector {
                             TF_OD_API_IS_QUANTIZED);
         } catch (final IOException e) {
             e.printStackTrace();
-            Log.e(TAG,"Exception initializing classifier!", e);
+            Log.e(TAG, "Exception initializing classifier!", e);
             Toast toast =
                     Toast.makeText(
                             activity.getApplicationContext(), "Classifier could not be initialized", Toast.LENGTH_SHORT);
@@ -99,11 +83,10 @@ public class OcrDigitDetector {
         frameToCropTransform.invert(cropToFrameTransform);
     }
 
-
-
     public void processImage(Bitmap image, OnProcessImageDone callback) {
 
-        Bitmap resizedImage = Bitmap.createBitmap(NN_INPUT_SIZE, NN_INPUT_SIZE, Bitmap.Config.ARGB_8888);;
+        Bitmap resizedImage = Bitmap.createBitmap(NN_INPUT_SIZE, NN_INPUT_SIZE, Bitmap.Config.ARGB_8888);
+        ;
         final Canvas canvas = new Canvas(resizedImage);
         canvas.drawBitmap(image, frameToCropTransform, null);
 
@@ -148,7 +131,7 @@ public class OcrDigitDetector {
             final List<Classifier.Recognition> mappedRecognitions = new LinkedList<>();
             for (Classifier.Recognition result : results) {
                 RectF location = result.getLocation();
-                if (location != null ){ //&& result.getConfidence() >= MINIMUM_CONFIDENCE) {
+                if (location != null) { //&& result.getConfidence() >= MINIMUM_CONFIDENCE) {
                     cropToFrameTransform.mapRect(location);
                     result.setLocation(location);
                     mappedRecognitions.add(result);
@@ -200,7 +183,6 @@ public class OcrDigitDetector {
 //                    }
 //                });
     }
-
 
     /*
         Results to Text
@@ -262,11 +244,20 @@ public class OcrDigitDetector {
         return text;
     }
 
-
     protected synchronized void runInBackground(final Runnable r) {
         if (handler != null) {
             handler.post(r);
         }
+    }
+
+
+    public interface OnProcessImageDone {
+        void notifyOfExtractedText(String extractedText);
+
+        void notifyOfBoundingBoxes(List<Classifier.Recognition> recognitions);
+
+        // DEBUG ONLY
+        void notifyOfRawBoundingBoxes(Bitmap inputToNeuralNetBmp, List<Classifier.Recognition> recognitions);
     }
 
 }

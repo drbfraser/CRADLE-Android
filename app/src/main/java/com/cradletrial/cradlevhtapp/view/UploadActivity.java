@@ -17,7 +17,6 @@ import com.cradletrial.cradlevhtapp.model.Reading;
 import com.cradletrial.cradlevhtapp.model.ReadingManager;
 import com.cradletrial.cradlevhtapp.model.Settings;
 import com.cradletrial.cradlevhtapp.utilitiles.DateUtil;
-import com.cradletrial.cradlevhtapp.utilitiles.HybridFileEncrypter;
 import com.cradletrial.cradlevhtapp.view.ui.network_volley.MultiReadingUploader;
 
 import org.threeten.bp.ZonedDateTime;
@@ -42,13 +41,13 @@ public class UploadActivity extends TabActivityBase {
 
     MultiReadingUploader multiUploader;
 
-    public static Intent makeIntent(Context context) {
-        return new Intent(context, UploadActivity.class);
-    }
-
     // set who we are for tab code
     public UploadActivity() {
         super(R.id.nav_upload);
+    }
+
+    public static Intent makeIntent(Context context) {
+        return new Intent(context, UploadActivity.class);
     }
 
     @Override
@@ -61,12 +60,12 @@ public class UploadActivity extends TabActivityBase {
         setContentView(R.layout.activity_upload);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        if(getSupportActionBar()!=null){
+        if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
         // bottom bar nav in base class
-       // setupBottomBarNavigation();
+        // setupBottomBarNavigation();
 
         // buttons
         setupUploadDataButton();
@@ -147,7 +146,7 @@ public class UploadActivity extends TabActivityBase {
         Button btnAbort = findViewById(R.id.btnStopUpload);
         View groupUploading = findViewById(R.id.layoutUploadingReadings);
 
-        btnStartUploading.setVisibility(doingUpload ? View.INVISIBLE: View.VISIBLE);
+        btnStartUploading.setVisibility(doingUpload ? View.INVISIBLE : View.VISIBLE);
         groupUploading.setVisibility(doingUpload ? View.VISIBLE : View.GONE);
         btnAbort.setVisibility(View.VISIBLE);
         if (!doingUpload) {
@@ -155,6 +154,7 @@ public class UploadActivity extends TabActivityBase {
         }
 
     }
+
     private void setErrorUiElementsVisible(int visible) {
         Button btnSkip = findViewById(R.id.btnSkip);
         btnSkip.setVisibility(visible);
@@ -269,8 +269,6 @@ public class UploadActivity extends TabActivityBase {
             }
         };
     }
-
-
 
 
 //    private void downloadPage() {

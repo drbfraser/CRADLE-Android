@@ -41,6 +41,17 @@ import javax.inject.Inject;
  */
 public class ConfirmDataFragment extends BaseFragment {
 
+    /**
+     * OCR
+     */
+    private static final int OCR_DEBUG_IDS_SCALED_IDX = 0;
+    private static final int OCR_DEBUG_IDS_RAW_IDX = 1;
+    private static final int OCR_DEBUG_IDS_TEXT_IDX = 2;
+    private static final int[][] OCR_DEBUG_IDS = {
+            {R.id.ivOcrScaled0, R.id.ivOcrRaw0, R.id.tvOcrText0},
+            {R.id.ivOcrScaled1, R.id.ivOcrRaw1, R.id.tvOcrText1},
+            {R.id.ivOcrScaled2, R.id.ivOcrRaw2, R.id.tvOcrText2},
+    };
     @Inject
     Settings settings;
     private boolean makingProgramaticChangeToVitals = false;
@@ -100,7 +111,7 @@ public class ConfirmDataFragment extends BaseFragment {
     }
 
     private void setupTextEdits() {
-        watchForUserTextEntry(R.id.etSystolic,  Reading.MANUAL_USER_ENTRY_SYSTOLIC);
+        watchForUserTextEntry(R.id.etSystolic, Reading.MANUAL_USER_ENTRY_SYSTOLIC);
         watchForUserTextEntry(R.id.etDiastolic, Reading.MANUAL_USER_ENTRY_DIASTOLIC);
         watchForUserTextEntry(R.id.etHeartRate, Reading.MANUAL_USER_ENTRY_HEARTRATE);
     }
@@ -109,7 +120,8 @@ public class ConfirmDataFragment extends BaseFragment {
         EditText et = getView().findViewById(id);
         et.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -119,7 +131,8 @@ public class ConfirmDataFragment extends BaseFragment {
             }
 
             @Override
-            public void afterTextChanged(Editable editable) {}
+            public void afterTextChanged(Editable editable) {
+            }
         });
     }
 
@@ -131,7 +144,6 @@ public class ConfirmDataFragment extends BaseFragment {
         });
     }
 
-
     @Override
     public boolean onMyBeingHidden() {
         // may not have created view yet.
@@ -140,7 +152,7 @@ public class ConfirmDataFragment extends BaseFragment {
         }
         currentReading.bpSystolic = getEditTextValue(R.id.etSystolic);
         currentReading.bpDiastolic = getEditTextValue(R.id.etDiastolic);
-        currentReading.heartRateBPM= getEditTextValue(R.id.etHeartRate);
+        currentReading.heartRateBPM = getEditTextValue(R.id.etHeartRate);
         return true;
     }
 
@@ -163,18 +175,6 @@ public class ConfirmDataFragment extends BaseFragment {
         }
     }
 
-
-    /**
-     * OCR
-     */
-    private static final int OCR_DEBUG_IDS_SCALED_IDX = 0;
-    private static final int OCR_DEBUG_IDS_RAW_IDX = 1;
-    private static final int OCR_DEBUG_IDS_TEXT_IDX = 2;
-    private static final int[][] OCR_DEBUG_IDS = {
-            {R.id.ivOcrScaled0, R.id.ivOcrRaw0, R.id.tvOcrText0},
-            {R.id.ivOcrScaled1, R.id.ivOcrRaw1, R.id.tvOcrText1},
-            {R.id.ivOcrScaled2, R.id.ivOcrRaw2, R.id.tvOcrText2},
-    };
     private void setupOcr() {
         if (getView() == null) {
             return;
@@ -182,12 +182,13 @@ public class ConfirmDataFragment extends BaseFragment {
 
         // show / hide OCR turned off warning
         TextView tvNoOcrWarning = getView().findViewById(R.id.tvOcrDisabled);
-        tvNoOcrWarning.setVisibility( settings.getOcrEnabled() ? View.GONE : View.VISIBLE);
+        tvNoOcrWarning.setVisibility(settings.getOcrEnabled() ? View.GONE : View.VISIBLE);
 
         // show / hide OCR debugging content
         View vDebug = getView().findViewById(R.id.groupDebugOcr);
-        vDebug.setVisibility( settings.getOcrDebugEnabled() ? View.VISIBLE : View.GONE);
+        vDebug.setVisibility(settings.getOcrDebugEnabled() ? View.VISIBLE : View.GONE);
     }
+
     private void doOcrOnCurrentImage() {
         if (!settings.getOcrEnabled()) {
             Log.i(TAG, "OCR Disabled; skipping OCR");
@@ -284,7 +285,7 @@ public class ConfirmDataFragment extends BaseFragment {
                 // put text into UI edit text
                 makingProgramaticChangeToVitals = true;
                 Util.ensure(settings.getOcrEnabled());
-                int[] textIds = { R.id.etSystolic, R.id.etDiastolic, R.id .etHeartRate };
+                int[] textIds = {R.id.etSystolic, R.id.etDiastolic, R.id.etHeartRate};
                 int etId = textIds[rowNumber];
                 EditText et = getView().findViewById(etId);
                 if (et.getText().toString().length() == 0) {
@@ -327,7 +328,7 @@ public class ConfirmDataFragment extends BaseFragment {
                 canvas.drawRect(location, paint);
 
                 // add text
-                String message = String.format("%s:%.0f%%", result.getTitle(), result.getConfidence()*100);
+                String message = String.format("%s:%.0f%%", result.getTitle(), result.getConfidence() * 100);
                 bt.drawText(canvas, result.getLocation().left, result.getLocation().top, message, paint);
             }
         }

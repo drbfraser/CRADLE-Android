@@ -264,8 +264,7 @@
             android:id="@+id/groupDebugOcr"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:constraint_referenced_ids="ivOcrScaled0, ivOcrScaled1, ivOcrScaled2, ivOcrRaw0, ivOcrRaw1, ivOcrRaw2, tvOcrText0, tvOcrText1, tvOcrText2, etBlurRadius, btnSetBlurSize"
-            />
+            app:constraint_referenced_ids="ivOcrScaled0, ivOcrScaled1, ivOcrScaled2, ivOcrRaw0, ivOcrRaw1, ivOcrRaw2, tvOcrText0, tvOcrText1, tvOcrText2, etBlurRadius, btnSetBlurSize" />
 
         <!--</android.support.constraint.ConstraintLayout>-->
 

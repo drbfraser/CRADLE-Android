@@ -8,7 +8,6 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.AppCompatButton;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,7 +29,7 @@ import org.threeten.bp.ZonedDateTime;
 import org.threeten.bp.temporal.ChronoUnit;
 
 /**
- *  Display summary and advice for currentReading.
+ * Display summary and advice for currentReading.
  */
 public class SummaryFragment extends BaseFragment {
 
@@ -69,7 +68,6 @@ public class SummaryFragment extends BaseFragment {
         hideKeyboard();
         updateUI();
     }
-
 
 
     @Override
@@ -130,7 +128,7 @@ public class SummaryFragment extends BaseFragment {
 
         // display "name, age @ ga"
         tv = getView().findViewById(R.id.txtPatientHeader);
-        tv.setText( getString(R.string.reading_name_age_ga, name, age, ga));
+        tv.setText(getString(R.string.reading_name_age_ga, name, age, ga));
 
         // patient id
         tv = getView().findViewById(R.id.txtPatientId);
@@ -189,7 +187,7 @@ public class SummaryFragment extends BaseFragment {
             String time = DateUtil.getDateString(reading.dateTimeTaken);
             String analysisText = analysis.getAnalysisText(getContext());
             tv = v.findViewById(R.id.txtReadingHeading);
-            tv.setText( getString(R.string.reading_time_summary,
+            tv.setText(getString(R.string.reading_time_summary,
                     time, analysisText));
             if (time.length() == 0) {
                 errorMessage += "- date/time of reading" + "\n";
@@ -243,13 +241,9 @@ public class SummaryFragment extends BaseFragment {
         String message = "";
         if (retestAnalysis.isRetestRecommendedNow()) {
             message = getString(R.string.brief_advice_retest_now);
-        }
-
-        else if (retestAnalysis.isRetestRecommendedIn15Min()) {
+        } else if (retestAnalysis.isRetestRecommendedIn15Min()) {
             message = getString(R.string.brief_advice_retest_after15);
-        }
-
-        else {
+        } else {
             ReadingAnalysis analysis = retestAnalysis.getMostRecentReadingAnalysis();
             message = analysis.getBriefAdviceText(getContext());
         }
@@ -276,7 +270,7 @@ public class SummaryFragment extends BaseFragment {
             currentReading.dateRecheckVitalsNeeded = ZonedDateTime.now();
         }
         // ..setup button
-        swNow.setOnClickListener( view -> {
+        swNow.setOnClickListener(view -> {
             currentReading.setATemporaryFlag(MASK_USER_HAS_CHANGED_RECHECK_OPTION);
             if (swNow.isChecked()) {
                 swIn15.setChecked(false);
@@ -320,8 +314,7 @@ public class SummaryFragment extends BaseFragment {
         if (retestAnalysis.isRetestRecommended()) {
             if (retestAnalysis.isRetestRecommendedNow()) {
                 tvRecommend.setText("Recheck vitals now is recommended");
-            }
-            else if (retestAnalysis.isRetestRecommendedIn15Min()) {
+            } else if (retestAnalysis.isRetestRecommendedIn15Min()) {
                 tvRecommend.setText("Recheck vitals in 15 minutes is recommended");
             } else {
                 Util.ensure(false);
@@ -342,10 +335,10 @@ public class SummaryFragment extends BaseFragment {
         ImageView ivReferralSent = getView().findViewById(R.id.ivReferralSent);
         TextView tv = getView().findViewById(R.id.txtReferralSent);
         if (currentReading.referralMessageSendTime == null) {
-            tv.setText( getString(R.string.reading_referral_notsent));
+            tv.setText(getString(R.string.reading_referral_notsent));
             ivReferralSent.setVisibility(View.GONE);
         } else {
-            tv.setText( getString(R.string.reading_referral_sent,
+            tv.setText(getString(R.string.reading_referral_sent,
                     currentReading.referralHealthCentre,
                     DateUtil.getFullDateString(currentReading.referralMessageSendTime)
             ));
@@ -372,7 +365,7 @@ public class SummaryFragment extends BaseFragment {
     private void updateUI_Followup(ReadingRetestAnalysis retestAnalysis) {
         Switch swFollowup = getView().findViewById(R.id.swFollowUpNeeded);
 
-        boolean needDefaultForFollowup=
+        boolean needDefaultForFollowup =
                 (!currentReading.isATemporaryFlagSet(MASK_USER_HAS_CHANGED_FOLLOW_UP))
                         && currentReading.dateLastSaved == null;
         boolean followupRecommended = retestAnalysis.getMostRecentReadingAnalysis().isRed();
@@ -417,9 +410,9 @@ public class SummaryFragment extends BaseFragment {
     }
 
 
-        /**
-         * Dialogs
-         */
+    /**
+     * Dialogs
+     */
     private void showReferralDialog() {
         // don't refer (and hence save!) if missing data
         if (currentReading.isMissingRequiredData()) {
@@ -434,6 +427,7 @@ public class SummaryFragment extends BaseFragment {
                 });
         newFragment.show(getFragmentManager(), "Referral");
     }
+
     private void displayMissingDataDialog() {
         // TODO: Put strings in xml
         AlertDialog.Builder dialog = new AlertDialog.Builder(getContext())

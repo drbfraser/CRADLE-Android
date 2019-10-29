@@ -1,6 +1,5 @@
 package com.cradletrial.cradlevhtapp.utilitiles;
 
-import android.support.v7.preference.EditTextPreference;
 import android.util.Log;
 
 import java.io.File;

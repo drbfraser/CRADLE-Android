@@ -65,6 +65,7 @@ public class DateUtil {
 
         return date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
     }
+
     public static String getISODateForFilename(ZonedDateTime date) {
         return getISODate(date).replace(":", ".");
     }

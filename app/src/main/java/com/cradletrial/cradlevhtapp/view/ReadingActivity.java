@@ -2,21 +2,18 @@ package com.cradletrial.cradlevhtapp.view;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
 import com.cradletrial.cradlevhtapp.R;
 import com.cradletrial.cradlevhtapp.dagger.MyApp;
-import com.cradletrial.cradlevhtapp.model.Patient.Patient;
 import com.cradletrial.cradlevhtapp.model.Reading;
 import com.cradletrial.cradlevhtapp.model.ReadingManager;
 import com.cradletrial.cradlevhtapp.utilitiles.GsonUtil;
@@ -25,42 +22,26 @@ import com.cradletrial.cradlevhtapp.view.ui.reading.BaseFragment;
 import com.cradletrial.cradlevhtapp.view.ui.reading.MyFragmentInteractionListener;
 import com.cradletrial.cradlevhtapp.view.ui.reading.SectionsPagerAdapter;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.threeten.bp.ZonedDateTime;
 
 import javax.inject.Inject;
 
 public class ReadingActivity
         extends AppCompatActivity
-        implements MyFragmentInteractionListener
-{
-    private enum LaunchReason {
-        LAUNCH_REASON_NEW,
-        LAUNCH_REASON_EDIT,
-        LAUNCH_REASON_RECHECK,
-        LAUNCH_REASON_NONE
-    }
-
+        implements MyFragmentInteractionListener {
     private static final String EXTRA_LAUNCH_REASON = "enum of why we launched";
     private static final String EXTRA_READING_ID = "ID of reading to load";
     private static final String EXTRA_START_TAB = "idx of tab to start on";
-
-    private ViewPager mPager;
-    private SectionsPagerAdapter mPagerAdapter;
-
-
     // Data Model
     @Inject
     ReadingManager readingManager;
-
+    private ViewPager mPager;
+    private SectionsPagerAdapter mPagerAdapter;
     // Reading object shared by all fragments:
     private LaunchReason reasonForLaunch = LaunchReason.LAUNCH_REASON_NONE;
     private Reading originalReading;
     private Reading currentReading;
     private int lastKnownTab = -1;
-
-
 
     static public Intent makeIntentForNewReading(Context context) {
         Intent intent = new Intent(context, ReadingActivity.class);
@@ -106,7 +87,7 @@ public class ReadingActivity
         Util.ensure(intent.hasExtra(EXTRA_LAUNCH_REASON));
         reasonForLaunch = (LaunchReason) intent.getSerializableExtra(EXTRA_LAUNCH_REASON);
 
-        long readingId= 0;
+        long readingId = 0;
         switch (reasonForLaunch) {
             case LAUNCH_REASON_NEW:
                 originalReading = null;
@@ -130,7 +111,6 @@ public class ReadingActivity
         }
     }
 
-
     /*
         Tabs
      */
@@ -143,7 +123,7 @@ public class ReadingActivity
         tabs.setupWithViewPager(mPager);
         tabs.setTabMode(TabLayout.MODE_SCROLLABLE);
 
-        mPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener(){
+        mPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageSelected(int i) {
                 callOnMyBeingHiddenForCurrentTab();
@@ -154,9 +134,12 @@ public class ReadingActivity
             }
 
             @Override
-            public void onPageScrollStateChanged(int i) { }
+            public void onPageScrollStateChanged(int i) {
+            }
+
             @Override
-            public void onPageScrolled(int i, float v, int i1) { }
+            public void onPageScrolled(int i, float v, int i1) {
+            }
         });
 
         // set tab to start on
@@ -166,13 +149,13 @@ public class ReadingActivity
         mPager.setCurrentItem(mPagerAdapter.getCount());
         mPager.setCurrentItem(startTab);
     }
+
     private void callOnMyBeingHiddenForCurrentTab() {
         if (lastKnownTab != -1) {
             BaseFragment lastFragment = (BaseFragment) mPagerAdapter.getItem(lastKnownTab);
             lastFragment.onMyBeingHidden();
         }
     }
-
 
     /*
         Top Toolbar & Back Button
@@ -255,7 +238,6 @@ public class ReadingActivity
         dialog.show();
     }
 
-
     /*
         Bottom Bar
      */
@@ -267,10 +249,12 @@ public class ReadingActivity
             public void onPageSelected(int position) {
                 updateBottomBar();
             }
+
             // This method will be invoked when the current page is scrolled
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
             }
+
             // Called when the scroll state changes:
             // SCROLL_STATE_IDLE, SCROLL_STATE_DRAGGING, SCROLL_STATE_SETTLING
             @Override
@@ -290,6 +274,7 @@ public class ReadingActivity
 
         updateBottomBar();
     }
+
     private void onClickPrevious(View v) {
         // If user taps PREVIOUS faster than UI can update, we can have multiple
         // clicks queued up and incorrectly want to go past first page.
@@ -298,6 +283,7 @@ public class ReadingActivity
 
         }
     }
+
     private void onClickNext(View v) {
         // If user taps NEXT faster than UI can update, we can have multiple
         // clicks queued up and incorrectly want to go past last page.
@@ -305,7 +291,6 @@ public class ReadingActivity
             mPager.setCurrentItem(mPager.getCurrentItem() + 1);
         }
     }
-
 
     private void updateBottomBar() {
         int position = mPager.getCurrentItem();
@@ -323,9 +308,6 @@ public class ReadingActivity
 
     }
 
-
-
-
     /*
         Callback from Fragments
     */
@@ -333,6 +315,7 @@ public class ReadingActivity
     public Reading getCurrentReading() {
         return currentReading;
     }
+
     @Override
     public ReadingManager getReadingManager() {
         return readingManager;
@@ -344,8 +327,6 @@ public class ReadingActivity
         // called from:
         // - activity's SAVE button(s)
         // - fragment's saving data as needed (send SMS)
-
-        Log.d("Json", currentReading.patient.getPatientInfoJSon().toString());
 
         callOnMyBeingHiddenForCurrentTab();
 
@@ -379,8 +360,16 @@ public class ReadingActivity
 
         return true;
     }
+
     @Override
     public void advanceToNextPage() {
         onClickNext(null);
+    }
+
+    private enum LaunchReason {
+        LAUNCH_REASON_NEW,
+        LAUNCH_REASON_EDIT,
+        LAUNCH_REASON_RECHECK,
+        LAUNCH_REASON_NONE
     }
 }

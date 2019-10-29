@@ -1,7 +1,5 @@
 package com.cradletrial.cradlevhtapp.model.Patient;
 
-import android.util.Log;
-
 import com.cradletrial.cradlevhtapp.model.Reading;
 
 import org.json.JSONException;
@@ -12,8 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Patient implements Serializable {
-
-    public static enum PATIENTSEX {MALE, FEMALE, OTHERS}
 
     // TODO: 22/09/19 encapsulate these class members
     // patient info
@@ -30,11 +26,13 @@ public class Patient implements Serializable {
     public String villageNumber;
     public String houseNumber;
 
-    public Patient() {}
-    public Patient(String mPatientId, String mPatientName,Integer mAgeYears, Reading.GestationalAgeUnit mGestationalAgeUnit,
+    public Patient() {
+    }
+
+    public Patient(String mPatientId, String mPatientName, Integer mAgeYears, Reading.GestationalAgeUnit mGestationalAgeUnit,
                    String mGestationalAgeValue, String mVillageNumber, PATIENTSEX mSex,
-                   String zone,String tankNo,String houseNumber,boolean isPregnant) {
-        patientId = mPatientId ;
+                   String zone, String tankNo, String houseNumber, boolean isPregnant) {
+        patientId = mPatientId;
         patientName = mPatientName;
         ageYears = mAgeYears;
         gestationalAgeUnit = mGestationalAgeUnit;
@@ -47,8 +45,7 @@ public class Patient implements Serializable {
         this.isPregnant = isPregnant;
     }
 
-    public String genSymptomString()
-    {
+    public String genSymptomString() {
         String symptomsString = "None";
         if (symptoms.size() > 0) {
             symptomsString = symptoms.get(0);
@@ -65,16 +62,16 @@ public class Patient implements Serializable {
     public JSONObject getPatientInfoJSon() {
         try {
             JSONObject patientInfoObject = new JSONObject();
-            patientInfoObject.put("patientId", patientId );
-            patientInfoObject.put("patientName", patientName );
-            patientInfoObject.put("patientAge", ageYears.toString() );
-            patientInfoObject.put("gestationalAgeUnit", gestationalAgeUnit.toString() );
-            patientInfoObject.put("gestationalAgeValue", gestationalAgeValue );
-            patientInfoObject.put("villageNumber", villageNumber );
-            patientInfoObject.put("patientSex", patientSex.toString() );
+            patientInfoObject.put("patientId", patientId);
+            patientInfoObject.put("patientName", patientName);
+            patientInfoObject.put("patientAge", ageYears.toString());
+            patientInfoObject.put("gestationalAgeUnit", gestationalAgeUnit.toString());
+            patientInfoObject.put("gestationalAgeValue", gestationalAgeValue);
+            patientInfoObject.put("villageNumber", villageNumber);
+            patientInfoObject.put("patientSex", patientSex.toString());
 
             String isPregnantString = "false";
-            if(isPregnant) {
+            if (isPregnant) {
                 isPregnantString = "true";
             }
             patientInfoObject.put("isPregnant", isPregnantString);
@@ -88,6 +85,7 @@ public class Patient implements Serializable {
         return null;
     }
 
+    public static enum PATIENTSEX {MALE, FEMALE, OTHERS}
 
 
 }

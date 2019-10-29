@@ -12,7 +12,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 public class Zipper {
-    private static final int BUFFER_SIZE = 1024*1024;
+    private static final int BUFFER_SIZE = 1024 * 1024;
+
     public static File zip(List<File> files, File zipFile) {
         // source: https://stackoverflow.com/questions/25562262/how-to-compress-files-into-zip-folder-in-android
         try {

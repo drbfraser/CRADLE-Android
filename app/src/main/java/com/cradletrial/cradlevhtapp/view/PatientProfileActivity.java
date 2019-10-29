@@ -2,13 +2,11 @@ package com.cradletrial.cradlevhtapp.view;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.widget.TextView;
 
 import com.cradletrial.cradlevhtapp.R;
@@ -18,7 +16,6 @@ import com.cradletrial.cradlevhtapp.model.Reading;
 import com.cradletrial.cradlevhtapp.model.ReadingManager;
 import com.cradletrial.cradlevhtapp.model.Settings;
 import com.cradletrial.cradlevhtapp.viewmodel.ReadingRecyclerViewAdapter;
-import com.cradletrial.cradlevhtapp.viewmodel.ReadingViewAdapter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,7 +23,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import static com.cradletrial.cradlevhtapp.view.ReadingsListActivity.READING_ACTIVITY_DONE;
+import static com.cradletrial.cradlevhtapp.view.DashBoardActivity.READING_ACTIVITY_DONE;
 
 
 public class PatientProfileActivity extends AppCompatActivity {
@@ -53,7 +50,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_patient_profile);
 
         android.support.v7.preference.PreferenceManager.setDefaultValues(
-                this,R.xml.preferences, false);
+                this, R.xml.preferences, false);
 
         // inject:
         ((MyApp) getApplication()).getAppComponent().inject(this);
@@ -68,7 +65,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         currPatient = (Patient) getIntent().getSerializableExtra("key");
         populatePatientInfo(currPatient);
         setupReadingsRecyclerView();
-        if(getSupportActionBar() != null){
+        if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle(R.string.patient_summary);
         }
@@ -82,8 +79,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         return true;
     }
 
-    void populatePatientInfo(Patient patient)
-    {
+    void populatePatientInfo(Patient patient) {
         patientID.setText(patient.patientId);
         patientName.setText(patient.patientName);
         patientAge.setText(patient.ageYears.toString());
@@ -100,14 +96,14 @@ public class PatientProfileActivity extends AppCompatActivity {
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         readingRecyclerview.setLayoutManager(layoutManager);
         readingRecyclerview.setNestedScrollingEnabled(false);
-        ReadingRecyclerViewAdapter  listAdapter;
+        ReadingRecyclerViewAdapter listAdapter;
         // get content & sort
         List<Reading> readings = readingManager.getReadings(this);
         Collections.sort(readings, new Reading.ComparatorByDateReverse());
         List<Reading> myReadings = new ArrayList<>();
-        for (Reading reading: readings){
+        for (Reading reading : readings) {
             Patient patient = reading.patient;
-            if(patient.patientId.equals(currPatient.patientId)){
+            if (patient.patientId.equals(currPatient.patientId)) {
                 myReadings.add(reading);
             }
         }        // set adapter
@@ -146,7 +142,7 @@ public class PatientProfileActivity extends AppCompatActivity {
     }
 
     private void updateUi() {
-       // setupEmptyState();
+        // setupEmptyState();
         setupReadingsRecyclerView();
     }
 

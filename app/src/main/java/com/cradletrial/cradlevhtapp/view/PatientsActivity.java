@@ -24,15 +24,10 @@ import com.cradletrial.cradlevhtapp.viewmodel.PatientsViewAdapter;
 import org.threeten.bp.ZonedDateTime;
 import org.threeten.bp.temporal.ChronoUnit;
 
-import java.sql.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -52,13 +47,13 @@ public class PatientsActivity extends TabActivityBase {
     private PatientsViewAdapter patientsViewAdapter;
 
 
-    public static Intent makeIntent(Context context) {
-        return new Intent(context, PatientsActivity.class);
-    }
-
     // set who we are for tab code
     public PatientsActivity() {
         super(R.id.nav_patients);
+    }
+
+    public static Intent makeIntent(Context context) {
+        return new Intent(context, PatientsActivity.class);
     }
 
     @Override
@@ -73,7 +68,7 @@ public class PatientsActivity extends TabActivityBase {
         patientRecyclerview = findViewById(R.id.patientListRecyclerview);
         setupPatientRecyclerview();
         setSupportActionBar(toolbar);
-        if(getSupportActionBar()!=null){
+        if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
@@ -95,24 +90,24 @@ public class PatientsActivity extends TabActivityBase {
 
         HashMap<String, Patient> patientHashMap = new HashMap<>();
         List<Reading> allReadings = readingManager.getReadings(this);
-        for(Reading reading: allReadings){
+        for (Reading reading : allReadings) {
 
-            patientHashMap.put(reading.patient.patientId,reading.patient);
+            patientHashMap.put(reading.patient.patientId, reading.patient);
         }
         List<Patient> patients = new ArrayList<>(patientHashMap.values());
         TextView textView = findViewById(R.id.emptyView);
-        if(patients.size() == 0){
+        if (patients.size() == 0) {
             textView.setVisibility(View.VISIBLE);
         } else {
             textView.setVisibility(View.GONE);
 
         }
 
-        PatientsViewAdapter patientsViewAdapter = new PatientsViewAdapter(patients,this);
+        PatientsViewAdapter patientsViewAdapter = new PatientsViewAdapter(patients, this);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         patientRecyclerview.setAdapter(patientsViewAdapter);
         patientRecyclerview.setLayoutManager(layoutManager);
-        patientRecyclerview.addItemDecoration(new DividerItemDecoration(this,DividerItemDecoration.VERTICAL));
+        patientRecyclerview.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         patientsViewAdapter.notifyDataSetChanged();
     }
 
@@ -124,18 +119,18 @@ public class PatientsActivity extends TabActivityBase {
 
             List<Reading> tmpList = new ArrayList<>();
             long timeDelta = 0;
-            for (int i = 0; i < 30; i++ ) {
+            for (int i = 0; i < 30; i++) {
                 int makeNeg = (i % 2 == 0) ? 1 : -1;
                 Reading r = new Reading();
-                r.patient.patientName = "P" + (char)('A' + i);
-                r.patient.patientId = String.valueOf(48300027400L + i + ((i * new Random().nextLong() % 10000000L)* 1000));
+                r.patient.patientName = "P" + (char) ('A' + i);
+                r.patient.patientId = String.valueOf(48300027400L + i + ((i * new Random().nextLong() % 10000000L) * 1000));
                 r.patient.ageYears = 20 + i;
                 r.dateTimeTaken = ZonedDateTime.now().minus(timeDelta, ChronoUnit.MINUTES);
                 r.bpSystolic = 120 + (i * 15) * makeNeg;
                 r.bpDiastolic = 80 + (i * 5) * makeNeg;
                 r.heartRateBPM = 100 + (i * 10) * makeNeg;
                 r.gpsLocationOfReading = "1.3733° N, 32.2903° E";
-                r.setFlaggedForFollowup( i % 3 == 1);
+                r.setFlaggedForFollowup(i % 3 == 1);
                 if (i % 2 == 1) {
                     r.setReferredToHealthCentre(
                             "Bibi Bibi health centre #5",
@@ -148,7 +143,7 @@ public class PatientsActivity extends TabActivityBase {
                 }
 
                 if (i < 20) {
-                    r.dateRecheckVitalsNeeded = ZonedDateTime.now().plusSeconds( (i-1) * 60);
+                    r.dateRecheckVitalsNeeded = ZonedDateTime.now().plusSeconds((i - 1) * 60);
                 }
 
                 if (i % 3 == 0) {
@@ -218,10 +213,10 @@ public class PatientsActivity extends TabActivityBase {
             SharedPreferences.Editor edit = sharedPreferences.edit();
             edit.putString(Settings.PREF_KEY_VHT_NAME, "Clark the Shark");
             edit.putInt(Settings.PREF_KEY_NUM_HEALTH_CENTRES, 2);
-            edit.putString(Settings.PREF_KEY_HEALTH_CENTRE_NAME_+"0", "Bidibidi Health Centre #1 (Zone 5)");
-            edit.putString(Settings.PREF_KEY_HEALTH_CENTRE_CELL_+"0", "+5 235 2352-2352");
-            edit.putString(Settings.PREF_KEY_HEALTH_CENTRE_NAME_+"1", "Bidibidi Regional Hospital");
-            edit.putString(Settings.PREF_KEY_HEALTH_CENTRE_CELL_+"1", "+1 325 2352 3523 52");
+            edit.putString(Settings.PREF_KEY_HEALTH_CENTRE_NAME_ + "0", "Bidibidi Health Centre #1 (Zone 5)");
+            edit.putString(Settings.PREF_KEY_HEALTH_CENTRE_CELL_ + "0", "+5 235 2352-2352");
+            edit.putString(Settings.PREF_KEY_HEALTH_CENTRE_NAME_ + "1", "Bidibidi Regional Hospital");
+            edit.putString(Settings.PREF_KEY_HEALTH_CENTRE_CELL_ + "1", "+1 325 2352 3523 52");
 
             edit.putString(Settings.PREF_KEY_SERVER_URL, Settings.DEFAULT_SERVER_URL);
             String LINEFEED = "\r\n";
@@ -231,7 +226,6 @@ public class PatientsActivity extends TabActivityBase {
 
             edit.commit();
             settings.loadFromSharedPrefs();
-
 
 
             Toast.makeText(this, "Add fake settings (testing)", Toast.LENGTH_LONG).show();
@@ -246,7 +240,7 @@ public class PatientsActivity extends TabActivityBase {
 
             // settings: load defaults if not previously set
             android.support.v7.preference.PreferenceManager.setDefaultValues(
-                    this,R.xml.preferences, true);
+                    this, R.xml.preferences, true);
 
             settings.loadFromSharedPrefs();
             Toast.makeText(this, "Cleared all settings", Toast.LENGTH_LONG).show();

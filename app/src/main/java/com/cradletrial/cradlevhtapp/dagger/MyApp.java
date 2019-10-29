@@ -14,9 +14,13 @@ import com.wonderkiln.blurkit.BlurKit;
  * Source: https://github.com/codepath/android_guides/wiki/Dependency-Injection-with-Dagger-2#instantiating-the-component
  */
 public class MyApp extends Application {
+    private static MyApp sInstance;
     private AppComponent mAppComponent;
     private boolean mDisableBlurKit;
-    private static MyApp sInstance;
+
+    public static MyApp getInstance() {
+        return sInstance;
+    }
 
     @Override
     public void onCreate() {
@@ -56,17 +60,28 @@ public class MyApp extends Application {
             }
 
             @Override
-            public void onActivityStarted(Activity activity) { }
+            public void onActivityStarted(Activity activity) {
+            }
+
             @Override
-            public void onActivityResumed(Activity activity) { }
+            public void onActivityResumed(Activity activity) {
+            }
+
             @Override
-            public void onActivityPaused(Activity activity) { }
+            public void onActivityPaused(Activity activity) {
+            }
+
             @Override
-            public void onActivityStopped(Activity activity) { }
+            public void onActivityStopped(Activity activity) {
+            }
+
             @Override
-            public void onActivitySaveInstanceState(Activity activity, Bundle bundle) { }
+            public void onActivitySaveInstanceState(Activity activity, Bundle bundle) {
+            }
+
             @Override
-            public void onActivityDestroyed(Activity activity) { }
+            public void onActivityDestroyed(Activity activity) {
+            }
         });
 
         // Blur-Effect
@@ -82,10 +97,6 @@ public class MyApp extends Application {
 
     public AppComponent getAppComponent() {
         return mAppComponent;
-    }
-
-    public static MyApp getInstance() {
-        return sInstance;
     }
 
     public boolean isDisableBlurKit() {

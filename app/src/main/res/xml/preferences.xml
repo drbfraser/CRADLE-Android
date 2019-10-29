@@ -1,128 +1,116 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    >
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Types: https://developer.android.com/guide/topics/ui/settings/components-and-attributes -->
 
     <PreferenceCategory android:title="General">
         <EditTextPreference
-            android:title="Your Name"
-            android:key="setting_vht_name"
             android:defaultValue="No name entered"
-            android:singleLine="true"
+            android:key="setting_vht_name"
             android:selectAllOnFocus="true"
-            />
+            android:singleLine="true"
+            android:title="Your Name" />
         <EditTextPreference
-            android:title="Your Region"
-            android:summary="The country or region you are working in."
-            android:key="setting_region"
             android:defaultValue="Uganda"
-            android:singleLine="true"
+            android:key="setting_region"
             android:selectAllOnFocus="true"
-            />
+            android:singleLine="true"
+            android:summary="The country or region you are working in."
+            android:title="Your Region" />
         <!--<EditTextPreference-->
-            <!--android:title="PIN"-->
-            <!--android:key="setting_pin"-->
-            <!--android:selectAllOnFocus="true"-->
-            <!--android:singleLine="true"-->
-            <!--/>-->
+        <!--android:title="PIN"-->
+        <!--android:key="setting_pin"-->
+        <!--android:selectAllOnFocus="true"-->
+        <!--android:singleLine="true"-->
+        <!--/>-->
         <!--<EditTextPreference-->
-            <!--android:title="Region"-->
-            <!--android:key="setting_region"-->
-            <!--android:defaultValue="Uganda"-->
-            <!--android:selectAllOnFocus="true"-->
-            <!--android:singleLine="true"-->
-            <!--/>-->
+        <!--android:title="Region"-->
+        <!--android:key="setting_region"-->
+        <!--android:defaultValue="Uganda"-->
+        <!--android:selectAllOnFocus="true"-->
+        <!--android:singleLine="true"-->
+        <!--/>-->
         <!--<ListPreference-->
-            <!--android:title="Usual location"-->
-            <!--android:entries="@array/settings_work_locations"-->
-            <!--android:key="setting_usual_location"-->
-            <!--/>-->
+        <!--android:title="Usual location"-->
+        <!--android:entries="@array/settings_work_locations"-->
+        <!--android:key="setting_usual_location"-->
+        <!--/>-->
         <!--<EditTextPreference-->
-            <!--android:title="Hold screen on while taking a reading"-->
-            <!--android:summary="3 minutes"-->
-            <!--android:key="setting_keep_awake_during_reading"-->
-            <!--android:defaultValue="Default value"-->
-            <!--android:selectAllOnFocus="true"-->
-            <!--android:singleLine="true"-->
-            <!--/>-->
+        <!--android:title="Hold screen on while taking a reading"-->
+        <!--android:summary="3 minutes"-->
+        <!--android:key="setting_keep_awake_during_reading"-->
+        <!--android:defaultValue="Default value"-->
+        <!--android:selectAllOnFocus="true"-->
+        <!--android:singleLine="true"-->
+        <!--/>-->
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Referrals">
 
         <Preference
-            android:title="Health centres"
             android:key="setting_health_centres"
-            />
+            android:title="Health centres" />
 
         <!--<android.support.v7.preference.SwitchPreferenceCompat-->
-            <!--android:title="Community health officer"-->
-            <!--android:summary="Also gets copy of referrals &#45;&#45; XXX"-->
-            <!--android:key="setting_community_health_officer"-->
-            <!--android:defaultValue="true"-->
-            <!--/>-->
+        <!--android:title="Community health officer"-->
+        <!--android:summary="Also gets copy of referrals &#45;&#45; XXX"-->
+        <!--android:key="setting_community_health_officer"-->
+        <!--android:defaultValue="true"-->
+        <!--/>-->
 
         <!--<EditTextPreference-->
-            <!--android:title="Community health officer cell"-->
-            <!--android:summary="+256 78 321 7651 &#45;&#45; XXX"-->
-            <!--android:key="setting_community_health_cell"-->
-            <!--android:selectAllOnFocus="true"-->
-            <!--android:singleLine="true"-->
-            <!--/>-->
+        <!--android:title="Community health officer cell"-->
+        <!--android:summary="+256 78 321 7651 &#45;&#45; XXX"-->
+        <!--android:key="setting_community_health_cell"-->
+        <!--android:selectAllOnFocus="true"-->
+        <!--android:singleLine="true"-->
+        <!--/>-->
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Upload to Server">
         <EditTextPreference
-            android:title="Server URL"
+            android:defaultValue="@string/settings_reading_server_url"
             android:key="settings_upload_server"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:defaultValue="@string/settings_reading_server_url"
-            />
+            android:title="Server URL" />
         <EditTextPreference
-            android:title="User name on server"
+            android:defaultValue="@string/settings_default_server_username"
             android:key="settings_upload_username"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:defaultValue="@string/settings_default_server_username"
-            />
+            android:title="User name on server" />
         <EditTextPreference
-            android:title="Password"
-            android:key="settings_upload_password"
-            android:inputType="textPassword"
-            android:password="true"
             android:defaultValue="@string/settings_default_server_password"
-            />
+            android:inputType="textPassword"
+            android:key="settings_upload_password"
+            android:password="true"
+            android:title="Password" />
         <EditTextPreference
-            android:title="Public key (for encryption)"
+            android:defaultValue="@string/settings_default_server_rsa"
             android:key="settings_upload_rsapubkey"
             android:selectAllOnFocus="true"
             android:singleLine="false"
-            android:typeface="monospace"
-            android:defaultValue="@string/settings_default_server_rsa"
-            />
+            android:title="Public key (for encryption)"
+            android:typeface="monospace" />
 
 
         <SwitchPreference
-            android:title="Upload images to server"
-            android:summary="CRADLE VSA screenshots are useful for app development but make uploading slower."
-            android:key="settings_upload_images"
             android:defaultValue="true"
-            />
+            android:key="settings_upload_images"
+            android:summary="CRADLE VSA screenshots are useful for app development but make uploading slower."
+            android:title="Upload images to server" />
     </PreferenceCategory>
 
 
     <PreferenceCategory android:title="Optical Character Recognition">
         <SwitchPreference
-            android:title="Enable OCR"
-            android:key="setting_ocr_enabled"
             android:defaultValue="true"
-        />
+            android:key="setting_ocr_enabled"
+            android:title="Enable OCR" />
         <SwitchPreference
-            android:title="Show OCR debugging info"
-            android:key="setting_ocr_debug_enabled"
             android:defaultValue="false"
-        />
+            android:key="setting_ocr_debug_enabled"
+            android:title="Show OCR debugging info" />
     </PreferenceCategory>
 
 </PreferenceScreen>

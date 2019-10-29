@@ -1,12 +1,8 @@
 package com.cradletrial.cradlevhtapp.viewmodel;
 
-import android.content.Context;
-import android.content.Intent;
 import android.support.annotation.NonNull;
-import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,19 +22,11 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
 
     private List<Reading> readings;
     private RecyclerView recyclerView;
-
-    public interface OnClickElement {
-        void onClick(long readingId);
-        // Return true if click handled
-        boolean onLongClick(long readingId);
-        void onClickRecheckReading(long readingId);
-    }
     private OnClickElement onClickElementListener;
 
     public ReadingRecyclerViewAdapter(List<Reading> readings) {
         this.readings = readings;
-            }
-
+    }
 
     @NonNull
     @Override
@@ -113,13 +101,15 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         //todo: setup on click listner for cardview and open the summary page
 
     }
+
     private void setVisibilityForImageAndText(View v, int imageViewId, int textViewId, boolean show) {
         ImageView iv = v.findViewById(imageViewId);
-        iv.setVisibility( show ? View.VISIBLE : View.GONE);
+        iv.setVisibility(show ? View.VISIBLE : View.GONE);
 
         TextView tv = v.findViewById(textViewId);
-        tv.setVisibility( show ? View.VISIBLE : View.GONE);
+        tv.setVisibility(show ? View.VISIBLE : View.GONE);
     }
+
     // Store ref to recycler
     @Override
     public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
@@ -143,17 +133,28 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             onClickElementListener.onClick(readingId);
         }
     }
-     static class MyViewHolder extends RecyclerView.ViewHolder {
+
+    public interface OnClickElement {
+        void onClick(long readingId);
+
+        // Return true if click handled
+        boolean onLongClick(long readingId);
+
+        void onClickRecheckReading(long readingId);
+    }
+
+    static class MyViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
-        TextView readingDate, assessmentDate, sysBP, diaBP,heartRate,diagnosis,treatment,other;
+        TextView readingDate, assessmentDate, sysBP, diaBP, heartRate, diagnosis, treatment, other;
         ImageView trafficLight, arrow;
         Button retakeVitalButton;
         View view;
         CardView cardView;
-         MyViewHolder(View v) {
+
+        MyViewHolder(View v) {
             super(v);
             readingDate = v.findViewById(R.id.readingDate);
-            assessmentDate =v.findViewById(R.id.assessmentDate);
+            assessmentDate = v.findViewById(R.id.assessmentDate);
             sysBP = v.findViewById(R.id.sysBP);
             diaBP = v.findViewById(R.id.diaBP);
             heartRate = v.findViewById(R.id.readingHeartRate);

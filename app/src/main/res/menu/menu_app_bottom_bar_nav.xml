@@ -4,9 +4,9 @@
     tools:context="com.cradletrial.cradlevhtapp.view.ReadingActivity">
     <item
         android:id="@+id/nav_readings"
+        android:icon="@drawable/vitals"
         android:orderInCategory="100"
         android:title="@string/menu_readings"
-        android:icon="@drawable/vitals"
         app:showAsAction="never" />
     <item
         android:id="@+id/nav_patients"
@@ -16,9 +16,9 @@
         app:showAsAction="never" />
     <item
         android:id="@+id/nav_upload"
+        android:icon="@drawable/upload"
         android:orderInCategory="120"
         android:title="@string/menu_upload"
-        android:icon="@drawable/upload"
         app:showAsAction="never" />
     <item
         android:id="@+id/nav_help"
