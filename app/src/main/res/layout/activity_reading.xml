@@ -22,17 +22,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:theme="@style/AppTheme.AppBarOverlay">
-            <!--android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">-->
+                <!--android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">-->
 
                 <android.support.v7.widget.Toolbar
                     android:id="@+id/toolbar"
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
                     android:background="?attr/colorPrimary"
-                    app:titleTextColor="@color/white"
-                    app:popupTheme="@style/AppTheme.PopupOverlay" />
-                    <!--app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />-->
-                    <!--app:layout_scrollFlags="scroll|enterAlways|snap" />-->
+                    app:popupTheme="@style/AppTheme.PopupOverlay"
+                    app:titleTextColor="@color/white" />
+                <!--app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />-->
+                <!--app:layout_scrollFlags="scroll|enterAlways|snap" />-->
 
 
                 <android.support.design.widget.TabLayout
@@ -81,6 +81,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/baseline_chevron_right_black_18" />
+
             <TextView
                 android:id="@+id/txtNext"
                 android:layout_width="wrap_content"
@@ -100,15 +101,14 @@
                 android:padding="10dp"
                 android:paddingEnd="40dp"
                 android:text="@string/save"
-                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintBottom_toBottomOf="@+id/ivNext"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/ivNext"
                 app:layout_constraintVertical_bias="0.5" />
 
         </android.support.constraint.ConstraintLayout>
 
     </LinearLayout>
-
 
 
 </android.support.design.widget.CoordinatorLayout>

@@ -1,27 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".view.UploadActivity"
-    tools:showIn="@layout/activity_upload"
-
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    >
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+
+    tools:context=".view.UploadActivity"
+    tools:showIn="@layout/activity_upload">
 
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        >
+        android:orientation="vertical">
 
         <android.support.constraint.ConstraintLayout
             android:id="@+id/layoutUploadStatus"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            >
+            android:layout_height="wrap_content">
 
             <TextView
                 android:id="@+id/lblUploadStatusTitle"
@@ -76,8 +72,7 @@
         <android.support.constraint.ConstraintLayout
             android:id="@+id/layoutUploadingReadings"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            >
+            android:layout_height="wrap_content">
 
             <TextView
                 android:id="@+id/lblUploadingReadingsTitle"

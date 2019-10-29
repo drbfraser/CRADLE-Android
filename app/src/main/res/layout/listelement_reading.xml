@@ -36,6 +36,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/status_green" />
+
     <ImageView
         android:id="@+id/imageArrow"
         android:layout_width="17dp"
@@ -45,7 +46,6 @@
         app:layout_constraintTop_toTopOf="@+id/imageCircle"
         app:layout_constraintVertical_bias="0.0"
         app:srcCompat="@drawable/arrow_up" />
-
 
 
     <!-- details to show about currentReading (icon + text) -->
@@ -105,12 +105,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+        android:text="Follow-up needed"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/imgFollowUp"
         app:layout_constraintStart_toEndOf="@+id/imgFollowUp"
         app:layout_constraintTop_toTopOf="@+id/imgFollowUp"
-        app:layout_constraintVertical_bias="1.0"
-        android:text="Follow-up needed" />
+        app:layout_constraintVertical_bias="1.0" />
 
 
     <ImageView
