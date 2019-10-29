@@ -25,7 +25,7 @@ public class DashBoardActivity extends AppCompatActivity implements View.OnClick
         setContentView(R.layout.activity_dash_board);
         setupOnClickListner();
         ActionBar actionBar = getSupportActionBar();
-        if(actionBar!=null) {
+        if (actionBar != null) {
             actionBar.setDisplayShowHomeEnabled(true);
             actionBar.setDisplayUseLogoEnabled(true);
             actionBar.setTitle("");

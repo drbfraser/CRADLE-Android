@@ -17,6 +17,7 @@ public class ReadingRetestAnalysis {
     private List<Reading> readings;
     private List<ReadingAnalysis> analyses = new ArrayList<>();
     private RetestWhen retestAdvice;
+
     /**
      * Constructor
      */

@@ -38,7 +38,6 @@ public class MultiReadingUploader {
     private State state = State.IDLE;
     private int numCompleted = 0;
 
-    ;
     public MultiReadingUploader(Context context, Settings settings, ProgressCallback progressCallback) {
         this.context = context;
         this.settings = settings;

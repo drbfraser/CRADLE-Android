@@ -25,6 +25,7 @@ public class Patient implements Serializable {
     public String tankNo;
     public String villageNumber;
     public String houseNumber;
+
     public Patient() {
     }
 

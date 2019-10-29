@@ -70,6 +70,7 @@ public class Settings {
     private int lastHealthCentreSelectionIdx = 0;
     // data to operate
     private SharedPreferences sharedPref;
+
     // constructor
     public Settings(SharedPreferences sharedPreferences) {
         this.sharedPref = sharedPreferences;
