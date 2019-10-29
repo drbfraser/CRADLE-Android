@@ -345,8 +345,6 @@ public class ReadingActivity
         // - activity's SAVE button(s)
         // - fragment's saving data as needed (send SMS)
 
-        Log.d("Json", currentReading.patient.getPatientInfoJSon().toString());
-
         callOnMyBeingHiddenForCurrentTab();
 
         if (currentReading.isMissingRequiredData()) {
