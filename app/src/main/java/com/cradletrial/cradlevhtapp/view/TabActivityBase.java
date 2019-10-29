@@ -3,14 +3,10 @@ package com.cradletrial.cradlevhtapp.view;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
-
-import com.cradletrial.cradlevhtapp.R;
 
 abstract public class TabActivityBase extends AppCompatActivity {
     protected static final int TAB_ACTIVITY_BASE_SETTINGS_DONE = 948;

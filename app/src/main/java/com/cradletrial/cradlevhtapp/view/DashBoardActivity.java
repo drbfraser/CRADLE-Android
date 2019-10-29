@@ -3,9 +3,9 @@ package com.cradletrial.cradlevhtapp.view;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,10 +24,12 @@ public class DashBoardActivity extends AppCompatActivity implements View.OnClick
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dash_board);
         setupOnClickListner();
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setDisplayUseLogoEnabled(true);
-        getSupportActionBar().setTitle("");
-        //getSupportActionBar().setLogo(getResources().getDrawable(R.drawable.upload));
+        ActionBar actionBar = getSupportActionBar();
+        if(actionBar!=null) {
+            actionBar.setDisplayShowHomeEnabled(true);
+            actionBar.setDisplayUseLogoEnabled(true);
+            actionBar.setTitle("");
+        }
 
     }
 
@@ -79,22 +81,16 @@ public class DashBoardActivity extends AppCompatActivity implements View.OnClick
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.readingCardView:
-                Log.d("bugg", "reading clicked");
                 Intent intent = ReadingActivity.makeIntentForNewReading(DashBoardActivity.this);
                 startActivityForResult(intent, READING_ACTIVITY_DONE);
                 break;
             case R.id.patientCardview:
-                Log.d("bugg", "patient clicked");
                 startActivity(PatientsActivity.makeIntent(this));
                 break;
             case R.id.syncCardView:
-                Log.d("bugg", "upload clicked");
-
                 startActivity(UploadActivity.makeIntent(this));
                 break;
             case R.id.fabHelpDashboard:
-                Log.d("bugg", "fab clicked");
-
                 startActivity(HelpActivity.makeIntent(this));
                 break;
 
