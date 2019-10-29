@@ -5,7 +5,6 @@ import com.cradletrial.cradlevhtapp.view.IntroActivity;
 import com.cradletrial.cradlevhtapp.view.PatientProfileActivity;
 import com.cradletrial.cradlevhtapp.view.PatientsActivity;
 import com.cradletrial.cradlevhtapp.view.ReadingActivity;
-import com.cradletrial.cradlevhtapp.view.ReadingsListActivity;
 import com.cradletrial.cradlevhtapp.view.UploadActivity;
 import com.cradletrial.cradlevhtapp.view.ui.reading.ConfirmDataFragment;
 import com.cradletrial.cradlevhtapp.view.ui.reading.ReferralDialogFragment;
@@ -23,7 +22,6 @@ import dagger.Component;
 @Singleton
 @Component(modules = {AppModule.class, DataModule.class})
 public interface AppComponent {
-    void inject(ReadingsListActivity activity);
 
     void inject(ReadingActivity activity);
 

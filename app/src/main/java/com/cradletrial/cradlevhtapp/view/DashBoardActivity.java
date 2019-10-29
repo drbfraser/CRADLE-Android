@@ -13,10 +13,10 @@ import android.view.View;
 import com.cradletrial.cradlevhtapp.R;
 import com.cradletrial.cradlevhtapp.view.ui.settings.SettingsActivity;
 
-import static com.cradletrial.cradlevhtapp.view.ReadingsListActivity.READING_ACTIVITY_DONE;
 import static com.cradletrial.cradlevhtapp.view.TabActivityBase.TAB_ACTIVITY_BASE_SETTINGS_DONE;
 
 public class DashBoardActivity extends AppCompatActivity implements View.OnClickListener {
+    public static final int READING_ACTIVITY_DONE = 12345;
 
 
     @Override

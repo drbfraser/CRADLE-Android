@@ -32,41 +32,4 @@ abstract public class TabActivityBase extends AppCompatActivity {
         }
     }
 
-    /**
-     * Bottom Bar Navigation
-     */
-    public void setupBottomBarNavigation() {
-//        BottomNavigationView navView = findViewById(R.id.bottom_bar_nav);
-//        navView.setOnNavigationItemSelectedListener(this::onNavigationItemSelected);
-//
-//        String title = String.format("%s (%s)", getTitle(), BuildConfig.VERSION_NAME);
-//        setTitle(title);
-    }
-
-    private boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        // Do nothing if we are already there
-        if (item.getItemId() == myTabButtonId) {
-            return true;
-        }
-
-        switch (item.getItemId()) {
-            case R.id.nav_readings:
-                startActivity(ReadingsListActivity.makeIntent(this));
-                finish();
-                return true;
-            case R.id.nav_patients:
-                startActivity(PatientsActivity.makeIntent(this));
-                finish();
-                return true;
-            case R.id.nav_upload:
-                startActivity(UploadActivity.makeIntent(this));
-                finish();
-                return true;
-            case R.id.nav_help:
-                startActivity(HelpActivity.makeIntent(this));
-                finish();
-                return true;
-        }
-        return false;
-    }
 }

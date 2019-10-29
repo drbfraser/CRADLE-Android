@@ -23,7 +23,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import static com.cradletrial.cradlevhtapp.view.ReadingsListActivity.READING_ACTIVITY_DONE;
+import static com.cradletrial.cradlevhtapp.view.DashBoardActivity.READING_ACTIVITY_DONE;
 
 
 public class PatientProfileActivity extends AppCompatActivity {
