@@ -6,7 +6,6 @@ import android.preference.PreferenceManager;
 
 import com.cradletrial.cradlevhtapp.model.ReadingManager;
 import com.cradletrial.cradlevhtapp.model.ReadingManagerAsDB;
-import com.cradletrial.cradlevhtapp.model.ReadingManagerAsList;
 import com.cradletrial.cradlevhtapp.model.Settings;
 
 import javax.inject.Singleton;

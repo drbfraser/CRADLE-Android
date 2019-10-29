@@ -15,12 +15,30 @@ import java.util.List;
  */
 public class Settings {
 
-    // Temporary Upload Defaults:
-    // todo: remove temporary upload defaults once 2D bar-code reading in place for settings.
-    private static String LINEFEED = "\r\n";
+    // constants
+    public static final int MIN_VHT_NAME_LENGTH = 2;
+    // shared preference strings
+    // (hard-coded strings found in res\xml\preferences.xml)
+    public static final String PREF_KEY_VHT_NAME = "setting_vht_name";
+    public static final String PREF_KEY_REGION = "setting_region";
+    public static final String PREF_KEY_NUM_HEALTH_CENTRES = "setting_num_health_centres";
+    public static final String PREF_KEY_HEALTH_CENTRE_NAME_ = "setting_health_centre_name_";
+    public static final String PREF_KEY_HEALTH_CENTRE_CELL_ = "setting_health_centre_cell_";
+    public static final String PREF_KEY_HEALTH_CENTRE_LAST_IDX = "setting_health_centre_last_idx";
+    public static final String PREF_KEY_SERVER_URL = "settings_upload_server";
+    public static final String PREF_KEY_SERVER_USERNAME = "settings_upload_username";
+    public static final String PREF_KEY_SERVER_PASSWORD = "settings_upload_password";
+    public static final String PREF_KEY_RSAPUBKEY = "settings_upload_rsapubkey";
+    public static final String PREF_KEY_UPLOAD_IMAGES = "settings_upload_images";
+    public static final String PREF_KEY_OCR_ENABLED = "setting_ocr_enabled";
+    public static final String PREF_KEY_OCR_DEBUG_ENABLED = "setting_ocr_debug_enabled";
     public static String DEFAULT_SERVER_URL = "http://cmpt373.csil.sfu.ca:8088/";
     public static String DEFAULT_SERVER_USERNAME = "user";
     public static String DEFAULT_SERVER_USERPASSWORD = "just4testing";
+    public static String authServerUrl = "http://cmpt373.csil.sfu.ca:8088/api/user/auth";
+    // Temporary Upload Defaults:
+    // todo: remove temporary upload defaults once 2D bar-code reading in place for settings.
+    private static String LINEFEED = "\r\n";
     public static String DEFAULT_SERVER_RSA = "-----BEGIN PUBLIC KEY-----                                      " + LINEFEED +
             "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA8/2NBuEDyLiClu+wkHCP" + LINEFEED +
             "BVGxgwDj8PDLBah7Ge9bYgmM7Jcmc5F15VVQG/RWSFnxD/+/rTGYRju6JYxtnw6G" + LINEFEED +
@@ -30,79 +48,28 @@ public class Settings {
             "w1wKQF+cc9G+pKNNWJDerGTKtmARge2N/3IpT6yQNhVpf6iezISnWrDgcj1jvemR" + LINEFEED +
             "3QIDAQAB                                                        " + LINEFEED +
             "-----END PUBLIC KEY-----                                        " + LINEFEED;
-
-
-    // types
-    public enum WorkLocation{
-        WORK_LOCATION_IN_COMMUNITY,
-        WORK_LOCATION_IN_HEALTH_CENTRE
-    }
-
-    public static class NamedPair {
-        public String name;
-        public String value;
-
-        public NamedPair(String name, String value) {
-            this.name = name;
-            this.value = value;
-        }
-    }
-
-    // constants
-    public static final int MIN_VHT_NAME_LENGTH = 2;
-
-    // shared preference strings
-    // (hard-coded strings found in res\xml\preferences.xml)
-    public static final String PREF_KEY_VHT_NAME = "setting_vht_name";
-    public static final String PREF_KEY_REGION = "setting_region";
-    public static final String PREF_KEY_NUM_HEALTH_CENTRES = "setting_num_health_centres";
-    public static final String PREF_KEY_HEALTH_CENTRE_NAME_ = "setting_health_centre_name_";
-    public static final String PREF_KEY_HEALTH_CENTRE_CELL_ = "setting_health_centre_cell_";
-    public static final String PREF_KEY_HEALTH_CENTRE_LAST_IDX = "setting_health_centre_last_idx";
-
-    public static final String PREF_KEY_SERVER_URL = "settings_upload_server";
-    public static final String PREF_KEY_SERVER_USERNAME = "settings_upload_username";
-    public static final String PREF_KEY_SERVER_PASSWORD = "settings_upload_password";
-    public static final String PREF_KEY_RSAPUBKEY = "settings_upload_rsapubkey";
-    public static final String PREF_KEY_UPLOAD_IMAGES = "settings_upload_images";
-
-    public static final String PREF_KEY_OCR_ENABLED = "setting_ocr_enabled";
-    public static final String PREF_KEY_OCR_DEBUG_ENABLED = "setting_ocr_debug_enabled";
-
-
     // stored values managed by settings screen
     private String vhtName = "";
     private WorkLocation usualWorkLocation = WorkLocation.WORK_LOCATION_IN_COMMUNITY;
     private String region;
     private String pin;
     private int holdScreenAwakeForNewReading = 0;
-
     private boolean communityHealthOfficerGetsReferrals = false;
     private String communityHealthOfficerPhoneNumber;
-
     private String readingServerUrl = "http://cmpt373.csil.sfu.ca:8088/api/patient/reading";
-//    private String referallServerUrl= "http://cmpt373.csil.sfu.ca:8088/api/referral";
-    private String referallServerUrl= "http://10.0.2.2:5000/api/referral";
-    public static String authServerUrl = "http://cmpt373.csil.sfu.ca:8088/api/user/auth";
+    //    private String referallServerUrl= "http://cmpt373.csil.sfu.ca:8088/api/referral";
+    private String referallServerUrl = "http://10.0.2.2:5000/api/referral";
     private String serverUserName;
     private String serverPassword;
     private String rsaPubKey;
     private boolean shouldUploadImages;
-
     private Boolean ocrEnabled = false;
     private Boolean ocrDebugEnabled = false;
-
-
     // stored values managed by us
     private List<NamedPair> healthCentres = new ArrayList<>();
     private int lastHealthCentreSelectionIdx = 0;
-
-
-
     // data to operate
     private SharedPreferences sharedPref;
-
-
     // constructor
     public Settings(SharedPreferences sharedPreferences) {
         this.sharedPref = sharedPreferences;
@@ -127,7 +94,7 @@ public class Settings {
         for (int i = 0; i < numHealthCentres; i++) {
             String name = sharedPref.getString(PREF_KEY_HEALTH_CENTRE_NAME_ + i, "no name");
             String value = sharedPref.getString(PREF_KEY_HEALTH_CENTRE_CELL_ + i, "no number");
-            healthCentres.add( new NamedPair(name, value));
+            healthCentres.add(new NamedPair(name, value));
         }
         lastHealthCentreSelectionIdx = sharedPref.getInt(PREF_KEY_HEALTH_CENTRE_LAST_IDX, 0);
 
@@ -144,17 +111,19 @@ public class Settings {
         ocrDebugEnabled = sharedPref.getBoolean(PREF_KEY_OCR_DEBUG_ENABLED, false);
     }
 
-
     // getters
     public String getVhtName() {
         return vhtName;
     }
+
     public String getRegion() {
         return region;
     }
+
     public List<NamedPair> getHealthCentres() {
         return healthCentres;
     }
+
     public List<String> getHealthCentreNames() {
         List<String> names = new ArrayList<>();
         for (NamedPair pair : healthCentres) {
@@ -162,6 +131,7 @@ public class Settings {
         }
         return names;
     }
+
     public String getHealthCentrePhoneNumber(int position) {
         return healthCentres.get(position).value;
     }
@@ -169,6 +139,7 @@ public class Settings {
     public int getLastHealthCentreSelectionIdx() {
         return lastHealthCentreSelectionIdx;
     }
+
     public void setLastHealthCentreSelectionIdx(int selectionIdx) {
         lastHealthCentreSelectionIdx = selectionIdx;
         sharedPref.edit().putInt(PREF_KEY_HEALTH_CENTRE_LAST_IDX, selectionIdx).apply();
@@ -182,11 +153,11 @@ public class Settings {
         return ocrEnabled;
     }
 
-
     // upload
     public String getReadingServerUrl() {
         return readingServerUrl;
     }
+
     public String getServerUserName() {
         if (serverUserName == null) {
             return "";
@@ -194,6 +165,7 @@ public class Settings {
             return serverUserName;
         }
     }
+
     public String getServerPassword() {
         if (serverPassword == null) {
             return "";
@@ -213,10 +185,10 @@ public class Settings {
     public String getRsaPubKey() {
         return rsaPubKey;
     }
+
     public boolean shouldUploadImages() {
         return shouldUploadImages;
     }
-
 
     //
     public boolean isAllRequiredDataOK() {
@@ -225,5 +197,21 @@ public class Settings {
             ok = false;
         }
         return ok;
+    }
+
+    // types
+    public enum WorkLocation {
+        WORK_LOCATION_IN_COMMUNITY,
+        WORK_LOCATION_IN_HEALTH_CENTRE
+    }
+
+    public static class NamedPair {
+        public String name;
+        public String value;
+
+        public NamedPair(String name, String value) {
+            this.name = name;
+            this.value = value;
+        }
     }
 }

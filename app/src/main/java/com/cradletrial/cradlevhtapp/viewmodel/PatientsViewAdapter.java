@@ -14,8 +14,6 @@ import com.cradletrial.cradlevhtapp.R;
 import com.cradletrial.cradlevhtapp.model.Patient.Patient;
 import com.cradletrial.cradlevhtapp.view.PatientProfileActivity;
 
-import org.w3c.dom.Text;
-
 import java.util.List;
 
 public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapter.PatientViewHolder> {
@@ -61,6 +59,7 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
     static class PatientViewHolder extends RecyclerView.ViewHolder {
         TextView patientName, patientVillage, patientId;
         CardView patientCardview;
+
         public PatientViewHolder(@NonNull View itemView) {
             super(itemView);
             patientCardview = itemView.findViewById(R.id.patientCardview);

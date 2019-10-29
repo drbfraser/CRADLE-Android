@@ -11,6 +11,7 @@ import com.cradletrial.cradlevhtapp.model.ReadingManager;
  */
 public interface MyFragmentInteractionListener {
     Reading getCurrentReading();
+
     ReadingManager getReadingManager();
 
     void advanceToNextPage();

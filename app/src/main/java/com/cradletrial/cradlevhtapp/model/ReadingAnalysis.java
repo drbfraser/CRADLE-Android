@@ -1,24 +1,28 @@
 package com.cradletrial.cradlevhtapp.model;
 
 import android.content.Context;
-import android.graphics.Color;
 
 import com.cradletrial.cradlevhtapp.R;
-import com.cradletrial.cradlevhtapp.utilitiles.Util;
 
 /**
  * Analyzes a single reading and generates advice for this reading.
  * If analyzing a sequence of readings (retests), use ReadingRetestAnalysis
  */
-public enum ReadingAnalysis  {
+public enum ReadingAnalysis {
     // Enum Types
-    NONE (R.string.analysis_none, R.string.brief_advice_none),
-    GREEN (R.string.analysis_green, R.string.brief_advice_green),
-    YELLOW_UP (R.string.analysis_yellow_up, R.string.brief_advice_yellow_up),
-    YELLOW_DOWN (R.string.analysis_yellow_down, R.string.brief_advice_yellow_down),
-    RED_UP (R.string.analysis_red_up, R.string.brief_advice_red_up),
-    RED_DOWN (R.string.analysis_red_down, R.string.brief_advice_red_down);
+    NONE(R.string.analysis_none, R.string.brief_advice_none),
+    GREEN(R.string.analysis_green, R.string.brief_advice_green),
+    YELLOW_UP(R.string.analysis_yellow_up, R.string.brief_advice_yellow_up),
+    YELLOW_DOWN(R.string.analysis_yellow_down, R.string.brief_advice_yellow_down),
+    RED_UP(R.string.analysis_red_up, R.string.brief_advice_red_up),
+    RED_DOWN(R.string.analysis_red_down, R.string.brief_advice_red_down);
 
+    public static final int MAX_SYSTOLIC = 300;
+    public static final int MIN_SYSTOLIC = 10;
+    public static final int MAX_DIASTOLIC = 300;
+    public static final int MIN_DIASTOLIC = 10;
+    public static final int MAX_HEART_RATE = 200;
+    public static final int MIN_HEART_RATE = 40;
     // Break points for determining Green/Yellow/Red Up/Down
     // source: CRADLE VSA Manual (extracted spring 2019)
     private static final int RED_SYSTOLIC = 160;
@@ -27,46 +31,13 @@ public enum ReadingAnalysis  {
     private static final int YELLOW_DIASTOLIC = 90;
     private static final double SHOCK_HIGH = 1.7;
     private static final double SHOCK_MEDIUM = 0.9;
-
-    public static final int MAX_SYSTOLIC = 300;
-    public static final int MIN_SYSTOLIC = 10;
-    public static final int MAX_DIASTOLIC = 300;
-    public static final int MIN_DIASTOLIC = 10;
-    public static final int MAX_HEART_RATE = 200;
-    public static final int MIN_HEART_RATE = 40;
-
-
     // Fields
     private final int analysisTextId;
     private final int briefAdviceTextId;
+
     ReadingAnalysis(int analysisTextId, int briefAdviceTextId) {
         this.analysisTextId = analysisTextId;
         this.briefAdviceTextId = briefAdviceTextId;
-    }
-
-    // Get Text
-    public String getAnalysisText(Context context) {
-        return context.getString(analysisTextId);
-    }
-    public String getBriefAdviceText(Context context) {
-        return context.getString(briefAdviceTextId);
-    }
-
-
-    public boolean isUp() {
-        return this == YELLOW_UP || this == RED_UP;
-    }
-    public boolean isDown() {
-        return this == YELLOW_DOWN || this == RED_DOWN;
-    }
-    public boolean isGreen() {
-        return this == GREEN;
-    }
-    public boolean isYellow() {
-        return this == YELLOW_UP|| this == YELLOW_DOWN;
-    }
-    public boolean isRed() {
-        return this == RED_UP || this == RED_DOWN;
     }
 
     // Analysis Functions
@@ -98,12 +69,42 @@ public enum ReadingAnalysis  {
         }
         return analysis;
     }
+
     private static double getShockIndex(Reading r) {
         // Div-zero guard:
         if (r.bpSystolic == null || r.bpSystolic == 0) {
             return 0;
         }
         return (double) r.heartRateBPM / (double) r.bpSystolic;
+    }
+
+    // Get Text
+    public String getAnalysisText(Context context) {
+        return context.getString(analysisTextId);
+    }
+
+    public String getBriefAdviceText(Context context) {
+        return context.getString(briefAdviceTextId);
+    }
+
+    public boolean isUp() {
+        return this == YELLOW_UP || this == RED_UP;
+    }
+
+    public boolean isDown() {
+        return this == YELLOW_DOWN || this == RED_DOWN;
+    }
+
+    public boolean isGreen() {
+        return this == GREEN;
+    }
+
+    public boolean isYellow() {
+        return this == YELLOW_UP || this == YELLOW_DOWN;
+    }
+
+    public boolean isRed() {
+        return this == RED_UP || this == RED_DOWN;
     }
 
     public boolean isReferralToHealthCentreRecommended() {

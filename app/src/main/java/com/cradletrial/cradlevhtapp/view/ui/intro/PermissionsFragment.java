@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +14,6 @@ import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.cradletrial.cradlevhtapp.R;
 import com.cradletrial.cradlevhtapp.view.ui.reading.PatientInfoFragment;
@@ -24,9 +22,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *  Confirm privacy policy with user
+ * Confirm privacy policy with user
  */
 public class PermissionsFragment extends IntroBaseFragment {
+    /*
+        Permissions
+     */
+    private static final String[] requiredPermissions = {
+            Manifest.permission.CAMERA,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.INTERNET,
+            Manifest.permission.ACCESS_NETWORK_STATE
+    };
+    private static final int MY_PERMISSIONS_REQUEST = 1515;
     private View mView;
     private List<CheckBox> checkBoxes = new ArrayList<>();
 
@@ -38,6 +46,15 @@ public class PermissionsFragment extends IntroBaseFragment {
     public static PermissionsFragment newInstance() {
         PermissionsFragment fragment = new PermissionsFragment();
         return fragment;
+    }
+
+    public static boolean areAllPermissionsGranted(Context context) {
+        for (String permission : requiredPermissions) {
+            if (ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -79,8 +96,6 @@ public class PermissionsFragment extends IntroBaseFragment {
         return true;
     }
 
-
-
     private void updateDisplay() {
         // Show permissions message
         WebView wv = getView().findViewById(R.id.wvPermissions);
@@ -103,19 +118,6 @@ public class PermissionsFragment extends IntroBaseFragment {
         // callback to activity done when we get focus
     }
 
-
-    /*
-        Permissions
-     */
-    private static final String[] requiredPermissions = {
-            Manifest.permission.CAMERA,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.INTERNET,
-            Manifest.permission.ACCESS_NETWORK_STATE
-    };
-    private static final int MY_PERMISSIONS_REQUEST = 1515;
-
-
     private void setupGrantPermissions() {
         Button btn = getView().findViewById(R.id.btnGrantPermissions);
         btn.setOnClickListener(view -> requestAllPermissions());
@@ -123,14 +125,6 @@ public class PermissionsFragment extends IntroBaseFragment {
 
     private void requestAllPermissions() {
         requestPermissions(requiredPermissions, MY_PERMISSIONS_REQUEST);
-    }
-    public static boolean areAllPermissionsGranted(Context context) {
-        for (String permission : requiredPermissions) {
-            if (ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
-                return false;
-            }
-        }
-        return true;
     }
 
     @Override

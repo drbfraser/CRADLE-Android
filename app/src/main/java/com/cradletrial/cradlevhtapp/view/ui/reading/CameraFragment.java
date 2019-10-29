@@ -24,7 +24,6 @@ import android.widget.Toast;
 
 import com.cradletrial.cradlevhtapp.R;
 import com.cradletrial.cradlevhtapp.ocr.CradleOverlay;
-import com.cradletrial.cradlevhtapp.ocr.OcrDigitDetector;
 import com.cradletrial.cradlevhtapp.view.ui.camera.CameraPreview;
 
 import java.io.File;
@@ -36,14 +35,14 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- *  Take a photo of a CRADLE VSA device after a currentReading has been taken.
- *  REQUIRES: Add permissions for camera and disk access inside app.
+ * Take a photo of a CRADLE VSA device after a currentReading has been taken.
+ * REQUIRES: Add permissions for camera and disk access inside app.
  */
 public class CameraFragment extends BaseFragment {
 
+    private static final int FOCUS_PERIOD_ms = 1000;
     private Camera mCamera;
     private CameraPreview mPreview;
-
     // zoom
     private ScaleGestureDetector mScaleGestureDectector;
     private float mScaleFactor = 1.0f;
@@ -51,230 +50,6 @@ public class CameraFragment extends BaseFragment {
     private boolean mIsTakingPhotoNow;
     private Handler focusTimerHandler = new Handler();
     private Runnable focusTimerRunnable;
-    private static final int FOCUS_PERIOD_ms = 1000;
-
-    public CameraFragment() {
-        // Required empty public constructor
-    }
-
-    public static CameraFragment newInstance() {
-        return new CameraFragment();
-    }
-
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_camera, container, false);
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        setupCamera();
-        setupZoom();
-        setupFocusTimer();
-
-        // Take Photo Button:
-        mIsTakingPhotoNow = false;
-        Button btnTakePhoto = view.findViewById(R.id.btnCapturePhoto);
-        btnTakePhoto.setOnClickListener(view1 -> {
-            try {
-                mIsTakingPhotoNow = true;
-                focusTimerHandler.removeCallbacks(focusTimerRunnable);
-
-                // Ensure preview running:
-                if (mCamera == null) {
-                    setupCamera();
-                }
-                setPhotoSizeToMatchPreview();
-
-                // May generate an exception, which we catch.
-                mCamera.startPreview();
-
-                // CALLBACK: Button pressed
-                mCamera.autoFocus((success, camera) -> {
-                    if (!success) {
-                        // REVISIT: Handle this better?
-                        Log.e(TAG, "Unable to auto focus; taking photo anyways!");
-                        Toast.makeText(getContext(), "Trouble focusing well. Move further away?", Toast.LENGTH_LONG).show();
-                    }
-                    // CALLBACK: Auto-focus done
-                    if (mIsTakingPhotoNow) {
-                        mIsTakingPhotoNow = false;
-                        mCamera.takePicture(null, null, mPicture);
-                    }
-                });
-            } catch(Exception e) {
-                Log.e(TAG, "Failed taking photo with exception.", e);
-                Toast.makeText(getContext(), "Unable to access camera. Close other camera apps then try again.", Toast.LENGTH_LONG).show();
-            }
-        });
-    }
-
-    private void setupFocusTimer() {
-        // make it restarting
-        focusTimerRunnable = new Runnable() {
-            @Override
-            public void run() {
-                if (mCamera != null) {
-                    try {
-                        mCamera.autoFocus((b, camera) ->
-                                // re-queue focus event
-                                focusTimerHandler.postDelayed(this, FOCUS_PERIOD_ms)
-                        );
-                    } catch (RuntimeException ex) {
-                        if (getActivity() != null) {
-                            Log.w(TAG, "Auto focus failed; likely because camera destroyed while autofocusing.", ex);
-                        }
-                    }
-                }
-            }
-        };
-
-        // start it
-        focusTimerHandler.postDelayed(focusTimerRunnable, 0);
-    }
-
-    private void setupCamera() {
-        if (getView() == null) {
-            return;
-        }
-        // Create an instance of Camera
-        mCamera = getCameraInstance();
-        if (mCamera != null) {
-
-            // Create our Preview view and set it as the content of our activity.
-            mPreview = new CameraPreview(this.getContext(), mCamera);
-            FrameLayout preview = getView().findViewById(R.id.camera_preview);
-            preview.addView(mPreview);
-
-            // don't set photo size here, because preview only sets its size
-            // after it has been draw!
-        }
-    }
-
-    private void setPhotoSizeToMatchPreview() {
-        // Set camera options
-        Camera.Parameters params = mCamera.getParameters();
-
-        if (mPreview == null || mPreview.getPreviewSize() == null) {
-            Log.e(TAG, "ERROR: Trying to set photo size to match preview before preview size set.");
-            return;
-        }
-
-        Camera.Size pSize = mPreview.getPreviewSize();
-        Log.d(TAG, "preview size: "+pSize.width+"x"+pSize.height+"   ratio: " + ((float)pSize.height/pSize.width));
-
-        // find perfect match:
-        Camera.Size bestSize = null;
-        for (Camera.Size size : params.getSupportedPictureSizes()) {
-            if (size.width == pSize.width && size.height == pSize.height) {
-                bestSize = size;
-                Log.d(TAG, "photo size matches preview:  "+size.width+"x"+size.height+"   ratio h/w: " + ((float)size.height/size.width));
-            }
-        }
-
-        // if no perfect match, select the closet ratio:
-        if (bestSize == null) {
-            float perfectRatio = (float)pSize.height / pSize.width;
-            float smallestError = 999999;
-            for (Camera.Size size : params.getSupportedPictureSizes()) {
-                float ratio = (float) size.height / size.width;
-                float error = Math.abs(perfectRatio - ratio);
-                if (error < smallestError) {
-                    smallestError = error;
-                    bestSize = size;
-                    Log.d(TAG, "picking size with closer ratio:  "+size.width+"x"+size.height+"   ratio h/w: " + ((float)size.height/size.width));
-                }
-            }
-        }
-
-        if (bestSize != null) {
-            params.setPictureSize(bestSize.width, bestSize.height);
-        }
-
-        mCamera.setParameters(params);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-
-        // release camera:
-        // TODO: Test if we need to reacquire it too anywhere?
-        if (mCamera != null) {
-            mCamera.release();
-            mCamera = null;
-        }
-
-        // stop timer
-        focusTimerHandler.removeCallbacks(focusTimerRunnable);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        // reacquire camera
-        if (mCamera == null) {
-            setupCamera();
-        }
-
-        // start timer
-        setupFocusTimer();
-    }
-
-    @Override
-    public void onMyBeingDisplayed() {
-        // may not have created view yet.
-        if (getView() == null) {
-            return;
-        }
-        hideKeyboard();
-
-        // Call startPreview() to restart the preview.
-        if (mCamera != null) {
-            mCamera.startPreview();
-        }
-    }
-    @Override
-    public boolean onMyBeingHidden() {
-        // may not have created view yet.
-        if (getView() == null) {
-            return true;
-        }
-
-        // Call stopPreview() to stop updating the preview surface.
-        if (mCamera != null) {
-            mCamera.stopPreview();
-        }
-        return true;
-    }
-
-
-    /* ***********************************************************
-     *                      Camera Support
-     * ***********************************************************/
-    // Source: https://developer.android.com/guide/topics/media/camera#java
-
-    /** A safe way to get an instance of the Camera object. */
-    public Camera getCameraInstance(){
-        Camera c = null;
-        try {
-            c = Camera.open(); // attempt to get a Camera instance
-        }
-        catch (Exception e){
-            // Camera is not available (in use or does not exist)
-            Log.e(TAG, "Unable to open camera", e);
-            if (getActivity() != null) {
-                Toast.makeText(getActivity(), "Unable to access camera. Close other camera apps then try again.", Toast.LENGTH_LONG).show();
-            }
-        }
-        return c; // returns null if camera is unavailable
-    }
-
     private Camera.PictureCallback mPicture = new Camera.PictureCallback() {
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
@@ -285,9 +60,9 @@ public class CameraFragment extends BaseFragment {
             String baseName = pictureFile.getAbsolutePath();
             baseName = baseName.substring(0, baseName.lastIndexOf('.'));
             File pictureFileFull = new File(baseName + "_0full.jpg");
-            File pictureFileSys  = new File(baseName + "_1sys.jpg");
-            File pictureFileDia  = new File(baseName + "_2dia.jpg");
-            File pictureFileHr   = new File(baseName + "_3hr.jpg");
+            File pictureFileSys = new File(baseName + "_1sys.jpg");
+            File pictureFileDia = new File(baseName + "_2dia.jpg");
+            File pictureFileHr = new File(baseName + "_3hr.jpg");
 
             try {
 
@@ -336,64 +111,20 @@ public class CameraFragment extends BaseFragment {
         }
     };
 
-
-
-    /** Create a file Uri for saving an image */
-    private Uri getOutputMediaFileUri(){
-        return Uri.fromFile(getOutputMediaFile());
+    public CameraFragment() {
+        // Required empty public constructor
     }
 
-    /** Create a File for saving an image */
-    private File getOutputMediaFile(){
-        // To be safe, you should check that the SDCard is mounted
-        // using Environment.getExternalStorageState() before doing this.
-
-        File mediaStorageDir = new File(
-                // For public storage:
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-
-                // For less public storage
-//                getContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES),
-
-                // TODO: Store photos in a private protected directory.
-//                getContext().getFilesDir()
-
-                "CradleSupportApp");
-        // This location works best if you want the created images to be shared
-        // between applications and persist after your app has been uninstalled.
-
-        // Create the storage directory if it does not exist
-        if (! mediaStorageDir.exists()){
-            if (! mediaStorageDir.mkdirs()){
-                Log.d("MyCameraApp", "failed to create directory");
-                return null;
-            }
-        }
-
-        // Create a media file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        File mediaFile;
-        mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                "IMG_"+ timeStamp + ".jpg");
-
-        return mediaFile;
+    public static CameraFragment newInstance() {
+        return new CameraFragment();
     }
-
-
-
-
-
-
-    /* *******************************************************************
-        Image rotation
-        source: https://www.samieltamawy.com/how-to-fix-the-camera-intent-rotated-image-in-android/
-     ******************************************************************** */
 
     /**
      * Set the rotation of an image on file.
-     * @param image what to rotate
+     *
+     * @param image       what to rotate
      * @param orientation such as ExifInterface.ORIENTATION_ROTATE_90
-     * source: https://stackoverflow.com/questions/19753912/set-image-orientation-using-exifinterface
+     *                    source: https://stackoverflow.com/questions/19753912/set-image-orientation-using-exifinterface
      */
     public static void setRotationInImage(File image, int orientation) {
 
@@ -487,6 +218,7 @@ public class CameraFragment extends BaseFragment {
         }
         return inSampleSize;
     }
+
     /**
      * Rotate an image if required.
      *
@@ -510,6 +242,7 @@ public class CameraFragment extends BaseFragment {
                 return img;
         }
     }
+
     private static Bitmap rotateImage(Bitmap img, int degree) {
         Matrix matrix = new Matrix();
         matrix.postRotate(degree);
@@ -517,7 +250,6 @@ public class CameraFragment extends BaseFragment {
         img.recycle();
         return rotatedImg;
     }
-
 
     private static void writeBitMapToFile(Bitmap img, String path) {
         try (FileOutputStream out = new FileOutputStream(path)) {
@@ -527,6 +259,276 @@ public class CameraFragment extends BaseFragment {
         }
     }
 
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_camera, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        setupCamera();
+        setupZoom();
+        setupFocusTimer();
+
+        // Take Photo Button:
+        mIsTakingPhotoNow = false;
+        Button btnTakePhoto = view.findViewById(R.id.btnCapturePhoto);
+        btnTakePhoto.setOnClickListener(view1 -> {
+            try {
+                mIsTakingPhotoNow = true;
+                focusTimerHandler.removeCallbacks(focusTimerRunnable);
+
+                // Ensure preview running:
+                if (mCamera == null) {
+                    setupCamera();
+                }
+                setPhotoSizeToMatchPreview();
+
+                // May generate an exception, which we catch.
+                mCamera.startPreview();
+
+                // CALLBACK: Button pressed
+                mCamera.autoFocus((success, camera) -> {
+                    if (!success) {
+                        // REVISIT: Handle this better?
+                        Log.e(TAG, "Unable to auto focus; taking photo anyways!");
+                        Toast.makeText(getContext(), "Trouble focusing well. Move further away?", Toast.LENGTH_LONG).show();
+                    }
+                    // CALLBACK: Auto-focus done
+                    if (mIsTakingPhotoNow) {
+                        mIsTakingPhotoNow = false;
+                        mCamera.takePicture(null, null, mPicture);
+                    }
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "Failed taking photo with exception.", e);
+                Toast.makeText(getContext(), "Unable to access camera. Close other camera apps then try again.", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+
+    /* ***********************************************************
+     *                      Camera Support
+     * ***********************************************************/
+    // Source: https://developer.android.com/guide/topics/media/camera#java
+
+    private void setupFocusTimer() {
+        // make it restarting
+        focusTimerRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (mCamera != null) {
+                    try {
+                        mCamera.autoFocus((b, camera) ->
+                                // re-queue focus event
+                                focusTimerHandler.postDelayed(this, FOCUS_PERIOD_ms)
+                        );
+                    } catch (RuntimeException ex) {
+                        if (getActivity() != null) {
+                            Log.w(TAG, "Auto focus failed; likely because camera destroyed while autofocusing.", ex);
+                        }
+                    }
+                }
+            }
+        };
+
+        // start it
+        focusTimerHandler.postDelayed(focusTimerRunnable, 0);
+    }
+
+    private void setupCamera() {
+        if (getView() == null) {
+            return;
+        }
+        // Create an instance of Camera
+        mCamera = getCameraInstance();
+        if (mCamera != null) {
+
+            // Create our Preview view and set it as the content of our activity.
+            mPreview = new CameraPreview(this.getContext(), mCamera);
+            FrameLayout preview = getView().findViewById(R.id.camera_preview);
+            preview.addView(mPreview);
+
+            // don't set photo size here, because preview only sets its size
+            // after it has been draw!
+        }
+    }
+
+    private void setPhotoSizeToMatchPreview() {
+        // Set camera options
+        Camera.Parameters params = mCamera.getParameters();
+
+        if (mPreview == null || mPreview.getPreviewSize() == null) {
+            Log.e(TAG, "ERROR: Trying to set photo size to match preview before preview size set.");
+            return;
+        }
+
+        Camera.Size pSize = mPreview.getPreviewSize();
+        Log.d(TAG, "preview size: " + pSize.width + "x" + pSize.height + "   ratio: " + ((float) pSize.height / pSize.width));
+
+        // find perfect match:
+        Camera.Size bestSize = null;
+        for (Camera.Size size : params.getSupportedPictureSizes()) {
+            if (size.width == pSize.width && size.height == pSize.height) {
+                bestSize = size;
+                Log.d(TAG, "photo size matches preview:  " + size.width + "x" + size.height + "   ratio h/w: " + ((float) size.height / size.width));
+            }
+        }
+
+        // if no perfect match, select the closet ratio:
+        if (bestSize == null) {
+            float perfectRatio = (float) pSize.height / pSize.width;
+            float smallestError = 999999;
+            for (Camera.Size size : params.getSupportedPictureSizes()) {
+                float ratio = (float) size.height / size.width;
+                float error = Math.abs(perfectRatio - ratio);
+                if (error < smallestError) {
+                    smallestError = error;
+                    bestSize = size;
+                    Log.d(TAG, "picking size with closer ratio:  " + size.width + "x" + size.height + "   ratio h/w: " + ((float) size.height / size.width));
+                }
+            }
+        }
+
+        if (bestSize != null) {
+            params.setPictureSize(bestSize.width, bestSize.height);
+        }
+
+        mCamera.setParameters(params);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        // release camera:
+        // TODO: Test if we need to reacquire it too anywhere?
+        if (mCamera != null) {
+            mCamera.release();
+            mCamera = null;
+        }
+
+        // stop timer
+        focusTimerHandler.removeCallbacks(focusTimerRunnable);
+    }
+
+
+
+
+
+
+    /* *******************************************************************
+        Image rotation
+        source: https://www.samieltamawy.com/how-to-fix-the-camera-intent-rotated-image-in-android/
+     ******************************************************************** */
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // reacquire camera
+        if (mCamera == null) {
+            setupCamera();
+        }
+
+        // start timer
+        setupFocusTimer();
+    }
+
+    @Override
+    public void onMyBeingDisplayed() {
+        // may not have created view yet.
+        if (getView() == null) {
+            return;
+        }
+        hideKeyboard();
+
+        // Call startPreview() to restart the preview.
+        if (mCamera != null) {
+            mCamera.startPreview();
+        }
+    }
+
+    @Override
+    public boolean onMyBeingHidden() {
+        // may not have created view yet.
+        if (getView() == null) {
+            return true;
+        }
+
+        // Call stopPreview() to stop updating the preview surface.
+        if (mCamera != null) {
+            mCamera.stopPreview();
+        }
+        return true;
+    }
+
+    /**
+     * A safe way to get an instance of the Camera object.
+     */
+    public Camera getCameraInstance() {
+        Camera c = null;
+        try {
+            c = Camera.open(); // attempt to get a Camera instance
+        } catch (Exception e) {
+            // Camera is not available (in use or does not exist)
+            Log.e(TAG, "Unable to open camera", e);
+            if (getActivity() != null) {
+                Toast.makeText(getActivity(), "Unable to access camera. Close other camera apps then try again.", Toast.LENGTH_LONG).show();
+            }
+        }
+        return c; // returns null if camera is unavailable
+    }
+
+    /**
+     * Create a file Uri for saving an image
+     */
+    private Uri getOutputMediaFileUri() {
+        return Uri.fromFile(getOutputMediaFile());
+    }
+
+    /**
+     * Create a File for saving an image
+     */
+    private File getOutputMediaFile() {
+        // To be safe, you should check that the SDCard is mounted
+        // using Environment.getExternalStorageState() before doing this.
+
+        File mediaStorageDir = new File(
+                // For public storage:
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+
+                // For less public storage
+//                getContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+
+                // TODO: Store photos in a private protected directory.
+//                getContext().getFilesDir()
+
+                "CradleSupportApp");
+        // This location works best if you want the created images to be shared
+        // between applications and persist after your app has been uninstalled.
+
+        // Create the storage directory if it does not exist
+        if (!mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
+                Log.d("MyCameraApp", "failed to create directory");
+                return null;
+            }
+        }
+
+        // Create a media file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        File mediaFile;
+        mediaFile = new File(mediaStorageDir.getPath() + File.separator +
+                "IMG_" + timeStamp + ".jpg");
+
+        return mediaFile;
+    }
 
     /* ***********************************************************
      *                      Zoom
@@ -545,19 +547,6 @@ public class CameraFragment extends BaseFragment {
         mScaleImageView = getView().findViewById(R.id.camera_preview);
         mScaleGestureDectector = new ScaleGestureDetector(getActivity(), new ScaleListener());
     }
-    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
-        @Override
-        public boolean onScale(ScaleGestureDetector scaleGestureDetector){
-            mScaleFactor *= scaleGestureDetector.getScaleFactor();
-            // REVISIT: Disable pinch to zoom until we also change the image too.
-            mScaleFactor = Math.max(1.0f,
-                    Math.min(mScaleFactor, 1.0f));
-            mScaleImageView.setScaleX(mScaleFactor);
-            mScaleImageView.setScaleY(mScaleFactor);
-            return true;
-        }
-    }
-
 
     /* ***********************************************************
      *                      Segment Image
@@ -570,6 +559,18 @@ public class CameraFragment extends BaseFragment {
         writeBitMapToFile(extracted, target.getAbsolutePath());
     }
 
+    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+        @Override
+        public boolean onScale(ScaleGestureDetector scaleGestureDetector) {
+            mScaleFactor *= scaleGestureDetector.getScaleFactor();
+            // REVISIT: Disable pinch to zoom until we also change the image too.
+            mScaleFactor = Math.max(1.0f,
+                    Math.min(mScaleFactor, 1.0f));
+            mScaleImageView.setScaleX(mScaleFactor);
+            mScaleImageView.setScaleY(mScaleFactor);
+            return true;
+        }
+    }
 
 
 }

@@ -5,7 +5,6 @@ import android.util.Log;
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
 import com.android.volley.ParseError;
-import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
@@ -21,7 +20,7 @@ public class MultipartRequest extends JsonRequest<NetworkResponse> {
     private final String mMimeType;
 
     public MultipartRequest(String url, Map<String, String> headers, String mimeType, String multipartBody, Response.Listener<NetworkResponse> listener, Response.ErrorListener errorListener) {
-        super(Method.POST,url,multipartBody,listener,errorListener);
+        super(Method.POST, url, multipartBody, listener, errorListener);
         this.mListener = listener;
         this.mErrorListener = errorListener;
         this.mHeaders = headers;
@@ -32,7 +31,6 @@ public class MultipartRequest extends JsonRequest<NetworkResponse> {
     public Map<String, String> getHeaders() throws AuthFailureError {
         return (mHeaders != null) ? mHeaders : super.getHeaders();
     }
-
 
 
     @Override
@@ -55,10 +53,10 @@ public class MultipartRequest extends JsonRequest<NetworkResponse> {
     public void deliverError(VolleyError error) {
         try {
             String json = new String(error.networkResponse.data, HttpHeaderParser.parseCharset(error.networkResponse.headers));
-            Log.d("bugg","Delivery error: "+json);
+            Log.d("bugg", "Delivery error: " + json);
 
         } catch (UnsupportedEncodingException e) {
-            Log.d("bugg",e.getMessage());
+            Log.d("bugg", e.getMessage());
         }
 
         mErrorListener.onErrorResponse(error);

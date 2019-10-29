@@ -17,10 +17,6 @@ import android.widget.TextView;
 import com.cradletrial.cradlevhtapp.R;
 import com.cradletrial.cradlevhtapp.model.Settings;
 
-import org.threeten.bp.ZonedDateTime;
-
-import java.util.ArrayList;
-
 public class EditNamedPairDialogFragment extends DialogFragment {
     private static final String STATE_SHOW_FOR_EDITING = "state_editing";
     private static final String STATE_PAIR_NAME = "state_name";
@@ -30,12 +26,6 @@ public class EditNamedPairDialogFragment extends DialogFragment {
     private Settings.NamedPair pair;
     private DoneCallback callback;
 
-
-    public interface DoneCallback {
-        void ok(Settings.NamedPair pair);
-        void delete(Settings.NamedPair pair);
-    }
-
     public static EditNamedPairDialogFragment makeInstanceForNew(DoneCallback callback) {
         EditNamedPairDialogFragment dialog = new EditNamedPairDialogFragment();
         dialog.isShownForEditing = false;
@@ -43,13 +33,13 @@ public class EditNamedPairDialogFragment extends DialogFragment {
         dialog.callback = callback;
         return dialog;
     }
+
     public static EditNamedPairDialogFragment makeInstanceForEdit(Settings.NamedPair pair, DoneCallback callback) {
         EditNamedPairDialogFragment dialog = new EditNamedPairDialogFragment();
         dialog.pair = pair;
         dialog.callback = callback;
         return dialog;
     }
-
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -150,6 +140,7 @@ public class EditNamedPairDialogFragment extends DialogFragment {
         et = dialog.findViewById(R.id.etValue);
         pair.value = et.getText().toString();
     }
+
     private void setupDialogLabels(Dialog dialog) {
         // TODO: add code to set for health centre vs upload server
     }
@@ -176,6 +167,12 @@ public class EditNamedPairDialogFragment extends DialogFragment {
 
         et = dialog.findViewById(R.id.etValue);
         et.setText(pair.value);
+    }
+
+    public interface DoneCallback {
+        void ok(Settings.NamedPair pair);
+
+        void delete(Settings.NamedPair pair);
     }
 
 }

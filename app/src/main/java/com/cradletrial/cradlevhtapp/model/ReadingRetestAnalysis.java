@@ -9,22 +9,14 @@ import java.util.List;
 
 public class ReadingRetestAnalysis {
 
-    private enum RetestWhen {
-        RETEST_NOT_RECOMMENDED,
-        RETEST_RIGHT_NOW_RECOMMENDED,
-        RETEST_IN_15_RECOMMENDED
-    }
-
     // our initial arguments
     private Reading reading;
     private ReadingManager manager;
-
     // this and previous readings:
     //  ORDER: oldest first
     private List<Reading> readings;
     private List<ReadingAnalysis> analyses = new ArrayList<>();
     private RetestWhen retestAdvice;
-
     /**
      * Constructor
      */
@@ -51,9 +43,11 @@ public class ReadingRetestAnalysis {
     public boolean isRetestRecommended() {
         return isRetestRecommendedIn15Min() || isRetestRecommendedNow();
     }
+
     public boolean isRetestRecommendedNow() {
         return retestAdvice == RetestWhen.RETEST_RIGHT_NOW_RECOMMENDED;
     }
+
     public boolean isRetestRecommendedIn15Min() {
         return retestAdvice == RetestWhen.RETEST_IN_15_RECOMMENDED;
     }
@@ -64,19 +58,19 @@ public class ReadingRetestAnalysis {
     public List<Reading> getReadings() {
         return readings;
     }
+
     public List<ReadingAnalysis> getReadingAnalyses() {
         return analyses;
     }
+
     public ReadingAnalysis getMostRecentReadingAnalysis() {
         return analyses.get(analyses.size() - 1);
     }
+
     public int getNumberReadings() {
         Util.ensure(readings.size() == analyses.size());
         return readings.size();
     }
-
-
-
 
     /**
      * Access DB and figure out advice
@@ -98,10 +92,11 @@ public class ReadingRetestAnalysis {
 
     private void computeAnalyses() {
         analyses.clear();
-        for (Reading r: readings) {
+        for (Reading r : readings) {
             analyses.add(ReadingAnalysis.analyze(r));
         }
     }
+
     private void computeAdvice() {
         // count green, yellow, and red of analyses
         int countGreen = 0;
@@ -149,5 +144,11 @@ public class ReadingRetestAnalysis {
             // done if have 3+ readings (using the most recent reading is sufficient)
             retestAdvice = RetestWhen.RETEST_NOT_RECOMMENDED;
         }
+    }
+
+    private enum RetestWhen {
+        RETEST_NOT_RECOMMENDED,
+        RETEST_RIGHT_NOW_RECOMMENDED,
+        RETEST_IN_15_RECOMMENDED
     }
 }

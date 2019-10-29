@@ -30,23 +30,15 @@ import java.util.List;
  * Interface with client code (an activity) via callbacks.
  */
 public class MultiReadingUploader {
-    public interface ProgressCallback {
-        void uploadProgress(int numCompleted, int numTotal);
-        void uploadReadingSucceeded(Reading reading);
-        void uploadPausedOnError(String message);
-    }
-
     private static final String TAG = "MultiReadingUploader";
     private Context context;
     private Settings settings;
     private List<Reading> readings;
     private ProgressCallback progressCallback;
-
-    private enum State{IDLE, UPLOADING, PAUSED, DONE};
     private State state = State.IDLE;
     private int numCompleted = 0;
 
-
+    ;
     public MultiReadingUploader(Context context, Settings settings, ProgressCallback progressCallback) {
         this.context = context;
         this.settings = settings;
@@ -64,10 +56,12 @@ public class MultiReadingUploader {
             progressCallback.uploadProgress(numCompleted, getTotalNumReadings());
         }
     }
+
     public void abortUpload() {
         state = State.DONE;
         readings.clear();
     }
+
     public void resumeUploadBySkip() {
         if (state != State.PAUSED) {
             Log.e(TAG, "ERROR: Not in paused state");
@@ -84,6 +78,7 @@ public class MultiReadingUploader {
             progressCallback.uploadProgress(numCompleted, getTotalNumReadings());
         }
     }
+
     public void resumeUploadByRetry() {
         if (state != State.PAUSED) {
             Log.e(TAG, "ERROR: Not in paused state");
@@ -98,12 +93,15 @@ public class MultiReadingUploader {
     public boolean isUploadingReadingToStart() {
         return state == State.IDLE;
     }
+
     public boolean isUploading() {
         return state == State.UPLOADING;
     }
+
     public boolean isUploadPaused() {
         return state == State.PAUSED;
     }
+
     public boolean isUploadDone() {
         return state == State.DONE;
     }
@@ -112,13 +110,14 @@ public class MultiReadingUploader {
     public int getNumCompleted() {
         return numCompleted;
     }
+
     public int getNumRemaining() {
         return readings.size();
     }
+
     public int getTotalNumReadings() {
         return numCompleted + getNumRemaining();
     }
-
 
     // CONSTRUCT DATA ZIP FILES
     private File zipReading(Reading reading) throws IOException {
@@ -144,8 +143,6 @@ public class MultiReadingUploader {
         File zipFile = new File(context.getCacheDir(), "upload_reading_" + SystemClock.uptimeMillis() + ".zip");
         return Zipper.zip(filesToZip, zipFile);
     }
-
-
 
     // INTERNAL STATE MACHINE OPERATIONS
     private void startUploadOfPendingReading() {
@@ -204,6 +201,7 @@ public class MultiReadingUploader {
             }
         };
     }
+
     private Response.ErrorListener getErrorCallback() {
         return error -> {
             // handle aborted upload:
@@ -216,8 +214,7 @@ public class MultiReadingUploader {
             String message = "Unable to upload to server (network error)";
             if (error == null) {
                 // do nothing special
-            }
-            else if (error.getCause() != null) {
+            } else if (error.getCause() != null) {
                 if (error.getCause().getClass() == UnknownHostException.class) {
                     message = "Unable to resolve server address; check server URL in settings.";
                 } else if (error.getCause().getClass() == ConnectException.class) {
@@ -225,8 +222,7 @@ public class MultiReadingUploader {
                 } else {
                     message = error.getCause().getMessage();
                 }
-            }
-            else if (error.networkResponse != null){
+            } else if (error.networkResponse != null) {
                 switch (error.networkResponse.statusCode) {
                     case 401:
                         message = "Server rejected username and password; check they are correct in settings.";
@@ -244,5 +240,15 @@ public class MultiReadingUploader {
             progressCallback.uploadPausedOnError(message);
         };
 
+    }
+
+    private enum State {IDLE, UPLOADING, PAUSED, DONE}
+
+    public interface ProgressCallback {
+        void uploadProgress(int numCompleted, int numTotal);
+
+        void uploadReadingSucceeded(Reading reading);
+
+        void uploadPausedOnError(String message);
     }
 }

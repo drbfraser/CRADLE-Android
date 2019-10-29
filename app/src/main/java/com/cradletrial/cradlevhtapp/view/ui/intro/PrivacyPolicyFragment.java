@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *  Confirm privacy policy with user
+ * Confirm privacy policy with user
  */
 public class PrivacyPolicyFragment extends IntroBaseFragment {
     private View mView;
@@ -88,7 +88,6 @@ public class PrivacyPolicyFragment extends IntroBaseFragment {
         hideKeyboard();
 
     }
-
 
 
     @Override

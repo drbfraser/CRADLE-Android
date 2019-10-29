@@ -10,8 +10,10 @@ public interface ReadingManager {
     void updateReading(Context context, Reading reading);
 
     List<Reading> getReadings(Context context);
+
     Reading getReadingById(Context context, long id);
 
     void deleteReadingById(Context context, long readingID);
+
     void deleteAllData(Context context);
 }

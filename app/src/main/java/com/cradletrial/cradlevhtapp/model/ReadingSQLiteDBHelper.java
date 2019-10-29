@@ -5,16 +5,14 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class ReadingSQLiteDBHelper extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION = 1;
     public static final String DATABASE_NAME = "app_database";
-
     public static final String PATIENT_TABLE_NAME = "patient";
     public static final String PATIENT_COLUMN_ID = "_id";
-
     public static final String READING_TABLE_NAME = "reading";
     public static final String READING_COLUMN_DBID = "_id";
     public static final String READING_COLUMN_PATIENT_ID = "patient_id";
     public static final String READING_COLUMN_JSON = "json";
+    private static final int DATABASE_VERSION = 1;
 
     public ReadingSQLiteDBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

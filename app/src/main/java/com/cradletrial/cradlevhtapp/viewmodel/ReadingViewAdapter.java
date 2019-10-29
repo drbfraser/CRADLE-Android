@@ -23,26 +23,7 @@ import java.util.List;
 public class ReadingViewAdapter extends RecyclerView.Adapter<ReadingViewAdapter.MyViewHolder> {
     private List<Reading> readings;
     private RecyclerView recyclerView;
-
-    public interface OnClickElement {
-        void onClick(long readingId);
-        // Return true if click handled
-        boolean onLongClick(long readingId);
-        void onClickRecheckReading(long readingId);
-    }
     private OnClickElement onClickElementListener;
-
-    // Provide a reference to the views for each data item
-    // Complex data items may need more than one view per item, and
-    // you provide access to all the views for a data item in a view holder
-    public static class MyViewHolder extends RecyclerView.ViewHolder {
-        // each data item is just a string in this case
-        public View itemView;
-        public MyViewHolder(View v) {
-            super(v);
-            itemView = v;
-        }
-    }
 
     // Provide a suitable constructor (depends on the kind of dataset)
     public ReadingViewAdapter(List<Reading> readings) {
@@ -59,15 +40,14 @@ public class ReadingViewAdapter extends RecyclerView.Adapter<ReadingViewAdapter.
     // Create new views (invoked by the layout manager)
     @Override
     public ReadingViewAdapter.MyViewHolder onCreateViewHolder(
-            ViewGroup parent, int viewType)
-    {
+            ViewGroup parent, int viewType) {
         // create a new view
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.listelement_reading, parent, false);
 
         // on click
-        v.setOnClickListener( (view)-> onClick(view));
-        v.setOnLongClickListener( (view) -> onLongClick(view));
+        v.setOnClickListener((view) -> onClick(view));
+        v.setOnLongClickListener((view) -> onLongClick(view));
 
         MyViewHolder vh = new MyViewHolder(v);
         return vh;
@@ -84,6 +64,7 @@ public class ReadingViewAdapter extends RecyclerView.Adapter<ReadingViewAdapter.
             onClickElementListener.onClick(readingId);
         }
     }
+
     private boolean onLongClick(View view) {
         int itemPosition = recyclerView.getChildLayoutPosition(view);
         long readingId = readings.get(itemPosition).readingId;
@@ -165,18 +146,40 @@ public class ReadingViewAdapter extends RecyclerView.Adapter<ReadingViewAdapter.
         }
     }
 
-
     private void setVisibilityForImageAndText(View v, int imageViewId, int textViewId, boolean show) {
         ImageView iv = v.findViewById(imageViewId);
-        iv.setVisibility( show ? View.VISIBLE : View.GONE);
+        iv.setVisibility(show ? View.VISIBLE : View.GONE);
 
         TextView tv = v.findViewById(textViewId);
-        tv.setVisibility( show ? View.VISIBLE : View.GONE);
+        tv.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
         return readings.size();
+    }
+
+
+    public interface OnClickElement {
+        void onClick(long readingId);
+
+        // Return true if click handled
+        boolean onLongClick(long readingId);
+
+        void onClickRecheckReading(long readingId);
+    }
+
+    // Provide a reference to the views for each data item
+    // Complex data items may need more than one view per item, and
+    // you provide access to all the views for a data item in a view holder
+    public static class MyViewHolder extends RecyclerView.ViewHolder {
+        // each data item is just a string in this case
+        public View itemView;
+
+        public MyViewHolder(View v) {
+            super(v);
+            itemView = v;
+        }
     }
 }

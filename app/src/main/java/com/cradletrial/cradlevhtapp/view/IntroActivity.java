@@ -23,20 +23,15 @@ import javax.inject.Inject;
 
 public class IntroActivity
         extends AppCompatActivity
-        implements MyIntroFragmentInteractionListener
-{
-    @Inject
-    SharedPreferences sharedPreferences;
-
-    private ViewPager mPager;
-    private IntroSectionsPagerAdapter mPagerAdapter;
-
-    // Reading object shared by all fragments:
-    private int lastKnownTab = -1;
-
+        implements MyIntroFragmentInteractionListener {
     // Shared Pref for this activity
     private static final String LAST_VERSION_TO_COMPLETE_WIZARD = "last ver complete intro";
-
+    @Inject
+    SharedPreferences sharedPreferences;
+    private ViewPager mPager;
+    private IntroSectionsPagerAdapter mPagerAdapter;
+    // Reading object shared by all fragments:
+    private int lastKnownTab = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +68,7 @@ public class IntroActivity
 //        tabs.setupWithViewPager(mPager);
 //        tabs.setTabMode(TabLayout.MODE_SCROLLABLE);
 
-        mPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener(){
+        mPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageSelected(int i) {
                 callOnMyBeingHiddenForCurrentTab();
@@ -84,9 +79,12 @@ public class IntroActivity
             }
 
             @Override
-            public void onPageScrollStateChanged(int i) { }
+            public void onPageScrollStateChanged(int i) {
+            }
+
             @Override
-            public void onPageScrolled(int i, float v, int i1) { }
+            public void onPageScrolled(int i, float v, int i1) {
+            }
         });
 
         // set tab to start on
@@ -96,6 +94,7 @@ public class IntroActivity
 
         setNextButtonEnabled(true);
     }
+
     private void callOnMyBeingHiddenForCurrentTab() {
         if (lastKnownTab != -1) {
             IntroBaseFragment lastFragment = (IntroBaseFragment) mPagerAdapter.getItem(lastKnownTab);
@@ -117,10 +116,12 @@ public class IntroActivity
             public void onPageSelected(int position) {
                 updateBottomBar();
             }
+
             // This method will be invoked when the current page is scrolled
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
             }
+
             // Called when the scroll state changes:
             // SCROLL_STATE_IDLE, SCROLL_STATE_DRAGGING, SCROLL_STATE_SETTLING
             @Override
@@ -144,7 +145,7 @@ public class IntroActivity
 
 
         //Intent intent = ReadingsListActivity.makeIntent(IntroActivity.this);
-        Intent intent = new Intent(this,DashBoardActivity.class);
+        Intent intent = new Intent(this, DashBoardActivity.class);
         startActivity(intent);
         finish();
     }
@@ -153,6 +154,7 @@ public class IntroActivity
         Util.ensure(mPager.getCurrentItem() > 0);
         mPager.setCurrentItem(mPager.getCurrentItem() - 1);
     }
+
     private void onClickNext(View v) {
         Util.ensure(mPager.getCurrentItem() < mPagerAdapter.getCount() - 1);
         mPager.setCurrentItem(mPager.getCurrentItem() + 1);
@@ -191,6 +193,7 @@ public class IntroActivity
     public void advanceToNextPage() {
         onClickNext(null);
     }
+
     @Override
     public void setNextButtonEnabled(boolean enabled) {
         findViewById(R.id.ivNext).setEnabled(enabled);

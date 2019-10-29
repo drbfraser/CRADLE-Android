@@ -14,17 +14,15 @@ import java.io.IOException;
 
 public class Uploader {
     private static final String TAG = "Uploader";
-
-    // what to send
-    private String urlString;
-    private String userName;
-    private String userPassword;
-
     // http related values
     private final String twoHyphens = "--";
     private final String lineEnd = "\r\n";
     private final String boundary = "apiclient-" + System.currentTimeMillis();
     private final String mimeType = "multipart/form-data;boundary=" + boundary;
+    // what to send
+    private String urlString;
+    private String userName;
+    private String userPassword;
     private byte[] multipartBody;
 
     public Uploader(String urlString, String userName, String userPassword) {

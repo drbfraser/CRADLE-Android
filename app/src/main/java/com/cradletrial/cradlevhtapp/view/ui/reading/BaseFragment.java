@@ -13,7 +13,7 @@ import com.cradletrial.cradlevhtapp.model.ReadingManager;
  * Base class for other ReadingFragments
  * - Observer
  * - Shared access to Reading object
-
+ * <p>
  * Activities that contain fragments derived from this class  must implement the
  * {@link MyFragmentInteractionListener} interface to handle interaction events.
  * Use the newInstance() factory method to create an instance of derived fragment.
@@ -41,7 +41,7 @@ abstract public class BaseFragment extends Fragment {
         Context context = getContext();
         View view = this.getActivity().getCurrentFocus();
         if (view != null) {
-            InputMethodManager imm = (InputMethodManager)context.getSystemService(Context.INPUT_METHOD_SERVICE);
+            InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
     }
@@ -55,7 +55,7 @@ abstract public class BaseFragment extends Fragment {
         super.onAttach(context);
 
         // ensure callback functions are implemented.
-        if ( !(context instanceof MyFragmentInteractionListener)) {
+        if (!(context instanceof MyFragmentInteractionListener)) {
             throw new RuntimeException(context.toString()
                     + " must implement MyFragmentInteractionListener");
         }
@@ -75,6 +75,7 @@ abstract public class BaseFragment extends Fragment {
      * Called by ReadingActivity when fragment is just being displayed (navigated to)
      */
     abstract public void onMyBeingDisplayed();
+
     /**
      * Called by ReadingActivity after fragment has been navigated away from (hidden)
      */

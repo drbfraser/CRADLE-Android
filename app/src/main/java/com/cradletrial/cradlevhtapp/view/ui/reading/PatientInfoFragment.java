@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.InputType;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,26 +12,32 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.Switch;
 
 import com.cradletrial.cradlevhtapp.R;
 import com.cradletrial.cradlevhtapp.model.Patient.Patient;
 import com.cradletrial.cradlevhtapp.model.Reading;
-import com.cradletrial.cradlevhtapp.model.Settings;
 import com.cradletrial.cradlevhtapp.utilitiles.Util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.inject.Inject;
-
 /**
- *  Gather information about the patient.
+ * Gather information about the patient.
  */
 public class PatientInfoFragment extends BaseFragment {
+    /*
+        Gestational Age
+     */
+    private static final int GA_UNIT_INDEX_WEEKS = 0;
+    private static final int GA_UNIT_INDEX_MOTHS = 1;
+    private static final int GA_UNIT_INDEX_LMP = -9;    // TODO: not yet implemented
+    private static final int GA_UNIT_INDEX_NONE = 2;
+    private static final int PATIENT_SEX_MALE = 0;
+    private static final int PATIENT_SEX_FEMALE = 1;
+    private static final int PATIENT_SEX_INTERSEX = 2;
     private View mView;
     private List<CheckBox> checkBoxes = new ArrayList<>();
 
@@ -74,8 +79,6 @@ public class PatientInfoFragment extends BaseFragment {
         updateGA_UiFromModel(mView);
     }
 
-
-
     @Override
     public boolean onMyBeingHidden() {
         // may not have created view yet.
@@ -109,6 +112,7 @@ public class PatientInfoFragment extends BaseFragment {
             et.setText("");
         }
     }
+
     private void updateText_ModelFromUi(View mView) {
         EditText et;
         // id
@@ -143,14 +147,6 @@ public class PatientInfoFragment extends BaseFragment {
         currentReading.patient.houseNumber = et.getText().toString();
     }
 
-
-    /*
-        Gestational Age
-     */
-    private static final int GA_UNIT_INDEX_WEEKS = 0;
-    private static final int GA_UNIT_INDEX_MOTHS = 1;
-    private static final int GA_UNIT_INDEX_LMP   = -9;    // TODO: not yet implemented
-    private static final int GA_UNIT_INDEX_NONE  = 2;
     private void setupGASpinner(View v) {
         Spinner spin = v.findViewById(R.id.spinnerGestationalAgeUnits);
 
@@ -176,6 +172,10 @@ public class PatientInfoFragment extends BaseFragment {
         });
 
     }
+
+    /*
+        Patient Sex
+     */
 
     private void updateGA_UiFromModel(View v) {
         Spinner spin = v.findViewById(R.id.spinnerGestationalAgeUnits);
@@ -205,6 +205,7 @@ public class PatientInfoFragment extends BaseFragment {
 
         updateGA_onSpinnerChange(v);
     }
+
     private void updateGA_ModelFromUi(View v) {
         Spinner spin = v.findViewById(R.id.spinnerGestationalAgeUnits);
         EditText etValue = v.findViewById(R.id.etGestationalAgeValue);
@@ -226,6 +227,7 @@ public class PatientInfoFragment extends BaseFragment {
         // save value
         currentReading.patient.gestationalAgeValue = etValue.getText().toString();
     }
+
     private void updateGA_onSpinnerChange(View v) {
         Spinner spin = v.findViewById(R.id.spinnerGestationalAgeUnits);
         EditText etValue = v.findViewById(R.id.etGestationalAgeValue);
@@ -250,7 +252,7 @@ public class PatientInfoFragment extends BaseFragment {
                 Util.ensure(false);
         }
         if (spin.getSelectedItemPosition() != GA_UNIT_INDEX_NONE
-            && etValue.getText().toString().equals(notApplicableString)) {
+                && etValue.getText().toString().equals(notApplicableString)) {
             value = "";
         }
 
@@ -259,10 +261,6 @@ public class PatientInfoFragment extends BaseFragment {
         etValue.setInputType(valueInputType);
         etValue.setText(value);
     }
-
-    /*
-        Patient Sex
-     */
 
     private void setupSexSpinner(View v) {
         Spinner spin = v.findViewById(R.id.spinnerPatientSex);
@@ -290,23 +288,20 @@ public class PatientInfoFragment extends BaseFragment {
 
     }
 
-    private static final int PATIENT_SEX_MALE = 0;
-    private static final int PATIENT_SEX_FEMALE = 1;
-    private static final int PATIENT_SEX_INTERSEX  = 2;
     private void updateSex_ModelFromUI(View v) {
         Spinner spin = v.findViewById(R.id.spinnerPatientSex);
         Switch isPregnant = v.findViewById(R.id.pregnantSwitch);
         switch (spin.getSelectedItemPosition()) {
-            case PATIENT_SEX_MALE :
+            case PATIENT_SEX_MALE:
                 currentReading.patient.patientSex = Patient.PATIENTSEX.MALE;
                 isPregnant.setChecked(false);
-                currentReading.patient.isPregnant= false;
+                currentReading.patient.isPregnant = false;
                 break;
-            case PATIENT_SEX_FEMALE :
+            case PATIENT_SEX_FEMALE:
                 currentReading.patient.patientSex = Patient.PATIENTSEX.FEMALE;
                 currentReading.patient.isPregnant = isPregnant.isChecked();
                 break;
-            case PATIENT_SEX_INTERSEX  :
+            case PATIENT_SEX_INTERSEX:
                 currentReading.patient.patientSex = Patient.PATIENTSEX.OTHERS;
                 currentReading.patient.isPregnant = isPregnant.isChecked();
                 break;

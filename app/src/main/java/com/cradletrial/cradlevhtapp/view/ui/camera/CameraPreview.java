@@ -12,7 +12,7 @@ import java.util.List;
  * A basic Camera preview class
  * Use old Camera API to support Android < 5.0
  * SOURCE: https://developer.android.com/guide/topics/media/camera#java
- * */
+ */
 // Source: https://stackoverflow.com/a/22758359/3475174
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
 
@@ -54,7 +54,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         Log.e(TAG, "surfaceChanged => w=" + w + ", h=" + h);
         // If your preview can change or rotate, take care of those events here.
         // Make sure to stop the preview before resizing or reformatting it.
-        if (mHolder.getSurface() == null){
+        if (mHolder.getSurface() == null) {
             // preview surface does not exist
             return;
         }
@@ -62,7 +62,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         // stop preview before making changes
         try {
             mCamera.stopPreview();
-        } catch (Exception e){
+        } catch (Exception e) {
             // ignore: tried to stop a non-existent preview
         }
 
@@ -76,7 +76,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             mCamera.setPreviewDisplay(mHolder);
             mCamera.startPreview();
 
-        } catch (Exception e){
+        } catch (Exception e) {
             Log.d(TAG, "Error starting camera preview: " + e.getMessage());
         }
     }
@@ -90,9 +90,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             mPreviewSize = getOptimalPreviewSizeBasedOnWidth(mSupportedPreviewSizes, width, height);
         }
 
-        if (mPreviewSize!=null) {
+        if (mPreviewSize != null) {
             float ratio;
-            if(mPreviewSize.height >= mPreviewSize.width)
+            if (mPreviewSize.height >= mPreviewSize.width)
                 ratio = (float) mPreviewSize.height / (float) mPreviewSize.width;
             else
                 ratio = (float) mPreviewSize.width / (float) mPreviewSize.height;

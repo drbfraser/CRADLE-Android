@@ -6,30 +6,22 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.text.HtmlCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.webkit.WebView;
-import android.widget.TextView;
 
-import com.cradletrial.cradlevhtapp.BuildConfig;
 import com.cradletrial.cradlevhtapp.R;
 import com.cradletrial.cradlevhtapp.dagger.MyApp;
 import com.cradletrial.cradlevhtapp.model.Reading;
 import com.cradletrial.cradlevhtapp.model.ReadingManager;
 import com.cradletrial.cradlevhtapp.model.Settings;
-import com.cradletrial.cradlevhtapp.view.ui.settings.SettingsActivity;
 import com.cradletrial.cradlevhtapp.viewmodel.ReadingViewAdapter;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 import javax.inject.Inject;
 
@@ -50,20 +42,19 @@ public class ReadingsListActivity extends TabActivityBase {
     private RecyclerView readingsRecyclerView;
     private ReadingViewAdapter listAdapter;
 
-    public static Intent makeIntent(Context context) {
-        return new Intent(context, ReadingsListActivity.class);
-    }
-
     public ReadingsListActivity() {
         super(R.id.nav_readings);
     }
 
+    public static Intent makeIntent(Context context) {
+        return new Intent(context, ReadingsListActivity.class);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // settings: load defaults if not previously set
         android.support.v7.preference.PreferenceManager.setDefaultValues(
-                this,R.xml.preferences, false);
+                this, R.xml.preferences, false);
 
         // inject:
         ((MyApp) getApplication()).getAppComponent().inject(this);
@@ -74,7 +65,7 @@ public class ReadingsListActivity extends TabActivityBase {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         this.setTitle(R.string.title_activity_readings);
-        if(getSupportActionBar()!=null){
+        if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
@@ -99,7 +90,7 @@ public class ReadingsListActivity extends TabActivityBase {
     }
 
     /**
-     *  List View
+     * List View
      */
     private void setupReadingsRecyclerView() {
         readingsRecyclerView = findViewById(R.id.reading_list_view);
@@ -160,6 +151,7 @@ public class ReadingsListActivity extends TabActivityBase {
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
+
     private void updateUi() {
         setupEmptyState();
         setupReadingsRecyclerView();
@@ -176,8 +168,6 @@ public class ReadingsListActivity extends TabActivityBase {
             wv.setVisibility(View.INVISIBLE);
         }
     }
-
-
 
 
 }

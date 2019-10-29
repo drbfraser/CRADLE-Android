@@ -16,11 +16,10 @@ import android.widget.LinearLayout;
 import com.cradletrial.cradlevhtapp.R;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
- *  Gather information about the patient.
+ * Gather information about the patient.
  */
 public class SymptomsFragment extends BaseFragment {
     private static final int CHECKBOX_NO_SYMPTOMS_INDEX = 0;
@@ -67,7 +66,6 @@ public class SymptomsFragment extends BaseFragment {
     }
 
 
-
     @Override
     public boolean onMyBeingHidden() {
         // may not have created view yet.
@@ -77,7 +75,6 @@ public class SymptomsFragment extends BaseFragment {
         updateSymptoms_ModelFromUi(mView);
         return true;
     }
-
 
 
     /*
@@ -111,7 +108,8 @@ public class SymptomsFragment extends BaseFragment {
         otherSymptoms.clearFocus();
         otherSymptoms.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -119,7 +117,8 @@ public class SymptomsFragment extends BaseFragment {
             }
 
             @Override
-            public void afterTextChanged(Editable editable) { }
+            public void afterTextChanged(Editable editable) {
+            }
         });
 
         updateSymptoms_UiFromModel(v);
@@ -144,6 +143,7 @@ public class SymptomsFragment extends BaseFragment {
             noSymptomsCheckBox.setChecked(false);
         }
     }
+
     private void onOtherSymptomEdited(View v, CharSequence charSequence) {
         if (charSequence.length() > 0) {
             // 'real' symptom clicked; turn off "no symptoms"
@@ -190,6 +190,7 @@ public class SymptomsFragment extends BaseFragment {
         // set other symptoms
         otherSymptoms.setText(otherSymptomsStr);
     }
+
     private void updateSymptoms_ModelFromUi(View v) {
         currentReading.patient.symptoms.clear();
 

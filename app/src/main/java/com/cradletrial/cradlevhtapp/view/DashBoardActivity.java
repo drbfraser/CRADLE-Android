@@ -1,9 +1,9 @@
 package com.cradletrial.cradlevhtapp.view;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.Menu;
@@ -16,7 +16,7 @@ import com.cradletrial.cradlevhtapp.view.ui.settings.SettingsActivity;
 import static com.cradletrial.cradlevhtapp.view.ReadingsListActivity.READING_ACTIVITY_DONE;
 import static com.cradletrial.cradlevhtapp.view.TabActivityBase.TAB_ACTIVITY_BASE_SETTINGS_DONE;
 
-public class DashBoardActivity extends AppCompatActivity  implements View.OnClickListener {
+public class DashBoardActivity extends AppCompatActivity implements View.OnClickListener {
 
 
     @Override
@@ -30,8 +30,9 @@ public class DashBoardActivity extends AppCompatActivity  implements View.OnClic
         //getSupportActionBar().setLogo(getResources().getDrawable(R.drawable.upload));
 
     }
-    private void setupOnClickListner(){
-        View  patientView = findViewById(R.id.patientLayout);
+
+    private void setupOnClickListner() {
+        View patientView = findViewById(R.id.patientLayout);
         CardView patientCardView = patientView.findViewById(R.id.patientCardview);
 
         View statView = findViewById(R.id.statLayout);
@@ -50,6 +51,7 @@ public class DashBoardActivity extends AppCompatActivity  implements View.OnClic
         statCardview.setOnClickListener(this);
         helpButton.setOnClickListener(this);
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -75,22 +77,23 @@ public class DashBoardActivity extends AppCompatActivity  implements View.OnClic
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.readingCardView:
-                Log.d("bugg","reading clicked");
+                Log.d("bugg", "reading clicked");
                 Intent intent = ReadingActivity.makeIntentForNewReading(DashBoardActivity.this);
-                startActivityForResult(intent, READING_ACTIVITY_DONE);                break;
+                startActivityForResult(intent, READING_ACTIVITY_DONE);
+                break;
             case R.id.patientCardview:
-                Log.d("bugg","patient clicked");
+                Log.d("bugg", "patient clicked");
                 startActivity(PatientsActivity.makeIntent(this));
                 break;
             case R.id.syncCardView:
-                Log.d("bugg","upload clicked");
+                Log.d("bugg", "upload clicked");
 
                 startActivity(UploadActivity.makeIntent(this));
                 break;
             case R.id.fabHelpDashboard:
-                Log.d("bugg","fab clicked");
+                Log.d("bugg", "fab clicked");
 
                 startActivity(HelpActivity.makeIntent(this));
                 break;

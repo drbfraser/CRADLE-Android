@@ -13,6 +13,7 @@ public class SwipeControlViewPager extends ViewPager {
     public SwipeControlViewPager(@NonNull Context context) {
         super(context);
     }
+
     public SwipeControlViewPager(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
@@ -27,11 +28,11 @@ public class SwipeControlViewPager extends ViewPager {
         return swipeEnabled && super.onInterceptTouchEvent(event);
     }
 
-    public void setSwipeEnabled(boolean enabled) {
-        this.swipeEnabled = enabled;
-    }
-
     public boolean isSwipeEnabled() {
         return swipeEnabled;
+    }
+
+    public void setSwipeEnabled(boolean enabled) {
+        this.swipeEnabled = enabled;
     }
 }
