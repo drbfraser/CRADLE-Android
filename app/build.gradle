@@ -23,10 +23,10 @@ android {
     compileSdkVersion 28
     defaultConfig {
         // Update this every build
-        versionCode 16
-        versionName "Beta 0.016"
+        versionCode 1
+        versionName "Alpha 1.0"
 
-        applicationId "com.cradletrial.cradlevhtapp"
+        applicationId "com.cradle.neptune"
         minSdkVersion 17    // Android 4.2
         targetSdkVersion 28
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"

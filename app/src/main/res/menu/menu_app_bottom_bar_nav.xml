@@ -1,7 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.cradletrial.cradlevhtapp.view.ReadingActivity">
+    tools:context="com.cradle.neptune.view.ReadingActivity">
     <item
         android:id="@+id/nav_readings"
         android:icon="@drawable/vitals"
