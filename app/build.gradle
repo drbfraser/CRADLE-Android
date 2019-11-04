@@ -1,6 +1,25 @@
 apply plugin: 'com.android.application'
 
+// Initialize the keystore credentials from the keystore.properties file
+def filename = "keystore.properties"
+def keystoreProperties = new Properties()
+
+// Substitute with template if no configuration exists
+//if (!file(filename).exists()) {
+//    filename += ".template"
+//}
+keystoreProperties.load(new FileInputStream(rootProject.file(filename)))
+
 android {
+    signingConfigs {
+        release {
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+        }
+    }
+
     compileSdkVersion 28
     defaultConfig {
         // Update this every build
@@ -13,11 +32,11 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
 
-
         // Blur-Effect library
         renderscriptTargetApi 24
         renderscriptSupportModeEnabled true
 
+        signingConfig signingConfigs.release
     }
     buildTypes {
         release {
