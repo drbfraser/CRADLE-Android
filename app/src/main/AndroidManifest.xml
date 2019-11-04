@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.cradletrial.cradlevhtapp">
+    package="com.cradle.neptune">
     <!-- Use "old" Camera API for support for devices running < v5.0. -->
     <uses-permission android:name="android.permission.CAMERA" /> <!-- Removed autofocus because preventing install on some older phones. -->
     <uses-feature android:name="android.hardware.camera" />
@@ -10,7 +10,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
-        android:name=".dagger.MyApp"
+        android:name="com.cradle.neptune.dagger.MyApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -18,9 +18,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".view.LoginActivity" android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity android:name="com.cradle.neptune.view.LoginActivity" android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity
-            android:name=".view.SplashActivity"
+            android:name="com.cradle.neptune.view.SplashActivity"
             android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -28,40 +28,40 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".view.DashBoardActivity" />
-        <activity android:name=".view.PatientProfileActivity" />
-        <activity android:name=".view.ui.PatientsList" />
+        <activity android:name="com.cradle.neptune.view.DashBoardActivity" />
+        <activity android:name="com.cradle.neptune.view.PatientProfileActivity" />
+        <activity android:name="com.cradle.neptune.view.ui.PatientsList" />
         <activity
-            android:name=".view.IntroActivity"
+            android:name="com.cradle.neptune.view.IntroActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity
-            android:name=".view.PatientsActivity"
+            android:name="com.cradle.neptune.view.PatientsActivity"
             android:label="@string/title_activity_patients"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".view.UploadActivity"
+            android:name="com.cradle.neptune.view.UploadActivity"
             android:label="@string/title_activity_upload"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" /> <!-- windowSoftInputMode=adjustResize so that wizard's bottom buttons stay visible -->
         <activity
-            android:name=".view.HelpActivity"
+            android:name="com.cradle.neptune.view.HelpActivity"
             android:label="@string/title_activity_help"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".view.ReadingActivity"
+            android:name="com.cradle.neptune.view.ReadingActivity"
             android:label="@string/title_activity_reading"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".view.ui.settings.SettingsActivity"
+            android:name="com.cradle.neptune.view.ui.settings.SettingsActivity"
             android:label="Settings"
             android:screenOrientation="portrait" />
-        <activity android:name=".view.ui.settings.SettingNamedPairsActivity" />
+        <activity android:name="com.cradle.neptune.view.ui.settings.SettingNamedPairsActivity" />
 
         <meta-data
             android:name="preloaded_fonts"
