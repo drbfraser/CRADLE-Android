@@ -19,6 +19,7 @@ import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.Settings;
+import com.cradle.neptune.utilitiles.Decrypter;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,8 +34,20 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        checkSharedPrefForLogin();
-        setupLogin();
+        Test();
+       // checkSharedPrefForLogin();
+
+        //setupLogin();
+    }
+
+    private void Test() {
+        Decrypter decrypter = null;
+        try {
+            decrypter = new Decrypter(this);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void checkSharedPrefForLogin() {
