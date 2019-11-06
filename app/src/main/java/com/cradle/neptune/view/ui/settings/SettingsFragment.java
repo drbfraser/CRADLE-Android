@@ -1,6 +1,7 @@
 package com.cradle.neptune.view.ui.settings;
 
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.utilitiles.Util;
+import com.cradle.neptune.view.LoginActivity;
 
 import java.util.Arrays;
 
@@ -44,6 +46,29 @@ public class SettingsFragment extends PreferenceFragmentCompat
         setPreferencesFromResource(R.xml.preferences, rootKey);
 
         setupHealthCentres();
+        setupSignOut();
+    }
+
+    private void setupSignOut() {
+        Preference signout = findPreference("signout");
+        if(signout!=null) {
+            signout.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    //todo show a pop up delete all tbe offlne patient data
+                    SharedPreferences sharedPref = getActivity().getSharedPreferences("login",Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPref.edit();
+                    editor.remove(LoginActivity.LOGIN_EMAIL);
+                    editor.remove(LoginActivity.LOGIN_PASSWORD);
+                    editor.apply();
+                    Intent intent = new Intent(getActivity(),LoginActivity.class);
+                    startActivity(intent);
+                    getActivity().finishAffinity();
+                    return true;
+
+                }
+            });
+        }
     }
 
     private void setupHealthCentres() {

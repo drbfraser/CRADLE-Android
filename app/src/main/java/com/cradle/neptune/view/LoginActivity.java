@@ -29,12 +29,15 @@ public class LoginActivity extends AppCompatActivity {
 
     public static final String LOGIN_EMAIL = "loginEmail";
     public static final String LOGIN_PASSWORD = "loginPassword";
+    public static final  String DEFAULT_EMAIL="";
+    public static final  int DEFAULT_PASSWORD =-1;
     private int loginCount = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        Log.d("buggg","he1111rerer");
 
         checkSharedPrefForLogin();
         setupLogin();
@@ -42,10 +45,10 @@ public class LoginActivity extends AppCompatActivity {
 
 
     private void checkSharedPrefForLogin() {
-        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
-        String email = sharedPref.getString(LOGIN_EMAIL, "");
-        int password = sharedPref.getInt(LOGIN_PASSWORD, -1);
-        if (!email.equals("") && password!=-1) {
+        SharedPreferences sharedPref = this.getSharedPreferences("login",Context.MODE_PRIVATE);
+        String email = sharedPref.getString(LOGIN_EMAIL, DEFAULT_EMAIL);
+        int password = sharedPref.getInt(LOGIN_PASSWORD, DEFAULT_PASSWORD);
+        if (!email.equals(DEFAULT_EMAIL) && password!=DEFAULT_PASSWORD) {
             startIntroActivity();
         }
 
@@ -100,7 +103,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void saveUserNamePasswordSharedPref(String email, String password) {
-        SharedPreferences sharedPref = LoginActivity.this.getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = LoginActivity.this.getSharedPreferences("login",Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(LOGIN_EMAIL, email);
         editor.putInt(LOGIN_PASSWORD, password.hashCode());
