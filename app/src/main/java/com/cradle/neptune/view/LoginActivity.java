@@ -44,8 +44,8 @@ public class LoginActivity extends AppCompatActivity {
     private void checkSharedPrefForLogin() {
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
         String email = sharedPref.getString(LOGIN_EMAIL, "");
-        String password = sharedPref.getString(LOGIN_PASSWORD, "");
-        if (!email.equals("") && !password.equals("")) {
+        int password = sharedPref.getInt(LOGIN_PASSWORD, -1);
+        if (!email.equals("") && password!=-1) {
             startIntroActivity();
         }
 
