@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -19,10 +20,10 @@ import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.Settings;
-import com.cradle.neptune.utilitiles.Decrypter;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -34,21 +35,11 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        Test();
-       // checkSharedPrefForLogin();
 
-        //setupLogin();
+        checkSharedPrefForLogin();
+        setupLogin();
     }
 
-    private void Test() {
-        Decrypter decrypter = null;
-        try {
-            decrypter = new Decrypter(this);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
 
     private void checkSharedPrefForLogin() {
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
@@ -97,7 +88,7 @@ public class LoginActivity extends AppCompatActivity {
                 progressDialog.cancel();
                 //put it into sharedpress for offline login.
                 saveUserNamePasswordSharedPref(emailET.getText().toString(), passwordET.getText().toString());
-                Toast.makeText(LoginActivity.this, "LOGIN", Toast.LENGTH_LONG).show();
+                Toast.makeText(LoginActivity.this, "Login Successful!", Toast.LENGTH_LONG).show();
                 startIntroActivity();
             }, error -> {
                 Toast.makeText(LoginActivity.this, " Invalid credentials", Toast.LENGTH_LONG).show();
@@ -112,7 +103,7 @@ public class LoginActivity extends AppCompatActivity {
         SharedPreferences sharedPref = LoginActivity.this.getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(LOGIN_EMAIL, email);
-        editor.putString(LOGIN_PASSWORD, password);
+        editor.putInt(LOGIN_PASSWORD, password.hashCode());
         editor.apply();
     }
 
