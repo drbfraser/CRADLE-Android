@@ -1,6 +1,7 @@
 package com.cradle.neptune.view.ui.network_volley;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.SystemClock;
 import android.util.Log;
 
@@ -13,6 +14,7 @@ import com.cradle.neptune.utilitiles.GsonUtil;
 import com.cradle.neptune.utilitiles.HybridFileEncrypter;
 import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.utilitiles.Zipper;
+import com.cradle.neptune.view.LoginActivity;
 
 import org.threeten.bp.ZonedDateTime;
 
@@ -160,10 +162,13 @@ public class MultiReadingUploader {
 
             String readingJson = Reading.getJsonObj(readings.get(0));
             // start upload
+            SharedPreferences sharedPref = context.getSharedPreferences("login",Context.MODE_PRIVATE);
+            String token = sharedPref.getString("TOKEN",null);
+
             Uploader uploader = new Uploader(
                     settings.getReadingServerUrl(),
                     settings.getServerUserName(),
-                    settings.getServerPassword());
+                    settings.getServerPassword(),token);
             uploader.doUpload(readingJson, getSuccessCallback(), getErrorCallback());
 
         } catch (IOException | GeneralSecurityException ex) {

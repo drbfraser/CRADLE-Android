@@ -1,16 +1,22 @@
 package com.cradle.neptune.view.ui.network_volley;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+
 import com.android.volley.NetworkResponse;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.view.LoginActivity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Uploader {
     private static final String TAG = "Uploader";
@@ -24,14 +30,17 @@ public class Uploader {
     private String userName;
     private String userPassword;
     private byte[] multipartBody;
+    private String token;
 
-    public Uploader(String urlString, String userName, String userPassword) {
+    public Uploader(String urlString, String userName, String userPassword, String token) {
         this.urlString = urlString;
         this.userName = userName;
         this.userPassword = userPassword;
+        this.token=token;
     }
 
     public void doUpload(String jsonStringForBody, Response.Listener<NetworkResponse> callbackOk, Response.ErrorListener callbackFail) {
+
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(bos);
         try {
@@ -53,10 +62,11 @@ public class Uploader {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        Map<String,String> header = new HashMap<>();
+        header.put("token",token);
         MultipartRequest multipartRequest = new MultipartRequest(
                 urlString,
-                null,
+                header,
                 mimeType,
                 jsonStringForBody,
                 callbackOk, callbackFail);
