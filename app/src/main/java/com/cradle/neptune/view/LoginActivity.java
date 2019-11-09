@@ -29,8 +29,10 @@ public class LoginActivity extends AppCompatActivity {
 
     public static final String LOGIN_EMAIL = "loginEmail";
     public static final String LOGIN_PASSWORD = "loginPassword";
+    public static final String TOKEN = "token";
     public static final  String DEFAULT_EMAIL="";
     public static final  int DEFAULT_PASSWORD =-1;
+    public static final  String DEFAULT_TOKEN = null;
     private int loginCount = 3;
 
     @Override
@@ -93,7 +95,7 @@ public class LoginActivity extends AppCompatActivity {
                 try {
                     SharedPreferences sharedPref = LoginActivity.this.getSharedPreferences("login",Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = sharedPref.edit();
-                    editor.putString("TOKEN", response.getString("token"));
+                    editor.putString(TOKEN, response.getString(TOKEN));
                     editor.apply();
                 } catch (JSONException e) {
                     e.printStackTrace();

@@ -63,7 +63,7 @@ public class Uploader {
             e.printStackTrace();
         }
         Map<String,String> header = new HashMap<>();
-        header.put("token",token);
+        header.put(LoginActivity.TOKEN,token);
         MultipartRequest multipartRequest = new MultipartRequest(
                 urlString,
                 header,
