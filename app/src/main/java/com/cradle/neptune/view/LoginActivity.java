@@ -30,6 +30,7 @@ public class LoginActivity extends AppCompatActivity {
     public static final String LOGIN_EMAIL = "loginEmail";
     public static final String LOGIN_PASSWORD = "loginPassword";
     public static final String TOKEN = "token";
+    public static final String AUTH = "Authorization";
     public static final  String DEFAULT_EMAIL="";
     public static final  int DEFAULT_PASSWORD =-1;
     public static final  String DEFAULT_TOKEN = null;
