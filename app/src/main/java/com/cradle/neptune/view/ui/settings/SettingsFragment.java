@@ -60,6 +60,7 @@ public class SettingsFragment extends PreferenceFragmentCompat
                     SharedPreferences.Editor editor = sharedPref.edit();
                     editor.remove(LoginActivity.LOGIN_EMAIL);
                     editor.remove(LoginActivity.LOGIN_PASSWORD);
+                    editor.remove(LoginActivity.TOKEN);
                     editor.apply();
                     Intent intent = new Intent(getActivity(),LoginActivity.class);
                     startActivity(intent);

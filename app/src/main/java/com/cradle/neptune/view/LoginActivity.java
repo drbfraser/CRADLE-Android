@@ -29,8 +29,11 @@ public class LoginActivity extends AppCompatActivity {
 
     public static final String LOGIN_EMAIL = "loginEmail";
     public static final String LOGIN_PASSWORD = "loginPassword";
+    public static final String TOKEN = "token";
+    public static final String AUTH = "Authorization";
     public static final  String DEFAULT_EMAIL="";
     public static final  int DEFAULT_PASSWORD =-1;
+    public static final  String DEFAULT_TOKEN = null;
     private int loginCount = 3;
 
     @Override
@@ -90,6 +93,14 @@ public class LoginActivity extends AppCompatActivity {
                 //put it into sharedpress for offline login.
                 saveUserNamePasswordSharedPref(emailET.getText().toString(), passwordET.getText().toString());
                 Toast.makeText(LoginActivity.this, "Login Successful!", Toast.LENGTH_LONG).show();
+                try {
+                    SharedPreferences sharedPref = LoginActivity.this.getSharedPreferences("login",Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPref.edit();
+                    editor.putString(TOKEN, response.getString(TOKEN));
+                    editor.apply();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
                 startIntroActivity();
             }, error -> {
                 Toast.makeText(LoginActivity.this, " Invalid credentials", Toast.LENGTH_LONG).show();
