@@ -99,6 +99,8 @@ dependencies {
 
     // SMS
     implementation 'com.squareup.okhttp3:okhttp:3.2.0'
+
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
 }
 
 // TensorFlow Lite: select only the ABI's we (likely) need
