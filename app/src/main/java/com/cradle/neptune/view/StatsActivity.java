@@ -41,11 +41,17 @@ public class StatsActivity extends AppCompatActivity {
         LineDataSet dataSet2 = new LineDataSet(entries2,"HeartRate3");
 
         dataSet.setColor(getResources().getColor(R.color.colorAccent));
-        dataSet1.setColor(Color.RED);
-        dataSet2.setColor(Color.GREEN);
-        dataSet.setCircleColor(Color.RED);
+        dataSet1.setColor(getResources().getColor(R.color.purple));
+        dataSet2.setColor(getResources().getColor(R.color.orange));
+        dataSet.setCircleColor(getResources().getColor(R.color.colorAccent));
+        dataSet1.setCircleColor(getResources().getColor(R.color.purple));
+        dataSet2.setCircleColor(getResources().getColor(R.color.orange));
+
         dataSet.setCircleHoleRadius(0);
+        lineChart.setDrawBorders(false);
+        lineChart.setDrawGridBackground(false);
         lineChart.getAxisRight().setDrawLabels(false);
+        lineChart.getAxisRight().setDrawGridLines(false);
         lineChart.getXAxis().setDrawGridLines(false);
         lineChart.getAxisLeft().setDrawGridLines(false);
 

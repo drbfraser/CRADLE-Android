@@ -12,7 +12,8 @@
     <color name="light_grey">#BBBBBB</color>
 
     <color name="recommended">#3170D6</color>
-
+    <color name="purple">#e69400d3</color>
+<color name="orange">#e6ff7f50</color>
     <color name="colorOffWhite">#f2f5fa</color>
     <color name="dashboard_help">#606060</color>
 
