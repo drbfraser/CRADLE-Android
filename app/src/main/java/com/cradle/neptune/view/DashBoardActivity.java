@@ -93,6 +93,9 @@ public class DashBoardActivity extends AppCompatActivity implements View.OnClick
             case R.id.fabHelpDashboard:
                 startActivity(HelpActivity.makeIntent(this));
                 break;
+            case R.id.statCardView:
+                startActivity(new Intent(this,StatsActivity.class));
+                break;
 
         }
     }

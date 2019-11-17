@@ -18,7 +18,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".view.ui.StatsActivity"></activity>
+        <activity android:name=".view.StatsActivity"></activity>
         <activity
             android:name=".view.LoginActivity"
             android:theme="@style/AppTheme.NoActionBar" />
