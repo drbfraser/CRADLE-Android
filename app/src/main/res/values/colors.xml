@@ -16,6 +16,7 @@
 <color name="orange">#e6ff7f50</color>
     <color name="colorOffWhite">#f2f5fa</color>
     <color name="dashboard_help">#606060</color>
-
+    <color name="yellowDown">#f7b500</color>
+    <color name="redDown">#cc0605</color>
 
 </resources>

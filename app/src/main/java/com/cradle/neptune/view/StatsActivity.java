@@ -110,8 +110,8 @@ public class StatsActivity extends AppCompatActivity {
 
         greenDataSet.setColor(Color.GREEN);
         yellowUpDataSet.setColor(Color.YELLOW);
-        yellowDownDataSet.setColor(Color.YELLOW);
-        redDownDataSet.setColor(Color.RED);
+        yellowDownDataSet.setColor(getResources().getColor(R.color.yellowDown));
+        redDownDataSet.setColor(getResources().getColor(R.color.redDown));
         redUpDataSet.setColor(Color.RED);
 
 
