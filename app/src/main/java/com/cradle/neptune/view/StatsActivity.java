@@ -13,6 +13,7 @@ import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.utilitiles.BarGraphValueFormatter;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
@@ -106,8 +107,11 @@ public class StatsActivity extends AppCompatActivity {
         barChart.getAxisLeft().setAxisMinimum(0);
 
         BarData lineData = new BarData(greenDataSet,yellowUpDataSet,yellowDownDataSet,redUpDataSet,redDownDataSet);
+        barChart.getDescription().setText("Traffic Lights from all the readings");
 
         barChart.setData(lineData);
+        barChart.getLegend().setEnabled(false);
+
         barChart.invalidate();
     }
 
@@ -172,6 +176,8 @@ public class StatsActivity extends AppCompatActivity {
         //start at zero
         lineChart.getAxisRight().setAxisMinimum(0);
         lineChart.getAxisRight().setAxisMinimum(0);
+
+        lineChart.getDescription().setText("Cardiovascular Data from last "+ readings.size()+ " readings");
         lineChart.invalidate();
     }
 }
