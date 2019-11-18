@@ -178,7 +178,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/textView34" />
 
             <TextView
-                android:id="@+id/textView37"
+                android:id="@+id/readingTvStats"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -198,11 +198,11 @@
                 android:textColor="@color/black"
                 android:textSize="12sp"
                 android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="@+id/textView37"
+                app:layout_constraintStart_toStartOf="@+id/readingTvStats"
                 app:layout_constraintTop_toBottomOf="@+id/readingdiagnosis" />
 
             <TextView
-                android:id="@+id/textView39"
+                android:id="@+id/assessmentTvStats"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
@@ -224,8 +224,8 @@
                 android:textColor="@color/black"
                 android:textSize="12sp"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/textView37"
-                app:layout_constraintTop_toTopOf="@+id/textView37" />
+                app:layout_constraintStart_toEndOf="@+id/readingTvStats"
+                app:layout_constraintTop_toTopOf="@+id/readingTvStats" />
 
             <TextView
                 android:id="@+id/readingTreatment"
@@ -250,8 +250,8 @@
                 android:text="NA "
                 android:textColor="@color/black"
                 android:textSize="12sp"
-                app:layout_constraintStart_toEndOf="@+id/textView39"
-                app:layout_constraintTop_toTopOf="@+id/textView39" />
+                app:layout_constraintStart_toEndOf="@+id/assessmentTvStats"
+                app:layout_constraintTop_toTopOf="@+id/assessmentTvStats" />
 
             <Button
                 android:id="@+id/newReadingButton"
@@ -264,8 +264,8 @@
                 app:backgroundTint="@color/colorPrimaryLight"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@+id/textView39"
-                app:layout_constraintTop_toBottomOf="@+id/textView39" />
+                app:layout_constraintStart_toStartOf="@+id/assessmentTvStats"
+                app:layout_constraintTop_toBottomOf="@+id/assessmentTvStats" />
 
 
         </android.support.constraint.ConstraintLayout>

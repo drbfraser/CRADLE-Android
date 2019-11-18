@@ -29,19 +29,20 @@ public class StatsActivity extends AppCompatActivity {
 
     @Inject
     ReadingManager readingManager;
+
+    List<Reading> readings;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stats);
         ((MyApp) getApplication()).getAppComponent().inject(this);
-
+        readings = readingManager.getReadings(this);
         setupLineChar();
         setupBarChart();
     }
 
     private void setupBarChart() {
 
-        List<Reading> readings = readingManager.getReadings(this);
         BarChart barChart = findViewById(R.id.bargraph);
         List<BarEntry> greenEntry = new ArrayList<>();
         List<BarEntry> yellowUpEntry = new ArrayList<>();
@@ -119,7 +120,6 @@ public class StatsActivity extends AppCompatActivity {
         List<Entry> diastolicEntry = new ArrayList<>();
         List<Entry> systolicEntry = new ArrayList<>();
         List<Entry> heartrateEntry = new ArrayList<>();
-        List<Reading> readings = readingManager.getReadings(this);
         //start at 0
 
         for(int i =0;i<readings.size();i++){
