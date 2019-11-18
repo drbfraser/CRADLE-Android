@@ -3,6 +3,7 @@ package com.cradle.neptune.view;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.TextView;
 
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
@@ -37,8 +38,28 @@ public class StatsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_stats);
         ((MyApp) getApplication()).getAppComponent().inject(this);
         readings = readingManager.getReadings(this);
+        setupBasicStats();
         setupLineChar();
         setupBarChart();
+    }
+
+    private void setupBasicStats() {
+        int totalReadings = readings.size();
+        int totalRef =0;
+        int totalassessments=0;
+
+        for (int i=0;i<totalReadings;i++){
+            if(readings.get(i).isReferredToHealthCentre()) {
+                totalRef++;
+            }
+        }
+        TextView readingTV = findViewById(R.id.readingTvStats);
+        readingTV.setText(totalReadings+"");
+        TextView refTV = findViewById(R.id.refTvStats);
+        refTV.setText(totalRef+"");
+        //todo do the same for the referrals
+
+
     }
 
     private void setupBarChart() {
