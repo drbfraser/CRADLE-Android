@@ -3,7 +3,6 @@ package com.cradle.neptune.view;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
@@ -13,14 +12,13 @@ import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.utilitiles.BarGraphValueFormatter;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.components.Description;
+import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.formatter.ValueFormatter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -107,11 +105,12 @@ public class StatsActivity extends AppCompatActivity {
         barChart.getAxisLeft().setAxisMinimum(0);
 
         BarData lineData = new BarData(greenDataSet,yellowUpDataSet,yellowDownDataSet,redUpDataSet,redDownDataSet);
-        barChart.getDescription().setText("Traffic Lights from all the readings");
+        barChart.getDescription().setText("");
+
 
         barChart.setData(lineData);
         barChart.getLegend().setEnabled(false);
-
+        barChart.setHighlightPerTapEnabled(false);
         barChart.invalidate();
     }
 
@@ -121,13 +120,10 @@ public class StatsActivity extends AppCompatActivity {
         List<Entry> systolicEntry = new ArrayList<>();
         List<Entry> heartrateEntry = new ArrayList<>();
         List<Reading> readings = readingManager.getReadings(this);
-        diastolicEntry.add(new Entry(0,0));
-        systolicEntry.add(new Entry(0,0));
-        heartrateEntry.add(new Entry(0,0));
+        //start at 0
 
-        for(int i =1;i<readings.size();i++){
+        for(int i =0;i<readings.size();i++){
             Reading reading = readings.get(i);
-            Log.d("buggg",reading.dateTimeTaken.getDayOfMonth()+" "+ reading);
             diastolicEntry.add(new Entry(i,reading.bpDiastolic));
             systolicEntry.add(new Entry(i,reading.bpSystolic));
             heartrateEntry.add(new Entry(i,reading.heartRateBPM));
@@ -169,14 +165,16 @@ public class StatsActivity extends AppCompatActivity {
         lineChart.getAxisLeft().setDrawGridLines(false);
 
         LineData lineData = new LineData(diastolicDataSet,systolicDataSet,heartRateDataSet);
-        lineData.setDrawValues(false);
+        //lineData.setDrawValues(false);
+
         lineData.setHighlightEnabled(false);
-        lineChart.getXAxis().setDrawAxisLine(false);
+
+        lineChart.getXAxis().setDrawAxisLine(true);
         lineChart.setData(lineData);
         //start at zero
         lineChart.getAxisRight().setAxisMinimum(0);
         lineChart.getAxisRight().setAxisMinimum(0);
-
+        lineChart.getXAxis().setEnabled(false);
         lineChart.getDescription().setText("Cardiovascular Data from last "+ readings.size()+ " readings");
         lineChart.invalidate();
     }
