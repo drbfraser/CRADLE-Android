@@ -5,6 +5,7 @@ import com.cradle.neptune.view.IntroActivity;
 import com.cradle.neptune.view.PatientProfileActivity;
 import com.cradle.neptune.view.PatientsActivity;
 import com.cradle.neptune.view.ReadingActivity;
+import com.cradle.neptune.view.StatsActivity;
 import com.cradle.neptune.view.UploadActivity;
 import com.cradle.neptune.view.ui.reading.ConfirmDataFragment;
 import com.cradle.neptune.view.ui.reading.ReferralDialogFragment;
@@ -43,6 +44,7 @@ public interface AppComponent {
 
     void inject(PatientProfileActivity activity);
 
+    void inject(StatsActivity statsActivity);
     // void inject(MyFragment fragment);
     // void inject(MyService service);
 }
