@@ -3,6 +3,8 @@ package com.cradle.neptune.view;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.CardView;
+import android.view.View;
 import android.widget.TextView;
 
 import com.cradle.neptune.R;
@@ -36,14 +38,31 @@ public class StatsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stats);
+
         ((MyApp) getApplication()).getAppComponent().inject(this);
         readings = readingManager.getReadings(this);
-        setupBasicStats();
-        setupLineChar();
-        setupBarChart();
+
+        if(readings.size()>0){
+            setupBasicStats();
+            setupLineChar();
+            setupBarChart();
+        }
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle("Statistics");
+        }
+
     }
 
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
+    }
     private void setupBasicStats() {
+        TextView emptyview = findViewById(R.id.emptyView);
+        emptyview.setVisibility(View.GONE);
+
         int totalReadings = readings.size();
         int totalRef =0;
         int totalassessments=0;
@@ -65,6 +84,9 @@ public class StatsActivity extends AppCompatActivity {
     private void setupBarChart() {
 
         BarChart barChart = findViewById(R.id.bargraph);
+        CardView barCard = findViewById(R.id.bargraphCard);
+        barCard.setVisibility(View.VISIBLE);
+
         List<BarEntry> greenEntry = new ArrayList<>();
         List<BarEntry> yellowUpEntry = new ArrayList<>();
         List<BarEntry> yellowDownEntry = new ArrayList<>();
@@ -138,18 +160,21 @@ public class StatsActivity extends AppCompatActivity {
 
     private void setupLineChar() {
         LineChart lineChart = findViewById(R.id.lineChart);
+        CardView linecard = findViewById(R.id.linechartCard);
+        linecard.setVisibility(View.VISIBLE);
         List<Entry> diastolicEntry = new ArrayList<>();
         List<Entry> systolicEntry = new ArrayList<>();
         List<Entry> heartrateEntry = new ArrayList<>();
         //start at 0
 
+        diastolicEntry.add(new Entry(0,0));
+        systolicEntry.add(new Entry(0,0));
+        heartrateEntry.add(new Entry(0,0));
         for(int i =0;i<readings.size();i++){
             Reading reading = readings.get(i);
-            diastolicEntry.add(new Entry(i,reading.bpDiastolic));
-            systolicEntry.add(new Entry(i,reading.bpSystolic));
-            heartrateEntry.add(new Entry(i,reading.heartRateBPM));
-
-
+            diastolicEntry.add(new Entry(i+1,reading.bpDiastolic));
+            systolicEntry.add(new Entry(i+1,reading.bpSystolic));
+            heartrateEntry.add(new Entry(i+1,reading.heartRateBPM));
         }
 
         LineDataSet diastolicDataSet = new LineDataSet(diastolicEntry,"BP Diastolic");
