@@ -249,5 +249,6 @@
     <string name="empty_text_for_patient">You dont have any patients right now.\n Go to the dashboard to create a new reading.</string>
     <string name="emptyViewStatText">Please create some readings to see stats</string>
     <string name="stateTextforMonth">This Month, you have made</string>
+    <string name="pregnant_question">Pregnant?</string>
 
 </resources>

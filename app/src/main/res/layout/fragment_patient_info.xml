@@ -17,9 +17,10 @@
             android:id="@+id/spinnerPatientSex"
             android:layout_width="163dp"
             android:layout_height="31dp"
-            android:layout_marginTop="12dp"
-            app:layout_constraintStart_toStartOf="@+id/spinnerGestationalAgeUnits"
-            app:layout_constraintTop_toBottomOf="@+id/spinnerGestationalAgeUnits" />
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txtVillageNumber" />
 
         <Spinner
             android:id="@+id/spinnerGestationalAgeUnits"
@@ -100,7 +101,7 @@
             android:layout_marginTop="8dp"
             android:hint="@string/gestational_age"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/txtPatientAge">
+            app:layout_constraintTop_toBottomOf="@+id/spinnerPatientSex">
 
             <android.support.design.widget.TextInputEditText
                 android:id="@+id/etGestationalAgeValue"
@@ -132,13 +133,13 @@
         <android.support.design.widget.TextInputLayout
             android:id="@+id/txtZone"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="140dp"
+            android:layout_width="320dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:hint="@string/zone"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/txtGestationalAge">
+            app:layout_constraintTop_toBottomOf="@+id/txtPatientName">
 
             <android.support.design.widget.TextInputEditText
                 android:id="@+id/etZone"
@@ -206,14 +207,12 @@
             android:id="@+id/pregnantSwitch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
             android:checked="false"
-            android:text="Pregnant?"
-            app:layout_constraintBottom_toTopOf="@+id/txtTankNumber"
-            app:layout_constraintEnd_toEndOf="@+id/spinnerPatientSex"
-            app:layout_constraintStart_toEndOf="@+id/txtZone"
-            app:layout_constraintTop_toBottomOf="@+id/spinnerPatientSex" />
+            android:text="@string/pregnant_question"
+            app:layout_constraintStart_toEndOf="@+id/spinnerPatientSex"
+            app:layout_constraintTop_toBottomOf="@+id/txtHouseNumber" />
 
 
     </android.support.constraint.ConstraintLayout>
