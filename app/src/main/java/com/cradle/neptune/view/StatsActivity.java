@@ -44,7 +44,7 @@ public class StatsActivity extends AppCompatActivity {
 
         if(readings.size()>0){
             setupBasicStats();
-            setupLineChar();
+            setupLineChart();
             setupBarChart();
         }
         if (getSupportActionBar() != null) {
@@ -73,9 +73,9 @@ public class StatsActivity extends AppCompatActivity {
             }
         }
         TextView readingTV = findViewById(R.id.readingTvStats);
-        readingTV.setText(totalReadings+"");
+        readingTV.setText(String.valueOf(totalReadings));
         TextView refTV = findViewById(R.id.refTvStats);
-        refTV.setText(totalRef+"");
+        refTV.setText(String.valueOf(totalRef));
         //todo do the same for the referrals
 
 
@@ -158,7 +158,7 @@ public class StatsActivity extends AppCompatActivity {
         barChart.invalidate();
     }
 
-    private void setupLineChar() {
+    private void setupLineChart() {
         LineChart lineChart = findViewById(R.id.lineChart);
         CardView linecard = findViewById(R.id.linechartCard);
         linecard.setVisibility(View.VISIBLE);
@@ -167,9 +167,6 @@ public class StatsActivity extends AppCompatActivity {
         List<Entry> heartrateEntry = new ArrayList<>();
         //start at 0
 
-        diastolicEntry.add(new Entry(0,0));
-        systolicEntry.add(new Entry(0,0));
-        heartrateEntry.add(new Entry(0,0));
         for(int i =0;i<readings.size();i++){
             Reading reading = readings.get(i);
             diastolicEntry.add(new Entry(i+1,reading.bpDiastolic));
@@ -217,9 +214,6 @@ public class StatsActivity extends AppCompatActivity {
 
         lineChart.getXAxis().setDrawAxisLine(true);
         lineChart.setData(lineData);
-        //start at zero
-        lineChart.getAxisRight().setAxisMinimum(0);
-        lineChart.getAxisRight().setAxisMinimum(0);
         lineChart.getXAxis().setEnabled(false);
         lineChart.getDescription().setText("Cardiovascular Data from last "+ readings.size()+ " readings");
         lineChart.invalidate();

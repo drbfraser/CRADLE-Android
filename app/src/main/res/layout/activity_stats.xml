@@ -105,11 +105,11 @@
 
                 <TextView
                     android:id="@+id/textViewzz"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
                     android:layout_marginStart="8dp"
                     android:layout_marginEnd="8dp"
-                    android:text="@string/assessment"
+                    android:text="Referral Assessed"
                     android:textAllCaps="false"
                     android:textColor="@color/black"
                     app:layout_constraintBottom_toBottomOf="@+id/assessmentTvStats"
