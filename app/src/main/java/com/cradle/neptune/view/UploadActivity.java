@@ -17,6 +17,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
@@ -31,6 +32,8 @@ import com.cradle.neptune.view.ui.network_volley.MultipartRequest;
 import com.cradle.neptune.view.ui.network_volley.Uploader;
 import com.google.gson.JsonObject;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.threeten.bp.ZonedDateTime;
 
@@ -113,12 +116,14 @@ public class UploadActivity extends TabActivityBase {
 
         Map<String,String> header = new HashMap<>();
         header.put(LoginActivity.AUTH,"Bearer " + token);
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, "http://cmpt373.csil.sfu.ca:8088/api/referral",
+        JsonRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, "http://cmpt373.csil.sfu.ca:8088/api/referral",
                 null, response -> {
+
                     String string = response.toString();
                     longInfo(string);
+                    getReadingObjectsFromTheResponse(response);
                 }, error -> {
-            Log.d("bugg","ERRROROROOR: "+ error.getLocalizedMessage());
+            Log.d("bugg","Error: "+ error.getLocalizedMessage());
             }){
 
             /**
@@ -135,9 +140,22 @@ public class UploadActivity extends TabActivityBase {
 
         // add to volley queue
         RequestQueue queue = Volley.newRequestQueue(MyApp.getInstance());
-        queue.add(jsonObjectRequest);
+        queue.add(jsonArrayRequest);
 
     }
+
+    private void getReadingObjectsFromTheResponse(JSONArray response) {
+        List<Reading> readings = new ArrayList<>();
+        for(int i =0;i<response.length();i++){
+            try {
+                JSONObject jsonObject = response.getJSONObject(i);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
     public static void longInfo(String str) {
         if(str.length() > 4000) {
             Log.d("bugg","STRING IS OVER 4000\n\n");
