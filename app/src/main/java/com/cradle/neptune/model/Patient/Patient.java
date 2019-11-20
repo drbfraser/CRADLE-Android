@@ -25,10 +25,8 @@ public class Patient implements Serializable {
     public String tankNo;
     public String villageNumber;
     public String houseNumber;
-    private ArrayList<Reading> patientReadings;
 
     public Patient() {
-        patientReadings = new ArrayList<>();
     }
 
     public Patient(String mPatientId, String mPatientName, Integer mAgeYears, Reading.GestationalAgeUnit mGestationalAgeUnit,
@@ -45,15 +43,6 @@ public class Patient implements Serializable {
         this.tankNo = tankNo;
         this.houseNumber = houseNumber;
         this.isPregnant = isPregnant;
-        patientReadings = new ArrayList<>();
-    }
-
-    public void registerReading(Reading reading) {
-        patientReadings.add(reading);
-    }
-
-    public ArrayList<Reading> getPatientReadings() {
-        return patientReadings;
     }
 
     public String genSymptomString() {

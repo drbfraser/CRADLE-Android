@@ -138,22 +138,20 @@ public class Reading {
         r.dateTimeTaken = now;
         r.appVersion = String.format("%s = %s", BuildConfig.VERSION_CODE, BuildConfig.VERSION_NAME);
         r.deviceInfo = Build.MANUFACTURER + ", " + Build.MODEL;
-        r.patient.registerReading(r);
         return r;
     }
 
     public static Reading makeToConfirmReading(Reading source, ZonedDateTime now) {
         // copy fields
         Reading r = Reading.makeNewReading(now);
-        boolean samePatientCheck = false;
-        if(r.patient.patientId.equals(source.patient.patientId)) {
-            samePatientCheck = true;
-        }
+//        r.patientId = source.patientId;
+//        r.patientName = source.patientName;
+//        r.ageYears = source.ageYears;
+//        r.symptoms = new ArrayList<>();
+//        r.symptoms.addAll(source.symptoms);
+//        r.gestationalAgeUnit = source.gestationalAgeUnit;
+//        r.gestationalAgeValue = source.gestationalAgeValue;
         r.patient = source.patient;
-        if(!samePatientCheck) {
-            //don't register same reading twice with one patient, makeNewReading() registers too
-            r.patient.registerReading(r);
-        }
         // don't require user to re-check the 'no symptoms' box
         if (r.patient.symptoms.isEmpty()) {
             r.userHasSelectedNoSymptoms = true;
