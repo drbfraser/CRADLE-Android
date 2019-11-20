@@ -207,5 +207,11 @@
                 app:layout_constraintTop_toBottomOf="@+id/imageView5" />
         </android.support.constraint.ConstraintLayout>
 
+        <Button
+            android:id="@+id/syncReadingButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="SYNC" />
+
     </LinearLayout>
 </ScrollView>

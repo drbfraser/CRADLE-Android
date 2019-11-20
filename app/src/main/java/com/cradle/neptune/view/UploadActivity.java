@@ -71,6 +71,19 @@ public class UploadActivity extends TabActivityBase {
         setupUploadDataButton();
         setupErrorHandlingButtons();
         updateReadingUploadLabels();
+        setupSyncReadingButton();
+    }
+
+    private void setupSyncReadingButton() {
+
+        Button syncButton = findViewById(R.id.syncReadingButton);
+        syncButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // setup the network call here
+
+            }
+        });
     }
 
     @Override
