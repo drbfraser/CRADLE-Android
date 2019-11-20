@@ -75,6 +75,7 @@ public class Patient implements Serializable {
                 isPregnantString = "true";
             }
             patientInfoObject.put("isPregnant", isPregnantString);
+            return patientInfoObject;
 //
 //            String symptomsString = genSymptomString();
 //            patientInfoObject.put("symptoms", symptomsString);
