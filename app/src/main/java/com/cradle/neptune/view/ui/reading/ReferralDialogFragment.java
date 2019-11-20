@@ -103,7 +103,8 @@ public class ReferralDialogFragment extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setView(inflater.inflate(R.layout.referral_dialog, null))
                 .setPositiveButton(R.string.send_text_message, null)    // intercepted below
-                .setNegativeButton(R.string.cancel, null);
+                .setNegativeButton(R.string.cancel, null)
+                .setNeutralButton("Send via HTTPS", null);
         // Create the AlertDialog object and return it
         Dialog dialog = builder.create();
 
@@ -112,10 +113,10 @@ public class ReferralDialogFragment extends DialogFragment {
             @Override
             public void onShow(DialogInterface dialogInterface) {
                 Button button = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
-
+                Button btn1 = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_NEUTRAL);
+                btn1.setOnClickListener(view->requestStuff(dialog));
                 // brians code
                 button.setOnClickListener(view -> sendSMSMessage(dialog));
-
                 // matts code
 //                button.setOnClickListener(new View.OnClickListener() {
 //                    @Override
@@ -162,6 +163,39 @@ public class ReferralDialogFragment extends DialogFragment {
         updateUI(dialog);
 
         return dialog;
+    }
+
+    private void requestStuff(Dialog dialog) {
+        Log.d("bugg", "requestStuff");
+        Log.d("bugg", "settings: " + settings.getReferallServerUrl());
+
+        RequestQueue queue = Volley.newRequestQueue(getActivity());
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(JsonObjectRequest.Method.POST, settings.getReferallServerUrl(), getReferralJson(),
+                response -> {
+                    Log.d("bugg", "delivered " + response.toString() + "   server: " + settings.getReferallServerUrl());
+                    Log.d("bugg", "delivered " + response.toString() + "   server: " + settings.getReferallServerUrl());
+                    Toast.makeText(getActivity(), "Referral sent to " + settings.getReferallServerUrl(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(), "Referral sent to " + settings.getReferallServerUrl(), Toast.LENGTH_LONG).show();
+                    dismiss();
+                }, error -> {
+            String json = null;
+            try {
+                if (error.networkResponse != null) {
+                    if (error.networkResponse != null) {
+                        json = new String(error.networkResponse.data, HttpHeaderParser.parseCharset(error.networkResponse.headers));
+                    }
+                    Log.d("bugg", "referal error: " + json);
+                    Toast.makeText(getActivity(), "json: " + json, Toast.LENGTH_LONG).show();
+                    Log.d("bugg", "referal error: " + json);
+                    Toast.makeText(getActivity(), "json: " + json, Toast.LENGTH_LONG).show();
+                }
+                Log.d("bugg", "Delivery error: " + json);
+                Log.d("bugg", "Delivery error: " + json);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        });
+        queue.add(jsonObjectRequest);
     }
 
     @Override

@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.Response;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
@@ -109,10 +110,16 @@ public class UploadActivity extends TabActivityBase {
 
         Map<String,String> header = new HashMap<>();
         header.put(LoginActivity.AUTH,"Bearer " + token);
-        JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, "http://cmpt373.csil.sfu.ca:8088/api/referral",
-                null, this::getReadingObjectsFromTheResponse, error -> {
-            Log.d("bugg","Error: "+ error.getLocalizedMessage());
-            }){
+            JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, "http://10.0.2.2:5000/api/referral",
+//        JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, "http://cmpt373.csil.sfu.ca:8088/api/referral",
+                        null, new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        getReadingObjectsFromTheResponse(response);
+                    }
+                }, error -> {
+                    Log.d("bugg", "Error: " + error.getMessage());
+                }){
 
             /**
              * Passing some request headers
