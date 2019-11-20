@@ -5,12 +5,21 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.JsonRequest;
+import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.Reading;
@@ -18,11 +27,18 @@ import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.utilitiles.DateUtil;
 import com.cradle.neptune.view.ui.network_volley.MultiReadingUploader;
+import com.cradle.neptune.view.ui.network_volley.MultipartRequest;
+import com.cradle.neptune.view.ui.network_volley.Uploader;
+import com.google.gson.JsonObject;
 
+import org.json.JSONObject;
 import org.threeten.bp.ZonedDateTime;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -71,6 +87,64 @@ public class UploadActivity extends TabActivityBase {
         setupUploadDataButton();
         setupErrorHandlingButtons();
         updateReadingUploadLabels();
+        setupSyncReadingButton();
+    }
+
+    private void setupSyncReadingButton() {
+
+        Button syncButton = findViewById(R.id.syncReadingButton);
+        syncButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // setup the network call here
+                requestReadingsFromNetwork();
+            }
+        });
+    }
+
+    private void requestReadingsFromNetwork() {
+        SharedPreferences sharedPref = UploadActivity.this.getSharedPreferences("login",Context.MODE_PRIVATE);
+        String token = sharedPref.getString(LoginActivity.TOKEN,"");
+
+        if(token.equals("")){
+            Toast.makeText(this,"NO VALID TOKEN TO MAKE CALL",Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        Map<String,String> header = new HashMap<>();
+        header.put(LoginActivity.AUTH,"Bearer " + token);
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, "http://cmpt373.csil.sfu.ca:8088/api/referral",
+                null, response -> {
+                    String string = response.toString();
+                    longInfo(string);
+                }, error -> {
+            Log.d("bugg","ERRROROROOR: "+ error.getLocalizedMessage());
+            }){
+
+            /**
+             * Passing some request headers
+             */
+            @Override
+            public Map<String, String> getHeaders() {
+                HashMap<String, String> headers = new HashMap<>();
+                //headers.put("Content-Type", "application/json");
+                headers.put(LoginActivity.AUTH, "Bearer "+"");
+                return headers;
+            }
+        };
+
+        // add to volley queue
+        RequestQueue queue = Volley.newRequestQueue(MyApp.getInstance());
+        queue.add(jsonObjectRequest);
+
+    }
+    public static void longInfo(String str) {
+        if(str.length() > 4000) {
+            Log.d("bugg","STRING IS OVER 4000\n\n");
+            Log.d("buggg", str.substring(0, 4000));
+            longInfo(str.substring(4000));
+        } else
+            Log.d("buggg", str);
     }
 
     @Override
