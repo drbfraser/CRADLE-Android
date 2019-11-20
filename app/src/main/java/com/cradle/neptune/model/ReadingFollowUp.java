@@ -1,5 +1,7 @@
 package com.cradle.neptune.model;
 
+import android.support.annotation.NonNull;
+
 public class ReadingFollowUp {
 
     private String readingServerId;
@@ -45,5 +47,15 @@ public class ReadingFollowUp {
 
     public void setDiagnosis(String diagnosis) {
         this.diagnosis = diagnosis;
+    }
+
+    @Override
+    public String toString() {
+        return "ReadingFollowUp{" +
+                "readingServerId='" + readingServerId + '\'' +
+                ", followUpAction='" + followUpAction + '\'' +
+                ", treatment='" + treatment + '\'' +
+                ", diagnosis='" + diagnosis + '\'' +
+                '}';
     }
 }

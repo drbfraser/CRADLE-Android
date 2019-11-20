@@ -24,6 +24,7 @@ import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.Reading;
+import com.cradle.neptune.model.ReadingFollowUp;
 import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.utilitiles.DateUtil;
@@ -145,15 +146,23 @@ public class UploadActivity extends TabActivityBase {
     }
 
     private void getReadingObjectsFromTheResponse(JSONArray response) {
-        List<Reading> readings = new ArrayList<>();
+        List<ReadingFollowUp> readingsFollowUps = new ArrayList<>();
         for(int i =0;i<response.length();i++){
             try {
                 JSONObject jsonObject = response.getJSONObject(i);
+                String readingServerId =jsonObject.getString("readingId");
+                String followUpAction = jsonObject.getJSONObject("followUp").getString("followUpAction");
+                String treatment = jsonObject.getJSONObject("followUp").getString("treatment");
+                String diagnosis = jsonObject.getJSONObject("followUp").getString("diagnosis");
+                ReadingFollowUp readingFollowUp = new ReadingFollowUp(readingServerId,followUpAction,treatment,diagnosis);
+                readingsFollowUps.add(readingFollowUp);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
-
+        for(int i =0;i<readingsFollowUps.size();i++){
+            Log.d("bugggg",readingsFollowUps.get(i).toString());
+        }
     }
 
     public static void longInfo(String str) {
