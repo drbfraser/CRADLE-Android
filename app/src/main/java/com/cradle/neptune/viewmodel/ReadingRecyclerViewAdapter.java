@@ -24,6 +24,9 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
     private RecyclerView recyclerView;
     private OnClickElement onClickElementListener;
 
+    private final static int NO_ASSESSMENT_TYPE = 1;
+    private final static int ASSESSMENT_TYPE = 2;
+
     public ReadingRecyclerViewAdapter(List<Reading> readings) {
         this.readings = readings;
     }
@@ -33,10 +36,26 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
 
         View v = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.reading_card_no_or_pending_assessment, viewGroup, false);
+                .inflate(R.layout.reading_card_assesment, viewGroup, false);
+
+        if (i == NO_ASSESSMENT_TYPE) {
+            v = LayoutInflater.from(viewGroup.getContext())
+                    .inflate(R.layout.reading_card_no_or_pending_assessment, viewGroup, false);
+        }
+
         return new MyViewHolder(v);
 
     }
+
+    @Override
+    public int getItemViewType(int position) {
+        String followUpAction = readings.get(position).followUpAction;
+        if (followUpAction == null || followUpAction.equalsIgnoreCase("")) {
+            return NO_ASSESSMENT_TYPE;
+        }
+        return ASSESSMENT_TYPE;
+    }
+
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder myViewHolder, int i) {
@@ -49,56 +68,61 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         myViewHolder.diaBP.setText(new StringBuilder().append(currReading.bpDiastolic).append("").toString());
         myViewHolder.heartRate.setText(new StringBuilder().append(currReading.heartRateBPM).append("").toString());
 
-        if (currReading.isNeedRecheckVitals()) {
-            myViewHolder.retakeVitalButton.setVisibility(View.VISIBLE);
-            myViewHolder.retakeVitalButton.setOnClickListener(view -> onClickElementListener.onClickRecheckReading(currReading.readingId));
-        }
-        myViewHolder.trafficLight.setImageResource(ReadingAnalysisViewSupport.getColorCircleImageId(analysis));
-        myViewHolder.arrow.setImageResource(ReadingAnalysisViewSupport.getArrowImageId(analysis));
-
-        View v = myViewHolder.view;
-        myViewHolder.cardView.setOnClickListener(view -> onClickElementListener.onClick(currReading.readingId));
-
-        //upload button
-        setVisibilityForImageAndText(v, R.id.imgNotUploaded, R.id.tvNotUploaded, !currReading.isUploaded());
-
-        //referral
-        setVisibilityForImageAndText(v, R.id.imgReferred, R.id.txtReferred, currReading.isReferredToHealthCentre());
-        if (currReading.isReferredToHealthCentre()) {
-            String message;
-            if (currReading.referralHealthCentre != null && currReading.referralHealthCentre.length() > 0) {
-                message = v.getContext().getString(R.string.reading_referred_to_health_centre, currReading.referralHealthCentre);
-            } else {
-                message = v.getContext().getString(R.string.reading_referred_to_health_centre_unknown);
+        if (myViewHolder.getItemViewType() == NO_ASSESSMENT_TYPE) {
+            if (currReading.isNeedRecheckVitals()) {
+                myViewHolder.retakeVitalButton.setVisibility(View.VISIBLE);
+                myViewHolder.retakeVitalButton.setOnClickListener(view -> onClickElementListener.onClickRecheckReading(currReading.readingId));
             }
+            myViewHolder.trafficLight.setImageResource(ReadingAnalysisViewSupport.getColorCircleImageId(analysis));
+            myViewHolder.arrow.setImageResource(ReadingAnalysisViewSupport.getArrowImageId(analysis));
 
-            TextView tv = v.findViewById(R.id.txtReferred);
-            tv.setText(message);
-        }
+            View v = myViewHolder.view;
+            myViewHolder.cardView.setOnClickListener(view -> onClickElementListener.onClick(currReading.readingId));
 
+            //upload button
+            setVisibilityForImageAndText(v, R.id.imgNotUploaded, R.id.tvNotUploaded, !currReading.isUploaded());
 
-        // populate: follow-up
-        setVisibilityForImageAndText(v, R.id.imgFollowUp, R.id.txtFollowUp, currReading.isFlaggedForFollowup());
-
-        // populate: recheck vitals
-        setVisibilityForImageAndText(v, R.id.imgRecheckVitals, R.id.txtRecheckVitals, currReading.isNeedRecheckVitals());
-        if (currReading.isNeedRecheckVitals()) {
-            String message;
-            if (currReading.isNeedRecheckVitalsNow()) {
-                message = v.getContext().getString(R.string.reading_recheck_vitals_now);
-            } else {
-                long minutes = currReading.getMinutesUntilNeedRecheckVitals();
-                if (minutes == 1) {
-                    message = v.getContext().getString(R.string.reading_recheck_vitals_in_one_minute);
+            //referral
+            setVisibilityForImageAndText(v, R.id.imgReferred, R.id.txtReferred, currReading.isReferredToHealthCentre());
+            if (currReading.isReferredToHealthCentre()) {
+                String message;
+                if (currReading.referralHealthCentre != null && currReading.referralHealthCentre.length() > 0) {
+                    message = v.getContext().getString(R.string.reading_referred_to_health_centre, currReading.referralHealthCentre);
                 } else {
-                    message = v.getContext().getString(R.string.reading_recheck_vitals_in_minutes, minutes);
+                    message = v.getContext().getString(R.string.reading_referred_to_health_centre_unknown);
                 }
+
+                TextView tv = v.findViewById(R.id.txtReferred);
+                tv.setText(message);
             }
 
-            TextView tvRecheckVitals = v.findViewById(R.id.txtRecheckVitals);
-            tvRecheckVitals.setText(message);
+
+            // populate: follow-up
+            setVisibilityForImageAndText(v, R.id.imgFollowUp, R.id.txtFollowUp, currReading.isFlaggedForFollowup());
+
+            // populate: recheck vitals
+            setVisibilityForImageAndText(v, R.id.imgRecheckVitals, R.id.txtRecheckVitals, currReading.isNeedRecheckVitals());
+            if (currReading.isNeedRecheckVitals()) {
+                String message;
+                if (currReading.isNeedRecheckVitalsNow()) {
+                    message = v.getContext().getString(R.string.reading_recheck_vitals_now);
+                } else {
+                    long minutes = currReading.getMinutesUntilNeedRecheckVitals();
+                    if (minutes == 1) {
+                        message = v.getContext().getString(R.string.reading_recheck_vitals_in_one_minute);
+                    } else {
+                        message = v.getContext().getString(R.string.reading_recheck_vitals_in_minutes, minutes);
+                    }
+                }
+
+                TextView tvRecheckVitals = v.findViewById(R.id.txtRecheckVitals);
+                tvRecheckVitals.setText(message);
+            }
+            //todo: setup on click listner for cardview and open the summary page
+
+        } else if (i == ASSESSMENT_TYPE) {
+
         }
-        //todo: setup on click listner for cardview and open the summary page
 
     }
 

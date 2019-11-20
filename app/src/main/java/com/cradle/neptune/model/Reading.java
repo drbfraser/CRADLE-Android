@@ -58,6 +58,10 @@ public class Reading {
     // retest & follow-up
     public List<Long> retestOfPreviousReadingIds;   // oldest first
     public ZonedDateTime dateRecheckVitalsNeeded;
+    // assessment
+    public String followUpAction;
+    public String diagnosis;
+    public String treatment;
     // referrals
     public ZonedDateTime referralMessageSendTime;
     public String referralHealthCentre;
