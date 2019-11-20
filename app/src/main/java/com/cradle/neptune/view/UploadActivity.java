@@ -12,13 +12,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
@@ -29,16 +25,12 @@ import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.utilitiles.DateUtil;
 import com.cradle.neptune.view.ui.network_volley.MultiReadingUploader;
-import com.cradle.neptune.view.ui.network_volley.MultipartRequest;
-import com.cradle.neptune.view.ui.network_volley.Uploader;
-import com.google.gson.JsonObject;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.threeten.bp.ZonedDateTime;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -117,13 +109,8 @@ public class UploadActivity extends TabActivityBase {
 
         Map<String,String> header = new HashMap<>();
         header.put(LoginActivity.AUTH,"Bearer " + token);
-        JsonRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, "http://cmpt373.csil.sfu.ca:8088/api/referral",
-                null, response -> {
-
-                    String string = response.toString();
-                    longInfo(string);
-                    getReadingObjectsFromTheResponse(response);
-                }, error -> {
+        JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, "http://cmpt373.csil.sfu.ca:8088/api/referral",
+                null, this::getReadingObjectsFromTheResponse, error -> {
             Log.d("bugg","Error: "+ error.getLocalizedMessage());
             }){
 
@@ -134,7 +121,7 @@ public class UploadActivity extends TabActivityBase {
             public Map<String, String> getHeaders() {
                 HashMap<String, String> headers = new HashMap<>();
                 //headers.put("Content-Type", "application/json");
-                headers.put(LoginActivity.AUTH, "Bearer "+"");
+                headers.put(LoginActivity.AUTH, "Bearer "+token);
                 return headers;
             }
         };
@@ -160,18 +147,18 @@ public class UploadActivity extends TabActivityBase {
                 e.printStackTrace();
             }
         }
-        for(int i =0;i<readingsFollowUps.size();i++){
-            Log.d("bugggg",readingsFollowUps.get(i).toString());
+        List<Reading> readings = readingManager.getReadings(this);
+        //this is so bad but neccessary
+        for(Reading reading:readings){
+            for(ReadingFollowUp followUp: readingsFollowUps){
+                if(reading.serverReadingId.equals(followUp.getReadingServerId())){
+                    reading.diagnosis = followUp.getDiagnosis();
+                    reading.followUpAction = followUp.getFollowUpAction();
+                    reading.treatment = followUp.getTreatment();
+                    readingManager.updateReading(this,reading);
+                }
+            }
         }
-    }
-
-    public static void longInfo(String str) {
-        if(str.length() > 4000) {
-            Log.d("bugg","STRING IS OVER 4000\n\n");
-            Log.d("buggg", str.substring(0, 4000));
-            longInfo(str.substring(4000));
-        } else
-            Log.d("buggg", str);
     }
 
     @Override
