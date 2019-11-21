@@ -1,28 +1,43 @@
 package com.cradle.neptune.view;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonRequest;
+import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.Reading;
+import com.cradle.neptune.model.ReadingFollowUp;
 import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.utilitiles.DateUtil;
 import com.cradle.neptune.view.ui.network_volley.MultiReadingUploader;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.threeten.bp.ZonedDateTime;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -71,6 +86,111 @@ public class UploadActivity extends TabActivityBase {
         setupUploadDataButton();
         setupErrorHandlingButtons();
         updateReadingUploadLabels();
+        setupSyncReadingButton();
+
+        setupLastFollowupDownloadDate();
+    }
+
+    private void setupLastFollowupDownloadDate() {
+        //get last updated time
+        TextView lastDownloadText = findViewById(R.id.lastDownloadTimeTxt);
+        lastDownloadText.setText(settings.getLastTimeFollowUpDownloaded());
+    }
+
+    private void setupSyncReadingButton() {
+
+        Button syncButton = findViewById(R.id.downloadReadingButton);
+        syncButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // setup the network call here
+                requestReadingsFromNetwork();
+            }
+        });
+    }
+
+    private void requestReadingsFromNetwork() {
+        SharedPreferences sharedPref = UploadActivity.this.getSharedPreferences("login", Context.MODE_PRIVATE);
+        String token = sharedPref.getString(LoginActivity.TOKEN, "");
+
+        if (token.equals("")) {
+            Snackbar.make(findViewById(R.id.cordinatorLayout),R.string.userNotAuthenticated,Snackbar.LENGTH_LONG).show();
+            return;
+        }
+
+        Map<String, String> header = new HashMap<>();
+        header.put(LoginActivity.AUTH, "Bearer " + token);
+//            JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, "http://10.0.2.2:5000/api/referral",
+        Dialog dialog = new Dialog(this);
+        dialog.setTitle("Syncing");
+        dialog.setCancelable(false);
+        dialog.show();
+        JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, settings.getReferralsServerUrl(),
+                null, response -> {
+            getReadingObjectsFromTheResponse(response);
+            dialog.cancel();
+            upDateLastDownloadTime(ZonedDateTime.now());
+            setupLastFollowupDownloadDate();
+            Snackbar.make(findViewById(R.id.cordinatorLayout), R.string.followUpDownloaded, Snackbar.LENGTH_LONG)
+                    .show();
+        }, error -> {
+            Log.d("bugg", "Error: " + error.getMessage());
+
+            dialog.cancel();
+            Snackbar.make(findViewById(R.id.cordinatorLayout), R.string.followUpCheckInternet,
+                    Snackbar.LENGTH_LONG).setActionTextColor(Color.RED).setAction("Try Again", null)
+                    .show();
+        }) {
+
+            /**
+             * Passing some request headers
+             */
+            @Override
+            public Map<String, String> getHeaders() {
+                HashMap<String, String> headers = new HashMap<>();
+                //headers.put("Content-Type", "application/json");
+                headers.put(LoginActivity.AUTH, "Bearer " + token);
+                return headers;
+            }
+        };
+
+        // add to volley queue
+        RequestQueue queue = Volley.newRequestQueue(MyApp.getInstance());
+        queue.add(jsonArrayRequest);
+
+    }
+
+    private void getReadingObjectsFromTheResponse(JSONArray response) {
+        List<ReadingFollowUp> readingsFollowUps = new ArrayList<>();
+        for (int i = 0; i < response.length(); i++) {
+            try {
+                JSONObject jsonObject = response.getJSONObject(i);
+                String readingServerId = jsonObject.getString("readingId");
+                String followUpAction = jsonObject.getJSONObject("followUp").getString("followUpAction");
+                String treatment = jsonObject.getJSONObject("followUp").getString("treatment");
+                String diagnosis = jsonObject.getJSONObject("followUp").getString("diagnosis");
+                ReadingFollowUp readingFollowUp = new ReadingFollowUp(readingServerId, followUpAction, treatment, diagnosis);
+                readingsFollowUps.add(readingFollowUp);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        List<Reading> readings = readingManager.getReadings(this);
+        //todo with new database design, optimize this better to not take n^2
+        for (Reading reading : readings) {
+            for (ReadingFollowUp followUp : readingsFollowUps) {
+                if (reading.serverReadingId.equals(followUp.getReadingServerId())) {
+                    reading.diagnosis = followUp.getDiagnosis();
+                    reading.followUpAction = followUp.getFollowUpAction();
+                    reading.treatment = followUp.getTreatment();
+                    readingManager.updateReading(this, reading);
+                }
+            }
+        }
+    }
+
+    private void upDateLastDownloadTime(ZonedDateTime now) {
+        settings.saveLastTimeFollowUpDownloaded(DateUtil.getDateString(now));
     }
 
     @Override

@@ -135,7 +135,9 @@
 
 
     <!-- SMS Text Message Referral -->
-    <string name="send_text_message">Send Text Message</string>
+    <string name="send_text_message">Send via SMS</string>
+    <string name="send_via_Web">Send via Web</string>
+
     <string name="cancel">Cancel</string>
 
     <!-- SMS Text Message Referral - SMS content-->
@@ -249,5 +251,8 @@
     <string name="empty_text_for_patient">You dont have any patients right now.\n Go to the dashboard to create a new reading.</string>
     <string name="emptyViewStatText">Please create some readings to see stats</string>
     <string name="stateTextforMonth">This Month, you have made</string>
+    <string name="followUpDownloaded">Follow up information downloaded successfully</string>
+    <string name="followUpCheckInternet">Follow up information not downloaded, please check your internet connection</string>
+    <string name="userNotAuthenticated">The credentials are not vaild, Please login again.</string>
 
 </resources>

@@ -57,8 +57,8 @@ public class Settings {
     private boolean communityHealthOfficerGetsReferrals = false;
     private String communityHealthOfficerPhoneNumber;
     private String readingServerUrl = "http://cmpt373.csil.sfu.ca:8088/api/patient/reading";
-    //    private String referallServerUrl= "http://cmpt373.csil.sfu.ca:8088/api/referral";
-    private String referallServerUrl = "http://10.0.2.2:5000/api/referral";
+    private String referralsServerUrl = "http://cmpt373.csil.sfu.ca:8088/api/referral";
+//    private String referralsServerUrl = "http://10.0.2.2:5000/api/referral";
     private String serverUserName;
     private String serverPassword;
     private String rsaPubKey;
@@ -77,6 +77,13 @@ public class Settings {
 
         // load values
         loadFromSharedPrefs();
+    }
+
+    public void saveLastTimeFollowUpDownloaded(String time){
+        sharedPref.edit().putString("lastSavedTime",time).apply();
+    }
+    public String getLastTimeFollowUpDownloaded(){
+      return   sharedPref.getString("lastSavedTime","No previous time");
     }
 
     public void loadFromSharedPrefs() {
@@ -179,8 +186,8 @@ public class Settings {
         return authServerUrl;
     }
 
-    public String getReferallServerUrl() {
-        return referallServerUrl;
+    public String getReferralsServerUrl() {
+        return referralsServerUrl;
     }
 
     public String getRsaPubKey() {
