@@ -31,9 +31,11 @@ public class LoginActivity extends AppCompatActivity {
     public static final String LOGIN_PASSWORD = "loginPassword";
     public static final String TOKEN = "token";
     public static final String AUTH = "Authorization";
+    public static final String USER_ID = "userId";
     public static final  String DEFAULT_EMAIL="";
     public static final  int DEFAULT_PASSWORD =-1;
     public static final  String DEFAULT_TOKEN = null;
+    public static final String AUTH_PREF ="authSharefPref";
     private int loginCount = 3;
 
     @Override
@@ -46,7 +48,7 @@ public class LoginActivity extends AppCompatActivity {
 
 
     private void checkSharedPrefForLogin() {
-        SharedPreferences sharedPref = this.getSharedPreferences("login",Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = this.getSharedPreferences(AUTH_PREF,Context.MODE_PRIVATE);
         String email = sharedPref.getString(LOGIN_EMAIL, DEFAULT_EMAIL);
         int password = sharedPref.getInt(LOGIN_PASSWORD, DEFAULT_PASSWORD);
         if (!email.equals(DEFAULT_EMAIL) && password!=DEFAULT_PASSWORD) {
@@ -94,9 +96,10 @@ public class LoginActivity extends AppCompatActivity {
                 saveUserNamePasswordSharedPref(emailET.getText().toString(), passwordET.getText().toString());
                 Toast.makeText(LoginActivity.this, "Login Successful!", Toast.LENGTH_LONG).show();
                 try {
-                    SharedPreferences sharedPref = LoginActivity.this.getSharedPreferences("login",Context.MODE_PRIVATE);
+                    SharedPreferences sharedPref = LoginActivity.this.getSharedPreferences(AUTH_PREF,Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = sharedPref.edit();
                     editor.putString(TOKEN, response.getString(TOKEN));
+                    editor.putString(USER_ID,response.getString("userId"));
                     editor.apply();
                 } catch (JSONException e) {
                     e.printStackTrace();
