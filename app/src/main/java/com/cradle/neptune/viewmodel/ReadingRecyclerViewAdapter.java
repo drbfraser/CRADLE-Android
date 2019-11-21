@@ -68,6 +68,9 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         myViewHolder.diaBP.setText(new StringBuilder().append(currReading.bpDiastolic).append("").toString());
         myViewHolder.heartRate.setText(new StringBuilder().append(currReading.heartRateBPM).append("").toString());
 
+        View v = myViewHolder.view;
+        myViewHolder.cardView.setOnClickListener(view -> onClickElementListener.onClick(currReading.readingId));
+        myViewHolder.cardView.setOnLongClickListener(view ->onClickElementListener.onLongClick(currReading.readingId));
         if (myViewHolder.getItemViewType() == NO_ASSESSMENT_TYPE) {
             if (currReading.isNeedRecheckVitals()) {
                 myViewHolder.retakeVitalButton.setVisibility(View.VISIBLE);
@@ -75,9 +78,6 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             }
             myViewHolder.trafficLight.setImageResource(ReadingAnalysisViewSupport.getColorCircleImageId(analysis));
             myViewHolder.arrow.setImageResource(ReadingAnalysisViewSupport.getArrowImageId(analysis));
-
-            View v = myViewHolder.view;
-            myViewHolder.cardView.setOnClickListener(view -> onClickElementListener.onClick(currReading.readingId));
 
             //upload button
             setVisibilityForImageAndText(v, R.id.imgNotUploaded, R.id.tvNotUploaded, !currReading.isUploaded());

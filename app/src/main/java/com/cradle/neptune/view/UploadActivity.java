@@ -114,7 +114,7 @@ public class UploadActivity extends TabActivityBase {
         String token = sharedPref.getString(LoginActivity.TOKEN, "");
 
         if (token.equals("")) {
-            Toast.makeText(this, "NO VALID TOKEN TO MAKE CALL", Toast.LENGTH_LONG).show();
+            Snackbar.make(findViewById(R.id.cordinatorLayout),R.string.userNotAuthenticated,Snackbar.LENGTH_LONG).show();
             return;
         }
 
@@ -125,19 +125,19 @@ public class UploadActivity extends TabActivityBase {
         dialog.setTitle("Syncing");
         dialog.setCancelable(false);
         dialog.show();
-        JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, "http://cmpt373.csil.sfu.ca:8088/api/referral",
+        JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, settings.getReferralsServerUrl(),
                 null, response -> {
             getReadingObjectsFromTheResponse(response);
             dialog.cancel();
             upDateLastDownloadTime(ZonedDateTime.now());
             setupLastFollowupDownloadDate();
-            Snackbar.make(findViewById(R.id.cordinatorLayout), "Follow up information downloaded successfully", Snackbar.LENGTH_LONG)
+            Snackbar.make(findViewById(R.id.cordinatorLayout), R.string.followUpDownloaded, Snackbar.LENGTH_LONG)
                     .show();
         }, error -> {
             Log.d("bugg", "Error: " + error.getMessage());
 
             dialog.cancel();
-            Snackbar.make(findViewById(R.id.cordinatorLayout), "Follow up information not downloaded, please check your internet connection",
+            Snackbar.make(findViewById(R.id.cordinatorLayout), R.string.followUpCheckInternet,
                     Snackbar.LENGTH_LONG).setActionTextColor(Color.RED).setAction("Try Again", null)
                     .show();
         }) {

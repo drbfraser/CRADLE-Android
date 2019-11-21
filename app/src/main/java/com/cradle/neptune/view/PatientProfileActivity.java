@@ -1,5 +1,6 @@
 package com.cradle.neptune.view;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -118,7 +119,7 @@ public class PatientProfileActivity extends AppCompatActivity {
 
             @Override
             public boolean onLongClick(long readingId) {
-                //askToDeleteReading(readingId);
+                askToDeleteReading(readingId);
                 return true;
             }
 
@@ -131,6 +132,19 @@ public class PatientProfileActivity extends AppCompatActivity {
         readingRecyclerview.setAdapter(listAdapter);
 
     }
+
+    private void askToDeleteReading(long readingId) {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this)
+                .setMessage("Delete reading?")
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton(android.R.string.yes, (dialog1, whichButton) -> {
+                    readingManager.deleteReadingById(this, readingId);
+                    updateUi();
+                })
+                .setNegativeButton(android.R.string.no, null);
+        dialog.show();
+    }
+
 
 
     @Override
