@@ -72,9 +72,14 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         myViewHolder.cardView.setOnClickListener(view -> onClickElementListener.onClick(currReading.readingId));
         myViewHolder.cardView.setOnLongClickListener(view ->onClickElementListener.onLongClick(currReading.readingId));
         if (myViewHolder.getItemViewType() == NO_ASSESSMENT_TYPE) {
+
             if (currReading.isNeedRecheckVitals()) {
                 myViewHolder.retakeVitalButton.setVisibility(View.VISIBLE);
                 myViewHolder.retakeVitalButton.setOnClickListener(view -> onClickElementListener.onClickRecheckReading(currReading.readingId));
+            }
+
+            if(currReading.isReferredToHealthCentre()){
+             myViewHolder.isreferedTxt.setText("Referral Pending");
             }
             myViewHolder.trafficLight.setImageResource(ReadingAnalysisViewSupport.getColorCircleImageId(analysis));
             myViewHolder.arrow.setImageResource(ReadingAnalysisViewSupport.getArrowImageId(analysis));
@@ -173,7 +178,8 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
 
     static class MyViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
-        TextView readingDate, assessmentDate, sysBP, diaBP, heartRate, diagnosis, treatment, followUp, other;
+        TextView readingDate, assessmentDate, sysBP, diaBP, heartRate, diagnosis,
+                treatment, followUp, other, isreferedTxt;
         ImageView trafficLight, arrow;
         Button retakeVitalButton;
         View view;
@@ -195,6 +201,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             followUp = v.findViewById(R.id.followupTreatment);
             view = v;
             cardView = v.findViewById(R.id.readingCardview);
+            isreferedTxt = v.findViewById(R.id.isReferrerdText);
         }
     }
 }

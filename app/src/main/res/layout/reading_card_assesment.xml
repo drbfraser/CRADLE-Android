@@ -143,7 +143,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/textView14" />
 
             <TextView
-                android:id="@+id/textView33"
+                android:id="@+id/isReferrerdText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
@@ -165,8 +165,8 @@
                 android:textColor="@color/black"
                 android:textSize="12sp"
                 android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="@+id/textView33"
-                app:layout_constraintTop_toBottomOf="@+id/textView33" />
+                app:layout_constraintStart_toStartOf="@+id/isReferrerdText"
+                app:layout_constraintTop_toBottomOf="@+id/isReferrerdText" />
 
             <TextView
                 android:id="@+id/assessmentDate"

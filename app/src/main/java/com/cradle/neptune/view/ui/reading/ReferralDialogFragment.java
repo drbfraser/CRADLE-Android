@@ -141,6 +141,8 @@ public class ReferralDialogFragment extends DialogFragment {
         RequestQueue queue = Volley.newRequestQueue(getActivity());
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(JsonObjectRequest.Method.POST, settings.getReferralsServerUrl(), getReferralJson(),
                 response -> {
+                    currentReading.setReferredToHealthCentre(selectedHealthCentreName, ZonedDateTime.now());
+                    currentReading.referralComment = enteredComment;
                     dialog.cancel();
                     dismiss();
                 }, error -> {
