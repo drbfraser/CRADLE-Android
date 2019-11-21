@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.Toolbar;
@@ -26,7 +27,6 @@ import com.cradle.neptune.model.ReadingFollowUp;
 import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.utilitiles.DateUtil;
-import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.view.ui.network_volley.MultiReadingUploader;
 
 import org.json.JSONArray;
@@ -88,6 +88,10 @@ public class UploadActivity extends TabActivityBase {
         updateReadingUploadLabels();
         setupSyncReadingButton();
 
+        setupLastFollowupDownloadDate();
+    }
+
+    private void setupLastFollowupDownloadDate() {
         //get last updated time
         TextView lastDownloadText = findViewById(R.id.lastDownloadTimeTxt);
         lastDownloadText.setText(settings.getLastSaved());
@@ -106,37 +110,37 @@ public class UploadActivity extends TabActivityBase {
     }
 
     private void requestReadingsFromNetwork() {
-        SharedPreferences sharedPref = UploadActivity.this.getSharedPreferences("login",Context.MODE_PRIVATE);
-        String token = sharedPref.getString(LoginActivity.TOKEN,"");
+        SharedPreferences sharedPref = UploadActivity.this.getSharedPreferences("login", Context.MODE_PRIVATE);
+        String token = sharedPref.getString(LoginActivity.TOKEN, "");
 
-        if(token.equals("")){
-            Toast.makeText(this,"NO VALID TOKEN TO MAKE CALL",Toast.LENGTH_LONG).show();
+        if (token.equals("")) {
+            Toast.makeText(this, "NO VALID TOKEN TO MAKE CALL", Toast.LENGTH_LONG).show();
             return;
         }
 
-        Map<String,String> header = new HashMap<>();
-        header.put(LoginActivity.AUTH,"Bearer " + token);
+        Map<String, String> header = new HashMap<>();
+        header.put(LoginActivity.AUTH, "Bearer " + token);
 //            JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, "http://10.0.2.2:5000/api/referral",
         Dialog dialog = new Dialog(this);
         dialog.setTitle("Syncing");
         dialog.setCancelable(false);
         dialog.show();
         JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, "http://cmpt373.csil.sfu.ca:8088/api/referral",
-                        null, response -> {
-                            getReadingObjectsFromTheResponse(response);
-                            dialog.cancel();
-                        upDateLastDownloadTime(ZonedDateTime.now());
-
-                        Snackbar.make(findViewById(R.id.cordinatorLayout),"Sync Successfull!", Snackbar.LENGTH_LONG)
+                null, response -> {
+            getReadingObjectsFromTheResponse(response);
+            dialog.cancel();
+            upDateLastDownloadTime(ZonedDateTime.now());
+            setupLastFollowupDownloadDate();
+            Snackbar.make(findViewById(R.id.cordinatorLayout), "Follow up information downloaded successfully", Snackbar.LENGTH_LONG)
                     .show();
-                        }, error -> {
-                        //todo remove this before MR
-                        upDateLastDownloadTime(ZonedDateTime.now());
-                    Log.d("bugg", "Error: " + error.getMessage());
+        }, error -> {
+            Log.d("bugg", "Error: " + error.getMessage());
 
-                    dialog.cancel();
-                    Toast.makeText(this,"Unable to Sync",Toast.LENGTH_LONG).show();
-                }){
+            dialog.cancel();
+            Snackbar.make(findViewById(R.id.cordinatorLayout), "Follow up information not downloaded, please check your internet connection",
+                    Snackbar.LENGTH_LONG).setActionTextColor(Color.RED).setAction("Try Again", null)
+                    .show();
+        }) {
 
             /**
              * Passing some request headers
@@ -145,7 +149,7 @@ public class UploadActivity extends TabActivityBase {
             public Map<String, String> getHeaders() {
                 HashMap<String, String> headers = new HashMap<>();
                 //headers.put("Content-Type", "application/json");
-                headers.put(LoginActivity.AUTH, "Bearer "+token);
+                headers.put(LoginActivity.AUTH, "Bearer " + token);
                 return headers;
             }
         };
@@ -158,14 +162,14 @@ public class UploadActivity extends TabActivityBase {
 
     private void getReadingObjectsFromTheResponse(JSONArray response) {
         List<ReadingFollowUp> readingsFollowUps = new ArrayList<>();
-        for(int i =0;i<response.length();i++){
+        for (int i = 0; i < response.length(); i++) {
             try {
                 JSONObject jsonObject = response.getJSONObject(i);
-                String readingServerId =jsonObject.getString("readingId");
+                String readingServerId = jsonObject.getString("readingId");
                 String followUpAction = jsonObject.getJSONObject("followUp").getString("followUpAction");
                 String treatment = jsonObject.getJSONObject("followUp").getString("treatment");
                 String diagnosis = jsonObject.getJSONObject("followUp").getString("diagnosis");
-                ReadingFollowUp readingFollowUp = new ReadingFollowUp(readingServerId,followUpAction,treatment,diagnosis);
+                ReadingFollowUp readingFollowUp = new ReadingFollowUp(readingServerId, followUpAction, treatment, diagnosis);
                 readingsFollowUps.add(readingFollowUp);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -173,13 +177,13 @@ public class UploadActivity extends TabActivityBase {
         }
         List<Reading> readings = readingManager.getReadings(this);
         //this is so bad but neccessary
-        for(Reading reading:readings){
-            for(ReadingFollowUp followUp: readingsFollowUps){
-                if(reading.serverReadingId.equals(followUp.getReadingServerId())){
+        for (Reading reading : readings) {
+            for (ReadingFollowUp followUp : readingsFollowUps) {
+                if (reading.serverReadingId.equals(followUp.getReadingServerId())) {
                     reading.diagnosis = followUp.getDiagnosis();
                     reading.followUpAction = followUp.getFollowUpAction();
                     reading.treatment = followUp.getTreatment();
-                    readingManager.updateReading(this,reading);
+                    readingManager.updateReading(this, reading);
                 }
             }
         }

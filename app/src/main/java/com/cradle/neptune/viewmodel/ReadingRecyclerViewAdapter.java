@@ -21,12 +21,11 @@ import java.util.List;
 
 public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecyclerViewAdapter.MyViewHolder> {
 
+    private final static int NO_ASSESSMENT_TYPE = 1;
+    private final static int ASSESSMENT_TYPE = 2;
     private List<Reading> readings;
     private RecyclerView recyclerView;
     private OnClickElement onClickElementListener;
-
-    private final static int NO_ASSESSMENT_TYPE = 1;
-    private final static int ASSESSMENT_TYPE = 2;
 
     public ReadingRecyclerViewAdapter(List<Reading> readings) {
         this.readings = readings;
@@ -128,6 +127,9 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             Log.d("bugg", "assessment type: " + currReading.treatment);
             myViewHolder.diagnosis.setText(new StringBuilder().append(currReading.diagnosis).append("").toString());
             myViewHolder.treatment.setText(new StringBuilder().append(currReading.treatment).append("").toString());
+            myViewHolder.followUp.setText(new StringBuilder().append(currReading.followUpAction).append("").toString());
+
+
         }
 
     }
@@ -175,7 +177,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
 
     static class MyViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
-        TextView readingDate, assessmentDate, sysBP, diaBP, heartRate, diagnosis, treatment, other;
+        TextView readingDate, assessmentDate, sysBP, diaBP, heartRate, diagnosis, treatment, followUp, other;
         ImageView trafficLight, arrow;
         Button retakeVitalButton;
         View view;
@@ -194,6 +196,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             trafficLight = v.findViewById(R.id.readingTrafficLight);
             arrow = v.findViewById(R.id.readingArrow);
             retakeVitalButton = v.findViewById(R.id.newReadingButton);
+            followUp = v.findViewById(R.id.followupTreatment);
             view = v;
             cardView = v.findViewById(R.id.readingCardview);
         }
