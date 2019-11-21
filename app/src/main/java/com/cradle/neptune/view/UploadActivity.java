@@ -16,7 +16,6 @@ import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
@@ -27,6 +26,7 @@ import com.cradle.neptune.model.ReadingFollowUp;
 import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.utilitiles.DateUtil;
+import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.view.ui.network_volley.MultiReadingUploader;
 
 import org.json.JSONArray;
@@ -87,11 +87,15 @@ public class UploadActivity extends TabActivityBase {
         setupErrorHandlingButtons();
         updateReadingUploadLabels();
         setupSyncReadingButton();
+
+        //get last updated time
+        TextView lastDownloadText = findViewById(R.id.lastDownloadTimeTxt);
+        lastDownloadText.setText(settings.getLastSaved());
     }
 
     private void setupSyncReadingButton() {
 
-        Button syncButton = findViewById(R.id.syncReadingButton);
+        Button syncButton = findViewById(R.id.downloadReadingButton);
         syncButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -121,9 +125,13 @@ public class UploadActivity extends TabActivityBase {
                         null, response -> {
                             getReadingObjectsFromTheResponse(response);
                             dialog.cancel();
-            Snackbar.make(findViewById(R.id.cordinatorLayout),"Sync Successfull!", Snackbar.LENGTH_LONG)
+                        upDateLastDownloadTime(ZonedDateTime.now());
+
+                        Snackbar.make(findViewById(R.id.cordinatorLayout),"Sync Successfull!", Snackbar.LENGTH_LONG)
                     .show();
                         }, error -> {
+                        //todo remove this before MR
+                        upDateLastDownloadTime(ZonedDateTime.now());
                     Log.d("bugg", "Error: " + error.getMessage());
 
                     dialog.cancel();
@@ -175,6 +183,10 @@ public class UploadActivity extends TabActivityBase {
                 }
             }
         }
+    }
+
+    private void upDateLastDownloadTime(ZonedDateTime now) {
+        settings.saveLastSave(DateUtil.getDateString(now));
     }
 
     @Override

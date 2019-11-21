@@ -79,6 +79,13 @@ public class Settings {
         loadFromSharedPrefs();
     }
 
+    public void saveLastSave(String time){
+        sharedPref.edit().putString("lastSavedTime",time).apply();
+    }
+    public String getLastSaved(){
+      return   sharedPref.getString("lastSavedTime","No Saved time");
+    }
+
     public void loadFromSharedPrefs() {
 
         // Defaults set in preferences.xml
