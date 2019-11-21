@@ -1,9 +1,11 @@
 package com.cradle.neptune.view;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
@@ -110,15 +112,22 @@ public class UploadActivity extends TabActivityBase {
 
         Map<String,String> header = new HashMap<>();
         header.put(LoginActivity.AUTH,"Bearer " + token);
-            JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, "http://10.0.2.2:5000/api/referral",
-//        JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, "http://cmpt373.csil.sfu.ca:8088/api/referral",
-                        null, new Response.Listener<JSONArray>() {
-                    @Override
-                    public void onResponse(JSONArray response) {
-                        getReadingObjectsFromTheResponse(response);
-                    }
-                }, error -> {
+//            JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, "http://10.0.2.2:5000/api/referral",
+        Dialog dialog = new Dialog(this);
+        dialog.setTitle("Syncing");
+        dialog.setCancelable(false);
+        dialog.show();
+        JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, "http://cmpt373.csil.sfu.ca:8088/api/referral",
+                        null, response -> {
+                            getReadingObjectsFromTheResponse(response);
+                            dialog.cancel();
+            Snackbar.make(findViewById(R.id.cordinatorLayout),"Sync Successfull!", Snackbar.LENGTH_LONG)
+                    .show();
+                        }, error -> {
                     Log.d("bugg", "Error: " + error.getMessage());
+
+                    dialog.cancel();
+                    Toast.makeText(this,"Unable to Sync",Toast.LENGTH_LONG).show();
                 }){
 
             /**

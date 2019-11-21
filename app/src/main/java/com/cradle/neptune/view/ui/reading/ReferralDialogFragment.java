@@ -1,13 +1,13 @@
 package com.cradle.neptune.view.ui.reading;
 
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
@@ -31,7 +31,6 @@ import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.Reading;
-import com.cradle.neptune.model.ReadingAnalysis;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.utilitiles.DateUtil;
 import com.cradle.neptune.view.ui.settings.SettingsActivity;
@@ -101,10 +100,11 @@ public class ReferralDialogFragment extends DialogFragment {
 
         // Use the Builder class for convenient dialog construction
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setView(inflater.inflate(R.layout.referral_dialog, null))
-                .setPositiveButton(R.string.send_text_message, null)    // intercepted below
-                .setNegativeButton(R.string.cancel, null)
-                .setNeutralButton("Send via HTTPS", null);
+        View dialogView = inflater.inflate(R.layout.referral_dialog,null);
+        builder.setView(dialogView)
+                .setPositiveButton(R.string.send_text_message, null)
+                .setNeutralButton("Send via Web", null)
+                .setNegativeButton(R.string.cancel, null);
         // Create the AlertDialog object and return it
         Dialog dialog = builder.create();
 
@@ -114,41 +114,9 @@ public class ReferralDialogFragment extends DialogFragment {
             public void onShow(DialogInterface dialogInterface) {
                 Button button = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
                 Button btn1 = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_NEUTRAL);
-                btn1.setOnClickListener(view->requestStuff(dialog));
+                btn1.setOnClickListener(view-> sendReferralViaHttps(dialogView));
                 // brians code
                 button.setOnClickListener(view -> sendSMSMessage(dialog));
-                // matts code
-//                button.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        //todo remove this from here and only call when http call is a success. Just for testing
-//                       // currentReading.setReferredToHealthCentre("Neptune 5 Star",ZonedDateTime.now());
-//                        try {
-//                            post("https://smsneptuneapp.herokuapp.com/sms", new  Callback(){
-//
-//                                @Override
-//                                public void onFailure(Call call, IOException e) {
-//                                    e.printStackTrace();
-//                                }
-//
-//                                @Override
-//                                public void onResponse(Call call, Response response) throws IOException {
-//                                    getActivity().runOnUiThread(new Runnable() {
-//                                        @Override
-//                                        public void run() {
-//                                          //  mTo.setText("");
-//                                           // mBody.setText("");
-//                                            Log.d("buggg",response.message());
-//                                            Toast.makeText(getContext(),"SMS Sent!", Toast.LENGTH_SHORT).show();
-//                                        }
-//                                    });
-//                                }
-//                            });
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                });
             }
         });
 
@@ -165,35 +133,31 @@ public class ReferralDialogFragment extends DialogFragment {
         return dialog;
     }
 
-    private void requestStuff(Dialog dialog) {
-        Log.d("bugg", "requestStuff");
-        Log.d("bugg", "settings: " + settings.getReferallServerUrl());
-
+    private void sendReferralViaHttps(View dialogView) {
+        Dialog dialog = new Dialog(getActivity());
+        dialog.setTitle("Sending via HTTPS");
+        dialog.setCancelable(false);
+        dialog.show();
         RequestQueue queue = Volley.newRequestQueue(getActivity());
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(JsonObjectRequest.Method.POST, settings.getReferallServerUrl(), getReferralJson(),
                 response -> {
-                    Log.d("bugg", "delivered " + response.toString() + "   server: " + settings.getReferallServerUrl());
-                    Log.d("bugg", "delivered " + response.toString() + "   server: " + settings.getReferallServerUrl());
-                    Toast.makeText(getActivity(), "Referral sent to " + settings.getReferallServerUrl(), Toast.LENGTH_LONG).show();
-                    Toast.makeText(getActivity(), "Referral sent to " + settings.getReferallServerUrl(), Toast.LENGTH_LONG).show();
+                    dialog.cancel();
                     dismiss();
                 }, error -> {
             String json = null;
             try {
                 if (error.networkResponse != null) {
-                    if (error.networkResponse != null) {
-                        json = new String(error.networkResponse.data, HttpHeaderParser.parseCharset(error.networkResponse.headers));
-                    }
+                    json = new String(error.networkResponse.data, HttpHeaderParser.parseCharset(error.networkResponse.headers));
                     Log.d("bugg", "referal error: " + json);
                     Toast.makeText(getActivity(), "json: " + json, Toast.LENGTH_LONG).show();
                     Log.d("bugg", "referal error: " + json);
                     Toast.makeText(getActivity(), "json: " + json, Toast.LENGTH_LONG).show();
                 }
-                Log.d("bugg", "Delivery error: " + json);
-                Log.d("bugg", "Delivery error: " + json);
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
+            Snackbar.make(dialogView,"Unable to Send the referral: "+json,Snackbar.LENGTH_LONG).show();
+            dialog.cancel();
         });
         queue.add(jsonObjectRequest);
     }

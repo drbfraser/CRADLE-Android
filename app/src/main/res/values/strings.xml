@@ -135,7 +135,7 @@
 
 
     <!-- SMS Text Message Referral -->
-    <string name="send_text_message">Send Text Message</string>
+    <string name="send_text_message">Send via SMS</string>
     <string name="cancel">Cancel</string>
 
     <!-- SMS Text Message Referral - SMS content-->
