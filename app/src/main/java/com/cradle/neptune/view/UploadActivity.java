@@ -94,7 +94,7 @@ public class UploadActivity extends TabActivityBase {
     private void setupLastFollowupDownloadDate() {
         //get last updated time
         TextView lastDownloadText = findViewById(R.id.lastDownloadTimeTxt);
-        lastDownloadText.setText(settings.getLastSaved());
+        lastDownloadText.setText(settings.getLastTimeFollowUpDownloaded());
     }
 
     private void setupSyncReadingButton() {
@@ -176,7 +176,7 @@ public class UploadActivity extends TabActivityBase {
             }
         }
         List<Reading> readings = readingManager.getReadings(this);
-        //this is so bad but neccessary
+        //todo with new database design, optimize this better to not take n^2
         for (Reading reading : readings) {
             for (ReadingFollowUp followUp : readingsFollowUps) {
                 if (reading.serverReadingId.equals(followUp.getReadingServerId())) {
@@ -190,7 +190,7 @@ public class UploadActivity extends TabActivityBase {
     }
 
     private void upDateLastDownloadTime(ZonedDateTime now) {
-        settings.saveLastSave(DateUtil.getDateString(now));
+        settings.saveLastTimeFollowUpDownloaded(DateUtil.getDateString(now));
     }
 
     @Override

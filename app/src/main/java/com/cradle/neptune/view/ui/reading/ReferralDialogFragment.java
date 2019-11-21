@@ -103,7 +103,7 @@ public class ReferralDialogFragment extends DialogFragment {
         View dialogView = inflater.inflate(R.layout.referral_dialog,null);
         builder.setView(dialogView)
                 .setPositiveButton(R.string.send_text_message, null)
-                .setNeutralButton("Send via Web", null)
+                .setNeutralButton(R.string.send_via_Web, null)
                 .setNegativeButton(R.string.cancel, null);
         // Create the AlertDialog object and return it
         Dialog dialog = builder.create();
@@ -139,7 +139,7 @@ public class ReferralDialogFragment extends DialogFragment {
         dialog.setCancelable(false);
         dialog.show();
         RequestQueue queue = Volley.newRequestQueue(getActivity());
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(JsonObjectRequest.Method.POST, settings.getReferallServerUrl(), getReferralJson(),
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(JsonObjectRequest.Method.POST, settings.getReferralsServerUrl(), getReferralJson(),
                 response -> {
                     dialog.cancel();
                     dismiss();
@@ -211,11 +211,11 @@ public class ReferralDialogFragment extends DialogFragment {
 //        progressDialog.show();
 //
 //        RequestQueue queue = Volley.newRequestQueue(getActivity());
-//        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(JsonObjectRequest.Method.POST, settings.getReferallServerUrl(), getReferralJson(),
+//        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(JsonObjectRequest.Method.POST, settings.getReferralsServerUrl(), getReferralJson(),
 //                response -> {
-//                    Log.d("bugg", "delivered " + response.toString() + "   server: " + settings.getReferallServerUrl());
+//                    Log.d("bugg", "delivered " + response.toString() + "   server: " + settings.getReferralsServerUrl());
 //                    progressDialog.cancel();
-//                    Toast.makeText(getActivity(), "Referral sent to " + settings.getReferallServerUrl(), Toast.LENGTH_LONG).show();
+//                    Toast.makeText(getActivity(), "Referral sent to " + settings.getReferralsServerUrl(), Toast.LENGTH_LONG).show();
 //                    onFinishedSendingSMS(dialog);
 //                    dismiss();
 //

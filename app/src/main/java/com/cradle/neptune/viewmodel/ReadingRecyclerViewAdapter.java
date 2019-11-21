@@ -51,10 +51,8 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
     public int getItemViewType(int position) {
         String followUpAction = readings.get(position).followUpAction;
         if (followUpAction == null || followUpAction.equalsIgnoreCase("")) {
-            Log.d("buggg", "NO followup, returning no assessment type");
             return NO_ASSESSMENT_TYPE;
         }
-        Log.d("buggg", "YES followup, returning assessment type");
         return ASSESSMENT_TYPE;
     }
 
@@ -123,8 +121,6 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             //todo: setup on click listner for cardview and open the summary page
 
         } else if (myViewHolder.getItemViewType() == ASSESSMENT_TYPE) {
-            Log.d("bugg", "assessment type: " + currReading.diagnosis);
-            Log.d("bugg", "assessment type: " + currReading.treatment);
             myViewHolder.diagnosis.setText(new StringBuilder().append(currReading.diagnosis).append("").toString());
             myViewHolder.treatment.setText(new StringBuilder().append(currReading.treatment).append("").toString());
             myViewHolder.followUp.setText(new StringBuilder().append(currReading.followUpAction).append("").toString());
