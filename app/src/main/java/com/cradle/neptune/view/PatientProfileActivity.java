@@ -99,6 +99,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         Collections.sort(readings, new Reading.ComparatorByDateReverse());
         boolean readingFound = false;
         Reading latestReading = new Reading();
+
         for (Reading reading : readings) {
             Patient patient = reading.patient;
             if (patient.patientId.equals(currPatient.patientId)) {
@@ -108,11 +109,11 @@ public class PatientProfileActivity extends AppCompatActivity {
             }
         }
 
+        //button only works if readings exist, which it always should
         if(readingFound) {
             long readingID = latestReading.readingId;
             createButton.setOnClickListener(v -> {
                 Intent intent = ReadingActivity.makeIntentForNewReadingExistingPatient(PatientProfileActivity.this, readingID);
-                Log.d("kat", "setupCreatePatientReadingButton: made the intent");
                 startActivityForResult(intent, READING_ACTIVITY_DONE);
             });
         }

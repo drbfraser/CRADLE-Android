@@ -68,12 +68,10 @@ public class ReadingActivity
     }
 
     public static Intent makeIntentForNewReadingExistingPatient(Context context, long readingID) {
-        Log.d("kat", "makeIntentForNewReadingExistingPatient: about to make intent");
         Intent intent = new Intent(context, ReadingActivity.class);
         intent.putExtra(EXTRA_LAUNCH_REASON, LaunchReason.LAUNCH_REASON_EXISTINGNEW);
         intent.putExtra(EXTRA_READING_ID, readingID);
         intent.putExtra(EXTRA_START_TAB, SectionsPagerAdapter.TAB_NUMBER_SYMPTOMS);
-        Log.d("kat", "makeIntentForNewReadingExistingPatient: finished making intent");
         return intent;
     }
 
@@ -119,13 +117,10 @@ public class ReadingActivity
                 currentReading = Reading.makeToConfirmReading(originalReading, ZonedDateTime.now());
                 break;
             case LAUNCH_REASON_EXISTINGNEW:
-                Log.d("kat", "setupModelData: start launch existing");
                 readingId = getIntent().getLongExtra(EXTRA_READING_ID, -1);
-                Log.d("kat", "setupModelData: readingID = " + readingId);
                 Util.ensure(readingId >= 0);
                 originalReading = readingManager.getReadingById(this, readingId);
                 currentReading = Reading.makeNewExistingPatientReading(originalReading, ZonedDateTime.now());
-                Log.d("kat", "setupModelData: end launch existing");
                 break;
             default:
                 Util.ensure(false);
