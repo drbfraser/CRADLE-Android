@@ -132,6 +132,8 @@
     <string name="discard_dialog_changes">Discard your changes?</string>
     <string name="missing_info_title">Missing Information</string>
     <string name="missing_info_body">Some required fields from PATIENT or CONFIRM VITALS tabs are missing. Please enter this data before saving.</string>
+    <string name="invalid_data">Invalid Data</string>
+    <string name="invalid_data_message">Valid ranges\n\nAge limit: 0-150 years\nHearth rate: 30-300 bpm\nsystolic and diastolic: 10-300 bpm\npregnancy max: 15 months</string>
 
 
     <!-- SMS Text Message Referral -->

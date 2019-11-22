@@ -299,6 +299,7 @@ public class PatientInfoFragment extends BaseFragment {
                                 spinGA.setEnabled(false);
                             } else {
                                 etValue.setText("");
+                                etValue.setEnabled(true);
                                 spinGA.setEnabled(true);
                             }
                         }

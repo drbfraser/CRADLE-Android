@@ -8,6 +8,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -238,6 +239,15 @@ public class ReadingActivity
         dialog.show();
     }
 
+    private void displayValidDataDialog() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this)
+                .setTitle(R.string.invalid_data)
+                .setMessage(R.string.invalid_data_message)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton(android.R.string.yes, null);
+        dialog.show();
+    }
+
     /*
         Bottom Bar
      */
@@ -332,6 +342,13 @@ public class ReadingActivity
 
         if (currentReading.isMissingRequiredData()) {
             displayMissingDataDialog();
+            return false;
+        }
+
+//        // check for valid data
+        if (currentReading.hasInvalidData()) {
+            displayValidDataDialog();
+            Log.i("validation", "Data out of range");
             return false;
         }
 
