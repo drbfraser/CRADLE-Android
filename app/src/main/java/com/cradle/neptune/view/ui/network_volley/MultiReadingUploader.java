@@ -162,7 +162,7 @@ public class MultiReadingUploader {
 
             String readingJson = Reading.getJsonObj(readings.get(0),context);
             // start upload
-            SharedPreferences sharedPref = context.getSharedPreferences("login",Context.MODE_PRIVATE);
+            SharedPreferences sharedPref = context.getSharedPreferences(LoginActivity.AUTH_PREF,Context.MODE_PRIVATE);
             String token = sharedPref.getString(LoginActivity.TOKEN,LoginActivity.DEFAULT_TOKEN);
 
             Uploader uploader = new Uploader(

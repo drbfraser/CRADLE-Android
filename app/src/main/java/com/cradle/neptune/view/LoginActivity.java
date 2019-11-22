@@ -115,7 +115,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void saveUserNamePasswordSharedPref(String email, String password) {
-        SharedPreferences sharedPref = LoginActivity.this.getSharedPreferences("login",Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = LoginActivity.this.getSharedPreferences(AUTH_PREF,Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(LOGIN_EMAIL, email);
         editor.putInt(LOGIN_PASSWORD, password.hashCode());

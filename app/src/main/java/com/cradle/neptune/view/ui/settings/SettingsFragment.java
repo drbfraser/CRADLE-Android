@@ -56,11 +56,12 @@ public class SettingsFragment extends PreferenceFragmentCompat
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
                     //todo show a pop up delete all tbe offlne patient data
-                    SharedPreferences sharedPref = getActivity().getSharedPreferences("login",Context.MODE_PRIVATE);
+                    SharedPreferences sharedPref = getActivity().getSharedPreferences(LoginActivity.AUTH_PREF,Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = sharedPref.edit();
                     editor.remove(LoginActivity.LOGIN_EMAIL);
                     editor.remove(LoginActivity.LOGIN_PASSWORD);
                     editor.remove(LoginActivity.TOKEN);
+                    editor.remove(LoginActivity.USER_ID);
                     editor.apply();
                     Intent intent = new Intent(getActivity(),LoginActivity.class);
                     startActivity(intent);
