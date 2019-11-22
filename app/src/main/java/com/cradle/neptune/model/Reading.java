@@ -20,6 +20,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
+import static com.cradle.neptune.view.LoginActivity.*;
+
 /**
  * Basic data about a currentReading.
  * <p>
@@ -98,8 +100,8 @@ public class Reading {
     public static String getJsonObj(Reading reading, Context context) {
         JSONObject patientVal = new JSONObject();
         Patient patient = reading.patient;
-        SharedPreferences sharedPreferences = context.getSharedPreferences(LoginActivity.AUTH_PREF,Context.MODE_PRIVATE);
-        String userId = sharedPreferences.getString(LoginActivity.USER_ID,"");
+        SharedPreferences sharedPreferences = context.getSharedPreferences(AUTH_PREF,Context.MODE_PRIVATE);
+        String userId = sharedPreferences.getString(USER_ID,"");
         try {
 
             patientVal.put("patientId", patient.patientId);
@@ -119,7 +121,7 @@ public class Reading {
             readingVal.put("dateLastSaved", reading.dateLastSaved);
             readingVal.put("dateTimeTaken", reading.dateTimeTaken);
             readingVal.put("bpSystolic", reading.bpSystolic);
-            readingVal.put(LoginActivity.USER_ID,userId);
+            readingVal.put(USER_ID,userId);
             readingVal.put("bpDiastolic", reading.bpDiastolic);
             readingVal.put("heartRateBPM", reading.heartRateBPM);
             readingVal.put("dateRecheckVitalsNeeded", reading.dateRecheckVitalsNeeded);
