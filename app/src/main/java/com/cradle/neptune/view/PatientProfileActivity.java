@@ -34,6 +34,13 @@ public class PatientProfileActivity extends AppCompatActivity {
     TextView patientAge;
     TextView patientSex;
     TextView villageNo;
+    TextView patientHouse;
+    TextView patientZone;
+    TextView patientTank;
+    TextView pregnant;
+    TextView gestationalAge;
+    TextView gestationalAgeUnit;
+
     RecyclerView readingRecyclerview;
     Patient currPatient;
     // Data Model
@@ -61,6 +68,13 @@ public class PatientProfileActivity extends AppCompatActivity {
         patientAge = (TextView) findViewById(R.id.patientAge);
         patientSex = (TextView) findViewById(R.id.patientSex);
         villageNo = (TextView) findViewById(R.id.patientVillage);
+        patientHouse = (TextView) findViewById(R.id.patientHouseNum);
+        patientZone = (TextView) findViewById(R.id.patientZone);
+        patientTank = (TextView) findViewById(R.id.patientTank);
+        pregnant = (TextView) findViewById(R.id.textView20);
+        gestationalAge = (TextView) findViewById(R.id.textView45);
+        gestationalAgeUnit = (TextView) findViewById(R.id.textView46);
+
         readingRecyclerview = findViewById(R.id.readingRecyclerview);
 
         currPatient = (Patient) getIntent().getSerializableExtra("key");
@@ -86,6 +100,20 @@ public class PatientProfileActivity extends AppCompatActivity {
         patientAge.setText(patient.ageYears.toString());
         patientSex.setText(patient.patientSex.toString());
         villageNo.setText(patient.villageNumber);
+        patientHouse.setText(patient.houseNumber);
+        patientZone.setText(patient.zone);
+        patientTank.setText(patient.tankNo);
+        if (patient.isPregnant) {
+            pregnant.setText("Yes");
+        } else {
+            pregnant.setText("No");
+        }
+        gestationalAge.setText(patient.gestationalAgeValue);
+        if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS) {
+            gestationalAgeUnit.setText("Weeks");
+        } else {
+            gestationalAgeUnit.setText("Months");
+        }
 
     }
 
