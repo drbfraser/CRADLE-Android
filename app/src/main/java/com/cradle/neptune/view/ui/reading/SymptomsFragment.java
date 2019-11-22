@@ -91,6 +91,9 @@ public class SymptomsFragment extends BaseFragment {
         for (String symptom : symptomsFromRes) {
             CheckBox cb = new CheckBox(getContext());
             cb.setText(symptom);
+            if (index == 0) {
+                cb.setChecked(true);
+            }
 
             final int indexCopy = index;
             cb.setOnClickListener(view -> onSymptomCheckboxClicked(indexCopy));
