@@ -8,6 +8,8 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.cradle.neptune.R;
@@ -66,6 +68,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         currPatient = (Patient) getIntent().getSerializableExtra("key");
         populatePatientInfo(currPatient);
         setupReadingsRecyclerView();
+        setupCreatePatientReadingButton();
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle(R.string.patient_summary);
@@ -87,6 +90,33 @@ public class PatientProfileActivity extends AppCompatActivity {
         patientSex.setText(patient.patientSex.toString());
         villageNo.setText(patient.villageNumber);
 
+    }
+
+    private void setupCreatePatientReadingButton() {
+        Button createButton = findViewById(R.id.newPatientReadingButton);
+
+        List<Reading> readings = readingManager.getReadings(this);
+        Collections.sort(readings, new Reading.ComparatorByDateReverse());
+        boolean readingFound = false;
+        Reading latestReading = new Reading();
+
+        for (Reading reading : readings) {
+            Patient patient = reading.patient;
+            if (patient.patientId.equals(currPatient.patientId)) {
+                latestReading = reading;
+                readingFound = true;
+                break;
+            }
+        }
+
+        //button only works if readings exist, which it always should
+        if(readingFound) {
+            long readingID = latestReading.readingId;
+            createButton.setOnClickListener(v -> {
+                Intent intent = ReadingActivity.makeIntentForNewReadingExistingPatient(PatientProfileActivity.this, readingID);
+                startActivityForResult(intent, READING_ACTIVITY_DONE);
+            });
+        }
     }
 
     private void setupReadingsRecyclerView() {
