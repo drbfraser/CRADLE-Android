@@ -166,6 +166,18 @@ public class Reading {
         return r;
     }
 
+    public static Reading makeNewExistingPatientReading(Reading source, ZonedDateTime now) {
+        Reading r = Reading.makeNewReading(now);
+        r.patient = source.patient;
+        r.patient.symptoms.clear();
+        // don't require user to re-check the 'no symptoms' box
+        if (r.patient.symptoms.isEmpty()) {
+            r.userHasSelectedNoSymptoms = true;
+        }
+
+        return r;
+    }
+
     @Override
     public String toString() {
         return "Reading{" +

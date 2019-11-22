@@ -7,9 +7,11 @@
     android:background="#e9e9e9"
     tools:context=".view.PatientProfileActivity">
 
+
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
 
         <TextView
             android:id="@+id/textView30"
@@ -224,6 +226,7 @@
                     android:textSize="14sp"
                     app:layout_constraintStart_toEndOf="@+id/textView23"
                     app:layout_constraintTop_toTopOf="@+id/textView23" />
+
             </android.support.constraint.ConstraintLayout>
         </android.support.v7.widget.CardView>
 
@@ -367,17 +370,30 @@
             </android.support.constraint.ConstraintLayout>
         </android.support.v7.widget.CardView>
 
+        <Button
+            android:id="@+id/newPatientReadingButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@color/colorPrimaryLight"
+            android:text="@string/create_new_reading"
+            app:backgroundTint="@color/colorPrimaryLight"
+            app:layout_constraintRight_toRightOf="@+id/medicalCard"
+            app:layout_constraintTop_toBottomOf="@+id/medicalCard"/>
+
         <android.support.v7.widget.RecyclerView
             android:id="@+id/readingRecyclerview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="8dp"
             android:clipChildren="true"
             android:clipToPadding="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/medicalCard" />
+            app:layout_constraintTop_toBottomOf="@+id/newPatientReadingButton" />
+
+
     </android.support.constraint.ConstraintLayout>
 </android.support.v4.widget.NestedScrollView>

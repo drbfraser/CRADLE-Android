@@ -8,12 +8,14 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.model.Patient.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.utilitiles.GsonUtil;
@@ -65,6 +67,16 @@ public class ReadingActivity
         return intent;
     }
 
+    public static Intent makeIntentForNewReadingExistingPatient(Context context, long readingID) {
+        Log.d("kat", "makeIntentForNewReadingExistingPatient: about to make intent");
+        Intent intent = new Intent(context, ReadingActivity.class);
+        intent.putExtra(EXTRA_LAUNCH_REASON, LaunchReason.LAUNCH_REASON_EXISTINGNEW);
+        intent.putExtra(EXTRA_READING_ID, readingID);
+        intent.putExtra(EXTRA_START_TAB, SectionsPagerAdapter.TAB_NUMBER_SYMPTOMS);
+        Log.d("kat", "makeIntentForNewReadingExistingPatient: finished making intent");
+        return intent;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // inject:
@@ -105,6 +117,15 @@ public class ReadingActivity
                 Util.ensure(readingId >= 0);
                 originalReading = readingManager.getReadingById(this, readingId);
                 currentReading = Reading.makeToConfirmReading(originalReading, ZonedDateTime.now());
+                break;
+            case LAUNCH_REASON_EXISTINGNEW:
+                Log.d("kat", "setupModelData: start launch existing");
+                readingId = getIntent().getLongExtra(EXTRA_READING_ID, -1);
+                Log.d("kat", "setupModelData: readingID = " + readingId);
+                Util.ensure(readingId >= 0);
+                originalReading = readingManager.getReadingById(this, readingId);
+                currentReading = Reading.makeNewExistingPatientReading(originalReading, ZonedDateTime.now());
+                Log.d("kat", "setupModelData: end launch existing");
                 break;
             default:
                 Util.ensure(false);
@@ -214,6 +235,9 @@ public class ReadingActivity
                 break;
             case LAUNCH_REASON_RECHECK:
                 confirmDiscardAndFinish(R.string.discard_dialog_rechecking);
+                break;
+            case LAUNCH_REASON_EXISTINGNEW:
+                confirmDiscardAndFinish(R.string.discard_dialog_new_reading);
                 break;
             default:
                 Util.ensure(false);
@@ -349,6 +373,9 @@ public class ReadingActivity
                 readingManager.addNewReading(this, currentReading);
                 // database clears all dataRecheckVitalsNeeded flags as needed
                 break;
+            case LAUNCH_REASON_EXISTINGNEW:
+                readingManager.addNewReading(this, currentReading);
+                break;
             default:
                 Util.ensure(false);
         }
@@ -370,6 +397,7 @@ public class ReadingActivity
         LAUNCH_REASON_NEW,
         LAUNCH_REASON_EDIT,
         LAUNCH_REASON_RECHECK,
-        LAUNCH_REASON_NONE
+        LAUNCH_REASON_NONE,
+        LAUNCH_REASON_EXISTINGNEW
     }
 }
