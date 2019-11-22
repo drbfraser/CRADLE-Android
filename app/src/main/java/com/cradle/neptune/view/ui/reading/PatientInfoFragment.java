@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Switch;
@@ -185,9 +186,9 @@ public class PatientInfoFragment extends BaseFragment {
 
         if (currentReading.patient.gestationalAgeUnit != null) {
             switch (currentReading.patient.gestationalAgeUnit) {
-                case GESTATIONAL_AGE_UNITS_NONE:
-                    selection = GA_UNIT_INDEX_NONE;
-                    break;
+//                case GESTATIONAL_AGE_UNITS_NONE:
+//                    selection = GA_UNIT_INDEX_NONE;
+//                    break;
                 case GESTATIONAL_AGE_UNITS_WEEKS:
                     selection = GA_UNIT_INDEX_WEEKS;
                     break;
@@ -211,9 +212,9 @@ public class PatientInfoFragment extends BaseFragment {
         EditText etValue = v.findViewById(R.id.etGestationalAgeValue);
 
         switch (spin.getSelectedItemPosition()) {
-            case GA_UNIT_INDEX_NONE:
-                currentReading.patient.gestationalAgeUnit = Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_NONE;
-                break;
+//            case GA_UNIT_INDEX_NONE:
+//                currentReading.patient.gestationalAgeUnit = Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_NONE;
+//                break;
             case GA_UNIT_INDEX_WEEKS:
                 currentReading.patient.gestationalAgeUnit = Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS;
                 break;
@@ -238,10 +239,10 @@ public class PatientInfoFragment extends BaseFragment {
         String notApplicableString = v.getContext().getString(R.string.reading_not_applicable);
 
         switch (spin.getSelectedItemPosition()) {
-            case GA_UNIT_INDEX_NONE:
-                value = notApplicableString;
-                valueEnabled = false;
-                break;
+//            case GA_UNIT_INDEX_NONE:
+//                value = notApplicableString;
+//                valueEnabled = false;
+//                break;
             case GA_UNIT_INDEX_WEEKS:
                 valueInputType = InputType.TYPE_CLASS_NUMBER;
                 break;
@@ -253,17 +254,20 @@ public class PatientInfoFragment extends BaseFragment {
         }
         if (spin.getSelectedItemPosition() != GA_UNIT_INDEX_NONE
                 && etValue.getText().toString().equals(notApplicableString)) {
-            value = "";
+            value = "N/A";
         }
 
         // Set UI state
-        etValue.setEnabled(valueEnabled);
+//        etValue.setEnabled(valueEnabled);
         etValue.setInputType(valueInputType);
         etValue.setText(value);
     }
 
     private void setupSexSpinner(View v) {
         Spinner spin = v.findViewById(R.id.spinnerPatientSex);
+        Switch isPregnant = v.findViewById(R.id.pregnantSwitch);
+        Spinner spinGA = v.findViewById(R.id.spinnerGestationalAgeUnits);
+        EditText etValue = v.findViewById(R.id.etGestationalAgeValue);
 
         // set options
         Resources res = getResources();
@@ -278,6 +282,29 @@ public class PatientInfoFragment extends BaseFragment {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 // updateGA_onSpinnerChange(mView);
+                if (i == 0) {
+                    isPregnant.setChecked(false);
+                    isPregnant.setEnabled(false);
+                    spinGA.setEnabled(false);
+                    etValue.setEnabled(false);
+                    etValue.setText("N/A");
+                } else {
+                    isPregnant.setEnabled(true);
+                    isPregnant.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                            if (!b) {
+                                etValue.setText("N/A");
+                                etValue.setEnabled(false);
+                                spinGA.setEnabled(false);
+                            } else {
+                                etValue.setText("");
+                                etValue.setEnabled(true);
+                                spinGA.setEnabled(true);
+                            }
+                        }
+                    });
+                }
             }
 
             @Override
@@ -291,6 +318,10 @@ public class PatientInfoFragment extends BaseFragment {
     private void updateSex_ModelFromUI(View v) {
         Spinner spin = v.findViewById(R.id.spinnerPatientSex);
         Switch isPregnant = v.findViewById(R.id.pregnantSwitch);
+//
+//        EditText etValue = v.findViewById(R.id.etGestationalAgeValue);
+//        etValue.setText("N/A");
+
         switch (spin.getSelectedItemPosition()) {
             case PATIENT_SEX_MALE:
                 currentReading.patient.patientSex = Patient.PATIENTSEX.MALE;

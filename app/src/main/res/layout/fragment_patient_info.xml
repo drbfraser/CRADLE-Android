@@ -17,9 +17,10 @@
             android:id="@+id/spinnerPatientSex"
             android:layout_width="163dp"
             android:layout_height="31dp"
-            android:layout_marginTop="12dp"
-            app:layout_constraintStart_toStartOf="@+id/spinnerGestationalAgeUnits"
-            app:layout_constraintTop_toBottomOf="@+id/spinnerGestationalAgeUnits" />
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txtSex" />
 
         <Spinner
             android:id="@+id/spinnerGestationalAgeUnits"
@@ -55,7 +56,7 @@
         <android.support.design.widget.TextInputLayout
             android:id="@+id/txtPatientName"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="160dp"
+            android:layout_width="190dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
@@ -68,18 +69,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textNoSuggestions|text|textCapCharacters"
-                android:maxLength="2" />
+                android:maxLength="3" />
         </android.support.design.widget.TextInputLayout>
 
         <!-- Age -->
         <android.support.design.widget.TextInputLayout
             android:id="@+id/txtPatientAge"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="140dp"
+            android:layout_width="190dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"
             android:hint="@string/age"
-            app:layout_constraintStart_toEndOf="@+id/txtPatientName"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/txtPatientName">
 
             <android.support.design.widget.TextInputEditText
@@ -100,7 +101,7 @@
             android:layout_marginTop="8dp"
             android:hint="@string/gestational_age"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/txtPatientAge">
+            app:layout_constraintTop_toBottomOf="@+id/spinnerPatientSex">
 
             <android.support.design.widget.TextInputEditText
                 android:id="@+id/etGestationalAgeValue"
@@ -113,13 +114,13 @@
         <android.support.design.widget.TextInputLayout
             android:id="@+id/txtVillageNumber"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="140dp"
+            android:layout_width="190dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:hint="@string/village_number"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/txtTankNumber">
+            app:layout_constraintTop_toBottomOf="@+id/txtZone">
 
             <android.support.design.widget.TextInputEditText
                 android:id="@+id/etVillageNumber"
@@ -132,13 +133,13 @@
         <android.support.design.widget.TextInputLayout
             android:id="@+id/txtZone"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="140dp"
+            android:layout_width="125dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:hint="@string/zone"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/txtGestationalAge">
+            app:layout_constraintTop_toBottomOf="@+id/txtPatientName">
 
             <android.support.design.widget.TextInputEditText
                 android:id="@+id/etZone"
@@ -151,13 +152,15 @@
         <android.support.design.widget.TextInputLayout
             android:id="@+id/txtBlockNumber"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="140dp"
+            android:layout_width="125dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
             android:hint="@string/block_no"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/txtZone">
+            app:layout_constraintEnd_toStartOf="@+id/txtTankNumber"
+            app:layout_constraintStart_toEndOf="@+id/txtZone"
+            app:layout_constraintTop_toBottomOf="@+id/txtPatientName">
 
             <android.support.design.widget.TextInputEditText
                 android:id="@+id/etBlockNumber"
@@ -170,12 +173,13 @@
         <android.support.design.widget.TextInputLayout
             android:id="@+id/txtTankNumber"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="140dp"
+            android:layout_width="125dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
             android:hint="@string/tank_no"
-            app:layout_constraintStart_toEndOf="@+id/txtBlockNumber"
-            app:layout_constraintTop_toTopOf="@+id/txtBlockNumber">
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txtPatientAge">
 
             <android.support.design.widget.TextInputEditText
                 android:id="@+id/etTankNumber"
@@ -188,11 +192,11 @@
         <android.support.design.widget.TextInputLayout
             android:id="@+id/txtHouseNumber"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="140dp"
+            android:layout_width="190dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
             android:hint="@string/house_number"
-            app:layout_constraintStart_toEndOf="@+id/txtVillageNumber"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/txtVillageNumber">
 
             <android.support.design.widget.TextInputEditText
@@ -206,14 +210,24 @@
             android:id="@+id/pregnantSwitch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginStart="8dp"
             android:checked="false"
-            android:text="Pregnant?"
-            app:layout_constraintBottom_toTopOf="@+id/txtTankNumber"
-            app:layout_constraintEnd_toEndOf="@+id/spinnerPatientSex"
-            app:layout_constraintStart_toEndOf="@+id/txtZone"
-            app:layout_constraintTop_toBottomOf="@+id/spinnerPatientSex" />
+            android:text="@string/pregnant_question"
+            app:layout_constraintStart_toEndOf="@+id/spinnerPatientSex"
+            app:layout_constraintTop_toTopOf="@+id/spinnerPatientSex" />
+
+        <TextView
+            android:id="@+id/txtSex"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:text="@string/sex"
+            android:textColor="#000000"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txtVillageNumber" />
 
 
     </android.support.constraint.ConstraintLayout>

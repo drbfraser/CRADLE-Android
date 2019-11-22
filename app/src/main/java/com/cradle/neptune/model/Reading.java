@@ -367,6 +367,27 @@ public class Reading {
         return manuallyChangeOcrResults;
     }
 
+    // check for valid data
+    // if hasInvalidData is true the dialog will be displayed
+    public boolean hasInvalidData() {
+        if ((patient.ageYears <= 0 || patient.ageYears > 150)
+                || (heartRateBPM < 30 || heartRateBPM > 300)
+                || (bpDiastolic < 10 || bpDiastolic > 300)
+                || (bpSystolic < 10 || bpSystolic > 300)) {
+            return true;
+        }
+
+        if (patient.isPregnant) {
+            if ((patient.gestationalAgeUnit == GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS
+                && Integer.valueOf(patient.gestationalAgeValue) > 15)
+                || (patient.gestationalAgeUnit == GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS
+                && Integer.valueOf(patient.gestationalAgeValue) > 66)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // check for required data
     public boolean isMissingRequiredData() {
         boolean missing = false;

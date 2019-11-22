@@ -72,7 +72,7 @@
         <item>Weeks</item>
         <item>Months</item>
         <!--TODO: re-add this: <item>Last menstrual period</item> -->
-        <item>Not pregnant</item>
+<!--        <item>Not pregnant</item>-->
     </string-array>
 
     <string-array name="sex">
@@ -132,6 +132,8 @@
     <string name="discard_dialog_changes">Discard your changes?</string>
     <string name="missing_info_title">Missing Information</string>
     <string name="missing_info_body">Some required fields from PATIENT or CONFIRM VITALS tabs are missing. Please enter this data before saving.</string>
+    <string name="invalid_data">Invalid Data</string>
+    <string name="invalid_data_message">Valid ranges\n\nAge limit: 0-150 years\nHearth rate: 30-300 bpm\nsystolic and diastolic: 10-300 bpm\npregnancy max: 15 months</string>
 
 
     <!-- SMS Text Message Referral -->
@@ -195,22 +197,22 @@
         3QIDAQAB                                                        \n
         -----END PUBLIC KEY-----
     </string>
-    <string name="village_number">Village Number:</string>
-    <string name="house_number">House Number:</string>
-    <string name="tank_no">Tank No:</string>
-    <string name="block_no">Block No:</string>
-    <string name="zone">Zone:</string>
+    <string name="village_number">Village Number</string>
+    <string name="house_number">House Number</string>
+    <string name="tank_no">Tank</string>
+    <string name="block_no">Block</string>
+    <string name="zone">Zone</string>
     <string name="id_number">ID number</string>
     <string name="initials">Initials</string>
     <string name="name">Name:</string>
-    <string name="age">Age:</string>
-    <string name="sex">Sex:</string>
+    <string name="age">Age</string>
+    <string name="sex">Sex</string>
     <string name="village_number_input">Village Number</string>
     <string name="last_reading">Last Reading:</string>
     <string name="last_reading_input">Last Reading</string>
     <string name="symptoms">Symptoms:</string>
     <string name="symptoms_input">Symptoms</string>
-    <string name="gestational_age">Gestational Age:</string>
+    <string name="gestational_age">Gestational Age</string>
     <string name="gestational_age_input">Gestational Age</string>
     <string name="units">Units</string>
     <string name="id">ID</string>
@@ -251,6 +253,7 @@
     <string name="empty_text_for_patient">You dont have any patients right now.\n Go to the dashboard to create a new reading.</string>
     <string name="emptyViewStatText">Please create some readings to see stats</string>
     <string name="stateTextforMonth">This Month, you have made</string>
+    <string name="pregnant_question">Pregnant?</string>
     <string name="followUpDownloaded">Follow up information downloaded successfully</string>
     <string name="followUpCheckInternet">Follow up information not downloaded, please check your internet connection</string>
     <string name="userNotAuthenticated">The credentials are not vaild, Please login again.</string>
