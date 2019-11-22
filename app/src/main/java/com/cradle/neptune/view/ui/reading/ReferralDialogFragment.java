@@ -1,13 +1,13 @@
 package com.cradle.neptune.view.ui.reading;
 
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
@@ -31,7 +31,6 @@ import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.Reading;
-import com.cradle.neptune.model.ReadingAnalysis;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.utilitiles.DateUtil;
 import com.cradle.neptune.view.ui.settings.SettingsActivity;
@@ -50,7 +49,7 @@ import okhttp3.OkHttpClient;
 
 public class ReferralDialogFragment extends DialogFragment {
 
-    public static final String TWILIO_PHONE_NUMBER = "19389999452";
+    public static final String TWILIO_PHONE_NUMBER = "16042298878";
     // Data Model
     @Inject
     Settings settings;
@@ -101,8 +100,10 @@ public class ReferralDialogFragment extends DialogFragment {
 
         // Use the Builder class for convenient dialog construction
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setView(inflater.inflate(R.layout.referral_dialog, null))
-                .setPositiveButton(R.string.send_text_message, null)    // intercepted below
+        View dialogView = inflater.inflate(R.layout.referral_dialog,null);
+        builder.setView(dialogView)
+                .setPositiveButton(R.string.send_text_message, null)
+                .setNeutralButton(R.string.send_via_Web, null)
                 .setNegativeButton(R.string.cancel, null);
         // Create the AlertDialog object and return it
         Dialog dialog = builder.create();
@@ -112,42 +113,10 @@ public class ReferralDialogFragment extends DialogFragment {
             @Override
             public void onShow(DialogInterface dialogInterface) {
                 Button button = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
-
+                Button btn1 = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_NEUTRAL);
+                btn1.setOnClickListener(view-> sendReferralViaHttps(dialogView));
                 // brians code
                 button.setOnClickListener(view -> sendSMSMessage(dialog));
-
-                // matts code
-//                button.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        //todo remove this from here and only call when http call is a success. Just for testing
-//                       // currentReading.setReferredToHealthCentre("Neptune 5 Star",ZonedDateTime.now());
-//                        try {
-//                            post("https://smsneptuneapp.herokuapp.com/sms", new  Callback(){
-//
-//                                @Override
-//                                public void onFailure(Call call, IOException e) {
-//                                    e.printStackTrace();
-//                                }
-//
-//                                @Override
-//                                public void onResponse(Call call, Response response) throws IOException {
-//                                    getActivity().runOnUiThread(new Runnable() {
-//                                        @Override
-//                                        public void run() {
-//                                          //  mTo.setText("");
-//                                           // mBody.setText("");
-//                                            Log.d("buggg",response.message());
-//                                            Toast.makeText(getContext(),"SMS Sent!", Toast.LENGTH_SHORT).show();
-//                                        }
-//                                    });
-//                                }
-//                            });
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                });
             }
         });
 
@@ -164,6 +133,37 @@ public class ReferralDialogFragment extends DialogFragment {
         return dialog;
     }
 
+    private void sendReferralViaHttps(View dialogView) {
+        Dialog dialog = new Dialog(getActivity());
+        dialog.setTitle("Sending via HTTPS");
+        dialog.setCancelable(false);
+        dialog.show();
+        RequestQueue queue = Volley.newRequestQueue(getActivity());
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(JsonObjectRequest.Method.POST, settings.getReferralsServerUrl(), getReferralJson(),
+                response -> {
+                    currentReading.setReferredToHealthCentre(selectedHealthCentreName, ZonedDateTime.now());
+                    currentReading.referralComment = enteredComment;
+                    dialog.cancel();
+                    dismiss();
+                }, error -> {
+            String json = null;
+            try {
+                if (error.networkResponse != null) {
+                    json = new String(error.networkResponse.data, HttpHeaderParser.parseCharset(error.networkResponse.headers));
+                    Log.d("bugg", "referal error: " + json);
+                    Toast.makeText(getActivity(), "json: " + json, Toast.LENGTH_LONG).show();
+                    Log.d("bugg", "referal error: " + json);
+                    Toast.makeText(getActivity(), "json: " + json, Toast.LENGTH_LONG).show();
+                }
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            Snackbar.make(dialogView,"Unable to Send the referral: "+json,Snackbar.LENGTH_LONG).show();
+            dialog.cancel();
+        });
+        queue.add(jsonObjectRequest);
+    }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -174,13 +174,13 @@ public class ReferralDialogFragment extends DialogFragment {
     }
 
     private void composeMmsMessage(String message, String phoneNumber) {
-//        Intent intent = new Intent(Intent.ACTION_VIEW);
-//        intent.setData(Uri.parse("smsto:"));  // This ensures only SMS apps respond
-//        intent.putExtra("address", phoneNumber);
-//        intent.putExtra("sms_body", message);
-//        if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
-//            startActivity(intent);
-//        }
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse("smsto:"));  // This ensures only SMS apps respond
+        intent.putExtra("address", phoneNumber);
+        intent.putExtra("sms_body", message);
+        if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+            startActivity(intent);
+        }
 
 
         Uri uri = Uri.parse("smsto:" + phoneNumber);
@@ -207,36 +207,36 @@ public class ReferralDialogFragment extends DialogFragment {
         onFinishedSendingSMS(dialog);
 //
 //        // Json for comments
-        ProgressDialog progressDialog = new ProgressDialog(getActivity());
-        progressDialog.setTitle("Uploading Referral");
-        progressDialog.setCancelable(false);
-        progressDialog.show();
-
-        RequestQueue queue = Volley.newRequestQueue(getActivity());
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(JsonObjectRequest.Method.POST, settings.getReferallServerUrl(), getReferralJson(),
-                response -> {
-                    Log.d("bugg", "delivered " + response.toString() + "   server: " + settings.getReferallServerUrl());
-                    progressDialog.cancel();
-                    Toast.makeText(getActivity(), "Referral sent to " + settings.getReferallServerUrl(), Toast.LENGTH_LONG).show();
-                    onFinishedSendingSMS(dialog);
-                    dismiss();
-
-                }, error -> {
-            String json = null;
-            try {
-                if (error.networkResponse != null) {
-                    json = new String(error.networkResponse.data, HttpHeaderParser.parseCharset(error.networkResponse.headers));
-                }
-                progressDialog.cancel();
-                Log.d("bugg", "referal error: " + json);
-                Toast.makeText(getActivity(), "json: " + json, Toast.LENGTH_LONG).show();
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-            Log.d("bugg", "Delivery error: " + json);
-
-        });
-        queue.add(jsonObjectRequest);
+//        ProgressDialog progressDialog = new ProgressDialog(getActivity());
+//        progressDialog.setTitle("Uploading Referral");
+//        progressDialog.setCancelable(false);
+//        progressDialog.show();
+//
+//        RequestQueue queue = Volley.newRequestQueue(getActivity());
+//        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(JsonObjectRequest.Method.POST, settings.getReferralsServerUrl(), getReferralJson(),
+//                response -> {
+//                    Log.d("bugg", "delivered " + response.toString() + "   server: " + settings.getReferralsServerUrl());
+//                    progressDialog.cancel();
+//                    Toast.makeText(getActivity(), "Referral sent to " + settings.getReferralsServerUrl(), Toast.LENGTH_LONG).show();
+//                    onFinishedSendingSMS(dialog);
+//                    dismiss();
+//
+//                }, error -> {
+//            String json = null;
+//            try {
+//                if (error.networkResponse != null) {
+//                    json = new String(error.networkResponse.data, HttpHeaderParser.parseCharset(error.networkResponse.headers));
+//                }
+//                progressDialog.cancel();
+//                Log.d("bugg", "referal error: " + json);
+//                Toast.makeText(getActivity(), "json: " + json, Toast.LENGTH_LONG).show();
+//            } catch (UnsupportedEncodingException e) {
+//                e.printStackTrace();
+//            }
+//            Log.d("bugg", "Delivery error: " + json);
+//
+//        });
+//        queue.add(jsonObjectRequest);
 
 //        // prep UI
 //        // TODO: put in XML
@@ -491,63 +491,67 @@ public class ReferralDialogFragment extends DialogFragment {
 
     private String buildMessage(Dialog dialog) {
 
-        // patient
-        String patient = getString(R.string.sms_message_patient,
-                currentReading.patient.patientName,
-                currentReading.patient.patientId
-        );
-        Reading.WeeksAndDays ga = currentReading.getGestationalAgeInWeeksAndDays();
-        String patientAge;
-        if (ga != null) {
-            patientAge = getString(R.string.sms_message_patient_age_pregnant,
-                    currentReading.patient.ageYears,
-                    ga.weeks,
-                    ga.days);
-        } else {
-            patientAge = getString(R.string.sms_message_patient_age_not_pregnant,
-                    currentReading.patient.ageYears);
-        }
+//        // patient
+//        String patient = getString(R.string.sms_message_patient,
+//                currentReading.patient.patientName,
+//                currentReading.patient.patientId
+//        );
+//        Reading.WeeksAndDays ga = currentReading.getGestationalAgeInWeeksAndDays();
+//        String patientAge;
+//        if (ga != null) {
+//            patientAge = getString(R.string.sms_message_patient_age_pregnant,
+//                    currentReading.patient.ageYears,
+//                    ga.weeks,
+//                    ga.days);
+//        } else {
+//            patientAge = getString(R.string.sms_message_patient_age_not_pregnant,
+//                    currentReading.patient.ageYears);
+//        }
+//
+//        // vitals
+//        ReadingAnalysis analysis = ReadingAnalysis.analyze(currentReading);
+//        String vitals = getString(R.string.sms_message_reading_results,
+//                currentReading.bpSystolic,
+//                currentReading.bpDiastolic,
+//                currentReading.heartRateBPM,
+//                analysis.getAnalysisText(getContext())
+//        );
+//
+//        // health centre: updated when selection changes
+//
+//        // warn recipient if possible duplicate referral
+//        String secondReferralWarning = "";
+//        if (currentReading.isReferredToHealthCentre()) {
+//            secondReferralWarning =
+//                    getString(R.string.sms_message_repeat_referral_warning,
+//                            currentReading.referralHealthCentre,
+//                            DateUtil.getFullDateString(currentReading.referralMessageSendTime));
+//        }
+//
+//        // comments
+//        String comments = enteredComment;
+//        if (comments.length() > 0) {
+//            comments = "\"" + comments + "\"";
+//        }
+//
+//        // construct it
+//        String message = addLf(getString(R.string.sms_message_header))
+//        + addLf(patient)
+//                + addLf(patientAge)
+//                + addLf(vitals)
+//                + addLf(currentReading.getSymptomsString())
+//                + addLf(getString(R.string.sms_message_reading_date,
+//                DateUtil.getFullDateString(currentReading.dateTimeTaken)))
+//                + addLf(getString(R.string.sms_message_referral,
+//                selectedHealthCentreName))
+//                + addLf(getString(R.string.sms_message_by_vht, settings.getVhtName()))
+//                + addLf(secondReferralWarning)
+//                + comments;
 
-        // vitals
-        ReadingAnalysis analysis = ReadingAnalysis.analyze(currentReading);
-        String vitals = getString(R.string.sms_message_reading_results,
-                currentReading.bpSystolic,
-                currentReading.bpDiastolic,
-                currentReading.heartRateBPM,
-                analysis.getAnalysisText(getContext())
-        );
+        JSONObject referralJson = getReferralJson();
 
-        // health centre: updated when selection changes
-
-        // warn recipient if possible duplicate referral
-        String secondReferralWarning = "";
-        if (currentReading.isReferredToHealthCentre()) {
-            secondReferralWarning =
-                    getString(R.string.sms_message_repeat_referral_warning,
-                            currentReading.referralHealthCentre,
-                            DateUtil.getFullDateString(currentReading.referralMessageSendTime));
-        }
-
-        // comments
-        String comments = enteredComment;
-        if (comments.length() > 0) {
-            comments = "\"" + comments + "\"";
-        }
-
-        // construct it
-        String message = addLf(getString(R.string.sms_message_header))
-                + addLf(patient)
-                + addLf(patientAge)
-                + addLf(vitals)
-                + addLf(currentReading.getSymptomsString())
-                + addLf(getString(R.string.sms_message_reading_date,
-                DateUtil.getFullDateString(currentReading.dateTimeTaken)))
-                + addLf(getString(R.string.sms_message_referral,
-                selectedHealthCentreName))
-                + addLf(getString(R.string.sms_message_by_vht, settings.getVhtName()))
-                + addLf(secondReferralWarning)
-                + comments;
-        return message;
+        String jsonStr = referralJson.toString();
+        return jsonStr;
     }
 
     private JSONObject getReferralJson() {
@@ -576,6 +580,7 @@ public class ReferralDialogFragment extends DialogFragment {
             readingVal.put("dateRecheckVitalsNeeded", currentReading.dateRecheckVitalsNeeded);
             readingVal.put("isFlaggedForFollowup", currentReading.isFlaggedForFollowup());
             readingVal.put("symptoms", currentReading.getSymptomsString());
+            readingVal.put("dateTimeTaken", currentReading.dateTimeTaken);
         } catch (JSONException e) {
             e.printStackTrace();
         }

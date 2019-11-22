@@ -72,7 +72,7 @@
         <item>Weeks</item>
         <item>Months</item>
         <!--TODO: re-add this: <item>Last menstrual period</item> -->
-<!--        <item>Not pregnant</item>-->
+        <item>Not pregnant</item>
     </string-array>
 
     <string-array name="sex">
@@ -137,7 +137,9 @@
 
 
     <!-- SMS Text Message Referral -->
-    <string name="send_text_message">Send Text Message</string>
+    <string name="send_text_message">Send via SMS</string>
+    <string name="send_via_Web">Send via Web</string>
+
     <string name="cancel">Cancel</string>
 
     <!-- SMS Text Message Referral - SMS content-->
@@ -252,5 +254,8 @@
     <string name="emptyViewStatText">Please create some readings to see stats</string>
     <string name="stateTextforMonth">This Month, you have made</string>
     <string name="pregnant_question">Pregnant?</string>
+    <string name="followUpDownloaded">Follow up information downloaded successfully</string>
+    <string name="followUpCheckInternet">Follow up information not downloaded, please check your internet connection</string>
+    <string name="userNotAuthenticated">The credentials are not vaild, Please login again.</string>
 
 </resources>
