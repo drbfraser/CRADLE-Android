@@ -32,6 +32,7 @@ import com.cradle.neptune.view.ui.network_volley.MultiReadingUploader;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.threeten.bp.ZoneId;
 import org.threeten.bp.ZonedDateTime;
 
 import java.util.ArrayList;
@@ -94,7 +95,13 @@ public class UploadActivity extends TabActivityBase {
     private void setupLastFollowupDownloadDate() {
         //get last updated time
         TextView lastDownloadText = findViewById(R.id.lastDownloadTimeTxt);
-        lastDownloadText.setText(settings.getLastTimeFollowUpDownloaded());
+        try {
+            ZonedDateTime zonedDateTime = ZonedDateTime.parse(settings.getLastTimeFollowUpDownloaded());
+            lastDownloadText.setText(DateUtil.getFullDateString(zonedDateTime));
+
+        }catch (Exception e){
+            lastDownloadText.setText(settings.getLastTimeFollowUpDownloaded());
+        }
     }
 
     private void setupSyncReadingButton() {
@@ -110,7 +117,7 @@ public class UploadActivity extends TabActivityBase {
     }
 
     private void requestReadingsFromNetwork() {
-        SharedPreferences sharedPref = UploadActivity.this.getSharedPreferences("login", Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = UploadActivity.this.getSharedPreferences(LoginActivity.AUTH_PREF, Context.MODE_PRIVATE);
         String token = sharedPref.getString(LoginActivity.TOKEN, "");
 
         if (token.equals("")) {
@@ -190,7 +197,7 @@ public class UploadActivity extends TabActivityBase {
     }
 
     private void upDateLastDownloadTime(ZonedDateTime now) {
-        settings.saveLastTimeFollowUpDownloaded(DateUtil.getDateString(now));
+        settings.saveLastTimeFollowUpDownloaded(now.toString());
     }
 
     @Override

@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -33,6 +34,7 @@ import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.utilitiles.DateUtil;
+import com.cradle.neptune.view.LoginActivity;
 import com.cradle.neptune.view.ui.settings.SettingsActivity;
 
 import org.json.JSONException;
@@ -41,10 +43,14 @@ import org.threeten.bp.ZonedDateTime;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Objects;
 
 import javax.inject.Inject;
 
 import okhttp3.OkHttpClient;
+
+import static com.cradle.neptune.view.LoginActivity.AUTH_PREF;
+import static com.cradle.neptune.view.LoginActivity.USER_ID;
 
 
 public class ReferralDialogFragment extends DialogFragment {
@@ -556,23 +562,13 @@ public class ReferralDialogFragment extends DialogFragment {
 
     private JSONObject getReferralJson() {
         JSONObject patientVal = currentReading.patient.getPatientInfoJSon();
-//        Patient patient = currentReading.patient;
-//        try {
-//
-//            patientVal.put("patientId", patient.patientId);
-//            patientVal.put("patientName", patient.patientName);
-//            patientVal.put("patientAge", patient.ageYears);
-//            patientVal.put("gestationalAgeUnit", patient.gestationalAgeUnit);
-//            patientVal.put("gestationalAgeValue", patient.gestationalAgeValue);
-//            patientVal.put("villageNumber", patient.villageNumber);
-//            patientVal.put("patientSex", patient.patientSex);
-//            patientVal.put("isPregnant", "false");
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
+        SharedPreferences sharedPreferences = Objects.requireNonNull(getActivity())
+                .getSharedPreferences(AUTH_PREF,Context.MODE_PRIVATE);
+
         JSONObject readingVal = new JSONObject();
         try {
             readingVal.put("readingId", currentReading.serverReadingId);
+            readingVal.put(USER_ID,sharedPreferences.getString(USER_ID,""));
             readingVal.put("dateLastSaved", currentReading.dateLastSaved);
             readingVal.put("bpSystolic", currentReading.bpSystolic);
             readingVal.put("bpDiastolic", currentReading.bpDiastolic);
