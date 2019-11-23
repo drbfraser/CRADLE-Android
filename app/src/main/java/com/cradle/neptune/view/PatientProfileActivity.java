@@ -6,9 +6,11 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -25,6 +27,17 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
+
+import com.cradle.neptune.utilitiles.BarGraphValueFormatter;
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
 
 import static com.cradle.neptune.view.DashBoardActivity.READING_ACTIVITY_DONE;
 
@@ -83,6 +96,8 @@ public class PatientProfileActivity extends AppCompatActivity {
         populatePatientInfo(currPatient);
         setupReadingsRecyclerView();
         setupCreatePatientReadingButton();
+        setupLineChart();
+
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle(R.string.patient_summary);
@@ -117,6 +132,29 @@ public class PatientProfileActivity extends AppCompatActivity {
         } else {
             gestationalAgeUnit.setText("Months");
         }
+
+    }
+
+    private List<Reading> getPatientReadings() {
+        List<Reading> readings = readingManager.getReadings(this);
+        Collections.sort(readings, new Reading.ComparatorByDateReverse());
+        List<Reading> myReadings = new ArrayList<>();
+        for (Reading reading : readings) {
+            Patient patient = reading.patient;
+            if (patient.patientId.equals(currPatient.patientId)) {
+                myReadings.add(reading);
+            }
+        }
+        return myReadings;
+    }
+
+    private void setupLineChart() {
+        LineChart lineChart = findViewById(R.id.patientLineChart);
+        CardView lineChartCard = findViewById(R.id.patientLineChartCard);
+        lineChartCard.setVisibility(View.VISIBLE);
+
+        List<Reading> patientReadings = getPatientReadings();
+
 
     }
 
@@ -157,15 +195,8 @@ public class PatientProfileActivity extends AppCompatActivity {
         readingRecyclerview.setNestedScrollingEnabled(false);
         ReadingRecyclerViewAdapter listAdapter;
         // get content & sort
-        List<Reading> readings = readingManager.getReadings(this);
-        Collections.sort(readings, new Reading.ComparatorByDateReverse());
-        List<Reading> myReadings = new ArrayList<>();
-        for (Reading reading : readings) {
-            Patient patient = reading.patient;
-            if (patient.patientId.equals(currPatient.patientId)) {
-                myReadings.add(reading);
-            }
-        }        // set adapter
+        List<Reading> myReadings = getPatientReadings();
+        // set adapter
         listAdapter = new ReadingRecyclerViewAdapter(myReadings);
 
         listAdapter.setOnClickElementListener(new ReadingRecyclerViewAdapter.OnClickElement() {
