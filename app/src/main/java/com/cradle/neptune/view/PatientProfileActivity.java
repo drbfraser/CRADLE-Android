@@ -155,7 +155,6 @@ public class PatientProfileActivity extends AppCompatActivity {
 
         int index = patientReadings.size();
         for (Reading reading : patientReadings) {
-            Log.d("kat", "setupLineChart: " + index);
             sBPs.add(new Entry(index, reading.bpSystolic));
             dBPs.add(new Entry(index, reading.bpDiastolic));
             bPMs.add(new Entry(index, reading.heartRateBPM));
@@ -193,7 +192,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         lineChart.getXAxis().setDrawAxisLine(true);
         lineChart.setData(lineData);
         lineChart.getXAxis().setEnabled(false);
-        lineChart.getDescription().setText("Cardiovascular Data from last "+ patientReadings.size()+ " readings");
+        lineChart.getDescription().setText("Cardiovascular Data from last " + patientReadings.size() + " readings");
         lineChart.invalidate();
 
     }
