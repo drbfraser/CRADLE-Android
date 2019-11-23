@@ -74,7 +74,7 @@ public class SettingsFragment extends PreferenceFragmentCompat
                             getActivity().finishAffinity();
                         }
                     }).setNegativeButton("No",null).setIcon(R.drawable.ic_sync)
-                            .setMessage("You will be required to sign in again before using the application.").create();
+                            .setMessage(R.string.signoutMessage).create();
                     alertDialog.show();
                     return true;
 

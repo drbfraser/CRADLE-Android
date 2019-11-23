@@ -116,5 +116,5 @@
 
     <Preference android:title="Sign Out"
         android:key="signout"
-        android:summary="You will be required to sign in again  before using the application"/>
+        android:summary= "@string/signoutMessage"/>
 </PreferenceScreen>
