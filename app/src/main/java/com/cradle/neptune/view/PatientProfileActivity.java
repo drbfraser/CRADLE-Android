@@ -28,13 +28,8 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import com.cradle.neptune.utilitiles.BarGraphValueFormatter;
-import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
-import com.github.mikephil.charting.data.BarData;
-import com.github.mikephil.charting.data.BarDataSet;
-import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -154,7 +149,52 @@ public class PatientProfileActivity extends AppCompatActivity {
         lineChartCard.setVisibility(View.VISIBLE);
 
         List<Reading> patientReadings = getPatientReadings();
+        List<Entry> sBPs = new ArrayList<>();
+        List<Entry> dBPs = new ArrayList<>();
+        List<Entry> bPMs = new ArrayList<>();
 
+        int index = patientReadings.size();
+        for (Reading reading : patientReadings) {
+            Log.d("kat", "setupLineChart: " + index);
+            sBPs.add(new Entry(index, reading.bpSystolic));
+            dBPs.add(new Entry(index, reading.bpDiastolic));
+            bPMs.add(new Entry(index, reading.heartRateBPM));
+            index--;
+        }
+
+        Collections.reverse(sBPs);
+        Collections.reverse(dBPs);
+        Collections.reverse(bPMs);
+
+        LineDataSet sBPDataSet = new LineDataSet(sBPs, "Systolic BP");
+        LineDataSet dBPDataSet = new LineDataSet(dBPs, "Diastolic BP");
+        LineDataSet bPMDataSet = new LineDataSet(bPMs, "Heart Rate BPM");
+
+        sBPDataSet.setColor(getResources().getColor(R.color.purple));
+        sBPDataSet.setCircleColor(getResources().getColor(R.color.purple));
+
+        dBPDataSet.setColor(getResources().getColor(R.color.colorAccent));
+        dBPDataSet.setCircleColor(getResources().getColor(R.color.colorAccent));
+
+        bPMDataSet.setColor(getResources().getColor(R.color.orange));
+        bPMDataSet.setCircleColor(getResources().getColor(R.color.orange));
+
+        lineChart.setDrawBorders(false);
+        lineChart.setDrawGridBackground(false);
+        lineChart.getAxisRight().setDrawLabels(false);
+        lineChart.getAxisRight().setDrawGridLines(false);
+        lineChart.getXAxis().setDrawGridLines(true);
+        lineChart.getAxisLeft().setDrawGridLines(true);
+
+        LineData lineData = new LineData(sBPDataSet, dBPDataSet, bPMDataSet);
+
+        lineData.setHighlightEnabled(false);
+
+        lineChart.getXAxis().setDrawAxisLine(true);
+        lineChart.setData(lineData);
+        lineChart.getXAxis().setEnabled(false);
+        lineChart.getDescription().setText("Cardiovascular Data from last "+ patientReadings.size()+ " readings");
+        lineChart.invalidate();
 
     }
 
@@ -247,6 +287,7 @@ public class PatientProfileActivity extends AppCompatActivity {
     private void updateUi() {
         // setupEmptyState();
         setupReadingsRecyclerView();
+        setupLineChart();
     }
 
 }

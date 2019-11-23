@@ -176,7 +176,7 @@ public class StatsActivity extends AppCompatActivity {
 
         LineDataSet diastolicDataSet = new LineDataSet(diastolicEntry,"BP Diastolic");
         LineDataSet systolicDataSet = new LineDataSet(systolicEntry,"BP Systolic");
-        LineDataSet heartRateDataSet = new LineDataSet(heartrateEntry,"HearRate BPM");
+        LineDataSet heartRateDataSet = new LineDataSet(heartrateEntry,"Heart Rate BPM");
 
         diastolicDataSet.setColor(getResources().getColor(R.color.colorAccent));
         systolicDataSet.setColor(getResources().getColor(R.color.purple));
