@@ -25,6 +25,7 @@ import org.threeten.bp.ZonedDateTime;
 import org.threeten.bp.temporal.ChronoUnit;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
@@ -90,6 +91,7 @@ public class PatientsActivity extends TabActivityBase {
 
         HashMap<String, Patient> patientHashMap = new HashMap<>();
         List<Reading> allReadings = readingManager.getReadings(this);
+        Collections.sort(allReadings,new Reading.ComparatorByDateReverse());
         for (Reading reading : allReadings) {
 
             patientHashMap.put(reading.patient.patientId, reading.patient);

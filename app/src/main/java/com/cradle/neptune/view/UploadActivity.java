@@ -22,6 +22,7 @@ import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.model.Patient.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingFollowUp;
 import com.cradle.neptune.model.ReadingManager;
@@ -189,6 +190,9 @@ public class UploadActivity extends TabActivityBase {
                 if (reading.serverReadingId.equals(followUp.getReadingServerId())) {
                     reading.diagnosis = followUp.getDiagnosis();
                     reading.followUpAction = followUp.getFollowUpAction();
+                    if(reading.followUpAction!=null && reading.followUpAction.equals("")){
+                        reading.patient.referralStatus = Patient.ReferralStatus.ASSESSED;
+                    }
                     reading.treatment = followUp.getTreatment();
                     readingManager.updateReading(this, reading);
                 }

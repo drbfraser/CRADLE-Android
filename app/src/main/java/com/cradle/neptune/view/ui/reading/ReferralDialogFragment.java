@@ -31,6 +31,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.model.Patient.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.utilitiles.DateUtil;
@@ -149,6 +150,7 @@ public class ReferralDialogFragment extends DialogFragment {
                 response -> {
                     currentReading.setReferredToHealthCentre(selectedHealthCentreName, ZonedDateTime.now());
                     currentReading.referralComment = enteredComment;
+                    currentReading.patient.referralStatus = Patient.ReferralStatus.PENDING;
                     dialog.cancel();
                     dismiss();
                 }, error -> {
@@ -306,6 +308,7 @@ public class ReferralDialogFragment extends DialogFragment {
     private void onFinishedSendingSMS(Dialog dialog) {
         currentReading.setReferredToHealthCentre(selectedHealthCentreName, ZonedDateTime.now());
         currentReading.referralComment = enteredComment;
+        currentReading.patient.referralStatus = Patient.ReferralStatus.PENDING;
         callback.sentTextMessage(smsTextMessage);
         dialog.dismiss();
     }
