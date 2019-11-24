@@ -132,7 +132,7 @@ public class UploadActivity extends TabActivityBase {
         dialog.setTitle("Syncing");
         dialog.setCancelable(false);
         dialog.show();
-        JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, settings.getReferralsServerUrl(),
+        JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, settings.getReferralSummeriesServerUrl(),
                 null, response -> {
             getReadingFollowFromTheResponse(response);
             dialog.cancel();
