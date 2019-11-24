@@ -150,7 +150,6 @@ public class ReferralDialogFragment extends DialogFragment {
                 response -> {
                     currentReading.setReferredToHealthCentre(selectedHealthCentreName, ZonedDateTime.now());
                     currentReading.referralComment = enteredComment;
-                    currentReading.patient.referralStatus = Patient.ReferralStatus.PENDING;
                     dialog.cancel();
                     dismiss();
                 }, error -> {
@@ -308,7 +307,6 @@ public class ReferralDialogFragment extends DialogFragment {
     private void onFinishedSendingSMS(Dialog dialog) {
         currentReading.setReferredToHealthCentre(selectedHealthCentreName, ZonedDateTime.now());
         currentReading.referralComment = enteredComment;
-        currentReading.patient.referralStatus = Patient.ReferralStatus.PENDING;
         callback.sentTextMessage(smsTextMessage);
         dialog.dismiss();
     }

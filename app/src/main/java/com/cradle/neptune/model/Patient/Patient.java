@@ -25,8 +25,6 @@ public class Patient implements Serializable {
     public String tankNo;
     public String villageNumber;
     public String houseNumber;
-    public ReferralStatus referralStatus= ReferralStatus.NA;
-
 
     public Patient() {
     }
