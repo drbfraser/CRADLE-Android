@@ -199,7 +199,7 @@ public class SymptomsFragment extends BaseFragment {
 
         // checkboxes
         for (CheckBox cb : checkBoxes) {
-            if (cb.isChecked() && cb != noSymptomsCheckBox) {
+            if (cb.isChecked()) {
                 currentReading.patient.symptoms.add(cb.getText().toString());
             }
         }
