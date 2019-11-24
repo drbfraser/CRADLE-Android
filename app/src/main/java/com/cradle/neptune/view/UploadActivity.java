@@ -190,9 +190,8 @@ public class UploadActivity extends TabActivityBase {
                 if (reading.serverReadingId.equals(followUp.getReadingServerId())) {
                     reading.diagnosis = followUp.getDiagnosis();
                     reading.followUpAction = followUp.getFollowUpAction();
-                    if(reading.followUpAction!=null && reading.followUpAction.equals("")){
-                        reading.patient.referralStatus = Patient.ReferralStatus.ASSESSED;
-                    }
+                    reading.patient.referralStatus = Patient.ReferralStatus.ASSESSED;
+
                     reading.treatment = followUp.getTreatment();
                     readingManager.updateReading(this, reading);
                 }

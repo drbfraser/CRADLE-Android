@@ -8,6 +8,7 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Pair;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -89,14 +90,19 @@ public class PatientsActivity extends TabActivityBase {
 
     private void setupPatientRecyclerview() {
 
-        HashMap<String, Patient> patientHashMap = new HashMap<>();
-        List<Reading> allReadings = readingManager.getReadings(this);
-        Collections.sort(allReadings,new Reading.ComparatorByDateReverse());
-        for (Reading reading : allReadings) {
+        HashMap<String, Pair<Patient,Reading>> patientHashMap = new HashMap<>();
 
-            patientHashMap.put(reading.patient.patientId, reading.patient);
+        List<Reading> allReadings = readingManager.getReadings(this);
+
+        Collections.sort(allReadings,new Reading.ComparatorByDateReverse());
+
+
+        for (Reading reading : allReadings) {
+            if(!patientHashMap.containsKey(reading.patient.patientId)) {
+                patientHashMap.put(reading.patient.patientId, new Pair<>(reading.patient, reading));
+            }
         }
-        List<Patient> patients = new ArrayList<>(patientHashMap.values());
+        List<Pair<Patient,Reading>> patients = new ArrayList<>(patientHashMap.values());
         TextView textView = findViewById(R.id.emptyView);
         if (patients.size() == 0) {
             textView.setVisibility(View.VISIBLE);
@@ -104,7 +110,6 @@ public class PatientsActivity extends TabActivityBase {
             textView.setVisibility(View.GONE);
 
         }
-
         PatientsViewAdapter patientsViewAdapter = new PatientsViewAdapter(patients, this);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         patientRecyclerview.setAdapter(patientsViewAdapter);
