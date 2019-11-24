@@ -10,11 +10,18 @@ public class ReadingFollowUp {
     private String diagnosis;
     private String healthcare;
     private String date;
-    public ReadingFollowUp(String readingServerId, String followUpAction, String treatment, String diagnosis) {
+    private String assessedBy;
+    private String referredBy;
+    public ReadingFollowUp(String readingServerId, String followUpAction, String treatment,
+                           String diagnosis,String healthcare,String date, String assessedBy,String referredBy) {
         this.readingServerId = readingServerId;
         this.followUpAction = followUpAction;
         this.treatment = treatment;
         this.diagnosis = diagnosis;
+        this.date=date;
+        this.healthcare = healthcare;
+        this.assessedBy = assessedBy;
+        this.referredBy = referredBy;
     }
 
 
@@ -50,6 +57,10 @@ public class ReadingFollowUp {
         this.diagnosis = diagnosis;
     }
 
+    public String getDate() {
+        return date;
+    }
+
     @Override
     public String toString() {
         return "ReadingFollowUp{" +
@@ -57,6 +68,37 @@ public class ReadingFollowUp {
                 ", followUpAction='" + followUpAction + '\'' +
                 ", treatment='" + treatment + '\'' +
                 ", diagnosis='" + diagnosis + '\'' +
+                ", healthcare='" + healthcare + '\'' +
+                ", date='" + date + '\'' +
                 '}';
     }
+
+    public String getAssessedBy() {
+        return assessedBy;
+    }
+
+    public void setAssessedBy(String assessedBy) {
+        this.assessedBy = assessedBy;
+    }
+
+    public String getReferredBy() {
+        return referredBy;
+    }
+
+    public void setReferredBy(String referredBy) {
+        this.referredBy = referredBy;
+    }
+
+    public String getHealthcare() {
+        return healthcare;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public void setHealthcare(String healthcare) {
+        this.healthcare = healthcare;
+    }
+
 }
