@@ -8,7 +8,8 @@ public class ReadingFollowUp {
     private String followUpAction;
     private String treatment;
     private String diagnosis;
-
+    private String healthcare;
+    private String date;
     public ReadingFollowUp(String readingServerId, String followUpAction, String treatment, String diagnosis) {
         this.readingServerId = readingServerId;
         this.followUpAction = followUpAction;

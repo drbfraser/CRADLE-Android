@@ -188,9 +188,7 @@ public class UploadActivity extends TabActivityBase {
         for (Reading reading : readings) {
             for (ReadingFollowUp followUp : readingsFollowUps) {
                 if (reading.serverReadingId.equals(followUp.getReadingServerId())) {
-                    reading.diagnosis = followUp.getDiagnosis();
-                    reading.followUpAction = followUp.getFollowUpAction();
-                    reading.treatment = followUp.getTreatment();
+                    reading.readingFollowUp = followUp;
                     readingManager.updateReading(this, reading);
                 }
             }

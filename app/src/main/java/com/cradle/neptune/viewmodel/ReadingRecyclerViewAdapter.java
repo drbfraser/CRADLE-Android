@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.cradle.neptune.R;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingAnalysis;
+import com.cradle.neptune.model.ReadingFollowUp;
 import com.cradle.neptune.utilitiles.DateUtil;
 
 import java.util.List;
@@ -49,8 +50,8 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
 
     @Override
     public int getItemViewType(int position) {
-        String followUpAction = readings.get(position).followUpAction;
-        if (followUpAction == null || followUpAction.equalsIgnoreCase("")) {
+        ReadingFollowUp followUpAction = readings.get(position).readingFollowUp;
+        if (followUpAction == null) {
             return NO_ASSESSMENT_TYPE;
         }
         return ASSESSMENT_TYPE;
@@ -123,12 +124,11 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
                 TextView tvRecheckVitals = v.findViewById(R.id.txtRecheckVitals);
                 tvRecheckVitals.setText(message);
             }
-            //todo: setup on click listner for cardview and open the summary page
 
         } else if (myViewHolder.getItemViewType() == ASSESSMENT_TYPE) {
-            myViewHolder.diagnosis.setText(new StringBuilder().append(currReading.diagnosis).append("").toString());
-            myViewHolder.treatment.setText(new StringBuilder().append(currReading.treatment).append("").toString());
-            myViewHolder.followUp.setText(new StringBuilder().append(currReading.followUpAction).append("").toString());
+            myViewHolder.diagnosis.setText(new StringBuilder().append(currReading.readingFollowUp.getDiagnosis()).append("").toString());
+            myViewHolder.treatment.setText(new StringBuilder().append(currReading.readingFollowUp.getTreatment()).append("").toString());
+            myViewHolder.followUp.setText(new StringBuilder().append(currReading.readingFollowUp.getFollowUpAction()).append("").toString());
 
 
         }
