@@ -162,7 +162,6 @@ public class StatsActivity extends AppCompatActivity {
     }
 
     private void setupLineChart() {
-        Log.d("bugg","setting up chart readings: "+ readings.size());
         LineChart lineChart = findViewById(R.id.lineChart);
         CardView linecard = findViewById(R.id.linechartCard);
         linecard.setVisibility(View.VISIBLE);
@@ -177,8 +176,6 @@ public class StatsActivity extends AppCompatActivity {
             systolicEntry.add(new Entry(i+1,reading.bpSystolic));
             heartrateEntry.add(new Entry(i+1,reading.heartRateBPM));
         }
-        Log.d("bugg","setting up chart dias: "+ diastolicEntry.size());
-
 
         LineDataSet diastolicDataSet = new LineDataSet(diastolicEntry,"BP Diastolic");
         LineDataSet systolicDataSet = new LineDataSet(systolicEntry,"BP Systolic");
