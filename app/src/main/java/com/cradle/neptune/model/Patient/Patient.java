@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Patient implements Serializable {
-
     // TODO: 22/09/19 encapsulate these class members
     // patient info
     public String patientId;

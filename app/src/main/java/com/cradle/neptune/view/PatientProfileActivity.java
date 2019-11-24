@@ -91,7 +91,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         currPatient = (Patient) getIntent().getSerializableExtra("key");
         populatePatientInfo(currPatient);
 
-        patientReadings = getPatientReadings();
+        getPatientReadings();
         setupReadingsRecyclerView();
         setupCreatePatientReadingButton();
         setupLineChart();
@@ -108,6 +108,15 @@ public class PatientProfileActivity extends AppCompatActivity {
     public boolean onSupportNavigateUp() {
         onBackPressed();
         return true;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getPatientReadings();
+        setupLineChart();
+        setupReadingsRecyclerView();
+
     }
 
     void populatePatientInfo(Patient patient) {
@@ -133,17 +142,16 @@ public class PatientProfileActivity extends AppCompatActivity {
 
     }
 
-    private List<Reading> getPatientReadings() {
+    private void getPatientReadings() {
         List<Reading> readings = readingManager.getReadings(this);
         Collections.sort(readings, new Reading.ComparatorByDateReverse());
-        List<Reading> myReadings = new ArrayList<>();
+        patientReadings= new ArrayList<>();
         for (Reading reading : readings) {
             Patient patient = reading.patient;
             if (patient.patientId.equals(currPatient.patientId)) {
-                myReadings.add(reading);
+                patientReadings.add(reading);
             }
         }
-        return myReadings;
     }
 
     private void setupLineChart() {
@@ -177,6 +185,10 @@ public class PatientProfileActivity extends AppCompatActivity {
 
         bPMDataSet.setColor(getResources().getColor(R.color.orange));
         bPMDataSet.setCircleColor(getResources().getColor(R.color.orange));
+
+        bPMDataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+        dBPDataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+        sBPDataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
 
         lineChart.setDrawBorders(false);
         lineChart.setDrawGridBackground(false);

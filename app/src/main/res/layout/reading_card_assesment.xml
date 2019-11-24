@@ -41,7 +41,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="October 22 2019"
+                android:text="Reading date"
                 android:textColor="@color/black"
                 android:textSize="14sp"
                 app:layout_constraintStart_toStartOf="@+id/textView14"
@@ -108,7 +108,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:text="100"
+                android:text="NA"
                 app:layout_constraintStart_toEndOf="@+id/textView18"
                 app:layout_constraintTop_toTopOf="@+id/textView18" />
 
@@ -116,7 +116,7 @@
                 android:id="@+id/diaBP"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="100"
+                android:text="NA"
                 app:layout_constraintBottom_toBottomOf="@+id/textView19"
                 app:layout_constraintStart_toEndOf="@+id/textView19"
                 app:layout_constraintTop_toTopOf="@+id/textView19" />
@@ -127,7 +127,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginBottom="8dp"
-                android:text="10"
+                android:text="NA"
                 app:layout_constraintBottom_toBottomOf="@+id/textView20"
                 app:layout_constraintStart_toEndOf="@+id/textView20"
                 app:layout_constraintTop_toTopOf="@+id/textView20" />
@@ -211,7 +211,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="@string/other"
+                android:text="Health Center:"
                 android:textColor="@color/black"
                 android:textSize="12sp"
                 android:textStyle="bold"
@@ -248,13 +248,14 @@
 
             <TextView
                 android:id="@+id/readingOther"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:maxLength="25"
                 android:text="NA "
                 android:textColor="@color/black"
                 android:textSize="12sp"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/assessmentTvStats"
                 app:layout_constraintTop_toTopOf="@+id/assessmentTvStats" />
 

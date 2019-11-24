@@ -445,6 +445,13 @@ public class Reading {
         }
     }
 
+    public static class ComparatorByDate implements Comparator<Reading> {
+        @Override
+        public int compare(Reading r1, Reading r2) {
+            return r1.dateTimeTaken.compareTo(r2.dateTimeTaken);
+        }
+    }
+
     public class WeeksAndDays {
         public final int weeks;
         public final int days;

@@ -151,14 +151,12 @@ public class MultiReadingUploader {
         state = State.UPLOADING;
 
         File zipFile = null;
-        File encryptedZip = null;
         try {
             // zip data
             zipFile = zipReading(readings.get(0));
 
             // generate zip of encrypted data
             String encryptedZipFileFolder = context.getCacheDir().getAbsolutePath();
-            encryptedZip = HybridFileEncrypter.hybridEncryptFile(zipFile, encryptedZipFileFolder, settings.getRsaPubKey());
 
             String readingJson = Reading.getJsonObj(readings.get(0),context);
             // start upload
@@ -171,13 +169,12 @@ public class MultiReadingUploader {
                     settings.getServerPassword(),token);
             uploader.doUpload(readingJson, getSuccessCallback(), getErrorCallback());
 
-        } catch (IOException | GeneralSecurityException ex) {
+        } catch (IOException ex) {
             Log.e(TAG, "Exception with encrypting and transmitting data!", ex);
             state = State.PAUSED;
             progressCallback.uploadPausedOnError("Encrypting data for upload failed (" + ex.getMessage() + ")");
         } finally {
             // cleanup
-            Util.deleteFile(encryptedZip);
             Util.deleteFile(zipFile);
         }
 

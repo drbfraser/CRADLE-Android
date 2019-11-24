@@ -22,6 +22,7 @@ import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.model.Patient.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingFollowUp;
 import com.cradle.neptune.model.ReadingManager;

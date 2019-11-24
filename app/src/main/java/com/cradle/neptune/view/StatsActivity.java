@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -24,6 +25,7 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -41,6 +43,7 @@ public class StatsActivity extends AppCompatActivity {
 
         ((MyApp) getApplication()).getAppComponent().inject(this);
         readings = readingManager.getReadings(this);
+        Collections.sort(readings,new Reading.ComparatorByDate());
 
         if(readings.size()>0){
             setupBasicStats();

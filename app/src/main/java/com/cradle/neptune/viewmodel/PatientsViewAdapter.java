@@ -5,22 +5,25 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.cradle.neptune.R;
 import com.cradle.neptune.model.Patient.Patient;
+import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.view.PatientProfileActivity;
 
 import java.util.List;
 
 public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapter.PatientViewHolder> {
-    private List<Patient> patientList;
+    private List<Pair<Patient, Reading>> patientList;
     private Context context;
 
-    public PatientsViewAdapter(List<Patient> patientList, Context context) {
+    public PatientsViewAdapter(List<Pair<Patient, Reading>> patientList, Context context) {
         this.patientList = patientList;
         this.context = context;
     }
@@ -36,17 +39,25 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
 
     @Override
     public void onBindViewHolder(@NonNull PatientViewHolder patientViewHolder, int i) {
-        Patient patient = patientList.get(i);
-
+        Pair<Patient,Reading> pair = patientList.get(i);
+        Patient patient = pair.first;
+        Reading reading = pair.second;
         patientViewHolder.patientVillage.setText(patient.villageNumber);
         patientViewHolder.patientName.setText(patient.patientName);
         patientViewHolder.patientId.setText(patient.patientId);
 
+        if(reading.treatment!=null&& !reading.treatment.equals("")){
+            patientViewHolder.referralImg.setBackground(context.getResources().getDrawable(R.drawable.ic_assessment_received_black_24dp));
+            patientViewHolder.referralImg.setVisibility(View.VISIBLE);
+        } else if(reading.isReferredToHealthCentre()){
+            patientViewHolder.referralImg.setBackground(context.getResources().getDrawable(R.drawable.ic_pending_referral_black_24dp));
+            patientViewHolder.referralImg.setVisibility(View.VISIBLE);
+        }
+
         patientViewHolder.patientCardview.setOnClickListener(view -> {
 
             Intent intent = new Intent(context, PatientProfileActivity.class);
-            Patient p = patientList.get(i);
-            intent.putExtra("key", p);
+            intent.putExtra("key", patient);
             context.startActivity(intent);
         });
     }
@@ -59,6 +70,7 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
     static class PatientViewHolder extends RecyclerView.ViewHolder {
         TextView patientName, patientVillage, patientId;
         CardView patientCardview;
+        ImageButton referralImg;
 
         public PatientViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -66,6 +78,7 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
             patientId = itemView.findViewById(R.id.patientID);
             patientName = itemView.findViewById(R.id.patientName);
             patientVillage = itemView.findViewById(R.id.patientVillage);
+            referralImg = itemView.findViewById(R.id.referralStatus);
         }
     }
 }
