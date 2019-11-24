@@ -118,6 +118,11 @@ public class PatientsActivity extends TabActivityBase {
         patientsViewAdapter.notifyDataSetChanged();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setupPatientRecyclerview();
+    }
 
     private void setupAddSampleDataButton() {
         Button btn = findViewById(R.id.btnAddSampleData);
