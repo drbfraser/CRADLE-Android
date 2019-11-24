@@ -381,6 +381,27 @@
             app:layout_constraintRight_toRightOf="@+id/medicalCard"
             app:layout_constraintTop_toBottomOf="@+id/medicalCard"/>
 
+        <android.support.v7.widget.CardView
+            android:id="@+id/patientLineChartCard"
+            android:layout_width="0dp"
+            android:layout_height="200dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="8dp"
+            android:visibility="gone"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="8dp"
+            app:cardPreventCornerOverlap="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/newPatientReadingButton">
+
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/patientLineChart"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </android.support.v7.widget.CardView>
+
         <android.support.v7.widget.RecyclerView
             android:id="@+id/readingRecyclerview"
             android:layout_width="match_parent"
@@ -392,7 +413,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/newPatientReadingButton" />
+            app:layout_constraintTop_toBottomOf="@+id/patientLineChartCard" />
 
 
     </android.support.constraint.ConstraintLayout>
