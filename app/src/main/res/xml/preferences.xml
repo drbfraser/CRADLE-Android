@@ -116,5 +116,5 @@
 
     <Preference android:title="Sign Out"
         android:key="signout"
-        android:summary="All the offline Patient data will be deleted on Sign out. Please upload all your data before signing out."/>
+        android:summary= "@string/signoutMessage"/>
 </PreferenceScreen>
