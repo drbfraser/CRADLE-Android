@@ -53,6 +53,7 @@ public class PatientProfileActivity extends AppCompatActivity {
 
     RecyclerView readingRecyclerview;
     Patient currPatient;
+    List<Reading> patientReadings;
     // Data Model
     @Inject
     ReadingManager readingManager;
@@ -89,6 +90,8 @@ public class PatientProfileActivity extends AppCompatActivity {
 
         currPatient = (Patient) getIntent().getSerializableExtra("key");
         populatePatientInfo(currPatient);
+
+        patientReadings = getPatientReadings();
         setupReadingsRecyclerView();
         setupCreatePatientReadingButton();
         setupLineChart();
@@ -148,7 +151,6 @@ public class PatientProfileActivity extends AppCompatActivity {
         CardView lineChartCard = findViewById(R.id.patientLineChartCard);
         lineChartCard.setVisibility(View.VISIBLE);
 
-        List<Reading> patientReadings = getPatientReadings();
         List<Entry> sBPs = new ArrayList<>();
         List<Entry> dBPs = new ArrayList<>();
         List<Entry> bPMs = new ArrayList<>();
@@ -233,10 +235,9 @@ public class PatientProfileActivity extends AppCompatActivity {
         readingRecyclerview.setLayoutManager(layoutManager);
         readingRecyclerview.setNestedScrollingEnabled(false);
         ReadingRecyclerViewAdapter listAdapter;
-        // get content & sort
-        List<Reading> myReadings = getPatientReadings();
+        
         // set adapter
-        listAdapter = new ReadingRecyclerViewAdapter(myReadings);
+        listAdapter = new ReadingRecyclerViewAdapter(patientReadings);
 
         listAdapter.setOnClickElementListener(new ReadingRecyclerViewAdapter.OnClickElement() {
             @Override
