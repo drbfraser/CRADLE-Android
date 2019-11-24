@@ -3,7 +3,6 @@ package com.cradle.neptune.viewmodel;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -194,7 +193,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             heartRate = v.findViewById(R.id.readingHeartRate);
             diagnosis = v.findViewById(R.id.readingdiagnosis);
             treatment = v.findViewById(R.id.readingTreatment);
-            other = v.findViewById(R.id.readingOther);
+            other = v.findViewById(R.id.hcReferred);
             trafficLight = v.findViewById(R.id.readingTrafficLight);
             arrow = v.findViewById(R.id.readingArrow);
             retakeVitalButton = v.findViewById(R.id.newReadingButton);

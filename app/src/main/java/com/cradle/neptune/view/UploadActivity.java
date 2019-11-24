@@ -174,17 +174,22 @@ public class UploadActivity extends TabActivityBase {
                 JSONObject jsonObject = response.getJSONObject(i);
 
                 String readingServerId = jsonObject.getString("readingId");
-
+                //follow up info
                 String followUpAction = jsonObject.getString("followUpAction");
                 String treatment = jsonObject.getString("treatment");
                 String diagnosis = jsonObject.getString("diagnosis");
                 String referredBy = jsonObject.getString("referredBy");
                 String dateAssessed = jsonObject.getString("dateAssessed");
-
+                // health facility info
                 JSONObject healthFacility = jsonObject.getJSONObject("healthFacility");
                 String hfName = healthFacility.getString("name");
                 String assessedBy = healthFacility
                         .getJSONObject("healthcareWorker").getString("email");
+                //patient info
+                JSONObject patient = jsonObject.getJSONObject("patient");
+                String medicalInfo =  patient.getString("medicalHistory");
+                String drugInfo = patient.getString("drugHistory");
+                String patientId = patient.getString("patientId");
 
                 ReadingFollowUp readingFollowUp = new ReadingFollowUp(readingServerId, followUpAction,
                         treatment, diagnosis,hfName,dateAssessed,assessedBy,referredBy);

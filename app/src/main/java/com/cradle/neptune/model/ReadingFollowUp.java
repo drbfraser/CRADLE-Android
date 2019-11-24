@@ -12,6 +12,9 @@ public class ReadingFollowUp {
     private String date;
     private String assessedBy;
     private String referredBy;
+    private String patientMedInfoUpdate;
+    private String patientDrugInfoUpdate;
+
     public ReadingFollowUp(String readingServerId, String followUpAction, String treatment,
                            String diagnosis,String healthcare,String date, String assessedBy,String referredBy) {
         this.readingServerId = readingServerId;
@@ -101,4 +104,19 @@ public class ReadingFollowUp {
         this.healthcare = healthcare;
     }
 
+    public String getPatientDrugInfoUpdate() {
+        return patientDrugInfoUpdate;
+    }
+
+    public String getPatientMedInfoUpdate() {
+        return patientMedInfoUpdate;
+    }
+
+    public void setPatientDrugInfoUpdate(String patientDrugInfoUpdate) {
+        this.patientDrugInfoUpdate = patientDrugInfoUpdate;
+    }
+
+    public void setPatientMedInfoUpdate(String patientMedInfoUpdate) {
+        this.patientMedInfoUpdate = patientMedInfoUpdate;
+    }
 }

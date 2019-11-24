@@ -21,7 +21,8 @@
 
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:paddingBottom="4dp">
 
             <TextView
                 android:id="@+id/textView14"
@@ -144,15 +145,13 @@
 
             <TextView
                 android:id="@+id/isReferrerdText"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:layout_marginEnd="8dp"
-                android:text="@string/assessment"
+                android:text="Assessed By:"
                 android:textColor="@color/black"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/view"
                 app:layout_constraintTop_toTopOf="@+id/view" />
 
@@ -166,7 +165,7 @@
                 android:textSize="12sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="@+id/isReferrerdText"
-                app:layout_constraintTop_toBottomOf="@+id/isReferrerdText" />
+                app:layout_constraintTop_toBottomOf="@+id/assessedBy" />
 
             <TextView
                 android:id="@+id/assessmentDate"
@@ -247,10 +246,11 @@
                 app:layout_constraintTop_toTopOf="@+id/textView38" />
 
             <TextView
-                android:id="@+id/readingOther"
+                android:id="@+id/hcReferred"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
                 android:maxLength="25"
                 android:text="NA "
                 android:textColor="@color/black"
@@ -290,6 +290,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
                 android:text="NA"
                 android:textColor="@color/black"
                 android:textSize="12sp"
@@ -297,6 +298,44 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/textView36"
                 app:layout_constraintTop_toTopOf="@+id/textView36" />
+
+            <TextView
+                android:id="@+id/assessedBy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="NA"
+                android:textColor="@color/black"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toBottomOf="@+id/isReferrerdText"
+                app:layout_constraintStart_toEndOf="@+id/isReferrerdText"
+                app:layout_constraintTop_toTopOf="@+id/isReferrerdText" />
+
+            <TextView
+                android:id="@+id/textView29"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Referred By: "
+                android:textColor="@color/black"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/assessmentTvStats"
+                app:layout_constraintTop_toBottomOf="@+id/hcReferred" />
+
+            <TextView
+                android:id="@+id/treatmentReferedBy"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:text="NA"
+                android:textColor="@color/black"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toBottomOf="@+id/textView29"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/textView29"
+                app:layout_constraintTop_toTopOf="@+id/textView29" />
 
 
         </android.support.constraint.ConstraintLayout>
