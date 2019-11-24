@@ -271,7 +271,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="@+id/assessmentTvStats"
-                app:layout_constraintTop_toBottomOf="@+id/assessmentTvStats" />
+                app:layout_constraintTop_toBottomOf="@+id/treatmentReferedBy" />
 
             <TextView
                 android:id="@+id/textView36"

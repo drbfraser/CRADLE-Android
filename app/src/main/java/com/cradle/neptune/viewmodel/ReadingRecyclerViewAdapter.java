@@ -125,11 +125,14 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             }
 
         } else if (myViewHolder.getItemViewType() == ASSESSMENT_TYPE) {
-            myViewHolder.diagnosis.setText(new StringBuilder().append(currReading.readingFollowUp.getDiagnosis()).append("").toString());
-            myViewHolder.treatment.setText(new StringBuilder().append(currReading.readingFollowUp.getTreatment()).append("").toString());
-            myViewHolder.followUp.setText(new StringBuilder().append(currReading.readingFollowUp.getFollowUpAction()).append("").toString());
-
-
+            ReadingFollowUp readingFollowUp = currReading.readingFollowUp;
+            myViewHolder.diagnosis.setText(new StringBuilder().append(readingFollowUp.getDiagnosis()).append("").toString());
+            myViewHolder.treatment.setText(new StringBuilder().append(readingFollowUp.getTreatment()).append("").toString());
+            myViewHolder.followUp.setText(new StringBuilder().append(readingFollowUp.getFollowUpAction()).append("").toString());
+            myViewHolder.hcName.setText(readingFollowUp.getHealthcare());
+            myViewHolder.referredBy.setText(readingFollowUp.getReferredBy());
+            myViewHolder.assessedBy.setText(readingFollowUp.getAssessedBy());
+            myViewHolder.assessmentDate.setText(readingFollowUp.getDate());
         }
 
     }
@@ -178,7 +181,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
     static class MyViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
         TextView readingDate, assessmentDate, sysBP, diaBP, heartRate, diagnosis,
-                treatment, followUp, other, isreferedTxt;
+                treatment, followUp, assessedBy, isreferedTxt,referredBy,hcName;
         ImageView trafficLight, arrow;
         Button retakeVitalButton;
         View view;
@@ -193,7 +196,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             heartRate = v.findViewById(R.id.readingHeartRate);
             diagnosis = v.findViewById(R.id.readingdiagnosis);
             treatment = v.findViewById(R.id.readingTreatment);
-            other = v.findViewById(R.id.hcReferred);
+            assessedBy = v.findViewById(R.id.assessedBy);
             trafficLight = v.findViewById(R.id.readingTrafficLight);
             arrow = v.findViewById(R.id.readingArrow);
             retakeVitalButton = v.findViewById(R.id.newReadingButton);
@@ -201,6 +204,8 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             view = v;
             cardView = v.findViewById(R.id.readingCardview);
             isreferedTxt = v.findViewById(R.id.isReferrerdText);
+            referredBy = v.findViewById(R.id.treatmentReferedBy);
+            hcName = v.findViewById(R.id.hcReferred);
         }
     }
 }

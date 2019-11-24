@@ -193,6 +193,9 @@ public class UploadActivity extends TabActivityBase {
 
                 ReadingFollowUp readingFollowUp = new ReadingFollowUp(readingServerId, followUpAction,
                         treatment, diagnosis,hfName,dateAssessed,assessedBy,referredBy);
+                readingFollowUp.setPatientDrugInfoUpdate(drugInfo);
+                readingFollowUp.setPatientMedInfoUpdate(medicalInfo);
+                readingFollowUp.setPatientId(patientId);
                 readingsFollowUps.add(readingFollowUp);
             } catch (JSONException e) {
                 e.printStackTrace();

@@ -14,6 +14,7 @@ public class ReadingFollowUp {
     private String referredBy;
     private String patientMedInfoUpdate;
     private String patientDrugInfoUpdate;
+    private String patientId;
 
     public ReadingFollowUp(String readingServerId, String followUpAction, String treatment,
                            String diagnosis,String healthcare,String date, String assessedBy,String referredBy) {
@@ -25,6 +26,9 @@ public class ReadingFollowUp {
         this.healthcare = healthcare;
         this.assessedBy = assessedBy;
         this.referredBy = referredBy;
+        this.patientId = null;
+        this.patientMedInfoUpdate = null;
+        this.patientDrugInfoUpdate = null;
     }
 
 
@@ -118,5 +122,13 @@ public class ReadingFollowUp {
 
     public void setPatientMedInfoUpdate(String patientMedInfoUpdate) {
         this.patientMedInfoUpdate = patientMedInfoUpdate;
+    }
+
+    public void setPatientId(String patientId) {
+        this.patientId = patientId;
+    }
+
+    public String getPatientId() {
+        return patientId;
     }
 }
