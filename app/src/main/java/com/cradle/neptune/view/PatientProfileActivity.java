@@ -155,17 +155,15 @@ public class PatientProfileActivity extends AppCompatActivity {
         List<Entry> dBPs = new ArrayList<>();
         List<Entry> bPMs = new ArrayList<>();
 
+        //put data sets in chronological order
         int index = patientReadings.size();
         for (Reading reading : patientReadings) {
-            sBPs.add(new Entry(index, reading.bpSystolic));
-            dBPs.add(new Entry(index, reading.bpDiastolic));
-            bPMs.add(new Entry(index, reading.heartRateBPM));
+            sBPs.add(0, new Entry(index, reading.bpSystolic));
+            dBPs.add(0, new Entry(index, reading.bpDiastolic));
+            bPMs.add(0, new Entry(index, reading.heartRateBPM));
             index--;
         }
 
-        Collections.reverse(sBPs);
-        Collections.reverse(dBPs);
-        Collections.reverse(bPMs);
 
         LineDataSet sBPDataSet = new LineDataSet(sBPs, "Systolic BP");
         LineDataSet dBPDataSet = new LineDataSet(dBPs, "Diastolic BP");
@@ -235,7 +233,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         readingRecyclerview.setLayoutManager(layoutManager);
         readingRecyclerview.setNestedScrollingEnabled(false);
         ReadingRecyclerViewAdapter listAdapter;
-        
+
         // set adapter
         listAdapter = new ReadingRecyclerViewAdapter(patientReadings);
 
