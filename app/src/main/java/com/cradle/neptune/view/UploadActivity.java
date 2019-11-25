@@ -142,7 +142,7 @@ public class UploadActivity extends TabActivityBase {
             Snackbar.make(findViewById(R.id.cordinatorLayout), R.string.followUpDownloaded, Snackbar.LENGTH_LONG)
                     .show();
         }, error -> {
-            Log.d("bugg", "Error: " + error.networkResponse.statusCode+"");
+            Log.d("bugg", "Error: network rsponse: " + error.networkResponse.statusCode+"");
 
             dialog.cancel();
             Snackbar.make(findViewById(R.id.cordinatorLayout), R.string.followUpCheckInternet,
@@ -210,7 +210,6 @@ public class UploadActivity extends TabActivityBase {
                     reading.readingFollowUp = followUp;
                     reading.patient.medicalHistoryList = new ArrayList<>();
                     reading.patient.drugHistoryList = new ArrayList<>();
-                    Log.d("medd",followUp.getPatientDrugInfoUpdate());
                     reading.patient.medicalHistoryList.add(followUp.getPatientMedInfoUpdate().toLowerCase());
                     reading.patient.drugHistoryList.add(followUp.getPatientDrugInfoUpdate().toLowerCase());
                     readingManager.updateReading(this, reading);
