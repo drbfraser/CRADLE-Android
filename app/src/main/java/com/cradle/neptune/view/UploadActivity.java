@@ -209,11 +209,12 @@ public class UploadActivity extends TabActivityBase {
                 if (reading.serverReadingId.equals(followUp.getReadingServerId())) {
                     reading.readingFollowUp = followUp;
                     if(reading.patient.medicalHistoryList ==null){
-                        reading.patient.medicalHistoryList = new HashSet<>();
+                        reading.patient.medicalHistoryList = new ArrayList<>();
                     }
                     if(reading.patient.drugHistoryList ==null){
-                        reading.patient.drugHistoryList = new HashSet<>();
+                        reading.patient.drugHistoryList = new ArrayList<>();
                     }
+                    Log.d("medd",followUp.getPatientDrugInfoUpdate());
                     reading.patient.medicalHistoryList.add(followUp.getPatientMedInfoUpdate().toLowerCase());
                     reading.patient.drugHistoryList.add(followUp.getPatientDrugInfoUpdate().toLowerCase());
                     readingManager.updateReading(this, reading);

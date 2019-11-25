@@ -25,8 +25,8 @@ public class Patient implements Serializable {
     public String tankNo;
     public String villageNumber;
     public String houseNumber;
-    public HashSet<String> drugHistoryList;
-    public HashSet<String> medicalHistoryList;
+    public List<String> drugHistoryList;
+    public List<String> medicalHistoryList;
 
     public Patient() {
     }
@@ -45,8 +45,8 @@ public class Patient implements Serializable {
         this.tankNo = tankNo;
         this.houseNumber = houseNumber;
         this.isPregnant = isPregnant;
-        drugHistoryList = new HashSet<>();
-        medicalHistoryList = new HashSet<>();
+        drugHistoryList = new ArrayList<>();
+        medicalHistoryList = new ArrayList<>();
 
     }
 
