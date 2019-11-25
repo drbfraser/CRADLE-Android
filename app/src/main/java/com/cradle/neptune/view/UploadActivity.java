@@ -37,6 +37,7 @@ import org.threeten.bp.ZonedDateTime;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -141,7 +142,7 @@ public class UploadActivity extends TabActivityBase {
             Snackbar.make(findViewById(R.id.cordinatorLayout), R.string.followUpDownloaded, Snackbar.LENGTH_LONG)
                     .show();
         }, error -> {
-            Log.d("bugg", "Error: " + error.getMessage());
+            Log.d("bugg", "Error: " + error.networkResponse.statusCode+"");
 
             dialog.cancel();
             Snackbar.make(findViewById(R.id.cordinatorLayout), R.string.followUpCheckInternet,
@@ -207,6 +208,14 @@ public class UploadActivity extends TabActivityBase {
             for (ReadingFollowUp followUp : readingsFollowUps) {
                 if (reading.serverReadingId.equals(followUp.getReadingServerId())) {
                     reading.readingFollowUp = followUp;
+                    if(reading.patient.medicalHistoryList ==null){
+                        reading.patient.medicalHistoryList = new HashSet<>();
+                    }
+                    if(reading.patient.drugHistoryList ==null){
+                        reading.patient.drugHistoryList = new HashSet<>();
+                    }
+                    reading.patient.medicalHistoryList.add(followUp.getPatientMedInfoUpdate().toLowerCase());
+                    reading.patient.drugHistoryList.add(followUp.getPatientDrugInfoUpdate().toLowerCase());
                     readingManager.updateReading(this, reading);
                 }
             }
