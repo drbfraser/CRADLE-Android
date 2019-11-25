@@ -58,6 +58,7 @@ public class Settings {
     private String communityHealthOfficerPhoneNumber;
     private String readingServerUrl = "http://cmpt373.csil.sfu.ca:8088/api/patient/reading";
     private String referralsServerUrl = "http://cmpt373.csil.sfu.ca:8088/api/referral";
+    private String referralSummeriesServerUrl = "http://cmpt373.csil.sfu.ca:8088/api/mobile/summarized/follow_up";
 //    private String referralsServerUrl = "http://10.0.2.2:5000/api/referral";
     private String serverUserName;
     private String serverPassword;
@@ -205,6 +206,10 @@ public class Settings {
             ok = false;
         }
         return ok;
+    }
+
+    public String getReferralSummeriesServerUrl() {
+        return referralSummeriesServerUrl;
     }
 
     // types

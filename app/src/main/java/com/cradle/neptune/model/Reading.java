@@ -65,9 +65,7 @@ public class Reading {
     public List<Long> retestOfPreviousReadingIds;   // oldest first
     public ZonedDateTime dateRecheckVitalsNeeded;
     // assessment
-    public String followUpAction;
-    public String diagnosis;
-    public String treatment;
+    public ReadingFollowUp readingFollowUp= null;
     // referrals
     public ZonedDateTime referralMessageSendTime;
     public String referralHealthCentre;

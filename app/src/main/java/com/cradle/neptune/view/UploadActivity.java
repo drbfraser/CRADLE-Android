@@ -22,22 +22,22 @@ import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
-import com.cradle.neptune.model.Patient.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingFollowUp;
 import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.utilitiles.DateUtil;
 import com.cradle.neptune.view.ui.network_volley.MultiReadingUploader;
+import com.google.gson.JsonObject;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.threeten.bp.ZoneId;
 import org.threeten.bp.ZonedDateTime;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -133,16 +133,16 @@ public class UploadActivity extends TabActivityBase {
         dialog.setTitle("Syncing");
         dialog.setCancelable(false);
         dialog.show();
-        JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, settings.getReferralsServerUrl(),
+        JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, settings.getReferralSummeriesServerUrl(),
                 null, response -> {
-            getReadingObjectsFromTheResponse(response);
+            getReadingFollowFromTheResponse(response);
             dialog.cancel();
             upDateLastDownloadTime(ZonedDateTime.now());
             setupLastFollowupDownloadDate();
             Snackbar.make(findViewById(R.id.cordinatorLayout), R.string.followUpDownloaded, Snackbar.LENGTH_LONG)
                     .show();
         }, error -> {
-            Log.d("bugg", "Error: " + error.getMessage());
+            Log.d("bugg", "Error: network rsponse: " + error.networkResponse.statusCode+"");
 
             dialog.cancel();
             Snackbar.make(findViewById(R.id.cordinatorLayout), R.string.followUpCheckInternet,
@@ -168,16 +168,35 @@ public class UploadActivity extends TabActivityBase {
 
     }
 
-    private void getReadingObjectsFromTheResponse(JSONArray response) {
+    private void getReadingFollowFromTheResponse(JSONArray response) {
         List<ReadingFollowUp> readingsFollowUps = new ArrayList<>();
         for (int i = 0; i < response.length(); i++) {
             try {
                 JSONObject jsonObject = response.getJSONObject(i);
+
                 String readingServerId = jsonObject.getString("readingId");
-                String followUpAction = jsonObject.getJSONObject("followUp").getString("followUpAction");
-                String treatment = jsonObject.getJSONObject("followUp").getString("treatment");
-                String diagnosis = jsonObject.getJSONObject("followUp").getString("diagnosis");
-                ReadingFollowUp readingFollowUp = new ReadingFollowUp(readingServerId, followUpAction, treatment, diagnosis);
+                //follow up info
+                String followUpAction = jsonObject.getString("followUpAction");
+                String treatment = jsonObject.getString("treatment");
+                String diagnosis = jsonObject.getString("diagnosis");
+                String referredBy = jsonObject.getString("referredBy");
+                String dateAssessed = jsonObject.getString("dateAssessed");
+                // health facility info
+                JSONObject healthFacility = jsonObject.getJSONObject("healthFacility");
+                String hfName = healthFacility.getString("name");
+                String assessedBy = healthFacility
+                        .getJSONObject("healthcareWorker").getString("email");
+                //patient info
+                JSONObject patient = jsonObject.getJSONObject("patient");
+                String medicalInfo =  patient.getString("medicalHistory");
+                String drugInfo = patient.getString("drugHistory");
+                String patientId = patient.getString("patientId");
+
+                ReadingFollowUp readingFollowUp = new ReadingFollowUp(readingServerId, followUpAction,
+                        treatment, diagnosis,hfName,dateAssessed,assessedBy,referredBy);
+                readingFollowUp.setPatientDrugInfoUpdate(drugInfo);
+                readingFollowUp.setPatientMedInfoUpdate(medicalInfo);
+                readingFollowUp.setPatientId(patientId);
                 readingsFollowUps.add(readingFollowUp);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -188,9 +207,11 @@ public class UploadActivity extends TabActivityBase {
         for (Reading reading : readings) {
             for (ReadingFollowUp followUp : readingsFollowUps) {
                 if (reading.serverReadingId.equals(followUp.getReadingServerId())) {
-                    reading.diagnosis = followUp.getDiagnosis();
-                    reading.followUpAction = followUp.getFollowUpAction();
-                    reading.treatment = followUp.getTreatment();
+                    reading.readingFollowUp = followUp;
+                    reading.patient.medicalHistoryList = new ArrayList<>();
+                    reading.patient.drugHistoryList = new ArrayList<>();
+                    reading.patient.medicalHistoryList.add(followUp.getPatientMedInfoUpdate().toLowerCase());
+                    reading.patient.drugHistoryList.add(followUp.getPatientDrugInfoUpdate().toLowerCase());
                     readingManager.updateReading(this, reading);
                 }
             }

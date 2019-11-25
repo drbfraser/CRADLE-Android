@@ -7,6 +7,7 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class Patient implements Serializable {
@@ -24,6 +25,8 @@ public class Patient implements Serializable {
     public String tankNo;
     public String villageNumber;
     public String houseNumber;
+    public List<String> drugHistoryList;
+    public List<String> medicalHistoryList;
 
     public Patient() {
     }
@@ -42,6 +45,9 @@ public class Patient implements Serializable {
         this.tankNo = tankNo;
         this.houseNumber = houseNumber;
         this.isPregnant = isPregnant;
+        drugHistoryList = new ArrayList<>();
+        medicalHistoryList = new ArrayList<>();
+
     }
 
     public String genSymptomString() {

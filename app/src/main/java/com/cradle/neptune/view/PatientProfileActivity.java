@@ -139,7 +139,16 @@ public class PatientProfileActivity extends AppCompatActivity {
         } else {
             gestationalAgeUnit.setText("Months");
         }
+        if(patient.drugHistoryList!=null && !patient.drugHistoryList.isEmpty()) {
+            TextView drugHistroy = findViewById(R.id.drugHistroyTxt);
+            drugHistroy.setText(patient.drugHistoryList.get(0));
 
+        }
+        if(patient.medicalHistoryList!=null && !patient.medicalHistoryList.isEmpty()) {
+
+            TextView medHistory = findViewById(R.id.medHistoryText);
+            medHistory.setText(patient.medicalHistoryList.get(0));
+        }
     }
 
     private void getPatientReadings() {

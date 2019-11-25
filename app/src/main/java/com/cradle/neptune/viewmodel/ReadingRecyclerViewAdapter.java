@@ -14,8 +14,15 @@ import android.widget.TextView;
 import com.cradle.neptune.R;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingAnalysis;
+import com.cradle.neptune.model.ReadingFollowUp;
 import com.cradle.neptune.utilitiles.DateUtil;
 
+import org.threeten.bp.ZonedDateTime;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 
@@ -49,8 +56,8 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
 
     @Override
     public int getItemViewType(int position) {
-        String followUpAction = readings.get(position).followUpAction;
-        if (followUpAction == null || followUpAction.equalsIgnoreCase("")) {
+        ReadingFollowUp followUpAction = readings.get(position).readingFollowUp;
+        if (followUpAction == null) {
             return NO_ASSESSMENT_TYPE;
         }
         return ASSESSMENT_TYPE;
@@ -123,14 +130,23 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
                 TextView tvRecheckVitals = v.findViewById(R.id.txtRecheckVitals);
                 tvRecheckVitals.setText(message);
             }
-            //todo: setup on click listner for cardview and open the summary page
 
         } else if (myViewHolder.getItemViewType() == ASSESSMENT_TYPE) {
-            myViewHolder.diagnosis.setText(new StringBuilder().append(currReading.diagnosis).append("").toString());
-            myViewHolder.treatment.setText(new StringBuilder().append(currReading.treatment).append("").toString());
-            myViewHolder.followUp.setText(new StringBuilder().append(currReading.followUpAction).append("").toString());
+            ReadingFollowUp readingFollowUp = currReading.readingFollowUp;
+            myViewHolder.diagnosis.setText(readingFollowUp.getDiagnosis());
+            myViewHolder.treatment.setText(readingFollowUp.getTreatment());
+            myViewHolder.followUp.setText(readingFollowUp.getFollowUpAction());
+            myViewHolder.hcName.setText(readingFollowUp.getHealthcare());
+            myViewHolder.referredBy.setText(readingFollowUp.getReferredBy());
+            myViewHolder.assessedBy.setText(readingFollowUp.getAssessedBy());
+            SimpleDateFormat inFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            try {
+                Date date = inFormat.parse(readingFollowUp.getDate());
+                myViewHolder.assessmentDate.setText(date.toString());
 
-
+            } catch (ParseException e) {
+                myViewHolder.assessmentDate.setText(readingFollowUp.getDate());
+            }
         }
 
     }
@@ -179,7 +195,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
     static class MyViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
         TextView readingDate, assessmentDate, sysBP, diaBP, heartRate, diagnosis,
-                treatment, followUp, other, isreferedTxt;
+                treatment, followUp, assessedBy, isreferedTxt,referredBy,hcName;
         ImageView trafficLight, arrow;
         Button retakeVitalButton;
         View view;
@@ -194,7 +210,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             heartRate = v.findViewById(R.id.readingHeartRate);
             diagnosis = v.findViewById(R.id.readingdiagnosis);
             treatment = v.findViewById(R.id.readingTreatment);
-            other = v.findViewById(R.id.readingOther);
+            assessedBy = v.findViewById(R.id.assessedBy);
             trafficLight = v.findViewById(R.id.readingTrafficLight);
             arrow = v.findViewById(R.id.readingArrow);
             retakeVitalButton = v.findViewById(R.id.newReadingButton);
@@ -202,6 +218,8 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             view = v;
             cardView = v.findViewById(R.id.readingCardview);
             isreferedTxt = v.findViewById(R.id.isReferrerdText);
+            referredBy = v.findViewById(R.id.treatmentReferedBy);
+            hcName = v.findViewById(R.id.hcReferred);
         }
     }
 }

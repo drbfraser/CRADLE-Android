@@ -255,9 +255,9 @@
     <string name="stateTextforMonth">This Month, you have made</string>
     <string name="pregnant_question">Pregnant?</string>
     <string name="followUpDownloaded">Follow up information downloaded successfully</string>
-    <string name="followUpCheckInternet">Follow up information not downloaded, please check your internet connection</string>
+    <string name="followUpCheckInternet">Follow up information not available.</string>
     <string name="userNotAuthenticated">The credentials are not vaild, Please login again.</string>
     <string name="create_new_reading">Create New Reading</string>
-    <string name="signoutMessage">You will be required to sign in again  before using the application</string>
+    <string name="signoutMessage">You will be required to sign in again before using the application.</string>
 
 </resources>

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,7 +47,7 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
         patientViewHolder.patientName.setText(patient.patientName);
         patientViewHolder.patientId.setText(patient.patientId);
 
-        if(reading.treatment!=null&& !reading.treatment.equals("")){
+        if(reading.readingFollowUp!=null){
             patientViewHolder.referralImg.setBackground(context.getResources().getDrawable(R.drawable.ic_assessment_received_black_24dp));
             patientViewHolder.referralImg.setVisibility(View.VISIBLE);
         } else if(reading.isReferredToHealthCentre()){
