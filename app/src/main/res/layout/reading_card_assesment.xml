@@ -161,18 +161,6 @@
                 app:layout_constraintTop_toBottomOf="@+id/textView28" />
 
             <TextView
-                android:id="@+id/textView34"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/created"
-                android:textColor="@color/black"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="@+id/isReferrerdText"
-                app:layout_constraintTop_toBottomOf="@+id/assessedBy" />
-
-            <TextView
                 android:id="@+id/assessmentDate"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -181,9 +169,10 @@
                 android:text="NA"
                 android:textColor="@color/black"
                 android:textSize="12sp"
+                app:layout_constraintBottom_toBottomOf="@+id/textView28"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/textView34"
-                app:layout_constraintTop_toTopOf="@+id/textView34" />
+                app:layout_constraintStart_toEndOf="@+id/textView28"
+                app:layout_constraintTop_toTopOf="@+id/textView28" />
 
             <TextView
                 android:id="@+id/readingTvStats"
@@ -194,8 +183,8 @@
                 android:textColor="@color/black"
                 android:textSize="12sp"
                 android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="@+id/textView34"
-                app:layout_constraintTop_toBottomOf="@+id/assessmentDate" />
+                app:layout_constraintStart_toStartOf="@+id/isReferrerdText"
+                app:layout_constraintTop_toBottomOf="@+id/assessedBy" />
 
             <TextView
                 android:id="@+id/textView38"

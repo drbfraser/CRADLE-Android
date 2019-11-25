@@ -3,6 +3,7 @@ package com.cradle.neptune.viewmodel;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,12 @@ import com.cradle.neptune.model.ReadingAnalysis;
 import com.cradle.neptune.model.ReadingFollowUp;
 import com.cradle.neptune.utilitiles.DateUtil;
 
+import org.threeten.bp.ZonedDateTime;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 
@@ -126,13 +133,20 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
 
         } else if (myViewHolder.getItemViewType() == ASSESSMENT_TYPE) {
             ReadingFollowUp readingFollowUp = currReading.readingFollowUp;
-            myViewHolder.diagnosis.setText(new StringBuilder().append(readingFollowUp.getDiagnosis()).append("").toString());
-            myViewHolder.treatment.setText(new StringBuilder().append(readingFollowUp.getTreatment()).append("").toString());
-            myViewHolder.followUp.setText(new StringBuilder().append(readingFollowUp.getFollowUpAction()).append("").toString());
+            myViewHolder.diagnosis.setText(readingFollowUp.getDiagnosis());
+            myViewHolder.treatment.setText(readingFollowUp.getTreatment());
+            myViewHolder.followUp.setText(readingFollowUp.getFollowUpAction());
             myViewHolder.hcName.setText(readingFollowUp.getHealthcare());
             myViewHolder.referredBy.setText(readingFollowUp.getReferredBy());
             myViewHolder.assessedBy.setText(readingFollowUp.getAssessedBy());
-            myViewHolder.assessmentDate.setText(readingFollowUp.getDate());
+            SimpleDateFormat inFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            try {
+                Date date = inFormat.parse(readingFollowUp.getDate());
+                myViewHolder.assessmentDate.setText(date.toString());
+
+            } catch (ParseException e) {
+                myViewHolder.assessmentDate.setText(readingFollowUp.getDate());
+            }
         }
 
     }
