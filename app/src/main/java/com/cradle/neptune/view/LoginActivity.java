@@ -36,7 +36,6 @@ public class LoginActivity extends AppCompatActivity {
     public static final  int DEFAULT_PASSWORD =-1;
     public static final  String DEFAULT_TOKEN = null;
     public static final String AUTH_PREF ="authSharefPref";
-    private int loginCount = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,12 +70,7 @@ public class LoginActivity extends AppCompatActivity {
 
         loginbuttoon.setOnClickListener(v -> {
 
-            //todo remove this from final version
-            if (loginCount <= 0) {
-                startIntroActivity();
-                return;
-            }
-            loginCount--;
+
             if (emailET.getText().equals("")) {
                 Toast.makeText(LoginActivity.this, "Empty Email", Toast.LENGTH_SHORT).show();
                 return;
