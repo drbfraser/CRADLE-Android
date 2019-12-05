@@ -36,6 +36,7 @@ public class LoginActivity extends AppCompatActivity {
     public static final  int DEFAULT_PASSWORD =-1;
     public static final  String DEFAULT_TOKEN = null;
     public static final String AUTH_PREF ="authSharefPref";
+    public static int loginBruteForceAttempts;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,8 +44,9 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         checkSharedPrefForLogin();
         setupLogin();
-    }
 
+        loginBruteForceAttempts = 3;
+    }
 
     private void checkSharedPrefForLogin() {
         SharedPreferences sharedPref = this.getSharedPreferences(AUTH_PREF,Context.MODE_PRIVATE);
@@ -70,6 +72,11 @@ public class LoginActivity extends AppCompatActivity {
 
         loginbuttoon.setOnClickListener(v -> {
 
+            if (loginBruteForceAttempts <= 0) {
+                startIntroActivity();
+                return;
+            }
+            loginBruteForceAttempts--;
 
             if (emailET.getText().equals("")) {
                 Toast.makeText(LoginActivity.this, "Empty Email", Toast.LENGTH_SHORT).show();
