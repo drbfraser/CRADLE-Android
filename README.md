@@ -1,4 +1,17 @@
-# Cradle: Android Application
+# <img src="readme-img/logo.png" width=40> Cradle VSA System: Android Application
+
+[![License](https://img.shields.io/github/license/Cradle-VSA/cradle-mobile)](https://github.com/Cradle-VSA/cradle-mobile/blob/master/LICENCE)
+
+Android application for the Cradle VSA System, a technological health care system to improve maternal care and reduce preventable maternal deaths in Ugandan villages.
+
+![Screenshot](readme-img/screenshot.jpg)
+
+## Software Stack
+
+| Purpose | Technology |
+| --- | --- |
+| Development Language | Android (Java) |
+| Dependency Injection Framework | [Dagger](https://dagger.dev/) |
 
 ## Setup Instructions
 
@@ -17,10 +30,7 @@ This file will be ignored by Git.
 
 Set your keystore information in this file.
 
-
-
-**Screen shots**
-
+## Application Screenshots
 
 ![Screenshot_20191125-174211_Cradle](https://user-images.githubusercontent.com/25393450/69906502-62561280-1379-11ea-8643-06d3b25b14a8.jpg)
 ![Screenshot_20191125-175544_Cradle](https://user-images.githubusercontent.com/25393450/69906506-65e99980-1379-11ea-88ff-2691a9df0374.jpg)
@@ -40,4 +50,3 @@ Set your keystore information in this file.
 ![Screenshot_20191125-174338_Cradle](https://user-images.githubusercontent.com/25393450/69906531-97626500-1379-11ea-9a35-e76720e4f848.jpg)
 ![Screenshot_20191125-174342_Cradle](https://user-images.githubusercontent.com/25393450/69906532-97626500-1379-11ea-9124-60b5f8ae3ae0.jpg)
 ![Screenshot_20191125-174247_Cradle](https://user-images.githubusercontent.com/25393450/69906533-97626500-1379-11ea-9bd7-90c94b127e6e.jpg)
-
