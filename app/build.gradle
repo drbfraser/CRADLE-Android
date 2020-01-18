@@ -1,5 +1,5 @@
 apply plugin: 'com.android.application'
-
+apply plugin: "de.mannodermaus.android-junit5"
 // Initialize the keystore credentials from the keystore.properties file
 def filename = "keystore.properties"
 def keystoreProperties = new Properties()
@@ -63,7 +63,6 @@ dependencies {
     implementation 'android.arch.lifecycle:extensions:1.1.1'
     implementation 'com.android.support:support-v4:28.0.0'
     implementation 'com.android.support:support-vector-drawable:28.0.0'
-    testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
@@ -101,6 +100,11 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:3.2.0'
 
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
+
+    // junit 5 unit testing
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.5.2"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.5.2"
+
 }
 
 // TensorFlow Lite: select only the ABI's we (likely) need
