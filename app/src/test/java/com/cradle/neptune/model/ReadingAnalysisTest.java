@@ -26,7 +26,7 @@ class ReadingAnalysisTest {
     private Reading readingMock;
 
     @BeforeEach
-    void beforeAll(){
+    void beforeEach(){
         //need  to init the mocks
         MockitoAnnotations.initMocks(this);
     }
@@ -111,24 +111,12 @@ class ReadingAnalysisTest {
         @Test
         @DisplayName("Testing normal GREEN")
         void  analyzeNormalGreen(){
-
             when(readingMock.getHeartRateBPM()).thenReturn(0);
-
             readingAnalysis = ReadingAnalysis.analyze(readingMock);
-
             assertEquals(ReadingAnalysis.GREEN,readingAnalysis);
         }
 
     }
-
-    @Test
-    void getAnalysisText() {
-    }
-
-    @Test
-    void getBriefAdviceText() {
-    }
-
 
 
 }
