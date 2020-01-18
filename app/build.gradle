@@ -105,6 +105,11 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.5.2"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.5.2"
 
+    // required if you want to use Mockito for unit tests
+    testCompile 'org.mockito:mockito-core:2.7.22'
+    // required if you want to use Mockito for Android tests
+    androidTestCompile 'org.mockito:mockito-android:2.7.22'
+
 }
 
 // TensorFlow Lite: select only the ABI's we (likely) need
