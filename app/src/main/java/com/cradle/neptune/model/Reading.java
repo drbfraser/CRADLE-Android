@@ -459,4 +459,16 @@ public class Reading {
             this.days = days;
         }
     }
+
+    public Integer getBpDiastolic() {
+        return bpDiastolic;
+    }
+
+    public Integer getBpSystolic() {
+        return bpSystolic;
+    }
+
+    public Integer getHeartRateBPM() {
+        return heartRateBPM;
+    }
 }

@@ -25,10 +25,10 @@ public enum ReadingAnalysis {
     public static final int MIN_HEART_RATE = 40;
     // Break points for determining Green/Yellow/Red Up/Down
     // source: CRADLE VSA Manual (extracted spring 2019)
-    private static final int RED_SYSTOLIC = 160;
-    private static final int RED_DIASTOLIC = 110;
-    private static final int YELLOW_SYSTOLIC = 140;
-    private static final int YELLOW_DIASTOLIC = 90;
+    static final int RED_SYSTOLIC = 160;
+    static final int RED_DIASTOLIC = 110;
+    static final int YELLOW_SYSTOLIC = 140;
+    static final int YELLOW_DIASTOLIC = 90;
     private static final double SHOCK_HIGH = 1.7;
     private static final double SHOCK_MEDIUM = 0.9;
     // Fields
@@ -43,14 +43,14 @@ public enum ReadingAnalysis {
     // Analysis Functions
     public static ReadingAnalysis analyze(Reading r) {
         // Guard no currentReading:
-        if (r.bpSystolic == null || r.bpDiastolic == null || r.heartRateBPM == null) {
+        if (r == null || r.getBpSystolic() == null || r.getBpDiastolic() == null || r.getHeartRateBPM() == null) {
             return NONE;
         }
 
         double shockIndex = getShockIndex(r);
 
-        boolean isBpVeryHigh = (r.bpSystolic >= RED_SYSTOLIC) || (r.bpDiastolic >= RED_DIASTOLIC);
-        boolean isBpHigh = (r.bpSystolic >= YELLOW_SYSTOLIC) || (r.bpDiastolic >= YELLOW_DIASTOLIC);
+        boolean isBpVeryHigh = (r.getBpSystolic() >= RED_SYSTOLIC) || (r.getBpDiastolic() >= RED_DIASTOLIC);
+        boolean isBpHigh = (r.getBpSystolic() >= YELLOW_SYSTOLIC) || (r.getBpDiastolic() >= YELLOW_DIASTOLIC);
         boolean isSevereShock = (shockIndex >= SHOCK_HIGH);
         boolean isShock = (shockIndex >= SHOCK_MEDIUM);
 
@@ -72,10 +72,10 @@ public enum ReadingAnalysis {
 
     private static double getShockIndex(Reading r) {
         // Div-zero guard:
-        if (r.bpSystolic == null || r.bpSystolic == 0) {
+        if (r.getBpSystolic() == null || r.getBpSystolic() == 0) {
             return 0;
         }
-        return (double) r.heartRateBPM / (double) r.bpSystolic;
+        return (double) r.getHeartRateBPM() / (double) r.getBpSystolic();
     }
 
     // Get Text
