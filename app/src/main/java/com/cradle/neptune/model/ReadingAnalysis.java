@@ -25,10 +25,10 @@ public enum ReadingAnalysis {
     public static final int MIN_HEART_RATE = 40;
     // Break points for determining Green/Yellow/Red Up/Down
     // source: CRADLE VSA Manual (extracted spring 2019)
-     static final int RED_SYSTOLIC = 160;
-     static final int RED_DIASTOLIC = 110;
-     static final int YELLOW_SYSTOLIC = 140;
-     static final int YELLOW_DIASTOLIC = 90;
+    static final int RED_SYSTOLIC = 160;
+    static final int RED_DIASTOLIC = 110;
+    static final int YELLOW_SYSTOLIC = 140;
+    static final int YELLOW_DIASTOLIC = 90;
     private static final double SHOCK_HIGH = 1.7;
     private static final double SHOCK_MEDIUM = 0.9;
     // Fields
@@ -43,7 +43,7 @@ public enum ReadingAnalysis {
     // Analysis Functions
     public static ReadingAnalysis analyze(Reading r) {
         // Guard no currentReading:
-        if (r==null||r.getBpSystolic() == null || r.getBpDiastolic() == null || r.getHeartRateBPM() == null) {
+        if (r == null || r.getBpSystolic() == null || r.getBpDiastolic() == null || r.getHeartRateBPM() == null) {
             return NONE;
         }
 
