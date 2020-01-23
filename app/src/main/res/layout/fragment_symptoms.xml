@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
@@ -61,6 +61,6 @@
                     android:inputType="textPersonName" />
             </android.support.design.widget.TextInputLayout>
 
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.ConstraintLayout>
     </ScrollView>
 </FrameLayout>

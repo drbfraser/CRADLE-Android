@@ -15,7 +15,7 @@
 
         <!-- Patient Info -->
 
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.ConstraintLayout
             android:id="@+id/sectionPatient"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -60,7 +60,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/txtSymptoms"
                 tools:text="PATIENT INFORMATION ERROR: \nMissing patient name\nMissing patient age" />
 
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.ConstraintLayout>
 
         <LinearLayout
             android:id="@+id/layoutReadings"
@@ -76,7 +76,7 @@
 
 
         <!-- Advice -->
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.ConstraintLayout
             android:id="@+id/sectionAdvice"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -119,11 +119,11 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/txtAdvice" />
 
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.ConstraintLayout>
 
 
         <!-- Recheck Vitals -->
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.ConstraintLayout
             android:id="@+id/sectionRecheckVitals"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -189,10 +189,10 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/swRecheckVitalsIn15" />
             </android.support.constraint.ConstraintLayout>
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.ConstraintLayout>
 
         <!-- Referral -->
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.ConstraintLayout
             android:id="@+id/sectionReferral"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -275,12 +275,12 @@
 
             </android.support.constraint.ConstraintLayout>
 
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.ConstraintLayout>
 
 
         <!-- Follow-up -->
 
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.ConstraintLayout
             android:id="@+id/sectionFollowUp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -336,7 +336,7 @@
 
             </android.support.constraint.ConstraintLayout>
 
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.ConstraintLayout>
 
         <TextView
             android:id="@+id/txtUploadedMessage"

@@ -1,7 +1,7 @@
 package com.cradle.neptune.view.ui.intro;
 
 import android.content.Context;
-import android.support.v4.app.Fragment;
+import androidx.core.app.Fragment;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
