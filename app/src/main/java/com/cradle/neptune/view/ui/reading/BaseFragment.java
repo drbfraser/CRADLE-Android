@@ -1,10 +1,11 @@
 package com.cradle.neptune.view.ui.reading;
 
 import android.content.Context;
-import androidx.core.app.Fragment;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+
+import androidx.fragment.app.Fragment;
 
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingManager;

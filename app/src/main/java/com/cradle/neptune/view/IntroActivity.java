@@ -3,10 +3,11 @@ package com.cradle.neptune.view;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import androidx.core.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager.widget.ViewPager;
 
 import com.cradle.neptune.BuildConfig;
 import com.cradle.neptune.R;
