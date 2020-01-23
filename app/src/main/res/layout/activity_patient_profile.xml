@@ -8,7 +8,7 @@
     tools:context=".view.PatientProfileActivity">
 
 
-    <androidx.constraintlayout.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -418,5 +418,5 @@
             app:layout_constraintTop_toBottomOf="@+id/patientLineChartCard" />
 
 
-    </androidx.constraintlayout.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>

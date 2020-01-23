@@ -7,7 +7,7 @@
 
     android:background="@drawable/dashboard_background">
 
-    <androidx.constraintlayout.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         tools:context=".view.DashBoardActivity">
@@ -79,5 +79,5 @@
             app:layout_constraintTop_toBottomOf="@+id/uploadlayout"
             app:maxImageSize="67dp"
             app:srcCompat="@drawable/ic_help_black_24dp" />
-    </androidx.constraintlayout.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

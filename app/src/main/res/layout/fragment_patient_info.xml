@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".view.ui.reading.PatientInfoFragment">
 
-    <androidx.constraintlayout.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
@@ -236,5 +236,5 @@
             app:layout_constraintTop_toBottomOf="@+id/txtVillageNumber" />
 
 
-    </androidx.constraintlayout.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
