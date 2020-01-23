@@ -7,14 +7,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v14.preference.MultiSelectListPreference;
-import androidx.core.app.Fragment;
-import android.support.v7.preference.EditTextPreference;
-import android.support.v7.preference.ListPreference;
-import android.support.v7.preference.Preference;
-import android.support.v7.preference.PreferenceFragmentCompat;
-import android.support.v7.preference.PreferenceGroup;
 import android.util.Log;
+
+import androidx.preference.EditTextPreference;
+import androidx.preference.ListPreference;
+import androidx.preference.MultiSelectListPreference;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceGroup;
 
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
@@ -27,7 +27,7 @@ import java.util.Arrays;
 import javax.inject.Inject;
 
 /**
- * A simple {@link Fragment} subclass.
+ * A simple {@link androidx.fragment.app.Fragment} subclass.
  */
 public class SettingsFragment extends PreferenceFragmentCompat
         implements SharedPreferences.OnSharedPreferenceChangeListener {
