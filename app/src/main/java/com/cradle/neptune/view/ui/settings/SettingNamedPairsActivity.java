@@ -3,9 +3,10 @@ package com.cradle.neptune.view.ui.settings;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.cradle.neptune.R;
 import com.cradle.neptune.view.ui.settings.ui.settingnamedpairs.SettingNamedPairsFragment;

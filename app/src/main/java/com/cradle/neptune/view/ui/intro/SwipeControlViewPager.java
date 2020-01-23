@@ -1,11 +1,12 @@
 package com.cradle.neptune.view.ui.intro;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import androidx.core.view.ViewPager;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.viewpager.widget.ViewPager;
 
 public class SwipeControlViewPager extends ViewPager {
     private boolean swipeEnabled = true;
