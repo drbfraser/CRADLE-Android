@@ -39,7 +39,7 @@
             app:layout_constraintStart_toEndOf="@+id/textView30"
             app:layout_constraintTop_toTopOf="@+id/textView30" />
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             android:id="@+id/personalInfoCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -228,9 +228,9 @@
                     app:layout_constraintTop_toTopOf="@+id/textView23" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
-        </android.support.v7.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             android:id="@+id/medicalCard"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -369,7 +369,7 @@
                     app:layout_constraintStart_toEndOf="@+id/textView49"
                     app:layout_constraintTop_toTopOf="@+id/textView49" />
             </androidx.constraintlayout.widget.ConstraintLayout>
-        </android.support.v7.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
         <Button
             android:id="@+id/newPatientReadingButton"
@@ -382,7 +382,7 @@
             app:layout_constraintRight_toRightOf="@+id/medicalCard"
             app:layout_constraintTop_toBottomOf="@+id/medicalCard"/>
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             android:id="@+id/patientLineChartCard"
             android:layout_width="0dp"
             android:layout_height="200dp"
@@ -401,7 +401,7 @@
                 android:id="@+id/patientLineChart"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
-        </android.support.v7.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/readingRecyclerview"

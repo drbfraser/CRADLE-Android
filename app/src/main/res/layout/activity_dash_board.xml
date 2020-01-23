@@ -65,7 +65,7 @@
             app:layout_constraintStart_toEndOf="@+id/statLayout"
             app:layout_constraintTop_toTopOf="@+id/statLayout" />
 
-        <android.support.design.widget.FloatingActionButton
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fabHelpDashboard"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
