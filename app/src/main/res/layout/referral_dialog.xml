@@ -28,7 +28,7 @@
 
 
         <!-- Comments -->
-        <android.support.design.widget.TextInputLayout
+        <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/textView4"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
@@ -47,7 +47,7 @@
                 android:gravity="start|top"
                 android:inputType="textCapSentences"
                 android:minLines="2" />
-        </android.support.design.widget.TextInputLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
 
         <!-- Health centre -->
