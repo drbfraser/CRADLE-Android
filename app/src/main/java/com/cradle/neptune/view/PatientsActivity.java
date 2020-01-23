@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -35,7 +36,7 @@ import java.util.Random;
 
 import javax.inject.Inject;
 
-public class PatientsActivity extends TabActivityBase {
+public class PatientsActivity extends AppCompatActivity {
 
     // Data Model
     @Inject
@@ -53,7 +54,7 @@ public class PatientsActivity extends TabActivityBase {
 
     // set who we are for tab code
     public PatientsActivity() {
-        super(R.id.nav_patients);
+        //super(R.id.nav_patients);
     }
 
     public static Intent makeIntent(Context context) {
