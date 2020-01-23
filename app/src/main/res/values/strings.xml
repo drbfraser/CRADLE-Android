@@ -20,16 +20,12 @@
     </string>
 
 
-    <string name="title_activity_readings">Readings</string>
     <string name="title_activity_patients">Patients</string>
     <string name="title_activity_help">Help</string>
     <string name="title_activity_upload">Upload To Server</string>
 
     <!-- Navigation Menu Options-->
     <string name="menu_readings">Readings</string>
-    <string name="menu_patients">Patients</string>
-    <string name="menu_upload">Upload</string>
-    <string name="menu_help">Help</string>
 
 
     <!-- Patient Reading - Tab Interface -->
@@ -41,22 +37,6 @@
     <string name="reading_tab_camera">Photo</string>
     <string name="reading_tab_confirm_data">Vitals</string>
     <string name="reading_tab_summary">Summary</string>
-    <string name="reading_tab_empty_state">
-        <![CDATA[
-        <h2>No readings yet</h2>
-        <p>First, <b>set your name and region in settings</b> (gear icon top right).</p>
-
-        <p>Taking your first CRADLE VSA reading:</p>
-        <ol>
-        <li><b>Tap the \'+\' button</b> (below) and enter patient\'s info.</li>
-        <li><b>Check your patient\'s vitals</b> with CRADLE VSA.</li>
-        <li>Use app to <b>take photo of CRADLE VSA\'s screen</b> to capture patient vitals.</li>
-        <li><b>Refer patient to health centre</b> or mark for later <b>follow-up</b> when needed.</li>
-        </ol>
-
-        <p>See Help tab (bottom) for CRADLE VSA training videos (accessible offline).</p>
-        ]]>
-    </string>
 
     <!-- Readings Patient Info-->
     <string-array name="reading_symptoms">
@@ -82,11 +62,9 @@
     </string-array>
 
     <!-- Reading Descriptions -->
-    <string name="reading_name_and_id">%1$s (#%2$s)</string>
     <string name="reading_recheck_vitals_now">Recheck vitals now</string>
     <string name="reading_recheck_vitals_in_one_minute">Recheck vitals in 1 minute</string>
     <string name="reading_recheck_vitals_in_minutes">Recheck vitals in %1$d minutes</string>
-    <string name="reading_recheck_vitals_button">Take new reading</string>
     <string name="reading_referred_to_health_centre">Referred to %1$s</string>
     <string name="reading_referred_to_health_centre_unknown">Referred to a health centre</string>
 
@@ -144,21 +122,8 @@
 
     <!-- SMS Text Message Referral - SMS content-->
     <!-- NOTE: May not want to translate, as sent to doctors -->
-    <string name="sms_message_header">CRADLE VSA REFERRAL:</string>
-    <string name="sms_message_patient">Patient %1$s (#%2$s)</string>
-    <string name="sms_message_patient_age_pregnant">   Age %1$dy, GA %2$dw+%3$dd</string>
-    <string name="sms_message_patient_age_not_pregnant">   Age %1$dy, Not pregnant</string>
-    <string name="sms_message_reading_date">Reading @ %1$s</string>
-    <string name="sms_message_reading_results">BP %1$d/%2$d, HR %3$d\n  = %4$s</string>
-    <string name="sms_message_referral">Referring to %1$s</string>
-    <string name="sms_message_by_vht">by %1$s</string>
-    <string name="sms_message_repeat_referral_warning">NOTE: Patient previously referred for this reading to %1$s on %2$s</string>
 
     <!-- Settings -->
-    <string-array name="settings_work_locations">
-        <item>In Community</item>
-        <item>In health centre</item>
-    </string-array>
 
     <!-- Settings: Health Centres -->
 
@@ -182,7 +147,6 @@
     <!--</string>-->
     <!--    <string name="settings_default_server_url">https://cmpt276-1177-bf.cmpt.sfu.ca/unhcr/upload.php</string>-->
     <string name="settings_reading_server_url">http://cradle-platform.herokuapp.com/patient/reading</string>
-    <string name="settings_referral_server_url">http://cradle-platform.herokuapp.com/patient/referral</string>
 
     <string name="settings_default_server_username">user</string>
     <string name="settings_default_server_password">just4testing</string>
@@ -204,24 +168,11 @@
     <string name="zone">Zone</string>
     <string name="id_number">ID number</string>
     <string name="initials">Initials</string>
-    <string name="name">Name:</string>
     <string name="age">Age</string>
     <string name="sex">Sex</string>
-    <string name="village_number_input">Village Number</string>
-    <string name="last_reading">Last Reading:</string>
-    <string name="last_reading_input">Last Reading</string>
-    <string name="symptoms">Symptoms:</string>
-    <string name="symptoms_input">Symptoms</string>
     <string name="gestational_age">Gestational Age</string>
-    <string name="gestational_age_input">Gestational Age</string>
-    <string name="units">Units</string>
     <string name="id">ID</string>
     <string name="id_colon">ID:</string>
-    <string name="id_input">ID</string>
-    <string name="profile">Profile</string>
-    <string name="age_input">Age:</string>
-    <string name="sex_input">Sex:</string>
-    <string name="name_input">name</string>
     <string name="patients">Patients</string>
     <string name="village">VILLAGE</string>
     <string name="village_colon">Village:</string>
@@ -235,13 +186,9 @@
     <string name="Systolic_blood_pressure">Systolic Blood Pressure:</string>
     <string name="diastolic_blood_pressure">Diastolic Blood Pressure:</string>
     <string name="heart_rate">Heart Rate (BPM):</string>
-    <string name="symptom">Symptoms:</string>
-    <string name="referral_pending">Referral Pending</string>
-    <string name="created">Created:</string>
     <string name="assessment">Assessment</string>
     <string name="diagnosis">Diagnosis:</string>
     <string name="treatment">Treatment:</string>
-    <string name="other">Other:</string>
     <string name="medical_history">Medical History</string>
     <string name="drug_history">Drug History</string>
     <string name="take_new_reading">Take New Reading</string>

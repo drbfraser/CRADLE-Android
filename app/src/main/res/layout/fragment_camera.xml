@@ -32,7 +32,6 @@
     </FrameLayout>
 
     <ImageView
-        android:id="@+id/ivCradleOverlay"
         android:layout_width="0dp"
         android:layout_height="1000dp"
         android:alpha="0.75"

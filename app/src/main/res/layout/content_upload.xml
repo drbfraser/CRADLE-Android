@@ -15,7 +15,6 @@
         android:orientation="vertical">
 
         <androidx.constraintlayout.ConstraintLayout
-            android:id="@+id/layoutUploadStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -198,7 +197,6 @@
                 app:layout_constraintTop_toBottomOf="@+id/imageView4" />
 
             <TextView
-                android:id="@+id/textView11"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Server"
@@ -208,7 +206,6 @@
         </androidx.constraintlayout.ConstraintLayout>
 
         <TextView
-            android:id="@+id/textView37"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingLeft="8dp"
@@ -228,7 +225,6 @@
             android:text="DOWNLOAD" />
 
         <TextView
-            android:id="@+id/textView35"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal|center_vertical"

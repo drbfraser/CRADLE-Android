@@ -51,7 +51,6 @@
                     app:layout_constraintTop_toBottomOf="@+id/refTvStats" />
 
                 <TextView
-                    android:id="@+id/textViewqq"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
@@ -104,7 +103,6 @@
                     app:layout_constraintTop_toBottomOf="@+id/assessmentTvStats" />
 
                 <TextView
-                    android:id="@+id/textViewzz"
                     android:layout_width="0dp"
                     android:layout_height="0dp"
                     android:layout_marginStart="8dp"
@@ -234,7 +232,6 @@
                     app:layout_constraintTop_toBottomOf="@+id/readingTvStats" />
 
                 <TextView
-                    android:id="@+id/textView41"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"

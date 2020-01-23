@@ -38,7 +38,6 @@
         app:srcCompat="@drawable/ic_stats" />
 
     <TextView
-        android:id="@+id/textView7"
         style="@style/DashboardCardText"
         android:text="Statistics"
         tools:layout_editor_absoluteX="47dp"

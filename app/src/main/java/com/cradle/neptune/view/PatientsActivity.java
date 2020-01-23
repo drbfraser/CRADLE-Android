@@ -4,16 +4,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.widget.Toolbar;
+import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
@@ -252,7 +253,7 @@ public class PatientsActivity extends TabActivityBase {
             sharedPreferences.edit().clear().commit();
 
             // settings: load defaults if not previously set
-            android.support.v7.preference.PreferenceManager.setDefaultValues(
+            PreferenceManager.setDefaultValues(
                     this, R.xml.preferences, true);
 
             settings.loadFromSharedPrefs();

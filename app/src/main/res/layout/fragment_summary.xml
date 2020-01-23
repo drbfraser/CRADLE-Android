@@ -16,7 +16,6 @@
         <!-- Patient Info -->
 
         <androidx.constraintlayout.ConstraintLayout
-            android:id="@+id/sectionPatient"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
@@ -77,7 +76,6 @@
 
         <!-- Advice -->
         <androidx.constraintlayout.ConstraintLayout
-            android:id="@+id/sectionAdvice"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
@@ -146,7 +144,6 @@
 
             <!-- TODO: Flatten the nested constraint layouts using groups, etc: https://riggaroo.co.za/constraintlayout-guidelines-barriers-chains-groups/ -->
             <android.support.constraint.ConstraintLayout
-                android:id="@+id/nestedContentRecheckVitals"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -214,7 +211,6 @@
                 app:srcCompat="@drawable/hospital" />
 
             <android.support.constraint.ConstraintLayout
-                android:id="@+id/nestedContentReferral"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -303,7 +299,6 @@
                 app:srcCompat="@mipmap/followup" />
 
             <android.support.constraint.ConstraintLayout
-                android:id="@+id/nestedContentFollowup"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 app:layout_constraintBottom_toBottomOf="parent"

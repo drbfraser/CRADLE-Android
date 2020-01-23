@@ -37,7 +37,6 @@
         app:srcCompat="@drawable/ic_sync" />
 
     <TextView
-        android:id="@+id/textView7"
         style="@style/DashboardCardText"
         android:text="Sync" />
 

@@ -36,7 +36,6 @@
         app:srcCompat="@drawable/ic_patients" />
 
     <TextView
-        android:id="@+id/textView7"
         style="@style/DashboardCardText"
         android:text="@string/patients" />
 

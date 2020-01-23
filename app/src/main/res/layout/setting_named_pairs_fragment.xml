@@ -6,7 +6,6 @@
     android:layout_height="match_parent">
 
     <androidx.constraintlayout.ConstraintLayout
-        android:id="@+id/settingnamedpairs"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".ui.settingnamedpairs.SettingNamedPairsFragment">

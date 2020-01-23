@@ -37,7 +37,6 @@
         app:srcCompat="@drawable/ic_reading" />
 
     <TextView
-        android:id="@+id/textView7"
         style="@style/DashboardCardText"
         android:text="New" />
 

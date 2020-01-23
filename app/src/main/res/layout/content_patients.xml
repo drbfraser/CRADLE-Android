@@ -9,7 +9,6 @@
     tools:showIn="@layout/activity_patients">
 
     <ScrollView
-        android:id="@+id/layoutDebugButtons"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
@@ -38,7 +37,6 @@
                     android:text="Clear database" />
 
                 <Button
-                    android:id="@+id/btnUploadData"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Upload Data" />
