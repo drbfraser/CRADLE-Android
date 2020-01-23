@@ -1,7 +1,5 @@
 package com.cradle.neptune.model;
 
-import android.support.annotation.NonNull;
-
 public class ReadingFollowUp {
 
     private String readingServerId;

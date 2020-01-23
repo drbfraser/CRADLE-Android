@@ -3,10 +3,11 @@ package com.cradle.neptune.view;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.view.Window;
 import android.view.WindowManager;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
 abstract public class TabActivityBase extends AppCompatActivity {
     protected static final int TAB_ACTIVITY_BASE_SETTINGS_DONE = 948;
