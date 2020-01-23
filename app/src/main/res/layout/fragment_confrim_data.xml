@@ -146,7 +146,7 @@
             app:constraint_referenced_ids="txtNoPhotoWarning, imageViewPhoto, txtDirections, tvOcrDisabled"
             tools:layout_editor_absoluteY="348dp" />
 
-        <!--<android.support.constraint.ConstraintLayout-->
+        <!--<androidx.constraintlayout.widget.ConstraintLayout-->
         <!--android:id="@+id/groupDebugOcr"-->
         <!--android:layout_width="0dp"-->
         <!--android:layout_height="wrap_content"-->
@@ -266,7 +266,7 @@
             android:layout_height="wrap_content"
             app:constraint_referenced_ids="ivOcrScaled0, ivOcrScaled1, ivOcrScaled2, ivOcrRaw0, ivOcrRaw1, ivOcrRaw2, tvOcrText0, tvOcrText1, tvOcrText2, etBlurRadius, btnSetBlurSize" />
 
-        <!--</android.support.constraint.ConstraintLayout>-->
+        <!--</androidx.constraintlayout.widget.ConstraintLayout>-->
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
