@@ -18,7 +18,7 @@
             tools:context=".view.ReadingActivity">
             <!-- Reference:
                 https://github.com/chrisbanes/cheesesquare/blob/master/app/src/main/res/layout/include_list_viewpager.xml-->
-            <android.support.design.widget.AppBarLayout
+            <com.google.android.material.appbar.AppBarLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:theme="@style/AppTheme.AppBarOverlay">
@@ -42,7 +42,7 @@
                     android:background="?attr/colorPrimary"
                     app:tabIndicatorColor="@color/colorPrimaryLight"
                     app:tabTextColor="@color/white" />
-            </android.support.design.widget.AppBarLayout>
+            </com.google.android.material.appbar.AppBarLayout>
 
 
             <!-- Hold Fragments -->

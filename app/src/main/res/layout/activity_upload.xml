@@ -19,7 +19,7 @@
             android:layout_weight="1"
             tools:context=".view.ReadingsListActivity">
 
-            <android.support.design.widget.AppBarLayout
+            <com.google.android.material.appbar.AppBarLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:theme="@style/AppTheme.AppBarOverlay">
@@ -31,7 +31,7 @@
                     app:popupTheme="@style/AppTheme.PopupOverlay"
                     app:titleTextColor="@color/white" />
 
-            </android.support.design.widget.AppBarLayout>
+            </com.google.android.material.appbar.AppBarLayout>
 
             <include layout="@layout/content_upload" />
 
