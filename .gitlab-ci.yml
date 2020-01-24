@@ -1,0 +1,4 @@
+unit_tests:
+  script:
+    - chmod +x gradlew
+    - ./gradlew test
