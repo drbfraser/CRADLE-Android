@@ -24,7 +24,7 @@
     </androidx.cardview.widget.CardView>
 
     <ImageButton
-        android:id="@+id/imageButton"
+        android:id="@+id/statImg"
         android:layout_width="95dp"
         android:layout_height="95dp"
         android:adjustViewBounds="true"
@@ -40,7 +40,8 @@
     <TextView
         style="@style/DashboardCardText"
         android:text="Statistics"
-        tools:layout_editor_absoluteX="47dp"
-        tools:layout_editor_absoluteY="90dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/statImg" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
