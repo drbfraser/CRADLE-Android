@@ -15,8 +15,7 @@
 
         <!-- Patient Info -->
 
-        <android.support.constraint.ConstraintLayout
-            android:id="@+id/sectionPatient"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
@@ -60,7 +59,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/txtSymptoms"
                 tools:text="PATIENT INFORMATION ERROR: \nMissing patient name\nMissing patient age" />
 
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <LinearLayout
             android:id="@+id/layoutReadings"
@@ -76,8 +75,7 @@
 
 
         <!-- Advice -->
-        <android.support.constraint.ConstraintLayout
-            android:id="@+id/sectionAdvice"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
@@ -119,11 +117,11 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/txtAdvice" />
 
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
 
         <!-- Recheck Vitals -->
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/sectionRecheckVitals"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -145,8 +143,7 @@
                 app:srcCompat="@drawable/clock" />
 
             <!-- TODO: Flatten the nested constraint layouts using groups, etc: https://riggaroo.co.za/constraintlayout-guidelines-barriers-chains-groups/ -->
-            <android.support.constraint.ConstraintLayout
-                android:id="@+id/nestedContentRecheckVitals"
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -188,11 +185,11 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/swRecheckVitalsIn15" />
-            </android.support.constraint.ConstraintLayout>
-        </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- Referral -->
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/sectionReferral"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -213,8 +210,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/hospital" />
 
-            <android.support.constraint.ConstraintLayout
-                android:id="@+id/nestedContentReferral"
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -273,14 +269,14 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/txtReferralSent" />
 
-            </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
 
         <!-- Follow-up -->
 
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/sectionFollowUp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -302,8 +298,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@mipmap/followup" />
 
-            <android.support.constraint.ConstraintLayout
-                android:id="@+id/nestedContentFollowup"
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -334,9 +329,9 @@
                     app:layout_constraintStart_toStartOf="@+id/swFollowUpNeeded"
                     app:layout_constraintTop_toBottomOf="@+id/swFollowUpNeeded" />
 
-            </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <TextView
             android:id="@+id/txtUploadedMessage"

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".view.ui.reading.ConfirmDataFragment">
@@ -20,7 +20,7 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <!-- Systolic -->
-            <android.support.design.widget.TextInputLayout
+            <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/txtSystolic"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="120dp"
@@ -31,17 +31,17 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
-                <android.support.design.widget.TextInputEditText
+                <EditText
                     android:id="@+id/etSystolic"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="number"
                     android:selectAllOnFocus="true" />
-            </android.support.design.widget.TextInputLayout>
+            </com.google.android.material.textfield.TextInputLayout>
 
 
             <!-- Diastolic -->
-            <android.support.design.widget.TextInputLayout
+            <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/txtDiastolic"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="120dp"
@@ -52,16 +52,16 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/txtSystolic">
 
-                <android.support.design.widget.TextInputEditText
+                <EditText
                     android:id="@+id/etDiastolic"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="number"
                     android:selectAllOnFocus="true" />
-            </android.support.design.widget.TextInputLayout>
+            </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Heart Rate -->
-            <android.support.design.widget.TextInputLayout
+            <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/txtHeartRate"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="120dp"
@@ -72,13 +72,13 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/txtDiastolic">
 
-                <android.support.design.widget.TextInputEditText
+                <EditText
                     android:id="@+id/etHeartRate"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="number"
                     android:selectAllOnFocus="true" />
-            </android.support.design.widget.TextInputLayout>
+            </com.google.android.material.textfield.TextInputLayout>
 
         </LinearLayout>
 
@@ -138,7 +138,7 @@
             app:layout_constraintTop_toBottomOf="@+id/txtDirections" />
 
 
-        <android.support.constraint.Barrier
+        <androidx.constraintlayout.widget.Barrier
             android:id="@+id/debugOcrBarrierTop"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -146,7 +146,7 @@
             app:constraint_referenced_ids="txtNoPhotoWarning, imageViewPhoto, txtDirections, tvOcrDisabled"
             tools:layout_editor_absoluteY="348dp" />
 
-        <!--<android.support.constraint.ConstraintLayout-->
+        <!--<androidx.constraintlayout.widget.ConstraintLayout-->
         <!--android:id="@+id/groupDebugOcr"-->
         <!--android:layout_width="0dp"-->
         <!--android:layout_height="wrap_content"-->
@@ -260,14 +260,14 @@
             app:layout_constraintStart_toEndOf="@+id/etBlurRadius"
             app:layout_constraintTop_toTopOf="@+id/etBlurRadius" />
 
-        <android.support.constraint.Group
+        <androidx.constraintlayout.widget.Group
             android:id="@+id/groupDebugOcr"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:constraint_referenced_ids="ivOcrScaled0, ivOcrScaled1, ivOcrScaled2, ivOcrRaw0, ivOcrRaw1, ivOcrRaw2, tvOcrText0, tvOcrText1, tvOcrText2, etBlurRadius, btnSetBlurSize" />
 
-        <!--</android.support.constraint.ConstraintLayout>-->
+        <!--</androidx.constraintlayout.widget.ConstraintLayout>-->
 
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

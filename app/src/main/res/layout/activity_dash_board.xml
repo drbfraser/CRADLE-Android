@@ -7,7 +7,7 @@
 
     android:background="@drawable/dashboard_background">
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         tools:context=".view.DashBoardActivity">
@@ -65,7 +65,7 @@
             app:layout_constraintStart_toEndOf="@+id/statLayout"
             app:layout_constraintTop_toTopOf="@+id/statLayout" />
 
-        <android.support.design.widget.FloatingActionButton
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fabHelpDashboard"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -79,5 +79,5 @@
             app:layout_constraintTop_toBottomOf="@+id/uploadlayout"
             app:maxImageSize="67dp"
             app:srcCompat="@drawable/ic_help_black_24dp" />
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

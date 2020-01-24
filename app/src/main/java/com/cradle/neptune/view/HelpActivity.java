@@ -4,16 +4,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.widget.MediaController;
 import android.widget.VideoView;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
 import com.cradle.neptune.R;
 
-public class HelpActivity extends TabActivityBase {
+public class HelpActivity extends AppCompatActivity {
 
     public HelpActivity() {
-        super(R.id.nav_help);
+        super();
     }
 
     public static Intent makeIntent(Context context) {

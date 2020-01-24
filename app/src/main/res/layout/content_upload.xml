@@ -14,8 +14,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <android.support.constraint.ConstraintLayout
-            android:id="@+id/layoutUploadStatus"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -67,9 +66,9 @@
                 app:layout_constraintStart_toStartOf="@+id/tvReadingsToUpload"
                 app:layout_constraintTop_toBottomOf="@+id/tvReadingsToUpload" />
 
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/layoutUploadingReadings"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -168,7 +167,7 @@
                 app:layout_constraintStart_toStartOf="@+id/guideline"
                 app:layout_constraintTop_toBottomOf="@+id/tvUploadErrorMessage" />
 
-            <android.support.constraint.Guideline
+            <androidx.constraintlayout.widget.Guideline
                 android:id="@+id/guideline"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -198,17 +197,15 @@
                 app:layout_constraintTop_toBottomOf="@+id/imageView4" />
 
             <TextView
-                android:id="@+id/textView11"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Server"
                 app:layout_constraintEnd_toEndOf="@+id/imageView5"
                 app:layout_constraintStart_toStartOf="@+id/imageView5"
                 app:layout_constraintTop_toBottomOf="@+id/imageView5" />
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <TextView
-            android:id="@+id/textView37"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingLeft="8dp"
@@ -228,7 +225,6 @@
             android:text="DOWNLOAD" />
 
         <TextView
-            android:id="@+id/textView35"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal|center_vertical"

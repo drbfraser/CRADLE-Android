@@ -6,14 +6,15 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -28,7 +29,7 @@ import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.utilitiles.DateUtil;
 import com.cradle.neptune.view.ui.network_volley.MultiReadingUploader;
-import com.google.gson.JsonObject;
+import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,7 +44,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-public class UploadActivity extends TabActivityBase {
+public class UploadActivity extends AppCompatActivity {
 
     private static final String TAG = "UploadActivity";
     private static final String LAST_UPLOAD_DATE = "pref last upload date";
@@ -60,7 +61,6 @@ public class UploadActivity extends TabActivityBase {
 
     // set who we are for tab code
     public UploadActivity() {
-        super(R.id.nav_upload);
     }
 
     public static Intent makeIntent(Context context) {

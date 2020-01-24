@@ -8,12 +8,12 @@
     android:clipToPadding="true"
     android:fillViewport="true">
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         tools:context=".view.StatsActivity">
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             android:id="@+id/referralCard"
             android:layout_width="120dp"
             android:layout_height="100dp"
@@ -26,7 +26,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/readingCard">
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
@@ -51,7 +51,6 @@
                     app:layout_constraintTop_toBottomOf="@+id/refTvStats" />
 
                 <TextView
-                    android:id="@+id/textViewqq"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
@@ -63,10 +62,10 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/refTvStats"
                     app:layout_constraintTop_toTopOf="@+id/refTvStats" />
-            </android.support.constraint.ConstraintLayout>
-        </android.support.v7.widget.CardView>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             android:id="@+id/assmentCard"
             android:layout_width="120dp"
             android:layout_height="100dp"
@@ -79,7 +78,7 @@
             app:layout_constraintStart_toEndOf="@+id/readingCard"
             app:layout_constraintTop_toBottomOf="@+id/readingCard">
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
@@ -104,7 +103,6 @@
                     app:layout_constraintTop_toBottomOf="@+id/assessmentTvStats" />
 
                 <TextView
-                    android:id="@+id/textViewzz"
                     android:layout_width="0dp"
                     android:layout_height="0dp"
                     android:layout_marginStart="8dp"
@@ -116,10 +114,10 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/assessmentTvStats"
                     app:layout_constraintTop_toTopOf="@+id/assessmentTvStats" />
-            </android.support.constraint.ConstraintLayout>
-        </android.support.v7.widget.CardView>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             android:id="@+id/linechartCard"
             android:layout_width="0dp"
             android:layout_height="300dp"
@@ -138,9 +136,9 @@
                 android:id="@+id/lineChart"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
-        </android.support.v7.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             android:id="@+id/bargraphCard"
             android:layout_width="0dp"
             android:layout_height="300dp"
@@ -157,7 +155,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/linechartCard">
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
@@ -181,8 +179,8 @@
                     app:layout_constraintTop_toBottomOf="@+id/textView31">
 
                 </com.github.mikephil.charting.charts.BarChart>
-            </android.support.constraint.ConstraintLayout>
-        </android.support.v7.widget.CardView>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
 
         <TextView
             android:id="@+id/textView32"
@@ -197,7 +195,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             android:id="@+id/readingCard"
             android:layout_width="120dp"
             android:layout_height="100dp"
@@ -209,7 +207,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView32">
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
@@ -234,7 +232,6 @@
                     app:layout_constraintTop_toBottomOf="@+id/readingTvStats" />
 
                 <TextView
-                    android:id="@+id/textView41"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
@@ -246,8 +243,8 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/readingTvStats"
                     app:layout_constraintTop_toTopOf="@+id/readingTvStats" />
-            </android.support.constraint.ConstraintLayout>
-        </android.support.v7.widget.CardView>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
 
         <TextView
             android:id="@+id/emptyView"
@@ -265,5 +262,5 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/referralCard" />
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

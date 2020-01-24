@@ -4,16 +4,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
@@ -34,7 +36,7 @@ import java.util.Random;
 
 import javax.inject.Inject;
 
-public class PatientsActivity extends TabActivityBase {
+public class PatientsActivity extends AppCompatActivity {
 
     // Data Model
     @Inject
@@ -52,7 +54,7 @@ public class PatientsActivity extends TabActivityBase {
 
     // set who we are for tab code
     public PatientsActivity() {
-        super(R.id.nav_patients);
+        //super(R.id.nav_patients);
     }
 
     public static Intent makeIntent(Context context) {
@@ -252,7 +254,7 @@ public class PatientsActivity extends TabActivityBase {
             sharedPreferences.edit().clear().commit();
 
             // settings: load defaults if not previously set
-            android.support.v7.preference.PreferenceManager.setDefaultValues(
+            PreferenceManager.setDefaultValues(
                     this, R.xml.preferences, true);
 
             settings.loadFromSharedPrefs();

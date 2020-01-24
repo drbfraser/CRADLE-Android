@@ -2,16 +2,17 @@ package com.cradle.neptune.view;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.CardView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
+
 import com.cradle.neptune.R;
 import com.cradle.neptune.view.ui.settings.SettingsActivity;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import static com.cradle.neptune.view.TabActivityBase.TAB_ACTIVITY_BASE_SETTINGS_DONE;
 

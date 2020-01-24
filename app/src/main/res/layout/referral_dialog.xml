@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -28,7 +28,7 @@
 
 
         <!-- Comments -->
-        <android.support.design.widget.TextInputLayout
+        <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/textView4"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
@@ -40,14 +40,14 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/txtReferralMessageSentStatus">
 
-            <android.support.design.widget.TextInputEditText
+            <EditText
                 android:id="@+id/etReferralComments"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="start|top"
                 android:inputType="textCapSentences"
                 android:minLines="2" />
-        </android.support.design.widget.TextInputLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
 
         <!-- Health centre -->
@@ -143,7 +143,6 @@
             app:layout_constraintTop_toBottomOf="@+id/tvError" />
 
         <TextView
-            android:id="@+id/textView6"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
@@ -170,5 +169,5 @@
             app:layout_constraintTop_toBottomOf="@+id/txtMessagePreview"
             tools:text="Sending referral.\nPlease wait..." />
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

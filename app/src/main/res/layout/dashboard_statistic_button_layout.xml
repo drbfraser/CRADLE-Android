@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
-    <android.support.v7.widget.CardView
+    <androidx.cardview.widget.CardView
 
         android:id="@+id/statCardView"
         android:layout_width="@dimen/dashboard_card_height"
@@ -21,7 +21,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-    </android.support.v7.widget.CardView>
+    </androidx.cardview.widget.CardView>
 
     <ImageButton
         android:id="@+id/imageButton"
@@ -38,10 +38,9 @@
         app:srcCompat="@drawable/ic_stats" />
 
     <TextView
-        android:id="@+id/textView7"
         style="@style/DashboardCardText"
         android:text="Statistics"
         tools:layout_editor_absoluteX="47dp"
         tools:layout_editor_absoluteY="90dp" />
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

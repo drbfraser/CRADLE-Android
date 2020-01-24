@@ -3,19 +3,19 @@ package com.cradle.neptune.view;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.TabLayout;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.viewpager.widget.ViewPager;
+
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
-import com.cradle.neptune.model.Patient.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.utilitiles.GsonUtil;
@@ -23,6 +23,7 @@ import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.view.ui.reading.BaseFragment;
 import com.cradle.neptune.view.ui.reading.MyFragmentInteractionListener;
 import com.cradle.neptune.view.ui.reading.SectionsPagerAdapter;
+import com.google.android.material.tabs.TabLayout;
 
 import org.threeten.bp.ZonedDateTime;
 
