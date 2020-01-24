@@ -89,7 +89,7 @@
                 android:layout_marginTop="8dp"
                 android:backgroundTint="@color/colorPrimaryLight"
                 android:ems="10"
-                android:hint="bfraser@sfu.ca"
+                android:hint="someone@example.com"
                 android:inputType="textEmailAddress"
                 android:singleLine="true"
                 android:textCursorDrawable="@null"

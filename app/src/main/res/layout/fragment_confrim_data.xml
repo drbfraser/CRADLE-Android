@@ -138,7 +138,7 @@
             app:layout_constraintTop_toBottomOf="@+id/txtDirections" />
 
 
-        <android.support.constraint.Barrier
+        <androidx.constraintlayout.widget.Barrier
             android:id="@+id/debugOcrBarrierTop"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -260,7 +260,7 @@
             app:layout_constraintStart_toEndOf="@+id/etBlurRadius"
             app:layout_constraintTop_toTopOf="@+id/etBlurRadius" />
 
-        <android.support.constraint.Group
+        <androidx.constraintlayout.widget.Group
             android:id="@+id/groupDebugOcr"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
