@@ -78,10 +78,6 @@ public class LoginActivity extends AppCompatActivity {
             }
             loginBruteForceAttempts--;
 
-            if (emailET.getText().equals("")) {
-                Toast.makeText(LoginActivity.this, "Empty Email", Toast.LENGTH_SHORT).show();
-                return;
-            }
             ProgressDialog progressDialog = getProgressDialog();
             RequestQueue queue = Volley.newRequestQueue(MyApp.getInstance());
             JSONObject jsonObject = new JSONObject();
@@ -107,7 +103,6 @@ public class LoginActivity extends AppCompatActivity {
                 }
                 startIntroActivity();
             }, error -> {
-                Toast.makeText(LoginActivity.this, " Invalid credentials", Toast.LENGTH_LONG).show();
                 errorText.setVisibility(View.VISIBLE);
                 progressDialog.cancel();
             });
