@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -37,21 +38,34 @@ public class DashBoardActivity extends AppCompatActivity implements View.OnClick
     private void setupOnClickListner() {
         View patientView = findViewById(R.id.patientLayout);
         CardView patientCardView = patientView.findViewById(R.id.patientCardview);
+        ImageButton patientImg = patientView.findViewById(R.id.patientImg);
 
         View statView = findViewById(R.id.statLayout);
         CardView statCardview = statView.findViewById(R.id.statCardView);
+        ImageButton statImg = statView.findViewById(R.id.statImg);
 
         View uploadCard = findViewById(R.id.uploadlayout);
         CardView syncCardview = uploadCard.findViewById(R.id.syncCardView);
+        ImageButton syncImg = uploadCard.findViewById(R.id.syncImg);
 
         View readingLayout = findViewById(R.id.readingLayout);
         CardView readingCardView = readingLayout.findViewById(R.id.readingCardView);
+        ImageButton readImg = readingLayout.findViewById(R.id.readingImg);
 
         FloatingActionButton helpButton = findViewById(R.id.fabHelpDashboard);
+        
         readingCardView.setOnClickListener(this);
+        readImg.setOnClickListener(this);
+
         syncCardview.setOnClickListener(this);
+        syncImg.setOnClickListener(this);
+
         patientCardView.setOnClickListener(this);
+        patientImg.setOnClickListener(this);
+
         statCardview.setOnClickListener(this);
+        statImg.setOnClickListener(this);
+
         helpButton.setOnClickListener(this);
     }
 
@@ -82,19 +96,23 @@ public class DashBoardActivity extends AppCompatActivity implements View.OnClick
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.readingCardView:
+            case R.id.readingImg:
                 Intent intent = ReadingActivity.makeIntentForNewReading(DashBoardActivity.this);
                 startActivityForResult(intent, READING_ACTIVITY_DONE);
                 break;
             case R.id.patientCardview:
+            case R.id.patientImg:
                 startActivity(PatientsActivity.makeIntent(this));
                 break;
             case R.id.syncCardView:
+            case R.id.syncImg:
                 startActivity(UploadActivity.makeIntent(this));
                 break;
             case R.id.fabHelpDashboard:
                 startActivity(HelpActivity.makeIntent(this));
                 break;
             case R.id.statCardView:
+            case R.id.statImg:
                 startActivity(new Intent(this,StatsActivity.class));
                 break;
 

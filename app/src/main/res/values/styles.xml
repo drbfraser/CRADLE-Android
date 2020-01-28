@@ -29,7 +29,6 @@
         <item name="android:elevation">4dp</item>
         <item name="layout_constraintEnd_toEndOf">parent</item>
         <item name="layout_constraintStart_toStartOf">parent</item>
-        <item name="layout_constraintTop_toBottomOf">@+id/imageButton</item>
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />

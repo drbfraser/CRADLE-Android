@@ -23,7 +23,7 @@
     </androidx.cardview.widget.CardView>
 
     <ImageButton
-        android:id="@+id/imageButton"
+        android:id="@+id/syncImg"
         android:layout_width="95dp"
         android:layout_height="95dp"
         android:adjustViewBounds="true"
@@ -38,6 +38,9 @@
 
     <TextView
         style="@style/DashboardCardText"
-        android:text="Sync" />
+        android:text="Sync"
+        app:layout_constraintEnd_toEndOf="@+id/syncCardView"
+        app:layout_constraintStart_toStartOf="@+id/syncCardView"
+        app:layout_constraintTop_toBottomOf="@id/syncImg" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
