@@ -51,13 +51,8 @@ public class MultipartRequest extends JsonRequest<NetworkResponse> {
 
     @Override
     public void deliverError(VolleyError error) {
-        try {
-            String json = new String(error.networkResponse.data, HttpHeaderParser.parseCharset(error.networkResponse.headers));
-            Log.d("bugg", "Delivery error: " + json);
-
-        } catch (UnsupportedEncodingException e) {
-            Log.d("bugg", e.getMessage());
-        }
+        if(error!=null)
+            Log.d("bugg", error.getMessage());
 
         mErrorListener.onErrorResponse(error);
     }
