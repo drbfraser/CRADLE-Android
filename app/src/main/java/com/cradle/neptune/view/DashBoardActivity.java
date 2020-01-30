@@ -1,10 +1,13 @@
 package com.cradle.neptune.view;
 
 import android.content.Intent;
+import android.icu.text.Collator;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 
 import androidx.appcompat.app.ActionBar;
@@ -12,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
 import com.cradle.neptune.R;
+import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.view.ui.settings.SettingsActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -67,6 +71,20 @@ public class DashBoardActivity extends AppCompatActivity implements View.OnClick
         statImg.setOnClickListener(this);
 
         helpButton.setOnClickListener(this);
+
+
+        Button crashButton = new Button(this);
+        crashButton.setText("Crash! Only for testing --__--");
+        crashButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                Reading reading = null;
+                reading.getBpDiastolic();
+            }
+        });
+
+        addContentView(crashButton, new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
     }
 
     @Override
