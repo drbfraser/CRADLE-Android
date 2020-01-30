@@ -72,19 +72,6 @@ public class DashBoardActivity extends AppCompatActivity implements View.OnClick
 
         helpButton.setOnClickListener(this);
 
-
-        Button crashButton = new Button(this);
-        crashButton.setText("Crash! Only for testing --__--");
-        crashButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                Reading reading = null;
-                reading.getBpDiastolic();
-            }
-        });
-
-        addContentView(crashButton, new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT));
     }
 
     @Override
