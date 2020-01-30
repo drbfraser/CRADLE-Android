@@ -35,7 +35,7 @@ public class Settings {
     public static String DEFAULT_SERVER_URL = "http://cmpt373.csil.sfu.ca:8088/";
     public static String DEFAULT_SERVER_USERNAME = "user";
     public static String DEFAULT_SERVER_USERPASSWORD = "just4testing";
-    public static String authServerUrl = "https://cmpt373.csil.sfu.ca:8048/api/user/auth";
+    public static String authServerUrl = "http://cmpt373.csil.sfu.ca:8088/api/user/auth";
     // Temporary Upload Defaults:
     // todo: remove temporary upload defaults once 2D bar-code reading in place for settings.
     private static String LINEFEED = "\r\n";

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -71,13 +72,13 @@ public class LoginActivity extends AppCompatActivity {
         Button loginbuttoon = findViewById(R.id.loginButton);
 
         loginbuttoon.setOnClickListener(v -> {
-
+            Log.d("bugg","login clicked");
             if (loginBruteForceAttempts <= 0) {
                 startIntroActivity();
+                Log.d("bugg","forced login");
                 return;
             }
             loginBruteForceAttempts--;
-
             ProgressDialog progressDialog = getProgressDialog();
             RequestQueue queue = Volley.newRequestQueue(MyApp.getInstance());
             JSONObject jsonObject = new JSONObject();
@@ -85,10 +86,12 @@ public class LoginActivity extends AppCompatActivity {
                 jsonObject.put("email", emailET.getText());
                 jsonObject.put("password", passwordET.getText());
             } catch (JSONException e) {
+                Log.d("bugg","exception in json");
                 e.printStackTrace();
             }
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Settings.authServerUrl, jsonObject, response -> {
                 progressDialog.cancel();
+                Log.d("bugg","got a success response");
                 //put it into sharedpress for offline login.
                 saveUserNamePasswordSharedPref(emailET.getText().toString(), passwordET.getText().toString());
                 Toast.makeText(LoginActivity.this, "Login Successful!", Toast.LENGTH_LONG).show();
@@ -101,8 +104,10 @@ public class LoginActivity extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+
                 startIntroActivity();
             }, error -> {
+                Log.d("bugg","got a fail response: "+ error.getMessage()+ " \n"+ error.networkResponse);
                 errorText.setVisibility(View.VISIBLE);
                 progressDialog.cancel();
             });
