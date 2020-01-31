@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "955083530878",
+    "firebase_url": "https://cradle-vsa.firebaseio.com",
+    "project_id": "cradle-vsa",
+    "storage_bucket": "cradle-vsa.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:955083530878:android:b708f179d8a3c37c9d2e2f",
+        "android_client_info": {
+          "package_name": "com.cradleVSA.neptune"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "955083530878-8rqg452svda2sfin4ipvvpi13puqmnr8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC392du_UyzGsHxIm0iMTpXjTWpwujimnE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "955083530878-8rqg452svda2sfin4ipvvpi13puqmnr8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

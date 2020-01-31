@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -71,13 +72,11 @@ public class LoginActivity extends AppCompatActivity {
         Button loginbuttoon = findViewById(R.id.loginButton);
 
         loginbuttoon.setOnClickListener(v -> {
-
             if (loginBruteForceAttempts <= 0) {
                 startIntroActivity();
                 return;
             }
             loginBruteForceAttempts--;
-
             ProgressDialog progressDialog = getProgressDialog();
             RequestQueue queue = Volley.newRequestQueue(MyApp.getInstance());
             JSONObject jsonObject = new JSONObject();
@@ -101,6 +100,7 @@ public class LoginActivity extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+
                 startIntroActivity();
             }, error -> {
                 errorText.setVisibility(View.VISIBLE);

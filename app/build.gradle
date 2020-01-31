@@ -1,5 +1,8 @@
 apply plugin: 'com.android.application'
 apply plugin: "de.mannodermaus.android-junit5"
+apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.crashlytics'
+
 // Initialize the keystore credentials from the keystore.properties file
 def filename = "keystore.properties"
 def keystoreProperties = new Properties()
@@ -23,10 +26,10 @@ android {
     compileSdkVersion 29
     defaultConfig {
         // Update this every build
-        versionCode 1
-        versionName "Alpha 1.0"
+        versionCode 2
+        versionName "Alpha 1.2"
 
-        applicationId "com.cradle.neptune"
+        applicationId "com.cradleVSA.neptune"
         minSdkVersion 17    // Android 4.2
         targetSdkVersion 29
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -112,6 +115,10 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:2.22.0'
     // required if you want to use Mockito for Android tests
     androidTestImplementation 'org.mockito:mockito-android:2.7.22'
+
+    implementation 'com.google.firebase:firebase-analytics:17.2.2'
+    implementation 'com.google.firebase:firebase-crashlytics:17.0.0-beta01'
+
 
 }
 
