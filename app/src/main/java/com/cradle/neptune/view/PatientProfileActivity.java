@@ -4,8 +4,10 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -30,7 +32,6 @@ import java.util.List;
 import javax.inject.Inject;
 
 import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -40,6 +41,7 @@ import static com.cradle.neptune.view.DashBoardActivity.READING_ACTIVITY_DONE;
 
 public class PatientProfileActivity extends AppCompatActivity {
 
+    static final double WEEKS_IN_MONTH=4.34524;
     TextView patientID;
     TextView patientName;
     TextView patientAge;
@@ -48,8 +50,9 @@ public class PatientProfileActivity extends AppCompatActivity {
     TextView patientHouse;
     TextView patientZone;
     TextView pregnant;
-    TextView gestationalAge;
-    TextView gestationalAgeUnit;
+    TextView gestationalAgeMonth;
+    TextView gestationalAgeWeek;
+    LinearLayout pregnancyInfoLayout;
 
     RecyclerView readingRecyclerview;
     Patient currPatient;
@@ -82,9 +85,9 @@ public class PatientProfileActivity extends AppCompatActivity {
         patientHouse = (TextView) findViewById(R.id.patientHouseNum);
         patientZone = (TextView) findViewById(R.id.patientZone);
         pregnant = (TextView) findViewById(R.id.textView20);
-        gestationalAge = (TextView) findViewById(R.id.textView45);
-        gestationalAgeUnit = (TextView) findViewById(R.id.textView46);
-
+        gestationalAgeMonth = (TextView) findViewById(R.id.gestationalAgeMonths);
+        gestationalAgeWeek = findViewById(R.id.gestationalAgeWeek);
+        pregnancyInfoLayout = findViewById(R.id.pregnancyLayout);
         readingRecyclerview = findViewById(R.id.readingRecyclerview);
 
         currPatient = (Patient) getIntent().getSerializableExtra("key");
@@ -128,15 +131,12 @@ public class PatientProfileActivity extends AppCompatActivity {
         patientZone.setText(patient.zone);
         if (patient.isPregnant) {
             pregnant.setText("Yes");
+            setupGestationalInfo(patient);
         } else {
             pregnant.setText("No");
+            pregnancyInfoLayout.setVisibility(View.GONE);
         }
-        gestationalAge.setText(patient.gestationalAgeValue);
-        if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS) {
-            gestationalAgeUnit.setText("Weeks");
-        } else {
-            gestationalAgeUnit.setText("Months");
-        }
+
         if(patient.drugHistoryList!=null && !patient.drugHistoryList.isEmpty()) {
             TextView drugHistroy = findViewById(R.id.drugHistroyTxt);
             drugHistroy.setText(patient.drugHistoryList.get(0));
@@ -146,6 +146,32 @@ public class PatientProfileActivity extends AppCompatActivity {
 
             TextView medHistory = findViewById(R.id.medHistoryText);
             medHistory.setText(patient.medicalHistoryList.get(0));
+        }
+    }
+
+    /**
+     * This function converts either weeks or months into months and weeks
+     * example: gestational age = 6 weeks ,converts to 1 month and 1.5 weeks(roughly)
+     * @param patient current patient
+     */
+    private void setupGestationalInfo(Patient patient) {
+        if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS && patient.isPregnant) {
+            double age = Double.parseDouble(patient.gestationalAgeValue);
+            int months = (int) (age / WEEKS_IN_MONTH);
+            double weeks = age % WEEKS_IN_MONTH;
+            double weeksRounded = Math.round(weeks * 100D) / 100D;
+            gestationalAgeMonth.setText(months+"");
+            gestationalAgeWeek.setText(weeksRounded+"");
+
+        } else if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS && patient.isPregnant) {
+            double age = Double.parseDouble(patient.gestationalAgeValue);
+            //get the whole months
+            int months = (int) (age);
+            double leftoverMonth = age-months;
+            double weeks = leftoverMonth * WEEKS_IN_MONTH;
+            double weeksRounded = Math.round(weeks * 100D) / 100D;
+            gestationalAgeMonth.setText(months+"");
+            gestationalAgeWeek.setText(weeksRounded+"");
         }
     }
 
