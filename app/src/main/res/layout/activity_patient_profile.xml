@@ -173,17 +173,6 @@
                     app:layout_constraintTop_toBottomOf="@+id/textView17" />
 
                 <TextView
-                    android:id="@+id/textView24"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/tank_no"
-                    android:textColor="@color/black"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    app:layout_constraintStart_toStartOf="@+id/textView22"
-                    app:layout_constraintTop_toBottomOf="@+id/textView22" />
-
-                <TextView
                     android:id="@+id/patientVillage"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -204,17 +193,6 @@
                     android:textSize="14sp"
                     app:layout_constraintStart_toEndOf="@+id/textView22"
                     app:layout_constraintTop_toBottomOf="@+id/textView21" />
-
-                <TextView
-                    android:id="@+id/patientTank"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:text="N/A"
-                    android:textColor="@color/black"
-                    android:textSize="14sp"
-                    app:layout_constraintStart_toEndOf="@+id/textView24"
-                    app:layout_constraintTop_toTopOf="@+id/textView24" />
 
                 <TextView
                     android:id="@+id/patientHouseNum"
