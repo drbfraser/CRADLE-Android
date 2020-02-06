@@ -248,7 +248,7 @@ public class PatientInfoFragment extends BaseFragment {
                 valueInputType = InputType.TYPE_CLASS_NUMBER;
                 break;
             case GA_UNIT_INDEX_MOTHS:
-                valueInputType =  InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_CLASS_NUMBER ;
+                valueInputType =  InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_CLASS_NUMBER;
                 break;
             default:
                 Util.ensure(false);

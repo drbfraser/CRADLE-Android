@@ -160,8 +160,8 @@ public class PatientProfileActivity extends AppCompatActivity {
             int months = (int) (age / WEEKS_IN_MONTH);
             double weeks = age % WEEKS_IN_MONTH;
             double weeksRounded = Math.round(weeks * 100D) / 100D;
-            gestationalAgeMonth.setText(months+"");
-            gestationalAgeWeek.setText(weeksRounded+"");
+            gestationalAgeMonth.setText(months + "");
+            gestationalAgeWeek.setText(weeksRounded + "");
 
         } else if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS && patient.isPregnant) {
             double age = Double.parseDouble(patient.gestationalAgeValue);
@@ -170,8 +170,8 @@ public class PatientProfileActivity extends AppCompatActivity {
             double leftoverMonth = age-months;
             double weeks = leftoverMonth * WEEKS_IN_MONTH;
             double weeksRounded = Math.round(weeks * 100D) / 100D;
-            gestationalAgeMonth.setText(months+"");
-            gestationalAgeWeek.setText(weeksRounded+"");
+            gestationalAgeMonth.setText(months + "");
+            gestationalAgeWeek.setText(weeksRounded + "");
         }
     }
 
