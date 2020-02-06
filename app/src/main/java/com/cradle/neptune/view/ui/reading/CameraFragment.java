@@ -161,7 +161,7 @@ public class CameraFragment extends BaseFragment {
 
         // Calculate inSampleSize
         options.inSampleSize = calculateInSampleSize(options, MAX_WIDTH, MAX_HEIGHT);
-
+        Log.d("bugg","samplesize: "+ options.inSampleSize);
         // Decode bitmap with inSampleSize set
         options.inJustDecodeBounds = false;
         imageStream = context.getContentResolver().openInputStream(selectedImage);
@@ -190,7 +190,7 @@ public class CameraFragment extends BaseFragment {
         // Raw height and width of image
         final int height = options.outHeight;
         final int width = options.outWidth;
-        int inSampleSize = 1;
+        int inSampleSize = 2;
 
         if (height > reqHeight || width > reqWidth) {
 
