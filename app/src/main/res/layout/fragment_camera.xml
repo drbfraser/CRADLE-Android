@@ -8,13 +8,16 @@
 
     <TextView
         android:id="@+id/textView2"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="Take Photo of CRADLE VSA Reading"
-        android:textSize="18sp"
+        android:text="Hold the phone steady and take Photo of CRADLE VSA Reading"
+        android:textAlignment="textStart"
+        android:textColor="@color/colorPrimaryDark"
+        android:textSize="12sp"
         android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -32,6 +35,7 @@
     </FrameLayout>
 
     <ImageView
+        android:id="@+id/imageView"
         android:layout_width="0dp"
         android:layout_height="1000dp"
         android:alpha="0.75"
@@ -45,10 +49,9 @@
         android:id="@+id/btnCapturePhoto"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
         android:text="Take Photo"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="@+id/imageView" />
 
     <Button
         android:id="@+id/button"
@@ -64,25 +67,27 @@
         android:id="@+id/zoomSeekbar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
         android:progressDrawable="@drawable/zoom_seek_bar"
         android:scrollbars="horizontal"
         android:thumb="@drawable/zoom_seekbar_thumb"
-        app:layout_constraintBottom_toTopOf="@+id/textView6"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/btnCapturePhoto"
+        app:layout_constraintStart_toStartOf="@+id/imageView"
+        app:layout_constraintTop_toTopOf="@+id/btnCapturePhoto" >
+
+    </SeekBar>
 
     <TextView
         android:id="@+id/textView6"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="8dp"
-        android:text="Zoom level"
-        android:textColor="@color/colorOffWhite"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/btnCapturePhoto"
-        app:layout_constraintEnd_toEndOf="@+id/zoomSeekbar" />
+        android:background="@drawable/rounded_corner"
+        android:padding="4dp"
+        android:text="Slide to zoom"
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@+id/zoomSeekbar"
+        app:layout_constraintStart_toStartOf="@+id/zoomSeekbar" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
