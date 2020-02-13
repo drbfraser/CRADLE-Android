@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -51,6 +52,8 @@ public class CameraFragment extends BaseFragment {
     private boolean mIsTakingPhotoNow;
     private Handler focusTimerHandler = new Handler();
     private Runnable focusTimerRunnable;
+    private SeekBar zoomSeekBar;
+
     private Camera.PictureCallback mPicture = new Camera.PictureCallback() {
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
@@ -265,11 +268,13 @@ public class CameraFragment extends BaseFragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_camera, container, false);
+
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        zoomSeekBar = view.findViewById(R.id.zoomSeekbar);
 
         setupCamera();
         setupZoom();
@@ -351,7 +356,7 @@ public class CameraFragment extends BaseFragment {
         if (mCamera != null) {
 
             // Create our Preview view and set it as the content of our activity.
-            mPreview = new CameraPreview(this.getContext(), mCamera);
+            mPreview = new CameraPreview(this.getContext(), mCamera,zoomSeekBar);
             FrameLayout preview = getView().findViewById(R.id.camera_preview);
             preview.addView(mPreview);
 

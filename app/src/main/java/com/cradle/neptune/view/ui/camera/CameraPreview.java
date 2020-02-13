@@ -5,6 +5,7 @@ import android.hardware.Camera;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.widget.SeekBar;
 
 import java.util.List;
 
@@ -23,11 +24,12 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private Camera mCamera;
     private List<Camera.Size> mSupportedPreviewSizes;
     private Camera.Size mPreviewSize;
-
-    public CameraPreview(Context context, Camera camera) {
+    private SeekBar zoomSeekbar;
+    public CameraPreview(Context context, Camera camera,SeekBar seekBar) {
         super(context);
         mContext = context;
         mCamera = camera;
+        this.zoomSeekbar = seekBar;
 
         // supported preview sizes
         mSupportedPreviewSizes = mCamera.getParameters().getSupportedPreviewSizes();
@@ -40,6 +42,38 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         mHolder.addCallback(this);
         // deprecated setting, but required on Android versions prior to 3.0
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        zoomSeekbar.setMax(mCamera.getParameters().getMaxZoom());
+        zoomSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress,
+                                          boolean fromUser) {
+                // TODO Auto-generated method stub
+                Log.d("bugg", "progress:"+progress);
+
+                // YOur code here in set zoom for pinch zooming, sth like this
+                if(mCamera.getParameters().isZoomSupported()){
+
+                    Camera.Parameters params = mCamera.getParameters();
+                    params.setPreviewSize(mPreviewSize.width,mPreviewSize.height);
+                    params.setZoom(progress);
+                    mCamera.setParameters(params);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // TODO Auto-generated method stub
+                Log.d(TAG, "onStartTrackingTouch");
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                // TODO Auto-generated method stub
+                Log.d(TAG, "onStartTrackingTouch");
+            }
+
+        });
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
@@ -71,7 +105,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         try {
             Camera.Parameters parameters = mCamera.getParameters();
             parameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
-            parameters.setZoom(20);
             mCamera.setParameters(parameters);
             mCamera.setDisplayOrientation(90);
             mCamera.setPreviewDisplay(mHolder);
