@@ -205,6 +205,29 @@
                 app:layout_constraintTop_toBottomOf="@+id/imageView5" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <Button
+            android:id="@+id/uploadImagesButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="upload Images" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/stopuploading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center_horizontal"
+            android:text="Stop uploading"
+            android:textAlignment="textStart"
+            android:visibility="gone" />
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -215,6 +238,7 @@
             android:textColor="@color/design_default_color_primary_dark"
             android:textSize="18sp"
             android:textStyle="bold" />
+
 
         <Button
             android:id="@+id/downloadReadingButton"

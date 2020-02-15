@@ -1,15 +1,18 @@
 package com.cradle.neptune.view;
 
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,13 +32,18 @@ import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.utilitiles.DateUtil;
 import com.cradle.neptune.view.ui.network_volley.MultiReadingUploader;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.threeten.bp.ZonedDateTime;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -91,6 +99,9 @@ public class UploadActivity extends AppCompatActivity {
         setupSyncReadingButton();
 
         setupLastFollowupDownloadDate();
+
+        setupUploadImageButton()
+                ;
     }
 
     private void setupLastFollowupDownloadDate() {
@@ -142,7 +153,6 @@ public class UploadActivity extends AppCompatActivity {
             Snackbar.make(findViewById(R.id.cordinatorLayout), R.string.followUpDownloaded, Snackbar.LENGTH_LONG)
                     .show();
         }, error -> {
-            Log.d("bugg", "Error: network rsponse: " + error.networkResponse.statusCode+"");
 
             dialog.cancel();
             Snackbar.make(findViewById(R.id.cordinatorLayout), R.string.followUpCheckInternet,
@@ -264,6 +274,70 @@ public class UploadActivity extends AppCompatActivity {
         setUploadUiElementVisibility(false);
     }
 
+    private void setupUploadImageButton() {
+        Button btnStart = findViewById(R.id.uploadImagesButton);
+        btnStart.setOnClickListener(view -> {
+            // start upload
+            List<Reading>readings = readingManager.getReadings(this);
+            List<Reading>readingsToUpload = new ArrayList<>();
+            for (int i=0;i<readings.size();i++){
+                Reading reading = readings.get(i);
+                if(reading.pathToPhoto != null) {
+                    File file = new File(reading.pathToPhoto);
+                    if (!reading.isImageUploaded && file.exists()) {
+
+                        readingsToUpload.add(reading);
+                    }
+                }
+            }
+            if(readingsToUpload.size()==0){
+                return;
+            }
+            final boolean[] stopuploading = {false};
+
+            ProgressBar progressBar = findViewById(R.id.progressBar);
+            Button stopButton = findViewById(R.id.stopuploading);
+            stopButton.setVisibility(View.VISIBLE);
+            stopButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    stopuploading[0] =true;
+                    progressBar.setVisibility(View.INVISIBLE);
+                    stopButton.setVisibility(View.GONE);
+                }
+            });
+            progressBar.setMax(readingsToUpload.size());
+            progressBar.setProgress(0);
+            progressBar.setVisibility(View.VISIBLE);
+
+            FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
+            StorageReference storageReference = firebaseStorage.getReference();
+
+            for (int i=0;i<readingsToUpload.size();i++){
+                if (stopuploading[0]){
+                    return;
+                }
+
+                Reading r=readingsToUpload.get(i);
+                Uri file = Uri.fromFile(new File(r.pathToPhoto));
+
+                StorageReference storageReference1 = storageReference.child("cradle-test-images/"+file.getLastPathSegment());
+                UploadTask uploadTask = storageReference1.putFile(file) ;
+                uploadTask.addOnSuccessListener(taskSnapshot -> {
+                    r.isImageUploaded=true;
+                    readingManager.updateReading(this,r);
+                    progressBar.setProgress(progressBar.getProgress() + 1);
+                    if (stopuploading[0]){
+                        progressBar.setVisibility(View.INVISIBLE);
+                    }
+                });
+                if(readingsToUpload.size()-1==i){
+                    stopuploading[0]=true;
+                }
+            }
+            });
+    }
+
     private void setupErrorHandlingButtons() {
         setErrorUiElementsVisible(View.GONE);
         Button btnSkip = findViewById(R.id.btnSkip);
@@ -333,10 +407,10 @@ public class UploadActivity extends AppCompatActivity {
             Toast.makeText(this, "Error: Must set server URL in settings", Toast.LENGTH_LONG).show();
             return;
         }
-        if (settings.getRsaPubKey() == null || settings.getRsaPubKey().length() == 0) {
-            Toast.makeText(this, "Error: Must set RSA Public Key in settings", Toast.LENGTH_LONG).show();
-            return;
-        }
+//        if (settings.getRsaPubKey() == null || settings.getRsaPubKey().length() == 0) {
+//            Toast.makeText(this, "Error: Must set RSA Public Key in settings", Toast.LENGTH_LONG).show();
+//            return;
+//        }
         // do a small sanity check on key
         // note: Many errors in key will seem valid here! No way to validate.
 //        try {
@@ -348,7 +422,6 @@ public class UploadActivity extends AppCompatActivity {
 
         // discover un-uploaded readings
         List<Reading> readingsToUpload = getReadingsToUpload();
-
         // abort if no readings
         if (readingsToUpload.size() == 0) {
             Toast.makeText(this, "No readings needing to be uploaded.", Toast.LENGTH_LONG).show();

@@ -55,6 +55,7 @@ public class Reading {
     public Patient patient = new Patient();
     // reading
     public String pathToPhoto;
+    public boolean isImageUploaded = false;
     public Integer bpSystolic;  // first number (top)
     public Integer bpDiastolic; // second number (bottom)
     public Integer heartRateBPM;
