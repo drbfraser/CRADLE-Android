@@ -3,17 +3,21 @@ package com.cradle.neptune.view.ui.intro;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.cradle.neptune.R;
@@ -99,22 +103,30 @@ public class PermissionsFragment extends IntroBaseFragment {
 
     private void updateDisplay() {
         // Show permissions message
-        WebView wv = getView().findViewById(R.id.wvPermissions);
-        String htmlContents = getString(R.string.intro_permission_description);
-        wv.loadDataWithBaseURL(null, htmlContents, "text/html", "utf-8", null);
-
+        /*
+        had to create webview dynamically, for some reason webview crashes on android 5.1
+           todo: figure out why
+         */
+        LinearLayout linearLayout = getView().findViewById(R.id.linearLayoutForWV);
+        if(linearLayout.getChildCount()==0) {
+            WebView wv = new WebView(getActivity().createConfigurationContext(new Configuration()));
+            String htmlContents = getString(R.string.intro_permission_description);
+            wv.loadDataWithBaseURL(null, htmlContents, "text/html", "utf-8", null);
+            linearLayout.addView(wv);
+        }
         boolean allGranted = areAllPermissionsGranted(getContext());
-
+        Log.d("bugg","permsissons granted: "+ allGranted);
         // Configure screen if we need permissions
         Button btn = getView().findViewById(R.id.btnGrantPermissions);
         btn.setVisibility(allGranted ? View.GONE : View.VISIBLE);
 
         TextView tvAllGranted = getView().findViewById(R.id.txtAllGranted);
-        tvAllGranted.setVisibility(allGranted ? View.VISIBLE : View.GONE);
-
+        tvAllGranted.setVisibility(allGranted ? View.VISIBLE : View.INVISIBLE);
+        Log.d("bugg","visible: "+tvAllGranted.getVisibility());
         // Each time we load, hide this; shown if granting fails.
         TextView tvMore = getView().findViewById(R.id.txtMoreNeededWarning);
         tvMore.setVisibility(View.GONE);
+        Log.d("bugg","visibleButton: "+btn.getVisibility());
 
         // callback to activity done when we get focus
     }

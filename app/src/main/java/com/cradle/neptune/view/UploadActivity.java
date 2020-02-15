@@ -1,14 +1,12 @@
 package com.cradle.neptune.view;
 
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -32,7 +30,6 @@ import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.utilitiles.DateUtil;
 import com.cradle.neptune.view.ui.network_volley.MultiReadingUploader;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -46,7 +43,6 @@ import org.threeten.bp.ZonedDateTime;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -101,7 +97,7 @@ public class UploadActivity extends AppCompatActivity {
         setupLastFollowupDownloadDate();
 
         setupUploadImageButton()
-                ;
+        ;
     }
 
     private void setupLastFollowupDownloadDate() {
@@ -111,7 +107,7 @@ public class UploadActivity extends AppCompatActivity {
             ZonedDateTime zonedDateTime = ZonedDateTime.parse(settings.getLastTimeFollowUpDownloaded());
             lastDownloadText.setText(DateUtil.getFullDateString(zonedDateTime));
 
-        }catch (Exception e){
+        } catch (Exception e) {
             lastDownloadText.setText(settings.getLastTimeFollowUpDownloaded());
         }
     }
@@ -133,7 +129,7 @@ public class UploadActivity extends AppCompatActivity {
         String token = sharedPref.getString(LoginActivity.TOKEN, "");
 
         if (token.equals("")) {
-            Snackbar.make(findViewById(R.id.cordinatorLayout),R.string.userNotAuthenticated,Snackbar.LENGTH_LONG).show();
+            Snackbar.make(findViewById(R.id.cordinatorLayout), R.string.userNotAuthenticated, Snackbar.LENGTH_LONG).show();
             return;
         }
 
@@ -198,12 +194,12 @@ public class UploadActivity extends AppCompatActivity {
                         .getJSONObject("healthcareWorker").getString("email");
                 //patient info
                 JSONObject patient = jsonObject.getJSONObject("patient");
-                String medicalInfo =  patient.getString("medicalHistory");
+                String medicalInfo = patient.getString("medicalHistory");
                 String drugInfo = patient.getString("drugHistory");
                 String patientId = patient.getString("patientId");
 
                 ReadingFollowUp readingFollowUp = new ReadingFollowUp(readingServerId, followUpAction,
-                        treatment, diagnosis,hfName,dateAssessed,assessedBy,referredBy);
+                        treatment, diagnosis, hfName, dateAssessed, assessedBy, referredBy);
                 readingFollowUp.setPatientDrugInfoUpdate(drugInfo);
                 readingFollowUp.setPatientMedInfoUpdate(medicalInfo);
                 readingFollowUp.setPatientId(patientId);
@@ -274,15 +270,18 @@ public class UploadActivity extends AppCompatActivity {
         setUploadUiElementVisibility(false);
     }
 
+    /*
+    uploads image to firebase
+    todo: remove uploading directly and send to server
+     */
     private void setupUploadImageButton() {
         Button btnStart = findViewById(R.id.uploadImagesButton);
         btnStart.setOnClickListener(view -> {
-            // start upload
-            List<Reading>readings = readingManager.getReadings(this);
-            List<Reading>readingsToUpload = new ArrayList<>();
-            for (int i=0;i<readings.size();i++){
+            List<Reading> readings = readingManager.getReadings(this);
+            List<Reading> readingsToUpload = new ArrayList<>();
+            for (int i = 0; i < readings.size(); i++) {
                 Reading reading = readings.get(i);
-                if(reading.pathToPhoto != null) {
+                if (reading.pathToPhoto != null) {
                     File file = new File(reading.pathToPhoto);
                     if (!reading.isImageUploaded && file.exists()) {
 
@@ -290,7 +289,7 @@ public class UploadActivity extends AppCompatActivity {
                     }
                 }
             }
-            if(readingsToUpload.size()==0){
+            if (readingsToUpload.size() == 0) {
                 return;
             }
             final boolean[] stopuploading = {false};
@@ -301,7 +300,7 @@ public class UploadActivity extends AppCompatActivity {
             stopButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    stopuploading[0] =true;
+                    stopuploading[0] = true;
                     progressBar.setVisibility(View.INVISIBLE);
                     stopButton.setVisibility(View.GONE);
                 }
@@ -313,29 +312,29 @@ public class UploadActivity extends AppCompatActivity {
             FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
             StorageReference storageReference = firebaseStorage.getReference();
 
-            for (int i=0;i<readingsToUpload.size();i++){
-                if (stopuploading[0]){
+            for (int i = 0; i < readingsToUpload.size(); i++) {
+                if (stopuploading[0]) {
                     return;
                 }
 
-                Reading r=readingsToUpload.get(i);
+                Reading r = readingsToUpload.get(i);
                 Uri file = Uri.fromFile(new File(r.pathToPhoto));
 
-                StorageReference storageReference1 = storageReference.child("cradle-test-images/"+file.getLastPathSegment());
-                UploadTask uploadTask = storageReference1.putFile(file) ;
+                StorageReference storageReference1 = storageReference.child("cradle-test-images/" + file.getLastPathSegment());
+                UploadTask uploadTask = storageReference1.putFile(file);
                 uploadTask.addOnSuccessListener(taskSnapshot -> {
-                    r.isImageUploaded=true;
-                    readingManager.updateReading(this,r);
+                    r.isImageUploaded = true;
+                    readingManager.updateReading(this, r);
                     progressBar.setProgress(progressBar.getProgress() + 1);
-                    if (stopuploading[0]){
+                    if (stopuploading[0]) {
                         progressBar.setVisibility(View.INVISIBLE);
                     }
                 });
-                if(readingsToUpload.size()-1==i){
-                    stopuploading[0]=true;
+                if (readingsToUpload.size() - 1 == i) {
+                    stopuploading[0] = true;
                 }
             }
-            });
+        });
     }
 
     private void setupErrorHandlingButtons() {

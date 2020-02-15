@@ -209,7 +209,7 @@
             android:id="@+id/uploadImagesButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="upload Images" />
+            android:text="upload Images to help us improve the app" />
 
         <ProgressBar
             android:id="@+id/progressBar"
