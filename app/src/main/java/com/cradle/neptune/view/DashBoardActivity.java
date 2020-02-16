@@ -40,19 +40,19 @@ public class DashBoardActivity extends AppCompatActivity implements View.OnClick
     }
 
     private void setupOnClickListner() {
-        View patientView = findViewById(R.id.patientLayout);
+        View patientView = findViewById(R.id.patientConstraintLayout);
         CardView patientCardView = patientView.findViewById(R.id.patientCardview);
         ImageButton patientImg = patientView.findViewById(R.id.patientImg);
 
-        View statView = findViewById(R.id.statLayout);
+        View statView = findViewById(R.id.statconstraintLayout);
         CardView statCardview = statView.findViewById(R.id.statCardView);
         ImageButton statImg = statView.findViewById(R.id.statImg);
 
-        View uploadCard = findViewById(R.id.uploadlayout);
+        View uploadCard = findViewById(R.id.syncConstraintlayout);
         CardView syncCardview = uploadCard.findViewById(R.id.syncCardView);
         ImageButton syncImg = uploadCard.findViewById(R.id.syncImg);
 
-        View readingLayout = findViewById(R.id.readingLayout);
+        View readingLayout = findViewById(R.id.readingConstraintLayout);
         CardView readingCardView = readingLayout.findViewById(R.id.readingCardView);
         ImageButton readImg = readingLayout.findViewById(R.id.readingImg);
 

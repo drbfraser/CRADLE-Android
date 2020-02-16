@@ -272,7 +272,7 @@ public class UploadActivity extends AppCompatActivity {
 
     /*
     uploads image to firebase
-    todo: remove uploading directly and send to server
+    todo: remove uploading directly to firebase and send to server for authentication first and find a better way to do this
      */
     private void setupUploadImageButton() {
         Button btnStart = findViewById(R.id.uploadImagesButton);
@@ -328,6 +328,7 @@ public class UploadActivity extends AppCompatActivity {
                     progressBar.setProgress(progressBar.getProgress() + 1);
                     if (stopuploading[0]) {
                         progressBar.setVisibility(View.INVISIBLE);
+                        stopButton.setVisibility(View.GONE);
                     }
                 });
                 if (readingsToUpload.size() - 1 == i) {
