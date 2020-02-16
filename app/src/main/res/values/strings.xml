@@ -48,6 +48,24 @@
         <item>Feverish</item>
         <item>Unwell</item>
     </string-array>
+
+    <string-array name="urine_test_result">
+        <item>leuc +</item>
+        <item>leuc ++</item>
+        <item>leuc +++</item>
+        <item>nit +</item>
+        <item>nit ++</item>
+        <item>nit +++</item>
+        <item>glu +</item>
+        <item>glu ++</item>
+        <item>glu +++</item>
+        <item>pro +</item>
+        <item>pro ++</item>
+        <item>pro +++</item>
+        <item>blood +</item>
+        <item>blood ++</item>
+        <item>blood +++</item>
+    </string-array>
     <string-array name="reading_ga_units">
         <item>Weeks</item>
         <item>Months</item>

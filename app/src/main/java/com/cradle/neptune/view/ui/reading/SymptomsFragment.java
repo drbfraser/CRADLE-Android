@@ -4,12 +4,17 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
+import android.widget.Switch;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -53,6 +58,46 @@ public class SymptomsFragment extends BaseFragment {
         mView = view;
 
         setupSymptoms(view);
+        setupUrineResult(view);
+    }
+
+    private void setupUrineResult(View view) {
+
+        Switch urineresultSwitch = view.findViewById(R.id.urineResultSwitch);
+        Spinner urineResultSpinner= view.findViewById(R.id.urineTestResultSpinner);
+
+        Resources res = getResources();
+        String[] urineResults = res.getStringArray(R.array.urine_test_result);
+        urineResultSpinner.setEnabled(false);
+
+
+        urineresultSwitch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (urineresultSwitch.isChecked()){
+                    urineResultSpinner.setEnabled(true);
+                } else {
+                    urineResultSpinner.setEnabled(false);
+                    currentReading.urineTestResult= "";
+                }
+            }
+        });
+        urineResultSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+
+                currentReading.urineTestResult = urineResults[i];
+                Log.d("bugg","urine: "+ urineResults[i]);
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                currentReading.urineTestResult = "";
+                Log.d("bugg","nothing: "+ currentReading.urineTestResult);
+            }
+        });
+
     }
 
     @Override

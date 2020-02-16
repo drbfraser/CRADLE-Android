@@ -73,6 +73,7 @@ public class Reading {
     public String deviceInfo;
     public float totalOcrSeconds;
     transient public boolean userHasSelectedNoSymptoms;
+    public String urineTestResult = "";
     private Boolean isFlaggedForFollowup;
     private int manuallyChangeOcrResults; // constants above
     // temporary values
@@ -117,6 +118,7 @@ public class Reading {
             readingVal.put("dateLastSaved", reading.dateLastSaved);
             readingVal.put("dateTimeTaken", reading.dateTimeTaken);
             readingVal.put("bpSystolic", reading.bpSystolic);
+            readingVal.put("urineTest",reading.urineTestResult);
             readingVal.put(USER_ID,userId);
             readingVal.put("bpDiastolic", reading.bpDiastolic);
             readingVal.put("heartRateBPM", reading.heartRateBPM);
