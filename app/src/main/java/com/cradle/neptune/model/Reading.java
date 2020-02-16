@@ -118,7 +118,7 @@ public class Reading {
             readingVal.put("dateLastSaved", reading.dateLastSaved);
             readingVal.put("dateTimeTaken", reading.dateTimeTaken);
             readingVal.put("bpSystolic", reading.bpSystolic);
-            //readingVal.put("urineTest",reading.urineTestResult);
+            readingVal.put("urineTest",reading.urineTestResult);
             readingVal.put(USER_ID,userId);
             readingVal.put("bpDiastolic", reading.bpDiastolic);
             readingVal.put("heartRateBPM", reading.heartRateBPM);

@@ -304,14 +304,14 @@
                             android:id="@+id/monthradiobutton"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Month(s)"
+                            android:text="Month"
                             android:textSize="12sp" />
 
                         <RadioButton
                             android:id="@+id/weeksradiobutton"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Week(s)"
+                            android:text="Week"
                             android:textAlignment="viewStart"
                             android:textSize="12sp" />
                     </RadioGroup>
