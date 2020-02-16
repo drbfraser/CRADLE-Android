@@ -3,12 +3,9 @@ package com.cradle.neptune.model;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
-import android.util.Log;
 
 import com.cradle.neptune.BuildConfig;
-import com.cradle.neptune.model.Patient.Patient;
 import com.cradle.neptune.utilitiles.Util;
-import com.cradle.neptune.view.LoginActivity;
 
 import org.json.JSONException;
 import org.json.JSONObject;

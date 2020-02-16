@@ -18,7 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.cradle.neptune.R;
-import com.cradle.neptune.model.Patient.Patient;
+import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.utilitiles.Util;
 

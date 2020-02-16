@@ -1,4 +1,4 @@
-package com.cradle.neptune.model.Patient;
+package com.cradle.neptune.model;
 
 import com.cradle.neptune.model.Reading;
 
