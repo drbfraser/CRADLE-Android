@@ -170,7 +170,7 @@
     <string name="initials">Initials</string>
     <string name="age">Age</string>
     <string name="sex">Sex</string>
-    <string name="gestational_age">Gestational Age</string>
+    <string name="gestational_age">Gestational Age: </string>
     <string name="id">ID</string>
     <string name="id_colon">ID:</string>
     <string name="patients">Patients</string>
