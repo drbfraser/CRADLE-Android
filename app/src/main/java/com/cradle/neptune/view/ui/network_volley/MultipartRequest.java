@@ -52,7 +52,6 @@ public class MultipartRequest extends JsonRequest<NetworkResponse> {
     @Override
     public void deliverError(VolleyError error) {
         if(error!=null)
-            Log.d("bugg", error.getMessage());
 
         mErrorListener.onErrorResponse(error);
     }

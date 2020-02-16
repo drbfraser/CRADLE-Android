@@ -71,15 +71,12 @@ public class SymptomsFragment extends BaseFragment {
         urineResultSpinner.setEnabled(false);
 
 
-        urineresultSwitch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (urineresultSwitch.isChecked()){
-                    urineResultSpinner.setEnabled(true);
-                } else {
-                    urineResultSpinner.setEnabled(false);
-                    currentReading.urineTestResult= "";
-                }
+        urineresultSwitch.setOnClickListener(view1 -> {
+            if (urineresultSwitch.isChecked()){
+                urineResultSpinner.setEnabled(true);
+            } else {
+                urineResultSpinner.setEnabled(false);
+                currentReading.urineTestResult= "";
             }
         });
         urineResultSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -87,14 +84,12 @@ public class SymptomsFragment extends BaseFragment {
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
 
                 currentReading.urineTestResult = urineResults[i];
-                Log.d("bugg","urine: "+ urineResults[i]);
 
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
                 currentReading.urineTestResult = "";
-                Log.d("bugg","nothing: "+ currentReading.urineTestResult);
             }
         });
 

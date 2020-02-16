@@ -164,7 +164,6 @@ public class CameraFragment extends BaseFragment {
 
         // Calculate inSampleSize
         options.inSampleSize = calculateInSampleSize(options, MAX_WIDTH, MAX_HEIGHT);
-        Log.d("bugg","samplesize: "+ options.inSampleSize);
         // Decode bitmap with inSampleSize set
         options.inJustDecodeBounds = false;
         imageStream = context.getContentResolver().openInputStream(selectedImage);

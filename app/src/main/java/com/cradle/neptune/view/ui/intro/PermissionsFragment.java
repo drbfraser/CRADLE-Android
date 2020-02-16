@@ -115,18 +115,15 @@ public class PermissionsFragment extends IntroBaseFragment {
             linearLayout.addView(wv);
         }
         boolean allGranted = areAllPermissionsGranted(getContext());
-        Log.d("bugg","permsissons granted: "+ allGranted);
         // Configure screen if we need permissions
         Button btn = getView().findViewById(R.id.btnGrantPermissions);
         btn.setVisibility(allGranted ? View.GONE : View.VISIBLE);
 
         TextView tvAllGranted = getView().findViewById(R.id.txtAllGranted);
         tvAllGranted.setVisibility(allGranted ? View.VISIBLE : View.INVISIBLE);
-        Log.d("bugg","visible: "+tvAllGranted.getVisibility());
         // Each time we load, hide this; shown if granting fails.
         TextView tvMore = getView().findViewById(R.id.txtMoreNeededWarning);
         tvMore.setVisibility(View.GONE);
-        Log.d("bugg","visibleButton: "+btn.getVisibility());
 
         // callback to activity done when we get focus
     }

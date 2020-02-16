@@ -290,6 +290,7 @@ public class UploadActivity extends AppCompatActivity {
                 }
             }
             if (readingsToUpload.size() == 0) {
+                Toast.makeText(this,"No more Images to upload!",Toast.LENGTH_LONG).show();
                 return;
             }
             final boolean[] stopuploading = {false};
@@ -329,6 +330,7 @@ public class UploadActivity extends AppCompatActivity {
                     if (stopuploading[0]) {
                         progressBar.setVisibility(View.INVISIBLE);
                         stopButton.setVisibility(View.GONE);
+                        Toast.makeText(this,"All Images uploaded.",Toast.LENGTH_LONG).show();
                     }
                 });
                 if (readingsToUpload.size() - 1 == i) {

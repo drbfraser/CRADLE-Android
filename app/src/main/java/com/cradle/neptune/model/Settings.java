@@ -32,10 +32,10 @@ public class Settings {
     public static final String PREF_KEY_UPLOAD_IMAGES = "settings_upload_images";
     public static final String PREF_KEY_OCR_ENABLED = "setting_ocr_enabled";
     public static final String PREF_KEY_OCR_DEBUG_ENABLED = "setting_ocr_debug_enabled";
-    public static String DEFAULT_SERVER_URL = "http://cmpt373.csil.sfu.ca:8088/";
+    public static String DEFAULT_SERVER_URL = "https://cmpt373.csil.sfu.ca:8048/";
     public static String DEFAULT_SERVER_USERNAME = "user";
     public static String DEFAULT_SERVER_USERPASSWORD = "just4testing";
-    public static String authServerUrl = "http://cmpt373.csil.sfu.ca:8088/api/user/auth";
+    public static String authServerUrl = "https://cmpt373.csil.sfu.ca:8048/api/user/auth";
     // Temporary Upload Defaults:
     // todo: remove temporary upload defaults once 2D bar-code reading in place for settings.
     private static String LINEFEED = "\r\n";
@@ -56,9 +56,9 @@ public class Settings {
     private int holdScreenAwakeForNewReading = 0;
     private boolean communityHealthOfficerGetsReferrals = false;
     private String communityHealthOfficerPhoneNumber;
-    private String readingServerUrl = "http://cmpt373.csil.sfu.ca:8088/api/patient/reading";
-    private String referralsServerUrl = "http://cmpt373.csil.sfu.ca:8088/api/referral";
-    private String referralSummeriesServerUrl = "http://cmpt373.csil.sfu.ca:8088/api/mobile/summarized/follow_up";
+    private String readingServerUrl = "https://cmpt373.csil.sfu.ca:8048/api/patient/reading";
+    private String referralsServerUrl = "https://cmpt373.csil.sfu.ca:8048/api/referral";
+    private String referralSummeriesServerUrl = "https://cmpt373.csil.sfu.ca:8048/api/mobile/summarized/follow_up";
 //    private String referralsServerUrl = "http://10.0.2.2:5000/api/referral";
     private String serverUserName;
     private String serverPassword;

@@ -114,6 +114,7 @@
                 android:layout_height="wrap_content"
                 android:background="@color/colorPrimaryLight"
                 android:text="@string/go"
+                android:textAlignment="viewStart"
                 app:backgroundTint="@color/colorPrimaryLight"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="@+id/passwordEditText"

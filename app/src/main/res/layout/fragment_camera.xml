@@ -88,6 +88,6 @@
         android:textColor="@color/white"
         android:textSize="14sp"
         app:layout_constraintBottom_toTopOf="@+id/zoomSeekbar"
-        app:layout_constraintStart_toStartOf="@+id/zoomSeekbar" />
+        app:layout_constraintStart_toStartOf="@+id/button" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
