@@ -75,6 +75,10 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         myViewHolder.diaBP.setText(new StringBuilder().append(currReading.bpDiastolic).append("").toString());
         myViewHolder.heartRate.setText(new StringBuilder().append(currReading.heartRateBPM).append("").toString());
 
+        if(currReading.urineTestResult!=null && !currReading.urineTestResult.equals("")){
+            myViewHolder.urineTest.setText(currReading.urineTestResult);
+        }
+
         View v = myViewHolder.view;
         myViewHolder.cardView.setOnClickListener(view -> onClickElementListener.onClick(currReading.readingId));
         myViewHolder.cardView.setOnLongClickListener(view ->onClickElementListener.onLongClick(currReading.readingId));
@@ -195,7 +199,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
     static class MyViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
         TextView readingDate, assessmentDate, sysBP, diaBP, heartRate, diagnosis,
-                treatment, followUp, assessedBy, isreferedTxt,referredBy,hcName;
+                treatment, followUp, assessedBy, isreferedTxt,referredBy,hcName, urineTest;
         ImageView trafficLight, arrow;
         Button retakeVitalButton;
         View view;
@@ -220,6 +224,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             isreferedTxt = v.findViewById(R.id.isReferrerdText);
             referredBy = v.findViewById(R.id.treatmentReferedBy);
             hcName = v.findViewById(R.id.hcReferred);
+            urineTest =v.findViewById(R.id.urineResultTxt);
         }
     }
 }

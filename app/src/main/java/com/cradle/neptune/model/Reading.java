@@ -3,12 +3,9 @@ package com.cradle.neptune.model;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
-import android.util.Log;
 
 import com.cradle.neptune.BuildConfig;
-import com.cradle.neptune.model.Patient.Patient;
 import com.cradle.neptune.utilitiles.Util;
-import com.cradle.neptune.view.LoginActivity;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -55,6 +52,7 @@ public class Reading {
     public Patient patient = new Patient();
     // reading
     public String pathToPhoto;
+    public boolean isImageUploaded = false;
     public Integer bpSystolic;  // first number (top)
     public Integer bpDiastolic; // second number (bottom)
     public Integer heartRateBPM;
@@ -75,6 +73,7 @@ public class Reading {
     public String deviceInfo;
     public float totalOcrSeconds;
     transient public boolean userHasSelectedNoSymptoms;
+    public String urineTestResult = "";
     private Boolean isFlaggedForFollowup;
     private int manuallyChangeOcrResults; // constants above
     // temporary values
@@ -119,6 +118,7 @@ public class Reading {
             readingVal.put("dateLastSaved", reading.dateLastSaved);
             readingVal.put("dateTimeTaken", reading.dateTimeTaken);
             readingVal.put("bpSystolic", reading.bpSystolic);
+            readingVal.put("urineTest",reading.urineTestResult);
             readingVal.put(USER_ID,userId);
             readingVal.put("bpDiastolic", reading.bpDiastolic);
             readingVal.put("heartRateBPM", reading.heartRateBPM);

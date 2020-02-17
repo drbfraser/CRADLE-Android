@@ -4,10 +4,10 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -19,7 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
-import com.cradle.neptune.model.Patient.Patient;
+import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
@@ -50,8 +50,7 @@ public class PatientProfileActivity extends AppCompatActivity {
     TextView patientHouse;
     TextView patientZone;
     TextView pregnant;
-    TextView gestationalAgeMonth;
-    TextView gestationalAgeWeek;
+    TextView gestationalAge;
     LinearLayout pregnancyInfoLayout;
 
     RecyclerView readingRecyclerview;
@@ -85,8 +84,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         patientHouse = (TextView) findViewById(R.id.patientHouseNum);
         patientZone = (TextView) findViewById(R.id.patientZone);
         pregnant = (TextView) findViewById(R.id.textView20);
-        gestationalAgeMonth = (TextView) findViewById(R.id.gestationalAgeMonths);
-        gestationalAgeWeek = findViewById(R.id.gestationalAgeWeek);
+        gestationalAge = (TextView) findViewById(R.id.gestationalAge);
         pregnancyInfoLayout = findViewById(R.id.pregnancyLayout);
         readingRecyclerview = findViewById(R.id.readingRecyclerview);
 
@@ -155,24 +153,75 @@ public class PatientProfileActivity extends AppCompatActivity {
      * @param patient current patient
      */
     private void setupGestationalInfo(Patient patient) {
-        if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS && patient.isPregnant) {
-            double age = Double.parseDouble(patient.gestationalAgeValue);
-            int months = (int) (age / WEEKS_IN_MONTH);
-            double weeks = age % WEEKS_IN_MONTH;
-            double weeksRounded = Math.round(weeks * 100D) / 100D;
-            gestationalAgeMonth.setText(months + "");
-            gestationalAgeWeek.setText(weeksRounded + "");
+        RadioGroup radioGroup = findViewById(R.id.gestationradioGroup);
+        radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                double val =-1;
+                if (i == R.id.monthradiobutton){
+                    val = convertGestationAgeToMonth(patient);
+                    if (val<0){
+                        gestationalAge.setText("N/A");
+                    } else {
+                        gestationalAge.setText(val+"");
+                    }
+                } else {
+                    val = convertGestationAgeToWeek(patient);
+                }
+                if (val<0){
+                    gestationalAge.setText("N/A");
+                } else {
+                    gestationalAge.setText(val+"");
+                }
+            }
+        });
+        radioGroup.check(R.id.monthradiobutton);
+    }
 
-        } else if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS && patient.isPregnant) {
-            double age = Double.parseDouble(patient.gestationalAgeValue);
-            //get the whole months
-            int months = (int) (age);
-            double leftoverMonth = age-months;
-            double weeks = leftoverMonth * WEEKS_IN_MONTH;
-            double weeksRounded = Math.round(weeks * 100D) / 100D;
-            gestationalAgeMonth.setText(months + "");
-            gestationalAgeWeek.setText(weeksRounded + "");
+    private double convertGestationAgeToWeek(Patient patient) {
+        double age=0;
+        if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS && patient.isPregnant) {
+            try {
+                age = Double.parseDouble(patient.gestationalAgeValue);
+            } catch (NumberFormatException e) {
+                age=-1;
+                e.printStackTrace();
+            }
+            double week = age * WEEKS_IN_MONTH;
+            double weekRounded = Math.round(week * 100D) / 100D;
+            return weekRounded;
+        } else if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS && patient.isPregnant){
+            try {
+                age=Double.parseDouble(patient.gestationalAgeValue);
+            } catch (NumberFormatException e) {
+                age=-1;
+                e.printStackTrace();
+            }
         }
+        return age;
+    }
+
+    private double convertGestationAgeToMonth(Patient patient)  {
+        double age=0;
+        if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS && patient.isPregnant) {
+            try {
+               age = Double.parseDouble(patient.gestationalAgeValue);
+           } catch (NumberFormatException e) {
+                age=-1;
+               e.printStackTrace();
+           }
+            double months = age / WEEKS_IN_MONTH;
+            double monthRounded = Math.round(months * 100D) / 100D;
+            return monthRounded;
+        } else if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS && patient.isPregnant){
+            try {
+                age=Double.parseDouble(patient.gestationalAgeValue);
+            } catch (NumberFormatException e) {
+                age=-1;
+                e.printStackTrace();
+            }
+        }
+        return age;
     }
 
     private void getPatientReadings() {

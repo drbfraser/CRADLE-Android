@@ -262,10 +262,14 @@
 
                 <LinearLayout
                     android:id="@+id/pregnancyLayout"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:gravity="start|center_vertical"
                     android:orientation="horizontal"
+                    android:visibility="visible"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="@+id/textView19"
                     app:layout_constraintTop_toBottomOf="@+id/textView19">
 
@@ -279,40 +283,38 @@
                         android:textStyle="bold" />
 
                     <TextView
-                        android:id="@+id/gestationalAgeMonths"
+                        android:id="@+id/gestationalAge"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
+                        android:gravity="clip_horizontal|center|center_vertical"
+                        android:paddingRight="8dp"
                         android:text="N/A"
                         android:textColor="@color/black"
                         android:textSize="14sp" />
 
-                    <TextView
-                        android:id="@+id/textView46"
+                    <RadioGroup
+                        android:id="@+id/gestationradioGroup"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="4dp"
-                        android:text="Month(s) and"
-                        android:textColor="@color/black"
-                        android:textSize="12sp" />
+                        android:orientation="horizontal"
+                        android:paddingBottom="2dp">
 
-                    <TextView
-                        android:id="@+id/gestationalAgeWeek"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:text="N/A"
-                        android:textColor="@color/black" />
+                        <RadioButton
+                            android:id="@+id/monthradiobutton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Month"
+                            android:textSize="12sp" />
 
-                    <TextView
-                        android:id="@+id/textView7"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:layout_marginEnd="32dp"
-                        android:text="Week(s)"
-                        android:textColor="@color/black"
-                        android:textSize="12sp" />
+                        <RadioButton
+                            android:id="@+id/weeksradiobutton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Week"
+                            android:textAlignment="viewStart"
+                            android:textSize="12sp" />
+                    </RadioGroup>
 
                 </LinearLayout>
 
@@ -322,10 +324,11 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="@string/medical_history"
+                    android:textAlignment="viewStart"
                     android:textColor="@color/black"
                     android:textSize="14sp"
                     android:textStyle="bold"
-                    app:layout_constraintStart_toStartOf="@+id/pregnancyLayout"
+                    app:layout_constraintStart_toStartOf="@+id/textView19"
                     app:layout_constraintTop_toBottomOf="@+id/pregnancyLayout" />
 
                 <TextView

@@ -156,9 +156,7 @@ public class ReferralDialogFragment extends DialogFragment {
             try {
                 if (error.networkResponse != null) {
                     json = new String(error.networkResponse.data, HttpHeaderParser.parseCharset(error.networkResponse.headers));
-                    Log.d("bugg", "referal error: " + json);
                     Toast.makeText(getActivity(), "json: " + json, Toast.LENGTH_LONG).show();
-                    Log.d("bugg", "referal error: " + json);
                     Toast.makeText(getActivity(), "json: " + json, Toast.LENGTH_LONG).show();
                 }
             } catch (UnsupportedEncodingException e) {
@@ -572,6 +570,7 @@ public class ReferralDialogFragment extends DialogFragment {
             readingVal.put("dateLastSaved", currentReading.dateLastSaved);
             readingVal.put("bpSystolic", currentReading.bpSystolic);
             readingVal.put("bpDiastolic", currentReading.bpDiastolic);
+            readingVal.put("urineTest",currentReading.urineTestResult);
             readingVal.put("heartRateBPM", currentReading.heartRateBPM);
             readingVal.put("dateRecheckVitalsNeeded", currentReading.dateRecheckVitalsNeeded);
             readingVal.put("isFlaggedForFollowup", currentReading.isFlaggedForFollowup());

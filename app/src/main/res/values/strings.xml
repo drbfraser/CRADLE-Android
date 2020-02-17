@@ -48,6 +48,24 @@
         <item>Feverish</item>
         <item>Unwell</item>
     </string-array>
+
+    <string-array name="urine_test_result">
+        <item>leuc +</item>
+        <item>leuc ++</item>
+        <item>leuc +++</item>
+        <item>nit +</item>
+        <item>nit ++</item>
+        <item>nit +++</item>
+        <item>glu +</item>
+        <item>glu ++</item>
+        <item>glu +++</item>
+        <item>pro +</item>
+        <item>pro ++</item>
+        <item>pro +++</item>
+        <item>blood +</item>
+        <item>blood ++</item>
+        <item>blood +++</item>
+    </string-array>
     <string-array name="reading_ga_units">
         <item>Weeks</item>
         <item>Months</item>
@@ -170,7 +188,7 @@
     <string name="initials">Initials</string>
     <string name="age">Age</string>
     <string name="sex">Sex</string>
-    <string name="gestational_age">Gestational Age</string>
+    <string name="gestational_age">Gestational Age: </string>
     <string name="id">ID</string>
     <string name="id_colon">ID:</string>
     <string name="patients">Patients</string>
