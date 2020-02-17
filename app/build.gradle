@@ -28,7 +28,7 @@ android {
     compileSdkVersion 29
     defaultConfig {
         // Update this every build
-        versionCode 6
+        versionCode 7
         versionName "Beta 1.4"
 
         applicationId "com.cradleVSA.neptune"
