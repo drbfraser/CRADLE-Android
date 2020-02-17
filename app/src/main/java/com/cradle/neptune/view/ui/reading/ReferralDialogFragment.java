@@ -570,6 +570,7 @@ public class ReferralDialogFragment extends DialogFragment {
             readingVal.put("dateLastSaved", currentReading.dateLastSaved);
             readingVal.put("bpSystolic", currentReading.bpSystolic);
             readingVal.put("bpDiastolic", currentReading.bpDiastolic);
+            readingVal.put("urineTest",currentReading.urineTestResult);
             readingVal.put("heartRateBPM", currentReading.heartRateBPM);
             readingVal.put("dateRecheckVitalsNeeded", currentReading.dateRecheckVitalsNeeded);
             readingVal.put("isFlaggedForFollowup", currentReading.isFlaggedForFollowup());
