@@ -12,7 +12,7 @@
 
         <androidx.cardview.widget.CardView
             android:id="@+id/postercardview"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
             android:layout_marginTop="16dp"
@@ -31,11 +31,11 @@
 
                 <ImageView
                     android:id="@+id/imageView3"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="32dp"
+                    android:layout_marginStart="16dp"
                     android:layout_marginTop="16dp"
-                    android:layout_marginEnd="32dp"
+                    android:layout_marginEnd="16dp"
                     android:adjustViewBounds="true"
                     android:maxHeight="150dp"
                     android:scaleType="fitXY"
@@ -48,20 +48,22 @@
                     android:id="@+id/textView33"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
                     android:layout_marginBottom="8dp"
-                    android:text="View Education poster"
+                    android:text="View community poster"
                     android:textColor="@color/black"
                     android:textSize="18sp"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="@+id/imageView3"
-                    app:layout_constraintStart_toStartOf="@+id/imageView3"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/imageView3" />
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
 
         <androidx.cardview.widget.CardView
             android:id="@+id/videoCardview"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
             android:layout_marginTop="16dp"
@@ -83,7 +85,7 @@
 
                 <ImageView
                     android:id="@+id/imageView6"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="32dp"
                     android:layout_marginTop="16dp"
@@ -96,7 +98,7 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    tools:srcCompat="@android:drawable/ic_media_play" />
+                    tools:srcCompat="@drawable/cradle_for_icon_512x512" />
 
                 <TextView
                     android:id="@+id/textView34"
@@ -104,9 +106,10 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:layout_marginBottom="16dp"
-                    android:text="watch the cradle video"
+                    android:text="watch training video"
                     android:textAlignment="center"
                     android:textColor="@color/black"
+                    android:textSize="18sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="@+id/imageView6"
                     app:layout_constraintStart_toStartOf="@+id/imageView6"
