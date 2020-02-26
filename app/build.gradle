@@ -124,7 +124,6 @@ dependencies {
     implementation 'com.google.firebase:firebase-storage:19.1.1'
 
 
-
 }
 
 // TensorFlow Lite: select only the ABI's we (likely) need
