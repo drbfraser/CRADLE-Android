@@ -16,11 +16,21 @@ public class PdfViewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pdf_view);
         setupPDFview();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle("Educational Poster");
+        }
     }
 
     private void setupPDFview() {
         PDFView pdfDocument = findViewById(R.id.pdfView);
-            pdfDocument.fromAsset("education_poster.pdf").enableAntialiasing(true).spacing(4).load();
+            pdfDocument.fromAsset("education_poster.pdf").enableAntialiasing(true).spacing(8).load();
 
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return super.onSupportNavigateUp();
     }
 }
