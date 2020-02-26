@@ -2,12 +2,11 @@ package com.cradle.neptune.view;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 
 import com.cradle.neptune.R;
 import com.github.barteksc.pdfviewer.PDFView;
-import com.shockwave.pdfium.PdfDocument;
 
 public class PdfViewActivity extends AppCompatActivity {
 
@@ -15,16 +14,20 @@ public class PdfViewActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pdf_view);
-        setupPDFview();
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle("Educational Poster");
         }
+        Intent intent = getIntent();
+        if (intent!=null){
+            String filename = intent.getStringExtra("poster");
+            setupPDFview(filename);
+        }
     }
 
-    private void setupPDFview() {
+    private void setupPDFview(String filename) {
         PDFView pdfDocument = findViewById(R.id.pdfView);
-            pdfDocument.fromAsset("education_poster.pdf").enableAntialiasing(true).spacing(8).load();
+            pdfDocument.fromAsset(filename).enableAntialiasing(true).spacing(8).load();
 
     }
 

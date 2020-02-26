@@ -18,7 +18,7 @@ public class EducationActivity extends AppCompatActivity {
         setupOnCLickMethods();
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("HELP");
+            getSupportActionBar().setTitle("Help");
         }
     }
 
@@ -27,7 +27,9 @@ public class EducationActivity extends AppCompatActivity {
         postercard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(EducationActivity.this,PdfViewActivity.class));
+                Intent intent =new Intent(EducationActivity.this,PdfViewActivity.class);
+                intent.putExtra("poster","education_community_poster.pdf");
+                startActivity(intent);
             }
         });
 
