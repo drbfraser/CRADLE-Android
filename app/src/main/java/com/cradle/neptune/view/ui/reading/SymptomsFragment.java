@@ -4,22 +4,21 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.Spinner;
-import android.widget.Switch;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.cradle.neptune.R;
+import com.cradle.neptune.model.UrineTestResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +35,13 @@ public class SymptomsFragment extends BaseFragment {
     private CheckBox noSymptomsCheckBox;
     private EditText otherSymptoms;
 
+    //urine tests
+    RadioGroup leucRadioGroup;
+    RadioGroup nitRadioGroup ;
+    RadioGroup protienRadioGroup;
+    RadioGroup bloodRadioGroup ;
+    RadioGroup glucoseRadioGroup;
+    ToggleButton urineResultTakenButton;
     public SymptomsFragment() {
         // Required empty public constructor
         TAG = SymptomsFragment.class.getName();
@@ -62,34 +68,23 @@ public class SymptomsFragment extends BaseFragment {
     }
 
     private void setupUrineResult(View view) {
-
-        Switch urineresultSwitch = view.findViewById(R.id.urineResultSwitch);
-        Spinner urineResultSpinner= view.findViewById(R.id.urineTestResultSpinner);
-
-        Resources res = getResources();
-        String[] urineResults = res.getStringArray(R.array.urine_test_result);
-        urineResultSpinner.setEnabled(false);
+         leucRadioGroup = view.findViewById(R.id.leukRadioGroup);
+         nitRadioGroup = view.findViewById(R.id.nitrRadioGroup);
+         protienRadioGroup = view.findViewById(R.id.protientRadioGroup);
+         bloodRadioGroup = view.findViewById(R.id.bloodRadioGroup);
+         glucoseRadioGroup = view.findViewById(R.id.glucRadioGroup);
 
 
-        urineresultSwitch.setOnClickListener(view1 -> {
-            if (urineresultSwitch.isChecked()){
-                urineResultSpinner.setEnabled(true);
-            } else {
-                urineResultSpinner.setEnabled(false);
-                currentReading.urineTestResult= "";
-            }
-        });
-        urineResultSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        View urineTestResultView = view.findViewById(R.id.urineTestResultLayout);
+        urineResultTakenButton = view.findViewById(R.id.UrineTestToggleButton);
+        urineResultTakenButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-
-                currentReading.urineTestResult = urineResults[i];
-
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-                currentReading.urineTestResult = "";
+            public void onClick(View view) {
+                if (urineResultTakenButton.isChecked()){
+                    urineTestResultView.setVisibility(View.VISIBLE);
+                } else {
+                    urineTestResultView.setVisibility(View.GONE);
+                }
             }
         });
 
@@ -104,6 +99,35 @@ public class SymptomsFragment extends BaseFragment {
         hideKeyboard();
 
         updateSymptoms_UiFromModel(mView);
+
+        if(urineResultTakenButton.isChecked()){
+            View urineTestResultView = mView.findViewById(R.id.urineTestResultLayout);
+            urineTestResultView.setVisibility(View.VISIBLE);
+        }
+        updateUrineTestUIFromModel(mView);
+    }
+
+    private void updateUrineTestUIFromModel(View mView) {
+        UrineTestResult urineTestResult = currentReading.urineTestResult;
+        if(urineTestResult==null){
+            return;
+        }
+        setupUrineTestResultRadio(leucRadioGroup,urineTestResult.getLeukocytes());
+        setupUrineTestResultRadio(bloodRadioGroup,urineTestResult.getBlood());
+        setupUrineTestResultRadio(protienRadioGroup,urineTestResult.getProtein());
+        setupUrineTestResultRadio(nitRadioGroup,urineTestResult.getNitrites());
+        setupUrineTestResultRadio(glucoseRadioGroup,urineTestResult.getGlucose());
+
+    }
+
+    private void setupUrineTestResultRadio(RadioGroup radioGroup, String leukocytes) {
+        radioGroup.clearCheck();
+        for(int i=0;i<radioGroup.getChildCount();i++){
+            RadioButton radioButton = (RadioButton) radioGroup.getChildAt(i);
+            if(radioButton.getText().toString().equals(leukocytes)){
+                radioButton.setChecked(true);
+            }
+        }
     }
 
 
@@ -114,7 +138,22 @@ public class SymptomsFragment extends BaseFragment {
             return true;
         }
         updateSymptoms_ModelFromUi(mView);
+        updateUrineTestModelFromUI(mView);
         return true;
+    }
+
+    private void updateUrineTestModelFromUI(View mView) {
+        if(!urineResultTakenButton.isChecked()){
+            currentReading.urineTestResult = null;
+            return;
+        }
+        String leuk = ((RadioButton)leucRadioGroup.findViewById(leucRadioGroup.getCheckedRadioButtonId())).getText().toString();
+        String blood = ((RadioButton)bloodRadioGroup.findViewById(bloodRadioGroup.getCheckedRadioButtonId())).getText().toString();
+        String glucose = ((RadioButton)glucoseRadioGroup.findViewById(glucoseRadioGroup.getCheckedRadioButtonId())).getText().toString();
+        String nitr = ((RadioButton)nitRadioGroup.findViewById(nitRadioGroup.getCheckedRadioButtonId())).getText().toString();
+        String protient = ((RadioButton)protienRadioGroup.findViewById(protienRadioGroup.getCheckedRadioButtonId())).getText().toString();
+
+        currentReading.urineTestResult = new UrineTestResult(leuk,nitr,protient,blood,glucose);
     }
 
 
@@ -250,5 +289,6 @@ public class SymptomsFragment extends BaseFragment {
         if (otherSymptomsStr.length() > 0) {
             currentReading.patient.symptoms.add(otherSymptomsStr);
         }
+
     }
 }

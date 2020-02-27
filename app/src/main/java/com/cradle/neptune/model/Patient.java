@@ -15,7 +15,7 @@ public class Patient implements Serializable {
     // patient info
     public String patientId;
     public String patientName;
-    public Integer ageYears;
+    public String dob;
     public List<String> symptoms = new ArrayList<>();
     public Reading.GestationalAgeUnit gestationalAgeUnit;
     public String gestationalAgeValue;
@@ -30,12 +30,12 @@ public class Patient implements Serializable {
     public Patient() {
     }
 
-    public Patient(String mPatientId, String mPatientName, Integer mAgeYears, Reading.GestationalAgeUnit mGestationalAgeUnit,
+    public Patient(String mPatientId, String mPatientName, String dob, Reading.GestationalAgeUnit mGestationalAgeUnit,
                    String mGestationalAgeValue, String mVillageNumber, PATIENTSEX mSex,
                    String zone, String houseNumber, boolean isPregnant) {
         patientId = mPatientId;
         patientName = mPatientName;
-        ageYears = mAgeYears;
+        dob = dob;
         gestationalAgeUnit = mGestationalAgeUnit;
         gestationalAgeValue = mGestationalAgeValue;
         villageNumber = mVillageNumber;
@@ -67,12 +67,12 @@ public class Patient implements Serializable {
             JSONObject patientInfoObject = new JSONObject();
             patientInfoObject.put("patientId", patientId);
             patientInfoObject.put("patientName", patientName);
-            patientInfoObject.put("patientAge", ageYears.toString());
+            patientInfoObject.put("dob", dob);
             patientInfoObject.put("gestationalAgeUnit", gestationalAgeUnit.toString());
             patientInfoObject.put("gestationalAgeValue", gestationalAgeValue);
             patientInfoObject.put("villageNumber", villageNumber);
             patientInfoObject.put("patientSex", patientSex.toString());
-
+            patientInfoObject.put("patientAge",-1);
             String isPregnantString = "false";
             if (isPregnant) {
                 isPregnantString = "true";

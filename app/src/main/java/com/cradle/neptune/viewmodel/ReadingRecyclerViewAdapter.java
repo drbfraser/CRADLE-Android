@@ -15,6 +15,7 @@ import com.cradle.neptune.R;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingAnalysis;
 import com.cradle.neptune.model.ReadingFollowUp;
+import com.cradle.neptune.model.UrineTestResult;
 import com.cradle.neptune.utilitiles.DateUtil;
 
 import org.threeten.bp.ZonedDateTime;
@@ -76,7 +77,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         myViewHolder.heartRate.setText(new StringBuilder().append(currReading.heartRateBPM).append("").toString());
 
         if(currReading.urineTestResult!=null && !currReading.urineTestResult.equals("")){
-            myViewHolder.urineTest.setText(currReading.urineTestResult);
+           myViewHolder.urineTest.setText(getUrineTestFormattedTxt(currReading.urineTestResult));
         }
 
         View v = myViewHolder.view;
@@ -153,6 +154,14 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             }
         }
 
+    }
+
+    private String getUrineTestFormattedTxt(UrineTestResult urineTestResult) {
+        return "Leukocytes: " + urineTestResult.getLeukocytes() + " , " +
+                "Nitrites: " + urineTestResult.getNitrites() + " , " +
+                "Protein: " + urineTestResult.getProtein() + " \n " +
+                "Blood: " + urineTestResult.getBlood() + " , " +
+                "Glucose: " + urineTestResult.getGlucose();
     }
 
     private void setVisibilityForImageAndText(View v, int imageViewId, int textViewId, boolean show) {

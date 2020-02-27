@@ -3,6 +3,7 @@ package com.cradle.neptune.model;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
+import android.util.Log;
 
 import com.cradle.neptune.BuildConfig;
 import com.cradle.neptune.utilitiles.Util;
@@ -73,7 +74,7 @@ public class Reading {
     public String deviceInfo;
     public float totalOcrSeconds;
     transient public boolean userHasSelectedNoSymptoms;
-    public String urineTestResult = "";
+    public UrineTestResult urineTestResult;
     private Boolean isFlaggedForFollowup;
     private int manuallyChangeOcrResults; // constants above
     // temporary values
@@ -94,52 +95,44 @@ public class Reading {
      * @param reading reading to put into json object.
      * @return a json string
      */
-    public static String getJsonObj(Reading reading, Context context) {
-        JSONObject patientVal = new JSONObject();
-        Patient patient = reading.patient;
+    public static String getJsonObj(Reading reading, Context context) throws JSONException {
+        JSONObject patientVal = reading.patient.getPatientInfoJSon();
+
         SharedPreferences sharedPreferences = context.getSharedPreferences(AUTH_PREF,Context.MODE_PRIVATE);
         String userId = sharedPreferences.getString(USER_ID,"");
-        try {
-
-            patientVal.put("patientId", patient.patientId);
-            patientVal.put("patientName", patient.patientName);
-            patientVal.put("patientAge", patient.ageYears);
-            patientVal.put("gestationalAgeUnit", patient.gestationalAgeUnit);
-            patientVal.put("gestationalAgeValue", patient.gestationalAgeValue);
-            patientVal.put("villageNumber", patient.villageNumber);
-            patientVal.put("patientSex", patient.patientSex);
-            patientVal.put("isPregnant", patient.isPregnant);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        JSONObject readingVal = new JSONObject();
-        try {
-            readingVal.put("readingId", reading.serverReadingId);
-            readingVal.put("dateLastSaved", reading.dateLastSaved);
-            readingVal.put("dateTimeTaken", reading.dateTimeTaken);
-            readingVal.put("bpSystolic", reading.bpSystolic);
-            readingVal.put("urineTest",reading.urineTestResult);
-            readingVal.put(USER_ID,userId);
-            readingVal.put("bpDiastolic", reading.bpDiastolic);
-            readingVal.put("heartRateBPM", reading.heartRateBPM);
-            readingVal.put("dateRecheckVitalsNeeded", reading.dateRecheckVitalsNeeded);
-            readingVal.put("isFlaggedForFollowup", reading.isFlaggedForFollowup);
-            readingVal.put("symptoms", reading.getSymptomsString());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        JSONObject readingVal = getJsonReadingObject(reading,userId);
 
 
         JSONObject mainObj = new JSONObject();
-        try {
 
             mainObj.put("patient", patientVal);
             mainObj.put("reading", readingVal);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        Log.d("bugg",mainObj.toString());
 
         return mainObj.toString();
+    }
+
+    public static JSONObject getJsonReadingObject(Reading reading,String userId ) throws JSONException {
+        JSONObject readingVal = new JSONObject();
+        JSONObject urineTest = new JSONObject();
+        urineTest.put("urineTestBlood",reading.urineTestResult.getBlood());
+        urineTest.put("urineTestPro",reading.urineTestResult.getProtein());
+        urineTest.put("urineTestLeuc",reading.urineTestResult.getLeukocytes());
+        urineTest.put("urineTestGlu",reading.urineTestResult.getGlucose());
+        urineTest.put("urineTestNit",reading.urineTestResult.getNitrites());
+
+        readingVal.put("readingId", reading.serverReadingId);
+        readingVal.put("dateLastSaved", reading.dateLastSaved);
+        readingVal.put("dateTimeTaken", reading.dateTimeTaken);
+        readingVal.put("bpSystolic", reading.bpSystolic);
+        readingVal.put("urineTests",urineTest);
+        readingVal.put(USER_ID,userId);
+        readingVal.put("bpDiastolic", reading.bpDiastolic);
+        readingVal.put("heartRateBPM", reading.heartRateBPM);
+        readingVal.put("dateRecheckVitalsNeeded", reading.dateRecheckVitalsNeeded);
+        readingVal.put("isFlaggedForFollowup", reading.isFlaggedForFollowup);
+        readingVal.put("symptoms", reading.getSymptomsString());
+        return readingVal;
     }
 
     public static Reading makeNewReading(ZonedDateTime now) {
@@ -368,8 +361,8 @@ public class Reading {
     // check for valid data
     // if hasInvalidData is true the dialog will be displayed
     public boolean hasInvalidData() {
-        if ((patient.ageYears <= 0 || patient.ageYears > 150)
-                || (heartRateBPM < 30 || heartRateBPM > 300)
+        //todo add the age checker
+        if ( (heartRateBPM < 30 || heartRateBPM > 300)
                 || (bpDiastolic < 10 || bpDiastolic > 300)
                 || (bpSystolic < 10 || bpSystolic > 300)) {
             return true;
@@ -392,7 +385,7 @@ public class Reading {
         missing |= patient == null;
         missing |= patient.patientId == null;
         missing |= patient.patientName == null;
-        missing |= patient.ageYears == null;
+        missing |= (patient.dob == null||patient.dob.equals(""));
         missing |= patient.gestationalAgeUnit == null;
         missing |= (patient.gestationalAgeValue == null
                 && patient.gestationalAgeUnit != GestationalAgeUnit.GESTATIONAL_AGE_UNITS_NONE);

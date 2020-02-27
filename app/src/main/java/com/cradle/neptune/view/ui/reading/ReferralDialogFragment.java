@@ -562,20 +562,10 @@ public class ReferralDialogFragment extends DialogFragment {
         JSONObject patientVal = currentReading.patient.getPatientInfoJSon();
         SharedPreferences sharedPreferences = Objects.requireNonNull(getActivity())
                 .getSharedPreferences(AUTH_PREF,Context.MODE_PRIVATE);
-
         JSONObject readingVal = new JSONObject();
         try {
-            readingVal.put("readingId", currentReading.serverReadingId);
-            readingVal.put(USER_ID,sharedPreferences.getString(USER_ID,""));
-            readingVal.put("dateLastSaved", currentReading.dateLastSaved);
-            readingVal.put("bpSystolic", currentReading.bpSystolic);
-            readingVal.put("bpDiastolic", currentReading.bpDiastolic);
-            readingVal.put("urineTest",currentReading.urineTestResult);
-            readingVal.put("heartRateBPM", currentReading.heartRateBPM);
-            readingVal.put("dateRecheckVitalsNeeded", currentReading.dateRecheckVitalsNeeded);
-            readingVal.put("isFlaggedForFollowup", currentReading.isFlaggedForFollowup());
-            readingVal.put("symptoms", currentReading.getSymptomsString());
-            readingVal.put("dateTimeTaken", currentReading.dateTimeTaken);
+            readingVal = Reading.getJsonReadingObject(currentReading,sharedPreferences.getString(USER_ID,""));
+
         } catch (JSONException e) {
             e.printStackTrace();
         }

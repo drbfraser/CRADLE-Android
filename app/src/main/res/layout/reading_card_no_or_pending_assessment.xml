@@ -278,11 +278,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
                 android:paddingBottom="8dp"
                 android:text="Urine Test Rsult:"
                 android:textColor="@color/black"
                 android:textSize="12sp"
                 android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="@+id/textView20"
                 app:layout_constraintTop_toBottomOf="@+id/textView20" />
 
@@ -291,11 +293,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
                 android:text="NA"
                 android:textSize="12sp"
-                app:layout_constraintBottom_toBottomOf="@+id/textView7"
+                app:layout_constraintBottom_toBottomOf="@id/textView7"
                 app:layout_constraintStart_toEndOf="@+id/textView7"
-                app:layout_constraintTop_toBottomOf="@+id/textView20" />
+                app:layout_constraintTop_toTopOf="@+id/textView7" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>

@@ -253,16 +253,31 @@
             android:id="@+id/fabHelpDashboard"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="48dp"
+            android:layout_marginTop="24dp"
             android:layout_marginEnd="16dp"
-            android:layout_marginBottom="8dp"
             android:clickable="true"
             app:backgroundTint="@color/white"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:elevation="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/linearlayout2"
             app:maxImageSize="67dp"
-            app:srcCompat="@drawable/ic_help_black_24dp" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            app:rippleColor="@color/colorPrimaryLight"
+            app:srcCompat="@drawable/education" />
+
+        <TextView
+            android:id="@+id/textView41"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="Educational Material"
+            android:textColor="@color/colorOffWhite"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/fabHelpDashboard" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </ScrollView>

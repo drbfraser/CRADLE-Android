@@ -1,8 +1,10 @@
 package com.cradle.neptune.view.ui.reading;
 
+import android.app.DatePickerDialog;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,9 +12,11 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Switch;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -66,7 +70,25 @@ public class PatientInfoFragment extends BaseFragment {
         mView = view;
 
         setupGASpinner(view);
-        setupSexSpinner(view);
+        setupSexSpinner(view,false);
+
+        TextView et = mView.findViewById(R.id.dobTxt);
+
+        et.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                DatePickerDialog datePickerDialog = new DatePickerDialog(getActivity(), new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+                        String date = year+"-"+month+"-"+day;
+                        et.setText(date);
+                        currentReading.patient.dob= date;
+                    }
+                },2010, 1,1);
+                datePickerDialog.show();
+            }
+        });
+
     }
 
     @Override
@@ -78,7 +100,6 @@ public class PatientInfoFragment extends BaseFragment {
         hideKeyboard();
 
         updateText_UiFromModel(mView);
-        updateGA_UiFromModel(mView);
     }
 
     @Override
@@ -107,12 +128,12 @@ public class PatientInfoFragment extends BaseFragment {
         et.setText(currentReading.patient.patientName);
 
         // age
-        et = mView.findViewById(R.id.etPatientAge);
-        if (currentReading.patient.ageYears != null) {
-            et.setText(Integer.toString(currentReading.patient.ageYears));
-        } else {
-            et.setText("");
+        TextView age = mView.findViewById(R.id.dobTxt);
+        if (currentReading.patient.dob != null) {
+            age.setText(currentReading.patient.dob);
         }
+        setupSexSpinner(mView,true);
+
     }
 
     private void updateText_ModelFromUi(View mView) {
@@ -126,10 +147,10 @@ public class PatientInfoFragment extends BaseFragment {
         currentReading.patient.patientName = et.getText().toString();
 
         // age
-        et = mView.findViewById(R.id.etPatientAge);
-        String ageStr = et.getText().toString().trim();
+        TextView age = mView.findViewById(R.id.dobTxt);
+        String ageStr = age.getText().toString().trim();
         if (ageStr.length() > 0) {
-            currentReading.patient.ageYears = Util.stringToIntOr0(ageStr);
+            currentReading.patient.dob = ageStr;
         }
 
         // village number
@@ -176,34 +197,6 @@ public class PatientInfoFragment extends BaseFragment {
         Patient Sex
      */
 
-    private void updateGA_UiFromModel(View v) {
-        Spinner spin = v.findViewById(R.id.spinnerGestationalAgeUnits);
-        EditText etValue = v.findViewById(R.id.etGestationalAgeValue);
-
-        int selection = 0;
-
-        if (currentReading.patient.gestationalAgeUnit != null) {
-            switch (currentReading.patient.gestationalAgeUnit) {
-//                case GESTATIONAL_AGE_UNITS_NONE:
-//                    selection = GA_UNIT_INDEX_NONE;
-//                    break;
-                case GESTATIONAL_AGE_UNITS_WEEKS:
-                    selection = GA_UNIT_INDEX_WEEKS;
-                    break;
-                case GESTATIONAL_AGE_UNITS_MONTHS:
-                    selection = GA_UNIT_INDEX_MOTHS;
-                    break;
-                default:
-                    Util.ensure(false);
-            }
-        }
-
-        // Set UI state
-        spin.setSelection(selection);
-        etValue.setText(currentReading.patient.gestationalAgeValue);
-
-        updateGA_onSpinnerChange(v);
-    }
 
     private void updateGA_ModelFromUi(View v) {
         Spinner spin = v.findViewById(R.id.spinnerGestationalAgeUnits);
@@ -261,7 +254,7 @@ public class PatientInfoFragment extends BaseFragment {
         etValue.setText(value);
     }
 
-    private void setupSexSpinner(View v) {
+    private void setupSexSpinner(View v,boolean fromOldReading) {
         Spinner spin = v.findViewById(R.id.spinnerPatientSex);
         Switch isPregnant = v.findViewById(R.id.pregnantSwitch);
         Spinner spinGA = v.findViewById(R.id.spinnerGestationalAgeUnits);
@@ -275,6 +268,30 @@ public class PatientInfoFragment extends BaseFragment {
                 new ArrayAdapter<>(v.getContext(), android.R.layout.simple_spinner_item, options);
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spin.setAdapter(dataAdapter);
+
+
+        if (fromOldReading) {
+            if (currentReading.patient.patientSex== Patient.PATIENTSEX.FEMALE){
+                isPregnant.setEnabled(true);
+                spin.setSelection(1);
+            }else if (currentReading.patient.patientSex == Patient.PATIENTSEX.MALE) {
+                spin.setSelection(0);
+            } else {
+                spin.setSelection(2);
+            }
+            if (currentReading.patient.isPregnant) {
+                isPregnant.setChecked(true);
+                etValue.setEnabled(true);
+                etValue.setText(currentReading.patient.gestationalAgeValue);
+                spinGA.setEnabled(true);
+                if (currentReading.patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS) {
+                    spinGA.setSelection(0);
+                } else {
+                    spinGA.setSelection(2);
+                }
+
+            }
+        }
 
         spin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override

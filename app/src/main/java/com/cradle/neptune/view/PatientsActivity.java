@@ -139,7 +139,6 @@ public class PatientsActivity extends AppCompatActivity {
                 Reading r = new Reading();
                 r.patient.patientName = "P" + (char) ('A' + i);
                 r.patient.patientId = String.valueOf(48300027400L + i + ((i * new Random().nextLong() % 10000000L) * 1000));
-                r.patient.ageYears = 20 + i;
                 r.dateTimeTaken = ZonedDateTime.now().minus(timeDelta, ChronoUnit.MINUTES);
                 r.bpSystolic = 120 + (i * 15) * makeNeg;
                 r.bpDiastolic = 80 + (i * 5) * makeNeg;
