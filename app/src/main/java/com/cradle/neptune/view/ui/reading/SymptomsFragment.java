@@ -99,6 +99,11 @@ public class SymptomsFragment extends BaseFragment {
         hideKeyboard();
 
         updateSymptoms_UiFromModel(mView);
+
+        if(urineResultTakenButton.isChecked()){
+            View urineTestResultView = mView.findViewById(R.id.urineTestResultLayout);
+            urineTestResultView.setVisibility(View.VISIBLE);
+        }
         updateUrineTestUIFromModel(mView);
     }
 
@@ -139,6 +144,7 @@ public class SymptomsFragment extends BaseFragment {
 
     private void updateUrineTestModelFromUI(View mView) {
         if(!urineResultTakenButton.isChecked()){
+            currentReading.urineTestResult = null;
             return;
         }
         String leuk = ((RadioButton)leucRadioGroup.findViewById(leucRadioGroup.getCheckedRadioButtonId())).getText().toString();

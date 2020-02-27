@@ -24,49 +24,45 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checked="true"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
             android:text="-"
             android:textColor="@color/white"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton2"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
         <RadioButton
             android:id="@+id/radioButton2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
             android:checked="false"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
             android:text="+"
             android:textColor="@color/white"
             app:layout_constraintStart_toEndOf="@+id/radioButton"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
         <RadioButton
             android:id="@+id/radioButton3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
             android:text="++"
             android:textColor="@color/white"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton2"
             app:layout_constraintStart_toEndOf="@+id/radioButton2" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
         <RadioButton
             android:id="@+id/radioButton4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
             android:text="+++"
             android:textColor="@color/white"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton3"
@@ -77,7 +73,7 @@
         android:id="@+id/textView37"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:text="Leukocytes"
         android:textColor="@color/black"
         android:textSize="14sp"
@@ -107,44 +103,32 @@
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton2"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
         <RadioButton
             android:id="@+id/radioButton29"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
             android:text="+"
             android:textColor="@color/white"
             app:layout_constraintStart_toEndOf="@+id/radioButton"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
         <RadioButton
             android:id="@+id/radioButton39"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
             android:text="++"
             android:textColor="@color/white"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton2"
             app:layout_constraintStart_toEndOf="@+id/radioButton2"
             tools:text="++" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
         <RadioButton
             android:id="@+id/radioButton49"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
             android:text="+++"
             android:textColor="@color/white"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton3"
@@ -185,44 +169,32 @@
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton2"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
         <RadioButton
             android:id="@+id/radioButton28"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
             android:text="+"
             android:textColor="@color/white"
             app:layout_constraintStart_toEndOf="@+id/radioButton"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
         <RadioButton
             android:id="@+id/radioButton38"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
             android:text="++"
             android:textColor="@color/white"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton2"
             app:layout_constraintStart_toEndOf="@+id/radioButton2"
             tools:text="++" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
         <RadioButton
             android:id="@+id/radioButton48"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
             android:text="+++"
             android:textColor="@color/white"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton3"
@@ -245,7 +217,7 @@
         android:id="@+id/bloodRadioGroup"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
+        android:layout_marginEnd="8dp"
         android:gravity="center|fill_horizontal"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="@+id/textView35"
@@ -263,44 +235,32 @@
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton2"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
         <RadioButton
             android:id="@+id/radioButton66"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
             android:text="+"
             android:textColor="@color/white"
             app:layout_constraintStart_toEndOf="@+id/radioButton"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
         <RadioButton
             android:id="@+id/radioButton36"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
             android:text="++"
             android:textColor="@color/white"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton2"
             app:layout_constraintStart_toEndOf="@+id/radioButton2"
             tools:text="++" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
         <RadioButton
             android:id="@+id/radioButton46"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
             android:text="+++"
             android:textColor="@color/white"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton3"
@@ -342,48 +302,36 @@
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton2"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
         <RadioButton
             android:id="@+id/radioButton25"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
             android:text="+"
             android:textColor="@color/white"
             app:layout_constraintStart_toEndOf="@+id/radioButton"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
         <RadioButton
             android:id="@+id/radioButton35"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
             android:text="++"
             android:textColor="@color/white"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton2"
             app:layout_constraintStart_toEndOf="@+id/radioButton2"
             tools:text="++" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
         <RadioButton
             android:id="@+id/radioButton45"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
             android:text="+++"
+            android:textColor="@color/white"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton3"
-            app:layout_constraintStart_toEndOf="@+id/radioButton3"
-            android:textColor="@color/white" />
+            app:layout_constraintStart_toEndOf="@+id/radioButton3" />
     </RadioGroup>
 
     <TextView
@@ -399,11 +347,10 @@
 
     <LinearLayout
         android:id="@+id/linearLayout2"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clipChildren="true"
         android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -416,54 +363,36 @@
             android:textSize="14sp"
             android:textStyle="bold" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight=".1" />
-
         <TextView
             android:id="@+id/textView40"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingStart="54dp"
             android:text="-"
             android:textColor="@color/colorPrimaryLight"
             android:textSize="24sp"
             android:textStyle="bold" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight=".1" />
-
         <TextView
             android:id="@+id/textView42"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
+            android:layout_marginStart="48dp"
             android:text="+"
             android:textColor="@color/colorPrimaryLight"
             android:textSize="24sp"
             android:textStyle="bold" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight=".1" />
-
         <TextView
             android:id="@+id/textView45"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
+            android:layout_marginStart="48dp"
             android:text="++"
+            android:textAlignment="viewStart"
             android:textColor="@color/colorPrimaryLight"
             android:textSize="24sp"
             android:textStyle="bold" />
-
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight=".1" />
 
         <TextView
             android:id="@+id/textView46"
