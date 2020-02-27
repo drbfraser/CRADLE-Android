@@ -95,7 +95,7 @@
                     android:id="@+id/textView15"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/age"
+                    android:text="Date of Birth"
                     android:textColor="@color/black"
                     android:textSize="14sp"
                     android:textStyle="bold"
@@ -151,12 +151,13 @@
                     android:id="@+id/textView22"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
                     android:text="@string/zone"
                     android:textColor="@color/black"
                     android:textSize="14sp"
                     android:textStyle="bold"
-                    app:layout_constraintStart_toStartOf="@+id/textView21"
-                    app:layout_constraintTop_toBottomOf="@+id/textView21" />
+                    app:layout_constraintStart_toEndOf="@+id/patientSex"
+                    app:layout_constraintTop_toBottomOf="@+id/patientAge" />
 
 
                 <TextView
@@ -192,7 +193,7 @@
                     android:textColor="@color/black"
                     android:textSize="14sp"
                     app:layout_constraintStart_toEndOf="@+id/textView22"
-                    app:layout_constraintTop_toBottomOf="@+id/textView21" />
+                    app:layout_constraintTop_toTopOf="@+id/textView22" />
 
                 <TextView
                     android:id="@+id/patientHouseNum"
