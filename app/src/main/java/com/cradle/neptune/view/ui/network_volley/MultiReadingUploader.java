@@ -16,6 +16,7 @@ import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.utilitiles.Zipper;
 import com.cradle.neptune.view.LoginActivity;
 
+import org.json.JSONException;
 import org.threeten.bp.ZonedDateTime;
 
 import java.io.File;
@@ -173,6 +174,8 @@ public class MultiReadingUploader {
             Log.e(TAG, "Exception with encrypting and transmitting data!", ex);
             state = State.PAUSED;
             progressCallback.uploadPausedOnError("Encrypting data for upload failed (" + ex.getMessage() + ")");
+        } catch (JSONException e) {
+            e.printStackTrace();
         } finally {
             // cleanup
             Util.deleteFile(zipFile);

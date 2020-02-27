@@ -3,6 +3,7 @@ package com.cradle.neptune.model;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
+import android.util.Log;
 
 import com.cradle.neptune.BuildConfig;
 import com.cradle.neptune.utilitiles.Util;
@@ -94,7 +95,7 @@ public class Reading {
      * @param reading reading to put into json object.
      * @return a json string
      */
-    public static String getJsonObj(Reading reading, Context context) {
+    public static String getJsonObj(Reading reading, Context context) throws JSONException {
         JSONObject patientVal = new JSONObject();
         Patient patient = reading.patient;
         SharedPreferences sharedPreferences = context.getSharedPreferences(AUTH_PREF,Context.MODE_PRIVATE);
@@ -104,6 +105,7 @@ public class Reading {
             patientVal.put("patientId", patient.patientId);
             patientVal.put("patientName", patient.patientName);
             patientVal.put("patientAge", patient.ageYears);
+            patientVal.put("dob","");
             patientVal.put("gestationalAgeUnit", patient.gestationalAgeUnit);
             patientVal.put("gestationalAgeValue", patient.gestationalAgeValue);
             patientVal.put("villageNumber", patient.villageNumber);
@@ -113,31 +115,31 @@ public class Reading {
             e.printStackTrace();
         }
         JSONObject readingVal = new JSONObject();
-        try {
+        JSONObject urineTest = new JSONObject();
+        urineTest.put("urineTestBlood",reading.urineTestResult.getBlood());
+        urineTest.put("urineTestPro",reading.urineTestResult.getProtein());
+        urineTest.put("urineTestLeuc",reading.urineTestResult.getLeukocytes());
+        urineTest.put("urineTestGlu",reading.urineTestResult.getGlucose());
+        urineTest.put("urineTestNit",reading.urineTestResult.getNitrites());
+
             readingVal.put("readingId", reading.serverReadingId);
             readingVal.put("dateLastSaved", reading.dateLastSaved);
             readingVal.put("dateTimeTaken", reading.dateTimeTaken);
             readingVal.put("bpSystolic", reading.bpSystolic);
-            readingVal.put("urineTest",reading.urineTestResult);
+            readingVal.put("urineTests",urineTest);
             readingVal.put(USER_ID,userId);
             readingVal.put("bpDiastolic", reading.bpDiastolic);
             readingVal.put("heartRateBPM", reading.heartRateBPM);
             readingVal.put("dateRecheckVitalsNeeded", reading.dateRecheckVitalsNeeded);
             readingVal.put("isFlaggedForFollowup", reading.isFlaggedForFollowup);
             readingVal.put("symptoms", reading.getSymptomsString());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
 
 
         JSONObject mainObj = new JSONObject();
-        try {
 
             mainObj.put("patient", patientVal);
             mainObj.put("reading", readingVal);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        Log.d("bugg",mainObj.toString());
 
         return mainObj.toString();
     }
