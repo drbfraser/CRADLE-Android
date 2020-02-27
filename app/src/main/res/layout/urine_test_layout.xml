@@ -7,7 +7,7 @@
     android:layout_height="wrap_content">
 
     <RadioGroup
-        android:id="@+id/radioGroup"
+        android:id="@+id/leukRadioGroup"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -23,6 +23,7 @@
             android:id="@+id/radioButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:checked="true"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton2"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -35,6 +36,7 @@
             android:id="@+id/radioButton2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:checked="false"
             app:layout_constraintStart_toEndOf="@+id/radioButton"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -68,7 +70,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="leukocytes"
+        android:text="Leukocytes"
         android:textColor="@color/black"
         android:textSize="14sp"
         app:layout_constraintStart_toStartOf="parent"
@@ -76,7 +78,7 @@
 
 
     <RadioGroup
-        android:id="@+id/radioGroup2"
+        android:id="@+id/nitrRadioGroup"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
@@ -84,13 +86,14 @@
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="@+id/textView38"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/radioGroup"
+        app:layout_constraintStart_toStartOf="@+id/leukRadioGroup"
         app:layout_constraintTop_toTopOf="@+id/textView38">
 
         <RadioButton
             android:id="@+id/radioButton9"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:checked="true"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton2"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -136,7 +139,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
-        android:text="nitrites"
+        android:text="Nitrites"
         android:textColor="@color/black"
         android:textSize="14sp"
         app:layout_constraintStart_toStartOf="@id/textView37"
@@ -144,7 +147,7 @@
 
 
     <RadioGroup
-        android:id="@+id/radioGroup3"
+        android:id="@+id/protientRadioGroup"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
@@ -152,13 +155,14 @@
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="@+id/textView36"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/radioGroup2"
+        app:layout_constraintStart_toStartOf="@+id/nitrRadioGroup"
         app:layout_constraintTop_toTopOf="@+id/textView36">
 
         <RadioButton
             android:id="@+id/radioButton8"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:checked="true"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton2"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -204,7 +208,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="protein"
+        android:text="Protein"
         android:textColor="@color/black"
         android:textSize="14sp"
         app:layout_constraintStart_toStartOf="@id/textView38"
@@ -212,7 +216,7 @@
 
 
     <RadioGroup
-        android:id="@+id/radioGroup4"
+        android:id="@+id/bloodRadioGroup"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
@@ -220,13 +224,14 @@
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="@+id/textView35"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/radioGroup3"
+        app:layout_constraintStart_toStartOf="@+id/protientRadioGroup"
         app:layout_constraintTop_toTopOf="@+id/textView35">
 
         <RadioButton
             android:id="@+id/radioButton6"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:checked="true"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton2"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -273,7 +278,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="blood"
+        android:text="Blood"
         android:textColor="@color/black"
         android:textSize="14sp"
         app:layout_constraintStart_toStartOf="@id/textView36"
@@ -281,6 +286,7 @@
 
 
     <RadioGroup
+        android:id="@+id/glucRadioGroup"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
@@ -288,13 +294,14 @@
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="@+id/textView34"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/radioGroup4"
+        app:layout_constraintStart_toStartOf="@+id/bloodRadioGroup"
         app:layout_constraintTop_toTopOf="@+id/textView34">
 
         <RadioButton
             android:id="@+id/radioButton5"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:checked="true"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton2"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -340,7 +347,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="glucose"
+        android:text="Glucose"
         android:textColor="@color/black"
         android:textSize="14sp"
         app:layout_constraintStart_toStartOf="@id/textView35"

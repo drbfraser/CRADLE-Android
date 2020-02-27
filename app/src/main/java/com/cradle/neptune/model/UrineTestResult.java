@@ -9,6 +9,9 @@ public class UrineTestResult implements Serializable {
     private String blood ="";
     private String glucose="";
 
+    public UrineTestResult(){
+    }
+
     public UrineTestResult(String leukocytes, String nitrites,
                            String protein, String blood,
                            String glucose) {
