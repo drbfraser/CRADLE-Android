@@ -62,36 +62,36 @@ public class SymptomsFragment extends BaseFragment {
     }
 
     private void setupUrineResult(View view) {
-
-        Switch urineresultSwitch = view.findViewById(R.id.urineResultSwitch);
-        Spinner urineResultSpinner= view.findViewById(R.id.urineTestResultSpinner);
-
-        Resources res = getResources();
-        String[] urineResults = res.getStringArray(R.array.urine_test_result);
-        urineResultSpinner.setEnabled(false);
-
-
-        urineresultSwitch.setOnClickListener(view1 -> {
-            if (urineresultSwitch.isChecked()){
-                urineResultSpinner.setEnabled(true);
-            } else {
-                urineResultSpinner.setEnabled(false);
-                currentReading.urineTestResult= "";
-            }
-        });
-        urineResultSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-
-                currentReading.urineTestResult = urineResults[i];
-
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-                currentReading.urineTestResult = "";
-            }
-        });
+//
+//        Switch urineresultSwitch = view.findViewById(R.id.urineResultSwitch);
+//        Spinner urineResultSpinner= view.findViewById(R.id.urineTestResultSpinner);
+//
+//        Resources res = getResources();
+//        String[] urineResults = res.getStringArray(R.array.urine_test_result);
+//        urineResultSpinner.setEnabled(false);
+//
+//
+//        urineresultSwitch.setOnClickListener(view1 -> {
+//            if (urineresultSwitch.isChecked()){
+//                urineResultSpinner.setEnabled(true);
+//            } else {
+//                urineResultSpinner.setEnabled(false);
+//                currentReading.urineTestResult= "";
+//            }
+//        });
+//        urineResultSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+//            @Override
+//            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+//
+//                currentReading.urineTestResult = urineResults[i];
+//
+//            }
+//
+//            @Override
+//            public void onNothingSelected(AdapterView<?> adapterView) {
+//                currentReading.urineTestResult = "";
+//            }
+//        });
 
     }
 
