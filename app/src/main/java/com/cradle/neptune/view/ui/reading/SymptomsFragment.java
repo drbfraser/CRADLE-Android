@@ -15,6 +15,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.Switch;
+import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -92,6 +93,20 @@ public class SymptomsFragment extends BaseFragment {
 //                currentReading.urineTestResult = "";
 //            }
 //        });
+
+
+        View urineTestResultView = view.findViewById(R.id.urineTestResultLayout);
+        ToggleButton urineResultTakenButton = view.findViewById(R.id.UrineTestToggleButton);
+        urineResultTakenButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (urineResultTakenButton.isChecked()){
+                    urineTestResultView.setVisibility(View.VISIBLE);
+                } else {
+                    urineTestResultView.setVisibility(View.GONE);
+                }
+            }
+        });
 
     }
 
