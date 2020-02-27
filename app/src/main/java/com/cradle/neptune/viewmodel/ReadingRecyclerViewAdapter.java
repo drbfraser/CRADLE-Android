@@ -76,7 +76,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         myViewHolder.heartRate.setText(new StringBuilder().append(currReading.heartRateBPM).append("").toString());
 
         if(currReading.urineTestResult!=null && !currReading.urineTestResult.equals("")){
-            myViewHolder.urineTest.setText(currReading.urineTestResult);
+           // myViewHolder.urineTest.setText(currReading.urineTestResult);
         }
 
         View v = myViewHolder.view;

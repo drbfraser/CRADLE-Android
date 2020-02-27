@@ -1,6 +1,8 @@
 package com.cradle.neptune.model;
 
-public class UrineTestResult {
+import java.io.Serializable;
+
+public class UrineTestResult implements Serializable {
     private String leukocytes ="";
     private String nitrites ="";
     private String protein ="";
@@ -55,5 +57,16 @@ public class UrineTestResult {
 
     public void setGlucose(String glucose) {
         this.glucose = glucose;
+    }
+
+    @Override
+    public String toString() {
+        return "UrineTestResult{" +
+                "leukocytes='" + leukocytes + '\'' +
+                ", nitrites='" + nitrites + '\'' +
+                ", protein='" + protein + '\'' +
+                ", blood='" + blood + '\'' +
+                ", glucose='" + glucose + '\'' +
+                '}';
     }
 }

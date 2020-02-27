@@ -73,7 +73,7 @@ public class Reading {
     public String deviceInfo;
     public float totalOcrSeconds;
     transient public boolean userHasSelectedNoSymptoms;
-    public String urineTestResult = "";
+    public UrineTestResult urineTestResult;
     private Boolean isFlaggedForFollowup;
     private int manuallyChangeOcrResults; // constants above
     // temporary values
