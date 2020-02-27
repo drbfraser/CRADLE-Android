@@ -24,6 +24,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checked="true"
+            android:text="-"
+            android:textColor="@color/white"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton2"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -37,6 +39,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checked="false"
+            android:text="+"
+            android:textColor="@color/white"
             app:layout_constraintStart_toEndOf="@+id/radioButton"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -49,6 +53,8 @@
             android:id="@+id/radioButton3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="++"
+            android:textColor="@color/white"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton2"
             app:layout_constraintStart_toEndOf="@+id/radioButton2" />
 
@@ -61,6 +67,8 @@
             android:id="@+id/radioButton4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="+++"
+            android:textColor="@color/white"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton3"
             app:layout_constraintStart_toEndOf="@+id/radioButton3" />
     </RadioGroup>
@@ -94,6 +102,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checked="true"
+            android:text="-"
+            android:textColor="@color/white"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton2"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -106,6 +116,8 @@
             android:id="@+id/radioButton29"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="+"
+            android:textColor="@color/white"
             app:layout_constraintStart_toEndOf="@+id/radioButton"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -118,8 +130,11 @@
             android:id="@+id/radioButton39"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="++"
+            android:textColor="@color/white"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton2"
-            app:layout_constraintStart_toEndOf="@+id/radioButton2" />
+            app:layout_constraintStart_toEndOf="@+id/radioButton2"
+            tools:text="++" />
 
         <Space
             android:layout_width="wrap_content"
@@ -130,6 +145,8 @@
             android:id="@+id/radioButton49"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="+++"
+            android:textColor="@color/white"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton3"
             app:layout_constraintStart_toEndOf="@+id/radioButton3" />
     </RadioGroup>
@@ -163,6 +180,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checked="true"
+            android:text="-"
+            android:textColor="@color/white"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton2"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -175,6 +194,8 @@
             android:id="@+id/radioButton28"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="+"
+            android:textColor="@color/white"
             app:layout_constraintStart_toEndOf="@+id/radioButton"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -187,8 +208,11 @@
             android:id="@+id/radioButton38"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="++"
+            android:textColor="@color/white"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton2"
-            app:layout_constraintStart_toEndOf="@+id/radioButton2" />
+            app:layout_constraintStart_toEndOf="@+id/radioButton2"
+            tools:text="++" />
 
         <Space
             android:layout_width="wrap_content"
@@ -199,6 +223,8 @@
             android:id="@+id/radioButton48"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="+++"
+            android:textColor="@color/white"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton3"
             app:layout_constraintStart_toEndOf="@+id/radioButton3" />
     </RadioGroup>
@@ -232,6 +258,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checked="true"
+            android:text="-"
+            android:textColor="@color/white"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton2"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -244,6 +272,8 @@
             android:id="@+id/radioButton66"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="+"
+            android:textColor="@color/white"
             app:layout_constraintStart_toEndOf="@+id/radioButton"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -256,8 +286,11 @@
             android:id="@+id/radioButton36"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="++"
+            android:textColor="@color/white"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton2"
-            app:layout_constraintStart_toEndOf="@+id/radioButton2" />
+            app:layout_constraintStart_toEndOf="@+id/radioButton2"
+            tools:text="++" />
 
         <Space
             android:layout_width="wrap_content"
@@ -268,6 +301,8 @@
             android:id="@+id/radioButton46"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="+++"
+            android:textColor="@color/white"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton3"
             app:layout_constraintStart_toEndOf="@+id/radioButton3" />
     </RadioGroup>
@@ -302,6 +337,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checked="true"
+            android:text="-"
+            android:textColor="@color/white"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton2"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -314,6 +351,8 @@
             android:id="@+id/radioButton25"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="+"
+            android:textColor="@color/white"
             app:layout_constraintStart_toEndOf="@+id/radioButton"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -326,8 +365,11 @@
             android:id="@+id/radioButton35"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="++"
+            android:textColor="@color/white"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton2"
-            app:layout_constraintStart_toEndOf="@+id/radioButton2" />
+            app:layout_constraintStart_toEndOf="@+id/radioButton2"
+            tools:text="++" />
 
         <Space
             android:layout_width="wrap_content"
@@ -338,8 +380,10 @@
             android:id="@+id/radioButton45"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="+++"
             app:layout_constraintBaseline_toBaselineOf="@+id/radioButton3"
-            app:layout_constraintStart_toEndOf="@+id/radioButton3" />
+            app:layout_constraintStart_toEndOf="@+id/radioButton3"
+            android:textColor="@color/white" />
     </RadioGroup>
 
     <TextView
