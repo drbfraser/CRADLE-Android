@@ -11,7 +11,7 @@
         tools:context="com.cradle.neptune.view.EducationActivity">
 
         <androidx.cardview.widget.CardView
-            android:id="@+id/postercardview"
+            android:id="@+id/communityPosterView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
@@ -21,7 +21,7 @@
             app:cardBackgroundColor="@color/colorOffWhite"
             app:cardCornerRadius="16dp"
             app:cardElevation="8dp"
-            app:layout_constraintEnd_toStartOf="@+id/cardView3"
+            app:layout_constraintEnd_toStartOf="@+id/clinicPosterView"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
@@ -76,7 +76,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/postercardview">
+            app:layout_constraintTop_toBottomOf="@+id/communityPosterView">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -112,7 +112,7 @@
         </androidx.cardview.widget.CardView>
 
         <androidx.cardview.widget.CardView
-            android:id="@+id/cardView3"
+            android:id="@+id/clinicPosterView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
@@ -124,8 +124,8 @@
             app:cardPreventCornerOverlap="true"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/postercardview"
-            app:layout_constraintTop_toTopOf="@+id/postercardview">
+            app:layout_constraintStart_toEndOf="@+id/communityPosterView"
+            app:layout_constraintTop_toTopOf="@+id/communityPosterView">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"

@@ -23,7 +23,7 @@ public class EducationActivity extends AppCompatActivity {
     }
 
     private void setupOnCLickMethods() {
-        CardView postercard = findViewById(R.id.postercardview);
+        CardView postercard = findViewById(R.id.communityPosterView);
         postercard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -38,6 +38,16 @@ public class EducationActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 startActivity(HelpActivity.makeIntent(EducationActivity.this));
+            }
+        });
+
+        CardView clinicPoster = findViewById(R.id.clinicPosterView);
+        clinicPoster.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent =new Intent(EducationActivity.this,PdfViewActivity.class);
+                intent.putExtra("poster","education_clinic_poster.pdf");
+                startActivity(intent);
             }
         });
     }
