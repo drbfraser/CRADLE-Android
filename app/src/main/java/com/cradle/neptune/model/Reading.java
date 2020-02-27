@@ -115,12 +115,13 @@ public class Reading {
     public static JSONObject getJsonReadingObject(Reading reading,String userId ) throws JSONException {
         JSONObject readingVal = new JSONObject();
         JSONObject urineTest = new JSONObject();
-        urineTest.put("urineTestBlood",reading.urineTestResult.getBlood());
-        urineTest.put("urineTestPro",reading.urineTestResult.getProtein());
-        urineTest.put("urineTestLeuc",reading.urineTestResult.getLeukocytes());
-        urineTest.put("urineTestGlu",reading.urineTestResult.getGlucose());
-        urineTest.put("urineTestNit",reading.urineTestResult.getNitrites());
-
+        if(reading.urineTestResult!=null) {
+            urineTest.put("urineTestBlood", reading.urineTestResult.getBlood());
+            urineTest.put("urineTestPro", reading.urineTestResult.getProtein());
+            urineTest.put("urineTestLeuc", reading.urineTestResult.getLeukocytes());
+            urineTest.put("urineTestGlu", reading.urineTestResult.getGlucose());
+            urineTest.put("urineTestNit", reading.urineTestResult.getNitrites());
+        }
         readingVal.put("readingId", reading.serverReadingId);
         readingVal.put("dateLastSaved", reading.dateLastSaved);
         readingVal.put("dateTimeTaken", reading.dateTimeTaken);
