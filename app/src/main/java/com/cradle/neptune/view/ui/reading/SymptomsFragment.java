@@ -129,6 +129,7 @@ public class SymptomsFragment extends BaseFragment {
             return true;
         }
         updateSymptoms_ModelFromUi(mView);
+
         return true;
     }
 
