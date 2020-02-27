@@ -123,8 +123,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-perf:19.0.5'
     implementation 'com.google.firebase:firebase-storage:19.1.1'
 
-
-
+    implementation 'com.github.barteksc:android-pdf-viewer:2.8.2'
 }
 
 // TensorFlow Lite: select only the ABI's we (likely) need

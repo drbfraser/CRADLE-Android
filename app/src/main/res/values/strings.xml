@@ -70,7 +70,7 @@
         <item>Weeks</item>
         <item>Months</item>
         <!--TODO: re-add this: <item>Last menstrual period</item> -->
-<!--        <item>Not pregnant</item>-->
+        <!--        <item>Not pregnant</item>-->
     </string-array>
 
     <string-array name="sex">
