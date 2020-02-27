@@ -96,24 +96,11 @@ public class Reading {
      * @return a json string
      */
     public static String getJsonObj(Reading reading, Context context) throws JSONException {
-        JSONObject patientVal = new JSONObject();
-        Patient patient = reading.patient;
+        JSONObject patientVal = reading.patient.getPatientInfoJSon();
+
         SharedPreferences sharedPreferences = context.getSharedPreferences(AUTH_PREF,Context.MODE_PRIVATE);
         String userId = sharedPreferences.getString(USER_ID,"");
-        try {
 
-            patientVal.put("patientId", patient.patientId);
-            patientVal.put("patientName", patient.patientName);
-            patientVal.put("patientAge", patient.ageYears);
-            patientVal.put("dob","");
-            patientVal.put("gestationalAgeUnit", patient.gestationalAgeUnit);
-            patientVal.put("gestationalAgeValue", patient.gestationalAgeValue);
-            patientVal.put("villageNumber", patient.villageNumber);
-            patientVal.put("patientSex", patient.patientSex);
-            patientVal.put("isPregnant", patient.isPregnant);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
         JSONObject readingVal = new JSONObject();
         JSONObject urineTest = new JSONObject();
         urineTest.put("urineTestBlood",reading.urineTestResult.getBlood());
@@ -370,8 +357,8 @@ public class Reading {
     // check for valid data
     // if hasInvalidData is true the dialog will be displayed
     public boolean hasInvalidData() {
-        if ((patient.ageYears <= 0 || patient.ageYears > 150)
-                || (heartRateBPM < 30 || heartRateBPM > 300)
+        //todo add the age checker
+        if ( (heartRateBPM < 30 || heartRateBPM > 300)
                 || (bpDiastolic < 10 || bpDiastolic > 300)
                 || (bpSystolic < 10 || bpSystolic > 300)) {
             return true;
@@ -394,7 +381,7 @@ public class Reading {
         missing |= patient == null;
         missing |= patient.patientId == null;
         missing |= patient.patientName == null;
-        missing |= patient.ageYears == null;
+        missing |= (patient.dob == null||patient.dob.equals(""));
         missing |= patient.gestationalAgeUnit == null;
         missing |= (patient.gestationalAgeValue == null
                 && patient.gestationalAgeUnit != GestationalAgeUnit.GESTATIONAL_AGE_UNITS_NONE);

@@ -87,7 +87,7 @@
     <string name="reading_referred_to_health_centre_unknown">Referred to a health centre</string>
 
     <!-- Readings Details -->
-    <string name="reading_name_age_ga">%1$s, %2$dy @ %3$s</string>
+    <string name="reading_name_age_ga">%1$s, %2$s @ %3$s</string>
     <string name="reading_gestational_age_in_weeks_and_days">%1$dw +%2$dd</string>
     <string name="reading_gestational_age_not_pregnant">Not pregnant</string>
     <string name="reading_time_summary">%1$s: %2$s</string>

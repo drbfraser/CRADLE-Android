@@ -1,8 +1,10 @@
 package com.cradle.neptune.view.ui.reading;
 
+import android.app.DatePickerDialog;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,9 +12,11 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Switch;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -67,6 +71,24 @@ public class PatientInfoFragment extends BaseFragment {
 
         setupGASpinner(view);
         setupSexSpinner(view);
+
+        TextView et = mView.findViewById(R.id.dobTxt);
+
+        et.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                DatePickerDialog datePickerDialog = new DatePickerDialog(getActivity(), new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+                        String date = year+"-"+month+"-"+day;
+                        et.setText(date);
+                        currentReading.patient.dob= date;
+                    }
+                },2010, 1,1);
+                datePickerDialog.show();
+            }
+        });
+
     }
 
     @Override
@@ -107,9 +129,9 @@ public class PatientInfoFragment extends BaseFragment {
         et.setText(currentReading.patient.patientName);
 
         // age
-        et = mView.findViewById(R.id.etPatientAge);
-        if (currentReading.patient.ageYears != null) {
-            et.setText(Integer.toString(currentReading.patient.ageYears));
+        TextView age = mView.findViewById(R.id.dobTxt);
+        if (currentReading.patient.dob != null) {
+            et.setText(currentReading.patient.dob);
         } else {
             et.setText("");
         }
@@ -126,10 +148,10 @@ public class PatientInfoFragment extends BaseFragment {
         currentReading.patient.patientName = et.getText().toString();
 
         // age
-        et = mView.findViewById(R.id.etPatientAge);
-        String ageStr = et.getText().toString().trim();
+        TextView age = mView.findViewById(R.id.dobTxt);
+        String ageStr = age.getText().toString().trim();
         if (ageStr.length() > 0) {
-            currentReading.patient.ageYears = Util.stringToIntOr0(ageStr);
+            currentReading.patient.dob = ageStr;
         }
 
         // village number

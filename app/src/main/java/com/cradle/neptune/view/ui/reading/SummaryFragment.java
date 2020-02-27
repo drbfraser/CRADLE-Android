@@ -110,9 +110,9 @@ public class SummaryFragment extends BaseFragment {
         }
 
         // age
-        Integer age = currentReading.patient.ageYears;
-        if (Util.isNullOrZero(age)) {
-            age = 0;
+        String age = currentReading.patient.dob;
+        if (Util.isNullOrEmpty(age)) {
+            age = "";
             errorMessage += "- patient age" + "\n";
         }
 

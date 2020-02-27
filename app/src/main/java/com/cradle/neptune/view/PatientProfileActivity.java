@@ -122,7 +122,7 @@ public class PatientProfileActivity extends AppCompatActivity {
     void populatePatientInfo(Patient patient) {
         patientID.setText(patient.patientId);
         patientName.setText(patient.patientName);
-        patientAge.setText(patient.ageYears.toString());
+        patientAge.setText(patient.dob.toString());
         patientSex.setText(patient.patientSex.toString());
         villageNo.setText(patient.villageNumber);
         patientHouse.setText(patient.houseNumber);
