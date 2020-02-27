@@ -70,7 +70,7 @@ public class PatientInfoFragment extends BaseFragment {
         mView = view;
 
         setupGASpinner(view);
-        setupSexSpinner(view);
+        setupSexSpinner(view,false);
 
         TextView et = mView.findViewById(R.id.dobTxt);
 
@@ -100,7 +100,6 @@ public class PatientInfoFragment extends BaseFragment {
         hideKeyboard();
 
         updateText_UiFromModel(mView);
-        updateGA_UiFromModel(mView);
     }
 
     @Override
@@ -131,10 +130,10 @@ public class PatientInfoFragment extends BaseFragment {
         // age
         TextView age = mView.findViewById(R.id.dobTxt);
         if (currentReading.patient.dob != null) {
-            et.setText(currentReading.patient.dob);
-        } else {
-            et.setText("");
+            age.setText(currentReading.patient.dob);
         }
+        setupSexSpinner(mView,true);
+
     }
 
     private void updateText_ModelFromUi(View mView) {
@@ -198,34 +197,6 @@ public class PatientInfoFragment extends BaseFragment {
         Patient Sex
      */
 
-    private void updateGA_UiFromModel(View v) {
-        Spinner spin = v.findViewById(R.id.spinnerGestationalAgeUnits);
-        EditText etValue = v.findViewById(R.id.etGestationalAgeValue);
-
-        int selection = 0;
-
-        if (currentReading.patient.gestationalAgeUnit != null) {
-            switch (currentReading.patient.gestationalAgeUnit) {
-//                case GESTATIONAL_AGE_UNITS_NONE:
-//                    selection = GA_UNIT_INDEX_NONE;
-//                    break;
-                case GESTATIONAL_AGE_UNITS_WEEKS:
-                    selection = GA_UNIT_INDEX_WEEKS;
-                    break;
-                case GESTATIONAL_AGE_UNITS_MONTHS:
-                    selection = GA_UNIT_INDEX_MOTHS;
-                    break;
-                default:
-                    Util.ensure(false);
-            }
-        }
-
-        // Set UI state
-        spin.setSelection(selection);
-        etValue.setText(currentReading.patient.gestationalAgeValue);
-
-        updateGA_onSpinnerChange(v);
-    }
 
     private void updateGA_ModelFromUi(View v) {
         Spinner spin = v.findViewById(R.id.spinnerGestationalAgeUnits);
@@ -283,7 +254,7 @@ public class PatientInfoFragment extends BaseFragment {
         etValue.setText(value);
     }
 
-    private void setupSexSpinner(View v) {
+    private void setupSexSpinner(View v,boolean fromOldReading) {
         Spinner spin = v.findViewById(R.id.spinnerPatientSex);
         Switch isPregnant = v.findViewById(R.id.pregnantSwitch);
         Spinner spinGA = v.findViewById(R.id.spinnerGestationalAgeUnits);
@@ -297,6 +268,30 @@ public class PatientInfoFragment extends BaseFragment {
                 new ArrayAdapter<>(v.getContext(), android.R.layout.simple_spinner_item, options);
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spin.setAdapter(dataAdapter);
+
+
+        if (fromOldReading) {
+            if (currentReading.patient.patientSex== Patient.PATIENTSEX.FEMALE){
+                isPregnant.setEnabled(true);
+                spin.setSelection(1);
+            }else if (currentReading.patient.patientSex == Patient.PATIENTSEX.MALE) {
+                spin.setSelection(0);
+            } else {
+                spin.setSelection(2);
+            }
+            if (currentReading.patient.isPregnant) {
+                isPregnant.setChecked(true);
+                etValue.setEnabled(true);
+                etValue.setText(currentReading.patient.gestationalAgeValue);
+                spinGA.setEnabled(true);
+                if (currentReading.patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS) {
+                    spinGA.setSelection(0);
+                } else {
+                    spinGA.setSelection(2);
+                }
+
+            }
+        }
 
         spin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
