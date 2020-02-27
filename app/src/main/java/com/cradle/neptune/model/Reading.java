@@ -100,26 +100,7 @@ public class Reading {
 
         SharedPreferences sharedPreferences = context.getSharedPreferences(AUTH_PREF,Context.MODE_PRIVATE);
         String userId = sharedPreferences.getString(USER_ID,"");
-
-        JSONObject readingVal = new JSONObject();
-        JSONObject urineTest = new JSONObject();
-        urineTest.put("urineTestBlood",reading.urineTestResult.getBlood());
-        urineTest.put("urineTestPro",reading.urineTestResult.getProtein());
-        urineTest.put("urineTestLeuc",reading.urineTestResult.getLeukocytes());
-        urineTest.put("urineTestGlu",reading.urineTestResult.getGlucose());
-        urineTest.put("urineTestNit",reading.urineTestResult.getNitrites());
-
-            readingVal.put("readingId", reading.serverReadingId);
-            readingVal.put("dateLastSaved", reading.dateLastSaved);
-            readingVal.put("dateTimeTaken", reading.dateTimeTaken);
-            readingVal.put("bpSystolic", reading.bpSystolic);
-            readingVal.put("urineTests",urineTest);
-            readingVal.put(USER_ID,userId);
-            readingVal.put("bpDiastolic", reading.bpDiastolic);
-            readingVal.put("heartRateBPM", reading.heartRateBPM);
-            readingVal.put("dateRecheckVitalsNeeded", reading.dateRecheckVitalsNeeded);
-            readingVal.put("isFlaggedForFollowup", reading.isFlaggedForFollowup);
-            readingVal.put("symptoms", reading.getSymptomsString());
+        JSONObject readingVal = getJsonReadingObject(reading,userId);
 
 
         JSONObject mainObj = new JSONObject();
@@ -129,6 +110,29 @@ public class Reading {
         Log.d("bugg",mainObj.toString());
 
         return mainObj.toString();
+    }
+
+    public static JSONObject getJsonReadingObject(Reading reading,String userId ) throws JSONException {
+        JSONObject readingVal = new JSONObject();
+        JSONObject urineTest = new JSONObject();
+        urineTest.put("urineTestBlood",reading.urineTestResult.getBlood());
+        urineTest.put("urineTestPro",reading.urineTestResult.getProtein());
+        urineTest.put("urineTestLeuc",reading.urineTestResult.getLeukocytes());
+        urineTest.put("urineTestGlu",reading.urineTestResult.getGlucose());
+        urineTest.put("urineTestNit",reading.urineTestResult.getNitrites());
+
+        readingVal.put("readingId", reading.serverReadingId);
+        readingVal.put("dateLastSaved", reading.dateLastSaved);
+        readingVal.put("dateTimeTaken", reading.dateTimeTaken);
+        readingVal.put("bpSystolic", reading.bpSystolic);
+        readingVal.put("urineTests",urineTest);
+        readingVal.put(USER_ID,userId);
+        readingVal.put("bpDiastolic", reading.bpDiastolic);
+        readingVal.put("heartRateBPM", reading.heartRateBPM);
+        readingVal.put("dateRecheckVitalsNeeded", reading.dateRecheckVitalsNeeded);
+        readingVal.put("isFlaggedForFollowup", reading.isFlaggedForFollowup);
+        readingVal.put("symptoms", reading.getSymptomsString());
+        return readingVal;
     }
 
     public static Reading makeNewReading(ZonedDateTime now) {
