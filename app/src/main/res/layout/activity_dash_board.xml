@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:text="@string/app_name"
-            android:textSize="48sp"
+            android:textSize="64dp"
             app:layout_constraintBottom_toTopOf="@+id/readingConstraintLayout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -39,8 +39,8 @@
             <androidx.cardview.widget.CardView
 
                 android:id="@+id/readingCardView"
-                android:layout_width="@dimen/dashboard_card_height"
-                android:layout_height="@dimen/dashboard_card_width"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:clickable="true"
                 android:foreground="?android:attr/selectableItemBackground"
@@ -52,6 +52,11 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
+                <ImageView
+                    android:id="@+id/imageView9"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:srcCompat="@drawable/card_36" />
             </androidx.cardview.widget.CardView>
 
             <ImageButton
@@ -73,8 +78,10 @@
                 android:layout_width="0dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
+                android:layout_marginBottom="8dp"
                 android:text="New Reading"
                 android:textAlignment="center"
+                app:layout_constraintBottom_toBottomOf="@+id/readingCardView"
                 app:layout_constraintEnd_toEndOf="@+id/readingCardView"
                 app:layout_constraintStart_toStartOf="@+id/readingCardView"
                 app:layout_constraintTop_toBottomOf="@+id/readingImg" />
@@ -93,8 +100,8 @@
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/patientCardview"
-                android:layout_width="@dimen/dashboard_card_height"
-                android:layout_height="@dimen/dashboard_card_width"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:clickable="true"
                 android:foreground="?android:attr/selectableItemBackground"
@@ -106,6 +113,11 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
+                <ImageView
+                    android:id="@+id/imageView10"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:srcCompat="@drawable/card_36" />
             </androidx.cardview.widget.CardView>
 
             <ImageButton
@@ -124,7 +136,9 @@
 
             <TextView
                 style="@style/DashboardCardText"
+                android:layout_marginBottom="8dp"
                 android:text="@string/patients"
+                app:layout_constraintBottom_toBottomOf="@+id/patientCardview"
                 app:layout_constraintEnd_toEndOf="@+id/patientCardview"
                 app:layout_constraintStart_toStartOf="@+id/patientCardview"
                 app:layout_constraintTop_toBottomOf="@+id/patientImg" />
@@ -147,8 +161,8 @@
             <androidx.cardview.widget.CardView
 
                 android:id="@+id/statCardView"
-                android:layout_width="@dimen/dashboard_card_height"
-                android:layout_height="@dimen/dashboard_card_width"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:clickable="true"
                 android:foreground="?android:attr/selectableItemBackground"
@@ -160,6 +174,11 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
+                <ImageView
+                    android:id="@+id/imageView11"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:srcCompat="@drawable/card_36" />
             </androidx.cardview.widget.CardView>
 
             <ImageButton
@@ -178,7 +197,9 @@
 
             <TextView
                 style="@style/DashboardCardText"
+                android:layout_marginBottom="8dp"
                 android:text="Statistics"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/statImg" />
@@ -200,8 +221,8 @@
             <androidx.cardview.widget.CardView
 
                 android:id="@+id/syncCardView"
-                android:layout_width="@dimen/dashboard_card_height"
-                android:layout_height="@dimen/dashboard_card_width"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:clickable="true"
                 android:foreground="?android:attr/selectableItemBackground"
@@ -213,6 +234,11 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
+                <ImageView
+                    android:id="@+id/imageView12"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:srcCompat="@drawable/card_36" />
             </androidx.cardview.widget.CardView>
 
             <ImageButton
@@ -231,7 +257,9 @@
 
             <TextView
                 style="@style/DashboardCardText"
+                android:layout_marginBottom="8dp"
                 android:text="Sync"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="@+id/syncCardView"
                 app:layout_constraintStart_toStartOf="@+id/syncCardView"
                 app:layout_constraintTop_toBottomOf="@id/syncImg" />
