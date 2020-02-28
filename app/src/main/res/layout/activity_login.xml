@@ -47,13 +47,13 @@
                 android:id="@+id/textView25"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="64dp"
-                android:layout_marginEnd="72dp"
+                android:layout_marginTop="32dp"
+                android:layout_marginEnd="32dp"
                 android:text="@string/log_in"
                 android:textColor="@color/black"
                 android:textSize="30sp"
                 android:textStyle="bold"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/guideline3"
                 app:layout_constraintHorizontal_bias="0.39"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textView16" />
@@ -62,7 +62,7 @@
                 android:id="@+id/textView26"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
+                android:layout_marginTop="24dp"
                 android:text="@string/email"
                 android:textColor="@color/black"
                 android:textSize="14sp"
@@ -74,7 +74,7 @@
                 android:id="@+id/textView27"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
+                android:layout_marginTop="16dp"
                 android:text="@string/password"
                 android:textColor="@color/black"
                 android:textSize="14sp"
@@ -84,7 +84,7 @@
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/emailEditText"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:backgroundTint="@color/colorPrimaryLight"
@@ -93,18 +93,20 @@
                 android:inputType="textEmailAddress"
                 android:singleLine="true"
                 android:textCursorDrawable="@null"
+                app:layout_constraintEnd_toStartOf="@+id/guideline3"
                 app:layout_constraintStart_toStartOf="@+id/textView26"
                 app:layout_constraintTop_toBottomOf="@+id/textView26" />
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/passwordEditText"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/colorPrimaryLight"
                 android:ems="10"
                 android:hint="*********"
                 android:inputType="textPassword"
                 android:singleLine="true"
+                app:layout_constraintEnd_toEndOf="@+id/emailEditText"
                 app:layout_constraintStart_toStartOf="@+id/textView27"
                 app:layout_constraintTop_toBottomOf="@+id/textView27" />
 
@@ -117,7 +119,7 @@
                 android:textAlignment="viewStart"
                 app:backgroundTint="@color/colorPrimaryLight"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="@+id/passwordEditText"
+                app:layout_constraintEnd_toStartOf="@+id/guideline3"
                 app:layout_constraintTop_toBottomOf="@+id/invalidLoginText" />
 
             <TextView
@@ -130,6 +132,13 @@
                 android:visibility="gone"
                 app:layout_constraintStart_toStartOf="@+id/passwordEditText"
                 app:layout_constraintTop_toBottomOf="@+id/passwordEditText" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent=".9" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
