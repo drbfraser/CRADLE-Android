@@ -116,6 +116,7 @@ public class Reading {
         JSONObject readingVal = new JSONObject();
         JSONObject urineTest = new JSONObject();
         if(reading.urineTestResult!=null) {
+            Log.d("bugg","urine test not null");
             urineTest.put("urineTestBlood", reading.urineTestResult.getBlood());
             urineTest.put("urineTestPro", reading.urineTestResult.getProtein());
             urineTest.put("urineTestLeuc", reading.urineTestResult.getLeukocytes());

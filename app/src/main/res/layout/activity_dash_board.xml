@@ -18,265 +18,286 @@
             style="@style/LargeTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
             android:text="@string/app_name"
             android:textSize="64sp"
+            app:layout_constraintBottom_toTopOf="@+id/readingConstraintLayout"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <LinearLayout
-            android:id="@+id/linearlayout1"
-            android:layout_width="match_parent"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/readingConstraintLayout"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center|center_horizontal|center_vertical"
-            android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/patientConstraintLayout"
+            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/mainTitleDashBoard">
+            app:layout_constraintTop_toBottomOf="@+id/mainTitleDashBoard">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/readingConstraintLayout"
+            <androidx.cardview.widget.CardView
+
+                android:id="@+id/readingCardView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:padding="16dp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/mainTitleDashBoard">
-
-                <androidx.cardview.widget.CardView
-
-                    android:id="@+id/readingCardView"
-                    android:layout_width="@dimen/dashboard_card_height"
-                    android:layout_height="@dimen/dashboard_card_width"
-                    android:layout_marginTop="32dp"
-                    android:clickable="true"
-                    android:foreground="?android:attr/selectableItemBackground"
-                    app:cardBackgroundColor="@color/colorOffWhite"
-                    app:cardCornerRadius="8dp"
-                    app:cardElevation="4dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent">
-
-                </androidx.cardview.widget.CardView>
-
-                <ImageButton
-                    android:id="@+id/readingImg"
-                    android:layout_width="95dp"
-                    android:layout_height="95dp"
-                    android:adjustViewBounds="true"
-                    android:background="@drawable/round_background"
-                    android:cropToPadding="true"
-                    android:elevation="4dp"
-                    android:scaleType="fitXY"
-                    app:layout_constraintEnd_toEndOf="@+id/readingCardView"
-                    app:layout_constraintStart_toStartOf="@+id/readingCardView"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/ic_reading" />
-
-                <TextView
-                    style="@style/DashboardCardText"
-                    android:layout_width="0dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:text="New Reading"
-                    android:textAlignment="center"
-                    app:layout_constraintEnd_toEndOf="@+id/readingCardView"
-                    app:layout_constraintStart_toStartOf="@+id/readingCardView"
-                    app:layout_constraintTop_toBottomOf="@+id/readingImg" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/patientConstraintLayout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="16dp"
+                android:layout_marginTop="32dp"
+                android:clickable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/colorOffWhite"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="4dp"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/readingConstraintLayout"
-                app:layout_constraintTop_toTopOf="@+id/readingConstraintLayout">
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
-                <androidx.cardview.widget.CardView
-                    android:id="@+id/patientCardview"
-                    android:layout_width="@dimen/dashboard_card_height"
-                    android:layout_height="@dimen/dashboard_card_width"
-                    android:layout_marginTop="32dp"
-                    android:clickable="true"
-                    android:foreground="?android:attr/selectableItemBackground"
-                    app:cardBackgroundColor="@color/colorOffWhite"
-                    app:cardCornerRadius="8dp"
-                    app:cardElevation="4dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent">
+                <ImageView
+                    android:id="@+id/imageView9"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:srcCompat="@drawable/card_36" />
+            </androidx.cardview.widget.CardView>
 
-                </androidx.cardview.widget.CardView>
+            <ImageButton
+                android:id="@+id/readingImg"
+                android:layout_width="95dp"
+                android:layout_height="95dp"
+                android:adjustViewBounds="true"
+                android:background="@drawable/round_background"
+                android:cropToPadding="true"
+                android:elevation="4dp"
+                android:scaleType="fitXY"
+                app:layout_constraintEnd_toEndOf="@+id/readingCardView"
+                app:layout_constraintStart_toStartOf="@+id/readingCardView"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_reading" />
 
-                <ImageButton
-                    android:id="@+id/patientImg"
-                    android:layout_width="95dp"
-                    android:layout_height="95dp"
-                    android:adjustViewBounds="true"
-                    android:background="@drawable/round_background"
-                    android:cropToPadding="true"
-                    android:elevation="4dp"
-                    android:scaleType="fitXY"
-                    app:layout_constraintEnd_toEndOf="@+id/patientCardview"
-                    app:layout_constraintStart_toStartOf="@+id/patientCardview"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/ic_patients" />
+            <TextView
+                style="@style/DashboardCardText"
+                android:layout_width="0dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="8dp"
+                android:text="New Reading"
+                android:textAlignment="center"
+                app:layout_constraintBottom_toBottomOf="@+id/readingCardView"
+                app:layout_constraintEnd_toEndOf="@+id/readingCardView"
+                app:layout_constraintStart_toStartOf="@+id/readingCardView"
+                app:layout_constraintTop_toBottomOf="@+id/readingImg" />
 
-                <TextView
-                    style="@style/DashboardCardText"
-                    android:text="@string/patients"
-                    app:layout_constraintEnd_toEndOf="@+id/patientCardview"
-                    app:layout_constraintStart_toStartOf="@+id/patientCardview"
-                    app:layout_constraintTop_toBottomOf="@+id/patientImg" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/linearlayout2"
-            android:layout_width="match_parent"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/patientConstraintLayout"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:gravity="clip_horizontal|center|center_vertical"
-            android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="@id/linearlayout1"
-            app:layout_constraintStart_toStartOf="@+id/linearlayout1"
-            app:layout_constraintTop_toBottomOf="@id/linearlayout1">
+            android:padding="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/readingConstraintLayout"
+            app:layout_constraintTop_toTopOf="@+id/readingConstraintLayout">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/statconstraintLayout"
+            <androidx.cardview.widget.CardView
+                android:id="@+id/patientCardview"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingLeft="16dp"
-                android:paddingRight="16dp">
+                android:layout_marginTop="32dp"
+                android:clickable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/colorOffWhite"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="4dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
-                <androidx.cardview.widget.CardView
+                <ImageView
+                    android:id="@+id/imageView10"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:srcCompat="@drawable/card_36" />
+            </androidx.cardview.widget.CardView>
 
-                    android:id="@+id/statCardView"
-                    android:layout_width="@dimen/dashboard_card_height"
-                    android:layout_height="@dimen/dashboard_card_width"
-                    android:layout_marginTop="32dp"
-                    android:clickable="true"
-                    android:foreground="?android:attr/selectableItemBackground"
-                    app:cardBackgroundColor="@color/colorOffWhite"
-                    app:cardCornerRadius="8dp"
-                    app:cardElevation="4dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent">
+            <ImageButton
+                android:id="@+id/patientImg"
+                android:layout_width="95dp"
+                android:layout_height="95dp"
+                android:adjustViewBounds="true"
+                android:background="@drawable/round_background"
+                android:cropToPadding="true"
+                android:elevation="4dp"
+                android:scaleType="fitXY"
+                app:layout_constraintEnd_toEndOf="@+id/patientCardview"
+                app:layout_constraintStart_toStartOf="@+id/patientCardview"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_patients" />
 
-                </androidx.cardview.widget.CardView>
+            <TextView
+                style="@style/DashboardCardText"
+                android:layout_marginBottom="8dp"
+                android:text="@string/patients"
+                app:layout_constraintBottom_toBottomOf="@+id/patientCardview"
+                app:layout_constraintEnd_toEndOf="@+id/patientCardview"
+                app:layout_constraintStart_toStartOf="@+id/patientCardview"
+                app:layout_constraintTop_toBottomOf="@+id/patientImg" />
 
-                <ImageButton
-                    android:id="@+id/statImg"
-                    android:layout_width="95dp"
-                    android:layout_height="95dp"
-                    android:adjustViewBounds="true"
-                    android:background="@drawable/round_background"
-                    android:cropToPadding="true"
-                    android:elevation="4dp"
-                    android:scaleType="fitXY"
-                    app:layout_constraintEnd_toEndOf="@+id/statCardView"
-                    app:layout_constraintStart_toStartOf="@+id/statCardView"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/ic_stats" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <TextView
-                    style="@style/DashboardCardText"
-                    android:text="Statistics"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/statImg" />
 
-            </androidx.constraintlayout.widget.ConstraintLayout>
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/statconstraintLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:padding="0dp"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            app:layout_constraintEnd_toStartOf="@+id/syncConstraintlayout"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/readingConstraintLayout">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/syncConstraintlayout"
+            <androidx.cardview.widget.CardView
+
+                android:id="@+id/statCardView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingLeft="16dp"
-                android:paddingRight="16dp">
+                android:layout_marginTop="32dp"
+                android:clickable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/colorOffWhite"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="4dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
-                <androidx.cardview.widget.CardView
+                <ImageView
+                    android:id="@+id/imageView11"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:srcCompat="@drawable/card_36" />
+            </androidx.cardview.widget.CardView>
 
-                    android:id="@+id/syncCardView"
-                    android:layout_width="@dimen/dashboard_card_height"
-                    android:layout_height="@dimen/dashboard_card_width"
-                    android:layout_marginTop="32dp"
-                    android:clickable="true"
-                    android:foreground="?android:attr/selectableItemBackground"
-                    app:cardBackgroundColor="@color/colorOffWhite"
-                    app:cardCornerRadius="8dp"
-                    app:cardElevation="4dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent">
+            <ImageButton
+                android:id="@+id/statImg"
+                android:layout_width="95dp"
+                android:layout_height="95dp"
+                android:adjustViewBounds="true"
+                android:background="@drawable/round_background"
+                android:cropToPadding="true"
+                android:elevation="4dp"
+                android:scaleType="fitXY"
+                app:layout_constraintEnd_toEndOf="@+id/statCardView"
+                app:layout_constraintStart_toStartOf="@+id/statCardView"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_stats" />
 
-                </androidx.cardview.widget.CardView>
+            <TextView
+                style="@style/DashboardCardText"
+                android:layout_marginBottom="8dp"
+                android:text="Statistics"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/statImg" />
 
-                <ImageButton
-                    android:id="@+id/syncImg"
-                    android:layout_width="95dp"
-                    android:layout_height="95dp"
-                    android:adjustViewBounds="true"
-                    android:background="@drawable/round_background"
-                    android:cropToPadding="true"
-                    android:elevation="4dp"
-                    android:scaleType="fitXY"
-                    app:layout_constraintEnd_toEndOf="@+id/syncCardView"
-                    app:layout_constraintStart_toStartOf="@+id/syncCardView"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/ic_sync" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <TextView
-                    style="@style/DashboardCardText"
-                    android:text="Sync"
-                    app:layout_constraintEnd_toEndOf="@+id/syncCardView"
-                    app:layout_constraintStart_toStartOf="@+id/syncCardView"
-                    app:layout_constraintTop_toBottomOf="@id/syncImg" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/syncConstraintlayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="0dp"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/statconstraintLayout"
+            app:layout_constraintTop_toTopOf="@+id/statconstraintLayout">
 
-            </androidx.constraintlayout.widget.ConstraintLayout>
+            <androidx.cardview.widget.CardView
 
-        </LinearLayout>
+                android:id="@+id/syncCardView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:clickable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/colorOffWhite"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="4dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:id="@+id/imageView12"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:srcCompat="@drawable/card_36" />
+            </androidx.cardview.widget.CardView>
+
+            <ImageButton
+                android:id="@+id/syncImg"
+                android:layout_width="95dp"
+                android:layout_height="95dp"
+                android:adjustViewBounds="true"
+                android:background="@drawable/round_background"
+                android:cropToPadding="true"
+                android:elevation="4dp"
+                android:scaleType="fitXY"
+                app:layout_constraintEnd_toEndOf="@+id/syncCardView"
+                app:layout_constraintStart_toStartOf="@+id/syncCardView"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_sync" />
+
+            <TextView
+                style="@style/DashboardCardText"
+                android:layout_marginBottom="8dp"
+                android:text="Sync"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@+id/syncCardView"
+                app:layout_constraintStart_toStartOf="@+id/syncCardView"
+                app:layout_constraintTop_toBottomOf="@id/syncImg" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fabHelpDashboard"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:layout_marginEnd="16dp"
+            android:layout_marginTop="32dp"
+            android:adjustViewBounds="true"
+            android:baselineAlignBottom="false"
             android:clickable="true"
-            app:backgroundTint="@color/white"
+            android:cropToPadding="true"
+            android:tint="@color/colorPrimaryLight"
+            app:backgroundTint="@color/colorOffWhite"
             app:elevation="8dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/linearlayout2"
-            app:maxImageSize="67dp"
+            app:layout_constraintEnd_toEndOf="@+id/syncConstraintlayout"
+            app:layout_constraintTop_toBottomOf="@+id/syncConstraintlayout"
+            app:maxImageSize="48dp"
             app:rippleColor="@color/colorPrimaryLight"
-            app:srcCompat="@drawable/education" />
+            app:srcCompat="@drawable/ic_education" />
 
         <TextView
             android:id="@+id/textView41"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
             android:layout_marginBottom="8dp"
-            android:text="Educational Material"
+            android:text="Education"
             android:textColor="@color/colorOffWhite"
-            android:textSize="12sp"
+            android:textSize="14sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/fabHelpDashboard"
+            app:layout_constraintStart_toStartOf="@+id/fabHelpDashboard"
             app:layout_constraintTop_toBottomOf="@+id/fabHelpDashboard" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
