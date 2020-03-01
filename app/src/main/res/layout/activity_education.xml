@@ -42,7 +42,6 @@
                     app:srcCompat="@drawable/poster_image" />
 
                 <TextView
-                    android:id="@+id/textView33"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"

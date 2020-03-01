@@ -75,7 +75,6 @@
 
         <!-- Age -->
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/txtPatientAge"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -121,7 +120,6 @@
 
         <!-- Village number -->
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/txtVillageNumber"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -160,7 +158,6 @@
 
         <!-- Block number -->
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/txtBlockNumber"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
