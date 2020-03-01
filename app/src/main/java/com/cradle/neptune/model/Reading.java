@@ -371,12 +371,10 @@ public class Reading {
         }
 
         if (patient.isPregnant) {
-            if ((patient.gestationalAgeUnit == GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS
-                && Integer.valueOf(patient.gestationalAgeValue) > 15)
-                || (patient.gestationalAgeUnit == GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS
-                && Integer.valueOf(patient.gestationalAgeValue) > 66)) {
-                return true;
-            }
+            return (patient.gestationalAgeUnit == GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS
+                    && Integer.valueOf(patient.gestationalAgeValue) > 15)
+                    || (patient.gestationalAgeUnit == GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS
+                    && Integer.valueOf(patient.gestationalAgeValue) > 66);
         }
         return false;
     }

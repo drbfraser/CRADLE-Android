@@ -76,15 +76,15 @@ public class PatientProfileActivity extends AppCompatActivity {
         // inject:
         ((MyApp) getApplication()).getAppComponent().inject(this);
 
-        patientID = (TextView) findViewById(R.id.patientId);
-        patientName = (TextView) findViewById(R.id.patientName);
-        patientAge = (TextView) findViewById(R.id.patientAge);
-        patientSex = (TextView) findViewById(R.id.patientSex);
-        villageNo = (TextView) findViewById(R.id.patientVillage);
-        patientHouse = (TextView) findViewById(R.id.patientHouseNum);
-        patientZone = (TextView) findViewById(R.id.patientZone);
-        pregnant = (TextView) findViewById(R.id.textView20);
-        gestationalAge = (TextView) findViewById(R.id.gestationalAge);
+        patientID = findViewById(R.id.patientId);
+        patientName = findViewById(R.id.patientName);
+        patientAge = findViewById(R.id.patientAge);
+        patientSex = findViewById(R.id.patientSex);
+        villageNo = findViewById(R.id.patientVillage);
+        patientHouse = findViewById(R.id.patientHouseNum);
+        patientZone = findViewById(R.id.patientZone);
+        pregnant = findViewById(R.id.textView20);
+        gestationalAge = findViewById(R.id.gestationalAge);
         pregnancyInfoLayout = findViewById(R.id.pregnancyLayout);
         readingRecyclerview = findViewById(R.id.readingRecyclerview);
 
@@ -122,7 +122,7 @@ public class PatientProfileActivity extends AppCompatActivity {
     void populatePatientInfo(Patient patient) {
         patientID.setText(patient.patientId);
         patientName.setText(patient.patientName);
-        patientAge.setText(patient.dob.toString());
+        patientAge.setText(patient.dob);
         patientSex.setText(patient.patientSex.toString());
         villageNo.setText(patient.villageNumber);
         patientHouse.setText(patient.houseNumber);

@@ -89,7 +89,7 @@ public class Patient implements Serializable {
         return null;
     }
 
-    public static enum PATIENTSEX {MALE, FEMALE, OTHERS}
+    public enum PATIENTSEX {MALE, FEMALE, OTHERS}
 
 
 }

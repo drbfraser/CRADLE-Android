@@ -12,6 +12,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -87,7 +88,7 @@ public class HybridFileEncrypter {
             File aesKeyFile = new File(outputFileFolder, "aes_key.rsa");
             {
                 String base64AesKey = Base64.encodeToString(aesSecretKey.getEncoded(), Base64.NO_WRAP);
-                byte[] encryptedAesKey = encryptRSA(rsaPubKey, base64AesKey.getBytes("UTF-8"));
+                byte[] encryptedAesKey = encryptRSA(rsaPubKey, base64AesKey.getBytes(StandardCharsets.UTF_8));
                 writeDataToFile(aesKeyFile, encryptedAesKey);
                 filesToZip.add(aesKeyFile);
             }
@@ -96,7 +97,7 @@ public class HybridFileEncrypter {
             File aesIvFile = new File(outputFileFolder, "aes_iv.rsa");
             {
                 String base64Iv = Base64.encodeToString(iv, Base64.NO_WRAP);
-                byte[] encryptedIv = encryptRSA(rsaPubKey, base64Iv.getBytes("UTF-8"));
+                byte[] encryptedIv = encryptRSA(rsaPubKey, base64Iv.getBytes(StandardCharsets.UTF_8));
                 writeDataToFile(aesIvFile, encryptedIv);
                 filesToZip.add(aesIvFile);
             }
