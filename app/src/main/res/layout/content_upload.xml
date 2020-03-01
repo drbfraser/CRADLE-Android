@@ -36,6 +36,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Upload Readings"
+                app:backgroundTint="@color/colorPrimaryLight"
                 app:layout_constraintStart_toStartOf="@+id/tvReadingsToUpload"
                 app:layout_constraintTop_toBottomOf="@+id/tvLastUpdate" />
 
@@ -155,6 +156,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:text="Skip This Reading"
+                app:backgroundTint="@color/colorPrimaryLight"
                 app:layout_constraintEnd_toStartOf="@+id/guideline"
                 app:layout_constraintTop_toBottomOf="@+id/tvUploadErrorMessage" />
 
@@ -164,6 +166,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="Retry Uploading"
+                app:backgroundTint="@color/colorPrimaryLight"
                 app:layout_constraintStart_toStartOf="@+id/guideline"
                 app:layout_constraintTop_toBottomOf="@+id/tvUploadErrorMessage" />
 
@@ -209,7 +212,8 @@
             android:id="@+id/uploadImagesButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="upload Images to help us improve the app" />
+            android:text="upload Images to help us improve the app"
+            app:backgroundTint="@color/colorPrimaryLight" />
 
         <ProgressBar
             android:id="@+id/progressBar"
@@ -246,7 +250,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:gravity="center_horizontal|center_vertical"
-            android:text="DOWNLOAD" />
+            android:text="DOWNLOAD"
+            app:backgroundTint="@color/colorPrimaryLight" />
 
         <TextView
             android:layout_width="match_parent"
