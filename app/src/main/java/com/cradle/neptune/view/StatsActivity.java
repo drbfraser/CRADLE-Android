@@ -2,7 +2,6 @@ package com.cradle.neptune.view;
 
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -17,7 +16,6 @@ import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.utilitiles.BarGraphValueFormatter;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
@@ -37,6 +35,7 @@ public class StatsActivity extends AppCompatActivity {
     ReadingManager readingManager;
 
     List<Reading> readings;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,9 +43,9 @@ public class StatsActivity extends AppCompatActivity {
 
         ((MyApp) getApplication()).getAppComponent().inject(this);
         readings = readingManager.getReadings(this);
-        Collections.sort(readings,new Reading.ComparatorByDate());
+        Collections.sort(readings, new Reading.ComparatorByDate());
 
-        if(readings.size()>0){
+        if (readings.size() > 0) {
             setupBasicStats();
             setupLineChart();
             setupBarChart();
@@ -63,16 +62,17 @@ public class StatsActivity extends AppCompatActivity {
         onBackPressed();
         return true;
     }
+
     private void setupBasicStats() {
         TextView emptyview = findViewById(R.id.emptyView);
         emptyview.setVisibility(View.GONE);
 
         int totalReadings = readings.size();
-        int totalRef =0;
-        int totalassessments=0;
+        int totalRef = 0;
+        int totalassessments = 0;
 
-        for (int i=0;i<totalReadings;i++){
-            if(readings.get(i).isReferredToHealthCentre()) {
+        for (int i = 0; i < totalReadings; i++) {
+            if (readings.get(i).isReferredToHealthCentre()) {
                 totalRef++;
             }
         }
@@ -96,37 +96,37 @@ public class StatsActivity extends AppCompatActivity {
         List<BarEntry> yellowDownEntry = new ArrayList<>();
         List<BarEntry> redUpEntry = new ArrayList<>();
         List<BarEntry> redDownEntry = new ArrayList<>();
-        int green =0;
-        int yellowup=0;
+        int green = 0;
+        int yellowup = 0;
         int yellowDown = 0;
-        int redDown =0;
-        int redUp =0;
+        int redDown = 0;
+        int redUp = 0;
 
-        for(int i =0;i<readings.size();i++){
+        for (int i = 0; i < readings.size(); i++) {
             ReadingAnalysis analysis = ReadingAnalysis.analyze(readings.get(i));
-            if(analysis == ReadingAnalysis.RED_DOWN){
+            if (analysis == ReadingAnalysis.RED_DOWN) {
                 redDown++;
-            } else if(analysis==ReadingAnalysis.GREEN){
+            } else if (analysis == ReadingAnalysis.GREEN) {
                 green++;
-            } else if (analysis==ReadingAnalysis.RED_UP){
+            } else if (analysis == ReadingAnalysis.RED_UP) {
                 redDown++;
-            } else if (analysis == ReadingAnalysis.YELLOW_UP){
+            } else if (analysis == ReadingAnalysis.YELLOW_UP) {
                 yellowup++;
-            } else if (analysis==ReadingAnalysis.YELLOW_DOWN){
+            } else if (analysis == ReadingAnalysis.YELLOW_DOWN) {
                 yellowDown++;
             }
         }
-        greenEntry.add(new BarEntry(1,green));
-        yellowUpEntry.add(new BarEntry(2,yellowup));
-        yellowDownEntry.add(new BarEntry(3,yellowDown));
-        redUpEntry.add(new BarEntry(4,redUp));
-        redDownEntry.add(new BarEntry(5,redDown));
+        greenEntry.add(new BarEntry(1, green));
+        yellowUpEntry.add(new BarEntry(2, yellowup));
+        yellowDownEntry.add(new BarEntry(3, yellowDown));
+        redUpEntry.add(new BarEntry(4, redUp));
+        redDownEntry.add(new BarEntry(5, redDown));
 
-        BarDataSet greenDataSet = new BarDataSet(greenEntry,"GREEN");
-        BarDataSet yellowUpDataSet = new BarDataSet(yellowUpEntry,"YELLOW UP");
-        BarDataSet yellowDownDataSet = new BarDataSet(yellowDownEntry,"YELLOW DOWN");
-        BarDataSet redUpDataSet = new BarDataSet(redUpEntry,"RED UP");
-        BarDataSet redDownDataSet = new BarDataSet(redDownEntry,"RED DOWN");
+        BarDataSet greenDataSet = new BarDataSet(greenEntry, "GREEN");
+        BarDataSet yellowUpDataSet = new BarDataSet(yellowUpEntry, "YELLOW UP");
+        BarDataSet yellowDownDataSet = new BarDataSet(yellowDownEntry, "YELLOW DOWN");
+        BarDataSet redUpDataSet = new BarDataSet(redUpEntry, "RED UP");
+        BarDataSet redDownDataSet = new BarDataSet(redDownEntry, "RED DOWN");
 
         greenDataSet.setValueFormatter(new BarGraphValueFormatter("Green"));
         yellowDownDataSet.setValueFormatter(new BarGraphValueFormatter("Yellow Down"));
@@ -152,7 +152,7 @@ public class StatsActivity extends AppCompatActivity {
         barChart.getAxisRight().setAxisMinimum(0);
         barChart.getAxisLeft().setAxisMinimum(0);
 
-        BarData lineData = new BarData(greenDataSet,yellowUpDataSet,yellowDownDataSet,redUpDataSet,redDownDataSet);
+        BarData lineData = new BarData(greenDataSet, yellowUpDataSet, yellowDownDataSet, redUpDataSet, redDownDataSet);
         barChart.getDescription().setText("");
 
 
@@ -171,16 +171,16 @@ public class StatsActivity extends AppCompatActivity {
         List<Entry> heartrateEntry = new ArrayList<>();
         //start at 0
 
-        for(int i =0;i<readings.size();i++){
+        for (int i = 0; i < readings.size(); i++) {
             Reading reading = readings.get(i);
-            diastolicEntry.add(new Entry(i+1,reading.bpDiastolic));
-            systolicEntry.add(new Entry(i+1,reading.bpSystolic));
-            heartrateEntry.add(new Entry(i+1,reading.heartRateBPM));
+            diastolicEntry.add(new Entry(i + 1, reading.bpDiastolic));
+            systolicEntry.add(new Entry(i + 1, reading.bpSystolic));
+            heartrateEntry.add(new Entry(i + 1, reading.heartRateBPM));
         }
 
-        LineDataSet diastolicDataSet = new LineDataSet(diastolicEntry,"BP Diastolic");
-        LineDataSet systolicDataSet = new LineDataSet(systolicEntry,"BP Systolic");
-        LineDataSet heartRateDataSet = new LineDataSet(heartrateEntry,"Heart Rate BPM");
+        LineDataSet diastolicDataSet = new LineDataSet(diastolicEntry, "BP Diastolic");
+        LineDataSet systolicDataSet = new LineDataSet(systolicEntry, "BP Systolic");
+        LineDataSet heartRateDataSet = new LineDataSet(heartrateEntry, "Heart Rate BPM");
 
         diastolicDataSet.setColor(getResources().getColor(R.color.colorAccent));
         systolicDataSet.setColor(getResources().getColor(R.color.purple));
@@ -211,7 +211,7 @@ public class StatsActivity extends AppCompatActivity {
         lineChart.getXAxis().setDrawGridLines(false);
         lineChart.getAxisLeft().setDrawGridLines(false);
 
-        LineData lineData = new LineData(diastolicDataSet,systolicDataSet,heartRateDataSet);
+        LineData lineData = new LineData(diastolicDataSet, systolicDataSet, heartRateDataSet);
         //lineData.setDrawValues(false);
 
         lineData.setHighlightEnabled(false);
@@ -219,7 +219,7 @@ public class StatsActivity extends AppCompatActivity {
         lineChart.getXAxis().setDrawAxisLine(true);
         lineChart.setData(lineData);
         lineChart.getXAxis().setEnabled(false);
-        lineChart.getDescription().setText("Cardiovascular Data from last "+ readings.size()+ " readings");
+        lineChart.getDescription().setText("Cardiovascular Data from last " + readings.size() + " readings");
         lineChart.invalidate();
     }
 }

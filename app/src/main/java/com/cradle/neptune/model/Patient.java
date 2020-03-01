@@ -1,13 +1,10 @@
 package com.cradle.neptune.model;
 
-import com.cradle.neptune.model.Reading;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 public class Patient implements Serializable {
@@ -72,7 +69,7 @@ public class Patient implements Serializable {
             patientInfoObject.put("gestationalAgeValue", gestationalAgeValue);
             patientInfoObject.put("villageNumber", villageNumber);
             patientInfoObject.put("patientSex", patientSex.toString());
-            patientInfoObject.put("patientAge",-1);
+            patientInfoObject.put("patientAge", -1);
             String isPregnantString = "false";
             if (isPregnant) {
                 isPregnantString = "true";

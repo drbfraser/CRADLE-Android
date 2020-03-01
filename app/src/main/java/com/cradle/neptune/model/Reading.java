@@ -18,7 +18,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
-import static com.cradle.neptune.view.LoginActivity.*;
+import static com.cradle.neptune.view.LoginActivity.AUTH_PREF;
+import static com.cradle.neptune.view.LoginActivity.USER_ID;
 
 /**
  * Basic data about a currentReading.
@@ -64,7 +65,7 @@ public class Reading {
     public List<Long> retestOfPreviousReadingIds;   // oldest first
     public ZonedDateTime dateRecheckVitalsNeeded;
     // assessment
-    public ReadingFollowUp readingFollowUp= null;
+    public ReadingFollowUp readingFollowUp = null;
     // referrals
     public ZonedDateTime referralMessageSendTime;
     public String referralHealthCentre;
@@ -98,25 +99,25 @@ public class Reading {
     public static String getJsonObj(Reading reading, Context context) throws JSONException {
         JSONObject patientVal = reading.patient.getPatientInfoJSon();
 
-        SharedPreferences sharedPreferences = context.getSharedPreferences(AUTH_PREF,Context.MODE_PRIVATE);
-        String userId = sharedPreferences.getString(USER_ID,"");
-        JSONObject readingVal = getJsonReadingObject(reading,userId);
+        SharedPreferences sharedPreferences = context.getSharedPreferences(AUTH_PREF, Context.MODE_PRIVATE);
+        String userId = sharedPreferences.getString(USER_ID, "");
+        JSONObject readingVal = getJsonReadingObject(reading, userId);
 
 
         JSONObject mainObj = new JSONObject();
 
-            mainObj.put("patient", patientVal);
-            mainObj.put("reading", readingVal);
-        Log.d("bugg",mainObj.toString());
+        mainObj.put("patient", patientVal);
+        mainObj.put("reading", readingVal);
+        Log.d("bugg", mainObj.toString());
 
         return mainObj.toString();
     }
 
-    public static JSONObject getJsonReadingObject(Reading reading,String userId ) throws JSONException {
+    public static JSONObject getJsonReadingObject(Reading reading, String userId) throws JSONException {
         JSONObject readingVal = new JSONObject();
         JSONObject urineTest = new JSONObject();
-        if(reading.urineTestResult!=null) {
-            Log.d("bugg","urine test not null");
+        if (reading.urineTestResult != null) {
+            Log.d("bugg", "urine test not null");
             urineTest.put("urineTestBlood", reading.urineTestResult.getBlood());
             urineTest.put("urineTestPro", reading.urineTestResult.getProtein());
             urineTest.put("urineTestLeuc", reading.urineTestResult.getLeukocytes());
@@ -127,8 +128,8 @@ public class Reading {
         readingVal.put("dateLastSaved", reading.dateLastSaved);
         readingVal.put("dateTimeTaken", reading.dateTimeTaken);
         readingVal.put("bpSystolic", reading.bpSystolic);
-        readingVal.put("urineTests",urineTest);
-        readingVal.put(USER_ID,userId);
+        readingVal.put("urineTests", urineTest);
+        readingVal.put(USER_ID, userId);
         readingVal.put("bpDiastolic", reading.bpDiastolic);
         readingVal.put("heartRateBPM", reading.heartRateBPM);
         readingVal.put("dateRecheckVitalsNeeded", reading.dateRecheckVitalsNeeded);
@@ -364,7 +365,7 @@ public class Reading {
     // if hasInvalidData is true the dialog will be displayed
     public boolean hasInvalidData() {
         //todo add the age checker
-        if ( (heartRateBPM < 30 || heartRateBPM > 300)
+        if ((heartRateBPM < 30 || heartRateBPM > 300)
                 || (bpDiastolic < 10 || bpDiastolic > 300)
                 || (bpSystolic < 10 || bpSystolic > 300)) {
             return true;
@@ -385,7 +386,7 @@ public class Reading {
         missing |= patient == null;
         missing |= patient.patientId == null;
         missing |= patient.patientName == null;
-        missing |= (patient.dob == null||patient.dob.equals(""));
+        missing |= (patient.dob == null || patient.dob.equals(""));
         missing |= patient.gestationalAgeUnit == null;
         missing |= (patient.gestationalAgeValue == null
                 && patient.gestationalAgeUnit != GestationalAgeUnit.GESTATIONAL_AGE_UNITS_NONE);
@@ -417,6 +418,18 @@ public class Reading {
 
     public void clearAllTemporaryFlags() {
         temporaryFlags = 0;
+    }
+
+    public Integer getBpDiastolic() {
+        return bpDiastolic;
+    }
+
+    public Integer getBpSystolic() {
+        return bpSystolic;
+    }
+
+    public Integer getHeartRateBPM() {
+        return heartRateBPM;
     }
 
     /**
@@ -451,17 +464,5 @@ public class Reading {
             this.weeks = weeks;
             this.days = days;
         }
-    }
-
-    public Integer getBpDiastolic() {
-        return bpDiastolic;
-    }
-
-    public Integer getBpSystolic() {
-        return bpSystolic;
-    }
-
-    public Integer getHeartRateBPM() {
-        return heartRateBPM;
     }
 }

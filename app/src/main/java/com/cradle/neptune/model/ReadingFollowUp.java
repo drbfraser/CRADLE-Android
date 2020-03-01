@@ -15,12 +15,12 @@ public class ReadingFollowUp {
     private String patientId;
 
     public ReadingFollowUp(String readingServerId, String followUpAction, String treatment,
-                           String diagnosis,String healthcare,String date, String assessedBy,String referredBy) {
+                           String diagnosis, String healthcare, String date, String assessedBy, String referredBy) {
         this.readingServerId = readingServerId;
         this.followUpAction = followUpAction;
         this.treatment = treatment;
         this.diagnosis = diagnosis;
-        this.date=date;
+        this.date = date;
         this.healthcare = healthcare;
         this.assessedBy = assessedBy;
         this.referredBy = referredBy;
@@ -66,6 +66,10 @@ public class ReadingFollowUp {
         return date;
     }
 
+    public void setDate(String date) {
+        this.date = date;
+    }
+
     @Override
     public String toString() {
         return "ReadingFollowUp{" +
@@ -98,10 +102,6 @@ public class ReadingFollowUp {
         return healthcare;
     }
 
-    public void setDate(String date) {
-        this.date = date;
-    }
-
     public void setHealthcare(String healthcare) {
         this.healthcare = healthcare;
     }
@@ -110,23 +110,23 @@ public class ReadingFollowUp {
         return patientDrugInfoUpdate;
     }
 
-    public String getPatientMedInfoUpdate() {
-        return patientMedInfoUpdate;
-    }
-
     public void setPatientDrugInfoUpdate(String patientDrugInfoUpdate) {
         this.patientDrugInfoUpdate = patientDrugInfoUpdate;
+    }
+
+    public String getPatientMedInfoUpdate() {
+        return patientMedInfoUpdate;
     }
 
     public void setPatientMedInfoUpdate(String patientMedInfoUpdate) {
         this.patientMedInfoUpdate = patientMedInfoUpdate;
     }
 
-    public void setPatientId(String patientId) {
-        this.patientId = patientId;
-    }
-
     public String getPatientId() {
         return patientId;
+    }
+
+    public void setPatientId(String patientId) {
+        this.patientId = patientId;
     }
 }

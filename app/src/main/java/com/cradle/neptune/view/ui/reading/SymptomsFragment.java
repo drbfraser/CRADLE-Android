@@ -28,20 +28,18 @@ import java.util.List;
  */
 public class SymptomsFragment extends BaseFragment {
     private static final int CHECKBOX_NO_SYMPTOMS_INDEX = 0;
-
-
+    //urine tests
+    RadioGroup leucRadioGroup;
+    RadioGroup nitRadioGroup;
+    RadioGroup protienRadioGroup;
+    RadioGroup bloodRadioGroup;
+    RadioGroup glucoseRadioGroup;
+    ToggleButton urineResultTakenButton;
     private View mView;
     private List<CheckBox> checkBoxes = new ArrayList<>();
     private CheckBox noSymptomsCheckBox;
     private EditText otherSymptoms;
 
-    //urine tests
-    RadioGroup leucRadioGroup;
-    RadioGroup nitRadioGroup ;
-    RadioGroup protienRadioGroup;
-    RadioGroup bloodRadioGroup ;
-    RadioGroup glucoseRadioGroup;
-    ToggleButton urineResultTakenButton;
     public SymptomsFragment() {
         // Required empty public constructor
         TAG = SymptomsFragment.class.getName();
@@ -68,11 +66,11 @@ public class SymptomsFragment extends BaseFragment {
     }
 
     private void setupUrineResult(View view) {
-         leucRadioGroup = view.findViewById(R.id.leukRadioGroup);
-         nitRadioGroup = view.findViewById(R.id.nitrRadioGroup);
-         protienRadioGroup = view.findViewById(R.id.protientRadioGroup);
-         bloodRadioGroup = view.findViewById(R.id.bloodRadioGroup);
-         glucoseRadioGroup = view.findViewById(R.id.glucRadioGroup);
+        leucRadioGroup = view.findViewById(R.id.leukRadioGroup);
+        nitRadioGroup = view.findViewById(R.id.nitrRadioGroup);
+        protienRadioGroup = view.findViewById(R.id.protientRadioGroup);
+        bloodRadioGroup = view.findViewById(R.id.bloodRadioGroup);
+        glucoseRadioGroup = view.findViewById(R.id.glucRadioGroup);
 
 
         View urineTestResultView = view.findViewById(R.id.urineTestResultLayout);
@@ -80,7 +78,7 @@ public class SymptomsFragment extends BaseFragment {
         urineResultTakenButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (urineResultTakenButton.isChecked()){
+                if (urineResultTakenButton.isChecked()) {
                     urineTestResultView.setVisibility(View.VISIBLE);
                 } else {
                     urineTestResultView.setVisibility(View.GONE);
@@ -100,7 +98,7 @@ public class SymptomsFragment extends BaseFragment {
 
         updateSymptoms_UiFromModel(mView);
 
-        if(urineResultTakenButton.isChecked()){
+        if (urineResultTakenButton.isChecked()) {
             View urineTestResultView = mView.findViewById(R.id.urineTestResultLayout);
             urineTestResultView.setVisibility(View.VISIBLE);
         }
@@ -109,22 +107,22 @@ public class SymptomsFragment extends BaseFragment {
 
     private void updateUrineTestUIFromModel(View mView) {
         UrineTestResult urineTestResult = currentReading.urineTestResult;
-        if(urineTestResult==null){
+        if (urineTestResult == null) {
             return;
         }
-        setupUrineTestResultRadio(leucRadioGroup,urineTestResult.getLeukocytes());
-        setupUrineTestResultRadio(bloodRadioGroup,urineTestResult.getBlood());
-        setupUrineTestResultRadio(protienRadioGroup,urineTestResult.getProtein());
-        setupUrineTestResultRadio(nitRadioGroup,urineTestResult.getNitrites());
-        setupUrineTestResultRadio(glucoseRadioGroup,urineTestResult.getGlucose());
+        setupUrineTestResultRadio(leucRadioGroup, urineTestResult.getLeukocytes());
+        setupUrineTestResultRadio(bloodRadioGroup, urineTestResult.getBlood());
+        setupUrineTestResultRadio(protienRadioGroup, urineTestResult.getProtein());
+        setupUrineTestResultRadio(nitRadioGroup, urineTestResult.getNitrites());
+        setupUrineTestResultRadio(glucoseRadioGroup, urineTestResult.getGlucose());
 
     }
 
     private void setupUrineTestResultRadio(RadioGroup radioGroup, String leukocytes) {
         radioGroup.clearCheck();
-        for(int i=0;i<radioGroup.getChildCount();i++){
+        for (int i = 0; i < radioGroup.getChildCount(); i++) {
             RadioButton radioButton = (RadioButton) radioGroup.getChildAt(i);
-            if(radioButton.getText().toString().equals(leukocytes)){
+            if (radioButton.getText().toString().equals(leukocytes)) {
                 radioButton.setChecked(true);
             }
         }
@@ -143,17 +141,17 @@ public class SymptomsFragment extends BaseFragment {
     }
 
     private void updateUrineTestModelFromUI(View mView) {
-        if(!urineResultTakenButton.isChecked()){
+        if (!urineResultTakenButton.isChecked()) {
             currentReading.urineTestResult = null;
             return;
         }
-        String leuk = ((RadioButton)leucRadioGroup.findViewById(leucRadioGroup.getCheckedRadioButtonId())).getText().toString();
-        String blood = ((RadioButton)bloodRadioGroup.findViewById(bloodRadioGroup.getCheckedRadioButtonId())).getText().toString();
-        String glucose = ((RadioButton)glucoseRadioGroup.findViewById(glucoseRadioGroup.getCheckedRadioButtonId())).getText().toString();
-        String nitr = ((RadioButton)nitRadioGroup.findViewById(nitRadioGroup.getCheckedRadioButtonId())).getText().toString();
-        String protient = ((RadioButton)protienRadioGroup.findViewById(protienRadioGroup.getCheckedRadioButtonId())).getText().toString();
+        String leuk = ((RadioButton) leucRadioGroup.findViewById(leucRadioGroup.getCheckedRadioButtonId())).getText().toString();
+        String blood = ((RadioButton) bloodRadioGroup.findViewById(bloodRadioGroup.getCheckedRadioButtonId())).getText().toString();
+        String glucose = ((RadioButton) glucoseRadioGroup.findViewById(glucoseRadioGroup.getCheckedRadioButtonId())).getText().toString();
+        String nitr = ((RadioButton) nitRadioGroup.findViewById(nitRadioGroup.getCheckedRadioButtonId())).getText().toString();
+        String protient = ((RadioButton) protienRadioGroup.findViewById(protienRadioGroup.getCheckedRadioButtonId())).getText().toString();
 
-        currentReading.urineTestResult = new UrineTestResult(leuk,nitr,protient,blood,glucose);
+        currentReading.urineTestResult = new UrineTestResult(leuk, nitr, protient, blood, glucose);
     }
 
 

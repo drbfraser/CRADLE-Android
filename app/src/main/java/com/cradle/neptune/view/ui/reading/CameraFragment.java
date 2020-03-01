@@ -355,7 +355,7 @@ public class CameraFragment extends BaseFragment {
         if (mCamera != null) {
 
             // Create our Preview view and set it as the content of our activity.
-            mPreview = new CameraPreview(this.getContext(), mCamera,zoomSeekBar);
+            mPreview = new CameraPreview(this.getContext(), mCamera, zoomSeekBar);
             FrameLayout preview = getView().findViewById(R.id.camera_preview);
             preview.addView(mPreview);
 

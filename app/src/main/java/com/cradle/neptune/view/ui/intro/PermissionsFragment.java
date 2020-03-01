@@ -5,12 +5,6 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
-
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +13,10 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 
 import com.cradle.neptune.R;
 import com.cradle.neptune.view.ui.reading.PatientInfoFragment;
@@ -108,7 +106,7 @@ public class PermissionsFragment extends IntroBaseFragment {
            todo: figure out why
          */
         LinearLayout linearLayout = getView().findViewById(R.id.linearLayoutForWV);
-        if(linearLayout.getChildCount()==0) {
+        if (linearLayout.getChildCount() == 0) {
             WebView wv = new WebView(getActivity().createConfigurationContext(new Configuration()));
             String htmlContents = getString(R.string.intro_permission_description);
             wv.loadDataWithBaseURL(null, htmlContents, "text/html", "utf-8", null);

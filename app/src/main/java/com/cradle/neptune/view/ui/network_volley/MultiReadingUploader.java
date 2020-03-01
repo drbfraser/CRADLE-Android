@@ -11,7 +11,6 @@ import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.utilitiles.DateUtil;
 import com.cradle.neptune.utilitiles.GsonUtil;
-import com.cradle.neptune.utilitiles.HybridFileEncrypter;
 import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.utilitiles.Zipper;
 import com.cradle.neptune.view.LoginActivity;
@@ -24,7 +23,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -159,15 +157,15 @@ public class MultiReadingUploader {
             // generate zip of encrypted data
             String encryptedZipFileFolder = context.getCacheDir().getAbsolutePath();
 
-            String readingJson = Reading.getJsonObj(readings.get(0),context);
+            String readingJson = Reading.getJsonObj(readings.get(0), context);
             // start upload
-            SharedPreferences sharedPref = context.getSharedPreferences(LoginActivity.AUTH_PREF,Context.MODE_PRIVATE);
-            String token = sharedPref.getString(LoginActivity.TOKEN,LoginActivity.DEFAULT_TOKEN);
+            SharedPreferences sharedPref = context.getSharedPreferences(LoginActivity.AUTH_PREF, Context.MODE_PRIVATE);
+            String token = sharedPref.getString(LoginActivity.TOKEN, LoginActivity.DEFAULT_TOKEN);
 
             Uploader uploader = new Uploader(
                     settings.getReadingServerUrl(),
                     settings.getServerUserName(),
-                    settings.getServerPassword(),token);
+                    settings.getServerPassword(), token);
             uploader.doUpload(readingJson, getSuccessCallback(), getErrorCallback());
 
         } catch (IOException ex) {

@@ -4,7 +4,6 @@ import android.app.DatePickerDialog;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.text.InputType;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -70,7 +69,7 @@ public class PatientInfoFragment extends BaseFragment {
         mView = view;
 
         setupGASpinner(view);
-        setupSexSpinner(view,false);
+        setupSexSpinner(view, false);
 
         TextView et = mView.findViewById(R.id.dobTxt);
 
@@ -80,11 +79,11 @@ public class PatientInfoFragment extends BaseFragment {
                 DatePickerDialog datePickerDialog = new DatePickerDialog(getActivity(), new DatePickerDialog.OnDateSetListener() {
                     @Override
                     public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                        String date = year+"-"+month+"-"+day;
+                        String date = year + "-" + month + "-" + day;
                         et.setText(date);
-                        currentReading.patient.dob= date;
+                        currentReading.patient.dob = date;
                     }
-                },2010, 1,1);
+                }, 2010, 1, 1);
                 datePickerDialog.show();
             }
         });
@@ -132,7 +131,7 @@ public class PatientInfoFragment extends BaseFragment {
         if (currentReading.patient.dob != null) {
             age.setText(currentReading.patient.dob);
         }
-        setupSexSpinner(mView,true);
+        setupSexSpinner(mView, true);
 
     }
 
@@ -238,7 +237,7 @@ public class PatientInfoFragment extends BaseFragment {
                 valueInputType = InputType.TYPE_CLASS_NUMBER;
                 break;
             case GA_UNIT_INDEX_MOTHS:
-                valueInputType =  InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_CLASS_NUMBER;
+                valueInputType = InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_CLASS_NUMBER;
                 break;
             default:
                 Util.ensure(false);
@@ -254,7 +253,7 @@ public class PatientInfoFragment extends BaseFragment {
         etValue.setText(value);
     }
 
-    private void setupSexSpinner(View v,boolean fromOldReading) {
+    private void setupSexSpinner(View v, boolean fromOldReading) {
         Spinner spin = v.findViewById(R.id.spinnerPatientSex);
         Switch isPregnant = v.findViewById(R.id.pregnantSwitch);
         Spinner spinGA = v.findViewById(R.id.spinnerGestationalAgeUnits);
@@ -271,10 +270,10 @@ public class PatientInfoFragment extends BaseFragment {
 
 
         if (fromOldReading) {
-            if (currentReading.patient.patientSex== Patient.PATIENTSEX.FEMALE){
+            if (currentReading.patient.patientSex == Patient.PATIENTSEX.FEMALE) {
                 isPregnant.setEnabled(true);
                 spin.setSelection(1);
-            }else if (currentReading.patient.patientSex == Patient.PATIENTSEX.MALE) {
+            } else if (currentReading.patient.patientSex == Patient.PATIENTSEX.MALE) {
                 spin.setSelection(0);
             } else {
                 spin.setSelection(2);

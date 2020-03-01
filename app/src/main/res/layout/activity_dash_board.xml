@@ -268,13 +268,13 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
             android:cropToPadding="false"
-            app:tint= "@color/colorPrimaryLight"
             app:backgroundTint="@color/colorOffWhite"
             app:elevation="8dp"
             app:layout_constraintEnd_toEndOf="@+id/syncConstraintlayout"
             app:layout_constraintTop_toBottomOf="@+id/syncConstraintlayout"
             app:maxImageSize="48dp"
             app:srcCompat="@drawable/ic_education"
+            app:tint="@color/colorPrimaryLight"
             app:useCompatPadding="false" />
 
         <TextView

@@ -18,11 +18,8 @@ import com.cradle.neptune.model.ReadingFollowUp;
 import com.cradle.neptune.model.UrineTestResult;
 import com.cradle.neptune.utilitiles.DateUtil;
 
-import org.threeten.bp.ZonedDateTime;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -76,13 +73,13 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         myViewHolder.diaBP.setText(new StringBuilder().append(currReading.bpDiastolic).append("").toString());
         myViewHolder.heartRate.setText(new StringBuilder().append(currReading.heartRateBPM).append("").toString());
 
-        if(currReading.urineTestResult!=null && !currReading.urineTestResult.equals("")){
-           myViewHolder.urineTest.setText(getUrineTestFormattedTxt(currReading.urineTestResult));
+        if (currReading.urineTestResult != null && !currReading.urineTestResult.equals("")) {
+            myViewHolder.urineTest.setText(getUrineTestFormattedTxt(currReading.urineTestResult));
         }
 
         View v = myViewHolder.view;
         myViewHolder.cardView.setOnClickListener(view -> onClickElementListener.onClick(currReading.readingId));
-        myViewHolder.cardView.setOnLongClickListener(view ->onClickElementListener.onLongClick(currReading.readingId));
+        myViewHolder.cardView.setOnLongClickListener(view -> onClickElementListener.onLongClick(currReading.readingId));
         if (myViewHolder.getItemViewType() == NO_ASSESSMENT_TYPE) {
 
             if (currReading.isNeedRecheckVitals()) {
@@ -90,8 +87,8 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
                 myViewHolder.retakeVitalButton.setOnClickListener(view -> onClickElementListener.onClickRecheckReading(currReading.readingId));
             }
 
-            if(currReading.isReferredToHealthCentre()){
-             myViewHolder.isreferedTxt.setText("Referral Pending");
+            if (currReading.isReferredToHealthCentre()) {
+                myViewHolder.isreferedTxt.setText("Referral Pending");
             }
             myViewHolder.trafficLight.setImageResource(ReadingAnalysisViewSupport.getColorCircleImageId(analysis));
             myViewHolder.arrow.setImageResource(ReadingAnalysisViewSupport.getArrowImageId(analysis));
@@ -208,7 +205,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
     static class MyViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
         TextView readingDate, assessmentDate, sysBP, diaBP, heartRate, diagnosis,
-                treatment, followUp, assessedBy, isreferedTxt,referredBy,hcName, urineTest;
+                treatment, followUp, assessedBy, isreferedTxt, referredBy, hcName, urineTest;
         ImageView trafficLight, arrow;
         Button retakeVitalButton;
         View view;
@@ -233,7 +230,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             isreferedTxt = v.findViewById(R.id.isReferrerdText);
             referredBy = v.findViewById(R.id.treatmentReferedBy);
             hcName = v.findViewById(R.id.hcReferred);
-            urineTest =v.findViewById(R.id.urineResultTxt);
+            urineTest = v.findViewById(R.id.urineResultTxt);
         }
     }
 }

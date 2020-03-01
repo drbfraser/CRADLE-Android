@@ -1,9 +1,9 @@
 package com.cradle.neptune.view;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.cradle.neptune.R;
 import com.github.barteksc.pdfviewer.PDFView;
@@ -19,7 +19,7 @@ public class PdfViewActivity extends AppCompatActivity {
             getSupportActionBar().setTitle("Educational Poster");
         }
         Intent intent = getIntent();
-        if (intent!=null){
+        if (intent != null) {
             String filename = intent.getStringExtra("poster");
             setupPDFview(filename);
         }
@@ -27,7 +27,7 @@ public class PdfViewActivity extends AppCompatActivity {
 
     private void setupPDFview(String filename) {
         PDFView pdfDocument = findViewById(R.id.pdfView);
-            pdfDocument.fromAsset(filename).enableAntialiasing(true).spacing(8).load();
+        pdfDocument.fromAsset(filename).enableAntialiasing(true).spacing(8).load();
 
     }
 

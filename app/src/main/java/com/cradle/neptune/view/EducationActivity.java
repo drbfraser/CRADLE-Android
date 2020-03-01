@@ -1,11 +1,11 @@
 package com.cradle.neptune.view;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 
 import com.cradle.neptune.R;
 
@@ -27,8 +27,8 @@ public class EducationActivity extends AppCompatActivity {
         postercard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent =new Intent(EducationActivity.this,PdfViewActivity.class);
-                intent.putExtra("poster","education_community_poster.pdf");
+                Intent intent = new Intent(EducationActivity.this, PdfViewActivity.class);
+                intent.putExtra("poster", "education_community_poster.pdf");
                 startActivity(intent);
             }
         });
@@ -45,8 +45,8 @@ public class EducationActivity extends AppCompatActivity {
         clinicPoster.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent =new Intent(EducationActivity.this,PdfViewActivity.class);
-                intent.putExtra("poster","education_clinic_poster.pdf");
+                Intent intent = new Intent(EducationActivity.this, PdfViewActivity.class);
+                intent.putExtra("poster", "education_clinic_poster.pdf");
                 startActivity(intent);
             }
         });
