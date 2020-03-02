@@ -86,7 +86,6 @@ public class OcrDigitDetector {
     public void processImage(Bitmap image, OnProcessImageDone callback) {
 
         Bitmap resizedImage = Bitmap.createBitmap(NN_INPUT_SIZE, NN_INPUT_SIZE, Bitmap.Config.ARGB_8888);
-        ;
         final Canvas canvas = new Canvas(resizedImage);
         canvas.drawBitmap(image, frameToCropTransform, null);
 

@@ -24,6 +24,10 @@ import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,17 +35,12 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
-
 import static com.cradle.neptune.view.DashBoardActivity.READING_ACTIVITY_DONE;
 
 
 public class PatientProfileActivity extends AppCompatActivity {
 
-    static final double WEEKS_IN_MONTH=4.34524;
+    static final double WEEKS_IN_MONTH = 4.34524;
     TextView patientID;
     TextView patientName;
     TextView patientAge;
@@ -76,15 +75,15 @@ public class PatientProfileActivity extends AppCompatActivity {
         // inject:
         ((MyApp) getApplication()).getAppComponent().inject(this);
 
-        patientID = (TextView) findViewById(R.id.patientId);
-        patientName = (TextView) findViewById(R.id.patientName);
-        patientAge = (TextView) findViewById(R.id.patientAge);
-        patientSex = (TextView) findViewById(R.id.patientSex);
-        villageNo = (TextView) findViewById(R.id.patientVillage);
-        patientHouse = (TextView) findViewById(R.id.patientHouseNum);
-        patientZone = (TextView) findViewById(R.id.patientZone);
-        pregnant = (TextView) findViewById(R.id.textView20);
-        gestationalAge = (TextView) findViewById(R.id.gestationalAge);
+        patientID = findViewById(R.id.patientId);
+        patientName = findViewById(R.id.patientName);
+        patientAge = findViewById(R.id.patientAge);
+        patientSex = findViewById(R.id.patientSex);
+        villageNo = findViewById(R.id.patientVillage);
+        patientHouse = findViewById(R.id.patientHouseNum);
+        patientZone = findViewById(R.id.patientZone);
+        pregnant = findViewById(R.id.textView20);
+        gestationalAge = findViewById(R.id.gestationalAge);
         pregnancyInfoLayout = findViewById(R.id.pregnancyLayout);
         readingRecyclerview = findViewById(R.id.readingRecyclerview);
 
@@ -122,7 +121,7 @@ public class PatientProfileActivity extends AppCompatActivity {
     void populatePatientInfo(Patient patient) {
         patientID.setText(patient.patientId);
         patientName.setText(patient.patientName);
-        patientAge.setText(patient.dob.toString());
+        patientAge.setText(patient.dob);
         patientSex.setText(patient.patientSex.toString());
         villageNo.setText(patient.villageNumber);
         patientHouse.setText(patient.houseNumber);
@@ -135,12 +134,12 @@ public class PatientProfileActivity extends AppCompatActivity {
             pregnancyInfoLayout.setVisibility(View.GONE);
         }
 
-        if(patient.drugHistoryList!=null && !patient.drugHistoryList.isEmpty()) {
+        if (patient.drugHistoryList != null && !patient.drugHistoryList.isEmpty()) {
             TextView drugHistroy = findViewById(R.id.drugHistroyTxt);
             drugHistroy.setText(patient.drugHistoryList.get(0));
 
         }
-        if(patient.medicalHistoryList!=null && !patient.medicalHistoryList.isEmpty()) {
+        if (patient.medicalHistoryList != null && !patient.medicalHistoryList.isEmpty()) {
 
             TextView medHistory = findViewById(R.id.medHistoryText);
             medHistory.setText(patient.medicalHistoryList.get(0));
@@ -150,6 +149,7 @@ public class PatientProfileActivity extends AppCompatActivity {
     /**
      * This function converts either weeks or months into months and weeks
      * example: gestational age = 6 weeks ,converts to 1 month and 1.5 weeks(roughly)
+     *
      * @param patient current patient
      */
     private void setupGestationalInfo(Patient patient) {
@@ -157,21 +157,21 @@ public class PatientProfileActivity extends AppCompatActivity {
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
-                double val =-1;
-                if (i == R.id.monthradiobutton){
+                double val = -1;
+                if (i == R.id.monthradiobutton) {
                     val = convertGestationAgeToMonth(patient);
-                    if (val<0){
+                    if (val < 0) {
                         gestationalAge.setText("N/A");
                     } else {
-                        gestationalAge.setText(val+"");
+                        gestationalAge.setText(val + "");
                     }
                 } else {
                     val = convertGestationAgeToWeek(patient);
                 }
-                if (val<0){
+                if (val < 0) {
                     gestationalAge.setText("N/A");
                 } else {
-                    gestationalAge.setText(val+"");
+                    gestationalAge.setText(val + "");
                 }
             }
         });
@@ -179,45 +179,45 @@ public class PatientProfileActivity extends AppCompatActivity {
     }
 
     private double convertGestationAgeToWeek(Patient patient) {
-        double age=0;
+        double age = 0;
         if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS && patient.isPregnant) {
             try {
                 age = Double.parseDouble(patient.gestationalAgeValue);
             } catch (NumberFormatException e) {
-                age=-1;
+                age = -1;
                 e.printStackTrace();
             }
             double week = age * WEEKS_IN_MONTH;
             double weekRounded = Math.round(week * 100D) / 100D;
             return weekRounded;
-        } else if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS && patient.isPregnant){
+        } else if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS && patient.isPregnant) {
             try {
-                age=Double.parseDouble(patient.gestationalAgeValue);
+                age = Double.parseDouble(patient.gestationalAgeValue);
             } catch (NumberFormatException e) {
-                age=-1;
+                age = -1;
                 e.printStackTrace();
             }
         }
         return age;
     }
 
-    private double convertGestationAgeToMonth(Patient patient)  {
-        double age=0;
+    private double convertGestationAgeToMonth(Patient patient) {
+        double age = 0;
         if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS && patient.isPregnant) {
             try {
-               age = Double.parseDouble(patient.gestationalAgeValue);
-           } catch (NumberFormatException e) {
-                age=-1;
-               e.printStackTrace();
-           }
+                age = Double.parseDouble(patient.gestationalAgeValue);
+            } catch (NumberFormatException e) {
+                age = -1;
+                e.printStackTrace();
+            }
             double months = age / WEEKS_IN_MONTH;
             double monthRounded = Math.round(months * 100D) / 100D;
             return monthRounded;
-        } else if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS && patient.isPregnant){
+        } else if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS && patient.isPregnant) {
             try {
-                age=Double.parseDouble(patient.gestationalAgeValue);
+                age = Double.parseDouble(patient.gestationalAgeValue);
             } catch (NumberFormatException e) {
-                age=-1;
+                age = -1;
                 e.printStackTrace();
             }
         }
@@ -227,7 +227,7 @@ public class PatientProfileActivity extends AppCompatActivity {
     private void getPatientReadings() {
         List<Reading> readings = readingManager.getReadings(this);
         Collections.sort(readings, new Reading.ComparatorByDateReverse());
-        patientReadings= new ArrayList<>();
+        patientReadings = new ArrayList<>();
         for (Reading reading : readings) {
             Patient patient = reading.patient;
             if (patient.patientId.equals(currPatient.patientId)) {
@@ -309,7 +309,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         }
 
         //button only works if readings exist, which it always should
-        if(readingFound) {
+        if (readingFound) {
             long readingID = latestReading.readingId;
             createButton.setOnClickListener(v -> {
                 Intent intent = ReadingActivity.makeIntentForNewReadingExistingPatient(PatientProfileActivity.this, readingID);
@@ -365,7 +365,6 @@ public class PatientProfileActivity extends AppCompatActivity {
                 .setNegativeButton(android.R.string.no, null);
         dialog.show();
     }
-
 
 
     @Override

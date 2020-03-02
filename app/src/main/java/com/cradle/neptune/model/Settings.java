@@ -59,7 +59,7 @@ public class Settings {
     private String readingServerUrl = "https://cmpt373.csil.sfu.ca:8048/api/patient/reading";
     private String referralsServerUrl = "https://cmpt373.csil.sfu.ca:8048/api/referral";
     private String referralSummeriesServerUrl = "https://cmpt373.csil.sfu.ca:8048/api/mobile/summarized/follow_up";
-//    private String referralsServerUrl = "http://10.0.2.2:5000/api/referral";
+    //    private String referralsServerUrl = "http://10.0.2.2:5000/api/referral";
     private String serverUserName;
     private String serverPassword;
     private String rsaPubKey;
@@ -80,11 +80,12 @@ public class Settings {
         loadFromSharedPrefs();
     }
 
-    public void saveLastTimeFollowUpDownloaded(String time){
-        sharedPref.edit().putString("lastSavedTime",time).apply();
+    public void saveLastTimeFollowUpDownloaded(String time) {
+        sharedPref.edit().putString("lastSavedTime", time).apply();
     }
-    public String getLastTimeFollowUpDownloaded(){
-      return   sharedPref.getString("lastSavedTime","No previous time");
+
+    public String getLastTimeFollowUpDownloaded() {
+        return sharedPref.getString("lastSavedTime", "No previous time");
     }
 
     public void loadFromSharedPrefs() {

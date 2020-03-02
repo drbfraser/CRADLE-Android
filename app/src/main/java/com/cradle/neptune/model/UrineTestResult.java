@@ -3,13 +3,13 @@ package com.cradle.neptune.model;
 import java.io.Serializable;
 
 public class UrineTestResult implements Serializable {
-    private String leukocytes ="";
-    private String nitrites ="";
-    private String protein ="";
-    private String blood ="";
-    private String glucose="";
+    private String leukocytes = "";
+    private String nitrites = "";
+    private String protein = "";
+    private String blood = "";
+    private String glucose = "";
 
-    public UrineTestResult(){
+    public UrineTestResult() {
     }
 
     public UrineTestResult(String leukocytes, String nitrites,

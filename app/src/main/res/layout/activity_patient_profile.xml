@@ -275,7 +275,6 @@
                     app:layout_constraintTop_toBottomOf="@+id/textView19">
 
                     <TextView
-                        android:id="@+id/textView44"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/gestational_age"
@@ -309,7 +308,6 @@
                             android:textSize="12sp" />
 
                         <RadioButton
-                            android:id="@+id/weeksradiobutton"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Week"
@@ -383,7 +381,7 @@
             android:text="@string/create_new_reading"
             app:backgroundTint="@color/colorPrimaryLight"
             app:layout_constraintRight_toRightOf="@+id/medicalCard"
-            app:layout_constraintTop_toBottomOf="@+id/medicalCard"/>
+            app:layout_constraintTop_toBottomOf="@+id/medicalCard" />
 
         <androidx.cardview.widget.CardView
             android:id="@+id/patientLineChartCard"

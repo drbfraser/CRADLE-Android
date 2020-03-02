@@ -53,12 +53,12 @@ public class SettingsFragment extends PreferenceFragmentCompat
 
     private void setupSignOut() {
         Preference signout = findPreference("signout");
-        if(signout!=null) {
+        if (signout != null) {
             signout.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
                     //todo show a pop up delete all tbe offlne patient data
-                    SharedPreferences sharedPref = getActivity().getSharedPreferences(LoginActivity.AUTH_PREF,Context.MODE_PRIVATE);
+                    SharedPreferences sharedPref = getActivity().getSharedPreferences(LoginActivity.AUTH_PREF, Context.MODE_PRIVATE);
                     AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).setTitle("Sign out?").setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -69,11 +69,11 @@ public class SettingsFragment extends PreferenceFragmentCompat
                             editor.remove(LoginActivity.TOKEN);
                             editor.remove(LoginActivity.USER_ID);
                             editor.apply();
-                            Intent intent = new Intent(getActivity(),LoginActivity.class);
+                            Intent intent = new Intent(getActivity(), LoginActivity.class);
                             startActivity(intent);
                             getActivity().finishAffinity();
                         }
-                    }).setNegativeButton("No",null).setIcon(R.drawable.ic_sync)
+                    }).setNegativeButton("No", null).setIcon(R.drawable.ic_sync)
                             .setMessage(R.string.signoutMessage).create();
                     alertDialog.show();
                     return true;

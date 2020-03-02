@@ -21,7 +21,7 @@ public class Zipper {
             FileOutputStream dest = new FileOutputStream(zipFile.getAbsolutePath());
             ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(
                     dest));
-            byte data[] = new byte[BUFFER_SIZE];
+            byte[] data = new byte[BUFFER_SIZE];
 
             for (File file : files) {
                 Log.v("Compress", "Adding: " + file);

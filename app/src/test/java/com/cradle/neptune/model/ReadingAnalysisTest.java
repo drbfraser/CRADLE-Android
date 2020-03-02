@@ -1,8 +1,5 @@
 package com.cradle.neptune.model;
 
-import com.cradle.neptune.R;
-
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -14,7 +11,7 @@ import static com.cradle.neptune.model.ReadingAnalysis.RED_DIASTOLIC;
 import static com.cradle.neptune.model.ReadingAnalysis.RED_SYSTOLIC;
 import static com.cradle.neptune.model.ReadingAnalysis.YELLOW_DIASTOLIC;
 import static com.cradle.neptune.model.ReadingAnalysis.YELLOW_SYSTOLIC;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 @DisplayName("Testing ReadingAnalysis")
@@ -26,7 +23,7 @@ class ReadingAnalysisTest {
     private Reading readingMock;
 
     @BeforeEach
-    void beforeEach(){
+    void beforeEach() {
         //need  to init the mocks
         MockitoAnnotations.initMocks(this);
     }
@@ -35,14 +32,14 @@ class ReadingAnalysisTest {
     @DisplayName("Test null reading input")
     void analyzeNull() {
         readingAnalysis = ReadingAnalysis.analyze(null);
-        assertEquals(readingAnalysis,ReadingAnalysis.NONE);
+        assertEquals(readingAnalysis, ReadingAnalysis.NONE);
     }
 
     @Nested
     @DisplayName("Testing Differnt input into BP and heart rate")
     class Analyze {
         @BeforeEach
-        void setup(){
+        void setup() {
             when(readingMock.getBpSystolic()).thenReturn(80);
             when(readingMock.getBpDiastolic()).thenReturn(80);
             when(readingMock.getHeartRateBPM()).thenReturn(80);
@@ -55,7 +52,7 @@ class ReadingAnalysisTest {
             // important: mocks works on only functions, if returning
             when(readingMock.getBpSystolic()).thenReturn(null);
             readingAnalysis = ReadingAnalysis.analyze(readingMock);
-            assertEquals(readingAnalysis,ReadingAnalysis.NONE);
+            assertEquals(readingAnalysis, ReadingAnalysis.NONE);
         }
 
         @Test
@@ -63,7 +60,7 @@ class ReadingAnalysisTest {
         void analyzeSevereShockRedDown() {
             when(readingMock.getHeartRateBPM()).thenReturn(160);
             readingAnalysis = ReadingAnalysis.analyze(readingMock);
-            assertEquals(ReadingAnalysis.RED_DOWN,readingAnalysis);
+            assertEquals(ReadingAnalysis.RED_DOWN, readingAnalysis);
         }
 
         @Test
@@ -71,7 +68,7 @@ class ReadingAnalysisTest {
         void analyzeWhenBPHighViaSystolicRedUp() {
             when(readingMock.getBpSystolic()).thenReturn(RED_SYSTOLIC);
             readingAnalysis = ReadingAnalysis.analyze(readingMock);
-            assertEquals(ReadingAnalysis.RED_UP,readingAnalysis);
+            assertEquals(ReadingAnalysis.RED_UP, readingAnalysis);
         }
 
         @Test
@@ -79,7 +76,7 @@ class ReadingAnalysisTest {
         void analyzeWhenBPHighViaDiastolicRedUp() {
             when(readingMock.getBpDiastolic()).thenReturn(RED_DIASTOLIC);
             readingAnalysis = ReadingAnalysis.analyze(readingMock);
-            assertEquals(ReadingAnalysis.RED_UP,readingAnalysis);
+            assertEquals(ReadingAnalysis.RED_UP, readingAnalysis);
         }
 
         @Test
@@ -87,7 +84,7 @@ class ReadingAnalysisTest {
         void analyzeShockYellowDown() {
             when(readingMock.getHeartRateBPM()).thenReturn(80);
             readingAnalysis = ReadingAnalysis.analyze(readingMock);
-            assertEquals(ReadingAnalysis.YELLOW_DOWN,readingAnalysis);
+            assertEquals(ReadingAnalysis.YELLOW_DOWN, readingAnalysis);
         }
 
         @Test
@@ -95,7 +92,7 @@ class ReadingAnalysisTest {
         void analyzeWhenBPHighViaSystolicYellowUp() {
             when(readingMock.getBpSystolic()).thenReturn(YELLOW_SYSTOLIC);
             readingAnalysis = ReadingAnalysis.analyze(readingMock);
-            assertEquals(ReadingAnalysis.YELLOW_UP,readingAnalysis);
+            assertEquals(ReadingAnalysis.YELLOW_UP, readingAnalysis);
         }
 
         @Test
@@ -105,15 +102,15 @@ class ReadingAnalysisTest {
             when(readingMock.getHeartRateBPM()).thenReturn(0);
 
             readingAnalysis = ReadingAnalysis.analyze(readingMock);
-            assertEquals(ReadingAnalysis.YELLOW_UP,readingAnalysis);
+            assertEquals(ReadingAnalysis.YELLOW_UP, readingAnalysis);
         }
 
         @Test
         @DisplayName("Testing normal GREEN")
-        void  analyzeNormalGreen(){
+        void analyzeNormalGreen() {
             when(readingMock.getHeartRateBPM()).thenReturn(0);
             readingAnalysis = ReadingAnalysis.analyze(readingMock);
-            assertEquals(ReadingAnalysis.GREEN,readingAnalysis);
+            assertEquals(ReadingAnalysis.GREEN, readingAnalysis);
         }
 
     }

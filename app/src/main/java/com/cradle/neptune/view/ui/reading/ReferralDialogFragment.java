@@ -106,7 +106,7 @@ public class ReferralDialogFragment extends DialogFragment {
 
         // Use the Builder class for convenient dialog construction
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        View dialogView = inflater.inflate(R.layout.referral_dialog,null);
+        View dialogView = inflater.inflate(R.layout.referral_dialog, null);
         builder.setView(dialogView)
                 .setPositiveButton(R.string.send_text_message, null)
                 .setNeutralButton(R.string.send_via_Web, null)
@@ -120,7 +120,7 @@ public class ReferralDialogFragment extends DialogFragment {
             public void onShow(DialogInterface dialogInterface) {
                 Button button = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
                 Button btn1 = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_NEUTRAL);
-                btn1.setOnClickListener(view-> sendReferralViaHttps(dialogView));
+                btn1.setOnClickListener(view -> sendReferralViaHttps(dialogView));
                 // brians code
                 button.setOnClickListener(view -> sendSMSMessage(dialog));
             }
@@ -162,7 +162,7 @@ public class ReferralDialogFragment extends DialogFragment {
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
-            Snackbar.make(dialogView,"Unable to Send the referral: "+json,Snackbar.LENGTH_LONG).show();
+            Snackbar.make(dialogView, "Unable to Send the referral: " + json, Snackbar.LENGTH_LONG).show();
             dialog.cancel();
         });
         queue.add(jsonObjectRequest);
@@ -561,10 +561,10 @@ public class ReferralDialogFragment extends DialogFragment {
     private JSONObject getReferralJson() {
         JSONObject patientVal = currentReading.patient.getPatientInfoJSon();
         SharedPreferences sharedPreferences = Objects.requireNonNull(getActivity())
-                .getSharedPreferences(AUTH_PREF,Context.MODE_PRIVATE);
+                .getSharedPreferences(AUTH_PREF, Context.MODE_PRIVATE);
         JSONObject readingVal = new JSONObject();
         try {
-            readingVal = Reading.getJsonReadingObject(currentReading,sharedPreferences.getString(USER_ID,""));
+            readingVal = Reading.getJsonReadingObject(currentReading, sharedPreferences.getString(USER_ID, ""));
 
         } catch (JSONException e) {
             e.printStackTrace();

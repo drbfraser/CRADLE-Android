@@ -25,7 +25,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private List<Camera.Size> mSupportedPreviewSizes;
     private Camera.Size mPreviewSize;
     private SeekBar zoomSeekbar;
-    public CameraPreview(Context context, Camera camera,SeekBar seekBar) {
+
+    public CameraPreview(Context context, Camera camera, SeekBar seekBar) {
         super(context);
         mContext = context;
         mCamera = camera;
@@ -43,19 +44,19 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         // deprecated setting, but required on Android versions prior to 3.0
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         zoomSeekbar.setMax(mCamera.getParameters().getMaxZoom());
-        zoomSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+        zoomSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress,
                                           boolean fromUser) {
                 // TODO Auto-generated method stub
-                Log.d("bugg", "progress:"+progress);
+                Log.d("bugg", "progress:" + progress);
 
                 // YOur code here in set zoom for pinch zooming, sth like this
-                if(mCamera.getParameters().isZoomSupported()){
+                if (mCamera.getParameters().isZoomSupported()) {
 
                     Camera.Parameters params = mCamera.getParameters();
-                    params.setPreviewSize(mPreviewSize.width,mPreviewSize.height);
+                    params.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
                     params.setZoom(progress);
                     mCamera.setParameters(params);
                 }

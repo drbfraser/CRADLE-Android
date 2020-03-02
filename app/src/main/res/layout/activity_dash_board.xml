@@ -8,7 +8,6 @@
     android:background="@drawable/dashboard_background">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintlayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".view.DashBoardActivity">
@@ -52,7 +51,6 @@
                 app:layout_constraintTop_toTopOf="parent">
 
                 <ImageView
-                    android:id="@+id/imageView9"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     app:srcCompat="@drawable/card_36" />
@@ -113,7 +111,6 @@
                 app:layout_constraintTop_toTopOf="parent">
 
                 <ImageView
-                    android:id="@+id/imageView10"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     app:srcCompat="@drawable/card_36" />
@@ -175,7 +172,6 @@
                 app:layout_constraintTop_toTopOf="parent">
 
                 <ImageView
-                    android:id="@+id/imageView11"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     app:srcCompat="@drawable/card_36" />
@@ -235,9 +231,8 @@
                 app:layout_constraintTop_toTopOf="parent">
 
                 <ImageView
-                    android:id="@+id/imageView12"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     app:srcCompat="@drawable/card_36" />
             </androidx.cardview.widget.CardView>
 
@@ -272,21 +267,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
-            android:adjustViewBounds="true"
-            android:baselineAlignBottom="false"
-            android:clickable="true"
-            android:cropToPadding="true"
-            android:tint="@color/colorPrimaryLight"
+            android:cropToPadding="false"
             app:backgroundTint="@color/colorOffWhite"
             app:elevation="8dp"
             app:layout_constraintEnd_toEndOf="@+id/syncConstraintlayout"
             app:layout_constraintTop_toBottomOf="@+id/syncConstraintlayout"
             app:maxImageSize="48dp"
-            app:rippleColor="@color/colorPrimaryLight"
-            app:srcCompat="@drawable/ic_education" />
+            app:srcCompat="@drawable/ic_education"
+            app:tint="@color/colorPrimaryLight"
+            app:useCompatPadding="false" />
 
         <TextView
-            android:id="@+id/textView41"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"

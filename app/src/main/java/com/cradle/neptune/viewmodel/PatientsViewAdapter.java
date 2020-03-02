@@ -40,17 +40,17 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
 
     @Override
     public void onBindViewHolder(@NonNull PatientViewHolder patientViewHolder, int i) {
-        Pair<Patient,Reading> pair = patientList.get(i);
+        Pair<Patient, Reading> pair = patientList.get(i);
         Patient patient = pair.first;
         Reading reading = pair.second;
         patientViewHolder.patientVillage.setText(patient.villageNumber);
         patientViewHolder.patientName.setText(patient.patientName);
         patientViewHolder.patientId.setText(patient.patientId);
 
-        if(reading.readingFollowUp!=null){
+        if (reading.readingFollowUp != null) {
             patientViewHolder.referralImg.setBackground(context.getResources().getDrawable(R.drawable.ic_assessment_received_black_24dp));
             patientViewHolder.referralImg.setVisibility(View.VISIBLE);
-        } else if(reading.isReferredToHealthCentre()){
+        } else if (reading.isReferredToHealthCentre()) {
             patientViewHolder.referralImg.setBackground(context.getResources().getDrawable(R.drawable.ic_pending_referral_black_24dp));
             patientViewHolder.referralImg.setVisibility(View.VISIBLE);
         }

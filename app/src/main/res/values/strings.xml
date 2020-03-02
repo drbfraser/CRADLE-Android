@@ -49,23 +49,6 @@
         <item>Unwell</item>
     </string-array>
 
-    <string-array name="urine_test_result">
-        <item>leuc +</item>
-        <item>leuc ++</item>
-        <item>leuc +++</item>
-        <item>nit +</item>
-        <item>nit ++</item>
-        <item>nit +++</item>
-        <item>glu +</item>
-        <item>glu ++</item>
-        <item>glu +++</item>
-        <item>pro +</item>
-        <item>pro ++</item>
-        <item>pro +++</item>
-        <item>blood +</item>
-        <item>blood ++</item>
-        <item>blood +++</item>
-    </string-array>
     <string-array name="reading_ga_units">
         <item>Weeks</item>
         <item>Months</item>
@@ -181,7 +164,6 @@
     </string>
     <string name="village_number">Village Number</string>
     <string name="house_number">House Number</string>
-    <string name="tank_no">Tank</string>
     <string name="block_no">Block</string>
     <string name="zone">Zone</string>
     <string name="id_number">ID number</string>

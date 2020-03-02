@@ -114,7 +114,8 @@
     </PreferenceCategory>
 
 
-    <Preference android:title="Sign Out"
+    <Preference
         android:key="signout"
-        android:summary= "@string/signoutMessage"/>
+        android:summary="@string/signoutMessage"
+        android:title="Sign Out" />
 </PreferenceScreen>

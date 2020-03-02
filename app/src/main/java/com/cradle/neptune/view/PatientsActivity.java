@@ -93,19 +93,19 @@ public class PatientsActivity extends AppCompatActivity {
 
     private void setupPatientRecyclerview() {
 
-        HashMap<String, Pair<Patient,Reading>> patientHashMap = new HashMap<>();
+        HashMap<String, Pair<Patient, Reading>> patientHashMap = new HashMap<>();
 
         List<Reading> allReadings = readingManager.getReadings(this);
 
-        Collections.sort(allReadings,new Reading.ComparatorByDateReverse());
+        Collections.sort(allReadings, new Reading.ComparatorByDateReverse());
 
 
         for (Reading reading : allReadings) {
-            if(!patientHashMap.containsKey(reading.patient.patientId)) {
+            if (!patientHashMap.containsKey(reading.patient.patientId)) {
                 patientHashMap.put(reading.patient.patientId, new Pair<>(reading.patient, reading));
             }
         }
-        List<Pair<Patient,Reading>> patients = new ArrayList<>(patientHashMap.values());
+        List<Pair<Patient, Reading>> patients = new ArrayList<>(patientHashMap.values());
         TextView textView = findViewById(R.id.emptyView);
         if (patients.size() == 0) {
             textView.setVisibility(View.VISIBLE);

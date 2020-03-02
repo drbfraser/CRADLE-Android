@@ -215,7 +215,7 @@ public class ConfirmDataFragment extends BaseFragment {
                 savedImage.getHeight());
 
         TextView tv = getActivity().findViewById(R.id.etBlurRadius);
-        detector.g_blurRadiusREVISIT = Integer.parseInt(tv.getText().toString());
+        OcrDigitDetector.g_blurRadiusREVISIT = Integer.parseInt(tv.getText().toString());
 
         detector.processImage(savedImage, new OcrDigitDetector.OnProcessImageDone() {
             @Override

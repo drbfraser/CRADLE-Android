@@ -1,8 +1,5 @@
 package com.cradle.neptune.view.ui.network_volley;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-
 import com.android.volley.NetworkResponse;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -36,7 +33,7 @@ public class Uploader {
         this.urlString = urlString;
         this.userName = userName;
         this.userPassword = userPassword;
-        this.token=token;
+        this.token = token;
     }
 
     public void doUpload(String jsonStringForBody, Response.Listener<NetworkResponse> callbackOk, Response.ErrorListener callbackFail) {
@@ -62,8 +59,8 @@ public class Uploader {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Map<String,String> header = new HashMap<>();
-        header.put(LoginActivity.AUTH,"Bearer " + token);
+        Map<String, String> header = new HashMap<>();
+        header.put(LoginActivity.AUTH, "Bearer " + token);
         MultipartRequest multipartRequest = new MultipartRequest(
                 urlString,
                 header,
