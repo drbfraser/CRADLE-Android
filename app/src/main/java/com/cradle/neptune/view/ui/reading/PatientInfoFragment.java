@@ -160,10 +160,6 @@ public class PatientInfoFragment extends BaseFragment {
         et = mView.findViewById(R.id.etZone);
         currentReading.patient.zone = et.getText().toString();
 
-
-        // house number
-        et = mView.findViewById(R.id.etHouseNumber);
-        currentReading.patient.houseNumber = et.getText().toString();
     }
 
     private void setupGASpinner(View v) {

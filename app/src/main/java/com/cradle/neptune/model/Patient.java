@@ -20,7 +20,6 @@ public class Patient implements Serializable {
     public boolean isPregnant;
     public String zone;
     public String villageNumber;
-    public String houseNumber;
     public List<String> drugHistoryList;
     public List<String> medicalHistoryList;
 
@@ -29,16 +28,15 @@ public class Patient implements Serializable {
 
     public Patient(String mPatientId, String mPatientName, String dob, Reading.GestationalAgeUnit mGestationalAgeUnit,
                    String mGestationalAgeValue, String mVillageNumber, PATIENTSEX mSex,
-                   String zone, String houseNumber, boolean isPregnant) {
+                   String zone, boolean isPregnant) {
         patientId = mPatientId;
         patientName = mPatientName;
-        dob = dob;
+        this.dob = dob;
         gestationalAgeUnit = mGestationalAgeUnit;
         gestationalAgeValue = mGestationalAgeValue;
         villageNumber = mVillageNumber;
         patientSex = mSex;
         this.zone = zone;
-        this.houseNumber = houseNumber;
         this.isPregnant = isPregnant;
         drugHistoryList = new ArrayList<>();
         medicalHistoryList = new ArrayList<>();

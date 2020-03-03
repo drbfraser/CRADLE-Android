@@ -46,7 +46,6 @@ public class PatientProfileActivity extends AppCompatActivity {
     TextView patientAge;
     TextView patientSex;
     TextView villageNo;
-    TextView patientHouse;
     TextView patientZone;
     TextView pregnant;
     TextView gestationalAge;
@@ -80,7 +79,6 @@ public class PatientProfileActivity extends AppCompatActivity {
         patientAge = findViewById(R.id.patientAge);
         patientSex = findViewById(R.id.patientSex);
         villageNo = findViewById(R.id.patientVillage);
-        patientHouse = findViewById(R.id.patientHouseNum);
         patientZone = findViewById(R.id.patientZone);
         pregnant = findViewById(R.id.textView20);
         gestationalAge = findViewById(R.id.gestationalAge);
@@ -124,7 +122,6 @@ public class PatientProfileActivity extends AppCompatActivity {
         patientAge.setText(patient.dob);
         patientSex.setText(patient.patientSex.toString());
         villageNo.setText(patient.villageNumber);
-        patientHouse.setText(patient.houseNumber);
         patientZone.setText(patient.zone);
         if (patient.isPregnant) {
             pregnant.setText("Yes");
