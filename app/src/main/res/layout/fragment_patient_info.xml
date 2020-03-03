@@ -124,7 +124,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:hint="@string/village_number"
+            android:hint="@string/village"
             android:minWidth="250dp"
             app:layout_constraintStart_toEndOf="@+id/txtZone"
             app:layout_constraintTop_toTopOf="@+id/txtZone">
@@ -133,7 +133,7 @@
                 android:id="@+id/etVillageNumber"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="number" />
+                android:inputType="text" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Zone -->
@@ -170,22 +170,6 @@
         <!-- Tank number -->
 
         <!-- House number -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/txtHouseNumber"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:hint="@string/house_number"
-            android:minWidth="200dp"
-            app:layout_constraintStart_toStartOf="@+id/txtZone"
-            app:layout_constraintTop_toBottomOf="@+id/txtZone">
-
-            <EditText
-                android:id="@+id/etHouseNumber"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="number" />
-        </com.google.android.material.textfield.TextInputLayout>
 
         <Switch
             android:id="@+id/pregnantSwitch"
@@ -202,12 +186,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
             android:text="@string/sex"
             android:textColor="#000000"
             android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/txtHouseNumber" />
+            app:layout_constraintTop_toBottomOf="@+id/txtZone" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
