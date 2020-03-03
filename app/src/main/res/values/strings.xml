@@ -162,7 +162,7 @@
         3QIDAQAB                                                        \n
         -----END PUBLIC KEY-----
     </string>
-    <string name="village_number">Village Number</string>
+    <string name="village">Village</string>
     <string name="house_number">House Number</string>
     <string name="block_no">Block</string>
     <string name="zone">Zone</string>
@@ -174,7 +174,6 @@
     <string name="id">ID</string>
     <string name="id_colon">ID:</string>
     <string name="patients">Patients</string>
-    <string name="village">VILLAGE</string>
     <string name="village_colon">Village:</string>
     <string name="personal_information">Personal Information</string>
     <string name="medical_information">Medical Information</string>
