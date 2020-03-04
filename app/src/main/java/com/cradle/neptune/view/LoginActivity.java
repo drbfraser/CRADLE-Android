@@ -43,7 +43,7 @@ public class LoginActivity extends AppCompatActivity {
     public static final String AUTH = "Authorization";
     public static final String USER_ID = "userId";
     public static final String DEFAULT_EMAIL = "";
-    public static final int DEFAULT_PASSWORD = -1;
+    public static final String DEFAULT_PASSWORD = "";
     public static final String DEFAULT_TOKEN = null;
     public static final String AUTH_PREF = "authSharefPref";
     public static int loginBruteForceAttempts;
@@ -61,8 +61,8 @@ public class LoginActivity extends AppCompatActivity {
     private void checkSharedPrefForLogin() {
         SharedPreferences sharedPref = this.getSharedPreferences(AUTH_PREF, Context.MODE_PRIVATE);
         String email = sharedPref.getString(LOGIN_EMAIL, DEFAULT_EMAIL);
-        int password = sharedPref.getInt(LOGIN_PASSWORD, DEFAULT_PASSWORD);
-        if (!email.equals(DEFAULT_EMAIL) && password != DEFAULT_PASSWORD) {
+        String password = sharedPref.getString(LOGIN_PASSWORD, DEFAULT_PASSWORD);
+        if (!email.equals(DEFAULT_EMAIL) && !password.equals(DEFAULT_PASSWORD)) {
             startIntroActivity();
         }
 
@@ -107,12 +107,12 @@ public class LoginActivity extends AppCompatActivity {
                     editor.putString(USER_ID, response.getString("userId"));
                     editor.apply();
                     String token = response.get(TOKEN).toString();
-                    getAllMyPatients(token);
+                   // getAllMyPatients(token);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
                 //get all patients by this person
-                //startIntroActivity();
+                startIntroActivity();
             }, error -> {
                 errorText.setVisibility(View.VISIBLE);
                 progressDialog.cancel();
@@ -125,17 +125,12 @@ public class LoginActivity extends AppCompatActivity {
         JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, Settings.DEFAULT_SERVER_URL+"/patient/allinfo",
                 null, response -> {
             Log.d("bugg","response successful  "+response.toString());
-            Snackbar.make(findViewById(R.id.cordinatorLayout), R.string.followUpDownloaded, Snackbar.LENGTH_LONG)
-                    .show();
         }, error -> {
             Log.d("bugg","failed: "+ error);
             if (error!=null){
-                Log.d("bugg", error.getMessage());
+                Log.d("bugg", error.getMessage()+"     "+error.networkResponse);
 
             }
-            Snackbar.make(findViewById(R.id.cordinatorLayout), R.string.followUpCheckInternet,
-                    Snackbar.LENGTH_LONG).setActionTextColor(Color.RED).setAction("Try Again", null)
-                    .show();
         }) {
 
             /**

@@ -64,10 +64,10 @@ public class SettingsFragment extends PreferenceFragmentCompat
                         public void onClick(DialogInterface dialog, int which) {
 
                             SharedPreferences.Editor editor = sharedPref.edit();
-                            editor.remove(LoginActivity.LOGIN_EMAIL);
-                            editor.remove(LoginActivity.LOGIN_PASSWORD);
-                            editor.remove(LoginActivity.TOKEN);
-                            editor.remove(LoginActivity.USER_ID);
+                            editor.putString(LoginActivity.LOGIN_EMAIL,"");
+                            editor.putString(LoginActivity.LOGIN_PASSWORD,"");
+                            editor.putString(LoginActivity.TOKEN,"");
+                            editor.putString(LoginActivity.USER_ID,"");
                             editor.apply();
                             Intent intent = new Intent(getActivity(), LoginActivity.class);
                             startActivity(intent);
