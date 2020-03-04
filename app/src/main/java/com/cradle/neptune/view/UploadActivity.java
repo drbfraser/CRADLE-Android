@@ -135,7 +135,6 @@ public class UploadActivity extends AppCompatActivity {
 
         Map<String, String> header = new HashMap<>();
         header.put(LoginActivity.AUTH, "Bearer " + token);
-//            JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, "http://10.0.2.2:5000/api/referral",
         Dialog dialog = new Dialog(this);
         dialog.setTitle("Syncing");
         dialog.setCancelable(false);

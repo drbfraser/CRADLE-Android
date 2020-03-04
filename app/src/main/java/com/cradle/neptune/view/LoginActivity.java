@@ -4,7 +4,9 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -15,14 +17,22 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.Settings;
+import com.google.android.material.snackbar.Snackbar;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.threeten.bp.ZonedDateTime;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class LoginActivity extends AppCompatActivity {
@@ -96,17 +106,51 @@ public class LoginActivity extends AppCompatActivity {
                     editor.putString(TOKEN, response.getString(TOKEN));
                     editor.putString(USER_ID, response.getString("userId"));
                     editor.apply();
+                    String token = response.get(TOKEN).toString();
+                    getAllMyPatients(token);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-
-                startIntroActivity();
+                //get all patients by this person
+                //startIntroActivity();
             }, error -> {
                 errorText.setVisibility(View.VISIBLE);
                 progressDialog.cancel();
             });
             queue.add(jsonObjectRequest);
         });
+    }
+
+    private void getAllMyPatients(String token) {
+        JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, Settings.DEFAULT_SERVER_URL+"/patient/allinfo",
+                null, response -> {
+            Log.d("bugg","response successful  "+response.toString());
+            Snackbar.make(findViewById(R.id.cordinatorLayout), R.string.followUpDownloaded, Snackbar.LENGTH_LONG)
+                    .show();
+        }, error -> {
+            Log.d("bugg","failed: "+ error);
+            if (error!=null){
+                Log.d("bugg", error.getMessage());
+
+            }
+            Snackbar.make(findViewById(R.id.cordinatorLayout), R.string.followUpCheckInternet,
+                    Snackbar.LENGTH_LONG).setActionTextColor(Color.RED).setAction("Try Again", null)
+                    .show();
+        }) {
+
+            /**
+             * Passing some request headers
+             */
+            @Override
+            public Map<String, String> getHeaders() {
+                HashMap<String, String> headers = new HashMap<>();
+                //headers.put("Content-Type", "application/json");
+                headers.put(LoginActivity.AUTH, "Bearer " + token);
+                return headers;
+            }
+        };
+        RequestQueue queue = Volley.newRequestQueue(MyApp.getInstance());
+        queue.add(jsonArrayRequest);
     }
 
     private void saveUserNamePasswordSharedPref(String email, String password) {
