@@ -65,7 +65,7 @@ public class SettingsFragment extends PreferenceFragmentCompat
 
                             SharedPreferences.Editor editor = sharedPref.edit();
                             editor.putString(LoginActivity.LOGIN_EMAIL,"");
-                            editor.putString(LoginActivity.LOGIN_PASSWORD,"");
+                            editor.putInt(LoginActivity.LOGIN_PASSWORD,LoginActivity.DEFAULT_PASSWORD);
                             editor.putString(LoginActivity.TOKEN,"");
                             editor.putString(LoginActivity.USER_ID,"");
                             editor.apply();

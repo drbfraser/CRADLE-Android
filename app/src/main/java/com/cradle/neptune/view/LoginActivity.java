@@ -23,6 +23,8 @@ import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.model.Patient;
+import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.Settings;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -31,6 +33,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.threeten.bp.ZonedDateTime;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,10 +46,10 @@ public class LoginActivity extends AppCompatActivity {
     public static final String AUTH = "Authorization";
     public static final String USER_ID = "userId";
     public static final String DEFAULT_EMAIL = "";
-    public static final String DEFAULT_PASSWORD = "";
+    public static final int DEFAULT_PASSWORD = -1;
     public static final String DEFAULT_TOKEN = null;
     public static final String AUTH_PREF = "authSharefPref";
-    public static int loginBruteForceAttempts;
+    public static int loginBruteForceAttempts =3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,15 +57,13 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         checkSharedPrefForLogin();
         setupLogin();
-
-        loginBruteForceAttempts = 3;
     }
 
     private void checkSharedPrefForLogin() {
         SharedPreferences sharedPref = this.getSharedPreferences(AUTH_PREF, Context.MODE_PRIVATE);
         String email = sharedPref.getString(LOGIN_EMAIL, DEFAULT_EMAIL);
-        String password = sharedPref.getString(LOGIN_PASSWORD, DEFAULT_PASSWORD);
-        if (!email.equals(DEFAULT_EMAIL) && !password.equals(DEFAULT_PASSWORD)) {
+        int password = sharedPref.getInt(LOGIN_PASSWORD, DEFAULT_PASSWORD);
+        if (!email.equals(DEFAULT_EMAIL) && password!=DEFAULT_PASSWORD) {
             startIntroActivity();
         }
 
@@ -98,7 +99,7 @@ public class LoginActivity extends AppCompatActivity {
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Settings.authServerUrl, jsonObject, response -> {
                 progressDialog.cancel();
                 //put it into sharedpress for offline login.
-                saveUserNamePasswordSharedPref(emailET.getText().toString(), passwordET.getText().toString());
+                //saveUserNamePasswordSharedPref(emailET.getText().toString(), passwordET.getText().toString());
                 Toast.makeText(LoginActivity.this, "Login Successful!", Toast.LENGTH_LONG).show();
                 try {
                     SharedPreferences sharedPref = LoginActivity.this.getSharedPreferences(AUTH_PREF, Context.MODE_PRIVATE);
@@ -107,7 +108,7 @@ public class LoginActivity extends AppCompatActivity {
                     editor.putString(USER_ID, response.getString("userId"));
                     editor.apply();
                     String token = response.get(TOKEN).toString();
-                   // getAllMyPatients(token);
+                   getAllMyPatients(token);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -124,11 +125,15 @@ public class LoginActivity extends AppCompatActivity {
     private void getAllMyPatients(String token) {
         JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, Settings.DEFAULT_SERVER_URL+"/patient/allinfo",
                 null, response -> {
-            Log.d("bugg","response successful  "+response.toString());
+            try {
+                savePatientsAndReading(response);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }, error -> {
             Log.d("bugg","failed: "+ error);
             if (error!=null){
-                Log.d("bugg", error.getMessage()+"     "+error.networkResponse);
+                Log.d("bugg", error.getMessage()+"     "+error.networkResponse.statusCode);
 
             }
         }) {
@@ -146,6 +151,33 @@ public class LoginActivity extends AppCompatActivity {
         };
         RequestQueue queue = Volley.newRequestQueue(MyApp.getInstance());
         queue.add(jsonArrayRequest);
+    }
+
+    private void savePatientsAndReading(JSONArray response) throws JSONException {
+        for (int i=0;i<response.length();i++){
+            //get the main json object
+            JSONObject jsonObject = response.getJSONObject(i);
+            //build patient
+            Patient patient = new Patient();
+            patient.dob = jsonObject.getString("dob");
+            patient.patientName=jsonObject.getString("patientName");
+            patient.zone = jsonObject.getString("zone");
+            patient.gestationalAgeUnit = Reading.GestationalAgeUnit.valueOf((String) jsonObject.get("gestationalAgeUnit"));
+            patient.gestationalAgeValue = jsonObject.getString("gestationalAgeValue");
+            patient.patientId = jsonObject.getString("patientId");
+            patient.villageNumber = jsonObject.getString("villageNumber");
+            patient.patientSex = Patient.PATIENTSEX.valueOf((String) jsonObject.get("patientSex"));
+            patient.age = jsonObject.getInt("patientAge");
+            patient.isPregnant = jsonObject.getBoolean("isPregnant");
+            patient.needAssessment = jsonObject.getBoolean("needsAssessment");
+
+            patient.drugHistoryList = new ArrayList<>();
+            patient.drugHistoryList.add(jsonObject.getString("drugHistory"));
+            patient.medicalHistoryList = new ArrayList<>();
+            patient.medicalHistoryList.add(jsonObject.getString("medicalHistory"));
+
+            Log.d("bugg",patient.toString());
+        }
     }
 
     private void saveUserNamePasswordSharedPref(String email, String password) {

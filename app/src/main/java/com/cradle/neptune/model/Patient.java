@@ -13,11 +13,14 @@ public class Patient implements Serializable {
     public String patientId;
     public String patientName;
     public String dob;
+    // age in case there is no DOB
+    public Integer age;
     public List<String> symptoms = new ArrayList<>();
     public Reading.GestationalAgeUnit gestationalAgeUnit;
     public String gestationalAgeValue;
     public PATIENTSEX patientSex;
     public boolean isPregnant;
+    public boolean needAssessment;
     public String zone;
     public String villageNumber;
     public List<String> drugHistoryList;
@@ -86,5 +89,21 @@ public class Patient implements Serializable {
 
     public enum PATIENTSEX {MALE, FEMALE, OTHERS}
 
-
+    @Override
+    public String toString() {
+        return "Patient{" +
+                "patientId='" + patientId + '\'' +
+                ", patientName='" + patientName + '\'' +
+                ", dob='" + dob + '\'' +
+                ", symptoms=" + symptoms +
+                ", gestationalAgeUnit=" + gestationalAgeUnit +
+                ", gestationalAgeValue='" + gestationalAgeValue + '\'' +
+                ", patientSex=" + patientSex +
+                ", isPregnant=" + isPregnant +
+                ", zone='" + zone + '\'' +
+                ", villageNumber='" + villageNumber + '\'' +
+                ", drugHistoryList=" + drugHistoryList +
+                ", medicalHistoryList=" + medicalHistoryList +
+                '}';
+    }
 }
