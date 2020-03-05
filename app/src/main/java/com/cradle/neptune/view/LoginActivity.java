@@ -26,6 +26,7 @@ import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.Settings;
+import com.cradle.neptune.model.UrineTestResult;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONArray;
@@ -35,6 +36,7 @@ import org.threeten.bp.ZonedDateTime;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -153,6 +155,11 @@ public class LoginActivity extends AppCompatActivity {
         queue.add(jsonArrayRequest);
     }
 
+    /**
+     * converts patient and reading from json into Reading/ patient class
+     * @param response response from the web
+     * @throws JSONException if the object doesnt exist
+     */
     private void savePatientsAndReading(JSONArray response) throws JSONException {
         for (int i=0;i<response.length();i++){
             //get the main json object
@@ -175,7 +182,34 @@ public class LoginActivity extends AppCompatActivity {
             patient.drugHistoryList.add(jsonObject.getString("drugHistory"));
             patient.medicalHistoryList = new ArrayList<>();
             patient.medicalHistoryList.add(jsonObject.getString("medicalHistory"));
+            JSONArray readingArray = jsonObject.getJSONArray("readings");
 
+            //get all the readings
+            for (int j=0;j<readingArray.length();j++){
+                JSONObject readingJson = readingArray.getJSONObject(i);
+                Reading reading = new Reading();
+                reading.bpDiastolic = readingJson.getInt("bpDiastolic");
+                reading.bpSystolic = readingJson.getInt("bpSystolic");
+                reading.userHasSelectedNoSymptoms = readingJson.getBoolean("userHasSelectedNoSymptoms");
+                reading.dateLastSaved =ZonedDateTime.parse(readingJson.getString("dateLastSaved"));
+                reading.heartRateBPM = readingJson.getInt("heartRateBPM");
+                reading.serverReadingId = readingJson.getString("userId");
+                //
+                JSONObject urineTest = readingJson.getJSONObject("urineTests");
+                UrineTestResult urineTestResult = new UrineTestResult();
+                //todo fill out the urine result
+                //reading.retestOfPreviousReadingIds= (List<Long>) readingJson.get("retestOfPreviousReadingIds");
+                reading.dateUploadedToServer = ZonedDateTime.parse(readingJson.getString("dateUploadedToServer"));
+                if (reading.dateUploadedToServer==null){
+                    // cannot be null since we check this in order to upload reading to server
+                    reading.dateUploadedToServer = ZonedDateTime.now();
+                }
+                // TODO: 05/03/20 offline db creates reading id automatically, figure out if thats ok
+                reading.setAManualChangeOcrResultsFlags(readingJson.getInt("manuallyChangeOcrResults"));
+                //todo userId fill in
+                reading.totalOcrSeconds = readingJson.getInt("totalOcrSeconds");
+                reading.referralComment = readingJson.getString("referral");
+            }
             Log.d("bugg",patient.toString());
         }
     }
