@@ -25,8 +25,10 @@ import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
+import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.model.UrineTestResult;
+import com.cradle.neptune.utilitiles.DateUtil;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONArray;
@@ -38,6 +40,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.inject.Inject;
 
 
 public class LoginActivity extends AppCompatActivity {
@@ -53,10 +57,15 @@ public class LoginActivity extends AppCompatActivity {
     public static final String AUTH_PREF = "authSharefPref";
     public static int loginBruteForceAttempts =3;
 
+    @Inject
+    ReadingManager readingManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        ((MyApp) getApplication()).getAppComponent().inject(this);
+
         checkSharedPrefForLogin();
         setupLogin();
     }
@@ -174,9 +183,9 @@ public class LoginActivity extends AppCompatActivity {
             patient.patientId = jsonObject.getString("patientId");
             patient.villageNumber = jsonObject.getString("villageNumber");
             patient.patientSex = Patient.PATIENTSEX.valueOf((String) jsonObject.get("patientSex"));
-            patient.age = jsonObject.getInt("patientAge");
-            patient.isPregnant = jsonObject.getBoolean("isPregnant");
-            patient.needAssessment = jsonObject.getBoolean("needsAssessment");
+            patient.age = jsonObject.optInt("patientAge",-1);
+            patient.isPregnant = jsonObject.optBoolean("isPregnant",false);
+            patient.needAssessment = jsonObject.optBoolean("needsAssessment",false);
 
             patient.drugHistoryList = new ArrayList<>();
             patient.drugHistoryList.add(jsonObject.getString("drugHistory"));
@@ -188,26 +197,37 @@ public class LoginActivity extends AppCompatActivity {
             for (int j=0;j<readingArray.length();j++){
                 JSONObject readingJson = readingArray.getJSONObject(i);
                 Reading reading = new Reading();
-                reading.bpDiastolic = readingJson.getInt("bpDiastolic");
-                reading.bpSystolic = readingJson.getInt("bpSystolic");
-                reading.userHasSelectedNoSymptoms = readingJson.getBoolean("userHasSelectedNoSymptoms");
+                reading.bpDiastolic = readingJson.optInt("bpDiastolic",-1);
+                reading.bpSystolic = readingJson.optInt("bpSystolic",-1);
+                reading.userHasSelectedNoSymptoms = readingJson.optBoolean("userHasSelectedNoSymptoms",false);
                 reading.dateLastSaved =ZonedDateTime.parse(readingJson.getString("dateLastSaved"));
-                reading.heartRateBPM = readingJson.getInt("heartRateBPM");
+                reading.heartRateBPM = readingJson.optInt("heartRateBPM",-1);
                 reading.serverReadingId = readingJson.getString("userId");
                 //
                 JSONObject urineTest = readingJson.getJSONObject("urineTests");
                 UrineTestResult urineTestResult = new UrineTestResult();
                 //todo fill out the urine result
                 //reading.retestOfPreviousReadingIds= (List<Long>) readingJson.get("retestOfPreviousReadingIds");
-                reading.dateUploadedToServer = ZonedDateTime.parse(readingJson.getString("dateUploadedToServer"));
+                reading.dateUploadedToServer = DateUtil.getZoneTimeFromString(readingJson.getString("dateUploadedToServer"));
+                reading.dateTimeTaken = DateUtil.getZoneTimeFromString(readingJson.getString("dateTimeTaken"));
+                reading.dateRecheckVitalsNeeded = DateUtil.getZoneTimeFromString(readingJson.getString("dateRecheckVitalsNeeded"));
                 if (reading.dateUploadedToServer==null){
                     // cannot be null since we check this in order to upload reading to server
                     reading.dateUploadedToServer = ZonedDateTime.now();
                 }
                 // TODO: 05/03/20 offline db creates reading id automatically, figure out if thats ok
-                reading.setAManualChangeOcrResultsFlags(readingJson.getInt("manuallyChangeOcrResults"));
-                reading.totalOcrSeconds = readingJson.getInt("totalOcrSeconds");
+                reading.setAManualChangeOcrResultsFlags(readingJson.optInt("manuallyChangeOcrResults",-1));
+                reading.totalOcrSeconds = readingJson.optInt("totalOcrSeconds",-1);
                 reading.referralComment = readingJson.getString("referral");
+                reading.symptoms.add(0,readingJson.getString("symptoms"));
+                reading.setFlaggedForFollowup(readingJson.optBoolean("isFlaggedForFollowup",false));
+
+                // because we decided to put patient inside reading --___--
+                reading.patient = patient;
+                //adding the reading to db
+                Log.d("buggg","adding to the reading manager");
+                readingManager.addNewReading(this,reading);
+
             }
             Log.d("bugg",patient.toString());
         }

@@ -69,4 +69,12 @@ public class DateUtil {
     public static String getISODateForFilename(ZonedDateTime date) {
         return getISODate(date).replace(":", ".");
     }
+
+    public static ZonedDateTime getZoneTimeFromString(String date){
+        if (date==null || date.equals("")|| date.toLowerCase().equals("null")){
+            return null;
+        }
+        ZonedDateTime zonedDateTime = ZonedDateTime.parse(date);
+        return zonedDateTime;
+    }
 }
