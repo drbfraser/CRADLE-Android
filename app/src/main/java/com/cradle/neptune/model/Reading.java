@@ -66,6 +66,8 @@ public class Reading {
     public ZonedDateTime dateRecheckVitalsNeeded;
     // assessment
     public ReadingFollowUp readingFollowUp = null;
+    public List<String> symptoms = new ArrayList<>();
+
     // referrals
     public ZonedDateTime referralMessageSendTime;
     public String referralHealthCentre;
@@ -161,7 +163,7 @@ public class Reading {
 //        r.gestationalAgeValue = source.gestationalAgeValue;
         r.patient = source.patient;
         // don't require user to re-check the 'no symptoms' box
-        if (r.patient.symptoms.isEmpty()) {
+        if (r.symptoms.isEmpty()) {
             r.userHasSelectedNoSymptoms = true;
         }
 
@@ -173,9 +175,9 @@ public class Reading {
     public static Reading makeNewExistingPatientReading(Reading source, ZonedDateTime now) {
         Reading r = Reading.makeNewReading(now);
         r.patient = source.patient;
-        r.patient.symptoms.clear();
+        r.symptoms.clear();
         // don't require user to re-check the 'no symptoms' box
-        if (r.patient.symptoms.isEmpty()) {
+        if (r.symptoms.isEmpty()) {
             r.userHasSelectedNoSymptoms = true;
         }
 
@@ -333,7 +335,7 @@ public class Reading {
     // symptoms
     public String getSymptomsString() {
         String description = "";
-        for (String symptom : patient.symptoms) {
+        for (String symptom : symptoms) {
             // clean up
             symptom = symptom.trim();
             if (symptom.length() == 0) {
@@ -399,7 +401,7 @@ public class Reading {
     }
 
     public boolean isMissingRequiredSymptoms() {
-        return patient.symptoms.isEmpty() && !userHasSelectedNoSymptoms && dateLastSaved == null;
+        return symptoms.isEmpty() && !userHasSelectedNoSymptoms && dateLastSaved == null;
     }
 
     /**

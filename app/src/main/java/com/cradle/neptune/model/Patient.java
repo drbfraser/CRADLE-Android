@@ -15,7 +15,6 @@ public class Patient implements Serializable {
     public String dob;
     // age in case there is no DOB
     public Integer age;
-    public List<String> symptoms = new ArrayList<>();
     public Reading.GestationalAgeUnit gestationalAgeUnit;
     public String gestationalAgeValue;
     public PATIENTSEX patientSex;
@@ -46,19 +45,6 @@ public class Patient implements Serializable {
 
     }
 
-    public String genSymptomString() {
-        String symptomsString = "None";
-        if (symptoms.size() > 0) {
-            symptomsString = symptoms.get(0);
-            if (symptoms.size() > 1) {
-                for (int i = 1; i < symptoms.size(); i++) {
-                    symptomsString += ",";
-                    symptomsString += symptoms.get(i);
-                }
-            }
-        }
-        return symptomsString;
-    }
 
     public JSONObject getPatientInfoJSon() {
         try {
@@ -95,7 +81,6 @@ public class Patient implements Serializable {
                 "patientId='" + patientId + '\'' +
                 ", patientName='" + patientName + '\'' +
                 ", dob='" + dob + '\'' +
-                ", symptoms=" + symptoms +
                 ", gestationalAgeUnit=" + gestationalAgeUnit +
                 ", gestationalAgeValue='" + gestationalAgeValue + '\'' +
                 ", patientSex=" + patientSex +

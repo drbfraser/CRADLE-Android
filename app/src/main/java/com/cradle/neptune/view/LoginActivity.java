@@ -206,7 +206,6 @@ public class LoginActivity extends AppCompatActivity {
                 }
                 // TODO: 05/03/20 offline db creates reading id automatically, figure out if thats ok
                 reading.setAManualChangeOcrResultsFlags(readingJson.getInt("manuallyChangeOcrResults"));
-                //todo userId fill in
                 reading.totalOcrSeconds = readingJson.getInt("totalOcrSeconds");
                 reading.referralComment = readingJson.getString("referral");
             }
