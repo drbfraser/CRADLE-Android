@@ -60,7 +60,7 @@ public class Settings {
     private String readingServerUrl = DEFAULT_SERVER_URL+"/patient/reading";
     private String referralsServerUrl = DEFAULT_SERVER_URL+"/referral";
     private String referralSummeriesServerUrl = DEFAULT_SERVER_URL+"/mobile/summarized/follow_up";
-
+    public static String patientGetAllInfoByUserIdUrl = DEFAULT_SERVER_URL+"/patient/allinfo";
     private String serverUserName;
     private String serverPassword;
     private String rsaPubKey;

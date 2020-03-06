@@ -142,7 +142,7 @@ public class LoginActivity extends AppCompatActivity {
      * @param token token for the user
      */
     private void getAllMyPatients(String token) {
-        JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, Settings.DEFAULT_SERVER_URL+"/patient/allinfo",
+        JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, Settings.patientGetAllInfoByUserIdUrl,
                 null, response -> {
             try {
                 savePatientsAndReading(response);
@@ -153,6 +153,7 @@ public class LoginActivity extends AppCompatActivity {
             Log.d("bugg","failed: "+ error);
             if (error!=null){
                 Log.d("bugg", error.getMessage()+"     "+error.networkResponse.statusCode);
+
 
             }
         }) {
@@ -196,9 +197,13 @@ public class LoginActivity extends AppCompatActivity {
             patient.needAssessment = jsonObject.optBoolean("needsAssessment",false);
 
             patient.drugHistoryList = new ArrayList<>();
-            patient.drugHistoryList.add(jsonObject.getString("drugHistory"));
+            if (!jsonObject.getString("drugHistory").toLowerCase().equals("null")) {
+                patient.drugHistoryList.add(jsonObject.getString("drugHistory"));
+            }
             patient.medicalHistoryList = new ArrayList<>();
-            patient.medicalHistoryList.add(jsonObject.getString("medicalHistory"));
+            if (!jsonObject.getString("medicalHistory").toLowerCase().equals("null")) {
+                patient.medicalHistoryList.add(jsonObject.getString("medicalHistory"));
+            }
             JSONArray readingArray = jsonObject.getJSONArray("readings");
             if (readingArray.length()<=0){
                 //should never be the case but just for safety
@@ -220,7 +225,7 @@ public class LoginActivity extends AppCompatActivity {
         reading.bpDiastolic = readingJson.optInt("bpDiastolic",-1);
         reading.bpSystolic = readingJson.optInt("bpSystolic",-1);
         reading.userHasSelectedNoSymptoms = readingJson.optBoolean("userHasSelectedNoSymptoms",false);
-        reading.dateLastSaved = ZonedDateTime.parse(readingJson.getString("dateLastSaved"));
+        reading.dateLastSaved = ZonedDateTime.parse(readingJson.optString("dateLastSaved",ZonedDateTime.now().toString()));
         reading.heartRateBPM = readingJson.optInt("heartRateBPM",-1);
         reading.readingId = readingJson.getString("readingId");
         //
@@ -241,7 +246,7 @@ public class LoginActivity extends AppCompatActivity {
         reading.urineTestResult = urineTestResult;
         //reading.retestOfPreviousReadingIds= (List<String>) readingJson.get("retestOfPreviousReadingIds");
 
-        reading.dateUploadedToServer = DateUtil.getZoneTimeFromString(readingJson.getString("dateUploadedToServer"));
+        reading.dateUploadedToServer = DateUtil.getZoneTimeFromString(readingJson.optString("dateUploadedToServer",ZonedDateTime.now().toString()));
         reading.dateTimeTaken = DateUtil.getZoneTimeFromString(readingJson.getString("dateTimeTaken"));
         reading.dateRecheckVitalsNeeded = DateUtil.getZoneTimeFromString(readingJson.getString("dateRecheckVitalsNeeded"));
         if (reading.dateUploadedToServer==null){
@@ -250,7 +255,7 @@ public class LoginActivity extends AppCompatActivity {
         }
         reading.setAManualChangeOcrResultsFlags(readingJson.optInt("manuallyChangeOcrResults",-1));
         reading.totalOcrSeconds = readingJson.optInt("totalOcrSeconds",-1);
-        reading.referralComment = readingJson.getString("referral");
+        reading.referralComment = readingJson.optString("referral");
         reading.symptoms.add(0,readingJson.getString("symptoms"));
         reading.setFlaggedForFollowup(readingJson.optBoolean("isFlaggedForFollowup",false));
         reading.readingId = readingJson.getString("readingId");
