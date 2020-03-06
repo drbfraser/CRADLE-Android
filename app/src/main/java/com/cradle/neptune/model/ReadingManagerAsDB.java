@@ -37,12 +37,12 @@ public class ReadingManagerAsDB implements ReadingManager {
     }
 
     @Override
-    public Reading getReadingById(Context context, long readingId) {
+    public Reading getReadingById(Context context, String readingId) {
         return readingDb.getReadingById(context, readingId);
     }
 
     @Override
-    public void deleteReadingById(Context context, long readingId) {
+    public void deleteReadingById(Context context, String readingId) {
         readingDb.deleteReadingById(context, readingId);
     }
 

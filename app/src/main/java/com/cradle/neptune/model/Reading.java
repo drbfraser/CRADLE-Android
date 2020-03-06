@@ -40,10 +40,9 @@ public class Reading {
      * Stored Values
      */
     // offline db
-    public Long readingId;
+    public String readingId;
     public ZonedDateTime dateLastSaved;
     //todo later change the reading Id to be same for offline and online
-    public String serverReadingId;
     // patient info
 //    public String patientId;
 //    public String patientName;
@@ -62,7 +61,7 @@ public class Reading {
     public String gpsLocationOfReading;
     public ZonedDateTime dateUploadedToServer;
     // retest & follow-up
-    public List<Long> retestOfPreviousReadingIds;   // oldest first
+    public List<String> retestOfPreviousReadingIds;   // oldest first
     public ZonedDateTime dateRecheckVitalsNeeded;
     // assessment
     public ReadingFollowUp readingFollowUp = null;
@@ -127,7 +126,7 @@ public class Reading {
             urineTest.put("urineTestGlu", reading.urineTestResult.getGlucose());
             urineTest.put("urineTestNit", reading.urineTestResult.getNitrites());
         }
-        readingVal.put("readingId", reading.serverReadingId);
+        readingVal.put("readingId", reading.readingId);
         readingVal.put("dateLastSaved", reading.dateLastSaved);
         readingVal.put("dateTimeTaken", reading.dateTimeTaken);
         readingVal.put("bpSystolic", reading.bpSystolic);
@@ -144,7 +143,6 @@ public class Reading {
     public static Reading makeNewReading(ZonedDateTime now) {
         // setup basic info
         Reading r = new Reading();
-        r.generateServerReadingId();
         r.dateTimeTaken = now;
         r.appVersion = String.format("%s = %s", BuildConfig.VERSION_CODE, BuildConfig.VERSION_NAME);
         r.deviceInfo = Build.MANUFACTURER + ", " + Build.MODEL;
@@ -235,9 +233,7 @@ public class Reading {
 //         return message;
 //    }
 
-    private void generateServerReadingId() {
-        serverReadingId = UUID.randomUUID().toString();
-    }
+
 
     /**
      * Accessors
@@ -296,7 +292,7 @@ public class Reading {
         return retestOfPreviousReadingIds != null && retestOfPreviousReadingIds.size() > 0;
     }
 
-    public void addIdToRetestOfPreviousReadings(List<Long> retestOfPreviousReadingIds, Long readingId) {
+    public void addIdToRetestOfPreviousReadings(List<String> retestOfPreviousReadingIds, String readingId) {
         if (this.retestOfPreviousReadingIds == null) {
             this.retestOfPreviousReadingIds = new ArrayList<>();
         }

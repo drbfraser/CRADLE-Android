@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.cradle.neptune.utilitiles.GsonUtil;
 import com.cradle.neptune.utilitiles.Util;
@@ -12,6 +13,7 @@ import org.threeten.bp.ZonedDateTime;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class ReadingDB {
     public void addNewReading(Context context, Reading reading) {
@@ -19,11 +21,13 @@ public class ReadingDB {
         SQLiteDatabase database = new ReadingSQLiteDBHelper(context).getWritableDatabase();
 
         ContentValues values = new ContentValues();
+        String primaryKey = UUID.randomUUID().toString();
+        reading.readingId = primaryKey;
+        values.put(ReadingSQLiteDBHelper.READING_COLUMN_DBID,primaryKey);
         values.put(ReadingSQLiteDBHelper.READING_COLUMN_PATIENT_ID, reading.patient.patientId);
         values.put(ReadingSQLiteDBHelper.READING_COLUMN_JSON, GsonUtil.getJson(reading));
 
-        long newRowId = database.insert(ReadingSQLiteDBHelper.READING_TABLE_NAME, null, values);
-        reading.readingId = newRowId;
+        database.insert(ReadingSQLiteDBHelper.READING_TABLE_NAME, null, values);
     }
 
     public void updateReading(Context context, Reading reading) {
@@ -44,7 +48,7 @@ public class ReadingDB {
                 whereClause,
                 whereArgs
         );
-
+        Log.d("bugg",numUpdates+" ");
         Util.ensure(numUpdates == 1);
     }
 
@@ -79,7 +83,7 @@ public class ReadingDB {
     }
 
 
-    public Reading getReadingById(Context context, long id) {
+    public Reading getReadingById(Context context, String id) {
         SQLiteDatabase database = new ReadingSQLiteDBHelper(context).getReadableDatabase();
 
         String[] projection = {
@@ -120,8 +124,6 @@ public class ReadingDB {
 
             // create reading & fill ID (not in JSON)
             Reading r = GsonUtil.makeObjectFromJson(json, Reading.class);
-            r.readingId = rowId;
-
             readings.add(r);
 
             // Double check that the data we are reading is consistent
@@ -130,7 +132,7 @@ public class ReadingDB {
         return readings;
     }
 
-    public void deleteReadingById(Context context, long readingID) {
+    public void deleteReadingById(Context context, String readingID) {
         SQLiteDatabase database = new ReadingSQLiteDBHelper(context).getWritableDatabase();
 
         String whereClause = ReadingSQLiteDBHelper.READING_COLUMN_DBID + " = ?";

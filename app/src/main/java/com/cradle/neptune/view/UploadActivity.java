@@ -211,7 +211,7 @@ public class UploadActivity extends AppCompatActivity {
         //todo with new database design, optimize this better to not take n^2
         for (Reading reading : readings) {
             for (ReadingFollowUp followUp : readingsFollowUps) {
-                if (reading.serverReadingId.equals(followUp.getReadingServerId())) {
+                if (reading.readingId.equals(followUp.getReadingServerId())) {
                     reading.readingFollowUp = followUp;
                     reading.patient.medicalHistoryList = new ArrayList<>();
                     reading.patient.drugHistoryList = new ArrayList<>();

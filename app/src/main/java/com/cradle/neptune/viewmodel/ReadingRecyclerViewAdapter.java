@@ -187,19 +187,19 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
 
     private void onClick(View view) {
         int itemPosition = recyclerView.getChildLayoutPosition(view);
-        long readingId = readings.get(itemPosition).readingId;
+        String readingId = readings.get(itemPosition).readingId;
         if (onClickElementListener != null) {
             onClickElementListener.onClick(readingId);
         }
     }
 
     public interface OnClickElement {
-        void onClick(long readingId);
+        void onClick(String readingId);
 
         // Return true if click handled
-        boolean onLongClick(long readingId);
+        boolean onLongClick(String readingId);
 
-        void onClickRecheckReading(long readingId);
+        void onClickRecheckReading(String readingId);
     }
 
     static class MyViewHolder extends RecyclerView.ViewHolder {

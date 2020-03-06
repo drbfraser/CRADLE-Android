@@ -34,9 +34,12 @@ import com.google.android.material.snackbar.Snackbar;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.threeten.bp.Instant;
+import org.threeten.bp.ZoneOffset;
 import org.threeten.bp.ZonedDateTime;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -119,7 +122,7 @@ public class LoginActivity extends AppCompatActivity {
                     editor.putString(USER_ID, response.getString("userId"));
                     editor.apply();
                     String token = response.get(TOKEN).toString();
-                   getAllMyPatients(token);
+                   //getAllMyPatients(token);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -202,7 +205,7 @@ public class LoginActivity extends AppCompatActivity {
                 reading.userHasSelectedNoSymptoms = readingJson.optBoolean("userHasSelectedNoSymptoms",false);
                 reading.dateLastSaved =ZonedDateTime.parse(readingJson.getString("dateLastSaved"));
                 reading.heartRateBPM = readingJson.optInt("heartRateBPM",-1);
-                reading.serverReadingId = readingJson.getString("userId");
+                reading.readingId = readingJson.getString("readingId");
                 //
                 JSONObject urineTest = readingJson.getJSONObject("urineTests");
                 UrineTestResult urineTestResult = new UrineTestResult();
@@ -221,13 +224,13 @@ public class LoginActivity extends AppCompatActivity {
                 reading.referralComment = readingJson.getString("referral");
                 reading.symptoms.add(0,readingJson.getString("symptoms"));
                 reading.setFlaggedForFollowup(readingJson.optBoolean("isFlaggedForFollowup",false));
-
+                reading.readingId = readingJson.getString("readingId");
                 // because we decided to put patient inside reading --___--
                 reading.patient = patient;
                 //adding the reading to db
                 Log.d("buggg","adding to the reading manager");
                 readingManager.addNewReading(this,reading);
-
+                Instant instant = Instant.ofEpochMilli(1234);
             }
             Log.d("bugg",patient.toString());
         }
