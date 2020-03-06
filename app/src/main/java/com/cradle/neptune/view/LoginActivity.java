@@ -126,7 +126,6 @@ public class LoginActivity extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                //get all patients by this person
                 startIntroActivity();
             }, error -> {
                 errorText.setVisibility(View.VISIBLE);
@@ -136,6 +135,12 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * makes the volley call to get all the  past readings from this user.
+     * Since Volley runs on its own thread, its okay for UI or activity to change as long as
+     * we are not referrencing them.
+     * @param token token for the user
+     */
     private void getAllMyPatients(String token) {
         JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, Settings.DEFAULT_SERVER_URL+"/patient/allinfo",
                 null, response -> {
@@ -195,50 +200,63 @@ public class LoginActivity extends AppCompatActivity {
             patient.medicalHistoryList = new ArrayList<>();
             patient.medicalHistoryList.add(jsonObject.getString("medicalHistory"));
             JSONArray readingArray = jsonObject.getJSONArray("readings");
-
+            if (readingArray.length()<=0){
+                //should never be the case but just for safety
+                //there shouldnt be a case where there is a patient without reeading
+                return;
+            }
             //get all the readings
             for (int j=0;j<readingArray.length();j++){
                 JSONObject readingJson = readingArray.getJSONObject(i);
-                Reading reading = new Reading();
-                reading.bpDiastolic = readingJson.optInt("bpDiastolic",-1);
-                reading.bpSystolic = readingJson.optInt("bpSystolic",-1);
-                reading.userHasSelectedNoSymptoms = readingJson.optBoolean("userHasSelectedNoSymptoms",false);
-                reading.dateLastSaved =ZonedDateTime.parse(readingJson.getString("dateLastSaved"));
-                reading.heartRateBPM = readingJson.optInt("heartRateBPM",-1);
-                reading.readingId = readingJson.getString("readingId");
-                //
-                JSONObject urineTest = readingJson.getJSONObject("urineTests");
-                UrineTestResult urineTestResult = null;
-                if (urineTest!=null){
-                    urineTestResult = new UrineTestResult();
-                    urineTestResult.setProtein(urineTest.getString("urineTestPro"));
-                    urineTestResult.setBlood(urineTest.getString("urineTestBlood"));
-                    urineTestResult.setLeukocytes(urineTest.getString("urineTestLeuc"));
-                    urineTestResult.setGlucose(urineTest.getString("urineTestGlu"));
-                    urineTestResult.setNitrites(urineTest.getString("urineTestNit"));
-                }
-                reading.urineTestResult = urineTestResult;
-                //reading.retestOfPreviousReadingIds= (List<String>) readingJson.get("retestOfPreviousReadingIds");
-
-                reading.dateUploadedToServer = DateUtil.getZoneTimeFromString(readingJson.getString("dateUploadedToServer"));
-                reading.dateTimeTaken = DateUtil.getZoneTimeFromString(readingJson.getString("dateTimeTaken"));
-                reading.dateRecheckVitalsNeeded = DateUtil.getZoneTimeFromString(readingJson.getString("dateRecheckVitalsNeeded"));
-                if (reading.dateUploadedToServer==null){
-                    // cannot be null since we check this in order to upload reading to server
-                    reading.dateUploadedToServer = ZonedDateTime.now();
-                }
-                reading.setAManualChangeOcrResultsFlags(readingJson.optInt("manuallyChangeOcrResults",-1));
-                reading.totalOcrSeconds = readingJson.optInt("totalOcrSeconds",-1);
-                reading.referralComment = readingJson.getString("referral");
-                reading.symptoms.add(0,readingJson.getString("symptoms"));
-                reading.setFlaggedForFollowup(readingJson.optBoolean("isFlaggedForFollowup",false));
-                reading.readingId = readingJson.getString("readingId");
-                // because we decided to put patient inside reading --___--
-                reading.patient = patient;
+                Reading reading = getReadingFromJSONObject(patient, readingJson);
                 //adding the reading to db
                 readingManager.addNewReading(this,reading);
             }
         }
+    }
+
+    private Reading getReadingFromJSONObject(Patient patient, JSONObject readingJson) throws JSONException {
+        Reading reading = new Reading();
+        reading.bpDiastolic = readingJson.optInt("bpDiastolic",-1);
+        reading.bpSystolic = readingJson.optInt("bpSystolic",-1);
+        reading.userHasSelectedNoSymptoms = readingJson.optBoolean("userHasSelectedNoSymptoms",false);
+        reading.dateLastSaved = ZonedDateTime.parse(readingJson.getString("dateLastSaved"));
+        reading.heartRateBPM = readingJson.optInt("heartRateBPM",-1);
+        reading.readingId = readingJson.getString("readingId");
+        //
+        UrineTestResult urineTestResult = null;
+        if (readingJson.has("urineTests")){
+            JSONObject urineTest = readingJson.getJSONObject("urineTests");
+            Log.d("bugg","URINETEST: "+urineTest.toString());
+            //checking for nulls, if one is null, all should be
+            if (!urineTest.getString("urineTestPro").toLowerCase().equals("null")) {
+                urineTestResult = new UrineTestResult();
+                urineTestResult.setProtein(urineTest.getString("urineTestPro"));
+                urineTestResult.setBlood(urineTest.getString("urineTestBlood"));
+                urineTestResult.setLeukocytes(urineTest.getString("urineTestLeuc"));
+                urineTestResult.setGlucose(urineTest.getString("urineTestGlu"));
+                urineTestResult.setNitrites(urineTest.getString("urineTestNit"));
+            }
+        }
+        reading.urineTestResult = urineTestResult;
+        //reading.retestOfPreviousReadingIds= (List<String>) readingJson.get("retestOfPreviousReadingIds");
+
+        reading.dateUploadedToServer = DateUtil.getZoneTimeFromString(readingJson.getString("dateUploadedToServer"));
+        reading.dateTimeTaken = DateUtil.getZoneTimeFromString(readingJson.getString("dateTimeTaken"));
+        reading.dateRecheckVitalsNeeded = DateUtil.getZoneTimeFromString(readingJson.getString("dateRecheckVitalsNeeded"));
+        if (reading.dateUploadedToServer==null){
+            // cannot be null since we check this in order to upload reading to server
+            reading.dateUploadedToServer = ZonedDateTime.now();
+        }
+        reading.setAManualChangeOcrResultsFlags(readingJson.optInt("manuallyChangeOcrResults",-1));
+        reading.totalOcrSeconds = readingJson.optInt("totalOcrSeconds",-1);
+        reading.referralComment = readingJson.getString("referral");
+        reading.symptoms.add(0,readingJson.getString("symptoms"));
+        reading.setFlaggedForFollowup(readingJson.optBoolean("isFlaggedForFollowup",false));
+        reading.readingId = readingJson.getString("readingId");
+        // because we decided to put patient inside reading --___--
+        reading.patient = patient;
+        return reading;
     }
 
     private void saveUserNamePasswordSharedPref(String email, String password) {
