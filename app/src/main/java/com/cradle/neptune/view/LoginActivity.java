@@ -122,7 +122,7 @@ public class LoginActivity extends AppCompatActivity {
                     editor.putString(USER_ID, response.getString("userId"));
                     editor.apply();
                     String token = response.get(TOKEN).toString();
-                   //getAllMyPatients(token);
+                   getAllMyPatients(token);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -208,9 +208,18 @@ public class LoginActivity extends AppCompatActivity {
                 reading.readingId = readingJson.getString("readingId");
                 //
                 JSONObject urineTest = readingJson.getJSONObject("urineTests");
-                UrineTestResult urineTestResult = new UrineTestResult();
-                //todo fill out the urine result
-                //reading.retestOfPreviousReadingIds= (List<Long>) readingJson.get("retestOfPreviousReadingIds");
+                UrineTestResult urineTestResult = null;
+                if (urineTest!=null){
+                    urineTestResult = new UrineTestResult();
+                    urineTestResult.setProtein(urineTest.getString("urineTestPro"));
+                    urineTestResult.setBlood(urineTest.getString("urineTestBlood"));
+                    urineTestResult.setLeukocytes(urineTest.getString("urineTestLeuc"));
+                    urineTestResult.setGlucose(urineTest.getString("urineTestGlu"));
+                    urineTestResult.setNitrites(urineTest.getString("urineTestNit"));
+                }
+                reading.urineTestResult = urineTestResult;
+                //reading.retestOfPreviousReadingIds= (List<String>) readingJson.get("retestOfPreviousReadingIds");
+
                 reading.dateUploadedToServer = DateUtil.getZoneTimeFromString(readingJson.getString("dateUploadedToServer"));
                 reading.dateTimeTaken = DateUtil.getZoneTimeFromString(readingJson.getString("dateTimeTaken"));
                 reading.dateRecheckVitalsNeeded = DateUtil.getZoneTimeFromString(readingJson.getString("dateRecheckVitalsNeeded"));
@@ -218,7 +227,6 @@ public class LoginActivity extends AppCompatActivity {
                     // cannot be null since we check this in order to upload reading to server
                     reading.dateUploadedToServer = ZonedDateTime.now();
                 }
-                // TODO: 05/03/20 offline db creates reading id automatically, figure out if thats ok
                 reading.setAManualChangeOcrResultsFlags(readingJson.optInt("manuallyChangeOcrResults",-1));
                 reading.totalOcrSeconds = readingJson.optInt("totalOcrSeconds",-1);
                 reading.referralComment = readingJson.getString("referral");
@@ -228,11 +236,8 @@ public class LoginActivity extends AppCompatActivity {
                 // because we decided to put patient inside reading --___--
                 reading.patient = patient;
                 //adding the reading to db
-                Log.d("buggg","adding to the reading manager");
                 readingManager.addNewReading(this,reading);
-                Instant instant = Instant.ofEpochMilli(1234);
             }
-            Log.d("bugg",patient.toString());
         }
     }
 

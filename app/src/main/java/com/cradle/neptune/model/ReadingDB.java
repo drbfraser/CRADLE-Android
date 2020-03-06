@@ -21,9 +21,12 @@ public class ReadingDB {
         SQLiteDatabase database = new ReadingSQLiteDBHelper(context).getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        String primaryKey = UUID.randomUUID().toString();
-        reading.readingId = primaryKey;
-        values.put(ReadingSQLiteDBHelper.READING_COLUMN_DBID,primaryKey);
+        //incase we are adding the reading from server on first login and readingId already exists.
+        if (reading.readingId==null ||reading.readingId.equals("")||
+                reading.readingId.toLowerCase().equals("null")){
+            reading.readingId = UUID.randomUUID().toString();
+        }
+        values.put(ReadingSQLiteDBHelper.READING_COLUMN_DBID,reading.readingId);
         values.put(ReadingSQLiteDBHelper.READING_COLUMN_PATIENT_ID, reading.patient.patientId);
         values.put(ReadingSQLiteDBHelper.READING_COLUMN_JSON, GsonUtil.getJson(reading));
 
