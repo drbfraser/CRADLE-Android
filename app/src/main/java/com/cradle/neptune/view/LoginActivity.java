@@ -112,7 +112,7 @@ public class LoginActivity extends AppCompatActivity {
             }
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Settings.authServerUrl, jsonObject, response -> {
                 progressDialog.cancel();
-                //put it into sharedpress for offline login.
+                //put it into sharedpref for offline login.
                 //saveUserNamePasswordSharedPref(emailET.getText().toString(), passwordET.getText().toString());
                 Toast.makeText(LoginActivity.this, "Login Successful!", Toast.LENGTH_LONG).show();
                 try {
@@ -212,7 +212,7 @@ public class LoginActivity extends AppCompatActivity {
             }
             //get all the readings
             for (int j=0;j<readingArray.length();j++){
-                JSONObject readingJson = readingArray.getJSONObject(i);
+                JSONObject readingJson = readingArray.getJSONObject(j);
                 Reading reading = getReadingFromJSONObject(patient, readingJson);
                 //adding the reading to db
                 readingManager.addNewReading(this,reading);
@@ -225,14 +225,12 @@ public class LoginActivity extends AppCompatActivity {
         reading.bpDiastolic = readingJson.optInt("bpDiastolic",-1);
         reading.bpSystolic = readingJson.optInt("bpSystolic",-1);
         reading.userHasSelectedNoSymptoms = readingJson.optBoolean("userHasSelectedNoSymptoms",false);
-        reading.dateLastSaved = ZonedDateTime.parse(readingJson.optString("dateLastSaved",ZonedDateTime.now().toString()));
         reading.heartRateBPM = readingJson.optInt("heartRateBPM",-1);
         reading.readingId = readingJson.getString("readingId");
         //
         UrineTestResult urineTestResult = null;
-        if (readingJson.has("urineTests")){
+        if (readingJson.has("urineTests") && !readingJson.get("urineTests").toString().toLowerCase().equals("null")){
             JSONObject urineTest = readingJson.getJSONObject("urineTests");
-            Log.d("bugg","URINETEST: "+urineTest.toString());
             //checking for nulls, if one is null, all should be
             if (!urineTest.getString("urineTestPro").toLowerCase().equals("null")) {
                 urineTestResult = new UrineTestResult();
@@ -252,6 +250,11 @@ public class LoginActivity extends AppCompatActivity {
         if (reading.dateUploadedToServer==null){
             // cannot be null since we check this in order to upload reading to server
             reading.dateUploadedToServer = ZonedDateTime.now();
+        }
+        if (!readingJson.optString("dateLastSaved").equals("null")) {
+            reading.dateLastSaved = ZonedDateTime.parse(readingJson.optString("dateLastSaved", ZonedDateTime.now().toString()));
+        } else {
+            reading.dateLastSaved = reading.dateUploadedToServer;
         }
         reading.setAManualChangeOcrResultsFlags(readingJson.optInt("manuallyChangeOcrResults",-1));
         reading.totalOcrSeconds = readingJson.optInt("totalOcrSeconds",-1);

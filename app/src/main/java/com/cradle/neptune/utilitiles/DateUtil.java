@@ -1,7 +1,15 @@
 package com.cradle.neptune.utilitiles;
 
+import android.util.Log;
+
+import org.threeten.bp.Instant;
+import org.threeten.bp.ZoneId;
+import org.threeten.bp.ZoneOffset;
 import org.threeten.bp.ZonedDateTime;
 import org.threeten.bp.format.DateTimeFormatter;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class DateUtil {
     public static String getDateString(ZonedDateTime date) {
@@ -74,7 +82,24 @@ public class DateUtil {
         if (date==null || date.equals("")|| date.toLowerCase().equals("null")){
             return null;
         }
-        ZonedDateTime zonedDateTime = ZonedDateTime.parse(date);
+
+        ZonedDateTime zonedDateTime = null;
+        try {
+            zonedDateTime = ZonedDateTime.parse(date);
+        }catch (Exception e){
+            Log.d("bugg", "date: "+ date);
+            try {
+                String date1=date.replace("T"," ");
+                Log.d("bugg","new string: "+date1);
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                Date date2 = simpleDateFormat.parse(date1);
+                zonedDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(date2.getTime()), ZoneId.systemDefault());
+                Log.d("bugg","time:zone: "+zonedDateTime.toString());
+            }catch (Exception e1){
+                e1.printStackTrace();
+            }
+            e.printStackTrace();
+        }
         return zonedDateTime;
     }
 }
