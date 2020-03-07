@@ -10,7 +10,7 @@ public class ReadingManagerAsDB implements ReadingManager {
 
     @Override
     public void addNewReading(Context context, Reading reading) {
-        readingDb.addNewReading(context, reading);
+        readingDb.addNewOrUpdateReading(context, reading);
 
         // update other records for this patient: done rechecking vitals
         List<Reading> readings = getReadings(context);

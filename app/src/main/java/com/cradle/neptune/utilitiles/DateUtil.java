@@ -85,20 +85,18 @@ public class DateUtil {
 
         ZonedDateTime zonedDateTime = null;
         try {
+            // if the date is already in zone format
             zonedDateTime = ZonedDateTime.parse(date);
         }catch (Exception e){
-            Log.d("bugg", "date: "+ date);
             try {
+                // date was in python date format
                 String date1=date.replace("T"," ");
-                Log.d("bugg","new string: "+date1);
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 Date date2 = simpleDateFormat.parse(date1);
                 zonedDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(date2.getTime()), ZoneId.systemDefault());
-                Log.d("bugg","time:zone: "+zonedDateTime.toString());
             }catch (Exception e1){
                 e1.printStackTrace();
             }
-            e.printStackTrace();
         }
         return zonedDateTime;
     }

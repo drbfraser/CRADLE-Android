@@ -4,6 +4,7 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -146,6 +147,9 @@ public class SymptomsFragment extends BaseFragment {
             return;
         }
         String leuk = ((RadioButton) leucRadioGroup.findViewById(leucRadioGroup.getCheckedRadioButtonId())).getText().toString();
+        if (bloodRadioGroup==null){
+            Log.d("bugg","radiogroup is null");
+        }
         String blood = ((RadioButton) bloodRadioGroup.findViewById(bloodRadioGroup.getCheckedRadioButtonId())).getText().toString();
         String glucose = ((RadioButton) glucoseRadioGroup.findViewById(glucoseRadioGroup.getCheckedRadioButtonId())).getText().toString();
         String nitr = ((RadioButton) nitRadioGroup.findViewById(nitRadioGroup.getCheckedRadioButtonId())).getText().toString();

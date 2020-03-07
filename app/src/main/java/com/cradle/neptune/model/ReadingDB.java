@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class ReadingDB {
-    public void addNewReading(Context context, Reading reading) {
+    public void addNewOrUpdateReading(Context context, Reading reading) {
         reading.dateLastSaved = ZonedDateTime.now();
         SQLiteDatabase database = new ReadingSQLiteDBHelper(context).getWritableDatabase();
 
@@ -29,8 +29,9 @@ public class ReadingDB {
         values.put(ReadingSQLiteDBHelper.READING_COLUMN_DBID,reading.readingId);
         values.put(ReadingSQLiteDBHelper.READING_COLUMN_PATIENT_ID, reading.patient.patientId);
         values.put(ReadingSQLiteDBHelper.READING_COLUMN_JSON, GsonUtil.getJson(reading));
+        // using replace is helpful since we might have duplicated entries whose values needs to be updated.
+        database.replace(ReadingSQLiteDBHelper.READING_TABLE_NAME, null, values);
 
-        database.insert(ReadingSQLiteDBHelper.READING_TABLE_NAME, null, values);
     }
 
     public void updateReading(Context context, Reading reading) {
