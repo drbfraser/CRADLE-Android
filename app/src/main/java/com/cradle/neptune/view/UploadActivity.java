@@ -208,17 +208,20 @@ public class UploadActivity extends AppCompatActivity {
             }
         }
         List<Reading> readings = readingManager.getReadings(this);
-        //todo with new database design, optimize this better to not take n^2
+        Map<String,Reading> readingMap = new HashMap<String, Reading>();
         for (Reading reading : readings) {
-            for (ReadingFollowUp followUp : readingsFollowUps) {
-                if (reading.readingId.equals(followUp.getReadingServerId())) {
-                    reading.readingFollowUp = followUp;
-                    reading.patient.medicalHistoryList = new ArrayList<>();
-                    reading.patient.drugHistoryList = new ArrayList<>();
-                    reading.patient.medicalHistoryList.add(followUp.getPatientMedInfoUpdate().toLowerCase());
-                    reading.patient.drugHistoryList.add(followUp.getPatientDrugInfoUpdate().toLowerCase());
-                    readingManager.updateReading(this, reading);
-                }
+            readingMap.put(reading.readingId,reading);
+        }
+        //update the followups
+        for (ReadingFollowUp followUp : readingsFollowUps) {
+            Reading reading = readingMap.get(followUp.getReadingServerId());
+            if (reading!=null) {
+                reading.readingFollowUp = followUp;
+                reading.patient.medicalHistoryList = new ArrayList<>();
+                reading.patient.drugHistoryList = new ArrayList<>();
+                reading.patient.medicalHistoryList.add(followUp.getPatientMedInfoUpdate().toLowerCase());
+                reading.patient.drugHistoryList.add(followUp.getPatientDrugInfoUpdate().toLowerCase());
+                readingManager.updateReading(this, reading);
             }
         }
     }
