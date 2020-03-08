@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -40,6 +41,7 @@ import org.threeten.bp.Instant;
 import org.threeten.bp.ZoneOffset;
 import org.threeten.bp.ZonedDateTime;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -64,6 +66,7 @@ public class LoginActivity extends AppCompatActivity {
     static String NOTIFICATION_CHANNEL_ID= "channelIdForDownloadingPatients";
     public static int PatientDownloadingNotificationID = 99;
     private int PatientDownloadFailNotificationID = 98;
+    private static AsyncTask asyncTask;
 
     @Inject
     ReadingManager readingManager;
@@ -149,15 +152,24 @@ public class LoginActivity extends AppCompatActivity {
     private void getAllMyPatients(String token) {
         JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, Settings.patientGetAllInfoByUserIdUrl,
                 null, response -> {
-            try {
-                savePatientsAndReading(response);
+             asyncTask = new AsyncTask() {
+                @Override
+                protected Object doInBackground(Object[] objects) {
+                    try {
 
-                //cancel the notification bar
-                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
-                notificationManager.cancel(PatientDownloadingNotificationID);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+                        savePatientsAndReading(response);
+
+                        //cancel the notification bar
+                        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
+                        notificationManager.cancel(PatientDownloadingNotificationID);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                }
+            };
+            asyncTask.execute();
+
         }, error -> {
             Log.d("bugg","failed: "+ error);
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
@@ -302,4 +314,5 @@ public class LoginActivity extends AppCompatActivity {
         progressDialog.show();
         return progressDialog;
     }
+
 }
