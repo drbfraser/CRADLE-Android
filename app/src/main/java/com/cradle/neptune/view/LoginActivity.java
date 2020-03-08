@@ -14,6 +14,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -59,6 +61,9 @@ public class LoginActivity extends AppCompatActivity {
     public static final String DEFAULT_TOKEN = null;
     public static final String AUTH_PREF = "authSharefPref";
     public static int loginBruteForceAttempts =3;
+    static String NOTIFICATION_CHANNEL_ID= "channelIdForDownloadingPatients";
+    public static int PatientDownloadingNotificationID = 99;
+    private int PatientDownloadFailNotificationID = 98;
 
     @Inject
     ReadingManager readingManager;
@@ -114,7 +119,7 @@ public class LoginActivity extends AppCompatActivity {
                 progressDialog.cancel();
                 //put it into sharedpref for offline login.
                 //saveUserNamePasswordSharedPref(emailET.getText().toString(), passwordET.getText().toString());
-                Toast.makeText(LoginActivity.this, "Login Successful!", Toast.LENGTH_LONG).show();
+                Toast.makeText(LoginActivity.this, "Login Successful!", Toast.LENGTH_SHORT).show();
                 try {
                     SharedPreferences sharedPref = LoginActivity.this.getSharedPreferences(AUTH_PREF, Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = sharedPref.edit();
@@ -146,16 +151,19 @@ public class LoginActivity extends AppCompatActivity {
                 null, response -> {
             try {
                 savePatientsAndReading(response);
+
+                //cancel the notification bar
+                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
+                notificationManager.cancel(PatientDownloadingNotificationID);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }, error -> {
             Log.d("bugg","failed: "+ error);
-            if (error!=null){
-                Log.d("bugg", error.getMessage()+"     "+error.networkResponse.statusCode);
-
-
-            }
+            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
+            notificationManager.cancel(PatientDownloadingNotificationID);
+            //let user know we failed getting the patients info // maybe due to timeout etc?
+            buildNotification(getString(R.string.app_name),"Failed to download Patients information...",PatientDownloadFailNotificationID);
         }) {
 
             /**
@@ -169,8 +177,20 @@ public class LoginActivity extends AppCompatActivity {
                 return headers;
             }
         };
+        Toast.makeText(this,"Downloading patient's information, Check the status bar for progress.",Toast.LENGTH_LONG).show();
         RequestQueue queue = Volley.newRequestQueue(MyApp.getInstance());
         queue.add(jsonArrayRequest);
+        buildNotification(getString(R.string.app_name),"Downloading Patients....",PatientDownloadingNotificationID);
+    }
+    void buildNotification(String title, String message, int id){
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+                .setSmallIcon(R.drawable.cradle_for_icon_512x512)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        notificationManager.notify(id,builder.build());
     }
 
     /**
