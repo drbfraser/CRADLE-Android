@@ -6,6 +6,8 @@ import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -18,14 +20,18 @@ import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.view.PatientProfileActivity;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapter.PatientViewHolder> {
+public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapter.PatientViewHolder> implements Filterable {
     private List<Pair<Patient, Reading>> patientList;
+    private List<Pair<Patient, Reading>> filteredpatientList;
+
     private Context context;
 
     public PatientsViewAdapter(List<Pair<Patient, Reading>> patientList, Context context) {
         this.patientList = patientList;
+        this.filteredpatientList = patientList;
         this.context = context;
     }
 
@@ -65,7 +71,39 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
 
     @Override
     public int getItemCount() {
-        return patientList.size();
+        return filteredpatientList.size();
+    }
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence charSequence) {
+                String charString = charSequence.toString();
+                if (charString.isEmpty()) {
+                     filteredpatientList= patientList;
+                } else {
+                    List<Pair<Patient, Reading>> filteredList = new ArrayList<>();
+                    for (Pair<Patient,Reading> pair : patientList) {
+                        if (pair.first.patientId.contains(charString) ||pair.first.patientName.contains(charSequence)){
+                            filteredList.add(pair);
+                        }
+                    }
+
+                    filteredpatientList = filteredList;
+                }
+
+                FilterResults filterResults = new FilterResults();
+                filterResults.values = filteredpatientList;
+                return filterResults;
+            }
+
+            @Override
+            protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+                filteredpatientList = (ArrayList<Pair<Patient, Reading>>) filterResults.values;
+                notifyDataSetChanged();
+            }
+        };
     }
 
     static class PatientViewHolder extends RecyclerView.ViewHolder {
