@@ -1,16 +1,22 @@
 package com.cradle.neptune.view;
 
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Pair;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -50,6 +56,7 @@ public class PatientsActivity extends AppCompatActivity {
 
     private RecyclerView patientRecyclerview;
     private PatientsViewAdapter patientsViewAdapter;
+    private SearchView searchView;
 
 
     // set who we are for tab code
@@ -76,6 +83,51 @@ public class PatientsActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_patients, menu);
+
+        // Associate searchable configuration with the SearchView
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        searchView = (SearchView) menu.findItem(R.id.searchPatients)
+                .getActionView();
+        searchView.setSearchableInfo(searchManager
+                .getSearchableInfo(getComponentName()));
+        searchView.setMaxWidth(Integer.MAX_VALUE);
+
+        // listening to search query text change
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                // filter recycler view when query submitted
+                patientsViewAdapter.getFilter().filter(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String query) {
+                // filter recycler view when text is changed
+                Log.d("bugg",patientsViewAdapter+"");
+                Log.d("bugg",patientsViewAdapter.getFilter()+"");
+                patientsViewAdapter.getFilter().filter(query);
+                return false;
+            }
+        });
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.searchPatients) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -106,7 +158,7 @@ public class PatientsActivity extends AppCompatActivity {
             textView.setVisibility(View.GONE);
 
         }
-        PatientsViewAdapter patientsViewAdapter = new PatientsViewAdapter(patients, this);
+        patientsViewAdapter = new PatientsViewAdapter(patients, this);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         patientRecyclerview.setAdapter(patientsViewAdapter);
         patientRecyclerview.setLayoutManager(layoutManager);

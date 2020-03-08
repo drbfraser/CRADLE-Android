@@ -2,6 +2,7 @@ package com.cradle.neptune.viewmodel;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -85,7 +86,8 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
                 } else {
                     List<Pair<Patient, Reading>> filteredList = new ArrayList<>();
                     for (Pair<Patient,Reading> pair : patientList) {
-                        if (pair.first.patientId.contains(charString) ||pair.first.patientName.contains(charSequence)){
+                        if (pair.first.patientId.contains(charString) ||pair.first.patientName.contains(charString)){
+                            Log.d("bugg","matching: search: "+ charString+ " matchID: "+pair.first.patientId+ " NAME: "+pair.first.patientName);
                             filteredList.add(pair);
                         }
                     }
@@ -100,6 +102,7 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
 
             @Override
             protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+
                 filteredpatientList = (ArrayList<Pair<Patient, Reading>>) filterResults.values;
                 notifyDataSetChanged();
             }
