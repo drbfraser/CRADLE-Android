@@ -31,6 +31,7 @@ public class ReadingDB {
         values.put(ReadingSQLiteDBHelper.READING_COLUMN_JSON, GsonUtil.getJson(reading));
         // using replace is helpful since we might have duplicated entries whose values needs to be updated.
         database.replace(ReadingSQLiteDBHelper.READING_TABLE_NAME, null, values);
+        database.close();
 
     }
 
@@ -53,6 +54,7 @@ public class ReadingDB {
                 whereArgs
         );
         Util.ensure(numUpdates == 1);
+        database.close();
     }
 
     public List<Reading> getReadings(Context context) {
@@ -110,6 +112,8 @@ public class ReadingDB {
         );
 
         List<Reading> list = cursorToArrayList(cursor);
+        cursor.close();
+        database.close();
         Util.ensure(list.size() <= 1);
         return list.size() > 0 ? list.get(0) : null;
     }
@@ -132,6 +136,7 @@ public class ReadingDB {
             // Double check that the data we are reading is consistent
             Util.ensure(patientId == r.patient.patientId || patientId.equals(r.patient.patientId));
         }
+        cursor.close();
         return readings;
     }
 

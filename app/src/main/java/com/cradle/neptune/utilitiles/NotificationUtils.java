@@ -9,9 +9,9 @@ import com.cradle.neptune.R;
 
 public class NotificationUtils {
 
-    static String NOTIFICATION_CHANNEL_ID= "channelIdForDownloadingPatients";
-    public static int PatientDownloadingNotificationID = 99;
-    public static int PatientDownloadFailNotificationID = 98;
+    private static final String NOTIFICATION_CHANNEL_ID= "channelIdForDownloadingPatients";
+    public static final int PatientDownloadingNotificationID = 99;
+    public static final int PatientDownloadFailNotificationID = 98;
 
     public static void buildNotification(String title, String message, int id, Context context){
 

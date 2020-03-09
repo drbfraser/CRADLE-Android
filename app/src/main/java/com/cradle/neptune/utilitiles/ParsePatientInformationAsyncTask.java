@@ -22,6 +22,10 @@ import java.util.ArrayList;
 import static com.cradle.neptune.utilitiles.NotificationUtils.PatientDownloadingNotificationID;
 import static com.cradle.neptune.utilitiles.NotificationUtils.buildNotification;
 
+/**
+ * this class takes the response received from the api /paitient/allinfo
+ * and parse it and saves it on the database.
+ */
 public class ParsePatientInformationAsyncTask extends AsyncTask<Void,Void,Void> {
 
     private WeakReference<Context> context;

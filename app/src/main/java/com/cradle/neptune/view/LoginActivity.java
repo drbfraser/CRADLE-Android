@@ -30,21 +30,12 @@ import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
-import com.cradle.neptune.model.UrineTestResult;
-import com.cradle.neptune.utilitiles.DateUtil;
 import com.cradle.neptune.utilitiles.ParsePatientInformationAsyncTask;
-import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.threeten.bp.Instant;
-import org.threeten.bp.ZoneOffset;
-import org.threeten.bp.ZonedDateTime;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
