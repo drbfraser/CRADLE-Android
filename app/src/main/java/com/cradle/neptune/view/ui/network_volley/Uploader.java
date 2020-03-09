@@ -48,7 +48,7 @@ public class Uploader {
 
             // the file
             // do this on the main thread because client may delete file immediately on return
-            buildFilePart(dos, jsonStringForBody);
+            //buildFilePart(dos, jsonStringForBody);
 
             // send multipart form data necessary after file data
             dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);

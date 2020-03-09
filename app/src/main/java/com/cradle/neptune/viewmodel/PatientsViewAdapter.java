@@ -55,10 +55,10 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
         patientViewHolder.patientId.setText(patient.patientId);
 
         if (reading.readingFollowUp != null) {
-            patientViewHolder.referralImg.setBackground(context.getResources().getDrawable(R.drawable.ic_assessment_received_black_24dp));
+            patientViewHolder.referralImg.setImageResource(R.drawable.ic_pending_referral_black_24dp);
             patientViewHolder.referralImg.setVisibility(View.VISIBLE);
         } else if (reading.isReferredToHealthCentre()) {
-            patientViewHolder.referralImg.setBackground(context.getResources().getDrawable(R.drawable.ic_pending_referral_black_24dp));
+            patientViewHolder.referralImg.setImageResource(R.drawable.ic_pending_referral_black_24dp);
             patientViewHolder.referralImg.setVisibility(View.VISIBLE);
         }
 
