@@ -47,7 +47,7 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
 
     @Override
     public void onBindViewHolder(@NonNull PatientViewHolder patientViewHolder, int i) {
-        Pair<Patient, Reading> pair = patientList.get(i);
+        Pair<Patient, Reading> pair = filteredpatientList.get(i);
         Patient patient = pair.first;
         Reading reading = pair.second;
         patientViewHolder.patientVillage.setText(patient.villageNumber);
@@ -86,8 +86,10 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
                 } else {
                     List<Pair<Patient, Reading>> filteredList = new ArrayList<>();
                     for (Pair<Patient,Reading> pair : patientList) {
-                        if (pair.first.patientId.contains(charString) ||pair.first.patientName.contains(charString)){
+                        if (pair.first.patientId.contains(charString) ||
+                                pair.first.patientName.toLowerCase().contains(charString.toLowerCase())){
                             Log.d("bugg","matching: search: "+ charString+ " matchID: "+pair.first.patientId+ " NAME: "+pair.first.patientName);
+
                             filteredList.add(pair);
                         }
                     }
@@ -104,6 +106,9 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
             protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
 
                 filteredpatientList = (ArrayList<Pair<Patient, Reading>>) filterResults.values;
+                for (Pair<Patient,Reading> pair : filteredpatientList) {
+
+                }
                 notifyDataSetChanged();
             }
         };

@@ -52,7 +52,6 @@ public class ReadingDB {
                 whereClause,
                 whereArgs
         );
-        Log.d("bugg",numUpdates+" ");
         Util.ensure(numUpdates == 1);
     }
 

@@ -109,8 +109,6 @@ public class PatientsActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextChange(String query) {
                 // filter recycler view when text is changed
-                Log.d("bugg",patientsViewAdapter+"");
-                Log.d("bugg",patientsViewAdapter.getFilter()+"");
                 patientsViewAdapter.getFilter().filter(query);
                 return false;
             }
