@@ -121,7 +121,7 @@ public class LoginActivity extends AppCompatActivity {
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Settings.authServerUrl, jsonObject, response -> {
                 progressDialog.cancel();
                 //put it into sharedpref for offline login.
-                //saveUserNamePasswordSharedPref(emailET.getText().toString(), passwordET.getText().toString());
+                saveUserNamePasswordSharedPref(emailET.getText().toString(), passwordET.getText().toString());
                 Toast.makeText(LoginActivity.this, "Login Successful!", Toast.LENGTH_SHORT).show();
                 try {
                     SharedPreferences sharedPref = LoginActivity.this.getSharedPreferences(AUTH_PREF, Context.MODE_PRIVATE);
