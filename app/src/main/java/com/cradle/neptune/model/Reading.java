@@ -115,9 +115,10 @@ public class Reading {
 
     public static JSONObject getJsonReadingObject(Reading reading, String userId) throws JSONException {
         JSONObject readingVal = new JSONObject();
-        JSONObject urineTest = new JSONObject();
+        JSONObject urineTest = null;
         if (reading.urineTestResult != null) {
             Log.d("bugg", "urine test not null");
+            urineTest = new JSONObject();
             urineTest.put("urineTestBlood", reading.urineTestResult.getBlood());
             urineTest.put("urineTestPro", reading.urineTestResult.getProtein());
             urineTest.put("urineTestLeuc", reading.urineTestResult.getLeukocytes());
