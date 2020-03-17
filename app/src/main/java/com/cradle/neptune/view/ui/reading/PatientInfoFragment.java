@@ -70,6 +70,7 @@ public class PatientInfoFragment extends BaseFragment {
 
         setupGASpinner(view);
         setupSexSpinner(view, false);
+        setupDOBAgeSwitch(view);
 
         TextView et = mView.findViewById(R.id.dobTxt);
 
@@ -88,6 +89,29 @@ public class PatientInfoFragment extends BaseFragment {
             }
         });
 
+    }
+
+    private void setupDOBAgeSwitch(View view) {
+
+        Switch sw = view.findViewById(R.id.dobSwitch);
+        TextView dobtxt = view.findViewById(R.id.dobTxt);
+        EditText ageET = view.findViewById(R.id.patientAgeEditTxt);
+        sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if (b){
+                    dobtxt.setClickable(true);
+                    ageET.setText("");
+                    ageET.setEnabled(false);
+                    ageET.setClickable(false);
+                } else {
+                    dobtxt.setClickable(false);
+                    dobtxt.setText("");
+                    ageET.setEnabled(true);
+                    ageET.setClickable(true);
+                }
+            }
+        });
     }
 
     @Override

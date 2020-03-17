@@ -111,7 +111,6 @@
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:clickable="false"
             android:hint="Patient's Age"
             android:minWidth="150dp"
             app:layout_constraintEnd_toEndOf="@+id/txtPatientName"
