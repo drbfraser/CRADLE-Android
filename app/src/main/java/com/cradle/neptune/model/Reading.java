@@ -385,7 +385,6 @@ public class Reading {
         missing |= patient == null;
         missing |= patient.patientId == null;
         missing |= patient.patientName == null;
-        missing |= (patient.dob == null || patient.dob.equals(""));
         missing |= patient.gestationalAgeUnit == null;
         missing |= (patient.gestationalAgeValue == null
                 && patient.gestationalAgeUnit != GestationalAgeUnit.GESTATIONAL_AGE_UNITS_NONE);

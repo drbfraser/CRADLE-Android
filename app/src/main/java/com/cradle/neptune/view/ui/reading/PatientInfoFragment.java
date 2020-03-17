@@ -74,19 +74,16 @@ public class PatientInfoFragment extends BaseFragment {
 
         TextView et = mView.findViewById(R.id.dobTxt);
 
-        et.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                DatePickerDialog datePickerDialog = new DatePickerDialog(getActivity(), new DatePickerDialog.OnDateSetListener() {
-                    @Override
-                    public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                        String date = year + "-" + month + "-" + day;
-                        et.setText(date);
-                        currentReading.patient.dob = date;
-                    }
-                }, 2010, 1, 1);
-                datePickerDialog.show();
-            }
+        et.setOnClickListener(view1 -> {
+            DatePickerDialog datePickerDialog = new DatePickerDialog(getActivity(), new DatePickerDialog.OnDateSetListener() {
+                @Override
+                public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+                    String date = year + "-" + month + "-" + day;
+                    et.setText(date);
+                    currentReading.patient.dob = date;
+                }
+            }, 2010, 1, 1);
+            datePickerDialog.show();
         });
 
     }
@@ -94,21 +91,26 @@ public class PatientInfoFragment extends BaseFragment {
     private void setupDOBAgeSwitch(View view) {
 
         Switch sw = view.findViewById(R.id.dobSwitch);
-        TextView dobtxt = view.findViewById(R.id.dobTxt);
+        EditText dobtxt = view.findViewById(R.id.dobTxt);
         EditText ageET = view.findViewById(R.id.patientAgeEditTxt);
         sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if (b){
+                    dobtxt.setEnabled(true);
                     dobtxt.setClickable(true);
                     ageET.setText("");
                     ageET.setEnabled(false);
                     ageET.setClickable(false);
+                    currentReading.patient.age= null;
                 } else {
+                    dobtxt.setEnabled(false);
+                    dobtxt.setText("");
                     dobtxt.setClickable(false);
                     dobtxt.setText("");
                     ageET.setEnabled(true);
                     ageET.setClickable(true);
+                    currentReading.patient.dob = null;
                 }
             }
         });
@@ -151,9 +153,12 @@ public class PatientInfoFragment extends BaseFragment {
         et.setText(currentReading.patient.patientName);
 
         // age
-        TextView age = mView.findViewById(R.id.dobTxt);
-        if (currentReading.patient.dob != null) {
-            age.setText(currentReading.patient.dob);
+        EditText dobET = mView.findViewById(R.id.dobTxt);
+        EditText ageET = mView.findViewById(R.id.patientAgeEditTxt);
+        if (currentReading.patient.dob != null && !currentReading.patient.dob.isEmpty()) {
+            dobET.setText(currentReading.patient.dob);
+        } else if (currentReading.patient.age!=null && currentReading.patient.age>=-1){
+            ageET.setText(currentReading.patient.age+"");
         }
         setupSexSpinner(mView, true);
 
@@ -170,10 +175,16 @@ public class PatientInfoFragment extends BaseFragment {
         currentReading.patient.patientName = et.getText().toString();
 
         // age
-        TextView age = mView.findViewById(R.id.dobTxt);
-        String ageStr = age.getText().toString().trim();
-        if (ageStr.length() > 0) {
-            currentReading.patient.dob = ageStr;
+        EditText dobET = mView.findViewById(R.id.dobTxt);
+        EditText ageET = mView.findViewById(R.id.patientAgeEditTxt);
+        String dobStr = dobET.getText().toString().trim();
+        String ageStr = ageET.getText().toString().trim();
+        if (!dobStr.isEmpty()) {
+            currentReading.patient.dob = dobStr;
+            currentReading.patient.age = null;
+        } else if (!ageStr.isEmpty()){
+            currentReading.patient.age = Integer.parseInt(ageStr);
+            currentReading.patient.dob = null;
         }
 
         // village number

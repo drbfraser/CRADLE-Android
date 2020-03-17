@@ -89,19 +89,19 @@
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
-            android:hint="@string/age"
+            android:hint="Date of Birth"
             android:minWidth="150dp"
             app:layout_constraintBottom_toTopOf="@+id/txtZone"
             app:layout_constraintStart_toStartOf="@+id/txtPatientId"
             app:layout_constraintTop_toBottomOf="@+id/dobSwitch">
 
-            <TextView
+            <EditText
                 android:id="@+id/dobTxt"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:focusable="false"
                 android:gravity="center_vertical"
-                android:text="Date of Birth"
                 android:textAlignment="center"
                 android:textSize="18sp" />
         </com.google.android.material.textfield.TextInputLayout>
@@ -122,7 +122,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clickable="false"
-                android:enabled="false" />
+                android:enabled="false"
+                android:inputType="number" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Gestational age -->
