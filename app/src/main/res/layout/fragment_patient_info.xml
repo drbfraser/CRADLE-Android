@@ -13,6 +13,19 @@
         tools:context=".view.PatientInfoOLDActivity">
 
         <!-- ID -->
+        <Switch
+            android:id="@+id/dobSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:checked="true"
+            android:text="Date Of Birth?"
+            android:textOff="NO"
+            android:textOn="@android:string/yes"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@+id/txtPatientId"
+            app:layout_constraintTop_toBottomOf="@+id/txtPatientId" />
+
         <Spinner
             android:id="@+id/spinnerPatientSex"
             android:layout_width="150dp"
@@ -34,13 +47,12 @@
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/txtPatientId"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
             android:hint="@string/id_number"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:minWidth="200dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
@@ -58,12 +70,10 @@
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
             android:hint="@string/initials"
             android:minWidth="200dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/txtPatientId">
+            app:layout_constraintStart_toEndOf="@+id/txtPatientId"
+            app:layout_constraintTop_toTopOf="@+id/txtPatientId">
 
             <EditText
                 android:id="@+id/etPatientName"
@@ -75,17 +85,15 @@
 
         <!-- Age -->
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textInputLayout3"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="0dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
             android:hint="@string/age"
-            android:minWidth="200dp"
-            app:layout_constraintBottom_toBottomOf="@+id/txtPatientName"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/txtPatientName"
-            app:layout_constraintTop_toTopOf="@+id/txtPatientName">
+            android:minWidth="150dp"
+            app:layout_constraintBottom_toTopOf="@+id/txtZone"
+            app:layout_constraintStart_toStartOf="@+id/txtPatientId"
+            app:layout_constraintTop_toBottomOf="@+id/dobSwitch">
 
             <TextView
                 android:id="@+id/dobTxt"
@@ -98,6 +106,25 @@
                 android:textSize="18sp" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/patientAge"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:clickable="false"
+            android:hint="Patient's Age"
+            android:minWidth="150dp"
+            app:layout_constraintEnd_toEndOf="@+id/txtPatientName"
+            app:layout_constraintStart_toEndOf="@+id/textInputLayout3"
+            app:layout_constraintTop_toBottomOf="@+id/dobSwitch">
+
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/patientAgeEditTxt"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clickable="false"
+                android:enabled="false" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Gestational age -->
         <com.google.android.material.textfield.TextInputLayout
@@ -143,11 +170,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
             android:hint="@string/zone"
             android:minWidth="100dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/txtPatientName">
+            app:layout_constraintTop_toBottomOf="@+id/patientAge">
 
             <EditText
                 android:id="@+id/etZone"
