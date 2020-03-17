@@ -147,8 +147,8 @@ public class SymptomsFragment extends BaseFragment {
             return;
         }
         String leuk = ((RadioButton) leucRadioGroup.findViewById(leucRadioGroup.getCheckedRadioButtonId())).getText().toString();
-        if (bloodRadioGroup==null){
-            Log.d("bugg","radiogroup is null");
+        if (bloodRadioGroup == null) {
+            Log.d("bugg", "radiogroup is null");
         }
         String blood = ((RadioButton) bloodRadioGroup.findViewById(bloodRadioGroup.getCheckedRadioButtonId())).getText().toString();
         String glucose = ((RadioButton) glucoseRadioGroup.findViewById(glucoseRadioGroup.getCheckedRadioButtonId())).getText().toString();

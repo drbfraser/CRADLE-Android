@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import com.cradle.neptune.utilitiles.GsonUtil;
 import com.cradle.neptune.utilitiles.Util;
@@ -22,11 +21,11 @@ public class ReadingDB {
 
         ContentValues values = new ContentValues();
         //incase we are adding the reading from server on first login and readingId already exists.
-        if (reading.readingId==null ||reading.readingId.equals("")||
-                reading.readingId.toLowerCase().equals("null")){
+        if (reading.readingId == null || reading.readingId.equals("") ||
+                reading.readingId.toLowerCase().equals("null")) {
             reading.readingId = UUID.randomUUID().toString();
         }
-        values.put(ReadingSQLiteDBHelper.READING_COLUMN_DBID,reading.readingId);
+        values.put(ReadingSQLiteDBHelper.READING_COLUMN_DBID, reading.readingId);
         values.put(ReadingSQLiteDBHelper.READING_COLUMN_PATIENT_ID, reading.patient.patientId);
         values.put(ReadingSQLiteDBHelper.READING_COLUMN_JSON, GsonUtil.getJson(reading));
         // using replace is helpful since we might have duplicated entries whose values needs to be updated.

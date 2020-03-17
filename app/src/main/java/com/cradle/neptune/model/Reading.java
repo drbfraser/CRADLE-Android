@@ -8,6 +8,7 @@ import android.util.Log;
 import com.cradle.neptune.BuildConfig;
 import com.cradle.neptune.utilitiles.Util;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.threeten.bp.ZonedDateTime;
@@ -118,7 +119,6 @@ public class Reading {
         JSONObject readingVal = new JSONObject();
         JSONObject urineTest = null;
         if (reading.urineTestResult != null) {
-            Log.d("bugg", "urine test not null");
             urineTest = new JSONObject();
             urineTest.put("urineTestBlood", reading.urineTestResult.getBlood());
             urineTest.put("urineTestPro", reading.urineTestResult.getProtein());
