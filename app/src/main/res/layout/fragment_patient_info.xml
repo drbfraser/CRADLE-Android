@@ -107,7 +107,7 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/patientAge"
+            android:id="@+id/patientDOB"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -173,7 +173,7 @@
             android:hint="@string/zone"
             android:minWidth="100dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/patientAge">
+            app:layout_constraintTop_toBottomOf="@+id/patientDOB">
 
             <EditText
                 android:id="@+id/etZone"

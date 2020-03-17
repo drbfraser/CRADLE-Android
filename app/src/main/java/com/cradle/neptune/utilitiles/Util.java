@@ -23,7 +23,12 @@ public class Util {
     public static boolean isNullOrEmpty(String s) {
         return s == null || s.length() == 0;
     }
-
+    public static boolean stringNullOrEmpty(String s) {
+        if (s==null || s.length()==0 || s.toLowerCase().equals("null")){
+            return true;
+        };
+        return false;
+    }
     public static boolean isNullOrZero(Integer value) {
         return value == null || value == 0;
     }
