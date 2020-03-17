@@ -10,7 +10,7 @@ public class ReadingManagerAsDB implements ReadingManager {
 
     @Override
     public void addNewReading(Context context, Reading reading) {
-        readingDb.addNewReading(context, reading);
+        readingDb.addNewOrUpdateReading(context, reading);
 
         // update other records for this patient: done rechecking vitals
         List<Reading> readings = getReadings(context);
@@ -37,12 +37,12 @@ public class ReadingManagerAsDB implements ReadingManager {
     }
 
     @Override
-    public Reading getReadingById(Context context, long readingId) {
+    public Reading getReadingById(Context context, String readingId) {
         return readingDb.getReadingById(context, readingId);
     }
 
     @Override
-    public void deleteReadingById(Context context, long readingId) {
+    public void deleteReadingById(Context context, String readingId) {
         readingDb.deleteReadingById(context, readingId);
     }
 

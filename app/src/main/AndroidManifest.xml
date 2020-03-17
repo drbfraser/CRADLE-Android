@@ -45,7 +45,11 @@
             android:name=".view.PatientsActivity"
             android:label="@string/title_activity_patients"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".view.UploadActivity"
             android:label="@string/title_activity_upload"

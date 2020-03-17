@@ -51,7 +51,7 @@ public class ReadingActivity
         return intent;
     }
 
-    static public Intent makeIntentForEdit(Context context, long readingId) {
+    static public Intent makeIntentForEdit(Context context, String readingId) {
         Intent intent = new Intent(context, ReadingActivity.class);
         intent.putExtra(EXTRA_LAUNCH_REASON, LaunchReason.LAUNCH_REASON_EDIT);
         intent.putExtra(EXTRA_READING_ID, readingId);
@@ -59,7 +59,7 @@ public class ReadingActivity
         return intent;
     }
 
-    public static Intent makeIntentForRecheck(Context context, long readingId) {
+    public static Intent makeIntentForRecheck(Context context, String readingId) {
         Intent intent = new Intent(context, ReadingActivity.class);
         intent.putExtra(EXTRA_LAUNCH_REASON, LaunchReason.LAUNCH_REASON_RECHECK);
         intent.putExtra(EXTRA_READING_ID, readingId);
@@ -67,7 +67,7 @@ public class ReadingActivity
         return intent;
     }
 
-    public static Intent makeIntentForNewReadingExistingPatient(Context context, long readingID) {
+    public static Intent makeIntentForNewReadingExistingPatient(Context context, String readingID) {
         Intent intent = new Intent(context, ReadingActivity.class);
         intent.putExtra(EXTRA_LAUNCH_REASON, LaunchReason.LAUNCH_REASON_EXISTINGNEW);
         intent.putExtra(EXTRA_READING_ID, readingID);
@@ -97,7 +97,7 @@ public class ReadingActivity
         Util.ensure(intent.hasExtra(EXTRA_LAUNCH_REASON));
         reasonForLaunch = (LaunchReason) intent.getSerializableExtra(EXTRA_LAUNCH_REASON);
 
-        long readingId = 0;
+        String readingId = "";
         switch (reasonForLaunch) {
             case LAUNCH_REASON_NEW:
                 originalReading = null;
@@ -105,20 +105,20 @@ public class ReadingActivity
                 currentReading.dateTimeTaken = ZonedDateTime.now();
                 break;
             case LAUNCH_REASON_EDIT:
-                readingId = getIntent().getLongExtra(EXTRA_READING_ID, -1);
-                Util.ensure(readingId >= 0);
+                readingId = intent.getStringExtra(EXTRA_READING_ID);
+                Util.ensure((readingId != null && !readingId.equals("")));
                 originalReading = readingManager.getReadingById(this, readingId);
                 currentReading = GsonUtil.cloneViaGson(originalReading, Reading.class);
                 break;
             case LAUNCH_REASON_RECHECK:
-                readingId = getIntent().getLongExtra(EXTRA_READING_ID, -1);
-                Util.ensure(readingId >= 0);
+                readingId = getIntent().getStringExtra(EXTRA_READING_ID);
+                Util.ensure((readingId != null && !readingId.equals("")));
                 originalReading = readingManager.getReadingById(this, readingId);
                 currentReading = Reading.makeToConfirmReading(originalReading, ZonedDateTime.now());
                 break;
             case LAUNCH_REASON_EXISTINGNEW:
-                readingId = getIntent().getLongExtra(EXTRA_READING_ID, -1);
-                Util.ensure(readingId >= 0);
+                readingId = getIntent().getStringExtra(EXTRA_READING_ID);
+                Util.ensure((readingId != null && !readingId.equals("")));
                 originalReading = readingManager.getReadingById(this, readingId);
                 currentReading = Reading.makeNewExistingPatientReading(originalReading, ZonedDateTime.now());
                 break;

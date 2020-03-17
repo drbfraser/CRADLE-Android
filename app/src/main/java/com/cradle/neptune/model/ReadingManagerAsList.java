@@ -33,7 +33,7 @@ public class ReadingManagerAsList implements ReadingManager {
     }
 
     @Override
-    public Reading getReadingById(Context context, long id) {
+    public Reading getReadingById(Context context, String id) {
         for (int i = 0; i < readings.size(); i++) {
             if (readings.get(i).readingId == id) {
                 readings.remove(i);
@@ -44,7 +44,7 @@ public class ReadingManagerAsList implements ReadingManager {
 
 
     @Override
-    public void deleteReadingById(Context context, long readingID) {
+    public void deleteReadingById(Context context, String readingID) {
         for (int i = 0; i < readings.size(); i++) {
             if (readings.get(i).readingId == readingID) {
                 readings.remove(i);

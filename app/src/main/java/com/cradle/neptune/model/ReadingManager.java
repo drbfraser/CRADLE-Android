@@ -11,9 +11,9 @@ public interface ReadingManager {
 
     List<Reading> getReadings(Context context);
 
-    Reading getReadingById(Context context, long id);
+    Reading getReadingById(Context context, String id);
 
-    void deleteReadingById(Context context, long readingID);
+    void deleteReadingById(Context context, String readingID);
 
     void deleteAllData(Context context);
 }

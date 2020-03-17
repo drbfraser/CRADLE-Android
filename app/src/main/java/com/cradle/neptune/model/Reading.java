@@ -8,6 +8,7 @@ import android.util.Log;
 import com.cradle.neptune.BuildConfig;
 import com.cradle.neptune.utilitiles.Util;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.threeten.bp.ZonedDateTime;
@@ -40,10 +41,9 @@ public class Reading {
      * Stored Values
      */
     // offline db
-    public Long readingId;
+    public String readingId;
     public ZonedDateTime dateLastSaved;
     //todo later change the reading Id to be same for offline and online
-    public String serverReadingId;
     // patient info
 //    public String patientId;
 //    public String patientName;
@@ -62,10 +62,12 @@ public class Reading {
     public String gpsLocationOfReading;
     public ZonedDateTime dateUploadedToServer;
     // retest & follow-up
-    public List<Long> retestOfPreviousReadingIds;   // oldest first
+    public List<String> retestOfPreviousReadingIds;   // oldest first
     public ZonedDateTime dateRecheckVitalsNeeded;
     // assessment
     public ReadingFollowUp readingFollowUp = null;
+    public List<String> symptoms = new ArrayList<>();
+
     // referrals
     public ZonedDateTime referralMessageSendTime;
     public String referralHealthCentre;
@@ -117,7 +119,6 @@ public class Reading {
         JSONObject readingVal = new JSONObject();
         JSONObject urineTest = null;
         if (reading.urineTestResult != null) {
-            Log.d("bugg", "urine test not null");
             urineTest = new JSONObject();
             urineTest.put("urineTestBlood", reading.urineTestResult.getBlood());
             urineTest.put("urineTestPro", reading.urineTestResult.getProtein());
@@ -125,7 +126,7 @@ public class Reading {
             urineTest.put("urineTestGlu", reading.urineTestResult.getGlucose());
             urineTest.put("urineTestNit", reading.urineTestResult.getNitrites());
         }
-        readingVal.put("readingId", reading.serverReadingId);
+        readingVal.put("readingId", reading.readingId);
         readingVal.put("dateLastSaved", reading.dateLastSaved);
         readingVal.put("dateTimeTaken", reading.dateTimeTaken);
         readingVal.put("bpSystolic", reading.bpSystolic);
@@ -142,7 +143,6 @@ public class Reading {
     public static Reading makeNewReading(ZonedDateTime now) {
         // setup basic info
         Reading r = new Reading();
-        r.generateServerReadingId();
         r.dateTimeTaken = now;
         r.appVersion = String.format("%s = %s", BuildConfig.VERSION_CODE, BuildConfig.VERSION_NAME);
         r.deviceInfo = Build.MANUFACTURER + ", " + Build.MODEL;
@@ -161,7 +161,7 @@ public class Reading {
 //        r.gestationalAgeValue = source.gestationalAgeValue;
         r.patient = source.patient;
         // don't require user to re-check the 'no symptoms' box
-        if (r.patient.symptoms.isEmpty()) {
+        if (r.symptoms.isEmpty()) {
             r.userHasSelectedNoSymptoms = true;
         }
 
@@ -173,9 +173,9 @@ public class Reading {
     public static Reading makeNewExistingPatientReading(Reading source, ZonedDateTime now) {
         Reading r = Reading.makeNewReading(now);
         r.patient = source.patient;
-        r.patient.symptoms.clear();
+        r.symptoms.clear();
         // don't require user to re-check the 'no symptoms' box
-        if (r.patient.symptoms.isEmpty()) {
+        if (r.symptoms.isEmpty()) {
             r.userHasSelectedNoSymptoms = true;
         }
 
@@ -233,9 +233,7 @@ public class Reading {
 //         return message;
 //    }
 
-    private void generateServerReadingId() {
-        serverReadingId = UUID.randomUUID().toString();
-    }
+
 
     /**
      * Accessors
@@ -294,7 +292,7 @@ public class Reading {
         return retestOfPreviousReadingIds != null && retestOfPreviousReadingIds.size() > 0;
     }
 
-    public void addIdToRetestOfPreviousReadings(List<Long> retestOfPreviousReadingIds, Long readingId) {
+    public void addIdToRetestOfPreviousReadings(List<String> retestOfPreviousReadingIds, String readingId) {
         if (this.retestOfPreviousReadingIds == null) {
             this.retestOfPreviousReadingIds = new ArrayList<>();
         }
@@ -333,7 +331,7 @@ public class Reading {
     // symptoms
     public String getSymptomsString() {
         String description = "";
-        for (String symptom : patient.symptoms) {
+        for (String symptom : symptoms) {
             // clean up
             symptom = symptom.trim();
             if (symptom.length() == 0) {
@@ -399,7 +397,7 @@ public class Reading {
     }
 
     public boolean isMissingRequiredSymptoms() {
-        return patient.symptoms.isEmpty() && !userHasSelectedNoSymptoms && dateLastSaved == null;
+        return symptoms.isEmpty() && !userHasSelectedNoSymptoms && dateLastSaved == null;
     }
 
     /**

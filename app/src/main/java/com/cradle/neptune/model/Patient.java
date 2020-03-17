@@ -13,11 +13,13 @@ public class Patient implements Serializable {
     public String patientId;
     public String patientName;
     public String dob;
-    public List<String> symptoms = new ArrayList<>();
+    // age in case there is no DOB
+    public Integer age;
     public Reading.GestationalAgeUnit gestationalAgeUnit;
     public String gestationalAgeValue;
     public PATIENTSEX patientSex;
     public boolean isPregnant;
+    public boolean needAssessment;
     public String zone;
     public String villageNumber;
     public List<String> drugHistoryList;
@@ -43,19 +45,6 @@ public class Patient implements Serializable {
 
     }
 
-    public String genSymptomString() {
-        String symptomsString = "None";
-        if (symptoms.size() > 0) {
-            symptomsString = symptoms.get(0);
-            if (symptoms.size() > 1) {
-                for (int i = 1; i < symptoms.size(); i++) {
-                    symptomsString += ",";
-                    symptomsString += symptoms.get(i);
-                }
-            }
-        }
-        return symptomsString;
-    }
 
     public JSONObject getPatientInfoJSon() {
         try {
@@ -86,5 +75,20 @@ public class Patient implements Serializable {
 
     public enum PATIENTSEX {MALE, FEMALE, OTHERS}
 
-
+    @Override
+    public String toString() {
+        return "Patient{" +
+                "patientId='" + patientId + '\'' +
+                ", patientName='" + patientName + '\'' +
+                ", dob='" + dob + '\'' +
+                ", gestationalAgeUnit=" + gestationalAgeUnit +
+                ", gestationalAgeValue='" + gestationalAgeValue + '\'' +
+                ", patientSex=" + patientSex +
+                ", isPregnant=" + isPregnant +
+                ", zone='" + zone + '\'' +
+                ", villageNumber='" + villageNumber + '\'' +
+                ", drugHistoryList=" + drugHistoryList +
+                ", medicalHistoryList=" + medicalHistoryList +
+                '}';
+    }
 }

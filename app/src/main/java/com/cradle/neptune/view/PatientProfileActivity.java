@@ -307,7 +307,7 @@ public class PatientProfileActivity extends AppCompatActivity {
 
         //button only works if readings exist, which it always should
         if (readingFound) {
-            long readingID = latestReading.readingId;
+            String readingID = latestReading.readingId;
             createButton.setOnClickListener(v -> {
                 Intent intent = ReadingActivity.makeIntentForNewReadingExistingPatient(PatientProfileActivity.this, readingID);
                 startActivityForResult(intent, READING_ACTIVITY_DONE);
@@ -330,19 +330,19 @@ public class PatientProfileActivity extends AppCompatActivity {
 
         listAdapter.setOnClickElementListener(new ReadingRecyclerViewAdapter.OnClickElement() {
             @Override
-            public void onClick(long readingId) {
+            public void onClick(String readingId) {
                 Intent intent = ReadingActivity.makeIntentForEdit(PatientProfileActivity.this, readingId);
                 startActivityForResult(intent, READING_ACTIVITY_DONE);
             }
 
             @Override
-            public boolean onLongClick(long readingId) {
+            public boolean onLongClick(String readingId) {
                 askToDeleteReading(readingId);
                 return true;
             }
 
             @Override
-            public void onClickRecheckReading(long readingId) {
+            public void onClickRecheckReading(String readingId) {
                 Intent intent = ReadingActivity.makeIntentForRecheck(PatientProfileActivity.this, readingId);
                 startActivityForResult(intent, READING_ACTIVITY_DONE);
             }
@@ -351,7 +351,7 @@ public class PatientProfileActivity extends AppCompatActivity {
 
     }
 
-    private void askToDeleteReading(long readingId) {
+    private void askToDeleteReading(String readingId) {
         AlertDialog.Builder dialog = new AlertDialog.Builder(this)
                 .setMessage("Delete reading?")
                 .setIcon(android.R.drawable.ic_dialog_alert)

@@ -2,6 +2,7 @@ package com.cradle.neptune.dagger;
 
 import com.cradle.neptune.view.HelpActivity;
 import com.cradle.neptune.view.IntroActivity;
+import com.cradle.neptune.view.LoginActivity;
 import com.cradle.neptune.view.PatientProfileActivity;
 import com.cradle.neptune.view.PatientsActivity;
 import com.cradle.neptune.view.ReadingActivity;
@@ -47,4 +48,5 @@ public interface AppComponent {
     void inject(StatsActivity statsActivity);
     // void inject(MyFragment fragment);
     // void inject(MyService service);
+    void inject(LoginActivity loginActivity);
 }

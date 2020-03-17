@@ -12,18 +12,26 @@ import org.threeten.bp.ZonedDateTime;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class ReadingDB {
-    public void addNewReading(Context context, Reading reading) {
+    public void addNewOrUpdateReading(Context context, Reading reading) {
         reading.dateLastSaved = ZonedDateTime.now();
         SQLiteDatabase database = new ReadingSQLiteDBHelper(context).getWritableDatabase();
 
         ContentValues values = new ContentValues();
+        //incase we are adding the reading from server on first login and readingId already exists.
+        if (reading.readingId == null || reading.readingId.equals("") ||
+                reading.readingId.toLowerCase().equals("null")) {
+            reading.readingId = UUID.randomUUID().toString();
+        }
+        values.put(ReadingSQLiteDBHelper.READING_COLUMN_DBID, reading.readingId);
         values.put(ReadingSQLiteDBHelper.READING_COLUMN_PATIENT_ID, reading.patient.patientId);
         values.put(ReadingSQLiteDBHelper.READING_COLUMN_JSON, GsonUtil.getJson(reading));
+        // using replace is helpful since we might have duplicated entries whose values needs to be updated.
+        database.replace(ReadingSQLiteDBHelper.READING_TABLE_NAME, null, values);
+        database.close();
 
-        long newRowId = database.insert(ReadingSQLiteDBHelper.READING_TABLE_NAME, null, values);
-        reading.readingId = newRowId;
     }
 
     public void updateReading(Context context, Reading reading) {
@@ -44,8 +52,8 @@ public class ReadingDB {
                 whereClause,
                 whereArgs
         );
-
         Util.ensure(numUpdates == 1);
+        database.close();
     }
 
     public List<Reading> getReadings(Context context) {
@@ -79,7 +87,7 @@ public class ReadingDB {
     }
 
 
-    public Reading getReadingById(Context context, long id) {
+    public Reading getReadingById(Context context, String id) {
         SQLiteDatabase database = new ReadingSQLiteDBHelper(context).getReadableDatabase();
 
         String[] projection = {
@@ -103,6 +111,8 @@ public class ReadingDB {
         );
 
         List<Reading> list = cursorToArrayList(cursor);
+        cursor.close();
+        database.close();
         Util.ensure(list.size() <= 1);
         return list.size() > 0 ? list.get(0) : null;
     }
@@ -120,17 +130,16 @@ public class ReadingDB {
 
             // create reading & fill ID (not in JSON)
             Reading r = GsonUtil.makeObjectFromJson(json, Reading.class);
-            r.readingId = rowId;
-
             readings.add(r);
 
             // Double check that the data we are reading is consistent
             Util.ensure(patientId == r.patient.patientId || patientId.equals(r.patient.patientId));
         }
+        cursor.close();
         return readings;
     }
 
-    public void deleteReadingById(Context context, long readingID) {
+    public void deleteReadingById(Context context, String readingID) {
         SQLiteDatabase database = new ReadingSQLiteDBHelper(context).getWritableDatabase();
 
         String whereClause = ReadingSQLiteDBHelper.READING_COLUMN_DBID + " = ?";

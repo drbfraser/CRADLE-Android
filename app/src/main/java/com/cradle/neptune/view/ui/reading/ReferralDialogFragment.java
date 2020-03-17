@@ -156,8 +156,9 @@ public class ReferralDialogFragment extends DialogFragment {
             try {
                 if (error.networkResponse != null) {
                     json = new String(error.networkResponse.data, HttpHeaderParser.parseCharset(error.networkResponse.headers));
-                    Toast.makeText(getActivity(), "json: " + json, Toast.LENGTH_LONG).show();
-                    Toast.makeText(getActivity(), "json: " + json, Toast.LENGTH_LONG).show();
+                    Log.d("bugg",json + "  "+error.networkResponse.statusCode);
+
+                   // Toast.makeText(getActivity(), "json: " + json, Toast.LENGTH_LONG).show();
                 }
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();

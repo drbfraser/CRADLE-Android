@@ -25,7 +25,7 @@ public class ReadingSQLiteDBHelper extends SQLiteOpenHelper {
                 + ")");
 
         sqLiteDatabase.execSQL("CREATE TABLE " + READING_TABLE_NAME + " (" +
-                READING_COLUMN_DBID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                READING_COLUMN_DBID + " TEXT PRIMARY KEY , " +
                 READING_COLUMN_PATIENT_ID + " TEXT, " +
                 READING_COLUMN_JSON + " JSON " +
                 ")");
