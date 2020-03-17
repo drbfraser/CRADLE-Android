@@ -171,8 +171,11 @@ public class Reading {
     }
 
     public static Reading makeNewExistingPatientReading(Reading source, ZonedDateTime now) {
+
         Reading r = Reading.makeNewReading(now);
-        r.patient = source.patient;
+        if (source!=null) {
+            r.patient = source.patient;
+        }
         r.symptoms.clear();
         // don't require user to re-check the 'no symptoms' box
         if (r.symptoms.isEmpty()) {
