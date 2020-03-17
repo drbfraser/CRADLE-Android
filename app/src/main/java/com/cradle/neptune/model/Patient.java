@@ -52,11 +52,11 @@ public class Patient implements Serializable {
             patientInfoObject.put("patientId", patientId);
             patientInfoObject.put("patientName", patientName);
             patientInfoObject.put("dob", dob);
+            patientInfoObject.put("patientAge",age);
             patientInfoObject.put("gestationalAgeUnit", gestationalAgeUnit.toString());
             patientInfoObject.put("gestationalAgeValue", gestationalAgeValue);
             patientInfoObject.put("villageNumber", villageNumber);
             patientInfoObject.put("patientSex", patientSex.toString());
-            patientInfoObject.put("patientAge", -1);
             String isPregnantString = "false";
             if (isPregnant) {
                 isPregnantString = "true";
