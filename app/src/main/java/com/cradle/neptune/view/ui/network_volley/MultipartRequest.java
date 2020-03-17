@@ -1,5 +1,7 @@
 package com.cradle.neptune.view.ui.network_volley;
 
+import android.util.Log;
+
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
 import com.android.volley.ParseError;
@@ -8,6 +10,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonRequest;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 public class MultipartRequest extends JsonRequest<NetworkResponse> {
@@ -48,8 +51,19 @@ public class MultipartRequest extends JsonRequest<NetworkResponse> {
 
     @Override
     public void deliverError(VolleyError error) {
-        if (error != null)
+        if (error != null) {
+            String json = null;
+            try {
+                if (error.networkResponse != null) {
+                    json = new String(error.networkResponse.data, HttpHeaderParser.parseCharset(error.networkResponse.headers));
+                    Log.d("bugg1", json + "  " + error.networkResponse.statusCode);
 
+                    // Toast.makeText(getActivity(), "json: " + json, Toast.LENGTH_LONG).show();
+                }
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
             mErrorListener.onErrorResponse(error);
+        }
     }
 }

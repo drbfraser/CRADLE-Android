@@ -133,8 +133,6 @@ public class UploadActivity extends AppCompatActivity {
             return;
         }
 
-        Map<String, String> header = new HashMap<>();
-        header.put(LoginActivity.AUTH, "Bearer " + token);
         Dialog dialog = new Dialog(this);
         dialog.setTitle("Syncing");
         dialog.setCancelable(false);
