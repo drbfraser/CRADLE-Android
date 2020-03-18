@@ -126,6 +126,10 @@ public class Reading {
             urineTest.put("urineTestGlu", reading.urineTestResult.getGlucose());
             urineTest.put("urineTestNit", reading.urineTestResult.getNitrites());
         }
+        //incase we are sending the referral before saving the reading
+        if (Util.stringNullOrEmpty(reading.readingId)){
+            reading.readingId = UUID.randomUUID().toString();
+        }
         readingVal.put("readingId", reading.readingId);
         readingVal.put("dateLastSaved", reading.dateLastSaved);
         readingVal.put("dateTimeTaken", reading.dateTimeTaken);

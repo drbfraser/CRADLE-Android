@@ -576,6 +576,7 @@ public class ReferralDialogFragment extends DialogFragment {
 
     private JSONObject getReferralJson() {
         JSONObject patientVal = currentReading.patient.getPatientInfoJSon();
+
         SharedPreferences sharedPreferences = Objects.requireNonNull(getActivity())
                 .getSharedPreferences(AUTH_PREF, Context.MODE_PRIVATE);
         JSONObject readingVal = new JSONObject();
