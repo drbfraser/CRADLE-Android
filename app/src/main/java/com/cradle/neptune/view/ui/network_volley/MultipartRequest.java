@@ -57,8 +57,6 @@ public class MultipartRequest extends JsonRequest<NetworkResponse> {
                 if (error.networkResponse != null) {
                     json = new String(error.networkResponse.data, HttpHeaderParser.parseCharset(error.networkResponse.headers));
                     Log.d("bugg1", json + "  " + error.networkResponse.statusCode);
-
-                    // Toast.makeText(getActivity(), "json: " + json, Toast.LENGTH_LONG).show();
                 }
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();

@@ -80,7 +80,7 @@ public class ReadingRetestAnalysis {
         readings = new ArrayList<>();
 
         // load history
-        if (reading!=null&&reading.retestOfPreviousReadingIds != null) {
+        if (reading != null && reading.retestOfPreviousReadingIds != null) {
             for (String l : reading.retestOfPreviousReadingIds) {
                 Reading r = manager.getReadingById(context, l);
                 readings.add(r);

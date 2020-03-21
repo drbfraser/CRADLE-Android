@@ -96,13 +96,13 @@ public class PatientInfoFragment extends BaseFragment {
         sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if (b){
+                if (b) {
                     dobtxt.setEnabled(true);
                     dobtxt.setClickable(true);
                     ageET.setText("");
                     ageET.setEnabled(false);
                     ageET.setClickable(false);
-                    currentReading.patient.age= null;
+                    currentReading.patient.age = null;
                 } else {
                     dobtxt.setEnabled(false);
                     dobtxt.setText("");
@@ -157,8 +157,8 @@ public class PatientInfoFragment extends BaseFragment {
         EditText ageET = mView.findViewById(R.id.patientAgeEditTxt);
         if (currentReading.patient.dob != null && !currentReading.patient.dob.isEmpty()) {
             dobET.setText(currentReading.patient.dob);
-        } else if (currentReading.patient.age!=null && currentReading.patient.age>=-1){
-            ageET.setText(currentReading.patient.age+"");
+        } else if (currentReading.patient.age != null && currentReading.patient.age >= -1) {
+            ageET.setText(currentReading.patient.age + "");
         }
         setupSexSpinner(mView, true);
 
@@ -182,7 +182,7 @@ public class PatientInfoFragment extends BaseFragment {
         if (!dobStr.isEmpty()) {
             currentReading.patient.dob = dobStr;
             currentReading.patient.age = null;
-        } else if (!ageStr.isEmpty()){
+        } else if (!ageStr.isEmpty()) {
             currentReading.patient.age = Integer.parseInt(ageStr);
             currentReading.patient.dob = null;
         }
