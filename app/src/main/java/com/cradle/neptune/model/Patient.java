@@ -52,20 +52,22 @@ public class Patient implements Serializable {
             patientInfoObject.put("patientId", patientId);
             patientInfoObject.put("patientName", patientName);
             patientInfoObject.put("dob", dob);
+            if (age==null){
+                patientInfoObject.put("patientAge",JSONObject.NULL);
+            }else {
+                patientInfoObject.put("patientAge", age);
+            }
             patientInfoObject.put("gestationalAgeUnit", gestationalAgeUnit.toString());
             patientInfoObject.put("gestationalAgeValue", gestationalAgeValue);
             patientInfoObject.put("villageNumber", villageNumber);
             patientInfoObject.put("patientSex", patientSex.toString());
-            patientInfoObject.put("patientAge", -1);
+            patientInfoObject.put("zone",zone);
             String isPregnantString = "false";
             if (isPregnant) {
                 isPregnantString = "true";
             }
             patientInfoObject.put("isPregnant", isPregnantString);
             return patientInfoObject;
-//
-//            String symptomsString = genSymptomString();
-//            patientInfoObject.put("symptoms", symptomsString);
 
         } catch (JSONException e) {
             e.printStackTrace();

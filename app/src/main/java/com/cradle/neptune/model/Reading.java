@@ -126,6 +126,10 @@ public class Reading {
             urineTest.put("urineTestGlu", reading.urineTestResult.getGlucose());
             urineTest.put("urineTestNit", reading.urineTestResult.getNitrites());
         }
+        //incase we are sending the referral before saving the reading
+        if (Util.stringNullOrEmpty(reading.readingId)){
+            reading.readingId = UUID.randomUUID().toString();
+        }
         readingVal.put("readingId", reading.readingId);
         readingVal.put("dateLastSaved", reading.dateLastSaved);
         readingVal.put("dateTimeTaken", reading.dateTimeTaken);
@@ -171,8 +175,11 @@ public class Reading {
     }
 
     public static Reading makeNewExistingPatientReading(Reading source, ZonedDateTime now) {
+
         Reading r = Reading.makeNewReading(now);
-        r.patient = source.patient;
+        if (source!=null) {
+            r.patient = source.patient;
+        }
         r.symptoms.clear();
         // don't require user to re-check the 'no symptoms' box
         if (r.symptoms.isEmpty()) {
@@ -385,7 +392,6 @@ public class Reading {
         missing |= patient == null;
         missing |= patient.patientId == null;
         missing |= patient.patientName == null;
-        missing |= (patient.dob == null || patient.dob.equals(""));
         missing |= patient.gestationalAgeUnit == null;
         missing |= (patient.gestationalAgeValue == null
                 && patient.gestationalAgeUnit != GestationalAgeUnit.GESTATIONAL_AGE_UNITS_NONE);

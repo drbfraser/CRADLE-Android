@@ -50,7 +50,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             public void onProgressChanged(SeekBar seekBar, int progress,
                                           boolean fromUser) {
                 // TODO Auto-generated method stub
-                Log.d("bugg", "progress:" + progress);
 
                 // YOur code here in set zoom for pinch zooming, sth like this
                 if (mCamera.getParameters().isZoomSupported()) {

@@ -95,6 +95,7 @@
                     android:id="@+id/textView15"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
                     android:text="Date of Birth"
                     android:textColor="@color/black"
                     android:textSize="14sp"
@@ -103,7 +104,7 @@
                     app:layout_constraintTop_toBottomOf="@+id/textView12" />
 
                 <TextView
-                    android:id="@+id/patientAge"
+                    android:id="@+id/patientDOB"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
@@ -117,6 +118,7 @@
                     android:id="@+id/textView17"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
                     android:text="@string/sex"
                     android:textColor="@color/black"
                     android:textSize="14sp"
@@ -133,7 +135,7 @@
                     android:textColor="@color/black"
                     android:textSize="14sp"
                     app:layout_constraintStart_toEndOf="@+id/textView17"
-                    app:layout_constraintTop_toBottomOf="@+id/patientAge" />
+                    app:layout_constraintTop_toTopOf="@+id/textView17" />
 
                 <TextView
                     android:id="@+id/textView21"
@@ -159,7 +161,7 @@
                     android:textStyle="bold"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/patientSex"
-                    app:layout_constraintTop_toBottomOf="@+id/patientAge" />
+                    app:layout_constraintTop_toTopOf="@+id/patientSex" />
 
 
                 <TextView
@@ -183,6 +185,29 @@
                     android:textSize="14sp"
                     app:layout_constraintStart_toEndOf="@+id/textView22"
                     app:layout_constraintTop_toTopOf="@+id/textView22" />
+
+                <TextView
+                    android:id="@+id/textView33"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="@string/age"
+                    android:textColor="@color/black"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toEndOf="@+id/patientDOB"
+                    app:layout_constraintTop_toTopOf="@+id/patientDOB" />
+
+                <TextView
+                    android:id="@+id/patientAge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="N/A"
+                    android:textColor="@color/black"
+                    android:textSize="12sp"
+                    app:layout_constraintStart_toEndOf="@+id/textView33"
+                    app:layout_constraintTop_toTopOf="@+id/textView33" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
@@ -243,7 +268,6 @@
                     android:id="@+id/pregnancyLayout"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
                     android:layout_marginEnd="8dp"
                     android:gravity="start|center_vertical"
                     android:orientation="horizontal"
@@ -299,7 +323,6 @@
                     android:id="@+id/textView47"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
                     android:text="@string/medical_history"
                     android:textAlignment="viewStart"
                     android:textColor="@color/black"

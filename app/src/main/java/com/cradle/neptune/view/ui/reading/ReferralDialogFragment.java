@@ -34,6 +34,7 @@ import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.utilitiles.DateUtil;
+import com.cradle.neptune.view.LoginActivity;
 import com.cradle.neptune.view.ui.settings.SettingsActivity;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -43,6 +44,8 @@ import org.threeten.bp.ZonedDateTime;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import javax.inject.Inject;
@@ -50,6 +53,7 @@ import javax.inject.Inject;
 import okhttp3.OkHttpClient;
 
 import static com.cradle.neptune.view.LoginActivity.AUTH_PREF;
+import static com.cradle.neptune.view.LoginActivity.TOKEN;
 import static com.cradle.neptune.view.LoginActivity.USER_ID;
 
 
@@ -165,7 +169,18 @@ public class ReferralDialogFragment extends DialogFragment {
             }
             Snackbar.make(dialogView, "Unable to Send the referral: " + json, Snackbar.LENGTH_LONG).show();
             dialog.cancel();
-        });
+        }){
+            /**
+             * Passing some request headers
+             */
+            @Override
+            public Map<String, String> getHeaders() {
+                HashMap<String, String> headers = new HashMap<>();
+                SharedPreferences sharedPref = getContext().getSharedPreferences(AUTH_PREF, Context.MODE_PRIVATE);
+                String token = sharedPref.getString(TOKEN,"");
+                headers.put(LoginActivity.AUTH, "Bearer " + token);
+                return headers;
+            }};
         queue.add(jsonObjectRequest);
     }
 
@@ -561,6 +576,7 @@ public class ReferralDialogFragment extends DialogFragment {
 
     private JSONObject getReferralJson() {
         JSONObject patientVal = currentReading.patient.getPatientInfoJSon();
+
         SharedPreferences sharedPreferences = Objects.requireNonNull(getActivity())
                 .getSharedPreferences(AUTH_PREF, Context.MODE_PRIVATE);
         JSONObject readingVal = new JSONObject();

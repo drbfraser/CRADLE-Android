@@ -23,6 +23,7 @@ import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
+import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.Entry;
@@ -43,6 +44,7 @@ public class PatientProfileActivity extends AppCompatActivity {
     static final double WEEKS_IN_MONTH = 4.34524;
     TextView patientID;
     TextView patientName;
+    TextView patientDOB;
     TextView patientAge;
     TextView patientSex;
     TextView villageNo;
@@ -76,6 +78,7 @@ public class PatientProfileActivity extends AppCompatActivity {
 
         patientID = findViewById(R.id.patientId);
         patientName = findViewById(R.id.patientName);
+        patientDOB = findViewById(R.id.patientDOB);
         patientAge = findViewById(R.id.patientAge);
         patientSex = findViewById(R.id.patientSex);
         villageNo = findViewById(R.id.patientVillage);
@@ -119,10 +122,19 @@ public class PatientProfileActivity extends AppCompatActivity {
     void populatePatientInfo(Patient patient) {
         patientID.setText(patient.patientId);
         patientName.setText(patient.patientName);
-        patientAge.setText(patient.dob);
+        if (!Util.stringNullOrEmpty(patient.dob)) {
+            patientDOB.setText(patient.dob);
+        }
+        if (!Util.stringNullOrEmpty(patient.age + "")) {
+            patientAge.setText(patient.age + "");
+        }
         patientSex.setText(patient.patientSex.toString());
-        villageNo.setText(patient.villageNumber);
-        patientZone.setText(patient.zone);
+        if (!Util.stringNullOrEmpty(patient.villageNumber)) {
+            villageNo.setText(patient.villageNumber);
+        }
+        if (!Util.stringNullOrEmpty(patient.zone)) {
+            patientZone.setText(patient.zone);
+        }
         if (patient.isPregnant) {
             pregnant.setText("Yes");
             setupGestationalInfo(patient);
