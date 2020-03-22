@@ -4,8 +4,11 @@ import android.app.Application;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import androidx.room.Room;
+
+import com.cradle.neptune.database.ReadingEntitiesDatabase;
+import com.cradle.neptune.database.RoomReadingManager;
 import com.cradle.neptune.model.ReadingManager;
-import com.cradle.neptune.model.ReadingManagerAsDB;
 import com.cradle.neptune.model.Settings;
 
 import javax.inject.Singleton;
@@ -21,9 +24,10 @@ import dagger.Provides;
 public class DataModule {
     @Provides
     @Singleton
-    public ReadingManager provideReadingManager() {
+    public ReadingManager provideReadingManager(Application application) {
 //        return new ReadingManagerAsList();
-        return new ReadingManagerAsDB();
+        ReadingEntitiesDatabase r  = Room.databaseBuilder(application, ReadingEntitiesDatabase.class, "room-readinDB").build();
+        return new RoomReadingManager(r);
     }
 
     @Provides

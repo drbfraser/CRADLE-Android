@@ -1,5 +1,6 @@
 package com.cradle.neptune.database;
 
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -9,6 +10,7 @@ import java.io.Serializable;
 @Entity
 public class ReadingEntity implements Serializable {
 
+    @NonNull
     @PrimaryKey
     private String readingId;
 

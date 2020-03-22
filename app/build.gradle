@@ -30,7 +30,7 @@ android {
         // Update this every build
         versionCode 14
         versionName "Beta 1.10"
-
+        multiDexEnabled true
         applicationId "com.cradleVSA.neptune"
         minSdkVersion 17    // Android 4.2
         targetSdkVersion 29
@@ -73,6 +73,8 @@ dependencies {
     androidTestImplementation 'androidx.test:rules:1.2.0'
 
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+
+    implementation 'com.android.support:multidex:1.0.3'
 
     // Dagger: Dependency Injection framework.
     implementation 'com.google.dagger:dagger-android:2.20'
