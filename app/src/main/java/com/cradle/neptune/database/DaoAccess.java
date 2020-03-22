@@ -13,13 +13,17 @@ public interface DaoAccess  {
     void insertReading(ReadingEntity readingEntity);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insertAll(List<ReadingEntity> readingEntities);
+    void insertAll(ReadingEntity... readingEntities);
 
     @Delete
     void delete(ReadingEntity readingEntity);
 
     @Query("SELECT * FROM ReadingEntity")
     List<ReadingEntity> getAllReadingEntities();
+
+    @Query("SELECT * FROM readingentity WHERE readingId LIKE :readinId LIMIT 1")
+    ReadingEntity findByName(String readinId);
+
 
 
 
