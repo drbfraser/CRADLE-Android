@@ -5,6 +5,7 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import java.util.List;
 
@@ -17,6 +18,9 @@ public interface DaoAccess  {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(ReadingEntity... readingEntities);
 
+    @Update(onConflict = OnConflictStrategy.REPLACE)
+    void update(ReadingEntity readingEntity);
+
     @Delete
     void delete(ReadingEntity readingEntity);
 
@@ -24,8 +28,10 @@ public interface DaoAccess  {
     List<ReadingEntity> getAllReadingEntities();
 
     @Query("SELECT * FROM readingentity WHERE readingId LIKE :readinId LIMIT 1")
-    ReadingEntity findByName(String readinId);
+    ReadingEntity getReadingById(String readinId);
 
+    @Query("DELETE FROM ReadingEntity")
+    void deleteAllReading();
 
 
 

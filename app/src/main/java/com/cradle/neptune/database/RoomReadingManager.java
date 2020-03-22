@@ -56,6 +56,7 @@ public class RoomReadingManager implements ReadingManager {
         readingEntity.setPatientId(reading.patient.patientId);
         readingEntity.setReadDataJsonString(GsonUtil.getJson(reading));
 
+        readingEntitiesDatabase.daoAccess().update(readingEntity);
     }
 
     @Override
@@ -73,17 +74,31 @@ public class RoomReadingManager implements ReadingManager {
     }
 
     @Override
-    public Reading getReadingById(Context context, String id) {
-        return null;
+    public Reading getReadingById(Context context, String id)
+    {
+        ReadingEntity readingEntity = readingEntitiesDatabase.daoAccess().getReadingById(id);
+        if (readingEntity==null){
+            return null;
+        }
+        Reading r = GsonUtil.makeObjectFromJson(readingEntity.getReadDataJsonString(),Reading.class);
+        String patientId  = r.patient.patientId;
+        Util.ensure(readingEntity.getPatientId() == patientId ||
+                patientId.equals(r.patient.patientId));
+        return r;
+
     }
 
     @Override
     public void deleteReadingById(Context context, String readingID) {
+        ReadingEntity readingEntity = readingEntitiesDatabase.daoAccess().getReadingById(readingID);
+        if (readingEntity!=null){
+            readingEntitiesDatabase.daoAccess().delete(readingEntity);
+        }
 
     }
 
     @Override
     public void deleteAllData(Context context) {
-
+        readingEntitiesDatabase.daoAccess().deleteAllReading();
     }
 }
