@@ -27,8 +27,8 @@ public interface DaoAccess {
     @Query("SELECT * FROM ReadingEntity")
     List<ReadingEntity> getAllReadingEntities();
 
-    @Query("SELECT * FROM ReadingEntity WHERE readingId LIKE :readinId LIMIT 1")
-    ReadingEntity getReadingById(String readinId);
+    @Query("SELECT * FROM ReadingEntity WHERE readingId LIKE :readingId LIMIT 1")
+    ReadingEntity getReadingById(String readingId);
 
     @Query("SELECT * FROM readingentity WHERE patientId LIKE :patientID")
     List<ReadingEntity> getAllReadingByPatientId(String patientID);
