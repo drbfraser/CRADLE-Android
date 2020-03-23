@@ -234,15 +234,8 @@ public class PatientProfileActivity extends AppCompatActivity {
     }
 
     private void getPatientReadings() {
-        List<Reading> readings = readingManager.getReadings(this);
-        Collections.sort(readings, new Reading.ComparatorByDateReverse());
-        patientReadings = new ArrayList<>();
-        for (Reading reading : readings) {
-            Patient patient = reading.patient;
-            if (patient.patientId.equals(currPatient.patientId)) {
-                patientReadings.add(reading);
-            }
-        }
+        patientReadings = readingManager.getReadingByPatientID(this,currPatient.patientId);
+        Collections.sort(patientReadings, new Reading.ComparatorByDateReverse());
     }
 
     private void setupLineChart() {

@@ -7,6 +7,8 @@ import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
 
+import com.cradle.neptune.model.Reading;
+
 import java.util.List;
 
 @Dao
@@ -29,6 +31,9 @@ public interface DaoAccess  {
 
     @Query("SELECT * FROM readingentity WHERE readingId LIKE :readinId LIMIT 1")
     ReadingEntity getReadingById(String readinId);
+
+    @Query("SELECT * FROM readingentity WHERE patientId LIKE :patientID")
+    List<ReadingEntity> getAllReadingByPatientId(String patientID);
 
     @Query("DELETE FROM ReadingEntity")
     void deleteAllReading();

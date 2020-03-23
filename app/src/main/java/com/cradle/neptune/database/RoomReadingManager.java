@@ -63,8 +63,7 @@ public class RoomReadingManager implements ReadingManager {
 
     @Override
     public List<Reading> getReadings(Context context) {
-
-        return new GetAllReadingsAsyncTask(readingEntitiesDatabase).doInBackground();
+        return new GetAllReadingsAsyncTask(readingEntitiesDatabase,false,"").doInBackground();
     }
 
     @Override
@@ -97,6 +96,11 @@ public class RoomReadingManager implements ReadingManager {
     }
 
     @Override
+    public List<Reading> getReadingByPatientID(Context context, String patientID) {
+        return new GetAllReadingsAsyncTask(readingEntitiesDatabase,true,patientID).doInBackground();
+    }
+
+    @Override
     public void addAllReadings(Context context, List<Reading> readings) {
         List<ReadingEntity> readingEntities = new ArrayList<>();
         for (Reading reading: readings){
@@ -115,15 +119,24 @@ public class RoomReadingManager implements ReadingManager {
     private class GetAllReadingsAsyncTask extends AsyncTask<Void, Void,List<Reading>>
     {
         WeakReference<ReadingEntitiesDatabase> readingEntitiesDatabaseWeakReference;
+        private boolean readingByPatientId = false;
+        private String patientId = "";
 
-         GetAllReadingsAsyncTask(ReadingEntitiesDatabase readingEntitiesDatabase){
+        GetAllReadingsAsyncTask(ReadingEntitiesDatabase readingEntitiesDatabase, boolean readingByPatientId, String patientId){
             this.readingEntitiesDatabaseWeakReference = new WeakReference<>(readingEntitiesDatabase);
+            this.readingByPatientId = readingByPatientId;
+            this.patientId = patientId;
         }
 
         @Override
         protected List<Reading> doInBackground(Void... url) {
             List<Reading> readings = new ArrayList<>();
-            List<ReadingEntity> readingEntities = readingEntitiesDatabaseWeakReference.get().daoAccess().getAllReadingEntities();
+            List<ReadingEntity> readingEntities;
+            if (readingByPatientId){
+                readingEntities = readingEntitiesDatabaseWeakReference.get().daoAccess().getAllReadingByPatientId(patientId);
+            } else {
+                readingEntities = readingEntitiesDatabaseWeakReference.get().daoAccess().getAllReadingEntities();
+            }
             for (ReadingEntity readingEntity:readingEntities){
                 Reading r = GsonUtil.makeObjectFromJson(readingEntity.getReadDataJsonString(),Reading.class);
                 readings.add(r);
