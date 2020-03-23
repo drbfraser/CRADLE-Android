@@ -210,9 +210,20 @@
 
         <Button
             android:id="@+id/uploadImagesButton"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center|center_horizontal"
             android:text="upload Images to help us improve the app"
+            app:backgroundTint="@color/colorPrimaryLight" />
+
+        <Button
+            android:id="@+id/updateAllPatientsBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="Update all patients"
             app:backgroundTint="@color/colorPrimaryLight" />
 
         <ProgressBar

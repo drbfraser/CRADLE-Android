@@ -88,7 +88,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         pregnancyInfoLayout = findViewById(R.id.pregnancyLayout);
         readingRecyclerview = findViewById(R.id.readingRecyclerview);
 
-        currPatient = (Patient) getIntent().getSerializableExtra("key");
+        currPatient = (Patient) getIntent().getSerializableExtra("patient");
         populatePatientInfo(currPatient);
 
         getPatientReadings();

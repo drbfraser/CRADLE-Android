@@ -65,7 +65,7 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
         patientViewHolder.patientCardview.setOnClickListener(view -> {
 
             Intent intent = new Intent(context, PatientProfileActivity.class);
-            intent.putExtra("key", patient);
+            intent.putExtra("patient", patient);
             context.startActivity(intent);
         });
     }
