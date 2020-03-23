@@ -296,20 +296,15 @@ public class PatientProfileActivity extends AppCompatActivity {
     private void setupCreatePatientReadingButton() {
         Button createButton = findViewById(R.id.newPatientReadingButton);
 
-        List<Reading> readings = readingManager.getReadings(this);
+        List<Reading> readings = readingManager.getReadingByPatientID(this,currPatient.patientId);
         Collections.sort(readings, new Reading.ComparatorByDateReverse());
         boolean readingFound = false;
         Reading latestReading = new Reading();
 
-        for (Reading reading : readings) {
-            Patient patient = reading.patient;
-            if (patient.patientId.equals(currPatient.patientId)) {
-                latestReading = reading;
-                readingFound = true;
-                break;
-            }
+        if (readings.size() > 1){
+            readingFound=true;
+            latestReading=readings.get(0);
         }
-
         //button only works if readings exist, which it always should
         if (readingFound) {
             String readingID = latestReading.readingId;
