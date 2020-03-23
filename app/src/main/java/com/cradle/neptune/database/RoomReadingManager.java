@@ -95,8 +95,8 @@ public class RoomReadingManager implements ReadingManager {
     }
 
     @Override
-    public List<Reading> getReadingByPatientID(Context context, String patientID) {
-        return new GetAllReadingsAsyncTask(readingEntitiesDatabase, true, patientID).doInBackground();
+    public List<Reading> getReadingByPatientID(Context context, String patientId) {
+        return new GetAllReadingsAsyncTask(readingEntitiesDatabase, true, patientId).doInBackground();
     }
 
     @Override

@@ -30,8 +30,8 @@ public interface DaoAccess {
     @Query("SELECT * FROM ReadingEntity WHERE readingId LIKE :readingId LIMIT 1")
     ReadingEntity getReadingById(String readingId);
 
-    @Query("SELECT * FROM ReadingEntity WHERE patientId LIKE :patientID")
-    List<ReadingEntity> getAllReadingByPatientId(String patientID);
+    @Query("SELECT * FROM ReadingEntity WHERE patientId LIKE :patientId")
+    List<ReadingEntity> getAllReadingByPatientId(String patientId);
 
     @Query("DELETE FROM ReadingEntity")
     void deleteAllReading();
