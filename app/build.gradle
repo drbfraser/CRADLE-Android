@@ -30,7 +30,7 @@ android {
         // Update this every build
         versionCode 14
         versionName "Beta 1.10"
-
+        multiDexEnabled true
         applicationId "com.cradleVSA.neptune"
         minSdkVersion 17    // Android 4.2
         targetSdkVersion 29
@@ -73,6 +73,8 @@ dependencies {
     androidTestImplementation 'androidx.test:rules:1.2.0'
 
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+
+    implementation 'com.android.support:multidex:1.0.3'
 
     // Dagger: Dependency Injection framework.
     implementation 'com.google.dagger:dagger-android:2.20'
@@ -121,6 +123,10 @@ dependencies {
     implementation 'com.google.firebase:firebase-storage:19.1.1'
 
     implementation 'com.github.barteksc:android-pdf-viewer:2.8.2'
+
+    //room database
+    implementation "androidx.room:room-runtime:2.2.5"
+    annotationProcessor 'android.arch.persistence.room:compiler:1.1.1'
 }
 
 // TensorFlow Lite: select only the ABI's we (likely) need

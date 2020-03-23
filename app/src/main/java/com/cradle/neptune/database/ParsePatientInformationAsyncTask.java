@@ -1,4 +1,4 @@
-package com.cradle.neptune.utilitiles;
+package com.cradle.neptune.database;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -10,6 +10,7 @@ import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.UrineTestResult;
+import com.cradle.neptune.utilitiles.DateUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,6 +19,7 @@ import org.threeten.bp.ZonedDateTime;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.List;
 
 import static com.cradle.neptune.utilitiles.NotificationUtils.PatientDownloadingNotificationID;
 import static com.cradle.neptune.utilitiles.NotificationUtils.buildNotification;
@@ -26,20 +28,22 @@ import static com.cradle.neptune.utilitiles.NotificationUtils.buildNotification;
  * this class takes the response received from the api /paitient/allinfo
  * and parse it and saves it on the database.
  */
-public class ParsePatientInformationAsyncTask extends AsyncTask<Void,Void,Void> {
+public class ParsePatientInformationAsyncTask extends AsyncTask<Void, Void, Void> {
 
     private WeakReference<Context> context;
     private ReadingManager readingManager;
     private JSONArray response;
-    public ParsePatientInformationAsyncTask(JSONArray response, Context context, ReadingManager readingManager){
-        this.context=new WeakReference<>(context);
+
+    public ParsePatientInformationAsyncTask(JSONArray response, Context context, ReadingManager readingManager) {
+        this.context = new WeakReference<>(context);
         this.response = response;
         this.readingManager = readingManager;
     }
+
     @Override
     protected Void doInBackground(Void... voids) {
         try {
-
+            List<Reading> readings = new ArrayList<>();
             for (int i = 0; i < response.length(); i++) {
                 //get the main json object
                 JSONObject jsonObject = response.getJSONObject(i);
@@ -76,39 +80,40 @@ public class ParsePatientInformationAsyncTask extends AsyncTask<Void,Void,Void> 
                     JSONObject readingJson = readingArray.getJSONObject(j);
                     Reading reading = getReadingFromJSONObject(patient, readingJson);
                     //adding the reading to db
-                    if (context.get()!=null) {
-                        readingManager.addNewReading(context.get(), reading);
-                    }
+                    readings.add(reading);
                 }
             }
-        } catch (JSONException e){
+            if (context.get() != null) {
+                readingManager.addAllReadings(context.get(), readings);
+            }
+        } catch (JSONException e) {
             e.printStackTrace();
         }
         return null;
-        }
+    }
 
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
-        if (context!=null &&context.get()!=null) {
+        if (context != null && context.get() != null) {
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context.get());
             notificationManager.cancel(PatientDownloadingNotificationID);
             buildNotification(context.get().getString(R.string.app_name),
-                    "Patients profiles successfully downloaded",PatientDownloadingNotificationID,context.get());
+                    "Patients profiles successfully downloaded", PatientDownloadingNotificationID, context.get());
         }
 
     }
 
     private Reading getReadingFromJSONObject(Patient patient, JSONObject readingJson) throws JSONException {
         Reading reading = new Reading();
-        reading.bpDiastolic = readingJson.optInt("bpDiastolic",-1);
-        reading.bpSystolic = readingJson.optInt("bpSystolic",-1);
-        reading.userHasSelectedNoSymptoms = readingJson.optBoolean("userHasSelectedNoSymptoms",false);
-        reading.heartRateBPM = readingJson.optInt("heartRateBPM",-1);
+        reading.bpDiastolic = readingJson.optInt("bpDiastolic", -1);
+        reading.bpSystolic = readingJson.optInt("bpSystolic", -1);
+        reading.userHasSelectedNoSymptoms = readingJson.optBoolean("userHasSelectedNoSymptoms", false);
+        reading.heartRateBPM = readingJson.optInt("heartRateBPM", -1);
         reading.readingId = readingJson.getString("readingId");
         //
         UrineTestResult urineTestResult = null;
-        if (readingJson.has("urineTests") && !readingJson.get("urineTests").toString().toLowerCase().equals("null")){
+        if (readingJson.has("urineTests") && !readingJson.get("urineTests").toString().toLowerCase().equals("null")) {
             JSONObject urineTest = readingJson.getJSONObject("urineTests");
             //checking for nulls, if one is null, all should be
             if (!urineTest.getString("urineTestPro").toLowerCase().equals("null")) {
@@ -126,7 +131,7 @@ public class ParsePatientInformationAsyncTask extends AsyncTask<Void,Void,Void> 
         reading.dateUploadedToServer = DateUtil.getZoneTimeFromString(readingJson.optString("dateUploadedToServer", ZonedDateTime.now().toString()));
         reading.dateTimeTaken = DateUtil.getZoneTimeFromString(readingJson.getString("dateTimeTaken"));
         reading.dateRecheckVitalsNeeded = DateUtil.getZoneTimeFromString(readingJson.getString("dateRecheckVitalsNeeded"));
-        if (reading.dateUploadedToServer==null){
+        if (reading.dateUploadedToServer == null) {
             // cannot be null since we check this in order to upload reading to server
             reading.dateUploadedToServer = ZonedDateTime.now();
         }
@@ -135,11 +140,11 @@ public class ParsePatientInformationAsyncTask extends AsyncTask<Void,Void,Void> 
         } else {
             reading.dateLastSaved = reading.dateUploadedToServer;
         }
-        reading.setAManualChangeOcrResultsFlags(readingJson.optInt("manuallyChangeOcrResults",-1));
-        reading.totalOcrSeconds = readingJson.optInt("totalOcrSeconds",-1);
+        reading.setAManualChangeOcrResultsFlags(readingJson.optInt("manuallyChangeOcrResults", -1));
+        reading.totalOcrSeconds = readingJson.optInt("totalOcrSeconds", -1);
         reading.referralComment = readingJson.optString("referral");
-        reading.symptoms.add(0,readingJson.getString("symptoms"));
-        reading.setFlaggedForFollowup(readingJson.optBoolean("isFlaggedForFollowup",false));
+        reading.symptoms.add(0, readingJson.getString("symptoms"));
+        reading.setFlaggedForFollowup(readingJson.optBoolean("isFlaggedForFollowup", false));
         reading.readingId = readingJson.getString("readingId");
         // because we decided to put patient inside reading --___--
         reading.patient = patient;
