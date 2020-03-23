@@ -7,12 +7,10 @@ import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
 
-import com.cradle.neptune.model.Reading;
-
 import java.util.List;
 
 @Dao
-public interface DaoAccess  {
+public interface DaoAccess {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertReading(ReadingEntity readingEntity);
@@ -37,7 +35,6 @@ public interface DaoAccess  {
 
     @Query("DELETE FROM ReadingEntity")
     void deleteAllReading();
-
 
 
 }
