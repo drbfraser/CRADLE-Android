@@ -1,4 +1,4 @@
-package com.cradle.neptune.utilitiles;
+package com.cradle.neptune.database;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -11,6 +11,7 @@ import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.UrineTestResult;
+import com.cradle.neptune.utilitiles.DateUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -78,16 +79,12 @@ public class ParsePatientInformationAsyncTask extends AsyncTask<Void,Void,Void> 
                     JSONObject readingJson = readingArray.getJSONObject(j);
                     Reading reading = getReadingFromJSONObject(patient, readingJson);
                     //adding the reading to db
-                    if (context.get()!=null) {
-                        readings.add(reading);
-                    }
+                    readings.add(reading);
                 }
             }
-            Log.d("bugg","reading size: "+ readings.size());
-            Log.d("bugg","adding the readings");
-            readingManager.addAllReadings(context.get(),readings);
-            Log.d("bugg","finshed the readings");
-
+            if (context.get()!=null) {
+                readingManager.addAllReadings(context.get(), readings);
+            }
         } catch (JSONException e){
             e.printStackTrace();
         }

@@ -26,7 +26,7 @@ import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
-import com.cradle.neptune.utilitiles.ParsePatientInformationAsyncTask;
+import com.cradle.neptune.database.ParsePatientInformationAsyncTask;
 
 import org.json.JSONArray;
 import org.json.JSONException;

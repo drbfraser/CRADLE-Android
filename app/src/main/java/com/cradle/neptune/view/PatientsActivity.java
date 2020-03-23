@@ -139,7 +139,6 @@ public class PatientsActivity extends AppCompatActivity {
         HashMap<String, Pair<Patient, Reading>> patientHashMap = new HashMap<>();
 
         List<Reading> allReadings = readingManager.getReadings(this);
-
         Collections.sort(allReadings, new Reading.ComparatorByDateReverse());
 
 

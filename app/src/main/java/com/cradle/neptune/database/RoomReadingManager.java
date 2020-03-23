@@ -110,7 +110,7 @@ public class RoomReadingManager implements ReadingManager {
     }
 
     /**
-     * since we dont want to block the main UI thread, we have to create a seperate thread.
+     * since we dont want to block the main UI thread, we have to create a seperate thread for large queries.
      */
     private class GetAllReadingsAsyncTask extends AsyncTask<Void, Void,List<Reading>>
     {
