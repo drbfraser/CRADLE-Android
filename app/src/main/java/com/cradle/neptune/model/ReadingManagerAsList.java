@@ -57,4 +57,8 @@ public class ReadingManagerAsList implements ReadingManager {
     public void deleteAllData(Context context) {
         readings.clear();
     }
+
+    @Override
+    public void addAllReadings(Context context, List<Reading> readings) {
+    }
 }

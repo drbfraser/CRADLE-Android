@@ -50,4 +50,8 @@ public class ReadingManagerAsDB implements ReadingManager {
     public void deleteAllData(Context context) {
         readingDb.deleteAllData(context);
     }
+
+    @Override
+    public void addAllReadings(Context context, List<Reading> readings) {
+    }
 }

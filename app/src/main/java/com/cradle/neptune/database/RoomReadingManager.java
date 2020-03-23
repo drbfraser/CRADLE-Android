@@ -1,6 +1,7 @@
 package com.cradle.neptune.database;
 
 import android.content.Context;
+import android.os.AsyncTask;
 
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingManager;
@@ -9,6 +10,7 @@ import com.cradle.neptune.utilitiles.Util;
 
 import org.threeten.bp.ZonedDateTime;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -61,16 +63,8 @@ public class RoomReadingManager implements ReadingManager {
 
     @Override
     public List<Reading> getReadings(Context context) {
-        List<Reading> readings = new ArrayList<>();
-        List<ReadingEntity> readingEntities = readingEntitiesDatabase.daoAccess().getAllReadingEntities();
-        for (ReadingEntity readingEntity:readingEntities){
-            Reading r = GsonUtil.makeObjectFromJson(readingEntity.getReadDataJsonString(),Reading.class);
-            readings.add(r);
-            String patientId  = r.patient.patientId;
-            Util.ensure(readingEntity.getPatientId() == patientId ||
-                    patientId.equals(r.patient.patientId));
-        }
-        return readings;
+
+        return new GetAllReadingsAsyncTask(readingEntitiesDatabase).doInBackground();
     }
 
     @Override
@@ -100,5 +94,44 @@ public class RoomReadingManager implements ReadingManager {
     @Override
     public void deleteAllData(Context context) {
         readingEntitiesDatabase.daoAccess().deleteAllReading();
+    }
+
+    @Override
+    public void addAllReadings(Context context, List<Reading> readings) {
+        List<ReadingEntity> readingEntities = new ArrayList<>();
+        for (Reading reading: readings){
+            ReadingEntity readingEntity = new ReadingEntity();
+            readingEntity.setReadingId(reading.readingId);
+            readingEntity.setPatientId(reading.patient.patientId);
+            readingEntity.setReadDataJsonString(GsonUtil.getJson(reading));
+            readingEntities.add(readingEntity);
+        }
+        readingEntitiesDatabase.daoAccess().insertAll(readingEntities);
+    }
+
+    /**
+     * since we dont want to block the main UI thread, we have to create a seperate thread.
+     */
+    private class GetAllReadingsAsyncTask extends AsyncTask<Void, Void,List<Reading>>
+    {
+        WeakReference<ReadingEntitiesDatabase> readingEntitiesDatabaseWeakReference;
+
+         GetAllReadingsAsyncTask(ReadingEntitiesDatabase readingEntitiesDatabase){
+            this.readingEntitiesDatabaseWeakReference = new WeakReference<>(readingEntitiesDatabase);
+        }
+
+        @Override
+        protected List<Reading> doInBackground(Void... url) {
+            List<Reading> readings = new ArrayList<>();
+            List<ReadingEntity> readingEntities = readingEntitiesDatabaseWeakReference.get().daoAccess().getAllReadingEntities();
+            for (ReadingEntity readingEntity:readingEntities){
+                Reading r = GsonUtil.makeObjectFromJson(readingEntity.getReadDataJsonString(),Reading.class);
+                readings.add(r);
+                String patientId  = r.patient.patientId;
+                Util.ensure(readingEntity.getPatientId() == patientId ||
+                        patientId.equals(r.patient.patientId));
+            }
+            return readings;
+        }
     }
 }

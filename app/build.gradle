@@ -125,7 +125,7 @@ dependencies {
     implementation 'com.github.barteksc:android-pdf-viewer:2.8.2'
 
     //room database
-    implementation 'android.arch.persistence.room:runtime:1.1.1'
+    implementation "androidx.room:room-runtime:2.2.5"
     annotationProcessor 'android.arch.persistence.room:compiler:1.1.1'
 }
 

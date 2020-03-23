@@ -16,7 +16,7 @@ public interface DaoAccess  {
     void insertReading(ReadingEntity readingEntity);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insertAll(ReadingEntity... readingEntities);
+    void insertAll(List<ReadingEntity> readingEntities);
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
     void update(ReadingEntity readingEntity);

@@ -2,6 +2,7 @@ package com.cradle.neptune.utilitiles;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import androidx.core.app.NotificationManagerCompat;
 
@@ -18,6 +19,7 @@ import org.threeten.bp.ZonedDateTime;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.List;
 
 import static com.cradle.neptune.utilitiles.NotificationUtils.PatientDownloadingNotificationID;
 import static com.cradle.neptune.utilitiles.NotificationUtils.buildNotification;
@@ -39,7 +41,7 @@ public class ParsePatientInformationAsyncTask extends AsyncTask<Void,Void,Void> 
     @Override
     protected Void doInBackground(Void... voids) {
         try {
-
+            List<Reading>readings = new ArrayList<>();
             for (int i = 0; i < response.length(); i++) {
                 //get the main json object
                 JSONObject jsonObject = response.getJSONObject(i);
@@ -77,10 +79,15 @@ public class ParsePatientInformationAsyncTask extends AsyncTask<Void,Void,Void> 
                     Reading reading = getReadingFromJSONObject(patient, readingJson);
                     //adding the reading to db
                     if (context.get()!=null) {
-                        readingManager.addNewReading(context.get(), reading);
+                        readings.add(reading);
                     }
                 }
             }
+            Log.d("bugg","reading size: "+ readings.size());
+            Log.d("bugg","adding the readings");
+            readingManager.addAllReadings(context.get(),readings);
+            Log.d("bugg","finshed the readings");
+
         } catch (JSONException e){
             e.printStackTrace();
         }

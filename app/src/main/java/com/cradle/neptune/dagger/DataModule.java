@@ -26,7 +26,9 @@ public class DataModule {
     @Singleton
     public ReadingManager provideReadingManager(Application application) {
 //        return new ReadingManagerAsList();
-        ReadingEntitiesDatabase r  = Room.databaseBuilder(application, ReadingEntitiesDatabase.class, "room-readinDB").build();
+        //allowing queries on main thread but should use a seperate thread for large queeries
+        ReadingEntitiesDatabase r  = Room.databaseBuilder(application,
+                ReadingEntitiesDatabase.class, "room-readinDB").allowMainThreadQueries().build();
         return new RoomReadingManager(r);
     }
 

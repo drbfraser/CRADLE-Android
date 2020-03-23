@@ -16,4 +16,6 @@ public interface ReadingManager {
     void deleteReadingById(Context context, String readingID);
 
     void deleteAllData(Context context);
+
+    void addAllReadings(Context context, List<Reading> readings);
 }
