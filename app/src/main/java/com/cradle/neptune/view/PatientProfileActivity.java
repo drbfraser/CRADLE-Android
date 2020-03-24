@@ -15,14 +15,12 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
-import androidx.core.app.NotificationManagerCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
@@ -40,7 +38,7 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 
-import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -51,9 +49,6 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import static com.cradle.neptune.utilitiles.NotificationUtils.PatientDownloadFailNotificationID;
-import static com.cradle.neptune.utilitiles.NotificationUtils.PatientDownloadingNotificationID;
-import static com.cradle.neptune.utilitiles.NotificationUtils.buildNotification;
 import static com.cradle.neptune.view.DashBoardActivity.READING_ACTIVITY_DONE;
 
 
@@ -109,7 +104,6 @@ public class PatientProfileActivity extends AppCompatActivity {
         currPatient = (Patient) getIntent().getSerializableExtra("patient");
         populatePatientInfo(currPatient);
 
-        getPatientReadings();
         setupReadingsRecyclerView();
         setupCreatePatientReadingButton();
         setupLineChart();
@@ -123,10 +117,17 @@ public class PatientProfileActivity extends AppCompatActivity {
     }
 
     private void setupUpdatePatient() {
-        JsonRequest<JSONObject> jsonArrayRequest = new JsonObjectRequest(Request.Method.GET, Settings.DEFAULT_SERVER_URL+"/patient/"+currPatient.patientId,
+        JsonRequest<JSONObject> jsonArrayRequest = new JsonObjectRequest(Request.Method.GET, Settings.DEFAULT_SERVER_URL+"/patient/reading/"+currPatient.patientId,
                 null, response -> {
-
-            Log.d("bugg","pass: "+ response.toString());
+            try {
+                List<Reading> readings =
+                        ParsePatientInformationAsyncTask.parseReadingsAndPatientFromJson(response);
+                readingManager.addAllReadings(this,readings);
+                setupReadingsRecyclerView();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            //Log.d("bugg","pass: "+ response.toString());
         }, error -> {
             Log.d("bugg", "failed: " + error);
 
@@ -164,7 +165,6 @@ public class PatientProfileActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        getPatientReadings();
         setupLineChart();
         setupReadingsRecyclerView();
 
@@ -284,11 +284,6 @@ public class PatientProfileActivity extends AppCompatActivity {
         return age;
     }
 
-    private void getPatientReadings() {
-        patientReadings = readingManager.getReadingByPatientID(this,currPatient.patientId);
-        Collections.sort(patientReadings, new Reading.ComparatorByDateReverse());
-    }
-
     private void setupLineChart() {
         LineChart lineChart = findViewById(R.id.patientLineChart);
         CardView lineChartCard = findViewById(R.id.patientLineChartCard);
@@ -368,7 +363,9 @@ public class PatientProfileActivity extends AppCompatActivity {
 
     private void setupReadingsRecyclerView() {
 
-        // Improve performance: size of each entry does not change.
+
+        patientReadings = readingManager.getReadingByPatientID(this,currPatient.patientId);
+        Collections.sort(patientReadings, new Reading.ComparatorByDateReverse());
 
         // use linear layout
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);

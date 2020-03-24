@@ -48,21 +48,8 @@ public class ParsePatientInformationAsyncTask extends AsyncTask<Void, Void, Void
                 //get the main json object
                 JSONObject jsonObject = response.getJSONObject(i);
                 //build patient
-                Patient patient = Patient.getPatientFromJson(jsonObject);
+                readings.addAll(parseReadingsAndPatientFromJson(jsonObject));
 
-                JSONArray readingArray = jsonObject.getJSONArray("readings");
-                if (readingArray.length() <= 0) {
-                    //should never be the case but just for safety
-                    //there shouldnt be a case where there is a patient without reeading
-                    return null;
-                }
-                //get all the readings
-                for (int j = 0; j < readingArray.length(); j++) {
-                    JSONObject readingJson = readingArray.getJSONObject(j);
-                    Reading reading = getReadingFromJSONObject(patient, readingJson);
-                    //adding the reading to db
-                    readings.add(reading);
-                }
             }
             if (context.get() != null) {
                 readingManager.addAllReadings(context.get(), readings);
@@ -85,7 +72,7 @@ public class ParsePatientInformationAsyncTask extends AsyncTask<Void, Void, Void
 
     }
 
-    private Reading getReadingFromJSONObject(Patient patient, JSONObject readingJson) throws JSONException {
+    public static Reading getReadingFromJSONObject(Patient patient, JSONObject readingJson) throws JSONException {
         Reading reading = new Reading();
         reading.bpDiastolic = readingJson.optInt("bpDiastolic", -1);
         reading.bpSystolic = readingJson.optInt("bpSystolic", -1);
@@ -130,5 +117,26 @@ public class ParsePatientInformationAsyncTask extends AsyncTask<Void, Void, Void
         // because we decided to put patient inside reading --___--
         reading.patient = patient;
         return reading;
+    }
+
+    /**
+     * since the server sends the list of readings as a jsonarray inside the patient json object
+     * we need to first parse for patient and than use the patient data to create the Readings
+     * @param patientJson patient json object
+     * @return list of readings
+     * @throws JSONException
+     */
+    public static List<Reading> parseReadingsAndPatientFromJson(JSONObject patientJson) throws JSONException {
+        Patient patient = Patient.getPatientFromJson(patientJson);
+        List<Reading> readings = new ArrayList<>();
+        JSONArray readingArray = patientJson.getJSONArray("readings");
+        //get all the readings
+        for (int j = 0; j < readingArray.length(); j++) {
+            JSONObject readingJson = readingArray.getJSONObject(j);
+            Reading reading = getReadingFromJSONObject(patient, readingJson);
+            //adding the reading to db
+            readings.add(reading);
+        }
+        return readings;
     }
 }
