@@ -1,9 +1,11 @@
 package com.cradle.neptune.view;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -13,12 +15,20 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.JsonRequest;
+import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.database.ParsePatientInformationAsyncTask;
 import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingManager;
@@ -30,12 +40,20 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
+import static com.cradle.neptune.utilitiles.NotificationUtils.PatientDownloadFailNotificationID;
+import static com.cradle.neptune.utilitiles.NotificationUtils.PatientDownloadingNotificationID;
+import static com.cradle.neptune.utilitiles.NotificationUtils.buildNotification;
 import static com.cradle.neptune.view.DashBoardActivity.READING_ACTIVITY_DONE;
 
 
@@ -95,12 +113,45 @@ public class PatientProfileActivity extends AppCompatActivity {
         setupReadingsRecyclerView();
         setupCreatePatientReadingButton();
         setupLineChart();
+        setupUpdatePatient();
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle(R.string.patient_summary);
         }
 
+    }
+
+    private void setupUpdatePatient() {
+        JsonRequest<JSONObject> jsonArrayRequest = new JsonObjectRequest(Request.Method.GET, Settings.DEFAULT_SERVER_URL+"/patient/"+currPatient.patientId,
+                null, response -> {
+
+            Log.d("bugg","pass: "+ response.toString());
+        }, error -> {
+            Log.d("bugg", "failed: " + error);
+
+        }) {
+            /**
+             * Passing some request headers
+             */
+            @Override
+            public Map<String, String> getHeaders() {
+                HashMap<String, String> headers = new HashMap<>();
+                //headers.put("Content-Type", "application/json");
+
+                SharedPreferences sharedPref = PatientProfileActivity.this.
+                        getSharedPreferences(LoginActivity.AUTH_PREF, Context.MODE_PRIVATE);
+                String token = sharedPref.getString(LoginActivity.TOKEN, LoginActivity.DEFAULT_TOKEN);
+                headers.put(LoginActivity.AUTH, "Bearer " + token);
+                return headers;
+            }
+        };
+
+        Button updateBtn = findViewById(R.id.updatePatientBtn);
+        updateBtn.setOnClickListener(view -> {
+            RequestQueue queue = Volley.newRequestQueue(MyApp.getInstance());
+            queue.add(jsonArrayRequest);
+        });
     }
 
 

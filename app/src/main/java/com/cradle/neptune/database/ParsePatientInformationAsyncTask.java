@@ -48,27 +48,8 @@ public class ParsePatientInformationAsyncTask extends AsyncTask<Void, Void, Void
                 //get the main json object
                 JSONObject jsonObject = response.getJSONObject(i);
                 //build patient
-                Patient patient = new Patient();
-                patient.dob = jsonObject.getString("dob");
-                patient.patientName = jsonObject.getString("patientName");
-                patient.zone = jsonObject.getString("zone");
-                patient.gestationalAgeUnit = Reading.GestationalAgeUnit.valueOf((String) jsonObject.get("gestationalAgeUnit"));
-                patient.gestationalAgeValue = jsonObject.getString("gestationalAgeValue");
-                patient.patientId = jsonObject.getString("patientId");
-                patient.villageNumber = jsonObject.getString("villageNumber");
-                patient.patientSex = Patient.PATIENTSEX.valueOf((String) jsonObject.get("patientSex"));
-                patient.age = jsonObject.optInt("patientAge", -1);
-                patient.isPregnant = jsonObject.optBoolean("isPregnant", false);
-                patient.needAssessment = jsonObject.optBoolean("needsAssessment", false);
+                Patient patient = Patient.getPatientFromJson(jsonObject);
 
-                patient.drugHistoryList = new ArrayList<>();
-                if (!jsonObject.getString("drugHistory").toLowerCase().equals("null")) {
-                    patient.drugHistoryList.add(jsonObject.getString("drugHistory"));
-                }
-                patient.medicalHistoryList = new ArrayList<>();
-                if (!jsonObject.getString("medicalHistory").toLowerCase().equals("null")) {
-                    patient.medicalHistoryList.add(jsonObject.getString("medicalHistory"));
-                }
                 JSONArray readingArray = jsonObject.getJSONArray("readings");
                 if (readingArray.length() <= 0) {
                     //should never be the case but just for safety
