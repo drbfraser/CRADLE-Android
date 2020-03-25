@@ -1,12 +1,15 @@
 package com.cradle.neptune.view;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -63,9 +66,6 @@ public class UploadActivity extends AppCompatActivity {
 
     MultiReadingUploader multiUploader;
 
-    // set who we are for tab code
-    public UploadActivity() {
-    }
 
     public static Intent makeIntent(Context context) {
         return new Intent(context, UploadActivity.class);
@@ -96,8 +96,32 @@ public class UploadActivity extends AppCompatActivity {
 
         setupLastFollowupDownloadDate();
 
-        setupUploadImageButton()
-        ;
+        setupUploadImageButton();
+
+        setupGettingAllReadingsFromServer();
+    }
+
+    private void setupGettingAllReadingsFromServer() {
+            Button uploadBtn = findViewById(R.id.updateAllPatientsBtn);
+            uploadBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    String token =sharedPreferences.getString(LoginActivity.TOKEN,"");
+                    new AlertDialog.Builder(UploadActivity.this)
+                            .setMessage("Downloading the patient data might take a while, please " +
+                                    "do not close the application. Check the status of download" +
+                                    " status in the notification bar.")
+                            .setTitle("Downloading patient data")
+                            .setPositiveButton("OK", (dialogInterface, i)
+                                    ->{
+                                LoginActivity.getAllMyPatients(token,readingManager,UploadActivity.this);
+                            })
+                            .setNegativeButton("Cancel", (dialogInterface, i) -> {
+
+                            }).create().show();
+
+                }
+            });
     }
 
     private void setupLastFollowupDownloadDate() {
@@ -119,12 +143,12 @@ public class UploadActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // setup the network call here
-                requestReadingsFromNetwork();
+                requestFollowupFromNetwork();
             }
         });
     }
 
-    private void requestReadingsFromNetwork() {
+    private void requestFollowupFromNetwork() {
         SharedPreferences sharedPref = UploadActivity.this.getSharedPreferences(LoginActivity.AUTH_PREF, Context.MODE_PRIVATE);
         String token = sharedPref.getString(LoginActivity.TOKEN, "");
 

@@ -142,7 +142,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         }, error -> {
             Log.d("bugg", "failed: " + error);
             progressDialog.cancel();
-
+            Toast.makeText(PatientProfileActivity.this,"Patient update fail!",Toast.LENGTH_SHORT).show();
         }) {
             /**
              * Passing some request headers
@@ -150,10 +150,6 @@ public class PatientProfileActivity extends AppCompatActivity {
             @Override
             public Map<String, String> getHeaders() {
                 HashMap<String, String> headers = new HashMap<>();
-                //headers.put("Content-Type", "application/json");
-
-                //SharedPreferences sharedPref = PatientProfileActivity.this.
-                        //getSharedPreferences(LoginActivity.AUTH_PREF, Context.MODE_PRIVATE);
                 String token = sharedPreferences.getString(LoginActivity.TOKEN, LoginActivity.DEFAULT_TOKEN);
                 headers.put(LoginActivity.AUTH, "Bearer " + token);
                 return headers;
