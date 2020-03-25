@@ -1,6 +1,8 @@
 package com.cradle.neptune.view;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -11,6 +13,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -117,6 +120,9 @@ public class PatientProfileActivity extends AppCompatActivity {
     }
 
     private void setupUpdatePatient() {
+        ProgressDialog progressDialog = new ProgressDialog(this);
+        progressDialog.setTitle("Updating patient");
+        progressDialog.setCancelable(false);
         JsonRequest<JSONObject> jsonArrayRequest = new JsonObjectRequest(Request.Method.GET, Settings.DEFAULT_SERVER_URL+"/patient/reading/"+currPatient.patientId,
                 null, response -> {
             try {
@@ -124,12 +130,18 @@ public class PatientProfileActivity extends AppCompatActivity {
                         ParsePatientInformationAsyncTask.parseReadingsAndPatientFromJson(response);
                 readingManager.addAllReadings(this,readings);
                 setupReadingsRecyclerView();
+                progressDialog.cancel();
+                Toast.makeText(PatientProfileActivity.this,"Patient updated!",Toast.LENGTH_SHORT).show();
             } catch (JSONException e) {
                 e.printStackTrace();
+                progressDialog.cancel();
+                Toast.makeText(PatientProfileActivity.this,"Patient update fail!",Toast.LENGTH_SHORT).show();
+
             }
             //Log.d("bugg","pass: "+ response.toString());
         }, error -> {
             Log.d("bugg", "failed: " + error);
+            progressDialog.cancel();
 
         }) {
             /**
@@ -140,9 +152,9 @@ public class PatientProfileActivity extends AppCompatActivity {
                 HashMap<String, String> headers = new HashMap<>();
                 //headers.put("Content-Type", "application/json");
 
-                SharedPreferences sharedPref = PatientProfileActivity.this.
-                        getSharedPreferences(LoginActivity.AUTH_PREF, Context.MODE_PRIVATE);
-                String token = sharedPref.getString(LoginActivity.TOKEN, LoginActivity.DEFAULT_TOKEN);
+                //SharedPreferences sharedPref = PatientProfileActivity.this.
+                        //getSharedPreferences(LoginActivity.AUTH_PREF, Context.MODE_PRIVATE);
+                String token = sharedPreferences.getString(LoginActivity.TOKEN, LoginActivity.DEFAULT_TOKEN);
                 headers.put(LoginActivity.AUTH, "Bearer " + token);
                 return headers;
             }
@@ -150,6 +162,7 @@ public class PatientProfileActivity extends AppCompatActivity {
 
         Button updateBtn = findViewById(R.id.updatePatientBtn);
         updateBtn.setOnClickListener(view -> {
+            progressDialog.show();
             RequestQueue queue = Volley.newRequestQueue(MyApp.getInstance());
             queue.add(jsonArrayRequest);
         });
