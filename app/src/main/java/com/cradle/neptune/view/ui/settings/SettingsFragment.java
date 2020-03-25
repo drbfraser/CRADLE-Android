@@ -58,12 +58,11 @@ public class SettingsFragment extends PreferenceFragmentCompat
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
                     //todo show a pop up delete all tbe offlne patient data
-                    SharedPreferences sharedPref = getActivity().getSharedPreferences(LoginActivity.AUTH_PREF, Context.MODE_PRIVATE);
                     AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).setTitle("Sign out?").setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
 
-                            SharedPreferences.Editor editor = sharedPref.edit();
+                            SharedPreferences.Editor editor = sharedPreferences.edit();
                             editor.putString(LoginActivity.LOGIN_EMAIL,"");
                             editor.putInt(LoginActivity.LOGIN_PASSWORD,LoginActivity.DEFAULT_PASSWORD);
                             editor.putString(LoginActivity.TOKEN,"");
@@ -124,7 +123,10 @@ public class SettingsFragment extends PreferenceFragmentCompat
     @Override
     public void onSharedPreferenceChanged(SharedPreferences prefsArg, String key) {
         Preference pref = getPreferenceScreen().findPreference(key);
-        setSummary(pref);
+        if (pref!=null) {
+            setSummary(pref);
+        }
+        Log.d("bugg","setting: "+ pref);
         settings.loadFromSharedPrefs();
 
     }

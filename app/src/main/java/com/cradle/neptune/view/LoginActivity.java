@@ -73,9 +73,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void checkSharedPrefForLogin() {
-        SharedPreferences sharedPref = this.getSharedPreferences(AUTH_PREF, Context.MODE_PRIVATE);
-        String email = sharedPref.getString(LOGIN_EMAIL, DEFAULT_EMAIL);
-        int password = sharedPref.getInt(LOGIN_PASSWORD, DEFAULT_PASSWORD);
+        String email = sharedPreferences.getString(LOGIN_EMAIL, DEFAULT_EMAIL);
+        int password = sharedPreferences.getInt(LOGIN_PASSWORD, DEFAULT_PASSWORD);
         if (!email.equals(DEFAULT_EMAIL) && password != DEFAULT_PASSWORD) {
             startIntroActivity();
         }
@@ -189,8 +188,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void saveUserNamePasswordSharedPref(String email, String password) {
-        SharedPreferences sharedPref = LoginActivity.this.getSharedPreferences(AUTH_PREF, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
+        SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(LOGIN_EMAIL, email);
         editor.putInt(LOGIN_PASSWORD, password.hashCode());
         editor.apply();

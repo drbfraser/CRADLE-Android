@@ -38,11 +38,13 @@ public class MultiReadingUploader {
     private ProgressCallback progressCallback;
     private State state = State.IDLE;
     private int numCompleted = 0;
+    private String token;
 
-    public MultiReadingUploader(Context context, Settings settings, ProgressCallback progressCallback) {
+    public MultiReadingUploader(Context context, Settings settings, String token,ProgressCallback progressCallback) {
         this.context = context;
         this.settings = settings;
         this.progressCallback = progressCallback;
+        this.token=token;
     }
 
     // OPERATIONS
@@ -159,9 +161,6 @@ public class MultiReadingUploader {
 
             String readingJson = Reading.getJsonObj(readings.get(0), context);
             // start upload
-            SharedPreferences sharedPref = context.getSharedPreferences(LoginActivity.AUTH_PREF, Context.MODE_PRIVATE);
-            String token = sharedPref.getString(LoginActivity.TOKEN, LoginActivity.DEFAULT_TOKEN);
-
             Uploader uploader = new Uploader(
                     settings.getReadingServerUrl(),
                     settings.getServerUserName(),

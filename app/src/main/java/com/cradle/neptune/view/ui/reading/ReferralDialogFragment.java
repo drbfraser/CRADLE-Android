@@ -63,6 +63,8 @@ public class ReferralDialogFragment extends DialogFragment {
     // Data Model
     @Inject
     Settings settings;
+    @Inject
+    SharedPreferences sharedPreferences;
 
 
     // UI elements
@@ -176,8 +178,7 @@ public class ReferralDialogFragment extends DialogFragment {
             @Override
             public Map<String, String> getHeaders() {
                 HashMap<String, String> headers = new HashMap<>();
-                SharedPreferences sharedPref = getContext().getSharedPreferences(AUTH_PREF, Context.MODE_PRIVATE);
-                String token = sharedPref.getString(TOKEN,"");
+                String token = sharedPreferences.getString(TOKEN,"");
                 headers.put(LoginActivity.AUTH, "Bearer " + token);
                 return headers;
             }};
@@ -576,9 +577,6 @@ public class ReferralDialogFragment extends DialogFragment {
 
     private JSONObject getReferralJson() {
         JSONObject patientVal = currentReading.patient.getPatientInfoJSon();
-
-        SharedPreferences sharedPreferences = Objects.requireNonNull(getActivity())
-                .getSharedPreferences(AUTH_PREF, Context.MODE_PRIVATE);
         JSONObject readingVal = new JSONObject();
         try {
             readingVal = Reading.getJsonReadingObject(currentReading, sharedPreferences.getString(USER_ID, ""));

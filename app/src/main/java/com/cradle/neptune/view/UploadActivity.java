@@ -149,8 +149,7 @@ public class UploadActivity extends AppCompatActivity {
     }
 
     private void requestFollowupFromNetwork() {
-        SharedPreferences sharedPref = UploadActivity.this.getSharedPreferences(LoginActivity.AUTH_PREF, Context.MODE_PRIVATE);
-        String token = sharedPref.getString(LoginActivity.TOKEN, "");
+        String token = sharedPreferences.getString(LoginActivity.TOKEN, "");
 
         if (token.equals("")) {
             Snackbar.make(findViewById(R.id.cordinatorLayout), R.string.userNotAuthenticated, Snackbar.LENGTH_LONG).show();
@@ -455,7 +454,7 @@ public class UploadActivity extends AppCompatActivity {
         }
 
         // upload multiple readings
-        multiUploader = new MultiReadingUploader(this, settings, getProgressCallbackListener());
+        multiUploader = new MultiReadingUploader(this, settings, sharedPreferences.getString(LoginActivity.TOKEN,""),getProgressCallbackListener());
         multiUploader.startUpload(readingsToUpload);
         setUploadUiElementVisibility(true);
     }
