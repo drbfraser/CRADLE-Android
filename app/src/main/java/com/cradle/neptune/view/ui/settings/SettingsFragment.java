@@ -62,21 +62,18 @@ public class SettingsFragment extends PreferenceFragmentCompat
             signout.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    //todo show a pop up delete all tbe offlne patient data
+
                     List<Reading> unUploadedReadings = readingManager.getUnuploadedReadings();
-                    String description = getString(R.string.signoutMessage);
+
+                    String description = getString(R.string.normalSignoutMessage);
                     if (!unUploadedReadings.isEmpty()){
-                        description = unUploadedReadings.size()+ " readings still needs to be uploaded to the server.\n" +
-                                "These reading will be lost after signing out!";
+                        description = unUploadedReadings.size()+ getString(R.string.unUploadedReadingSignoutMessage);
                     }
                     AlertDialog alertDialog = new AlertDialog.Builder(getActivity())
                             .setTitle("Sign out?").setMessage(description)
-                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            signoutTheUser();
-                        }
-                    }).setNegativeButton("No", null).setIcon(R.drawable.ic_sync)
+                            .setPositiveButton("Yes", (dialog, which) ->
+                                    signoutTheUser())
+                            .setNegativeButton("No", null).setIcon(R.drawable.ic_sync)
                             .create();
                     alertDialog.show();
                     return true;

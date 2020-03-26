@@ -204,6 +204,6 @@
     <string name="followUpCheckInternet">Follow up information not available.</string>
     <string name="userNotAuthenticated">The credentials are not vaild, Please login again.</string>
     <string name="create_new_reading">Create New Reading</string>
-    <string name="signoutMessage">You will be required to sign in again before using the application.</string>
-
+    <string name="normalSignoutMessage">You will be required to sign in again before using the application.</string>
+    <string name="unUploadedReadingSignoutMessage">reading(s) still needs to be uploaded to the server. These reading(s) will be lost after signing out!</string>
 </resources>
