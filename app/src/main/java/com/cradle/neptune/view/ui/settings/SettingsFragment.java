@@ -18,11 +18,14 @@ import androidx.preference.PreferenceGroup;
 
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.model.Reading;
+import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.view.LoginActivity;
 
 import java.util.Arrays;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -36,6 +39,8 @@ public class SettingsFragment extends PreferenceFragmentCompat
     SharedPreferences sharedPreferences;
     @Inject
     Settings settings;
+    @Inject
+    ReadingManager readingManager;
 
 //    private SharedPreferences sharedPreferences;
 
@@ -58,28 +63,40 @@ public class SettingsFragment extends PreferenceFragmentCompat
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
                     //todo show a pop up delete all tbe offlne patient data
-                    AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).setTitle("Sign out?").setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    List<Reading> unUploadedReadings = readingManager.getUnuploadedReadings();
+                    String description = getString(R.string.signoutMessage);
+                    if (!unUploadedReadings.isEmpty()){
+                        description = unUploadedReadings.size()+ " readings still needs to be uploaded to the server.\n" +
+                                "These reading will be lost after signing out!";
+                    }
+                    AlertDialog alertDialog = new AlertDialog.Builder(getActivity())
+                            .setTitle("Sign out?").setMessage(description)
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-
-                            SharedPreferences.Editor editor = sharedPreferences.edit();
-                            editor.putString(LoginActivity.LOGIN_EMAIL,"");
-                            editor.putInt(LoginActivity.LOGIN_PASSWORD,LoginActivity.DEFAULT_PASSWORD);
-                            editor.putString(LoginActivity.TOKEN,"");
-                            editor.putString(LoginActivity.USER_ID,"");
-                            editor.apply();
-                            Intent intent = new Intent(getActivity(), LoginActivity.class);
-                            startActivity(intent);
-                            getActivity().finishAffinity();
+                            signoutTheUser();
                         }
                     }).setNegativeButton("No", null).setIcon(R.drawable.ic_sync)
-                            .setMessage(R.string.signoutMessage).create();
+                            .create();
                     alertDialog.show();
                     return true;
 
                 }
             });
         }
+    }
+
+    private void signoutTheUser() {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(LoginActivity.LOGIN_EMAIL,"");
+        editor.putInt(LoginActivity.LOGIN_PASSWORD,LoginActivity.DEFAULT_PASSWORD);
+        editor.putString(LoginActivity.TOKEN,"");
+        editor.putString(LoginActivity.USER_ID,"");
+        editor.apply();
+        readingManager.deleteAllData(getActivity());
+        Intent intent = new Intent(getActivity(), LoginActivity.class);
+        startActivity(intent);
+        getActivity().finishAffinity();
     }
 
     private void setupHealthCentres() {
