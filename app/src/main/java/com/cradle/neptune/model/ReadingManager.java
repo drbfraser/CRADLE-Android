@@ -20,4 +20,6 @@ public interface ReadingManager {
     List<Reading> getReadingByPatientID(Context context, String patientID);
 
     void addAllReadings(Context context, List<Reading> readings);
+
+    List<Reading> getUnuploadedReadings();
 }

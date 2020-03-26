@@ -33,6 +33,10 @@ public interface DaoAccess {
     @Query("SELECT * FROM ReadingEntity WHERE patientId LIKE :patientId")
     List<ReadingEntity> getAllReadingByPatientId(String patientId);
 
+    // room maps bolean to zero and one. zero = false
+    @Query("SELECT * FROM ReadingEntity WHERE isUploadedToServer =0")
+    List<ReadingEntity> getAllUnUploadedReading();
+
     @Query("DELETE FROM ReadingEntity")
     void deleteAllReading();
 
