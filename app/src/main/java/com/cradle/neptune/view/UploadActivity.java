@@ -100,26 +100,26 @@ public class UploadActivity extends AppCompatActivity {
     }
 
     private void setupGettingAllReadingsFromServer() {
-            Button uploadBtn = findViewById(R.id.updateAllPatientsBtn);
-            uploadBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    String token =sharedPreferences.getString(LoginActivity.TOKEN,"");
-                    new AlertDialog.Builder(UploadActivity.this)
-                            .setMessage("Downloading the patient data might take a while, please " +
-                                    "do not close the application. Check the status of download" +
-                                    " status in the notification bar.")
-                            .setTitle("Downloading patient data")
-                            .setPositiveButton("OK", (dialogInterface, i)
-                                    ->{
-                                LoginActivity.getAllMyPatients(token,readingManager,UploadActivity.this);
-                            })
-                            .setNegativeButton("Cancel", (dialogInterface, i) -> {
+        Button uploadBtn = findViewById(R.id.updateAllPatientsBtn);
+        uploadBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String token = sharedPreferences.getString(LoginActivity.TOKEN, "");
+                new AlertDialog.Builder(UploadActivity.this)
+                        .setMessage("Downloading the patient data might take a while, please " +
+                                "do not close the application. Check the status of download" +
+                                " status in the notification bar.")
+                        .setTitle("Downloading patient data")
+                        .setPositiveButton("OK", (dialogInterface, i)
+                                -> {
+                            LoginActivity.getAllMyPatients(token, readingManager, UploadActivity.this);
+                        })
+                        .setNegativeButton("Cancel", (dialogInterface, i) -> {
 
-                            }).create().show();
+                        }).create().show();
 
-                }
-            });
+            }
+        });
     }
 
     private void setupLastFollowupDownloadDate() {
@@ -227,14 +227,14 @@ public class UploadActivity extends AppCompatActivity {
             }
         }
         List<Reading> readings = readingManager.getReadings(this);
-        Map<String,Reading> readingMap = new HashMap<String, Reading>();
+        Map<String, Reading> readingMap = new HashMap<String, Reading>();
         for (Reading reading : readings) {
-            readingMap.put(reading.readingId,reading);
+            readingMap.put(reading.readingId, reading);
         }
         //update the followups
         for (ReadingFollowUp followUp : readingsFollowUps) {
             Reading reading = readingMap.get(followUp.getReadingServerId());
-            if (reading!=null) {
+            if (reading != null) {
                 reading.readingFollowUp = followUp;
                 reading.patient.medicalHistoryList = new ArrayList<>();
                 reading.patient.drugHistoryList = new ArrayList<>();
@@ -452,7 +452,7 @@ public class UploadActivity extends AppCompatActivity {
         }
 
         // upload multiple readings
-        multiUploader = new MultiReadingUploader(this, settings, sharedPreferences.getString(LoginActivity.TOKEN,""),getProgressCallbackListener());
+        multiUploader = new MultiReadingUploader(this, settings, sharedPreferences.getString(LoginActivity.TOKEN, ""), getProgressCallbackListener());
         multiUploader.startUpload(readingsToUpload);
         setUploadUiElementVisibility(true);
     }

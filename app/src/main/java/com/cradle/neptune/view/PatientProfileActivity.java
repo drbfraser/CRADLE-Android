@@ -1,9 +1,7 @@
 package com.cradle.neptune.view;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -123,26 +121,26 @@ public class PatientProfileActivity extends AppCompatActivity {
         ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Updating patient");
         progressDialog.setCancelable(false);
-        JsonRequest<JSONObject> jsonArrayRequest = new JsonObjectRequest(Request.Method.GET, Settings.DEFAULT_SERVER_URL+"/patient/reading/"+currPatient.patientId,
+        JsonRequest<JSONObject> jsonArrayRequest = new JsonObjectRequest(Request.Method.GET, Settings.DEFAULT_SERVER_URL + "/patient/reading/" + currPatient.patientId,
                 null, response -> {
             try {
                 List<Reading> readings =
                         ParsePatientInformationAsyncTask.parseReadingsAndPatientFromJson(response);
-                readingManager.addAllReadings(this,readings);
+                readingManager.addAllReadings(this, readings);
                 setupReadingsRecyclerView();
                 progressDialog.cancel();
-                Toast.makeText(PatientProfileActivity.this,"Patient updated!",Toast.LENGTH_SHORT).show();
+                Toast.makeText(PatientProfileActivity.this, "Patient updated!", Toast.LENGTH_SHORT).show();
             } catch (JSONException e) {
                 e.printStackTrace();
                 progressDialog.cancel();
-                Toast.makeText(PatientProfileActivity.this,"Patient update fail!",Toast.LENGTH_SHORT).show();
+                Toast.makeText(PatientProfileActivity.this, "Patient update fail!", Toast.LENGTH_SHORT).show();
 
             }
             //Log.d("bugg","pass: "+ response.toString());
         }, error -> {
             Log.d("bugg", "failed: " + error);
             progressDialog.cancel();
-            Toast.makeText(PatientProfileActivity.this,"Patient update fail!",Toast.LENGTH_SHORT).show();
+            Toast.makeText(PatientProfileActivity.this, "Patient update fail!", Toast.LENGTH_SHORT).show();
         }) {
             /**
              * Passing some request headers
@@ -351,14 +349,14 @@ public class PatientProfileActivity extends AppCompatActivity {
     private void setupCreatePatientReadingButton() {
         Button createButton = findViewById(R.id.newPatientReadingButton);
 
-        List<Reading> readings = readingManager.getReadingByPatientID(this,currPatient.patientId);
+        List<Reading> readings = readingManager.getReadingByPatientID(this, currPatient.patientId);
         Collections.sort(readings, new Reading.ComparatorByDateReverse());
         boolean readingFound = false;
         Reading latestReading = new Reading();
 
-        if (readings.size() > 1){
-            readingFound=true;
-            latestReading=readings.get(0);
+        if (readings.size() > 1) {
+            readingFound = true;
+            latestReading = readings.get(0);
         }
         //button only works if readings exist, which it always should
         if (readingFound) {
@@ -373,7 +371,7 @@ public class PatientProfileActivity extends AppCompatActivity {
     private void setupReadingsRecyclerView() {
 
 
-        patientReadings = readingManager.getReadingByPatientID(this,currPatient.patientId);
+        patientReadings = readingManager.getReadingByPatientID(this, currPatient.patientId);
         Collections.sort(patientReadings, new Reading.ComparatorByDateReverse());
 
         // use linear layout

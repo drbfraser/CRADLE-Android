@@ -35,6 +35,8 @@ import javax.inject.Inject;
  */
 public class MultiReadingUploader {
     private static final String TAG = "MultiReadingUploader";
+    @Inject
+    SharedPreferences sharedPreferences;
     private Context context;
     private Settings settings;
     private List<Reading> readings;
@@ -43,14 +45,11 @@ public class MultiReadingUploader {
     private int numCompleted = 0;
     private String token;
 
-    @Inject
-    SharedPreferences sharedPreferences;
-
-    public MultiReadingUploader(Context context, Settings settings, String token,ProgressCallback progressCallback) {
+    public MultiReadingUploader(Context context, Settings settings, String token, ProgressCallback progressCallback) {
         this.context = context;
         this.settings = settings;
         this.progressCallback = progressCallback;
-        this.token=token;
+        this.token = token;
         ((MyApp) context.getApplicationContext()).getAppComponent().inject(this);
 
 
@@ -168,7 +167,7 @@ public class MultiReadingUploader {
             // generate zip of encrypted data
             String encryptedZipFileFolder = context.getCacheDir().getAbsolutePath();
 
-            String readingJson = Reading.getJsonObj(readings.get(0), sharedPreferences.getString(LoginActivity.USER_ID,""));
+            String readingJson = Reading.getJsonObj(readings.get(0), sharedPreferences.getString(LoginActivity.USER_ID, ""));
             // start upload
             Uploader uploader = new Uploader(
                     settings.getReadingServerUrl(),

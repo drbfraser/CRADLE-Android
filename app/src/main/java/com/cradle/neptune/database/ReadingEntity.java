@@ -24,15 +24,15 @@ public class ReadingEntity implements Serializable {
     private boolean isUploadedToServer;
 
 
-    public String getReadingId() {
-        return readingId;
-    }
-
-    public ReadingEntity(String readingId, String patientId, String readDataJsonString, boolean isUploadedToServer){
+    public ReadingEntity(String readingId, String patientId, String readDataJsonString, boolean isUploadedToServer) {
         this.readingId = readingId;
         this.readDataJsonString = readDataJsonString;
         this.patientId = patientId;
         this.isUploadedToServer = isUploadedToServer;
+    }
+
+    public String getReadingId() {
+        return readingId;
     }
 
     public void setReadingId(String readingId) {

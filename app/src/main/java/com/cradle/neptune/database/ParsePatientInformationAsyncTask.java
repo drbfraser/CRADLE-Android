@@ -40,38 +40,6 @@ public class ParsePatientInformationAsyncTask extends AsyncTask<Void, Void, Void
         this.readingManager = readingManager;
     }
 
-    @Override
-    protected Void doInBackground(Void... voids) {
-        try {
-            List<Reading> readings = new ArrayList<>();
-            for (int i = 0; i < response.length(); i++) {
-                //get the main json object
-                JSONObject jsonObject = response.getJSONObject(i);
-                //build patient
-                readings.addAll(parseReadingsAndPatientFromJson(jsonObject));
-
-            }
-            if (context.get() != null) {
-                readingManager.addAllReadings(context.get(), readings);
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    @Override
-    protected void onPostExecute(Void aVoid) {
-        super.onPostExecute(aVoid);
-        if (context != null && context.get() != null) {
-            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context.get());
-            notificationManager.cancel(PatientDownloadingNotificationID);
-            buildNotification(context.get().getString(R.string.app_name),
-                    "Patients profiles successfully downloaded", PatientDownloadingNotificationID, context.get());
-        }
-
-    }
-
     public static Reading getReadingFromJSONObject(Patient patient, JSONObject readingJson) throws JSONException {
         Reading reading = new Reading();
         reading.bpDiastolic = readingJson.optInt("bpDiastolic", -1);
@@ -122,6 +90,7 @@ public class ParsePatientInformationAsyncTask extends AsyncTask<Void, Void, Void
     /**
      * since the server sends the list of readings as a jsonarray inside the patient json object
      * we need to first parse for patient and than use the patient data to create the Readings
+     *
      * @param patientJson patient json object
      * @return list of readings
      * @throws JSONException
@@ -138,5 +107,37 @@ public class ParsePatientInformationAsyncTask extends AsyncTask<Void, Void, Void
             readings.add(reading);
         }
         return readings;
+    }
+
+    @Override
+    protected Void doInBackground(Void... voids) {
+        try {
+            List<Reading> readings = new ArrayList<>();
+            for (int i = 0; i < response.length(); i++) {
+                //get the main json object
+                JSONObject jsonObject = response.getJSONObject(i);
+                //build patient
+                readings.addAll(parseReadingsAndPatientFromJson(jsonObject));
+
+            }
+            if (context.get() != null) {
+                readingManager.addAllReadings(context.get(), readings);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    protected void onPostExecute(Void aVoid) {
+        super.onPostExecute(aVoid);
+        if (context != null && context.get() != null) {
+            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context.get());
+            notificationManager.cancel(PatientDownloadingNotificationID);
+            buildNotification(context.get().getString(R.string.app_name),
+                    "Patients profiles successfully downloaded", PatientDownloadingNotificationID, context.get());
+        }
+
     }
 }

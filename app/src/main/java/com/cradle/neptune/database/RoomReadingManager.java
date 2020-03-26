@@ -32,7 +32,7 @@ public class RoomReadingManager implements ReadingManager {
         }
 
         ReadingEntity readingEntity = new ReadingEntity(reading.readingId,
-                reading.patient.patientId,GsonUtil.getJson(reading),reading.isUploaded());
+                reading.patient.patientId, GsonUtil.getJson(reading), reading.isUploaded());
         readingEntitiesDatabase.daoAccess().insertReading(readingEntity);
 
         // update all the other patient's records .. because thats the way it is...
@@ -52,7 +52,7 @@ public class RoomReadingManager implements ReadingManager {
     public void updateReading(Context context, Reading reading) {
         reading.dateLastSaved = ZonedDateTime.now();
         ReadingEntity readingEntity = new ReadingEntity(reading.readingId,
-                reading.patient.patientId,GsonUtil.getJson(reading),reading.isUploaded());
+                reading.patient.patientId, GsonUtil.getJson(reading), reading.isUploaded());
         readingEntitiesDatabase.daoAccess().update(readingEntity);
     }
 
@@ -99,7 +99,7 @@ public class RoomReadingManager implements ReadingManager {
         List<ReadingEntity> readingEntities = new ArrayList<>();
         for (Reading reading : readings) {
             ReadingEntity readingEntity = new ReadingEntity(reading.readingId,
-                    reading.patient.patientId,GsonUtil.getJson(reading),reading.isUploaded());
+                    reading.patient.patientId, GsonUtil.getJson(reading), reading.isUploaded());
             readingEntities.add(readingEntity);
         }
         readingEntitiesDatabase.daoAccess().insertAll(readingEntities);
@@ -109,7 +109,7 @@ public class RoomReadingManager implements ReadingManager {
     public List<Reading> getUnuploadedReadings() {
         List<ReadingEntity> readingEntities = readingEntitiesDatabase.daoAccess().getAllUnUploadedReading();
         List<Reading> readings = new ArrayList<>();
-        for (ReadingEntity readingEntity: readingEntities){
+        for (ReadingEntity readingEntity : readingEntities) {
             Reading r = GsonUtil.makeObjectFromJson(readingEntity.getReadDataJsonString(), Reading.class);
             readings.add(r);
         }
