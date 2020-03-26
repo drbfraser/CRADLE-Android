@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.android.volley.NetworkResponse;
 import com.android.volley.Response;
+import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.utilitiles.DateUtil;
@@ -50,6 +51,9 @@ public class MultiReadingUploader {
         this.settings = settings;
         this.progressCallback = progressCallback;
         this.token=token;
+        ((MyApp) context.getApplicationContext()).getAppComponent().inject(this);
+
+
     }
 
     // OPERATIONS

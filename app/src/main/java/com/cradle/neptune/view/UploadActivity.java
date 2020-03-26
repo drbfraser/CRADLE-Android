@@ -3,13 +3,11 @@ package com.cradle.neptune.view;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -92,7 +90,7 @@ public class UploadActivity extends AppCompatActivity {
         setupUploadDataButton();
         setupErrorHandlingButtons();
         updateReadingUploadLabels();
-        setupSyncReadingButton();
+        setupSyncFollowupButton();
 
         setupLastFollowupDownloadDate();
 
@@ -136,7 +134,7 @@ public class UploadActivity extends AppCompatActivity {
         }
     }
 
-    private void setupSyncReadingButton() {
+    private void setupSyncFollowupButton() {
 
         Button syncButton = findViewById(R.id.downloadReadingButton);
         syncButton.setOnClickListener(new View.OnClickListener() {
@@ -269,7 +267,7 @@ public class UploadActivity extends AppCompatActivity {
 
     private void updateReadingUploadLabels() {
         // reading count
-        int numReadingsToUpload = getReadingsToUpload().size();
+        int numReadingsToUpload = readingManager.getUnuploadedReadings().size();
         TextView tvReadingCount = findViewById(R.id.tvReadingsToUpload);
         tvReadingCount.setText(String.format("%d patient readings ready to upload", numReadingsToUpload));
 
@@ -446,7 +444,7 @@ public class UploadActivity extends AppCompatActivity {
 //        }
 
         // discover un-uploaded readings
-        List<Reading> readingsToUpload = getReadingsToUpload();
+        List<Reading> readingsToUpload = readingManager.getUnuploadedReadings();
         // abort if no readings
         if (readingsToUpload.size() == 0) {
             Toast.makeText(this, "No readings needing to be uploaded.", Toast.LENGTH_LONG).show();
@@ -457,17 +455,6 @@ public class UploadActivity extends AppCompatActivity {
         multiUploader = new MultiReadingUploader(this, settings, sharedPreferences.getString(LoginActivity.TOKEN,""),getProgressCallbackListener());
         multiUploader.startUpload(readingsToUpload);
         setUploadUiElementVisibility(true);
-    }
-
-    private List<Reading> getReadingsToUpload() {
-        List<Reading> allReadings = readingManager.getReadings(this);
-        List<Reading> readingsToUpload = new ArrayList<>();
-        for (Reading reading : allReadings) {
-            if (!reading.isUploaded()) {
-                readingsToUpload.add(reading);
-            }
-        }
-        return readingsToUpload;
     }
 
     MultiReadingUploader.ProgressCallback getProgressCallbackListener() {
