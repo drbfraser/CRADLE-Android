@@ -98,14 +98,10 @@ public class Reading {
      * @param reading reading to put into json object.
      * @return a json string
      */
-    public static String getJsonObj(Reading reading, Context context) throws JSONException {
+    public static String getJsonObj(Reading reading, String userId) throws JSONException {
+
         JSONObject patientVal = reading.patient.getPatientInfoJSon();
-
-        SharedPreferences sharedPreferences = context.getSharedPreferences(AUTH_PREF, Context.MODE_PRIVATE);
-        String userId = sharedPreferences.getString(USER_ID, "");
         JSONObject readingVal = getJsonReadingObject(reading, userId);
-
-
         JSONObject mainObj = new JSONObject();
 
         mainObj.put("patient", patientVal);

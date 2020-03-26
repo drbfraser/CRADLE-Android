@@ -26,6 +26,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 /**
  * Handle uploading multiple readings to the server.
  * Interface with client code (an activity) via callbacks.
@@ -39,6 +41,9 @@ public class MultiReadingUploader {
     private State state = State.IDLE;
     private int numCompleted = 0;
     private String token;
+
+    @Inject
+    SharedPreferences sharedPreferences;
 
     public MultiReadingUploader(Context context, Settings settings, String token,ProgressCallback progressCallback) {
         this.context = context;
@@ -159,7 +164,7 @@ public class MultiReadingUploader {
             // generate zip of encrypted data
             String encryptedZipFileFolder = context.getCacheDir().getAbsolutePath();
 
-            String readingJson = Reading.getJsonObj(readings.get(0), context);
+            String readingJson = Reading.getJsonObj(readings.get(0), sharedPreferences.getString(LoginActivity.USER_ID,""));
             // start upload
             Uploader uploader = new Uploader(
                     settings.getReadingServerUrl(),

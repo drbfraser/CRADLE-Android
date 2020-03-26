@@ -8,6 +8,7 @@ import com.cradle.neptune.view.PatientsActivity;
 import com.cradle.neptune.view.ReadingActivity;
 import com.cradle.neptune.view.StatsActivity;
 import com.cradle.neptune.view.UploadActivity;
+import com.cradle.neptune.view.ui.network_volley.MultiReadingUploader;
 import com.cradle.neptune.view.ui.reading.ConfirmDataFragment;
 import com.cradle.neptune.view.ui.reading.ReferralDialogFragment;
 import com.cradle.neptune.view.ui.settings.SettingsFragment;
@@ -49,4 +50,5 @@ public interface AppComponent {
     // void inject(MyFragment fragment);
     // void inject(MyService service);
     void inject(LoginActivity loginActivity);
+    void inject (MultiReadingUploader multiReadingUploader);
 }
