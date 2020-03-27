@@ -2,8 +2,6 @@ package com.cradle.neptune.view.ui.settings;
 
 
 import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -66,8 +64,8 @@ public class SettingsFragment extends PreferenceFragmentCompat
                     List<Reading> unUploadedReadings = readingManager.getUnuploadedReadings();
 
                     String description = getString(R.string.normalSignoutMessage);
-                    if (!unUploadedReadings.isEmpty()){
-                        description = unUploadedReadings.size()+ getString(R.string.unUploadedReadingSignoutMessage);
+                    if (!unUploadedReadings.isEmpty()) {
+                        description = unUploadedReadings.size() + getString(R.string.unUploadedReadingSignoutMessage);
                     }
                     AlertDialog alertDialog = new AlertDialog.Builder(getActivity())
                             .setTitle("Sign out?").setMessage(description)
@@ -85,10 +83,10 @@ public class SettingsFragment extends PreferenceFragmentCompat
 
     private void signoutTheUser() {
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(LoginActivity.LOGIN_EMAIL,"");
-        editor.putInt(LoginActivity.LOGIN_PASSWORD,LoginActivity.DEFAULT_PASSWORD);
-        editor.putString(LoginActivity.TOKEN,"");
-        editor.putString(LoginActivity.USER_ID,"");
+        editor.putString(LoginActivity.LOGIN_EMAIL, "");
+        editor.putInt(LoginActivity.LOGIN_PASSWORD, LoginActivity.DEFAULT_PASSWORD);
+        editor.putString(LoginActivity.TOKEN, "");
+        editor.putString(LoginActivity.USER_ID, "");
         editor.apply();
         readingManager.deleteAllData(getActivity());
         Intent intent = new Intent(getActivity(), LoginActivity.class);
@@ -137,10 +135,10 @@ public class SettingsFragment extends PreferenceFragmentCompat
     @Override
     public void onSharedPreferenceChanged(SharedPreferences prefsArg, String key) {
         Preference pref = getPreferenceScreen().findPreference(key);
-        if (pref!=null) {
+        if (pref != null) {
             setSummary(pref);
         }
-        Log.d("bugg","setting: "+ pref);
+        Log.d("bugg", "setting: " + pref);
         settings.loadFromSharedPrefs();
 
     }

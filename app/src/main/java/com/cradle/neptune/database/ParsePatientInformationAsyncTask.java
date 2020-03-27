@@ -130,8 +130,8 @@ public class ParsePatientInformationAsyncTask extends AsyncTask<Void, Void, Void
     }
 
     @Override
-    protected void onPostExecute(Void aVoid) {
-        super.onPostExecute(aVoid);
+    protected void onPostExecute(Void Void) {
+        super.onPostExecute(Void);
         if (context != null && context.get() != null) {
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context.get());
             notificationManager.cancel(PatientDownloadingNotificationID);

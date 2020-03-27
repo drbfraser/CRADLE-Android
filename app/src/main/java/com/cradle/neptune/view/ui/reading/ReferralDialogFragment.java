@@ -162,26 +162,27 @@ public class ReferralDialogFragment extends DialogFragment {
             try {
                 if (error.networkResponse != null) {
                     json = new String(error.networkResponse.data, HttpHeaderParser.parseCharset(error.networkResponse.headers));
-                    Log.d("bugg",json + "  "+error.networkResponse.statusCode);
+                    Log.d("bugg", json + "  " + error.networkResponse.statusCode);
 
-                   // Toast.makeText(getActivity(), "json: " + json, Toast.LENGTH_LONG).show();
+                    // Toast.makeText(getActivity(), "json: " + json, Toast.LENGTH_LONG).show();
                 }
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
             Snackbar.make(dialogView, "Unable to Send the referral: " + json, Snackbar.LENGTH_LONG).show();
             dialog.cancel();
-        }){
+        }) {
             /**
              * Passing some request headers
              */
             @Override
             public Map<String, String> getHeaders() {
                 HashMap<String, String> headers = new HashMap<>();
-                String token = sharedPreferences.getString(TOKEN,"");
+                String token = sharedPreferences.getString(TOKEN, "");
                 headers.put(LoginActivity.AUTH, "Bearer " + token);
                 return headers;
-            }};
+            }
+        };
         queue.add(jsonObjectRequest);
     }
 
