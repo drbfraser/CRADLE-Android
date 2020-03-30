@@ -63,6 +63,8 @@ public class ReferralDialogFragment extends DialogFragment {
     // Data Model
     @Inject
     Settings settings;
+    @Inject
+    SharedPreferences sharedPreferences;
 
 
     // UI elements
@@ -160,27 +162,27 @@ public class ReferralDialogFragment extends DialogFragment {
             try {
                 if (error.networkResponse != null) {
                     json = new String(error.networkResponse.data, HttpHeaderParser.parseCharset(error.networkResponse.headers));
-                    Log.d("bugg",json + "  "+error.networkResponse.statusCode);
+                    Log.d("bugg", json + "  " + error.networkResponse.statusCode);
 
-                   // Toast.makeText(getActivity(), "json: " + json, Toast.LENGTH_LONG).show();
+                    // Toast.makeText(getActivity(), "json: " + json, Toast.LENGTH_LONG).show();
                 }
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
             Snackbar.make(dialogView, "Unable to Send the referral: " + json, Snackbar.LENGTH_LONG).show();
             dialog.cancel();
-        }){
+        }) {
             /**
              * Passing some request headers
              */
             @Override
             public Map<String, String> getHeaders() {
                 HashMap<String, String> headers = new HashMap<>();
-                SharedPreferences sharedPref = getContext().getSharedPreferences(AUTH_PREF, Context.MODE_PRIVATE);
-                String token = sharedPref.getString(TOKEN,"");
+                String token = sharedPreferences.getString(TOKEN, "");
                 headers.put(LoginActivity.AUTH, "Bearer " + token);
                 return headers;
-            }};
+            }
+        };
         queue.add(jsonObjectRequest);
     }
 
@@ -576,9 +578,6 @@ public class ReferralDialogFragment extends DialogFragment {
 
     private JSONObject getReferralJson() {
         JSONObject patientVal = currentReading.patient.getPatientInfoJSon();
-
-        SharedPreferences sharedPreferences = Objects.requireNonNull(getActivity())
-                .getSharedPreferences(AUTH_PREF, Context.MODE_PRIVATE);
         JSONObject readingVal = new JSONObject();
         try {
             readingVal = Reading.getJsonReadingObject(currentReading, sharedPreferences.getString(USER_ID, ""));

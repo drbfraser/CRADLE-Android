@@ -1,5 +1,6 @@
 package com.cradle.neptune.view;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -63,9 +64,6 @@ public class UploadActivity extends AppCompatActivity {
 
     MultiReadingUploader multiUploader;
 
-    // set who we are for tab code
-    public UploadActivity() {
-    }
 
     public static Intent makeIntent(Context context) {
         return new Intent(context, UploadActivity.class);
@@ -92,12 +90,36 @@ public class UploadActivity extends AppCompatActivity {
         setupUploadDataButton();
         setupErrorHandlingButtons();
         updateReadingUploadLabels();
-        setupSyncReadingButton();
+        setupSyncFollowupButton();
 
         setupLastFollowupDownloadDate();
 
-        setupUploadImageButton()
-        ;
+        setupUploadImageButton();
+
+        setupGettingAllReadingsFromServer();
+    }
+
+    private void setupGettingAllReadingsFromServer() {
+        Button uploadBtn = findViewById(R.id.updateAllPatientsBtn);
+        uploadBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String token = sharedPreferences.getString(LoginActivity.TOKEN, "");
+                new AlertDialog.Builder(UploadActivity.this)
+                        .setMessage("Downloading the patient data might take a while, please " +
+                                "do not close the application. Check the status of download" +
+                                " status in the notification bar.")
+                        .setTitle("Downloading patient data")
+                        .setPositiveButton("OK", (dialogInterface, i)
+                                -> {
+                            LoginActivity.getAllMyPatients(token, readingManager, UploadActivity.this);
+                        })
+                        .setNegativeButton("Cancel", (dialogInterface, i) -> {
+
+                        }).create().show();
+
+            }
+        });
     }
 
     private void setupLastFollowupDownloadDate() {
@@ -112,21 +134,20 @@ public class UploadActivity extends AppCompatActivity {
         }
     }
 
-    private void setupSyncReadingButton() {
+    private void setupSyncFollowupButton() {
 
         Button syncButton = findViewById(R.id.downloadReadingButton);
         syncButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // setup the network call here
-                requestReadingsFromNetwork();
+                requestFollowupFromNetwork();
             }
         });
     }
 
-    private void requestReadingsFromNetwork() {
-        SharedPreferences sharedPref = UploadActivity.this.getSharedPreferences(LoginActivity.AUTH_PREF, Context.MODE_PRIVATE);
-        String token = sharedPref.getString(LoginActivity.TOKEN, "");
+    private void requestFollowupFromNetwork() {
+        String token = sharedPreferences.getString(LoginActivity.TOKEN, "");
 
         if (token.equals("")) {
             Snackbar.make(findViewById(R.id.cordinatorLayout), R.string.userNotAuthenticated, Snackbar.LENGTH_LONG).show();
@@ -206,14 +227,14 @@ public class UploadActivity extends AppCompatActivity {
             }
         }
         List<Reading> readings = readingManager.getReadings(this);
-        Map<String,Reading> readingMap = new HashMap<String, Reading>();
+        Map<String, Reading> readingMap = new HashMap<String, Reading>();
         for (Reading reading : readings) {
-            readingMap.put(reading.readingId,reading);
+            readingMap.put(reading.readingId, reading);
         }
         //update the followups
         for (ReadingFollowUp followUp : readingsFollowUps) {
             Reading reading = readingMap.get(followUp.getReadingServerId());
-            if (reading!=null) {
+            if (reading != null) {
                 reading.readingFollowUp = followUp;
                 reading.patient.medicalHistoryList = new ArrayList<>();
                 reading.patient.drugHistoryList = new ArrayList<>();
@@ -246,7 +267,7 @@ public class UploadActivity extends AppCompatActivity {
 
     private void updateReadingUploadLabels() {
         // reading count
-        int numReadingsToUpload = getReadingsToUpload().size();
+        int numReadingsToUpload = readingManager.getUnuploadedReadings().size();
         TextView tvReadingCount = findViewById(R.id.tvReadingsToUpload);
         tvReadingCount.setText(String.format("%d patient readings ready to upload", numReadingsToUpload));
 
@@ -423,7 +444,7 @@ public class UploadActivity extends AppCompatActivity {
 //        }
 
         // discover un-uploaded readings
-        List<Reading> readingsToUpload = getReadingsToUpload();
+        List<Reading> readingsToUpload = readingManager.getUnuploadedReadings();
         // abort if no readings
         if (readingsToUpload.size() == 0) {
             Toast.makeText(this, "No readings needing to be uploaded.", Toast.LENGTH_LONG).show();
@@ -431,20 +452,9 @@ public class UploadActivity extends AppCompatActivity {
         }
 
         // upload multiple readings
-        multiUploader = new MultiReadingUploader(this, settings, getProgressCallbackListener());
+        multiUploader = new MultiReadingUploader(this, settings, sharedPreferences.getString(LoginActivity.TOKEN, ""), getProgressCallbackListener());
         multiUploader.startUpload(readingsToUpload);
         setUploadUiElementVisibility(true);
-    }
-
-    private List<Reading> getReadingsToUpload() {
-        List<Reading> allReadings = readingManager.getReadings(this);
-        List<Reading> readingsToUpload = new ArrayList<>();
-        for (Reading reading : allReadings) {
-            if (!reading.isUploaded()) {
-                readingsToUpload.add(reading);
-            }
-        }
-        return readingsToUpload;
     }
 
     MultiReadingUploader.ProgressCallback getProgressCallbackListener() {

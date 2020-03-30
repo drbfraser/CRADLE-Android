@@ -40,71 +40,7 @@ public class ParsePatientInformationAsyncTask extends AsyncTask<Void, Void, Void
         this.readingManager = readingManager;
     }
 
-    @Override
-    protected Void doInBackground(Void... voids) {
-        try {
-            List<Reading> readings = new ArrayList<>();
-            for (int i = 0; i < response.length(); i++) {
-                //get the main json object
-                JSONObject jsonObject = response.getJSONObject(i);
-                //build patient
-                Patient patient = new Patient();
-                patient.dob = jsonObject.getString("dob");
-                patient.patientName = jsonObject.getString("patientName");
-                patient.zone = jsonObject.getString("zone");
-                patient.gestationalAgeUnit = Reading.GestationalAgeUnit.valueOf((String) jsonObject.get("gestationalAgeUnit"));
-                patient.gestationalAgeValue = jsonObject.getString("gestationalAgeValue");
-                patient.patientId = jsonObject.getString("patientId");
-                patient.villageNumber = jsonObject.getString("villageNumber");
-                patient.patientSex = Patient.PATIENTSEX.valueOf((String) jsonObject.get("patientSex"));
-                patient.age = jsonObject.optInt("patientAge", -1);
-                patient.isPregnant = jsonObject.optBoolean("isPregnant", false);
-                patient.needAssessment = jsonObject.optBoolean("needsAssessment", false);
-
-                patient.drugHistoryList = new ArrayList<>();
-                if (!jsonObject.getString("drugHistory").toLowerCase().equals("null")) {
-                    patient.drugHistoryList.add(jsonObject.getString("drugHistory"));
-                }
-                patient.medicalHistoryList = new ArrayList<>();
-                if (!jsonObject.getString("medicalHistory").toLowerCase().equals("null")) {
-                    patient.medicalHistoryList.add(jsonObject.getString("medicalHistory"));
-                }
-                JSONArray readingArray = jsonObject.getJSONArray("readings");
-                if (readingArray.length() <= 0) {
-                    //should never be the case but just for safety
-                    //there shouldnt be a case where there is a patient without reeading
-                    return null;
-                }
-                //get all the readings
-                for (int j = 0; j < readingArray.length(); j++) {
-                    JSONObject readingJson = readingArray.getJSONObject(j);
-                    Reading reading = getReadingFromJSONObject(patient, readingJson);
-                    //adding the reading to db
-                    readings.add(reading);
-                }
-            }
-            if (context.get() != null) {
-                readingManager.addAllReadings(context.get(), readings);
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    @Override
-    protected void onPostExecute(Void aVoid) {
-        super.onPostExecute(aVoid);
-        if (context != null && context.get() != null) {
-            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context.get());
-            notificationManager.cancel(PatientDownloadingNotificationID);
-            buildNotification(context.get().getString(R.string.app_name),
-                    "Patients profiles successfully downloaded", PatientDownloadingNotificationID, context.get());
-        }
-
-    }
-
-    private Reading getReadingFromJSONObject(Patient patient, JSONObject readingJson) throws JSONException {
+    public static Reading getReadingFromJSONObject(Patient patient, JSONObject readingJson) throws JSONException {
         Reading reading = new Reading();
         reading.bpDiastolic = readingJson.optInt("bpDiastolic", -1);
         reading.bpSystolic = readingJson.optInt("bpSystolic", -1);
@@ -149,5 +85,59 @@ public class ParsePatientInformationAsyncTask extends AsyncTask<Void, Void, Void
         // because we decided to put patient inside reading --___--
         reading.patient = patient;
         return reading;
+    }
+
+    /**
+     * since the server sends the list of readings as a jsonarray inside the patient json object
+     * we need to first parse for patient and than use the patient data to create the Readings
+     *
+     * @param patientJson patient json object
+     * @return list of readings
+     * @throws JSONException
+     */
+    public static List<Reading> parseReadingsAndPatientFromJson(JSONObject patientJson) throws JSONException {
+        Patient patient = Patient.getPatientFromJson(patientJson);
+        List<Reading> readings = new ArrayList<>();
+        JSONArray readingArray = patientJson.getJSONArray("readings");
+        //get all the readings
+        for (int j = 0; j < readingArray.length(); j++) {
+            JSONObject readingJson = readingArray.getJSONObject(j);
+            Reading reading = getReadingFromJSONObject(patient, readingJson);
+            //adding the reading to db
+            readings.add(reading);
+        }
+        return readings;
+    }
+
+    @Override
+    protected Void doInBackground(Void... voids) {
+        try {
+            List<Reading> readings = new ArrayList<>();
+            for (int i = 0; i < response.length(); i++) {
+                //get the main json object
+                JSONObject jsonObject = response.getJSONObject(i);
+                //build patient
+                readings.addAll(parseReadingsAndPatientFromJson(jsonObject));
+
+            }
+            if (context.get() != null) {
+                readingManager.addAllReadings(context.get(), readings);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    protected void onPostExecute(Void Void) {
+        super.onPostExecute(Void);
+        if (context != null && context.get() != null) {
+            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context.get());
+            notificationManager.cancel(PatientDownloadingNotificationID);
+            buildNotification(context.get().getString(R.string.app_name),
+                    "Patients profiles successfully downloaded", PatientDownloadingNotificationID, context.get());
+        }
+
     }
 }

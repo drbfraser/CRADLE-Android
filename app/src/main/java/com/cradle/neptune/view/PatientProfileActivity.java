@@ -1,14 +1,17 @@
 package com.cradle.neptune.view;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,8 +20,14 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.JsonRequest;
+import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.database.ParsePatientInformationAsyncTask;
 import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingManager;
@@ -30,9 +39,14 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -88,19 +102,64 @@ public class PatientProfileActivity extends AppCompatActivity {
         pregnancyInfoLayout = findViewById(R.id.pregnancyLayout);
         readingRecyclerview = findViewById(R.id.readingRecyclerview);
 
-        currPatient = (Patient) getIntent().getSerializableExtra("key");
+        currPatient = (Patient) getIntent().getSerializableExtra("patient");
         populatePatientInfo(currPatient);
 
-        getPatientReadings();
         setupReadingsRecyclerView();
         setupCreatePatientReadingButton();
         setupLineChart();
+        setupUpdatePatient();
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle(R.string.patient_summary);
         }
 
+    }
+
+    private void setupUpdatePatient() {
+        ProgressDialog progressDialog = new ProgressDialog(this);
+        progressDialog.setTitle("Updating patient");
+        progressDialog.setCancelable(false);
+        JsonRequest<JSONObject> jsonArrayRequest = new JsonObjectRequest(Request.Method.GET, Settings.DEFAULT_SERVER_URL + "/patient/reading/" + currPatient.patientId,
+                null, response -> {
+            try {
+                List<Reading> readings =
+                        ParsePatientInformationAsyncTask.parseReadingsAndPatientFromJson(response);
+                readingManager.addAllReadings(this, readings);
+                setupReadingsRecyclerView();
+                progressDialog.cancel();
+                Toast.makeText(PatientProfileActivity.this, "Patient updated!", Toast.LENGTH_SHORT).show();
+            } catch (JSONException e) {
+                e.printStackTrace();
+                progressDialog.cancel();
+                Toast.makeText(PatientProfileActivity.this, "Patient update fail!", Toast.LENGTH_SHORT).show();
+
+            }
+            //Log.d("bugg","pass: "+ response.toString());
+        }, error -> {
+            Log.d("bugg", "failed: " + error);
+            progressDialog.cancel();
+            Toast.makeText(PatientProfileActivity.this, "Patient update fail!", Toast.LENGTH_SHORT).show();
+        }) {
+            /**
+             * Passing some request headers
+             */
+            @Override
+            public Map<String, String> getHeaders() {
+                HashMap<String, String> headers = new HashMap<>();
+                String token = sharedPreferences.getString(LoginActivity.TOKEN, LoginActivity.DEFAULT_TOKEN);
+                headers.put(LoginActivity.AUTH, "Bearer " + token);
+                return headers;
+            }
+        };
+
+        Button updateBtn = findViewById(R.id.updatePatientBtn);
+        updateBtn.setOnClickListener(view -> {
+            progressDialog.show();
+            RequestQueue queue = Volley.newRequestQueue(MyApp.getInstance());
+            queue.add(jsonArrayRequest);
+        });
     }
 
 
@@ -113,7 +172,6 @@ public class PatientProfileActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        getPatientReadings();
         setupLineChart();
         setupReadingsRecyclerView();
 
@@ -233,11 +291,6 @@ public class PatientProfileActivity extends AppCompatActivity {
         return age;
     }
 
-    private void getPatientReadings() {
-        patientReadings = readingManager.getReadingByPatientID(this,currPatient.patientId);
-        Collections.sort(patientReadings, new Reading.ComparatorByDateReverse());
-    }
-
     private void setupLineChart() {
         LineChart lineChart = findViewById(R.id.patientLineChart);
         CardView lineChartCard = findViewById(R.id.patientLineChartCard);
@@ -296,20 +349,15 @@ public class PatientProfileActivity extends AppCompatActivity {
     private void setupCreatePatientReadingButton() {
         Button createButton = findViewById(R.id.newPatientReadingButton);
 
-        List<Reading> readings = readingManager.getReadings(this);
+        List<Reading> readings = readingManager.getReadingByPatientID(this, currPatient.patientId);
         Collections.sort(readings, new Reading.ComparatorByDateReverse());
         boolean readingFound = false;
         Reading latestReading = new Reading();
 
-        for (Reading reading : readings) {
-            Patient patient = reading.patient;
-            if (patient.patientId.equals(currPatient.patientId)) {
-                latestReading = reading;
-                readingFound = true;
-                break;
-            }
+        if (readings.size() > 1) {
+            readingFound = true;
+            latestReading = readings.get(0);
         }
-
         //button only works if readings exist, which it always should
         if (readingFound) {
             String readingID = latestReading.readingId;
@@ -322,7 +370,9 @@ public class PatientProfileActivity extends AppCompatActivity {
 
     private void setupReadingsRecyclerView() {
 
-        // Improve performance: size of each entry does not change.
+
+        patientReadings = readingManager.getReadingByPatientID(this, currPatient.patientId);
+        Collections.sort(patientReadings, new Reading.ComparatorByDateReverse());
 
         // use linear layout
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);

@@ -2,8 +2,6 @@ package com.cradle.neptune.view.ui.settings;
 
 
 import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -18,11 +16,14 @@ import androidx.preference.PreferenceGroup;
 
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.model.Reading;
+import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.view.LoginActivity;
 
 import java.util.Arrays;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -36,6 +37,8 @@ public class SettingsFragment extends PreferenceFragmentCompat
     SharedPreferences sharedPreferences;
     @Inject
     Settings settings;
+    @Inject
+    ReadingManager readingManager;
 
 //    private SharedPreferences sharedPreferences;
 
@@ -57,30 +60,38 @@ public class SettingsFragment extends PreferenceFragmentCompat
             signout.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    //todo show a pop up delete all tbe offlne patient data
-                    SharedPreferences sharedPref = getActivity().getSharedPreferences(LoginActivity.AUTH_PREF, Context.MODE_PRIVATE);
-                    AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).setTitle("Sign out?").setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
 
-                            SharedPreferences.Editor editor = sharedPref.edit();
-                            editor.putString(LoginActivity.LOGIN_EMAIL,"");
-                            editor.putInt(LoginActivity.LOGIN_PASSWORD,LoginActivity.DEFAULT_PASSWORD);
-                            editor.putString(LoginActivity.TOKEN,"");
-                            editor.putString(LoginActivity.USER_ID,"");
-                            editor.apply();
-                            Intent intent = new Intent(getActivity(), LoginActivity.class);
-                            startActivity(intent);
-                            getActivity().finishAffinity();
-                        }
-                    }).setNegativeButton("No", null).setIcon(R.drawable.ic_sync)
-                            .setMessage(R.string.signoutMessage).create();
+                    List<Reading> unUploadedReadings = readingManager.getUnuploadedReadings();
+
+                    String description = getString(R.string.normalSignoutMessage);
+                    if (!unUploadedReadings.isEmpty()) {
+                        description = unUploadedReadings.size() + getString(R.string.unUploadedReadingSignoutMessage);
+                    }
+                    AlertDialog alertDialog = new AlertDialog.Builder(getActivity())
+                            .setTitle("Sign out?").setMessage(description)
+                            .setPositiveButton("Yes", (dialog, which) ->
+                                    signoutTheUser())
+                            .setNegativeButton("No", null).setIcon(R.drawable.ic_sync)
+                            .create();
                     alertDialog.show();
                     return true;
 
                 }
             });
         }
+    }
+
+    private void signoutTheUser() {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(LoginActivity.LOGIN_EMAIL, "");
+        editor.putInt(LoginActivity.LOGIN_PASSWORD, LoginActivity.DEFAULT_PASSWORD);
+        editor.putString(LoginActivity.TOKEN, "");
+        editor.putString(LoginActivity.USER_ID, "");
+        editor.apply();
+        readingManager.deleteAllData(getActivity());
+        Intent intent = new Intent(getActivity(), LoginActivity.class);
+        startActivity(intent);
+        getActivity().finishAffinity();
     }
 
     private void setupHealthCentres() {
@@ -124,7 +135,10 @@ public class SettingsFragment extends PreferenceFragmentCompat
     @Override
     public void onSharedPreferenceChanged(SharedPreferences prefsArg, String key) {
         Preference pref = getPreferenceScreen().findPreference(key);
-        setSummary(pref);
+        if (pref != null) {
+            setSummary(pref);
+        }
+        Log.d("bugg", "setting: " + pref);
         settings.loadFromSharedPrefs();
 
     }

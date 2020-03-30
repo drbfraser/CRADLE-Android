@@ -45,6 +45,31 @@ public class Patient implements Serializable {
 
     }
 
+    public static Patient getPatientFromJson(JSONObject jsonObject) throws JSONException {
+        Patient patient = new Patient();
+        patient.dob = jsonObject.optString("dob");
+        patient.patientName = jsonObject.optString("patientName");
+        patient.zone = jsonObject.optString("zone");
+        patient.gestationalAgeUnit = Reading.GestationalAgeUnit.valueOf((String) jsonObject.get("gestationalAgeUnit"));
+        patient.gestationalAgeValue = jsonObject.optString("gestationalAgeValue");
+        patient.patientId = jsonObject.optString("patientId");
+        patient.villageNumber = jsonObject.optString("villageNumber");
+        patient.patientSex = Patient.PATIENTSEX.valueOf((String) jsonObject.opt("patientSex"));
+        patient.age = jsonObject.optInt("patientAge", -1);
+        patient.isPregnant = jsonObject.optBoolean("isPregnant", false);
+        patient.needAssessment = jsonObject.optBoolean("needsAssessment", false);
+
+        patient.drugHistoryList = new ArrayList<>();
+        if (!jsonObject.optString("drugHistory").toLowerCase().equals("null")) {
+            patient.drugHistoryList.add(jsonObject.optString("drugHistory"));
+        }
+        patient.medicalHistoryList = new ArrayList<>();
+        if (!jsonObject.optString("medicalHistory").toLowerCase().equals("null")) {
+            patient.medicalHistoryList.add(jsonObject.optString("medicalHistory"));
+        }
+
+        return patient;
+    }
 
     public JSONObject getPatientInfoJSon() {
         try {
@@ -52,16 +77,16 @@ public class Patient implements Serializable {
             patientInfoObject.put("patientId", patientId);
             patientInfoObject.put("patientName", patientName);
             patientInfoObject.put("dob", dob);
-            if (age==null){
-                patientInfoObject.put("patientAge",JSONObject.NULL);
-            }else {
+            if (age == null) {
+                patientInfoObject.put("patientAge", JSONObject.NULL);
+            } else {
                 patientInfoObject.put("patientAge", age);
             }
             patientInfoObject.put("gestationalAgeUnit", gestationalAgeUnit.toString());
             patientInfoObject.put("gestationalAgeValue", gestationalAgeValue);
             patientInfoObject.put("villageNumber", villageNumber);
             patientInfoObject.put("patientSex", patientSex.toString());
-            patientInfoObject.put("zone",zone);
+            patientInfoObject.put("zone", zone);
             String isPregnantString = "false";
             if (isPregnant) {
                 isPregnantString = "true";
@@ -74,8 +99,6 @@ public class Patient implements Serializable {
         }
         return null;
     }
-
-    public enum PATIENTSEX {MALE, FEMALE, OTHERS}
 
     @Override
     public String toString() {
@@ -93,4 +116,6 @@ public class Patient implements Serializable {
                 ", medicalHistoryList=" + medicalHistoryList +
                 '}';
     }
+
+    public enum PATIENTSEX {MALE, FEMALE, OTHERS}
 }

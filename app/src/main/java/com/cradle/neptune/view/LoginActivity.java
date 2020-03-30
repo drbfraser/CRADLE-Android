@@ -18,6 +18,7 @@ import androidx.core.app.NotificationManagerCompat;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.JsonRequest;
@@ -32,6 +33,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,6 +59,8 @@ public class LoginActivity extends AppCompatActivity {
 
     @Inject
     ReadingManager readingManager;
+    @Inject
+    SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,9 +73,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void checkSharedPrefForLogin() {
-        SharedPreferences sharedPref = this.getSharedPreferences(AUTH_PREF, Context.MODE_PRIVATE);
-        String email = sharedPref.getString(LOGIN_EMAIL, DEFAULT_EMAIL);
-        int password = sharedPref.getInt(LOGIN_PASSWORD, DEFAULT_PASSWORD);
+        String email = sharedPreferences.getString(LOGIN_EMAIL, DEFAULT_EMAIL);
+        int password = sharedPreferences.getInt(LOGIN_PASSWORD, DEFAULT_PASSWORD);
         if (!email.equals(DEFAULT_EMAIL) && password != DEFAULT_PASSWORD) {
             startIntroActivity();
         }
@@ -111,13 +114,12 @@ public class LoginActivity extends AppCompatActivity {
                 saveUserNamePasswordSharedPref(emailET.getText().toString(), passwordET.getText().toString());
                 Toast.makeText(LoginActivity.this, "Login Successful!", Toast.LENGTH_SHORT).show();
                 try {
-                    SharedPreferences sharedPref = LoginActivity.this.getSharedPreferences(AUTH_PREF, Context.MODE_PRIVATE);
-                    SharedPreferences.Editor editor = sharedPref.edit();
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putString(TOKEN, response.getString(TOKEN));
                     editor.putString(USER_ID, response.getString("userId"));
                     editor.apply();
                     String token = response.get(TOKEN).toString();
-                    getAllMyPatients(token);
+                    getAllMyPatients(token, readingManager, this);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -144,19 +146,27 @@ public class LoginActivity extends AppCompatActivity {
      *
      * @param token token for the user
      */
-    private void getAllMyPatients(String token) {
+    public static void getAllMyPatients(String token, ReadingManager readingManager, Context context) {
         JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, Settings.patientGetAllInfoByUserIdUrl,
                 null, response -> {
 
             ParsePatientInformationAsyncTask parsePatientInformationAsyncTask =
-                    new ParsePatientInformationAsyncTask(response, getApplicationContext(), readingManager);
+                    new ParsePatientInformationAsyncTask(response, context.getApplicationContext(), readingManager);
             parsePatientInformationAsyncTask.execute();
         }, error -> {
             Log.d("bugg", "failed: " + error);
-            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
+            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context.getApplicationContext());
             notificationManager.cancel(PatientDownloadingNotificationID);
             //let user know we failed getting the patients info // maybe due to timeout etc?
-            buildNotification(getString(R.string.app_name), "Failed to download Patients information...", PatientDownloadFailNotificationID, this);
+            buildNotification(context.getString(R.string.app_name), "Failed to download Patients information...", PatientDownloadFailNotificationID, context);
+            try {
+                if (error.networkResponse != null) {
+                    String json = new String(error.networkResponse.data, HttpHeaderParser.parseCharset(error.networkResponse.headers));
+                    Log.d("bugg1", json + "  " + error.networkResponse.statusCode);
+                }
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
         }) {
             /**
              * Passing some request headers
@@ -169,17 +179,16 @@ public class LoginActivity extends AppCompatActivity {
                 return headers;
             }
         };
-        Toast.makeText(this, "Downloading patient's information, Check the status bar for progress.", Toast.LENGTH_LONG).show();
+        Toast.makeText(context, "Downloading patient's information, Check the status bar for progress.", Toast.LENGTH_LONG).show();
         //timeout to 15 second if there are alot of patients
         jsonArrayRequest.setRetryPolicy(new DefaultRetryPolicy(150000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_TIMEOUT_MS));
         RequestQueue queue = Volley.newRequestQueue(MyApp.getInstance());
         queue.add(jsonArrayRequest);
-        buildNotification(getString(R.string.app_name), "Downloading Patients....", PatientDownloadingNotificationID, this);
+        buildNotification(context.getString(R.string.app_name), "Downloading Patients....", PatientDownloadingNotificationID, context);
     }
 
     private void saveUserNamePasswordSharedPref(String email, String password) {
-        SharedPreferences sharedPref = LoginActivity.this.getSharedPreferences(AUTH_PREF, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
+        SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(LOGIN_EMAIL, email);
         editor.putInt(LOGIN_PASSWORD, password.hashCode());
         editor.apply();

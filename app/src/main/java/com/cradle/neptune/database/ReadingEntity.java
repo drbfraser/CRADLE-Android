@@ -20,6 +20,17 @@ public class ReadingEntity implements Serializable {
     @ColumnInfo
     private String readDataJsonString;
 
+    @ColumnInfo
+    private boolean isUploadedToServer;
+
+
+    public ReadingEntity(String readingId, String patientId, String readDataJsonString, boolean isUploadedToServer) {
+        this.readingId = readingId;
+        this.readDataJsonString = readDataJsonString;
+        this.patientId = patientId;
+        this.isUploadedToServer = isUploadedToServer;
+    }
+
     public String getReadingId() {
         return readingId;
     }
@@ -42,5 +53,13 @@ public class ReadingEntity implements Serializable {
 
     public void setReadDataJsonString(String readDataJsonString) {
         this.readDataJsonString = readDataJsonString;
+    }
+
+    public boolean isUploadedToServer() {
+        return isUploadedToServer;
+    }
+
+    public void setUploadedToServer(boolean uploadedToServer) {
+        isUploadedToServer = uploadedToServer;
     }
 }

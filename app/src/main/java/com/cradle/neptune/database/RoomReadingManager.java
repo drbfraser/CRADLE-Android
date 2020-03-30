@@ -31,10 +31,8 @@ public class RoomReadingManager implements ReadingManager {
             reading.readingId = UUID.randomUUID().toString();
         }
 
-        ReadingEntity readingEntity = new ReadingEntity();
-        readingEntity.setReadingId(reading.readingId);
-        readingEntity.setPatientId(reading.patient.patientId);
-        readingEntity.setReadDataJsonString(GsonUtil.getJson(reading));
+        ReadingEntity readingEntity = new ReadingEntity(reading.readingId,
+                reading.patient.patientId, GsonUtil.getJson(reading), reading.isUploaded());
         readingEntitiesDatabase.daoAccess().insertReading(readingEntity);
 
         // update all the other patient's records .. because thats the way it is...
@@ -53,11 +51,8 @@ public class RoomReadingManager implements ReadingManager {
     @Override
     public void updateReading(Context context, Reading reading) {
         reading.dateLastSaved = ZonedDateTime.now();
-        ReadingEntity readingEntity = new ReadingEntity();
-        readingEntity.setReadingId(reading.readingId);
-        readingEntity.setPatientId(reading.patient.patientId);
-        readingEntity.setReadDataJsonString(GsonUtil.getJson(reading));
-
+        ReadingEntity readingEntity = new ReadingEntity(reading.readingId,
+                reading.patient.patientId, GsonUtil.getJson(reading), reading.isUploaded());
         readingEntitiesDatabase.daoAccess().update(readingEntity);
     }
 
@@ -103,13 +98,22 @@ public class RoomReadingManager implements ReadingManager {
     public void addAllReadings(Context context, List<Reading> readings) {
         List<ReadingEntity> readingEntities = new ArrayList<>();
         for (Reading reading : readings) {
-            ReadingEntity readingEntity = new ReadingEntity();
-            readingEntity.setReadingId(reading.readingId);
-            readingEntity.setPatientId(reading.patient.patientId);
-            readingEntity.setReadDataJsonString(GsonUtil.getJson(reading));
+            ReadingEntity readingEntity = new ReadingEntity(reading.readingId,
+                    reading.patient.patientId, GsonUtil.getJson(reading), reading.isUploaded());
             readingEntities.add(readingEntity);
         }
         readingEntitiesDatabase.daoAccess().insertAll(readingEntities);
+    }
+
+    @Override
+    public List<Reading> getUnuploadedReadings() {
+        List<ReadingEntity> readingEntities = readingEntitiesDatabase.daoAccess().getAllUnUploadedReading();
+        List<Reading> readings = new ArrayList<>();
+        for (ReadingEntity readingEntity : readingEntities) {
+            Reading r = GsonUtil.makeObjectFromJson(readingEntity.getReadDataJsonString(), Reading.class);
+            readings.add(r);
+        }
+        return readings;
     }
 
     /**

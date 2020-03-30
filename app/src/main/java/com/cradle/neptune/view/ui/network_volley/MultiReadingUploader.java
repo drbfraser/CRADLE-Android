@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.android.volley.NetworkResponse;
 import com.android.volley.Response;
+import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.utilitiles.DateUtil;
@@ -26,23 +27,32 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 /**
  * Handle uploading multiple readings to the server.
  * Interface with client code (an activity) via callbacks.
  */
 public class MultiReadingUploader {
     private static final String TAG = "MultiReadingUploader";
+    @Inject
+    SharedPreferences sharedPreferences;
     private Context context;
     private Settings settings;
     private List<Reading> readings;
     private ProgressCallback progressCallback;
     private State state = State.IDLE;
     private int numCompleted = 0;
+    private String token;
 
-    public MultiReadingUploader(Context context, Settings settings, ProgressCallback progressCallback) {
+    public MultiReadingUploader(Context context, Settings settings, String token, ProgressCallback progressCallback) {
         this.context = context;
         this.settings = settings;
         this.progressCallback = progressCallback;
+        this.token = token;
+        ((MyApp) context.getApplicationContext()).getAppComponent().inject(this);
+
+
     }
 
     // OPERATIONS
@@ -157,11 +167,8 @@ public class MultiReadingUploader {
             // generate zip of encrypted data
             String encryptedZipFileFolder = context.getCacheDir().getAbsolutePath();
 
-            String readingJson = Reading.getJsonObj(readings.get(0), context);
+            String readingJson = Reading.getJsonObj(readings.get(0), sharedPreferences.getString(LoginActivity.USER_ID, ""));
             // start upload
-            SharedPreferences sharedPref = context.getSharedPreferences(LoginActivity.AUTH_PREF, Context.MODE_PRIVATE);
-            String token = sharedPref.getString(LoginActivity.TOKEN, LoginActivity.DEFAULT_TOKEN);
-
             Uploader uploader = new Uploader(
                     settings.getReadingServerUrl(),
                     settings.getServerUserName(),
