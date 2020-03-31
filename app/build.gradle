@@ -127,6 +127,9 @@ dependencies {
     //room database
     implementation "androidx.room:room-runtime:2.2.5"
     annotationProcessor 'android.arch.persistence.room:compiler:1.1.1'
+
+    // Guava - for immutable maps
+    implementation "com.google.guava:guava:16+"
 }
 
 // TensorFlow Lite: select only the ABI's we (likely) need

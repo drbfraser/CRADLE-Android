@@ -37,6 +37,7 @@ import com.cradle.neptune.utilitiles.DateUtil;
 import com.cradle.neptune.view.LoginActivity;
 import com.cradle.neptune.view.ui.settings.SettingsActivity;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.common.collect.ImmutableMap;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -47,6 +48,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -211,6 +213,43 @@ public class ReferralDialogFragment extends DialogFragment {
         startActivity(it);
     }
 
+    private Map<String, String> referralJsonKeys = ImmutableMap.<String, String>builder()
+            .put("patient", "0")
+            .put("patientId", "1")
+            .put("patientName", "2")
+            .put("patientAge", "3")
+            .put("gestationalAgeUnit", "4")
+            .put("gestationalAgeValue", "5")
+            .put("villageNumber", "6")
+            .put("patientSex", "7")
+            .put("zone", "8")
+            .put("isPregnant", "9")
+            .put("reading", "10")
+            .put("readingId", "11")
+            .put("dateTimeTaken", "12")
+            .put("bpSystolic", "13")
+            .put("userId", "14")
+            .put("bpDiastolic", "15")
+            .put("heartRateBPM", "16")
+            .put("dateRecheckVitalsNeeded", "17")
+            .put("isFlaggedForFollowup", "18")
+            .put("symptoms", "19")
+            .put("comment", "20")
+            .put("healthFacilityName", "21")
+            .put("date", "22")
+            .build();
+
+
+    private String mapStringKeysToNumbers(String referralJsonStr) {
+        if (referralJsonStr != null) {
+            Set<String> stringKeys = referralJsonKeys.keySet();
+            for (String stringKey : stringKeys) {
+                referralJsonStr = referralJsonStr.replace("\"" + stringKey + "\":", referralJsonKeys.get(stringKey) + ":");
+            }
+        }
+        return referralJsonStr;
+    }
+
     private void sendSMSMessage(Dialog dialog) {
         Log.d("MySms", "sending message");
 
@@ -225,6 +264,7 @@ public class ReferralDialogFragment extends DialogFragment {
 //
 //        // Must send SMS via intent to default SMS program due to PlayStore policy preventing
 //        // apps from sending SMS directly.
+        smsTextMessage = mapStringKeysToNumbers(smsTextMessage);
         composeMmsMessage(smsTextMessage, TWILIO_PHONE_NUMBER);
         onFinishedSendingSMS(dialog);
 //
