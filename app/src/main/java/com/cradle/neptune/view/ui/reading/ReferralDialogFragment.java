@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.inject.Inject;
 
@@ -121,6 +122,7 @@ public class ReferralDialogFragment extends DialogFragment {
             .put("comment", "28")
             .put("healthFacilityName", "29")
             .put("date", "30")
+            .put("referralId", "31")
             .build();
 
     public static ReferralDialogFragment makeInstance(Reading currentReading, DoneCallback callback) {
@@ -187,7 +189,7 @@ public class ReferralDialogFragment extends DialogFragment {
         dialog.setCancelable(false);
         dialog.show();
         RequestQueue queue = Volley.newRequestQueue(getActivity());
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(JsonObjectRequest.Method.POST, settings.getReferralsServerUrl(), getReferralJson(),
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(JsonObjectRequest.Method.POST, settings.getReferralsServerUrl(), getReferralJson(false),
                 response -> {
                     currentReading.setReferredToHealthCentre(selectedHealthCentreName, ZonedDateTime.now());
                     currentReading.referralComment = enteredComment;
@@ -247,14 +249,13 @@ public class ReferralDialogFragment extends DialogFragment {
         startActivity(it);
     }
 
-    private String mapStringKeysToNumbers(String referralJsonStr) {
-        if (referralJsonStr != null) {
+    private void prepareReferralJsonForSMS() {
+        if (smsTextMessage != null) {
             Set<String> stringKeys = referralJsonKeys.keySet();
             for (String stringKey : stringKeys) {
-                referralJsonStr = referralJsonStr.replace("\"" + stringKey + "\":", "\"" + referralJsonKeys.get(stringKey) + "\":");
+                smsTextMessage = smsTextMessage.replace("\"" + stringKey + "\":", "\"" + referralJsonKeys.get(stringKey) + "\":");
             }
         }
-        return referralJsonStr;
     }
 
     private void sendSMSMessage(Dialog dialog) {
@@ -271,7 +272,7 @@ public class ReferralDialogFragment extends DialogFragment {
 //
 //        // Must send SMS via intent to default SMS program due to PlayStore policy preventing
 //        // apps from sending SMS directly.
-        smsTextMessage = mapStringKeysToNumbers(smsTextMessage);
+        prepareReferralJsonForSMS();
         composeMmsMessage(smsTextMessage, TWILIO_PHONE_NUMBER);
         onFinishedSendingSMS(dialog);
 //
@@ -617,13 +618,13 @@ public class ReferralDialogFragment extends DialogFragment {
 //                + addLf(secondReferralWarning)
 //                + comments;
 
-        JSONObject referralJson = getReferralJson();
+        JSONObject referralJson = getReferralJson(true);
 
         String jsonStr = referralJson.toString();
         return jsonStr;
     }
 
-    private JSONObject getReferralJson() {
+    private JSONObject getReferralJson(boolean isSMS) {
         JSONObject patientVal = currentReading.patient.getPatientInfoJSon();
         JSONObject readingVal = new JSONObject();
         try {
@@ -636,12 +637,12 @@ public class ReferralDialogFragment extends DialogFragment {
 
         JSONObject mainObj = new JSONObject();
         try {
-
             mainObj.put("patient", patientVal);
             mainObj.put("reading", readingVal);
             mainObj.put("comment", enteredComment);
             mainObj.put("healthFacilityName", this.selectedHealthCentreName);
             mainObj.put("date", ZonedDateTime.now().toString());
+            if (isSMS) mainObj.put("referralId", UUID.randomUUID().toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
