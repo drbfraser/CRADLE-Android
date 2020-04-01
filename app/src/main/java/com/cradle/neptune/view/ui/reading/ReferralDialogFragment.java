@@ -93,7 +93,7 @@ public class ReferralDialogFragment extends DialogFragment {
             .put("patient", "0")
             .put("patientId", "1")
             .put("patientName", "2")
-            .put("dob", "3") //
+            .put("dob", "3")
             .put("patientAge", "4")
             .put("gestationalAgeUnit", "5")
             .put("gestationalAgeValue", "6")
@@ -103,7 +103,7 @@ public class ReferralDialogFragment extends DialogFragment {
             .put("isPregnant", "10")
             .put("reading", "11")
             .put("readingId", "12")
-            .put("dateLastSaved", "13") //
+            .put("dateLastSaved", "13")
             .put("dateTimeTaken", "14")
             .put("bpSystolic", "15")
             .put("urineTests", "16")
