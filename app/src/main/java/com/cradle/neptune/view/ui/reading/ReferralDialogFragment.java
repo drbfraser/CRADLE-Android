@@ -89,6 +89,40 @@ public class ReferralDialogFragment extends DialogFragment {
     private OkHttpClient mClient = new OkHttpClient();
     private Context mContext;
 
+    private final Map<String, String> referralJsonKeys = ImmutableMap.<String, String>builder()
+            .put("patient", "0")
+            .put("patientId", "1")
+            .put("patientName", "2")
+            .put("dob", "3") //
+            .put("patientAge", "4")
+            .put("gestationalAgeUnit", "5")
+            .put("gestationalAgeValue", "6")
+            .put("villageNumber", "7")
+            .put("patientSex", "8")
+            .put("zone", "9")
+            .put("isPregnant", "10")
+            .put("reading", "11")
+            .put("readingId", "12")
+            .put("dateLastSaved", "13") //
+            .put("dateTimeTaken", "14")
+            .put("bpSystolic", "15")
+            .put("urineTests", "16")
+            .put("urineTestBlood", "17")
+            .put("urineTestPro", "18")
+            .put("urineTestLeuc", "19")
+            .put("urineTestGlu", "20")
+            .put("urineTestNit", "21")
+            .put("userId", "22")
+            .put("bpDiastolic", "23")
+            .put("heartRateBPM", "24")
+            .put("dateRecheckVitalsNeeded", "25")
+            .put("isFlaggedForFollowup", "26")
+            .put("symptoms", "27")
+            .put("comment", "28")
+            .put("healthFacilityName", "29")
+            .put("date", "30")
+            .build();
+
     public static ReferralDialogFragment makeInstance(Reading currentReading, DoneCallback callback) {
         ReferralDialogFragment dialog = new ReferralDialogFragment();
         dialog.currentReading = currentReading;
@@ -213,38 +247,11 @@ public class ReferralDialogFragment extends DialogFragment {
         startActivity(it);
     }
 
-    private Map<String, String> referralJsonKeys = ImmutableMap.<String, String>builder()
-            .put("patient", "0")
-            .put("patientId", "1")
-            .put("patientName", "2")
-            .put("patientAge", "3")
-            .put("gestationalAgeUnit", "4")
-            .put("gestationalAgeValue", "5")
-            .put("villageNumber", "6")
-            .put("patientSex", "7")
-            .put("zone", "8")
-            .put("isPregnant", "9")
-            .put("reading", "10")
-            .put("readingId", "11")
-            .put("dateTimeTaken", "12")
-            .put("bpSystolic", "13")
-            .put("userId", "14")
-            .put("bpDiastolic", "15")
-            .put("heartRateBPM", "16")
-            .put("dateRecheckVitalsNeeded", "17")
-            .put("isFlaggedForFollowup", "18")
-            .put("symptoms", "19")
-            .put("comment", "20")
-            .put("healthFacilityName", "21")
-            .put("date", "22")
-            .build();
-
-
     private String mapStringKeysToNumbers(String referralJsonStr) {
         if (referralJsonStr != null) {
             Set<String> stringKeys = referralJsonKeys.keySet();
             for (String stringKey : stringKeys) {
-                referralJsonStr = referralJsonStr.replace("\"" + stringKey + "\":", referralJsonKeys.get(stringKey) + ":");
+                referralJsonStr = referralJsonStr.replace("\"" + stringKey + "\":", "\"" + referralJsonKeys.get(stringKey) + "\":");
             }
         }
         return referralJsonStr;
