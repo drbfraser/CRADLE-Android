@@ -37,6 +37,7 @@ import com.cradle.neptune.utilitiles.DateUtil;
 import com.cradle.neptune.view.LoginActivity;
 import com.cradle.neptune.view.ui.settings.SettingsActivity;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.common.collect.ImmutableMap;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -47,6 +48,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 
 import javax.inject.Inject;
 
@@ -86,6 +89,41 @@ public class ReferralDialogFragment extends DialogFragment {
     private Button mSend;
     private OkHttpClient mClient = new OkHttpClient();
     private Context mContext;
+
+    private final Map<String, String> referralJsonKeys = ImmutableMap.<String, String>builder()
+            .put("patient", "0")
+            .put("patientId", "1")
+            .put("patientName", "2")
+            .put("dob", "3")
+            .put("patientAge", "4")
+            .put("gestationalAgeUnit", "5")
+            .put("gestationalAgeValue", "6")
+            .put("villageNumber", "7")
+            .put("patientSex", "8")
+            .put("zone", "9")
+            .put("isPregnant", "10")
+            .put("reading", "11")
+            .put("readingId", "12")
+            .put("dateLastSaved", "13")
+            .put("dateTimeTaken", "14")
+            .put("bpSystolic", "15")
+            .put("urineTests", "16")
+            .put("urineTestBlood", "17")
+            .put("urineTestPro", "18")
+            .put("urineTestLeuc", "19")
+            .put("urineTestGlu", "20")
+            .put("urineTestNit", "21")
+            .put("userId", "22")
+            .put("bpDiastolic", "23")
+            .put("heartRateBPM", "24")
+            .put("dateRecheckVitalsNeeded", "25")
+            .put("isFlaggedForFollowup", "26")
+            .put("symptoms", "27")
+            .put("comment", "28")
+            .put("healthFacilityName", "29")
+            .put("date", "30")
+            .put("referralId", "31")
+            .build();
 
     public static ReferralDialogFragment makeInstance(Reading currentReading, DoneCallback callback) {
         ReferralDialogFragment dialog = new ReferralDialogFragment();
@@ -151,7 +189,7 @@ public class ReferralDialogFragment extends DialogFragment {
         dialog.setCancelable(false);
         dialog.show();
         RequestQueue queue = Volley.newRequestQueue(getActivity());
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(JsonObjectRequest.Method.POST, settings.getReferralsServerUrl(), getReferralJson(),
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(JsonObjectRequest.Method.POST, settings.getReferralsServerUrl(), getReferralJson(false),
                 response -> {
                     currentReading.setReferredToHealthCentre(selectedHealthCentreName, ZonedDateTime.now());
                     currentReading.referralComment = enteredComment;
@@ -211,6 +249,15 @@ public class ReferralDialogFragment extends DialogFragment {
         startActivity(it);
     }
 
+    private void prepareReferralJsonForSMS() {
+        if (smsTextMessage != null) {
+            Set<String> stringKeys = referralJsonKeys.keySet();
+            for (String stringKey : stringKeys) {
+                smsTextMessage = smsTextMessage.replace("\"" + stringKey + "\":", "\"" + referralJsonKeys.get(stringKey) + "\":");
+            }
+        }
+    }
+
     private void sendSMSMessage(Dialog dialog) {
         Log.d("MySms", "sending message");
 
@@ -225,6 +272,7 @@ public class ReferralDialogFragment extends DialogFragment {
 //
 //        // Must send SMS via intent to default SMS program due to PlayStore policy preventing
 //        // apps from sending SMS directly.
+        prepareReferralJsonForSMS();
         composeMmsMessage(smsTextMessage, TWILIO_PHONE_NUMBER);
         onFinishedSendingSMS(dialog);
 //
@@ -570,13 +618,13 @@ public class ReferralDialogFragment extends DialogFragment {
 //                + addLf(secondReferralWarning)
 //                + comments;
 
-        JSONObject referralJson = getReferralJson();
+        JSONObject referralJson = getReferralJson(true);
 
         String jsonStr = referralJson.toString();
         return jsonStr;
     }
 
-    private JSONObject getReferralJson() {
+    private JSONObject getReferralJson(boolean isSMS) {
         JSONObject patientVal = currentReading.patient.getPatientInfoJSon();
         JSONObject readingVal = new JSONObject();
         try {
@@ -589,12 +637,12 @@ public class ReferralDialogFragment extends DialogFragment {
 
         JSONObject mainObj = new JSONObject();
         try {
-
             mainObj.put("patient", patientVal);
             mainObj.put("reading", readingVal);
             mainObj.put("comment", enteredComment);
             mainObj.put("healthFacilityName", this.selectedHealthCentreName);
             mainObj.put("date", ZonedDateTime.now().toString());
+            if (isSMS) mainObj.put("referralId", UUID.randomUUID().toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
