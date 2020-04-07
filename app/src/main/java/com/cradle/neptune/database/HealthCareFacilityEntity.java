@@ -18,11 +18,23 @@ public class HealthCareFacilityEntity {
     @ColumnInfo
     private String phoneNumber;
 
+    // if user wants this in the dropdown menu
+    @ColumnInfo
+    private boolean isActive;
+
     public HealthCareFacilityEntity(@NonNull String id, String name, String location, String phoneNumber) {
         this.id = id;
         this.name = name;
         this.location = location;
         this.phoneNumber = phoneNumber;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
+
+    public boolean isActive() {
+        return isActive;
     }
 
     @NonNull

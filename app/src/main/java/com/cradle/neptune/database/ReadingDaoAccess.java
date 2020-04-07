@@ -10,7 +10,7 @@ import androidx.room.Update;
 import java.util.List;
 
 @Dao
-public interface DaoAccess {
+public interface ReadingDaoAccess {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertReading(ReadingEntity readingEntity);
