@@ -12,7 +12,7 @@ import com.cradle.neptune.view.ui.network_volley.MultiReadingUploader;
 import com.cradle.neptune.view.ui.reading.ConfirmDataFragment;
 import com.cradle.neptune.view.ui.reading.ReferralDialogFragment;
 import com.cradle.neptune.view.ui.settings.SettingsFragment;
-import com.cradle.neptune.view.ui.settings.ui.settingnamedpairs.HealthFacilitiesActivity;
+import com.cradle.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity;
 
 import javax.inject.Singleton;
 

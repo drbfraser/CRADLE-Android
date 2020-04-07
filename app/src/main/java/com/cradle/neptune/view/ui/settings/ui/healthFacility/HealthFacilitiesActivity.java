@@ -1,4 +1,4 @@
-package com.cradle.neptune.view.ui.settings.ui.settingnamedpairs;
+package com.cradle.neptune.view.ui.settings.ui.healthFacility;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;

@@ -3,6 +3,8 @@ package com.cradle.neptune.viewmodel;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -11,18 +13,21 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.cradle.neptune.R;
 import com.cradle.neptune.database.HealthFacilityEntity;
-import com.cradle.neptune.view.ui.settings.ui.settingnamedpairs.HealthFacilitiesActivity;
+import com.cradle.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
-public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFacilitiesAdapter.HealthFacilityViewHolder>  {
+public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFacilitiesAdapter.HealthFacilityViewHolder> implements Filterable {
 
     List<HealthFacilityEntity> healthFacilityEntities;
+    List<HealthFacilityEntity> filteredList;
     HealthFacilitiesActivity.onClick onClick;
 
     public HealthFacilitiesAdapter(List<HealthFacilityEntity> healthFacilityEntities) {
         this.healthFacilityEntities = healthFacilityEntities;
+        this.filteredList=healthFacilityEntities;
     }
 
     public void setOnClick(HealthFacilitiesActivity.onClick onClick) {
@@ -57,7 +62,38 @@ public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFaciliti
 
     @Override
     public int getItemCount() {
-        return healthFacilityEntities.size();
+        return filteredList.size();
+    }
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence charSequence) {
+                String charString = charSequence.toString().toLowerCase();
+                if (charString.isEmpty()) {
+                    filteredList= healthFacilityEntities;
+                } else {
+                    List<HealthFacilityEntity> newFilteredList = new ArrayList<>();
+                    for (HealthFacilityEntity hf: healthFacilityEntities){
+                        if (hf.getLocation().toLowerCase().contains(charSequence.toString())||
+                        hf.getName().toLowerCase().contains(charSequence.toString())){
+                            newFilteredList.add(hf);
+                        }
+                    }
+                    filteredList=newFilteredList;
+                }
+                FilterResults filterResults = new FilterResults();
+                filterResults.values = filterResults;
+                return filterResults;
+            }
+
+            @Override
+            protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+                filteredList = (List<HealthFacilityEntity>) filterResults.values;
+                notifyDataSetChanged();
+            }
+        };
     }
 
     class HealthFacilityViewHolder extends RecyclerView.ViewHolder{

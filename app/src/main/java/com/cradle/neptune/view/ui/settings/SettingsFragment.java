@@ -21,7 +21,7 @@ import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.view.LoginActivity;
-import com.cradle.neptune.view.ui.settings.ui.settingnamedpairs.HealthFacilitiesActivity;
+import com.cradle.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity;
 
 import java.util.Arrays;
 import java.util.List;
