@@ -270,7 +270,7 @@ public class ReferralDialogFragment extends DialogFragment {
 //        // source: https://mobiforge.com/design-development/sms-messaging-android
 //
 //        // check for data errors:
-        if (settings.getHealthCentreNames().size() == 0) {
+        if (readingManager.getUserSelectedFacilities().size() == 0) {
             tvSendingStatus.setText("ERROR: No known health centres.\nPlease go to settings to enter them.");
             tvSendingStatus.setVisibility(View.VISIBLE);
             // return;
@@ -501,7 +501,6 @@ public class ReferralDialogFragment extends DialogFragment {
                 updateUI(dialog);
             }
         });
-        sp.setSelection(settings.getLastHealthCentreSelectionIdx());
 
         // settings button
         ImageView iv = dialog.findViewById(R.id.ivSettings);
@@ -569,63 +568,6 @@ public class ReferralDialogFragment extends DialogFragment {
     }
 
     private String buildMessage(Dialog dialog) {
-
-//        // patient
-//        String patient = getString(R.string.sms_message_patient,
-//                currentReading.patient.patientName,
-//                currentReading.patient.patientId
-//        );
-//        Reading.WeeksAndDays ga = currentReading.getGestationalAgeInWeeksAndDays();
-//        String patientAge;
-//        if (ga != null) {
-//            patientAge = getString(R.string.sms_message_patient_age_pregnant,
-//                    currentReading.patient.ageYears,
-//                    ga.weeks,
-//                    ga.days);
-//        } else {
-//            patientAge = getString(R.string.sms_message_patient_age_not_pregnant,
-//                    currentReading.patient.ageYears);
-//        }
-//
-//        // vitals
-//        ReadingAnalysis analysis = ReadingAnalysis.analyze(currentReading);
-//        String vitals = getString(R.string.sms_message_reading_results,
-//                currentReading.bpSystolic,
-//                currentReading.bpDiastolic,
-//                currentReading.heartRateBPM,
-//                analysis.getAnalysisText(getContext())
-//        );
-//
-//        // health centre: updated when selection changes
-//
-//        // warn recipient if possible duplicate referral
-//        String secondReferralWarning = "";
-//        if (currentReading.isReferredToHealthCentre()) {
-//            secondReferralWarning =
-//                    getString(R.string.sms_message_repeat_referral_warning,
-//                            currentReading.referralHealthCentre,
-//                            DateUtil.getFullDateString(currentReading.referralMessageSendTime));
-//        }
-//
-//        // comments
-//        String comments = enteredComment;
-//        if (comments.length() > 0) {
-//            comments = "\"" + comments + "\"";
-//        }
-//
-//        // construct it
-//        String message = addLf(getString(R.string.sms_message_header))
-//        + addLf(patient)
-//                + addLf(patientAge)
-//                + addLf(vitals)
-//                + addLf(currentReading.getSymptomsString())
-//                + addLf(getString(R.string.sms_message_reading_date,
-//                DateUtil.getFullDateString(currentReading.dateTimeTaken)))
-//                + addLf(getString(R.string.sms_message_referral,
-//                selectedHealthCentreName))
-//                + addLf(getString(R.string.sms_message_by_vht, settings.getVhtName()))
-//                + addLf(secondReferralWarning)
-//                + comments;
 
         JSONObject referralJson = getReferralJson(true);
 

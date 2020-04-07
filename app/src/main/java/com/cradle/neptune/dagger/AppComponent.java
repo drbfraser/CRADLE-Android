@@ -13,7 +13,6 @@ import com.cradle.neptune.view.ui.reading.ConfirmDataFragment;
 import com.cradle.neptune.view.ui.reading.ReferralDialogFragment;
 import com.cradle.neptune.view.ui.settings.SettingsFragment;
 import com.cradle.neptune.view.ui.settings.ui.settingnamedpairs.HealthFacilitiesActivity;
-import com.cradle.neptune.view.ui.settings.ui.settingnamedpairs.SettingNamedPairsFragment;
 
 import javax.inject.Singleton;
 
@@ -38,8 +37,6 @@ public interface AppComponent {
     void inject(ReferralDialogFragment fragment);
 
     void inject(SettingsFragment fragment);
-
-    void inject(SettingNamedPairsFragment fragment);
 
     void inject(IntroActivity activity);
 

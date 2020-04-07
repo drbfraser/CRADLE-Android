@@ -178,7 +178,7 @@ public class SettingsFragment extends PreferenceFragmentCompat
 
         // health centres
         else if (pref.getKey().equals("setting_health_centres")) {
-            String summary = settings.getHealthCentres().size() + " configured health centres";
+            String summary = readingManager.getUserSelectedFacilities().size() + " configured health centres";
             pref.setSummary(summary);
         }
 
