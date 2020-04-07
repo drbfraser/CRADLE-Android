@@ -1,5 +1,6 @@
 package com.cradle.neptune.view.ui.settings.ui.settingnamedpairs;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -48,7 +49,14 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
         healthFacilitiesAdapter.setOnClick(new onClick() {
             @Override
             public void onClick(HealthFacilityEntity healthFacilityEntity) {
-
+                new AlertDialog.Builder(HealthFacilitiesActivity.this)
+                        .setTitle(healthFacilityEntity.getName()).setMessage("Would you live to add this facility to your list?")
+                        .setCancelable(true).setPositiveButton("YES", (dialogInterface, i) -> {
+                         healthFacilityEntity.setUserSelected(true);
+                         readingManager.insert(healthFacilityEntity);
+                        }).setNegativeButton("NO", (dialogInterface, i) -> {
+                        })
+                        .create().show();
             }
         });
     }
