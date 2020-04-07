@@ -26,6 +26,11 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle("Health Facilities");
         }
+        setupRecyclerview();
+    }
+
+    private void setupRecyclerview() {
+
     }
 
     @Override
