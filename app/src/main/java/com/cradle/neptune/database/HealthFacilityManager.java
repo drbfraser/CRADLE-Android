@@ -6,7 +6,7 @@ public interface HealthFacilityManager {
 
     void insert(HealthFacilityEntity healthFacilityEntity);
 
-    void removeById(String id);
+    void removeFacilityById(String id);
 
     void insertAll(List<HealthFacilityEntity> healthCareFacilityEntities);
 

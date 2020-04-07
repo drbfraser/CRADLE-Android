@@ -156,31 +156,33 @@ public class RoomDatabaseManager implements ReadingManager, HealthFacilityManage
 
     @Override
     public void insert(HealthFacilityEntity healthFacilityEntity) {
-
+        cradleDatabase.healthFacilityDaoAccess().insert(healthFacilityEntity);
     }
 
     @Override
-    public void removeById(String id) {
-
+    public void removeFacilityById(String id) {
+        HealthFacilityEntity healthFacilityEntity =
+                cradleDatabase.healthFacilityDaoAccess().getHealthFacilityById(id);
+        cradleDatabase.healthFacilityDaoAccess().delete(healthFacilityEntity);
     }
 
     @Override
     public void insertAll(List<HealthFacilityEntity> healthCareFacilityEntities) {
-
+        cradleDatabase.healthFacilityDaoAccess().insertAll(healthCareFacilityEntities);
     }
 
     @Override
     public List<HealthFacilityEntity> getAllFacilities() {
-        return null;
+        return cradleDatabase.healthFacilityDaoAccess().getAllHealthFacilities();
     }
 
     @Override
     public HealthFacilityEntity getFacilityById(String id) {
-        return null;
+        return cradleDatabase.healthFacilityDaoAccess().getHealthFacilityById(id);
     }
 
     @Override
     public List<HealthFacilityEntity> getUserSelectedFacilities() {
-        return null;
+        return cradleDatabase.healthFacilityDaoAccess().getAllUserSelectedHealthFacilities();
     }
 }
