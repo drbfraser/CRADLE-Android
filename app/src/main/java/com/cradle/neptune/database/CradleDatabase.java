@@ -5,5 +5,6 @@ import androidx.room.RoomDatabase;
 
 @Database(entities = {ReadingEntity.class, HealthFacilityEntity.class}, version = 1, exportSchema = false)
 public abstract class CradleDatabase extends RoomDatabase {
-    public abstract ReadingDaoAccess daoAccess();
+    public abstract ReadingDaoAccess readingDaoAccess();
+    public abstract HealthFacilityDaoAccess healthFacilityDaoAccess();
 }

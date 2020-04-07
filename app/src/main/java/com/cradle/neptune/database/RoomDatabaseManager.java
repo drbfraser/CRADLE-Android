@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class RoomDatabaseManager implements ReadingManager {
+public class RoomDatabaseManager implements ReadingManager, HealthFacilityManager {
     private CradleDatabase cradleDatabase;
 
     public RoomDatabaseManager(CradleDatabase cradleDatabase) {
@@ -33,7 +33,7 @@ public class RoomDatabaseManager implements ReadingManager {
 
         ReadingEntity readingEntity = new ReadingEntity(reading.readingId,
                 reading.patient.patientId, GsonUtil.getJson(reading), reading.isUploaded());
-        cradleDatabase.daoAccess().insertReading(readingEntity);
+        cradleDatabase.readingDaoAccess().insertReading(readingEntity);
 
         // update all the other patient's records .. because thats the way it is...
         List<Reading> readings = getReadings(context);
@@ -53,7 +53,7 @@ public class RoomDatabaseManager implements ReadingManager {
         reading.dateLastSaved = ZonedDateTime.now();
         ReadingEntity readingEntity = new ReadingEntity(reading.readingId,
                 reading.patient.patientId, GsonUtil.getJson(reading), reading.isUploaded());
-        cradleDatabase.daoAccess().update(readingEntity);
+        cradleDatabase.readingDaoAccess().update(readingEntity);
     }
 
     @Override
@@ -63,7 +63,7 @@ public class RoomDatabaseManager implements ReadingManager {
 
     @Override
     public Reading getReadingById(Context context, String id) {
-        ReadingEntity readingEntity = cradleDatabase.daoAccess().getReadingById(id);
+        ReadingEntity readingEntity = cradleDatabase.readingDaoAccess().getReadingById(id);
         if (readingEntity == null) {
             return null;
         }
@@ -77,16 +77,16 @@ public class RoomDatabaseManager implements ReadingManager {
 
     @Override
     public void deleteReadingById(Context context, String readingID) {
-        ReadingEntity readingEntity = cradleDatabase.daoAccess().getReadingById(readingID);
+        ReadingEntity readingEntity = cradleDatabase.readingDaoAccess().getReadingById(readingID);
         if (readingEntity != null) {
-            cradleDatabase.daoAccess().delete(readingEntity);
+            cradleDatabase.readingDaoAccess().delete(readingEntity);
         }
 
     }
 
     @Override
     public void deleteAllData(Context context) {
-        cradleDatabase.daoAccess().deleteAllReading();
+        cradleDatabase.readingDaoAccess().deleteAllReading();
     }
 
     @Override
@@ -102,12 +102,12 @@ public class RoomDatabaseManager implements ReadingManager {
                     reading.patient.patientId, GsonUtil.getJson(reading), reading.isUploaded());
             readingEntities.add(readingEntity);
         }
-        cradleDatabase.daoAccess().insertAll(readingEntities);
+        cradleDatabase.readingDaoAccess().insertAll(readingEntities);
     }
 
     @Override
     public List<Reading> getUnuploadedReadings() {
-        List<ReadingEntity> readingEntities = cradleDatabase.daoAccess().getAllUnUploadedReading();
+        List<ReadingEntity> readingEntities = cradleDatabase.readingDaoAccess().getAllUnUploadedReading();
         List<Reading> readings = new ArrayList<>();
         for (ReadingEntity readingEntity : readingEntities) {
             Reading r = GsonUtil.makeObjectFromJson(readingEntity.getReadDataJsonString(), Reading.class);
@@ -135,9 +135,9 @@ public class RoomDatabaseManager implements ReadingManager {
             List<Reading> readings = new ArrayList<>();
             List<ReadingEntity> readingEntities;
             if (readingByPatientId) {
-                readingEntities = readingEntitiesDatabaseWeakReference.get().daoAccess().getAllReadingByPatientId(patientId);
+                readingEntities = readingEntitiesDatabaseWeakReference.get().readingDaoAccess().getAllReadingByPatientId(patientId);
             } else {
-                readingEntities = readingEntitiesDatabaseWeakReference.get().daoAccess().getAllReadingEntities();
+                readingEntities = readingEntitiesDatabaseWeakReference.get().readingDaoAccess().getAllReadingEntities();
             }
             for (ReadingEntity readingEntity : readingEntities) {
                 Reading r = GsonUtil.makeObjectFromJson(readingEntity.getReadDataJsonString(), Reading.class);
@@ -148,5 +148,39 @@ public class RoomDatabaseManager implements ReadingManager {
             }
             return readings;
         }
+    }
+
+    /**
+     * HealthFacility functions
+     */
+
+    @Override
+    public void insert(HealthFacilityEntity healthFacilityEntity) {
+
+    }
+
+    @Override
+    public void removeById(String id) {
+
+    }
+
+    @Override
+    public void insertAll(List<HealthFacilityEntity> healthCareFacilityEntities) {
+
+    }
+
+    @Override
+    public List<HealthFacilityEntity> getAllFacilities() {
+        return null;
+    }
+
+    @Override
+    public HealthFacilityEntity getFacilityById(String id) {
+        return null;
+    }
+
+    @Override
+    public List<HealthFacilityEntity> getUserSelectedFacilities() {
+        return null;
     }
 }
