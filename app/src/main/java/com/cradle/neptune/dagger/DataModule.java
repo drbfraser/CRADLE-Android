@@ -7,7 +7,7 @@ import android.preference.PreferenceManager;
 import androidx.room.Room;
 
 import com.cradle.neptune.database.CradleDatabase;
-import com.cradle.neptune.database.RoomReadingManager;
+import com.cradle.neptune.database.RoomDatabaseManager;
 import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
 
@@ -29,7 +29,7 @@ public class DataModule {
         //allowing queries on main thread but should use a seperate thread for large queeries
         CradleDatabase r  = Room.databaseBuilder(application,
                 CradleDatabase.class, "room-readingDB").allowMainThreadQueries().build();
-        return new RoomReadingManager(r);
+        return new RoomDatabaseManager(r);
     }
 
     @Provides

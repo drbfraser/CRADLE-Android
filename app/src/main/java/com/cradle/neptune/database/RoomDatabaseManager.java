@@ -15,10 +15,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class RoomReadingManager implements ReadingManager {
+public class RoomDatabaseManager implements ReadingManager {
     private CradleDatabase cradleDatabase;
 
-    public RoomReadingManager(CradleDatabase cradleDatabase) {
+    public RoomDatabaseManager(CradleDatabase cradleDatabase) {
         this.cradleDatabase = cradleDatabase;
     }
 
