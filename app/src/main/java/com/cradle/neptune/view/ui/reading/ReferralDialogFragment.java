@@ -31,7 +31,9 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.database.HealthFacilityEntity;
 import com.cradle.neptune.model.Reading;
+import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.utilitiles.DateUtil;
 import com.cradle.neptune.view.LoginActivity;
@@ -46,6 +48,7 @@ import org.threeten.bp.ZonedDateTime;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -68,6 +71,8 @@ public class ReferralDialogFragment extends DialogFragment {
     Settings settings;
     @Inject
     SharedPreferences sharedPreferences;
+    @Inject
+    ReadingManager readingManager;
 
 
 
@@ -463,7 +468,13 @@ public class ReferralDialogFragment extends DialogFragment {
     private void setupHealthCentreSpinner(Dialog dialog) {
         Spinner sp = dialog.findViewById(R.id.spinnerHealthCentre);
         ArrayList<String> options = new ArrayList<>();
-        options.addAll(settings.getHealthCentreNames());
+        List<HealthFacilityEntity> healthFacilityEntities = readingManager.getUserSelectedFacilities();
+
+        for (HealthFacilityEntity h:healthFacilityEntities){
+            options.add(h.getName());
+        }
+        //options.addAll(settings.getHealthCentreNames());
+
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 getActivity(),
                 android.R.layout.simple_spinner_item,
@@ -479,13 +490,10 @@ public class ReferralDialogFragment extends DialogFragment {
                 Spinner spin = dialog.findViewById(R.id.spinnerHealthCentre);
                 int position = spin.getSelectedItemPosition();
                 if (position >= 0) {
-                    selectedHealthCentreName = spin.getSelectedItem().toString();
-                    selectedHealthCentreSmsPhoneNumber = settings.getHealthCentrePhoneNumber(position);
+                    selectedHealthCentreName = healthFacilityEntities.get(i).getName();
+                    selectedHealthCentreSmsPhoneNumber = healthFacilityEntities.get(i).getPhoneNumber();
                 }
-
-//                adapter.notifyDataSetChanged();
                 updateUI(dialog);
-                settings.setLastHealthCentreSelectionIdx(i);
             }
 
             @Override
