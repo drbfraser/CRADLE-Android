@@ -65,7 +65,6 @@ import static com.cradle.neptune.view.LoginActivity.USER_ID;
 
 public class ReferralDialogFragment extends DialogFragment {
 
-    public static final String TWILIO_PHONE_NUMBER = "16042298878";
     // Data Model
     @Inject
     Settings settings;
@@ -279,7 +278,7 @@ public class ReferralDialogFragment extends DialogFragment {
 //        // Must send SMS via intent to default SMS program due to PlayStore policy preventing
 //        // apps from sending SMS directly.
         prepareReferralJsonForSMS();
-        composeMmsMessage(smsTextMessage, TWILIO_PHONE_NUMBER);
+        composeMmsMessage(smsTextMessage, selectedHealthCentreSmsPhoneNumber);
         onFinishedSendingSMS(dialog);
 //
 //        // Json for comments

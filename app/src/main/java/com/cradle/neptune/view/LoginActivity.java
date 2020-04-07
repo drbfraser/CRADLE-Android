@@ -60,6 +60,7 @@ public class LoginActivity extends AppCompatActivity {
     public static final String DEFAULT_TOKEN = null;
     public static final String AUTH_PREF = "authSharefPref";
     public static int loginBruteForceAttempts = 3;
+    public static final String TWILIO_PHONE_NUMBER = "16042298878";
 
     @Inject
     ReadingManager readingManager;
@@ -146,10 +147,17 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void populateHealthFacilities() {
+        //we need to make a call to the server to get all HFs
         List<HealthFacilityEntity> healthFacilityEntities = new ArrayList<>();
+        HealthFacilityEntity hf = new HealthFacilityEntity(UUID.randomUUID().toString(),
+                "Neptune's five star care","Planet Neptune",TWILIO_PHONE_NUMBER);
+        hf.setUserSelected(true);
+        healthFacilityEntities.add(hf);
+
         for (int i =1;i<100;i++){
             String id = UUID.randomUUID().toString();
-            HealthFacilityEntity healthFacilityEntity = new HealthFacilityEntity(id," HF "+i,"Location "+ i%10,"7785555"+i*10);
+            HealthFacilityEntity healthFacilityEntity = new HealthFacilityEntity
+                    (id," HF "+i,"Location "+ i%10,"7785555"+i*10);
             healthFacilityEntities.add(healthFacilityEntity);
         }
         readingManager.insertAll(healthFacilityEntities);
