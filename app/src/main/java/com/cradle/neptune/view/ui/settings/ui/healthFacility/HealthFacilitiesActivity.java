@@ -60,7 +60,8 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
                         .setTitle(healthFacilityEntity.getName()).setMessage("Would you live to add this facility to your list?")
                         .setCancelable(true).setPositiveButton("YES", (dialogInterface, i) -> {
                          healthFacilityEntity.setUserSelected(true);
-                         readingManager.insert(healthFacilityEntity);
+                         readingManager.updateFacility(healthFacilityEntity);
+                         healthFacilitiesAdapter.notifyDataSetChanged();
                         }).setNegativeButton("NO", (dialogInterface, i) -> {
                         })
                         .create().show();

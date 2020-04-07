@@ -37,4 +37,6 @@ public interface ReadingManager {
     HealthFacilityEntity getFacilityById(String id);
 
     List<HealthFacilityEntity> getUserSelectedFacilities();
+
+    void updateFacility(HealthFacilityEntity healthFacilityEntity);
 }

@@ -5,6 +5,7 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import java.util.List;
 
@@ -16,6 +17,9 @@ interface HealthFacilityDaoAccess {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(List<HealthFacilityEntity> healthFacilityEntities);
+
+    @Update
+    void update(HealthFacilityEntity healthFacilityEntity);
 
     @Delete
     void delete(HealthFacilityEntity healthFacilityEntity);

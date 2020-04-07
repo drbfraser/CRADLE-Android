@@ -185,4 +185,9 @@ public class RoomDatabaseManager implements ReadingManager {
     public List<HealthFacilityEntity> getUserSelectedFacilities() {
         return cradleDatabase.healthFacilityDaoAccess().getAllUserSelectedHealthFacilities();
     }
+
+    @Override
+    public void updateFacility(HealthFacilityEntity healthFacilityEntity) {
+        cradleDatabase.healthFacilityDaoAccess().update(healthFacilityEntity);
+    }
 }

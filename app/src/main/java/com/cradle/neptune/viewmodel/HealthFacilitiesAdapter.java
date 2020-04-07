@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -51,6 +52,9 @@ public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFaciliti
         holder.nameTxt.setText(healthFacilityEntity.getName());
         holder.phoneTxt.setText(healthFacilityEntity.getPhoneNumber());
 
+        if (healthFacilityEntity.isUserSelected()){
+            holder.statusImg.setVisibility(View.VISIBLE);
+        }
         holder.layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -100,6 +104,7 @@ public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFaciliti
 
         TextView phoneTxt, nameTxt, locationTxt;
         ConstraintLayout layout;
+        ImageView statusImg;
 
         public HealthFacilityViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -107,6 +112,7 @@ public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFaciliti
             nameTxt = itemView.findViewById(R.id.hfNameTxt);
             locationTxt = itemView.findViewById(R.id.hfLocationTxt);
             layout = itemView.findViewById(R.id.hfLayout);
+            statusImg = itemView.findViewById(R.id.hfImageview);
         }
     }
 }

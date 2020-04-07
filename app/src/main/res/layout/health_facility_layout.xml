@@ -26,6 +26,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:text="778-522-3450"
+        android:textColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/hfNameTxt" />
 
@@ -50,4 +51,14 @@
         app:layout_constraintEnd_toEndOf="@id/hfNumberTxt"
         app:layout_constraintStart_toStartOf="@id/hfLocationTxt"
         app:layout_constraintTop_toBottomOf="@+id/hfLocationTxt" />
+
+    <ImageView
+        android:id="@+id/hfImageview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/hfNumberTxt"
+        app:layout_constraintTop_toTopOf="@+id/hfLocationTxt"
+        app:srcCompat="@drawable/ic_check_circle_black_24dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>
