@@ -45,7 +45,7 @@ public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFaciliti
     @Override
     public void onBindViewHolder(@NonNull HealthFacilityViewHolder holder, int position) {
 
-        HealthFacilityEntity healthFacilityEntity = healthFacilityEntities.get(position);
+        HealthFacilityEntity healthFacilityEntity = filteredList.get(position);
 
         holder.locationTxt.setText(healthFacilityEntity.getLocation());
         holder.nameTxt.setText(healthFacilityEntity.getName());
@@ -84,13 +84,13 @@ public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFaciliti
                     filteredList=newFilteredList;
                 }
                 FilterResults filterResults = new FilterResults();
-                filterResults.values = filterResults;
+                filterResults.values = filteredList;
                 return filterResults;
             }
 
             @Override
             protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-                filteredList = (List<HealthFacilityEntity>) filterResults.values;
+                filteredList = (ArrayList<HealthFacilityEntity>) filterResults.values;
                 notifyDataSetChanged();
             }
         };

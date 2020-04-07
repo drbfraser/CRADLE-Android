@@ -1,8 +1,8 @@
+apply plugin: 'com.google.firebase.firebase-perf'
 apply plugin: 'com.android.application'
 apply plugin: "de.mannodermaus.android-junit5"
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
-apply plugin: 'com.google.firebase.firebase-perf'
 
 
 // Initialize the keystore credentials from the keystore.properties file

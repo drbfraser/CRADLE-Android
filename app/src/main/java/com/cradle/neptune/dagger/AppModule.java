@@ -2,6 +2,8 @@ package com.cradle.neptune.dagger;
 
 import android.app.Application;
 
+import androidx.multidex.MultiDexApplication;
+
 import javax.inject.Singleton;
 
 import dagger.Module;
@@ -13,9 +15,9 @@ import dagger.Provides;
  */
 @Module
 public class AppModule {
-    Application application;
+    MultiDexApplication application;
 
-    public AppModule(Application application) {
+    public AppModule(MultiDexApplication application) {
         this.application = application;
     }
 
