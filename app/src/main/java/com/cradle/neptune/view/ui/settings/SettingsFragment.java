@@ -21,6 +21,7 @@ import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.view.LoginActivity;
+import com.cradle.neptune.view.ui.settings.ui.settingnamedpairs.HealthFacilitiesActivity;
 
 import java.util.Arrays;
 import java.util.List;
@@ -101,9 +102,12 @@ public class SettingsFragment extends PreferenceFragmentCompat
             hcPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    Log.d("TAG", "You clicked " + preference.getKey());
-                    Intent intent = SettingNamedPairsActivity.makeLaunchIntent(getContext(),
-                            SettingNamedPairsActivity.SelectPair.SELECT_PAIR_HEALTH_CENTRES);
+                    Log.d("bugg", "You clicked " + preference.getKey());
+
+                Intent intent = new Intent(getActivity(), HealthFacilitiesActivity.class);
+
+                   // Intent intent = SettingNamedPairsActivity.makeLaunchIntent(getContext(),
+                     //       SettingNamedPairsActivity.SelectPair.SELECT_PAIR_HEALTH_CENTRES);
                     startActivity(intent);
                     return true;
                 }

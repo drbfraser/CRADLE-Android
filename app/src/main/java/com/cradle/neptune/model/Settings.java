@@ -70,6 +70,7 @@ public class Settings {
     private boolean shouldUploadImages;
     private Boolean ocrEnabled = false;
     private Boolean ocrDebugEnabled = false;
+
     // stored values managed by us
     private List<NamedPair> healthCentres = new ArrayList<>();
     private int lastHealthCentreSelectionIdx = 0;

@@ -70,6 +70,7 @@ public class ReferralDialogFragment extends DialogFragment {
     SharedPreferences sharedPreferences;
 
 
+
     // UI elements
     TextView tvSendingStatus;
 
