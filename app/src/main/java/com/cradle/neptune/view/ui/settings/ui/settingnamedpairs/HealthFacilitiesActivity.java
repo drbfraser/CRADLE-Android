@@ -44,12 +44,24 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
         recyclerView.setAdapter(healthFacilitiesAdapter);
         recyclerView.setLayoutManager(layoutManager);
         healthFacilitiesAdapter.notifyDataSetChanged();
+
+        healthFacilitiesAdapter.setOnClick(new onClick() {
+            @Override
+            public void onClick(HealthFacilityEntity healthFacilityEntity) {
+
+            }
+        });
     }
 
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();
         return super.onSupportNavigateUp();
+    }
+
+
+    public interface onClick{
+        void onClick(HealthFacilityEntity healthFacilityEntity);
     }
 
 }
