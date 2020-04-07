@@ -25,6 +25,7 @@ import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.database.HealthFacilityEntity;
 import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.database.ParsePatientInformationAsyncTask;
@@ -34,8 +35,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.inject.Inject;
 
@@ -120,6 +124,8 @@ public class LoginActivity extends AppCompatActivity {
                     editor.apply();
                     String token = response.get(TOKEN).toString();
                     getAllMyPatients(token, readingManager, this);
+                    // only for testing
+                    populateHealthFacilities();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -137,6 +143,16 @@ public class LoginActivity extends AppCompatActivity {
             });
             queue.add(jsonObjectRequest);
         });
+    }
+
+    private void populateHealthFacilities() {
+        List<HealthFacilityEntity> healthFacilityEntities = new ArrayList<>();
+        for (int i =1;i<100;i++){
+            String id = UUID.randomUUID().toString();
+            HealthFacilityEntity healthFacilityEntity = new HealthFacilityEntity(id," HF "+i,"Location "+ i%10,"7785555"+i*10);
+            healthFacilityEntities.add(healthFacilityEntity);
+        }
+        readingManager.insertAll(healthFacilityEntities);
     }
 
     /**

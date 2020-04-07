@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class RoomDatabaseManager implements ReadingManager, HealthFacilityManager {
+public class RoomDatabaseManager implements ReadingManager {
     private CradleDatabase cradleDatabase;
 
     public RoomDatabaseManager(CradleDatabase cradleDatabase) {
