@@ -6,7 +6,7 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 @Entity
-public class HealthCareFacilityEntity {
+public class HealthFacilityEntity {
 
     @PrimaryKey
     @NonNull
@@ -22,7 +22,7 @@ public class HealthCareFacilityEntity {
     @ColumnInfo
     private boolean isUserSelected;
 
-    public HealthCareFacilityEntity(@NonNull String id, String name, String location, String phoneNumber) {
+    public HealthFacilityEntity(@NonNull String id, String name, String location, String phoneNumber) {
         this.id = id;
         this.name = name;
         this.location = location;

@@ -4,15 +4,15 @@ import java.util.List;
 
 public interface HealthFacilityManager {
 
-    void addFacility(HealthCareFacilityEntity healthCareFacilityEntity);
+    void insert(HealthFacilityEntity healthFacilityEntity);
 
-    void removeFacility(String id);
+    void removeById(String id);
 
-    void addAllFacilities(List<HealthCareFacilityEntity> healthCareFacilityEntities);
+    void insertAll(List<HealthFacilityEntity> healthCareFacilityEntities);
 
-    List<HealthCareFacilityEntity> getAllFacilities();
+    List<HealthFacilityEntity> getAllFacilities();
 
-    HealthCareFacilityEntity getFacilityById(String id);
+    HealthFacilityEntity getFacilityById(String id);
 
-    List<HealthCareFacilityEntity> getUserSelectedFacilities();
+    List<HealthFacilityEntity> getUserSelectedFacilities();
 }
