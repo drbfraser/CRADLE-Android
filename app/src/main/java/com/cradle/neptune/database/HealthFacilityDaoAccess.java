@@ -34,8 +34,4 @@ interface HealthFacilityDaoAccess {
     List<HealthFacilityEntity> getAllUserSelectedHealthFacilities();
 
 
-
-
-
-
 }

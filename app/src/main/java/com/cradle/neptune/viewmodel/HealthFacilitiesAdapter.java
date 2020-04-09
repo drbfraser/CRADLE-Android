@@ -28,7 +28,7 @@ public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFaciliti
 
     public HealthFacilitiesAdapter(List<HealthFacilityEntity> healthFacilityEntities) {
         this.healthFacilityEntities = healthFacilityEntities;
-        this.filteredList=healthFacilityEntities;
+        this.filteredList = healthFacilityEntities;
     }
 
     public void setAdapterClicker(HealthFacilitiesActivity.AdapterClicker adapterClicker) {
@@ -40,7 +40,7 @@ public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFaciliti
     public HealthFacilityViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.health_facility_layout, parent, false);
-        return new HealthFacilitiesAdapter.HealthFacilityViewHolder(v);
+        return new HealthFacilityViewHolder(v);
     }
 
     @Override
@@ -52,7 +52,7 @@ public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFaciliti
         holder.nameTxt.setText(healthFacilityEntity.getName());
         holder.phoneTxt.setText(healthFacilityEntity.getPhoneNumber());
 
-        if (healthFacilityEntity.isUserSelected()){
+        if (healthFacilityEntity.isUserSelected()) {
             holder.statusImg.setVisibility(View.VISIBLE);
         }
         holder.layout.setOnClickListener(new View.OnClickListener() {
@@ -76,16 +76,16 @@ public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFaciliti
             protected FilterResults performFiltering(CharSequence charSequence) {
                 String charString = charSequence.toString().toLowerCase();
                 if (charString.isEmpty()) {
-                    filteredList= healthFacilityEntities;
+                    filteredList = healthFacilityEntities;
                 } else {
                     List<HealthFacilityEntity> newFilteredList = new ArrayList<>();
-                    for (HealthFacilityEntity hf: healthFacilityEntities){
-                        if (hf.getLocation().toLowerCase().contains(charSequence.toString())||
-                        hf.getName().toLowerCase().contains(charSequence.toString())){
+                    for (HealthFacilityEntity hf : healthFacilityEntities) {
+                        if (hf.getLocation().toLowerCase().contains(charSequence.toString()) ||
+                                hf.getName().toLowerCase().contains(charSequence.toString())) {
                             newFilteredList.add(hf);
                         }
                     }
-                    filteredList=newFilteredList;
+                    filteredList = newFilteredList;
                 }
                 FilterResults filterResults = new FilterResults();
                 filterResults.values = filteredList;
@@ -100,7 +100,7 @@ public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFaciliti
         };
     }
 
-    class HealthFacilityViewHolder extends RecyclerView.ViewHolder{
+    static class HealthFacilityViewHolder extends RecyclerView.ViewHolder {
 
         TextView phoneTxt, nameTxt, locationTxt;
         ConstraintLayout layout;

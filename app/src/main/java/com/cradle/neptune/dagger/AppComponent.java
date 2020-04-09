@@ -45,11 +45,12 @@ public interface AppComponent {
     void inject(PatientProfileActivity activity);
 
     void inject(StatsActivity statsActivity);
+
     // void inject(MyFragment fragment);
     // void inject(MyService service);
     void inject(LoginActivity loginActivity);
 
-    void inject (MultiReadingUploader multiReadingUploader);
+    void inject(MultiReadingUploader multiReadingUploader);
 
     void inject(HealthFacilitiesActivity healthFacilitiesActivity);
 }

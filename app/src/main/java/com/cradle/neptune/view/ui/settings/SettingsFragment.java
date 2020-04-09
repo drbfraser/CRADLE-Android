@@ -102,12 +102,7 @@ public class SettingsFragment extends PreferenceFragmentCompat
             hcPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    Log.d("bugg", "You clicked " + preference.getKey());
-
-                Intent intent = new Intent(getActivity(), HealthFacilitiesActivity.class);
-
-                   // Intent intent = SettingNamedPairsActivity.makeLaunchIntent(getContext(),
-                     //       SettingNamedPairsActivity.SelectPair.SELECT_PAIR_HEALTH_CENTRES);
+                    Intent intent = new Intent(getActivity(), HealthFacilitiesActivity.class);
                     startActivity(intent);
                     return true;
                 }

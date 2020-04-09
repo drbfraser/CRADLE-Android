@@ -117,40 +117,6 @@ public class RoomDatabaseManager implements ReadingManager {
     }
 
     /**
-     * since we dont want to block the main UI thread, we have to create a seperate thread for large queries.
-     */
-    private class GetAllReadingsAsyncTask extends AsyncTask<Void, Void, List<Reading>> {
-        WeakReference<CradleDatabase> readingEntitiesDatabaseWeakReference;
-        private boolean readingByPatientId = false;
-        private String patientId = "";
-
-        GetAllReadingsAsyncTask(CradleDatabase cradleDatabase, boolean readingByPatientId, String patientId) {
-            this.readingEntitiesDatabaseWeakReference = new WeakReference<>(cradleDatabase);
-            this.readingByPatientId = readingByPatientId;
-            this.patientId = patientId;
-        }
-
-        @Override
-        protected List<Reading> doInBackground(Void... url) {
-            List<Reading> readings = new ArrayList<>();
-            List<ReadingEntity> readingEntities;
-            if (readingByPatientId) {
-                readingEntities = readingEntitiesDatabaseWeakReference.get().readingDaoAccess().getAllReadingByPatientId(patientId);
-            } else {
-                readingEntities = readingEntitiesDatabaseWeakReference.get().readingDaoAccess().getAllReadingEntities();
-            }
-            for (ReadingEntity readingEntity : readingEntities) {
-                Reading r = GsonUtil.makeObjectFromJson(readingEntity.getReadDataJsonString(), Reading.class);
-                readings.add(r);
-                String patientId = r.patient.patientId;
-                Util.ensure(readingEntity.getPatientId() == patientId ||
-                        patientId.equals(r.patient.patientId));
-            }
-            return readings;
-        }
-    }
-
-    /**
      * HealthFacility functions
      */
 
@@ -189,5 +155,39 @@ public class RoomDatabaseManager implements ReadingManager {
     @Override
     public void updateFacility(HealthFacilityEntity healthFacilityEntity) {
         cradleDatabase.healthFacilityDaoAccess().update(healthFacilityEntity);
+    }
+
+    /**
+     * since we dont want to block the main UI thread, we have to create a seperate thread for large queries.
+     */
+    private class GetAllReadingsAsyncTask extends AsyncTask<Void, Void, List<Reading>> {
+        WeakReference<CradleDatabase> readingEntitiesDatabaseWeakReference;
+        private boolean readingByPatientId = false;
+        private String patientId = "";
+
+        GetAllReadingsAsyncTask(CradleDatabase cradleDatabase, boolean readingByPatientId, String patientId) {
+            this.readingEntitiesDatabaseWeakReference = new WeakReference<>(cradleDatabase);
+            this.readingByPatientId = readingByPatientId;
+            this.patientId = patientId;
+        }
+
+        @Override
+        protected List<Reading> doInBackground(Void... url) {
+            List<Reading> readings = new ArrayList<>();
+            List<ReadingEntity> readingEntities;
+            if (readingByPatientId) {
+                readingEntities = readingEntitiesDatabaseWeakReference.get().readingDaoAccess().getAllReadingByPatientId(patientId);
+            } else {
+                readingEntities = readingEntitiesDatabaseWeakReference.get().readingDaoAccess().getAllReadingEntities();
+            }
+            for (ReadingEntity readingEntity : readingEntities) {
+                Reading r = GsonUtil.makeObjectFromJson(readingEntity.getReadDataJsonString(), Reading.class);
+                readings.add(r);
+                String patientId = r.patient.patientId;
+                Util.ensure(readingEntity.getPatientId() == patientId ||
+                        patientId.equals(r.patient.patientId));
+            }
+            return readings;
+        }
     }
 }

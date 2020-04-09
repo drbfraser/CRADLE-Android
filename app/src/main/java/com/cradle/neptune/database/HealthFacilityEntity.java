@@ -29,12 +29,12 @@ public class HealthFacilityEntity {
         this.phoneNumber = phoneNumber;
     }
 
-    public void setUserSelected(boolean userSelected) {
-        isUserSelected = userSelected;
-    }
-
     public boolean isUserSelected() {
         return isUserSelected;
+    }
+
+    public void setUserSelected(boolean userSelected) {
+        isUserSelected = userSelected;
     }
 
     @NonNull

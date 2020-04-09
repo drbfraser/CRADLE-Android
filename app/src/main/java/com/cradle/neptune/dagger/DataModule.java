@@ -27,7 +27,7 @@ public class DataModule {
     public ReadingManager provideReadingManager(Application application) {
 //        return new ReadingManagerAsList();
         //allowing queries on main thread but should use a seperate thread for large queeries
-        CradleDatabase r  = Room.databaseBuilder(application,
+        CradleDatabase r = Room.databaseBuilder(application,
                 CradleDatabase.class, "room-readingDB").allowMainThreadQueries().build();
         return new RoomDatabaseManager(r);
     }

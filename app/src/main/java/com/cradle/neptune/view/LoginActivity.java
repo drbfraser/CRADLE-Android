@@ -26,9 +26,9 @@ import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.database.HealthFacilityEntity;
+import com.cradle.neptune.database.ParsePatientInformationAsyncTask;
 import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
-import com.cradle.neptune.database.ParsePatientInformationAsyncTask;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -59,13 +59,60 @@ public class LoginActivity extends AppCompatActivity {
     public static final int DEFAULT_PASSWORD = -1;
     public static final String DEFAULT_TOKEN = null;
     public static final String AUTH_PREF = "authSharefPref";
-    public static int loginBruteForceAttempts = 3;
     public static final String TWILIO_PHONE_NUMBER = "16042298878";
-
+    public static int loginBruteForceAttempts = 3;
     @Inject
     ReadingManager readingManager;
     @Inject
     SharedPreferences sharedPreferences;
+
+    /**
+     * makes the volley call to get all the  past readings from this user.
+     * Since Volley runs on its own thread, its okay for UI or activity to change as long as
+     * we are not referrencing them.
+     *
+     * @param token token for the user
+     */
+    public static void getAllMyPatients(String token, ReadingManager readingManager, Context context) {
+        JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, Settings.patientGetAllInfoByUserIdUrl,
+                null, response -> {
+
+            ParsePatientInformationAsyncTask parsePatientInformationAsyncTask =
+                    new ParsePatientInformationAsyncTask(response, context.getApplicationContext(), readingManager);
+            parsePatientInformationAsyncTask.execute();
+        }, error -> {
+            Log.d("bugg", "failed: " + error);
+            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context.getApplicationContext());
+            notificationManager.cancel(PatientDownloadingNotificationID);
+            //let user know we failed getting the patients info // maybe due to timeout etc?
+            buildNotification(context.getString(R.string.app_name), "Failed to download Patients information...", PatientDownloadFailNotificationID, context);
+            try {
+                if (error.networkResponse != null) {
+                    String json = new String(error.networkResponse.data, HttpHeaderParser.parseCharset(error.networkResponse.headers));
+                    Log.d("bugg1", json + "  " + error.networkResponse.statusCode);
+                }
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }) {
+            /**
+             * Passing some request headers
+             */
+            @Override
+            public Map<String, String> getHeaders() {
+                HashMap<String, String> headers = new HashMap<>();
+                //headers.put("Content-Type", "application/json");
+                headers.put(LoginActivity.AUTH, "Bearer " + token);
+                return headers;
+            }
+        };
+        Toast.makeText(context, "Downloading patient's information, Check the status bar for progress.", Toast.LENGTH_LONG).show();
+        //timeout to 15 second if there are alot of patients
+        jsonArrayRequest.setRetryPolicy(new DefaultRetryPolicy(150000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_TIMEOUT_MS));
+        RequestQueue queue = Volley.newRequestQueue(MyApp.getInstance());
+        queue.add(jsonArrayRequest);
+        buildNotification(context.getString(R.string.app_name), "Downloading Patients....", PatientDownloadingNotificationID, context);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -150,65 +197,17 @@ public class LoginActivity extends AppCompatActivity {
         //we need to make a call to the server to get all HFs
         List<HealthFacilityEntity> healthFacilityEntities = new ArrayList<>();
         HealthFacilityEntity hf = new HealthFacilityEntity(UUID.randomUUID().toString(),
-                "Neptune's five star care","Planet Neptune",TWILIO_PHONE_NUMBER);
+                "Neptune's five star care", "Planet Neptune", TWILIO_PHONE_NUMBER);
         hf.setUserSelected(true);
         healthFacilityEntities.add(hf);
 
-        for (int i =1;i<100;i++){
+        for (int i = 1; i < 100; i++) {
             String id = UUID.randomUUID().toString();
             HealthFacilityEntity healthFacilityEntity = new HealthFacilityEntity
-                    (id," HF "+i,"Location "+ i%10,"7785555"+i*10);
+                    (id, " HF " + i, "Location " + i % 10, "7785555" + i * 10);
             healthFacilityEntities.add(healthFacilityEntity);
         }
         readingManager.insertAll(healthFacilityEntities);
-    }
-
-    /**
-     * makes the volley call to get all the  past readings from this user.
-     * Since Volley runs on its own thread, its okay for UI or activity to change as long as
-     * we are not referrencing them.
-     *
-     * @param token token for the user
-     */
-    public static void getAllMyPatients(String token, ReadingManager readingManager, Context context) {
-        JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, Settings.patientGetAllInfoByUserIdUrl,
-                null, response -> {
-
-            ParsePatientInformationAsyncTask parsePatientInformationAsyncTask =
-                    new ParsePatientInformationAsyncTask(response, context.getApplicationContext(), readingManager);
-            parsePatientInformationAsyncTask.execute();
-        }, error -> {
-            Log.d("bugg", "failed: " + error);
-            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context.getApplicationContext());
-            notificationManager.cancel(PatientDownloadingNotificationID);
-            //let user know we failed getting the patients info // maybe due to timeout etc?
-            buildNotification(context.getString(R.string.app_name), "Failed to download Patients information...", PatientDownloadFailNotificationID, context);
-            try {
-                if (error.networkResponse != null) {
-                    String json = new String(error.networkResponse.data, HttpHeaderParser.parseCharset(error.networkResponse.headers));
-                    Log.d("bugg1", json + "  " + error.networkResponse.statusCode);
-                }
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-        }) {
-            /**
-             * Passing some request headers
-             */
-            @Override
-            public Map<String, String> getHeaders() {
-                HashMap<String, String> headers = new HashMap<>();
-                //headers.put("Content-Type", "application/json");
-                headers.put(LoginActivity.AUTH, "Bearer " + token);
-                return headers;
-            }
-        };
-        Toast.makeText(context, "Downloading patient's information, Check the status bar for progress.", Toast.LENGTH_LONG).show();
-        //timeout to 15 second if there are alot of patients
-        jsonArrayRequest.setRetryPolicy(new DefaultRetryPolicy(150000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_TIMEOUT_MS));
-        RequestQueue queue = Volley.newRequestQueue(MyApp.getInstance());
-        queue.add(jsonArrayRequest);
-        buildNotification(context.getString(R.string.app_name), "Downloading Patients....", PatientDownloadingNotificationID, context);
     }
 
     private void saveUserNamePasswordSharedPref(String email, String password) {

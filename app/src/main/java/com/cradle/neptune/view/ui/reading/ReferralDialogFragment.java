@@ -19,7 +19,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -50,7 +49,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -58,42 +56,11 @@ import javax.inject.Inject;
 
 import okhttp3.OkHttpClient;
 
-import static com.cradle.neptune.view.LoginActivity.AUTH_PREF;
 import static com.cradle.neptune.view.LoginActivity.TOKEN;
 import static com.cradle.neptune.view.LoginActivity.USER_ID;
 
 
 public class ReferralDialogFragment extends DialogFragment {
-
-    // Data Model
-    @Inject
-    Settings settings;
-    @Inject
-    SharedPreferences sharedPreferences;
-    @Inject
-    ReadingManager readingManager;
-
-
-
-    // UI elements
-    TextView tvSendingStatus;
-
-    // Current state
-    private Reading currentReading;
-    private String enteredComment = "";
-    private boolean isShowingMessagePreview = false;
-    private DoneCallback callback;
-
-    private String smsTextMessage = "";
-    private String selectedHealthCentreSmsPhoneNumber = "";
-    private String selectedHealthCentreName = "";
-
-    // SMS elements
-    private EditText mTo;
-    private EditText mBody;
-    private Button mSend;
-    private OkHttpClient mClient = new OkHttpClient();
-    private Context mContext;
 
     private final Map<String, String> referralJsonKeys = ImmutableMap.<String, String>builder()
             .put("patient", "0")
@@ -129,6 +96,29 @@ public class ReferralDialogFragment extends DialogFragment {
             .put("date", "30")
             .put("referralId", "31")
             .build();
+    // Data Model
+    @Inject
+    Settings settings;
+    @Inject
+    SharedPreferences sharedPreferences;
+    @Inject
+    ReadingManager readingManager;
+    // UI elements
+    TextView tvSendingStatus;
+    // Current state
+    private Reading currentReading;
+    private String enteredComment = "";
+    private boolean isShowingMessagePreview = false;
+    private DoneCallback callback;
+    private String smsTextMessage = "";
+    private String selectedHealthCentreSmsPhoneNumber = "";
+    private String selectedHealthCentreName = "";
+    // SMS elements
+    private EditText mTo;
+    private EditText mBody;
+    private Button mSend;
+    private OkHttpClient mClient = new OkHttpClient();
+    private Context mContext;
 
     public static ReferralDialogFragment makeInstance(Reading currentReading, DoneCallback callback) {
         ReferralDialogFragment dialog = new ReferralDialogFragment();
@@ -469,7 +459,7 @@ public class ReferralDialogFragment extends DialogFragment {
         ArrayList<String> options = new ArrayList<>();
         List<HealthFacilityEntity> healthFacilityEntities = readingManager.getUserSelectedFacilities();
 
-        for (HealthFacilityEntity h:healthFacilityEntities){
+        for (HealthFacilityEntity h : healthFacilityEntities) {
             options.add(h.getName());
         }
         //options.addAll(settings.getHealthCentreNames());

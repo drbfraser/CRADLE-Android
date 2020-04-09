@@ -1,17 +1,17 @@
 package com.cradle.neptune.view.ui.settings.ui.healthFacility;
 
+import android.app.SearchManager;
+import android.content.Context;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.app.SearchManager;
-import android.content.Context;
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
@@ -29,6 +29,7 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
     ReadingManager readingManager;
     private SearchView searchView;
     private HealthFacilitiesAdapter healthFacilitiesAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,19 +55,19 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
         healthFacilitiesAdapter.notifyDataSetChanged();
 
         healthFacilitiesAdapter.setAdapterClicker(healthFacilityEntity -> {
-            String msg ="Add this facility to your list?";
+            String msg = "Add this facility to your list?";
 
-            if (healthFacilityEntity.isUserSelected()){
-                msg ="Remove this facility from your list?";
+            if (healthFacilityEntity.isUserSelected()) {
+                msg = "Remove this facility from your list?";
             }
             new AlertDialog.Builder(HealthFacilitiesActivity.this)
                     .setTitle(healthFacilityEntity.getName()).setMessage(msg)
                     .setCancelable(true).setPositiveButton("YES", (dialogInterface, i) -> {
-                     healthFacilityEntity.setUserSelected(!healthFacilityEntity.isUserSelected());
-                     readingManager.updateFacility(healthFacilityEntity);
-                     healthFacilitiesAdapter.notifyDataSetChanged();
-                    }).setNegativeButton("NO", (dialogInterface, i) -> {
-                    })
+                healthFacilityEntity.setUserSelected(!healthFacilityEntity.isUserSelected());
+                readingManager.updateFacility(healthFacilityEntity);
+                healthFacilitiesAdapter.notifyDataSetChanged();
+            }).setNegativeButton("NO", (dialogInterface, i) -> {
+            })
                     .create().show();
         });
     }
@@ -119,6 +120,7 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
     public interface AdapterClicker {
         void onClick(HealthFacilityEntity healthFacilityEntity);
     }
