@@ -15,11 +15,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class RoomReadingManager implements ReadingManager {
-    private ReadingEntitiesDatabase readingEntitiesDatabase;
+public class RoomDatabaseManager implements ReadingManager {
+    private CradleDatabase cradleDatabase;
 
-    public RoomReadingManager(ReadingEntitiesDatabase readingEntitiesDatabase) {
-        this.readingEntitiesDatabase = readingEntitiesDatabase;
+    public RoomDatabaseManager(CradleDatabase cradleDatabase) {
+        this.cradleDatabase = cradleDatabase;
     }
 
     @Override
@@ -33,7 +33,7 @@ public class RoomReadingManager implements ReadingManager {
 
         ReadingEntity readingEntity = new ReadingEntity(reading.readingId,
                 reading.patient.patientId, GsonUtil.getJson(reading), reading.isUploaded());
-        readingEntitiesDatabase.daoAccess().insertReading(readingEntity);
+        cradleDatabase.readingDaoAccess().insertReading(readingEntity);
 
         // update all the other patient's records .. because thats the way it is...
         List<Reading> readings = getReadings(context);
@@ -53,17 +53,17 @@ public class RoomReadingManager implements ReadingManager {
         reading.dateLastSaved = ZonedDateTime.now();
         ReadingEntity readingEntity = new ReadingEntity(reading.readingId,
                 reading.patient.patientId, GsonUtil.getJson(reading), reading.isUploaded());
-        readingEntitiesDatabase.daoAccess().update(readingEntity);
+        cradleDatabase.readingDaoAccess().update(readingEntity);
     }
 
     @Override
     public List<Reading> getReadings(Context context) {
-        return new GetAllReadingsAsyncTask(readingEntitiesDatabase, false, "").doInBackground();
+        return new GetAllReadingsAsyncTask(cradleDatabase, false, "").doInBackground();
     }
 
     @Override
     public Reading getReadingById(Context context, String id) {
-        ReadingEntity readingEntity = readingEntitiesDatabase.daoAccess().getReadingById(id);
+        ReadingEntity readingEntity = cradleDatabase.readingDaoAccess().getReadingById(id);
         if (readingEntity == null) {
             return null;
         }
@@ -77,21 +77,21 @@ public class RoomReadingManager implements ReadingManager {
 
     @Override
     public void deleteReadingById(Context context, String readingID) {
-        ReadingEntity readingEntity = readingEntitiesDatabase.daoAccess().getReadingById(readingID);
+        ReadingEntity readingEntity = cradleDatabase.readingDaoAccess().getReadingById(readingID);
         if (readingEntity != null) {
-            readingEntitiesDatabase.daoAccess().delete(readingEntity);
+            cradleDatabase.readingDaoAccess().delete(readingEntity);
         }
 
     }
 
     @Override
     public void deleteAllData(Context context) {
-        readingEntitiesDatabase.daoAccess().deleteAllReading();
+        cradleDatabase.readingDaoAccess().deleteAllReading();
     }
 
     @Override
     public List<Reading> getReadingByPatientID(Context context, String patientId) {
-        return new GetAllReadingsAsyncTask(readingEntitiesDatabase, true, patientId).doInBackground();
+        return new GetAllReadingsAsyncTask(cradleDatabase, true, patientId).doInBackground();
     }
 
     @Override
@@ -102,12 +102,12 @@ public class RoomReadingManager implements ReadingManager {
                     reading.patient.patientId, GsonUtil.getJson(reading), reading.isUploaded());
             readingEntities.add(readingEntity);
         }
-        readingEntitiesDatabase.daoAccess().insertAll(readingEntities);
+        cradleDatabase.readingDaoAccess().insertAll(readingEntities);
     }
 
     @Override
     public List<Reading> getUnuploadedReadings() {
-        List<ReadingEntity> readingEntities = readingEntitiesDatabase.daoAccess().getAllUnUploadedReading();
+        List<ReadingEntity> readingEntities = cradleDatabase.readingDaoAccess().getAllUnUploadedReading();
         List<Reading> readings = new ArrayList<>();
         for (ReadingEntity readingEntity : readingEntities) {
             Reading r = GsonUtil.makeObjectFromJson(readingEntity.getReadDataJsonString(), Reading.class);
@@ -117,15 +117,56 @@ public class RoomReadingManager implements ReadingManager {
     }
 
     /**
+     * HealthFacility functions
+     */
+
+    @Override
+    public void insert(HealthFacilityEntity healthFacilityEntity) {
+        cradleDatabase.healthFacilityDaoAccess().insert(healthFacilityEntity);
+    }
+
+    @Override
+    public void removeFacilityById(String id) {
+        HealthFacilityEntity healthFacilityEntity =
+                cradleDatabase.healthFacilityDaoAccess().getHealthFacilityById(id);
+        cradleDatabase.healthFacilityDaoAccess().delete(healthFacilityEntity);
+    }
+
+    @Override
+    public void insertAll(List<HealthFacilityEntity> healthCareFacilityEntities) {
+        cradleDatabase.healthFacilityDaoAccess().insertAll(healthCareFacilityEntities);
+    }
+
+    @Override
+    public List<HealthFacilityEntity> getAllFacilities() {
+        return cradleDatabase.healthFacilityDaoAccess().getAllHealthFacilities();
+    }
+
+    @Override
+    public HealthFacilityEntity getFacilityById(String id) {
+        return cradleDatabase.healthFacilityDaoAccess().getHealthFacilityById(id);
+    }
+
+    @Override
+    public List<HealthFacilityEntity> getUserSelectedFacilities() {
+        return cradleDatabase.healthFacilityDaoAccess().getAllUserSelectedHealthFacilities();
+    }
+
+    @Override
+    public void updateFacility(HealthFacilityEntity healthFacilityEntity) {
+        cradleDatabase.healthFacilityDaoAccess().update(healthFacilityEntity);
+    }
+
+    /**
      * since we dont want to block the main UI thread, we have to create a seperate thread for large queries.
      */
     private class GetAllReadingsAsyncTask extends AsyncTask<Void, Void, List<Reading>> {
-        WeakReference<ReadingEntitiesDatabase> readingEntitiesDatabaseWeakReference;
+        WeakReference<CradleDatabase> readingEntitiesDatabaseWeakReference;
         private boolean readingByPatientId = false;
         private String patientId = "";
 
-        GetAllReadingsAsyncTask(ReadingEntitiesDatabase readingEntitiesDatabase, boolean readingByPatientId, String patientId) {
-            this.readingEntitiesDatabaseWeakReference = new WeakReference<>(readingEntitiesDatabase);
+        GetAllReadingsAsyncTask(CradleDatabase cradleDatabase, boolean readingByPatientId, String patientId) {
+            this.readingEntitiesDatabaseWeakReference = new WeakReference<>(cradleDatabase);
             this.readingByPatientId = readingByPatientId;
             this.patientId = patientId;
         }
@@ -135,9 +176,9 @@ public class RoomReadingManager implements ReadingManager {
             List<Reading> readings = new ArrayList<>();
             List<ReadingEntity> readingEntities;
             if (readingByPatientId) {
-                readingEntities = readingEntitiesDatabaseWeakReference.get().daoAccess().getAllReadingByPatientId(patientId);
+                readingEntities = readingEntitiesDatabaseWeakReference.get().readingDaoAccess().getAllReadingByPatientId(patientId);
             } else {
-                readingEntities = readingEntitiesDatabaseWeakReference.get().daoAccess().getAllReadingEntities();
+                readingEntities = readingEntitiesDatabaseWeakReference.get().readingDaoAccess().getAllReadingEntities();
             }
             for (ReadingEntity readingEntity : readingEntities) {
                 Reading r = GsonUtil.makeObjectFromJson(readingEntity.getReadDataJsonString(), Reading.class);

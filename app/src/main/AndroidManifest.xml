@@ -18,7 +18,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".view.PdfViewActivity"></activity>
+        <activity android:name=".view.ui.settings.ui.healthFacility.HealthFacilitiesActivity"></activity>
+        <activity android:name=".view.PdfViewActivity" />
         <activity android:name=".view.EducationActivity" />
         <activity android:name=".view.StatsActivity" />
         <activity
@@ -70,7 +71,6 @@
             android:name=".view.ui.settings.SettingsActivity"
             android:label="Settings"
             android:screenOrientation="portrait" />
-        <activity android:name=".view.ui.settings.SettingNamedPairsActivity" />
 
         <meta-data
             android:name="preloaded_fonts"

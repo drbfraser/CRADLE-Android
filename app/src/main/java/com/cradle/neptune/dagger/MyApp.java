@@ -6,6 +6,8 @@ import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.util.Log;
 
+import androidx.multidex.MultiDexApplication;
+
 import com.jakewharton.threetenabp.AndroidThreeTen;
 import com.wonderkiln.blurkit.BlurKit;
 
@@ -13,7 +15,7 @@ import com.wonderkiln.blurkit.BlurKit;
  * Allow access to Dagger single instance of Component
  * Source: https://github.com/codepath/android_guides/wiki/Dependency-Injection-with-Dagger-2#instantiating-the-component
  */
-public class MyApp extends Application {
+public class MyApp extends MultiDexApplication {
     private static MyApp sInstance;
     private AppComponent mAppComponent;
     private boolean mDisableBlurKit;

@@ -106,9 +106,6 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
             protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
 
                 filteredpatientList = (ArrayList<Pair<Patient, Reading>>) filterResults.values;
-                for (Pair<Patient,Reading> pair : filteredpatientList) {
-
-                }
                 notifyDataSetChanged();
             }
         };
@@ -119,7 +116,7 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
         CardView patientCardview;
         ImageButton referralImg;
 
-        public PatientViewHolder(@NonNull View itemView) {
+        PatientViewHolder(@NonNull View itemView) {
             super(itemView);
             patientCardview = itemView.findViewById(R.id.patientCardview);
             patientId = itemView.findViewById(R.id.patientID);

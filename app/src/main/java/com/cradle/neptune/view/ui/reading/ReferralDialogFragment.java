@@ -19,7 +19,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -31,7 +30,9 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.database.HealthFacilityEntity;
 import com.cradle.neptune.model.Reading;
+import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.utilitiles.DateUtil;
 import com.cradle.neptune.view.LoginActivity;
@@ -46,8 +47,8 @@ import org.threeten.bp.ZonedDateTime;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -55,40 +56,11 @@ import javax.inject.Inject;
 
 import okhttp3.OkHttpClient;
 
-import static com.cradle.neptune.view.LoginActivity.AUTH_PREF;
 import static com.cradle.neptune.view.LoginActivity.TOKEN;
 import static com.cradle.neptune.view.LoginActivity.USER_ID;
 
 
 public class ReferralDialogFragment extends DialogFragment {
-
-    public static final String TWILIO_PHONE_NUMBER = "16042298878";
-    // Data Model
-    @Inject
-    Settings settings;
-    @Inject
-    SharedPreferences sharedPreferences;
-
-
-    // UI elements
-    TextView tvSendingStatus;
-
-    // Current state
-    private Reading currentReading;
-    private String enteredComment = "";
-    private boolean isShowingMessagePreview = false;
-    private DoneCallback callback;
-
-    private String smsTextMessage = "";
-    private String selectedHealthCentreSmsPhoneNumber = "";
-    private String selectedHealthCentreName = "";
-
-    // SMS elements
-    private EditText mTo;
-    private EditText mBody;
-    private Button mSend;
-    private OkHttpClient mClient = new OkHttpClient();
-    private Context mContext;
 
     private final Map<String, String> referralJsonKeys = ImmutableMap.<String, String>builder()
             .put("patient", "0")
@@ -124,6 +96,29 @@ public class ReferralDialogFragment extends DialogFragment {
             .put("date", "30")
             .put("referralId", "31")
             .build();
+    // Data Model
+    @Inject
+    Settings settings;
+    @Inject
+    SharedPreferences sharedPreferences;
+    @Inject
+    ReadingManager readingManager;
+    // UI elements
+    TextView tvSendingStatus;
+    // Current state
+    private Reading currentReading;
+    private String enteredComment = "";
+    private boolean isShowingMessagePreview = false;
+    private DoneCallback callback;
+    private String smsTextMessage = "";
+    private String selectedHealthCentreSmsPhoneNumber = "";
+    private String selectedHealthCentreName = "";
+    // SMS elements
+    private EditText mTo;
+    private EditText mBody;
+    private Button mSend;
+    private OkHttpClient mClient = new OkHttpClient();
+    private Context mContext;
 
     public static ReferralDialogFragment makeInstance(Reading currentReading, DoneCallback callback) {
         ReferralDialogFragment dialog = new ReferralDialogFragment();
@@ -264,7 +259,7 @@ public class ReferralDialogFragment extends DialogFragment {
 //        // source: https://mobiforge.com/design-development/sms-messaging-android
 //
 //        // check for data errors:
-        if (settings.getHealthCentreNames().size() == 0) {
+        if (readingManager.getUserSelectedFacilities().size() == 0) {
             tvSendingStatus.setText("ERROR: No known health centres.\nPlease go to settings to enter them.");
             tvSendingStatus.setVisibility(View.VISIBLE);
             // return;
@@ -273,7 +268,7 @@ public class ReferralDialogFragment extends DialogFragment {
 //        // Must send SMS via intent to default SMS program due to PlayStore policy preventing
 //        // apps from sending SMS directly.
         prepareReferralJsonForSMS();
-        composeMmsMessage(smsTextMessage, TWILIO_PHONE_NUMBER);
+        composeMmsMessage(smsTextMessage, selectedHealthCentreSmsPhoneNumber);
         onFinishedSendingSMS(dialog);
 //
 //        // Json for comments
@@ -462,7 +457,13 @@ public class ReferralDialogFragment extends DialogFragment {
     private void setupHealthCentreSpinner(Dialog dialog) {
         Spinner sp = dialog.findViewById(R.id.spinnerHealthCentre);
         ArrayList<String> options = new ArrayList<>();
-        options.addAll(settings.getHealthCentreNames());
+        List<HealthFacilityEntity> healthFacilityEntities = readingManager.getUserSelectedFacilities();
+
+        for (HealthFacilityEntity h : healthFacilityEntities) {
+            options.add(h.getName());
+        }
+        //options.addAll(settings.getHealthCentreNames());
+
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 getActivity(),
                 android.R.layout.simple_spinner_item,
@@ -478,13 +479,10 @@ public class ReferralDialogFragment extends DialogFragment {
                 Spinner spin = dialog.findViewById(R.id.spinnerHealthCentre);
                 int position = spin.getSelectedItemPosition();
                 if (position >= 0) {
-                    selectedHealthCentreName = spin.getSelectedItem().toString();
-                    selectedHealthCentreSmsPhoneNumber = settings.getHealthCentrePhoneNumber(position);
+                    selectedHealthCentreName = healthFacilityEntities.get(i).getName();
+                    selectedHealthCentreSmsPhoneNumber = healthFacilityEntities.get(i).getPhoneNumber();
                 }
-
-//                adapter.notifyDataSetChanged();
                 updateUI(dialog);
-                settings.setLastHealthCentreSelectionIdx(i);
             }
 
             @Override
@@ -492,7 +490,6 @@ public class ReferralDialogFragment extends DialogFragment {
                 updateUI(dialog);
             }
         });
-        sp.setSelection(settings.getLastHealthCentreSelectionIdx());
 
         // settings button
         ImageView iv = dialog.findViewById(R.id.ivSettings);
@@ -560,63 +557,6 @@ public class ReferralDialogFragment extends DialogFragment {
     }
 
     private String buildMessage(Dialog dialog) {
-
-//        // patient
-//        String patient = getString(R.string.sms_message_patient,
-//                currentReading.patient.patientName,
-//                currentReading.patient.patientId
-//        );
-//        Reading.WeeksAndDays ga = currentReading.getGestationalAgeInWeeksAndDays();
-//        String patientAge;
-//        if (ga != null) {
-//            patientAge = getString(R.string.sms_message_patient_age_pregnant,
-//                    currentReading.patient.ageYears,
-//                    ga.weeks,
-//                    ga.days);
-//        } else {
-//            patientAge = getString(R.string.sms_message_patient_age_not_pregnant,
-//                    currentReading.patient.ageYears);
-//        }
-//
-//        // vitals
-//        ReadingAnalysis analysis = ReadingAnalysis.analyze(currentReading);
-//        String vitals = getString(R.string.sms_message_reading_results,
-//                currentReading.bpSystolic,
-//                currentReading.bpDiastolic,
-//                currentReading.heartRateBPM,
-//                analysis.getAnalysisText(getContext())
-//        );
-//
-//        // health centre: updated when selection changes
-//
-//        // warn recipient if possible duplicate referral
-//        String secondReferralWarning = "";
-//        if (currentReading.isReferredToHealthCentre()) {
-//            secondReferralWarning =
-//                    getString(R.string.sms_message_repeat_referral_warning,
-//                            currentReading.referralHealthCentre,
-//                            DateUtil.getFullDateString(currentReading.referralMessageSendTime));
-//        }
-//
-//        // comments
-//        String comments = enteredComment;
-//        if (comments.length() > 0) {
-//            comments = "\"" + comments + "\"";
-//        }
-//
-//        // construct it
-//        String message = addLf(getString(R.string.sms_message_header))
-//        + addLf(patient)
-//                + addLf(patientAge)
-//                + addLf(vitals)
-//                + addLf(currentReading.getSymptomsString())
-//                + addLf(getString(R.string.sms_message_reading_date,
-//                DateUtil.getFullDateString(currentReading.dateTimeTaken)))
-//                + addLf(getString(R.string.sms_message_referral,
-//                selectedHealthCentreName))
-//                + addLf(getString(R.string.sms_message_by_vht, settings.getVhtName()))
-//                + addLf(secondReferralWarning)
-//                + comments;
 
         JSONObject referralJson = getReferralJson(true);
 

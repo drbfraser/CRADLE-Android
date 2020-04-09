@@ -6,8 +6,8 @@ import android.preference.PreferenceManager;
 
 import androidx.room.Room;
 
-import com.cradle.neptune.database.ReadingEntitiesDatabase;
-import com.cradle.neptune.database.RoomReadingManager;
+import com.cradle.neptune.database.CradleDatabase;
+import com.cradle.neptune.database.RoomDatabaseManager;
 import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
 
@@ -27,9 +27,9 @@ public class DataModule {
     public ReadingManager provideReadingManager(Application application) {
 //        return new ReadingManagerAsList();
         //allowing queries on main thread but should use a seperate thread for large queeries
-        ReadingEntitiesDatabase r  = Room.databaseBuilder(application,
-                ReadingEntitiesDatabase.class, "room-readingDB").allowMainThreadQueries().build();
-        return new RoomReadingManager(r);
+        CradleDatabase r = Room.databaseBuilder(application,
+                CradleDatabase.class, "room-readingDB").allowMainThreadQueries().build();
+        return new RoomDatabaseManager(r);
     }
 
     @Provides

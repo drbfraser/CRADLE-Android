@@ -2,6 +2,8 @@ package com.cradle.neptune.model;
 
 import android.content.Context;
 
+import com.cradle.neptune.database.HealthFacilityEntity;
+
 import java.util.List;
 
 public interface ReadingManager {
@@ -22,4 +24,19 @@ public interface ReadingManager {
     void addAllReadings(Context context, List<Reading> readings);
 
     List<Reading> getUnuploadedReadings();
+
+
+    void insert(HealthFacilityEntity healthFacilityEntity);
+
+    void removeFacilityById(String id);
+
+    void insertAll(List<HealthFacilityEntity> healthCareFacilityEntities);
+
+    List<HealthFacilityEntity> getAllFacilities();
+
+    HealthFacilityEntity getFacilityById(String id);
+
+    List<HealthFacilityEntity> getUserSelectedFacilities();
+
+    void updateFacility(HealthFacilityEntity healthFacilityEntity);
 }

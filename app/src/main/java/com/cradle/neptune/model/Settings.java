@@ -70,8 +70,8 @@ public class Settings {
     private boolean shouldUploadImages;
     private Boolean ocrEnabled = false;
     private Boolean ocrDebugEnabled = false;
+
     // stored values managed by us
-    private List<NamedPair> healthCentres = new ArrayList<>();
     private int lastHealthCentreSelectionIdx = 0;
     // data to operate
     private SharedPreferences sharedPref;
@@ -100,16 +100,6 @@ public class Settings {
         vhtName = sharedPref.getString(PREF_KEY_VHT_NAME, "no name available");
         region = sharedPref.getString(PREF_KEY_REGION, "no region available");
 
-        // health centres
-        healthCentres.clear();
-        NamedPair namedPair = new NamedPair("Neptune's 5 star care", "778-555-555");
-        healthCentres.add(namedPair);
-        int numHealthCentres = sharedPref.getInt(PREF_KEY_NUM_HEALTH_CENTRES, 0);
-        for (int i = 0; i < numHealthCentres; i++) {
-            String name = sharedPref.getString(PREF_KEY_HEALTH_CENTRE_NAME_ + i, "no name");
-            String value = sharedPref.getString(PREF_KEY_HEALTH_CENTRE_CELL_ + i, "no number");
-            healthCentres.add(new NamedPair(name, value));
-        }
         lastHealthCentreSelectionIdx = sharedPref.getInt(PREF_KEY_HEALTH_CENTRE_LAST_IDX, 0);
 
         // upload
@@ -134,25 +124,6 @@ public class Settings {
         return region;
     }
 
-    public List<NamedPair> getHealthCentres() {
-        return healthCentres;
-    }
-
-    public List<String> getHealthCentreNames() {
-        List<String> names = new ArrayList<>();
-        for (NamedPair pair : healthCentres) {
-            names.add(pair.name);
-        }
-        return names;
-    }
-
-    public String getHealthCentrePhoneNumber(int position) {
-        return healthCentres.get(position).value;
-    }
-
-    public int getLastHealthCentreSelectionIdx() {
-        return lastHealthCentreSelectionIdx;
-    }
 
     public void setLastHealthCentreSelectionIdx(int selectionIdx) {
         lastHealthCentreSelectionIdx = selectionIdx;
