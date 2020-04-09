@@ -22,17 +22,17 @@ import java.util.List;
 
 public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFacilitiesAdapter.HealthFacilityViewHolder> implements Filterable {
 
-    List<HealthFacilityEntity> healthFacilityEntities;
-    List<HealthFacilityEntity> filteredList;
-    HealthFacilitiesActivity.onClick onClick;
+    private List<HealthFacilityEntity> healthFacilityEntities;
+    private List<HealthFacilityEntity> filteredList;
+    private HealthFacilitiesActivity.AdapterClicker AdapterClicker;
 
     public HealthFacilitiesAdapter(List<HealthFacilityEntity> healthFacilityEntities) {
         this.healthFacilityEntities = healthFacilityEntities;
         this.filteredList=healthFacilityEntities;
     }
 
-    public void setOnClick(HealthFacilitiesActivity.onClick onClick) {
-        this.onClick = onClick;
+    public void setAdapterClicker(HealthFacilitiesActivity.AdapterClicker adapterClicker) {
+        this.AdapterClicker = adapterClicker;
     }
 
     @NonNull
@@ -58,7 +58,7 @@ public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFaciliti
         holder.layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                onClick.onClick(healthFacilityEntity);
+                AdapterClicker.onClick(healthFacilityEntity);
             }
         });
 
@@ -106,7 +106,7 @@ public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFaciliti
         ConstraintLayout layout;
         ImageView statusImg;
 
-        public HealthFacilityViewHolder(@NonNull View itemView) {
+        HealthFacilityViewHolder(@NonNull View itemView) {
             super(itemView);
             phoneTxt = itemView.findViewById(R.id.hfNumberTxt);
             nameTxt = itemView.findViewById(R.id.hfNameTxt);

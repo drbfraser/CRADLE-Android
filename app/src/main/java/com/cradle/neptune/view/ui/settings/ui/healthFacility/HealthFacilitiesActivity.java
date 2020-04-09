@@ -53,19 +53,21 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
         healthFacilitiesAdapter.notifyDataSetChanged();
 
-        healthFacilitiesAdapter.setOnClick(new onClick() {
-            @Override
-            public void onClick(HealthFacilityEntity healthFacilityEntity) {
-                new AlertDialog.Builder(HealthFacilitiesActivity.this)
-                        .setTitle(healthFacilityEntity.getName()).setMessage("Would you live to add this facility to your list?")
-                        .setCancelable(true).setPositiveButton("YES", (dialogInterface, i) -> {
-                         healthFacilityEntity.setUserSelected(true);
-                         readingManager.updateFacility(healthFacilityEntity);
-                         healthFacilitiesAdapter.notifyDataSetChanged();
-                        }).setNegativeButton("NO", (dialogInterface, i) -> {
-                        })
-                        .create().show();
+        healthFacilitiesAdapter.setAdapterClicker(healthFacilityEntity -> {
+            String msg ="Add this facility to your list?";
+
+            if (healthFacilityEntity.isUserSelected()){
+                msg ="Remove this facility from your list?";
             }
+            new AlertDialog.Builder(HealthFacilitiesActivity.this)
+                    .setTitle(healthFacilityEntity.getName()).setMessage(msg)
+                    .setCancelable(true).setPositiveButton("YES", (dialogInterface, i) -> {
+                     healthFacilityEntity.setUserSelected(!healthFacilityEntity.isUserSelected());
+                     readingManager.updateFacility(healthFacilityEntity);
+                     healthFacilitiesAdapter.notifyDataSetChanged();
+                    }).setNegativeButton("NO", (dialogInterface, i) -> {
+                    })
+                    .create().show();
         });
     }
 
@@ -117,7 +119,7 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-    public interface onClick{
+    public interface AdapterClicker {
         void onClick(HealthFacilityEntity healthFacilityEntity);
     }
 
