@@ -17,16 +17,31 @@ public class HealthFacilityEntity {
     private String location;
     @ColumnInfo
     private String phoneNumber;
+    @ColumnInfo
+    private String about;
+    @ColumnInfo
+    private String type;
+
 
     // if user wants this in the dropdown menu
     @ColumnInfo
     private boolean isUserSelected;
 
-    public HealthFacilityEntity(@NonNull String id, String name, String location, String phoneNumber) {
+    public HealthFacilityEntity(@NonNull String id, String name, String location, String phoneNumber, String about, String type) {
         this.id = id;
         this.name = name;
         this.location = location;
         this.phoneNumber = phoneNumber;
+        this.type = type;
+        this.about = about;
+    }
+
+    public String getAbout() {
+        return about;
+    }
+
+    public String getType() {
+        return type;
     }
 
     public boolean isUserSelected() {

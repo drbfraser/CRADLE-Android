@@ -197,41 +197,37 @@ public class LoginActivity extends AppCompatActivity {
 
     private void populateHealthFacilities() {
 
-        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, Settings.DEFAULT_SERVER_URL+"/health_facility", null, new Response.Listener<JSONArray>() {
-            @Override
-            public void onResponse(JSONArray response) {
-                try {
-                    Log.d("bugg","success: "+response.toString(4));
-                    //we need to make a call to the server to get all HFs
-                    List<HealthFacilityEntity> healthFacilityEntities = new ArrayList<>();
-                    HealthFacilityEntity hf = new HealthFacilityEntity(UUID.randomUUID().toString(),
-                            "Neptune's five star care", "Planet Neptune", TWILIO_PHONE_NUMBER);
-                    hf.setUserSelected(true);
-                    healthFacilityEntities.add(hf);
-                    for (int i =0;i<response.length();i++){
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, Settings.healthFacilityUrl, null, response -> {
+            try {
+                Log.d("bugg","success: "+response.toString(4));
+                List<HealthFacilityEntity> healthFacilityEntities = new ArrayList<>();
+                //adding our default one for twilio
+                HealthFacilityEntity hf = new HealthFacilityEntity(UUID.randomUUID().toString(),
+                        "Neptune's five star care", "Planet Neptune", TWILIO_PHONE_NUMBER,"Default TWILIO","TW");
+                hf.setUserSelected(true);
+                healthFacilityEntities.add(hf);
 
-                        JSONObject jsonObject = response.getJSONObject(i);
-                        String id = UUID.randomUUID().toString();
-                        HealthFacilityEntity healthFacilityEntity = new HealthFacilityEntity
-                                (id, jsonObject.getString("healthFacilityName"), jsonObject.getString("location"), jsonObject.getString("healthFacilityPhoneNumber"));
-                        healthFacilityEntities.add(healthFacilityEntity);
-                    }
-                    readingManager.insertAll(healthFacilityEntities);
+                for (int i =0;i<response.length();i++){
+                    JSONObject jsonObject = response.getJSONObject(i);
+                    String id = UUID.randomUUID().toString();
 
+                    HealthFacilityEntity healthFacilityEntity = new HealthFacilityEntity
+                            (id, jsonObject.getString("healthFacilityName"),
+                                    jsonObject.getString("location"),
+                                    jsonObject.getString("healthFacilityPhoneNumber"),
+                                    jsonObject.getString("about"),
+                                    jsonObject.getString("facilityType"));
 
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                    healthFacilityEntities.add(healthFacilityEntity);
                 }
+                readingManager.insertAll(healthFacilityEntities);
 
 
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.d("bugg","error: "+error.toString());
 
-            }
-        }) {
+        }, error -> Log.d("bugg","error: "+error.toString())) {
             /**
              * Passing some request headers
              */
