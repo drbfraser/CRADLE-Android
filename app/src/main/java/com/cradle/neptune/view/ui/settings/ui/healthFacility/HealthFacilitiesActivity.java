@@ -65,10 +65,8 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
                     .setCancelable(true).setPositiveButton("YES", (dialogInterface, i) -> {
                 healthFacilityEntity.setUserSelected(!healthFacilityEntity.isUserSelected());
                 readingManager.updateFacility(healthFacilityEntity);
-                healthFacilitiesAdapter.notifyDataSetChanged();
-            }).setNegativeButton("NO", (dialogInterface, i) -> {
-            })
-                    .create().show();
+                setupRecyclerview();
+            }).setNegativeButton("NO", (dialogInterface, i) -> {}).create().show();
         });
     }
 
