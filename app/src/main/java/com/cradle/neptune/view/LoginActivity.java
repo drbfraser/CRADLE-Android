@@ -18,8 +18,6 @@ import androidx.core.app.NotificationManagerCompat;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
@@ -202,11 +200,11 @@ public class LoginActivity extends AppCompatActivity {
                 List<HealthFacilityEntity> healthFacilityEntities = new ArrayList<>();
                 //adding our default one for twilio
                 HealthFacilityEntity hf = new HealthFacilityEntity(UUID.randomUUID().toString(),
-                        "Neptune's five star care", "Planet Neptune", TWILIO_PHONE_NUMBER,"Default TWILIO","TW");
+                        "Neptune's five star care", "Planet Neptune", TWILIO_PHONE_NUMBER, "Default TWILIO", "TW");
                 hf.setUserSelected(true);
                 healthFacilityEntities.add(hf);
 
-                for (int i =0;i<response.length();i++){
+                for (int i = 0; i < response.length(); i++) {
                     JSONObject jsonObject = response.getJSONObject(i);
                     String id = UUID.randomUUID().toString();
                     //todo get hcf id from the server, currently server doesnt have one
@@ -223,7 +221,7 @@ public class LoginActivity extends AppCompatActivity {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-        }, error -> Log.d("bugg","error: "+error.toString())) {
+        }, error -> Log.d("bugg", "error: " + error.toString())) {
             /**
              * Passing some request headers
              */
@@ -231,7 +229,7 @@ public class LoginActivity extends AppCompatActivity {
             public Map<String, String> getHeaders() {
                 HashMap<String, String> headers = new HashMap<>();
                 //headers.put("Content-Type", "application/json");
-                headers.put(LoginActivity.AUTH, "Bearer " + sharedPreferences.getString(TOKEN,""));
+                headers.put(LoginActivity.AUTH, "Bearer " + sharedPreferences.getString(TOKEN, ""));
                 return headers;
             }
         };

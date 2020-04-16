@@ -101,7 +101,7 @@ public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFaciliti
 
     static class HealthFacilityViewHolder extends RecyclerView.ViewHolder {
 
-        TextView phoneTxt, nameTxt, locationTxt, aboutTxt,typeTxt;
+        TextView phoneTxt, nameTxt, locationTxt, aboutTxt, typeTxt;
         ConstraintLayout layout;
         ImageView statusImg;
 

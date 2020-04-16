@@ -2,9 +2,6 @@ package com.cradle.neptune.model;
 
 import android.content.SharedPreferences;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Store app-wide settings.
  * To add a new setting:
@@ -38,6 +35,9 @@ public class Settings {
 
     public static String DEFAULT_SERVER_USERNAME = "user";
     public static String DEFAULT_SERVER_USERPASSWORD = "just4testing";
+    public static String authServerUrl = DEFAULT_SERVER_URL + "/user/auth";
+    public static String patientGetAllInfoByUserIdUrl = DEFAULT_SERVER_URL + "/patient/allinfo";
+    public static String healthFacilityUrl = DEFAULT_SERVER_URL + "/health_facility";
     // Temporary Upload Defaults:
     // todo: remove temporary upload defaults once 2D bar-code reading in place for settings.
     private static String LINEFEED = "\r\n";
@@ -58,13 +58,9 @@ public class Settings {
     private int holdScreenAwakeForNewReading = 0;
     private boolean communityHealthOfficerGetsReferrals = false;
     private String communityHealthOfficerPhoneNumber;
-
-    public static String authServerUrl = DEFAULT_SERVER_URL+"/user/auth";
-    private String readingServerUrl = DEFAULT_SERVER_URL+"/patient/reading";
-    private String referralsServerUrl = DEFAULT_SERVER_URL+"/referral";
-    private String referralSummeriesServerUrl = DEFAULT_SERVER_URL+"/mobile/summarized/follow_up";
-    public static String patientGetAllInfoByUserIdUrl = DEFAULT_SERVER_URL+"/patient/allinfo";
-    public static String healthFacilityUrl = DEFAULT_SERVER_URL+"/health_facility";
+    private String readingServerUrl = DEFAULT_SERVER_URL + "/patient/reading";
+    private String referralsServerUrl = DEFAULT_SERVER_URL + "/referral";
+    private String referralSummeriesServerUrl = DEFAULT_SERVER_URL + "/mobile/summarized/follow_up";
     private String serverUserName;
     private String serverPassword;
     private String rsaPubKey;
