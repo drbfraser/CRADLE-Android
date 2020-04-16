@@ -51,16 +51,13 @@ public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFaciliti
         holder.locationTxt.setText(healthFacilityEntity.getLocation());
         holder.nameTxt.setText(healthFacilityEntity.getName());
         holder.phoneTxt.setText(healthFacilityEntity.getPhoneNumber());
-
+        holder.typeTxt.setText(healthFacilityEntity.getType());
+        holder.aboutTxt.setText(healthFacilityEntity.getAbout());
         if (healthFacilityEntity.isUserSelected()) {
             holder.statusImg.setVisibility(View.VISIBLE);
         }
-        holder.layout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AdapterClicker.onClick(healthFacilityEntity);
-            }
-        });
+        holder.layout.setOnClickListener(view ->
+                AdapterClicker.onClick(healthFacilityEntity));
 
     }
 
@@ -81,7 +78,9 @@ public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFaciliti
                     List<HealthFacilityEntity> newFilteredList = new ArrayList<>();
                     for (HealthFacilityEntity hf : healthFacilityEntities) {
                         if (hf.getLocation().toLowerCase().contains(charSequence.toString()) ||
-                                hf.getName().toLowerCase().contains(charSequence.toString())) {
+                                hf.getName().toLowerCase().contains(charSequence.toString()) ||
+                                hf.getType().toLowerCase().contains(charSequence.toString()) ||
+                                hf.getAbout().toLowerCase().contains(charSequence.toString())) {
                             newFilteredList.add(hf);
                         }
                     }
@@ -102,7 +101,7 @@ public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFaciliti
 
     static class HealthFacilityViewHolder extends RecyclerView.ViewHolder {
 
-        TextView phoneTxt, nameTxt, locationTxt;
+        TextView phoneTxt, nameTxt, locationTxt, aboutTxt, typeTxt;
         ConstraintLayout layout;
         ImageView statusImg;
 
@@ -113,6 +112,8 @@ public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFaciliti
             locationTxt = itemView.findViewById(R.id.hfLocationTxt);
             layout = itemView.findViewById(R.id.hfLayout);
             statusImg = itemView.findViewById(R.id.hfImageview);
+            aboutTxt = itemView.findViewById(R.id.hfAbouttxt);
+            typeTxt = itemView.findViewById(R.id.hfTypeTxt);
         }
     }
 }
