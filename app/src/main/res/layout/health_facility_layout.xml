@@ -34,22 +34,22 @@
         android:id="@+id/hfLocationTxt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginStart="8dp"
         android:text="location"
-        app:layout_constraintStart_toStartOf="@+id/hfNameTxt"
-        app:layout_constraintTop_toBottomOf="@+id/hfNameTxt" />
+        android:textColor="@color/black"
+        app:layout_constraintStart_toEndOf="@+id/textView44"
+        app:layout_constraintTop_toTopOf="@+id/textView44" />
 
     <View
         android:id="@+id/textView42"
         android:layout_width="0dp"
         android:layout_height="2dp"
-        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
         android:background="@color/colorAccent"
         android:text="TextView"
         app:layout_constraintEnd_toEndOf="@id/hfNumberTxt"
-        app:layout_constraintStart_toStartOf="@id/hfLocationTxt"
+        app:layout_constraintStart_toStartOf="@+id/textView44"
         app:layout_constraintTop_toBottomOf="@+id/hfLocationTxt" />
 
     <ImageView
@@ -61,4 +61,48 @@
         app:layout_constraintEnd_toEndOf="@+id/hfNumberTxt"
         app:layout_constraintTop_toTopOf="@+id/hfLocationTxt"
         app:srcCompat="@drawable/ic_check_circle_black_24dp" />
+
+    <TextView
+        android:id="@+id/hfAbouttxt"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="8dp"
+        android:text="About"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/hfNameTxt"
+        app:layout_constraintTop_toBottomOf="@+id/hfNameTxt" />
+
+    <TextView
+        android:id="@+id/hfTypeTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:text="Type"
+        android:textColor="@color/black"
+        app:layout_constraintStart_toEndOf="@+id/textView41"
+        app:layout_constraintTop_toTopOf="@+id/textView41" />
+
+    <TextView
+        android:id="@+id/textView41"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Type: "
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="@+id/hfAbouttxt"
+        app:layout_constraintTop_toBottomOf="@+id/hfAbouttxt" />
+
+    <TextView
+        android:id="@+id/textView44"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Location:"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="@+id/textView41"
+        app:layout_constraintTop_toBottomOf="@+id/textView41" />
 </androidx.constraintlayout.widget.ConstraintLayout>

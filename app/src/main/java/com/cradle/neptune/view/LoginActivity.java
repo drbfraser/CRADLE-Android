@@ -199,7 +199,6 @@ public class LoginActivity extends AppCompatActivity {
 
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, Settings.healthFacilityUrl, null, response -> {
             try {
-                Log.d("bugg","success: "+response.toString(4));
                 List<HealthFacilityEntity> healthFacilityEntities = new ArrayList<>();
                 //adding our default one for twilio
                 HealthFacilityEntity hf = new HealthFacilityEntity(UUID.randomUUID().toString(),
@@ -210,7 +209,7 @@ public class LoginActivity extends AppCompatActivity {
                 for (int i =0;i<response.length();i++){
                     JSONObject jsonObject = response.getJSONObject(i);
                     String id = UUID.randomUUID().toString();
-
+                    //todo get hcf id from the server, currently server doesnt have one
                     HealthFacilityEntity healthFacilityEntity = new HealthFacilityEntity
                             (id, jsonObject.getString("healthFacilityName"),
                                     jsonObject.getString("location"),
@@ -221,12 +220,9 @@ public class LoginActivity extends AppCompatActivity {
                     healthFacilityEntities.add(healthFacilityEntity);
                 }
                 readingManager.insertAll(healthFacilityEntities);
-
-
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
         }, error -> Log.d("bugg","error: "+error.toString())) {
             /**
              * Passing some request headers
