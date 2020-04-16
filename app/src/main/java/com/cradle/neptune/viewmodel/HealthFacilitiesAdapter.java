@@ -78,7 +78,9 @@ public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFaciliti
                     List<HealthFacilityEntity> newFilteredList = new ArrayList<>();
                     for (HealthFacilityEntity hf : healthFacilityEntities) {
                         if (hf.getLocation().toLowerCase().contains(charSequence.toString()) ||
-                                hf.getName().toLowerCase().contains(charSequence.toString())) {
+                                hf.getName().toLowerCase().contains(charSequence.toString()) ||
+                                hf.getType().toLowerCase().contains(charSequence.toString()) ||
+                                hf.getAbout().toLowerCase().contains(charSequence.toString())) {
                             newFilteredList.add(hf);
                         }
                     }

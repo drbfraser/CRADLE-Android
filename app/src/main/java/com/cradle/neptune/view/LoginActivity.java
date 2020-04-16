@@ -122,7 +122,7 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         ((MyApp) getApplication()).getAppComponent().inject(this);
 
-        //checkSharedPrefForLogin();
+        checkSharedPrefForLogin();
         setupLogin();
     }
 
