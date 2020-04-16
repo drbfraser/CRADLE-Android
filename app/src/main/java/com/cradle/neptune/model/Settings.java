@@ -32,9 +32,9 @@ public class Settings {
     public static final String PREF_KEY_UPLOAD_IMAGES = "settings_upload_images";
     public static final String PREF_KEY_OCR_ENABLED = "setting_ocr_enabled";
     public static final String PREF_KEY_OCR_DEBUG_ENABLED = "setting_ocr_debug_enabled";
-    public static String DEFAULT_SERVER_URL = "https://cmpt373.csil.sfu.ca:8048/api";
+    //public static String DEFAULT_SERVER_URL = "https://cmpt373.csil.sfu.ca:8048/api";
     //testing with local server
-    //public static String DEFAULT_SERVER_URL = "http://10.0.2.2:5000/api";
+    public static String DEFAULT_SERVER_URL = "http://10.0.2.2:5000/api";
 
     public static String DEFAULT_SERVER_USERNAME = "user";
     public static String DEFAULT_SERVER_USERPASSWORD = "just4testing";

@@ -18,6 +18,8 @@ import androidx.core.app.NotificationManagerCompat;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
@@ -120,7 +122,7 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         ((MyApp) getApplication()).getAppComponent().inject(this);
 
-        checkSharedPrefForLogin();
+        //checkSharedPrefForLogin();
         setupLogin();
     }
 
@@ -194,20 +196,55 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void populateHealthFacilities() {
-        //we need to make a call to the server to get all HFs
-        List<HealthFacilityEntity> healthFacilityEntities = new ArrayList<>();
-        HealthFacilityEntity hf = new HealthFacilityEntity(UUID.randomUUID().toString(),
-                "Neptune's five star care", "Planet Neptune", TWILIO_PHONE_NUMBER);
-        hf.setUserSelected(true);
-        healthFacilityEntities.add(hf);
 
-        for (int i = 1; i < 100; i++) {
-            String id = UUID.randomUUID().toString();
-            HealthFacilityEntity healthFacilityEntity = new HealthFacilityEntity
-                    (id, " HF " + i, "Location " + i % 10, "7785555" + i * 10);
-            healthFacilityEntities.add(healthFacilityEntity);
-        }
-        readingManager.insertAll(healthFacilityEntities);
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, Settings.DEFAULT_SERVER_URL+"/health_facility", null, new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+                try {
+                    Log.d("bugg","success: "+response.toString(4));
+                    //we need to make a call to the server to get all HFs
+                    List<HealthFacilityEntity> healthFacilityEntities = new ArrayList<>();
+                    HealthFacilityEntity hf = new HealthFacilityEntity(UUID.randomUUID().toString(),
+                            "Neptune's five star care", "Planet Neptune", TWILIO_PHONE_NUMBER);
+                    hf.setUserSelected(true);
+                    healthFacilityEntities.add(hf);
+                    for (int i =0;i<response.length();i++){
+
+                        JSONObject jsonObject = response.getJSONObject(i);
+                        String id = UUID.randomUUID().toString();
+                        HealthFacilityEntity healthFacilityEntity = new HealthFacilityEntity
+                                (id, jsonObject.getString("healthFacilityName"), jsonObject.getString("location"), jsonObject.getString("healthFacilityPhoneNumber"));
+                        healthFacilityEntities.add(healthFacilityEntity);
+                    }
+                    readingManager.insertAll(healthFacilityEntities);
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d("bugg","error: "+error.toString());
+
+            }
+        }) {
+            /**
+             * Passing some request headers
+             */
+            @Override
+            public Map<String, String> getHeaders() {
+                HashMap<String, String> headers = new HashMap<>();
+                //headers.put("Content-Type", "application/json");
+                headers.put(LoginActivity.AUTH, "Bearer " + sharedPreferences.getString(TOKEN,""));
+                return headers;
+            }
+        };
+        RequestQueue queue = Volley.newRequestQueue(MyApp.getInstance());
+        queue.add(jsonArrayRequest);
     }
 
     private void saveUserNamePasswordSharedPref(String email, String password) {
