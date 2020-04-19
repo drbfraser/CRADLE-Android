@@ -2,6 +2,7 @@ package com.cradle.neptune.database;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import androidx.core.app.NotificationManagerCompat;
 
@@ -41,6 +42,7 @@ public class ParsePatientInformationAsyncTask extends AsyncTask<Void, Void, Void
     }
 
     public static Reading getReadingFromJSONObject(Patient patient, JSONObject readingJson) throws JSONException {
+      //  Log.d("bugg",readingJson.toString(4));
         Reading reading = new Reading();
         reading.bpDiastolic = readingJson.optInt("bpDiastolic", -1);
         reading.bpSystolic = readingJson.optInt("bpSystolic", -1);
@@ -64,9 +66,9 @@ public class ParsePatientInformationAsyncTask extends AsyncTask<Void, Void, Void
         reading.urineTestResult = urineTestResult;
         //reading.retestOfPreviousReadingIds= (List<String>) readingJson.get("retestOfPreviousReadingIds");
 
-        reading.dateUploadedToServer = DateUtil.getZoneTimeFromString(readingJson.optString("dateUploadedToServer", ZonedDateTime.now().toString()));
-        reading.dateTimeTaken = DateUtil.getZoneTimeFromString(readingJson.getString("dateTimeTaken"));
-        reading.dateRecheckVitalsNeeded = DateUtil.getZoneTimeFromString(readingJson.getString("dateRecheckVitalsNeeded"));
+        reading.dateUploadedToServer = DateUtil.getZoneTimeFromLong(readingJson.optLong("dateUploadedToServer"));
+        reading.dateTimeTaken = DateUtil.getZoneTimeFromLong(readingJson.optLong("dateTimeTaken"));
+        reading.dateRecheckVitalsNeeded = DateUtil.getZoneTimeFromLong(readingJson.optLong("dateRecheckVitalsNeeded"));
         if (reading.dateUploadedToServer == null) {
             // cannot be null since we check this in order to upload reading to server
             reading.dateUploadedToServer = ZonedDateTime.now();

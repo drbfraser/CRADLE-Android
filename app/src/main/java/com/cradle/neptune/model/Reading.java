@@ -446,6 +446,7 @@ public class Reading {
     public static class ComparatorByDateReverse implements Comparator<Reading> {
         @Override
         public int compare(Reading r1, Reading r2) {
+            Log.d("bugg","date: "+ r2.dateTimeTaken+ " n: "+ r1.dateTimeTaken);
             return r2.dateTimeTaken.compareTo(r1.dateTimeTaken);
         }
     }

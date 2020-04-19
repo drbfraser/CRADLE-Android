@@ -75,19 +75,19 @@ public class DateUtil {
         return getISODate(date).replace(":", ".");
     }
 
-    public static ZonedDateTime getZoneTimeFromString(String date) {
-        if (date == null || date.equals("") || date.toLowerCase().equals("null")) {
+    public static ZonedDateTime getZoneTimeFromLong(Long date) {
+        if (date == null || date.equals("")) {
             return null;
         }
 
         ZonedDateTime zonedDateTime = null;
         try {
             // if the date is already in zone format
-            zonedDateTime = ZonedDateTime.parse(date);
+            zonedDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(date),ZoneId.systemDefault());
         } catch (Exception e) {
             try {
                 // date was in python date format
-                String date1 = date.replace("T", " ");
+                String date1 = date.toString();
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 Date date2 = simpleDateFormat.parse(date1);
                 zonedDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(date2.getTime()), ZoneId.systemDefault());
