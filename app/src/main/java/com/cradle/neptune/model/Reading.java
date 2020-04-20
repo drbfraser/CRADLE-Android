@@ -127,9 +127,9 @@ public class Reading {
             reading.readingId = UUID.randomUUID().toString();
         }
         readingVal.put("readingId", reading.readingId);
-        long dateLastSavedLong = reading.dateLastSaved.toInstant().toEpochMilli();
+        long dateLastSavedLong = reading.dateLastSaved.toInstant().getEpochSecond();
         readingVal.put("dateLastSaved", dateLastSavedLong);
-        long datetakenLong = reading.dateTimeTaken.toInstant().toEpochMilli();
+        long datetakenLong = reading.dateTimeTaken.toInstant().getEpochSecond();
         readingVal.put("dateTimeTaken", datetakenLong);
         readingVal.put("bpSystolic", reading.bpSystolic);
         readingVal.put("urineTests", urineTest);
@@ -138,7 +138,7 @@ public class Reading {
         readingVal.put("heartRateBPM", reading.heartRateBPM);
         long dateRechackVitalNeededLong = -1;
         if (reading.dateRecheckVitalsNeeded !=null){
-            dateRechackVitalNeededLong = reading.dateRecheckVitalsNeeded.toInstant().toEpochMilli();
+            dateRechackVitalNeededLong = reading.dateRecheckVitalsNeeded.toInstant().getEpochSecond();
         }
         readingVal.put("dateRecheckVitalsNeeded", dateRechackVitalNeededLong);
         readingVal.put("isFlaggedForFollowup", reading.isFlaggedForFollowup);
@@ -452,7 +452,6 @@ public class Reading {
     public static class ComparatorByDateReverse implements Comparator<Reading> {
         @Override
         public int compare(Reading r1, Reading r2) {
-            Log.d("bugg","date: "+ r2.dateTimeTaken+ " n: "+ r1.dateTimeTaken);
             return r2.dateTimeTaken.compareTo(r1.dateTimeTaken);
         }
     }
