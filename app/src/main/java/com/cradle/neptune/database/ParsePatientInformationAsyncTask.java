@@ -70,7 +70,7 @@ public class ParsePatientInformationAsyncTask extends AsyncTask<Void, Void, Void
         reading.dateTimeTaken = DateUtil.getZoneTimeFromLong(readingJson.optLong("dateTimeTaken"));
         reading.dateRecheckVitalsNeeded = DateUtil.getZoneTimeFromLong(readingJson.optLong("dateRecheckVitalsNeeded"));
         if (reading.dateUploadedToServer == null) {
-            // cannot be null since we check this in order to upload reading to server
+            // cannot be null since we just downloiaded the reading and  we check this in order to upload reading to server
             reading.dateUploadedToServer = ZonedDateTime.now();
         }
         if (!readingJson.optString("dateLastSaved").equals("null")) {
@@ -78,6 +78,8 @@ public class ParsePatientInformationAsyncTask extends AsyncTask<Void, Void, Void
         } else {
             reading.dateLastSaved = reading.dateUploadedToServer;
         }
+        long x=reading.dateTimeTaken.toInstant().toEpochMilli();
+        Log.d("bugg","oldtime: "+readingJson.optLong("dateTimeTaken")+ " new: "+x);
         reading.setAManualChangeOcrResultsFlags(readingJson.optInt("manuallyChangeOcrResults", -1));
         reading.totalOcrSeconds = readingJson.optInt("totalOcrSeconds", -1);
         reading.referralComment = readingJson.optString("referral");
