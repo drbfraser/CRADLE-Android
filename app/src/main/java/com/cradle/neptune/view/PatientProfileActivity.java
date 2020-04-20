@@ -354,11 +354,11 @@ public class PatientProfileActivity extends AppCompatActivity {
         boolean readingFound = false;
         Reading latestReading = new Reading();
 
-        if (readings.size() > 1) {
+        if (readings.size() > 0) {
             readingFound = true;
             latestReading = readings.get(0);
         }
-        //button only works if readings exist, which it always should
+        //button only works if a reading exist, which it always should
         if (readingFound) {
             String readingID = latestReading.readingId;
             createButton.setOnClickListener(v -> {
