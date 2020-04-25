@@ -581,7 +581,7 @@ public class ReferralDialogFragment extends DialogFragment {
             mainObj.put("reading", readingVal);
             mainObj.put("comment", enteredComment);
             mainObj.put("healthFacilityName", this.selectedHealthCentreName);
-            mainObj.put("date", ZonedDateTime.now().toString());
+            mainObj.put("date", ZonedDateTime.now().toInstant().getEpochSecond());
             if (isSMS) mainObj.put("referralId", UUID.randomUUID().toString());
         } catch (JSONException e) {
             e.printStackTrace();

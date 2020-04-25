@@ -127,14 +127,20 @@ public class Reading {
             reading.readingId = UUID.randomUUID().toString();
         }
         readingVal.put("readingId", reading.readingId);
-        readingVal.put("dateLastSaved", reading.dateLastSaved);
-        readingVal.put("dateTimeTaken", reading.dateTimeTaken);
+        long dateLastSavedLong = reading.dateLastSaved.toInstant().getEpochSecond();
+        readingVal.put("dateLastSaved", dateLastSavedLong);
+        long datetakenLong = reading.dateTimeTaken.toInstant().getEpochSecond();
+        readingVal.put("dateTimeTaken", datetakenLong);
         readingVal.put("bpSystolic", reading.bpSystolic);
         readingVal.put("urineTests", urineTest);
         readingVal.put(USER_ID, userId);
         readingVal.put("bpDiastolic", reading.bpDiastolic);
         readingVal.put("heartRateBPM", reading.heartRateBPM);
-        readingVal.put("dateRecheckVitalsNeeded", reading.dateRecheckVitalsNeeded);
+        long dateRechackVitalNeededLong = -1;
+        if (reading.dateRecheckVitalsNeeded !=null){
+            dateRechackVitalNeededLong = reading.dateRecheckVitalsNeeded.toInstant().getEpochSecond();
+        }
+        readingVal.put("dateRecheckVitalsNeeded", dateRechackVitalNeededLong);
         readingVal.put("isFlaggedForFollowup", reading.isFlaggedForFollowup);
         readingVal.put("symptoms", reading.getSymptomsString());
         return readingVal;
