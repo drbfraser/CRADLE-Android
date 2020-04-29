@@ -4,7 +4,7 @@
 
 Android application for the CRADLE VSA System, a technological health care system to improve maternal care and reduce preventable maternal deaths in Ugandan villages.
 
-##Check documentation folder for technical details
+## Check documentation folder for technical details
 
 ## Software Stack
 
