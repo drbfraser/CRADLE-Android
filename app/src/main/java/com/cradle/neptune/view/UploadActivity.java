@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -197,6 +198,7 @@ public class UploadActivity extends AppCompatActivity {
         for (int i = 0; i < response.length(); i++) {
             try {
                 JSONObject jsonObject = response.getJSONObject(i);
+                Log.d("bugg","reading assessment"+jsonObject.toString(4));
 
                 String readingServerId = jsonObject.getString("readingId");
                 //follow up info
@@ -205,6 +207,14 @@ public class UploadActivity extends AppCompatActivity {
                 String diagnosis = jsonObject.getString("diagnosis");
                 String referredBy = jsonObject.getString("referredBy");
                 String dateAssessed = jsonObject.getString("dateAssessed");
+
+                //follow up actions
+                boolean followUpNeeded = jsonObject.optBoolean("followupNeeded",false);
+                String followupNeededTill = jsonObject.optString("followUpNeededTill","");
+                String medicationPrescribed = jsonObject.optString("medicationPrescribed","");
+                String followupFrequencyUnit = jsonObject.optString("followupFrequencyUnit");
+                int followupFrequencyValue = jsonObject.optInt("followupFrequencyValue");
+
                 // health facility info
                 JSONObject healthFacility = jsonObject.getJSONObject("healthFacility");
                 String hfName = healthFacility.getString("name");
@@ -222,6 +232,13 @@ public class UploadActivity extends AppCompatActivity {
                 readingFollowUp.setPatientMedInfoUpdate(medicalInfo);
                 readingFollowUp.setPatientId(patientId);
                 readingsFollowUps.add(readingFollowUp);
+
+                readingFollowUp.setFollowUpNeeded(followUpNeeded);
+                readingFollowUp.setFollowupNeededTill(followupNeededTill);
+                readingFollowUp.setFollowupFrequencyUnit(followupFrequencyUnit);
+                readingFollowUp.setFollowupFrequencyValue(followupFrequencyValue);
+                readingFollowUp.setMedicationPrescribed(medicationPrescribed);
+
             } catch (JSONException e) {
                 e.printStackTrace();
             }

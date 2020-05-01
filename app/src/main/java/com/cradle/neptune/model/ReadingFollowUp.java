@@ -13,6 +13,52 @@ public class ReadingFollowUp {
     private String patientMedInfoUpdate;
     private String patientDrugInfoUpdate;
     private String patientId;
+    private boolean followUpNeeded;
+    private String followupNeededTill;
+    private String medicationPrescribed;
+    private String followupFrequencyUnit ;
+    private int followupFrequencyValue;
+
+
+    public boolean isFollowUpNeeded() {
+        return followUpNeeded;
+    }
+
+    public void setFollowUpNeeded(boolean followUpNeeded) {
+        this.followUpNeeded = followUpNeeded;
+    }
+
+    public String getFollowupNeededTill() {
+        return followupNeededTill;
+    }
+
+    public void setFollowupNeededTill(String followupNeededTill) {
+        this.followupNeededTill = followupNeededTill;
+    }
+
+    public String getMedicationPrescribed() {
+        return medicationPrescribed;
+    }
+
+    public void setMedicationPrescribed(String medicationPrescribed) {
+        this.medicationPrescribed = medicationPrescribed;
+    }
+
+    public String getFollowupFrequencyUnit() {
+        return followupFrequencyUnit;
+    }
+
+    public void setFollowupFrequencyUnit(String followupFrequencyUnit) {
+        this.followupFrequencyUnit = followupFrequencyUnit;
+    }
+
+    public int getFollowupFrequencyValue() {
+        return followupFrequencyValue;
+    }
+
+    public void setFollowupFrequencyValue(int followupFrequencyValue) {
+        this.followupFrequencyValue = followupFrequencyValue;
+    }
 
     public ReadingFollowUp(String readingServerId, String followUpAction, String treatment,
                            String diagnosis, String healthcare, String date, String assessedBy, String referredBy) {
