@@ -210,10 +210,12 @@ public class UploadActivity extends AppCompatActivity {
 
                 //follow up actions
                 boolean followUpNeeded = jsonObject.optBoolean("followupNeeded",false);
-                String followupNeededTill = jsonObject.optString("followUpNeededTill","");
-                String medicationPrescribed = jsonObject.optString("medicationPrescribed","");
-                String followupFrequencyUnit = jsonObject.optString("followupFrequencyUnit");
+                Log.d("bugg","req: "+ followUpNeeded + followUpAction);
+                String followupNeededTill = jsonObject.optString("followUpNeededTill","N/A");
+                String medicationPrescribed = jsonObject.optString("medicationPrescribed","N/A");
+                String followupFrequencyUnit = jsonObject.optString("followupFrequencyUnit","N/A");
                 int followupFrequencyValue = jsonObject.optInt("followupFrequencyValue");
+                String specialInvestigation = jsonObject.optString("specialInvestigations","N/A");
 
                 // health facility info
                 JSONObject healthFacility = jsonObject.getJSONObject("healthFacility");
@@ -238,6 +240,7 @@ public class UploadActivity extends AppCompatActivity {
                 readingFollowUp.setFollowupFrequencyUnit(followupFrequencyUnit);
                 readingFollowUp.setFollowupFrequencyValue(followupFrequencyValue);
                 readingFollowUp.setMedicationPrescribed(medicationPrescribed);
+                readingFollowUp.setSpecialInvestigation(specialInvestigation);
 
             } catch (JSONException e) {
                 e.printStackTrace();

@@ -18,7 +18,15 @@ public class ReadingFollowUp {
     private String medicationPrescribed;
     private String followupFrequencyUnit ;
     private int followupFrequencyValue;
+    String specialInvestigation;
 
+    public String getSpecialInvestigation() {
+        return specialInvestigation;
+    }
+
+    public void setSpecialInvestigation(String specialInvestigation) {
+        this.specialInvestigation = specialInvestigation;
+    }
 
     public boolean isFollowUpNeeded() {
         return followUpNeeded;

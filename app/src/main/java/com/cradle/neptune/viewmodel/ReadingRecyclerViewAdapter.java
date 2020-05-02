@@ -1,5 +1,6 @@
 package com.cradle.neptune.viewmodel;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -144,7 +145,6 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             ReadingFollowUp readingFollowUp = currReading.readingFollowUp;
             myViewHolder.diagnosis.setText(readingFollowUp.getDiagnosis());
             myViewHolder.treatment.setText(readingFollowUp.getTreatment());
-            myViewHolder.followUp.setText(readingFollowUp.getFollowUpAction());
             myViewHolder.hcName.setText(readingFollowUp.getHealthcare());
             myViewHolder.referredBy.setText(readingFollowUp.getReferredBy());
             myViewHolder.assessedBy.setText(readingFollowUp.getAssessedBy());
@@ -155,6 +155,19 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
 
             } catch (ParseException e) {
                 myViewHolder.assessmentDate.setText(readingFollowUp.getDate());
+            }
+            TextView specialInvestigation = v.findViewById(R.id.specialInvestigationTxt);
+            TextView medPrescribed = v.findViewById(R.id.medPrescibedTxt);
+            Log.d("bugg","treatment: "+readingFollowUp.getTreatment());
+            specialInvestigation.setText(readingFollowUp.getSpecialInvestigation());
+            medPrescribed.setText(readingFollowUp.getMedicationPrescribed());
+            if (readingFollowUp.isFollowUpNeeded()) {
+                myViewHolder.followUp.setText(readingFollowUp.getFollowUpAction());
+                TextView frequencyTxt = v.findViewById(R.id.followupFrequencyTxt);
+                frequencyTxt.setVisibility(View.VISIBLE);
+                String txt = "Every " + readingFollowUp.getFollowupFrequencyValue() + " " + readingFollowUp.getFollowupFrequencyUnit()
+                        + " till: " + readingFollowUp.getFollowupNeededTill();
+                frequencyTxt.setText(txt);
             }
         }
 
