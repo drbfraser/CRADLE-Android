@@ -158,16 +158,18 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             }
             TextView specialInvestigation = v.findViewById(R.id.specialInvestigationTxt);
             TextView medPrescribed = v.findViewById(R.id.medPrescibedTxt);
-            Log.d("bugg","treatment: "+readingFollowUp.getTreatment());
             specialInvestigation.setText(readingFollowUp.getSpecialInvestigation());
             medPrescribed.setText(readingFollowUp.getMedicationPrescribed());
             if (readingFollowUp.isFollowUpNeeded()) {
                 myViewHolder.followUp.setText(readingFollowUp.getFollowUpAction());
                 TextView frequencyTxt = v.findViewById(R.id.followupFrequencyTxt);
                 frequencyTxt.setVisibility(View.VISIBLE);
-                String txt = "Every " + readingFollowUp.getFollowupFrequencyValue() + " " + readingFollowUp.getFollowupFrequencyUnit()
+                String txt = "Every " + readingFollowUp.getFollowupFrequencyValue() + " " + readingFollowUp.getFollowupFrequencyUnit().toLowerCase()
                         + " till: " + readingFollowUp.getFollowupNeededTill();
                 frequencyTxt.setText(txt);
+            } else {
+                TextView frequencyTxt = v.findViewById(R.id.followupFrequencyTxt);
+                frequencyTxt.setVisibility(View.GONE);
             }
         }
 

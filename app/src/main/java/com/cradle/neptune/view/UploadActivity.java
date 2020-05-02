@@ -198,11 +198,10 @@ public class UploadActivity extends AppCompatActivity {
         for (int i = 0; i < response.length(); i++) {
             try {
                 JSONObject jsonObject = response.getJSONObject(i);
-                Log.d("bugg","reading assessment"+jsonObject.toString(4));
 
                 String readingServerId = jsonObject.getString("readingId");
                 //follow up info
-                String followUpAction = jsonObject.getString("followUpAction");
+                String followUpAction = jsonObject.optString("followUpAction","N/A");
                 String treatment = jsonObject.getString("treatment");
                 String diagnosis = jsonObject.getString("diagnosis");
                 String referredBy = jsonObject.getString("referredBy");
@@ -210,7 +209,6 @@ public class UploadActivity extends AppCompatActivity {
 
                 //follow up actions
                 boolean followUpNeeded = jsonObject.optBoolean("followupNeeded",false);
-                Log.d("bugg","req: "+ followUpNeeded + followUpAction);
                 String followupNeededTill = jsonObject.optString("followUpNeededTill","N/A");
                 String medicationPrescribed = jsonObject.optString("medicationPrescribed","N/A");
                 String followupFrequencyUnit = jsonObject.optString("followupFrequencyUnit","N/A");
