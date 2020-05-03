@@ -84,6 +84,8 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             }
             myViewHolder.symptomTxt.setText(symptoms);
         }
+        myViewHolder.trafficLight.setImageResource(ReadingAnalysisViewSupport.getColorCircleImageId(analysis));
+        myViewHolder.arrow.setImageResource(ReadingAnalysisViewSupport.getArrowImageId(analysis));
 
         View v = myViewHolder.view;
         myViewHolder.cardView.setOnClickListener(view -> onClickElementListener.onClick(currReading.readingId));
