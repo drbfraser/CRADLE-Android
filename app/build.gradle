@@ -1,7 +1,9 @@
-apply plugin: 'com.google.firebase.firebase-perf'
 apply plugin: 'com.android.application'
 apply plugin: "de.mannodermaus.android-junit5"
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.firebase-perf'
 apply plugin: 'com.google.firebase.crashlytics'
 
 
@@ -130,6 +132,9 @@ dependencies {
 
     // Guava - for immutable maps
     implementation "com.google.guava:guava:16+"
+    implementation "androidx.core:core-ktx:+"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
 
 // TensorFlow Lite: select only the ABI's we (likely) need
@@ -140,4 +145,7 @@ android {
             abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86_64', 'x86'
         }
     }
+}
+repositories {
+    mavenCentral()
 }
