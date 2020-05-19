@@ -17,8 +17,8 @@ import java.io.Serializable
 @Entity
 data class ReadingEntity(
     @PrimaryKey var readingId: String,
-    @ColumnInfo var patientId: String,
-    @ColumnInfo var readDataJsonString: String,
+    @ColumnInfo var patientId: String?,
+    @ColumnInfo var readDataJsonString: String?,
     @ColumnInfo var isUploadedToServer: Boolean
 ) : Serializable
 
@@ -37,11 +37,11 @@ data class ReadingEntity(
 @Entity
 data class HealthFacilityEntity(
     @PrimaryKey var id: String,
-    @ColumnInfo var name: String,
-    @ColumnInfo var location: String,
-    @ColumnInfo var phoneNumber: String,
-    @ColumnInfo var about: String,
-    @ColumnInfo var type: String,
+    @ColumnInfo var name: String?,
+    @ColumnInfo var location: String?,
+    @ColumnInfo var phoneNumber: String?,
+    @ColumnInfo var about: String?,
+    @ColumnInfo var type: String?,
     @ColumnInfo var isUserSelected: Boolean
 ) {
     /**
@@ -49,10 +49,10 @@ data class HealthFacilityEntity(
      */
     constructor(
         id: String,
-        name: String,
-        location: String,
-        phoneNumber: String,
-        about: String,
-        type: String
+        name: String?,
+        location: String?,
+        phoneNumber: String?,
+        about: String?,
+        type: String?
     ) : this(id, name, location, phoneNumber, about, type, false)
 }
