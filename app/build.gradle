@@ -1,7 +1,10 @@
-apply plugin: 'com.google.firebase.firebase-perf'
 apply plugin: 'com.android.application'
 apply plugin: "de.mannodermaus.android-junit5"
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
 apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.firebase-perf'
 apply plugin: 'com.google.firebase.crashlytics'
 
 
@@ -79,8 +82,8 @@ dependencies {
     // Dagger: Dependency Injection framework.
     implementation 'com.google.dagger:dagger-android:2.20'
     implementation 'com.google.dagger:dagger-android-support:2.20'
-    annotationProcessor 'com.google.dagger:dagger-android-processor:2.20'
-    annotationProcessor 'com.google.dagger:dagger-compiler:2.20'
+    kapt 'com.google.dagger:dagger-android-processor:2.20'
+    kapt 'com.google.dagger:dagger-compiler:2.20'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
 
     // Time: Backport of Java 8's interfaces for Android
@@ -126,10 +129,13 @@ dependencies {
 
     //room database
     implementation "androidx.room:room-runtime:2.2.5"
-    annotationProcessor 'android.arch.persistence.room:compiler:1.1.1'
+    kapt 'android.arch.persistence.room:compiler:1.1.1'
 
     // Guava - for immutable maps
     implementation "com.google.guava:guava:16+"
+    implementation "androidx.core:core-ktx:+"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
 
 // TensorFlow Lite: select only the ABI's we (likely) need
@@ -140,4 +146,7 @@ android {
             abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86_64', 'x86'
         }
     }
+}
+repositories {
+    mavenCentral()
 }
