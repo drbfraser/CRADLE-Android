@@ -97,13 +97,15 @@ public class CameraFragment extends BaseFragment {
 //                detector.processImage(bmp, null);
 
                 // clear any current vitals we may have gotten from our previous image
-                currentReading.clearManualChangeOcrResultsFlags();
-                currentReading.bpSystolic = null;
-                currentReading.bpDiastolic = null;
-                currentReading.heartRateBPM = null;
+                viewModel.setBloodPressure(null);
+//                currentReading.clearManualChangeOcrResultsFlags();
+//                currentReading.bpSystolic = null;
+//                currentReading.bpDiastolic = null;
+//                currentReading.heartRateBPM = null;
 
                 // done: advance to next tab
-                currentReading.pathToPhoto = pictureFile.getPath();
+                viewModel.getMetadata().setPhotoPath(pictureFile.getPath());
+//                currentReading.pathToPhoto = pictureFile.getPath();
                 Toast.makeText(getContext(), "Photo taken successfully!", Toast.LENGTH_SHORT).show();
                 activityCallbackListener.advanceToNextPage();
 

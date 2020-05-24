@@ -31,15 +31,15 @@ import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.database.HealthFacilityEntity;
-import com.cradle.neptune.model.Reading;
-import com.cradle.neptune.model.ReadingManager;
-import com.cradle.neptune.model.Settings;
+import com.cradle.neptune.model.*;
 import com.cradle.neptune.utilitiles.DateUtil;
 import com.cradle.neptune.view.LoginActivity;
 import com.cradle.neptune.view.ui.settings.SettingsActivity;
+import com.cradle.neptune.viewmodel.PatientReadingViewModel;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.common.collect.ImmutableMap;
 
+import kotlin.Pair;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.threeten.bp.ZonedDateTime;
@@ -106,7 +106,7 @@ public class ReferralDialogFragment extends DialogFragment {
     // UI elements
     TextView tvSendingStatus;
     // Current state
-    private Reading currentReading;
+    private PatientReadingViewModel currentReading;
     private String enteredComment = "";
     private boolean isShowingMessagePreview = false;
     private DoneCallback callback;
@@ -120,7 +120,7 @@ public class ReferralDialogFragment extends DialogFragment {
     private OkHttpClient mClient = new OkHttpClient();
     private Context mContext;
 
-    public static ReferralDialogFragment makeInstance(Reading currentReading, DoneCallback callback) {
+    public static ReferralDialogFragment makeInstance(PatientReadingViewModel currentReading, DoneCallback callback) {
         ReferralDialogFragment dialog = new ReferralDialogFragment();
         dialog.currentReading = currentReading;
         dialog.callback = callback;
@@ -186,8 +186,8 @@ public class ReferralDialogFragment extends DialogFragment {
         RequestQueue queue = Volley.newRequestQueue(getActivity());
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(JsonObjectRequest.Method.POST, settings.getReferralsServerUrl(), getReferralJson(false),
                 response -> {
-                    currentReading.setReferredToHealthCentre(selectedHealthCentreName, ZonedDateTime.now());
-                    currentReading.referralComment = enteredComment;
+                    Referral referral = new Referral(ZonedDateTime.now(), selectedHealthCentreName, enteredComment);
+                    currentReading.setReferral(referral);
                     dialog.cancel();
                     dismiss();
                 }, error -> {
@@ -363,8 +363,8 @@ public class ReferralDialogFragment extends DialogFragment {
     }
 
     private void onFinishedSendingSMS(Dialog dialog) {
-        currentReading.setReferredToHealthCentre(selectedHealthCentreName, ZonedDateTime.now());
-        currentReading.referralComment = enteredComment;
+        Referral referral = new Referral(ZonedDateTime.now(), selectedHealthCentreName, enteredComment);
+        currentReading.setReferral(referral);
         callback.sentTextMessage(smsTextMessage);
         dialog.dismiss();
     }
@@ -434,8 +434,8 @@ public class ReferralDialogFragment extends DialogFragment {
      */
     private void setupCommentBox(Dialog dialog) {
         EditText et = dialog.findViewById(R.id.etReferralComments);
-        if (currentReading.referralComment != null) {
-            et.setText(currentReading.referralComment);
+        if (currentReading.getReferral() != null) {
+            et.setText(currentReading.getReferral().getComment());
         }
         et.addTextChangedListener(new TextWatcher() {
             @Override
@@ -535,11 +535,11 @@ public class ReferralDialogFragment extends DialogFragment {
     private void updateUI(Dialog dialog) {
         // Status message
         TextView tv = dialog.findViewById(R.id.txtReferralMessageSentStatus);
-        if (currentReading.isReferredToHealthCentre()) {
+        if (currentReading.getReferral() != null) {
             tv.setText(getString(
                     R.string.reading_referral_sent,
-                    currentReading.referralHealthCentre,
-                    DateUtil.getFullDateString(currentReading.referralMessageSendTime)
+                    currentReading.getReferral().getHealthCentre(),
+                    DateUtil.getFullDateString(currentReading.getReferral().getMessageSendTime())
             ));
             tv.setVisibility(View.VISIBLE);
         } else {
@@ -565,14 +565,17 @@ public class ReferralDialogFragment extends DialogFragment {
     }
 
     private JSONObject getReferralJson(boolean isSMS) {
-        JSONObject patientVal = currentReading.patient.getPatientInfoJSon();
-        JSONObject readingVal = new JSONObject();
-        try {
-            readingVal = Reading.getJsonReadingObject(currentReading, sharedPreferences.getString(USER_ID, ""));
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        Pair<Patient, Reading> pair = currentReading.constructModels();
+        JSONObject patientVal = pair.getFirst().marshal();
+        JSONObject readingVal = pair.getSecond().marshal();
+//        JSONObject patientVal = currentReading.patient.getPatientInfoJSon();
+//        JSONObject readingVal = new JSONObject();
+//        try {
+//            readingVal = Reading.getJsonReadingObject(currentReading, sharedPreferences.getString(USER_ID, ""));
+//
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
 
 
         JSONObject mainObj = new JSONObject();

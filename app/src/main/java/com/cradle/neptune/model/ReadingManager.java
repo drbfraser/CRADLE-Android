@@ -15,6 +15,8 @@ public interface ReadingManager {
 
     Reading getReadingById(Context context, String id);
 
+    RetestGroup getRetestGroup(Reading reading);
+
     void deleteReadingById(Context context, String readingID);
 
     void deleteAllData(Context context);

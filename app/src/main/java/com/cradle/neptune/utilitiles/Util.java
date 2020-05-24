@@ -64,4 +64,16 @@ public class Util {
             }
         }
     }
+
+    public interface Transformer<T, U> {
+        U transform(T t);
+    }
+
+    public static <T, U> U mapNullable(T t, Transformer<T, U> transformer) {
+        if (t == null) {
+            return null;
+        } else {
+            return transformer.transform(t);
+        }
+    }
 }

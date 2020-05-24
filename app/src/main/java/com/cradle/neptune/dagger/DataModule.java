@@ -7,8 +7,8 @@ import android.preference.PreferenceManager;
 import androidx.room.Room;
 
 import com.cradle.neptune.database.CradleDatabase;
-import com.cradle.neptune.database.RoomDatabaseManager;
 import com.cradle.neptune.model.ReadingManager;
+import com.cradle.neptune.model.RoomDatabaseManager;
 import com.cradle.neptune.model.Settings;
 
 import javax.inject.Singleton;

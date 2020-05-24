@@ -19,7 +19,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.cradle.neptune.R;
-import com.cradle.neptune.model.UrineTestResult;
+import com.cradle.neptune.model.UrineTest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -107,7 +107,8 @@ public class SymptomsFragment extends BaseFragment {
     }
 
     private void updateUrineTestUIFromModel(View mView) {
-        UrineTestResult urineTestResult = currentReading.urineTestResult;
+        UrineTest urineTestResult = viewModel.getUrineTest();
+//        UrineTestResult urineTestResult = currentReading.urineTestResult;
         if (urineTestResult == null) {
             return;
         }
@@ -143,7 +144,8 @@ public class SymptomsFragment extends BaseFragment {
 
     private void updateUrineTestModelFromUI(View mView) {
         if (!urineResultTakenButton.isChecked()) {
-            currentReading.urineTestResult = null;
+            viewModel.setUrineTest(null);
+//            currentReading.urineTestResult = null;
             return;
         }
         String leuk = ((RadioButton) leucRadioGroup.findViewById(leucRadioGroup.getCheckedRadioButtonId())).getText().toString();
@@ -155,7 +157,8 @@ public class SymptomsFragment extends BaseFragment {
         String nitr = ((RadioButton) nitRadioGroup.findViewById(nitRadioGroup.getCheckedRadioButtonId())).getText().toString();
         String protient = ((RadioButton) protienRadioGroup.findViewById(protienRadioGroup.getCheckedRadioButtonId())).getText().toString();
 
-        currentReading.urineTestResult = new UrineTestResult(leuk, nitr, protient, blood, glucose);
+        viewModel.setUrineTest(new UrineTest(leuk, nitr, protient, blood, glucose));
+//        currentReading.urineTestResult = new UrineTestResult(leuk, nitr, protient, blood, glucose);
     }
 
 
@@ -222,7 +225,8 @@ public class SymptomsFragment extends BaseFragment {
             otherSymptoms.clearFocus();
             otherSymptoms.setText("");
 
-            currentReading.userHasSelectedNoSymptoms = true;
+            viewModel.setHasNoSymptoms(true);
+//            currentReading.userHasSelectedNoSymptoms = true;
         } else {
             // 'real' symptom clicked; turn off "no symptoms"
             noSymptomsCheckBox.setChecked(false);
@@ -244,14 +248,17 @@ public class SymptomsFragment extends BaseFragment {
 
         String otherSymptomsStr = "";
         // TODO: [IMPORTANT] App crashes here if you navigate away and come back: currentReading could be null
-        if (currentReading.symptoms.size() == 0) {
+        if (viewModel.getSymptoms() == null || viewModel.getSymptoms().size() == 0) {
+//        if (currentReading.symptoms.size() == 0) {
             // no symptoms
-            if (currentReading.dateLastSaved != null || currentReading.userHasSelectedNoSymptoms) {
+            if (viewModel.getHasNoSymptoms()) {
+//            if (currentReading.dateLastSaved != null || currentReading.userHasSelectedNoSymptoms) {
                 noSymptomsCheckBox.setChecked(true);
             }
         } else {
             // some symptoms
-            for (String patientSymptom : currentReading.symptoms) {
+            for (String patientSymptom : viewModel.getSymptoms()) {
+//            for (String patientSymptom : currentReading.symptoms) {
                 // find the symptom and check UI box
                 boolean found = false;
                 for (int i = 0; i < symptomsFromRes.length; i++) {
@@ -277,19 +284,26 @@ public class SymptomsFragment extends BaseFragment {
     }
 
     private void updateSymptoms_ModelFromUi(View v) {
-        currentReading.symptoms.clear();
+        if (viewModel.getSymptoms() != null) {
+            viewModel.getSymptoms().clear();
+        } else {
+            viewModel.setSymptoms(new ArrayList<>());
+        }
+//        currentReading.symptoms.clear();
 
         // checkboxes
         for (CheckBox cb : checkBoxes) {
             if (cb.isChecked()) {
-                currentReading.symptoms.add(cb.getText().toString());
+                viewModel.getSymptoms().add(cb.getText().toString());
+//                currentReading.symptoms.add(cb.getText().toString());
             }
         }
 
         // other
         String otherSymptomsStr = otherSymptoms.getText().toString().trim();
         if (otherSymptomsStr.length() > 0) {
-            currentReading.symptoms.add(otherSymptomsStr);
+            viewModel.getSymptoms().add(otherSymptomsStr);
+//            currentReading.symptoms.add(otherSymptomsStr);
         }
 
     }

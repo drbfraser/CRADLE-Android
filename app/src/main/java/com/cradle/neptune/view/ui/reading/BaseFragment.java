@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment;
 
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingManager;
+import com.cradle.neptune.viewmodel.PatientReadingViewModel;
 
 /**
  * Base class for other ReadingFragments
@@ -23,7 +24,8 @@ abstract public class BaseFragment extends Fragment {
     protected String TAG = BaseFragment.class.getName();
 
     protected MyFragmentInteractionListener activityCallbackListener;
-    protected Reading currentReading;
+    protected PatientReadingViewModel viewModel;
+//    protected Reading currentReading;
     protected ReadingManager readingManager;
 
     protected long MASK_USER_HAS_SELECTED_THE_NO_SYMPTOM = 0x0001;
