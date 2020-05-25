@@ -22,6 +22,7 @@ import com.cradle.neptune.R;
 import com.cradle.neptune.model.UrineTest;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -225,7 +226,8 @@ public class SymptomsFragment extends BaseFragment {
             otherSymptoms.clearFocus();
             otherSymptoms.setText("");
 
-            viewModel.setHasNoSymptoms(true);
+            viewModel.setSymptoms(Collections.emptyList());
+//            viewModel.setHasNoSymptoms(true);
 //            currentReading.userHasSelectedNoSymptoms = true;
         } else {
             // 'real' symptom clicked; turn off "no symptoms"
@@ -251,7 +253,7 @@ public class SymptomsFragment extends BaseFragment {
         if (viewModel.getSymptoms() == null || viewModel.getSymptoms().size() == 0) {
 //        if (currentReading.symptoms.size() == 0) {
             // no symptoms
-            if (viewModel.getHasNoSymptoms()) {
+            if (viewModel.getSymptoms() != null && viewModel.getSymptoms().isEmpty()) {
 //            if (currentReading.dateLastSaved != null || currentReading.userHasSelectedNoSymptoms) {
                 noSymptomsCheckBox.setChecked(true);
             }

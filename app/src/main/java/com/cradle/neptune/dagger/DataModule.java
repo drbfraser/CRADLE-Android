@@ -13,6 +13,8 @@ import com.cradle.neptune.model.Settings;
 
 import javax.inject.Singleton;
 
+import com.cradle.neptune.service.DatabaseService;
+import com.cradle.neptune.service.impl.DatabaseServiceImpl;
 import dagger.Module;
 import dagger.Provides;
 
@@ -30,6 +32,15 @@ public class DataModule {
         CradleDatabase r = Room.databaseBuilder(application,
                 CradleDatabase.class, "room-readingDB").allowMainThreadQueries().build();
         return new RoomDatabaseManager(r);
+    }
+
+    @Provides
+    @Singleton
+    public DatabaseService provideDatabaseService(Application application) {
+        CradleDatabase r = Room.databaseBuilder(application, CradleDatabase.class, "room-readingDB")
+                .allowMainThreadQueries()
+                .build();
+        return new DatabaseServiceImpl(r);
     }
 
     @Provides

@@ -10,46 +10,120 @@ import com.cradle.neptune.model.Referral
 import com.cradle.neptune.model.RetestGroup
 import com.cradle.neptune.model.Sex
 import com.cradle.neptune.model.UrineTest
-import java.lang.IllegalStateException
-import java.util.UUID
+import com.cradle.neptune.utilitiles.DynamicModelBuilder
+import com.cradle.neptune.utilitiles.discard
 import org.threeten.bp.ZonedDateTime
 import org.threeten.bp.temporal.ChronoUnit
 
 /**
  * A bridge between the legacy model API used by the new model structures.
  *
+ * Once we migrate the UI to Kotlin, the UI will most likely interface
+ * directly with [DynamicModelBuilder] instances instead of going through
+ * this object.
+ *
  * TODO: This class is only temporary and should be replaced with a proper
  *   design pattern.
  */
 class PatientReadingViewModel() {
+    private val patientBuilder = DynamicModelBuilder()
+    private val readingBuilder = DynamicModelBuilder()
+
+    /**
+     * Constructs a view model for an existing patient.
+     */
+    constructor(patient: Patient) : this() {
+        patientBuilder.decompose(patient)
+    }
+
+    /**
+     * Constructs a view model from an existing patient and reading.
+     */
+    constructor(patient: Patient, reading: Reading) : this() {
+        patientBuilder.decompose(patient)
+        readingBuilder.decompose(reading)
+    }
+
     /* Patient Info */
-    var patientId: String? = null
-    var patientName: String? = null
-    var patientDob: String? = null
-    var patientAge: Int? = null
-    var patientGestationalAge: GestationalAge? = null
-    var patientSex: Sex? = null
-    var patientIsPregnant: Boolean = false
-    var patientZone: String? = null
-    var patientVillageNumber: String? = null
-    var hasNoSymptoms: Boolean = false
+    var patientId: String?
+        get() = patientBuilder.get(Patient::id) as String?
+        set(value) = patientBuilder.set(Patient::id, value).discard()
+
+    var patientName: String?
+        get() = patientBuilder.get(Patient::name) as String?
+        set(value) = patientBuilder.set(Patient::name, value).discard()
+
+    var patientDob: String?
+        get() = patientBuilder.get(Patient::dob) as String?
+        set(value) = patientBuilder.set(Patient::dob, value).discard()
+
+    var patientAge: Int?
+        get() = patientBuilder.get(Patient::age) as Int?
+        set(value) = patientBuilder.set(Patient::age, value).discard()
+
+    var patientGestationalAge: GestationalAge?
+        get() = patientBuilder.get(Patient::gestationalAge) as GestationalAge?
+        set(value) = patientBuilder.set(Patient::gestationalAge, value).discard()
+
+    var patientSex: Sex?
+        get() = patientBuilder.get(Patient::sex) as Sex?
+        set(value) = patientBuilder.set(Patient::sex, value).discard()
+
+    var patientIsPregnant: Boolean?
+        get() = patientBuilder.get(Patient::isPregnant) as Boolean?
+        set(value) = patientBuilder.set(Patient::isPregnant, value).discard()
+
+    var patientZone: String?
+        get() = patientBuilder.get(Patient::zone) as String?
+        set(value) = patientBuilder.set(Patient::zone, value).discard()
+
+    var patientVillageNumber: String?
+        get() = patientBuilder.get(Patient::villageNumber) as String?
+        set(value) = patientBuilder.set(Patient::villageNumber, value).discard()
+
 
     /* Blood Pressure Info */
-    var bloodPressure: BloodPressure? = null
+    var bloodPressure: BloodPressure?
+        get() = readingBuilder.get(Reading::bloodPressure) as BloodPressure?
+        set(value) = readingBuilder.set(Reading::bloodPressure, value).discard()
 
     /* Urine Test Info */
-    var urineTest: UrineTest? = null
+    var urineTest: UrineTest?
+        get() = readingBuilder.get(Reading::urineTest) as UrineTest?
+        set(value) = readingBuilder.set(Reading::urineTest, value).discard()
 
     /* Referral Info */
-    var referral: Referral? = null
+    var referral: Referral?
+        get() = readingBuilder.get(Reading::referral) as Referral?
+        set(value) = readingBuilder.set(Reading::referral, value).discard()
 
     /* Reading Info */
-    var readingId: String? = null
-    var dateTimeTaken: ZonedDateTime? = null
-    var symptoms: List<String>? = null
-    var dateRecheckVitalsNeeded: ZonedDateTime? = null
-    var isFlaggedForFollowUp: Boolean = false
-    var previousReadingIds: List<String> = emptyList()
+    var readingId: String?
+        get() = readingBuilder.get(Reading::id) as String?
+        set(value) = readingBuilder.set(Reading::id, value).discard()
+
+    var dateTimeTaken: ZonedDateTime?
+        get() = readingBuilder.get(Reading::dateTimeTaken) as ZonedDateTime?
+        set(value) = readingBuilder.set(Reading::dateTimeTaken, value).discard()
+
+    @Suppress("UNCHECKED_CAST")
+    var symptoms: List<String>?
+        get() = readingBuilder.get(Reading::symptoms) as List<String>?
+        set(value) = readingBuilder.set(Reading::symptoms, value).discard()
+
+    var dateRecheckVitalsNeeded: ZonedDateTime?
+        get() = readingBuilder.get(Reading::dateRecheckVitalsNeeded) as ZonedDateTime?
+        set(value) = readingBuilder.set(Reading::dateRecheckVitalsNeeded, value).discard()
+
+    var isFlaggedForFollowUp: Boolean?
+        get() = readingBuilder.get(Reading::isFlaggedForFollowUp) as Boolean?
+        set(value) = readingBuilder.set(Reading::isFlaggedForFollowUp, value).discard()
+
+    @Suppress("UNCHECKED_CAST")
+    var previousReadingIds: List<String>?
+        get() = readingBuilder.get(Reading::previousReadingIds) as List<String>?
+        set(value) = readingBuilder.set(Reading::previousReadingIds, value).discard()
+
     var metadata: ReadingMetadata = ReadingMetadata()
 
     /**
@@ -58,6 +132,16 @@ class PatientReadingViewModel() {
     val isMissingAnything: Boolean
         get() = missingPatientInfoDescription() == null
             && missingVitalInformationDescription() == null
+
+    /**
+     * True if the data in this view model is invalid.
+     *
+     * For this to be false, the blood pressure reading must exist and be valid
+     * and the implication "patient is pregnant" -> "gestational age not null"
+     * must be true.
+     */
+    val isDataInvalid: Boolean get() = bloodPressure?.isValid ?: false
+        || (patientIsPregnant ?: false && patientGestationalAge == null)
 
     val symptomsString get() = symptoms?.joinToString(", ")
 
@@ -123,43 +207,18 @@ class PatientReadingViewModel() {
     /**
      * Constructs [Patient] and [Reading] models based on the information
      * contained in this class.
-     *
-     * @throws IllegalStateException if any of the required fields needed to
-     * construct the models are missing. [isMissingAnything] should be used
-     * to ensure that this view model is in a valid state before calling this
-     * method.
      */
-    fun constructModels(): Pair<Patient, Reading> {
-        if (isMissingAnything) {
-            throw IllegalStateException("missing data")
-        }
+    fun constructModels(): Pair<Patient, Reading> = maybeConstructModels()!!
 
-        val patient = Patient(
-            id = patientId!!,
-            name = patientName!!,
-            dob = patientDob,
-            age = patientAge,
-            gestationalAge = patientGestationalAge,
-            sex = patientSex!!,
-            isPregnant = patientIsPregnant,
-            zone = patientZone,
-            villageNumber = patientVillageNumber
-        )
-
-        val reading = Reading(
-            id = readingId ?: UUID.randomUUID().toString(),
-            patientId = patientId!!,
-            dateTimeTaken = dateTimeTaken!!,
-            bloodPressure = bloodPressure!!,
-            urineTest = urineTest,
-            symptoms = symptoms!!,
-            referral = referral,
-            dateRecheckVitalsNeeded = dateRecheckVitalsNeeded,
-            isFlaggedForFollowUp = isFlaggedForFollowUp,
-            previousReadingIds = previousReadingIds,
-            metadata = metadata
-        )
-
+    /**
+     * Constructs [Patient] and [Reading] models based on the information
+     * contained in this class.
+     *
+     * Returns `null` if unable to construct models due to missing data.
+     */
+    fun maybeConstructModels(): Pair<Patient, Reading>? {
+        val patient = patientBuilder.build<Patient>() ?: return null
+        val reading = readingBuilder.build<Reading>() ?: return null
         return Pair(patient, reading)
     }
 
@@ -186,8 +245,8 @@ class PatientReadingViewModel() {
             symptoms = symptoms ?: emptyList(),
             referral = referral,
             dateRecheckVitalsNeeded = dateRecheckVitalsNeeded,
-            isFlaggedForFollowUp = isFlaggedForFollowUp,
-            previousReadingIds = previousReadingIds,
+            isFlaggedForFollowUp = isFlaggedForFollowUp ?: false,
+            previousReadingIds = previousReadingIds ?: emptyList(),
             metadata = metadata
         )
         return readingManager.getRetestGroup(reading)

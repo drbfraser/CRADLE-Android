@@ -6,7 +6,6 @@ import com.cradle.neptune.database.ReadingEntity
 import com.cradle.neptune.utilitiles.DateUtil
 import org.threeten.bp.ZonedDateTime
 import org.threeten.bp.temporal.ChronoUnit
-import kotlin.reflect.KClass
 
 const val RED_SYSTOLIC = 160
 const val RED_DIASTOLIC = 110
@@ -185,7 +184,7 @@ data class Reading(
             val hasO1 = o1?.dateTimeTaken != null
             val hasO2 = o2?.dateTimeTaken != null
             return when {
-                hasO1 && hasO2 -> o1!!.dateTimeTaken!!.compareTo(o2!!.dateTimeTaken!!)
+                hasO1 && hasO2 -> o1!!.dateTimeTaken.compareTo(o2!!.dateTimeTaken)
                 hasO1 && !hasO2 -> -1
                 !hasO1 && hasO2 -> 1
                 else -> 0
@@ -240,6 +239,15 @@ data class BloodPressure(
             // All good
             else -> ReadingAnalysis.GREEN
         }
+
+    /**
+     * True if this blood pressure reading is valid (i.e., all fields are
+     * within bounds).
+     */
+    val isValid: Boolean get() = systolic in MIN_SYSTOLIC..MAX_SYSTOLIC
+        && diastolic in MIN_DIASTOLIC..MAX_DIASTOLIC
+        && heartRate in MIN_HEART_RATE..MAX_HEART_RATE
+
 
     /**
      * Marshals this object to JSON.

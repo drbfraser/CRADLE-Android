@@ -3,6 +3,7 @@ package com.cradle.neptune.utilitiles
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KProperty
+import kotlin.reflect.full.memberProperties
 
 /**
  * Dynamically constructs an object of type [T] from a set of values.
@@ -134,6 +135,27 @@ open class DynamicModelBuilder {
         map[key.name] = value
         return this
     }
+
+    /**
+     * Decomposes the member properties of [obj] adding them to this builder's
+     * internal map.
+     *
+     * @return this object
+     */
+    fun <T : Any> decompose(k: KClass<T>, obj: T): DynamicModelBuilder {
+        for (property in k.memberProperties) {
+            set(property, property.get(obj))
+        }
+        return this
+    }
+
+    /**
+     * Decomposes the member properties of [obj] adding them to this builder's
+     * internal map.
+     *
+     * @return this object
+     */
+    inline fun <reified T : Any> decompose(obj: T) = decompose(T::class, obj)
 
     /**
      * Returns a list of missing parameters which will need to be supplied if

@@ -15,18 +15,23 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingManager;
+import com.cradle.neptune.service.DatabaseService;
 import com.cradle.neptune.utilitiles.GsonUtil;
 import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.view.ui.reading.BaseFragment;
 import com.cradle.neptune.view.ui.reading.MyFragmentInteractionListener;
 import com.cradle.neptune.view.ui.reading.SectionsPagerAdapter;
+import com.cradle.neptune.viewmodel.PatientReadingViewModel;
 import com.google.android.material.tabs.TabLayout;
 
+import kotlin.Pair;
 import org.threeten.bp.ZonedDateTime;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
 
 public class ReadingActivity
         extends AppCompatActivity
@@ -37,12 +42,18 @@ public class ReadingActivity
     // Data Model
     @Inject
     ReadingManager readingManager;
+
+    @Inject
+    DatabaseService databaseService;
+
     private ViewPager mPager;
     private SectionsPagerAdapter mPagerAdapter;
     // Reading object shared by all fragments:
     private LaunchReason reasonForLaunch = LaunchReason.LAUNCH_REASON_NONE;
-    private Reading originalReading;
-    private Reading currentReading;
+    private Pair<Patient, Reading> originalData = null;
+    private PatientReadingViewModel viewModel = null;
+//    private Reading originalReading;
+//    private Reading currentReading;
     private int lastKnownTab = -1;
 
     static public Intent makeIntentForNewReading(Context context) {
@@ -100,27 +111,43 @@ public class ReadingActivity
         String readingId = "";
         switch (reasonForLaunch) {
             case LAUNCH_REASON_NEW:
-                originalReading = null;
-                currentReading = Reading.makeNewReading(ZonedDateTime.now());
-                currentReading.dateTimeTaken = ZonedDateTime.now();
+                viewModel = new PatientReadingViewModel();
+//                originalReading = null;
+//                currentReading = Reading.makeNewReading(ZonedDateTime.now());
+//                currentReading.dateTimeTaken = ZonedDateTime.now();
                 break;
             case LAUNCH_REASON_EDIT:
                 readingId = intent.getStringExtra(EXTRA_READING_ID);
                 Util.ensure((readingId != null && !readingId.equals("")));
-                originalReading = readingManager.getReadingById(this, readingId);
-                currentReading = GsonUtil.cloneViaGson(originalReading, Reading.class);
+                originalData = databaseService.getReadingByIdBlocking(readingId);
+                assert originalData != null;
+                viewModel = new PatientReadingViewModel(originalData.getFirst(), originalData.getSecond());
+//                currentReading = GsonUtil.cloneViaGson(originalReading, Reading.class);
                 break;
             case LAUNCH_REASON_RECHECK:
                 readingId = getIntent().getStringExtra(EXTRA_READING_ID);
                 Util.ensure((readingId != null && !readingId.equals("")));
-                originalReading = readingManager.getReadingById(this, readingId);
-                currentReading = Reading.makeToConfirmReading(originalReading, ZonedDateTime.now());
+                originalData = databaseService.getReadingByIdBlocking(readingId);
+                assert originalData != null;
+                viewModel = new PatientReadingViewModel(originalData.getFirst());
+
+                // Add the old reading to the previous list of the new reading.
+                if (viewModel.getPreviousReadingIds() == null) {
+                    viewModel.setPreviousReadingIds(new ArrayList<>());
+                }
+                viewModel.getPreviousReadingIds().add(originalData.getFirst().getId());
+
+//                originalReading = readingManager.getReadingById(this, readingId);
+//                currentReading = Reading.makeToConfirmReading(originalReading, ZonedDateTime.now());
                 break;
             case LAUNCH_REASON_EXISTINGNEW:
                 readingId = getIntent().getStringExtra(EXTRA_READING_ID);
                 Util.ensure((readingId != null && !readingId.equals("")));
-                originalReading = readingManager.getReadingById(this, readingId);
-                currentReading = Reading.makeNewExistingPatientReading(originalReading, ZonedDateTime.now());
+                originalData = databaseService.getReadingByIdBlocking(readingId);
+                assert originalData != null;
+                viewModel = new PatientReadingViewModel(originalData.getFirst());
+//                originalReading = readingManager.getReadingById(this, readingId);
+//                currentReading = Reading.makeNewExistingPatientReading(originalReading, ZonedDateTime.now());
                 break;
             default:
                 Util.ensure(false);
@@ -222,7 +249,7 @@ public class ReadingActivity
                 confirmDiscardAndFinish(R.string.discard_dialog_new_reading);
                 break;
             case LAUNCH_REASON_EDIT:
-                if (GsonUtil.identicalContentViaGson(originalReading, currentReading)) {
+                if (originalData.equals(viewModel.maybeConstructModels())) {
                     finish();
                 } else {
                     confirmDiscardAndFinish(R.string.discard_dialog_changes);
@@ -340,8 +367,8 @@ public class ReadingActivity
         Callback from Fragments
     */
     @Override
-    public Reading getCurrentReading() {
-        return currentReading;
+    public PatientReadingViewModel getViewModel() {
+        return viewModel;
     }
 
     @Override
@@ -358,34 +385,30 @@ public class ReadingActivity
 
         callOnMyBeingHiddenForCurrentTab();
 
-        if (currentReading.isMissingRequiredData()) {
+        if (viewModel.isMissingAnything()) {
             displayMissingDataDialog();
             return false;
         }
 
 //        // check for valid data
-        if (currentReading.hasInvalidData()) {
+        if (viewModel.isDataInvalid()) {
             displayValidDataDialog();
             Log.i("validation", "Data out of range");
             return false;
         }
 
+        Pair<Patient, Reading> models = viewModel.constructModels();
         switch (reasonForLaunch) {
-            case LAUNCH_REASON_NEW:
-                readingManager.addNewReading(this, currentReading);
+            case LAUNCH_REASON_NEW: // fallthrough
+            case LAUNCH_REASON_RECHECK: // fallthrough
+            case LAUNCH_REASON_EXISTINGNEW:
+                databaseService.addReadingAsync(models.getFirst(), models.getSecond());
                 break;
             case LAUNCH_REASON_EDIT:
                 // overwrite if any changes
-                if (!GsonUtil.identicalContentViaGson(originalReading, currentReading)) {
-                    readingManager.updateReading(this, currentReading);
+                if (!models.equals(originalData)) {
+                    databaseService.updateReadingAsync(models.getFirst(), models.getSecond());
                 }
-                break;
-            case LAUNCH_REASON_RECHECK:
-                readingManager.addNewReading(this, currentReading);
-                // database clears all dataRecheckVitalsNeeded flags as needed
-                break;
-            case LAUNCH_REASON_EXISTINGNEW:
-                readingManager.addNewReading(this, currentReading);
                 break;
             default:
                 Util.ensure(false);
@@ -394,7 +417,8 @@ public class ReadingActivity
         // prep for continuing to work with data after save
         // after SMS is sent we save.
         reasonForLaunch = LaunchReason.LAUNCH_REASON_EDIT;
-        originalReading = GsonUtil.cloneViaGson(currentReading, Reading.class);
+        originalData = models;
+//        originalReading = GsonUtil.cloneViaGson(currentReading, Reading.class);
 
         return true;
     }
