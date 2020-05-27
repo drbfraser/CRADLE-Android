@@ -288,7 +288,7 @@ fun JsonObject.union(other: JsonObject?): JsonObject {
     val names = other.names()
     if (names != null) {
         for (i in 0..names.length()) {
-            val name = names.getString(i)
+            val name = names[0] as String
             put(name, other.get(name))
         }
     }

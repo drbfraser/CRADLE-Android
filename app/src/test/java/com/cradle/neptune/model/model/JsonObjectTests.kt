@@ -2,6 +2,7 @@ package com.cradle.neptune.model.model
 
 import com.cradle.neptune.model.JsonObject
 import com.cradle.neptune.model.union
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class JsonObjectTests {
@@ -11,9 +12,9 @@ class JsonObjectTests {
         val b = JsonObject("""{"b":2}""")
         a.union(b)
 
-        assert(a.get("a") == 1)
-        assert(a.get("b") == 2)
-        assert(a.get("hello") == "world")
+        Assertions.assertEquals(1, a.get("a"))
+        Assertions.assertEquals(2, a.get("b"))
+        Assertions.assertEquals("world", a.get("hello"))
     }
 
     @Test
@@ -22,7 +23,7 @@ class JsonObjectTests {
         val b = JsonObject("""{"a":2}""")
         a.union(b)
 
-        assert(a.get("a") == 2)
-        assert(a.get("hello") == "world")
+        Assertions.assertEquals(2, a.get("a"))
+        Assertions.assertEquals("world", a.get("hello"))
     }
 }

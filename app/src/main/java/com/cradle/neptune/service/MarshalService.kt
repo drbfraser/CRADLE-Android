@@ -22,7 +22,7 @@ class MarshalService @Inject constructor(private val settings: Settings) {
      * @param patient the patient associated with [reading]
      * @param reading the reading to marshal
      */
-    fun marshalToUploadJson(patient: Patient, reading: Reading) = with(JsonObject()) {
+    fun marshalToUploadJson(patient: Patient, reading: Reading): JsonObject = with(JsonObject()) {
         put("patient", patient.marshal())
         put("reading", reading.marshal())
         put("vhtName", settings.vhtName)

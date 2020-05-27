@@ -115,6 +115,10 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.6.0"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.6.0"
 
+    // JSON library for testing
+    //   The actual one is baked into the Android SDK so it fails if we try to test it
+    testImplementation "org.json:json:20200518"
+
     // required if you want to use Mockito for unit tests
     testImplementation 'org.mockito:mockito-core:2.22.0'
     // required if you want to use Mockito for Android tests
