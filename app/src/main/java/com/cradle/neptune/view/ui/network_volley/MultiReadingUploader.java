@@ -8,14 +8,17 @@ import android.util.Log;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Response;
 import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.Settings;
+import com.cradle.neptune.service.MarshalService;
 import com.cradle.neptune.utilitiles.DateUtil;
 import com.cradle.neptune.utilitiles.GsonUtil;
 import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.utilitiles.Zipper;
 import com.cradle.neptune.view.LoginActivity;
 
+import kotlin.Pair;
 import org.json.JSONException;
 import org.threeten.bp.ZonedDateTime;
 
@@ -37,9 +40,13 @@ public class MultiReadingUploader {
     private static final String TAG = "MultiReadingUploader";
     @Inject
     SharedPreferences sharedPreferences;
+
+    @Inject
+    MarshalService marshalService;
+
     private Context context;
     private Settings settings;
-    private List<Reading> readings;
+    private List<Pair<Patient, Reading>> pairs;
     private ProgressCallback progressCallback;
     private State state = State.IDLE;
     private int numCompleted = 0;
@@ -56,12 +63,12 @@ public class MultiReadingUploader {
     }
 
     // OPERATIONS
-    public void startUpload(List<Reading> readings) {
+    public void startUpload(List<Pair<Patient, Reading>> pairs) {
         if (state != State.IDLE) {
             Log.e(TAG, "ERROR: Not in idle state");
         } else {
-            Util.ensure(readings != null && readings.size() > 0);
-            this.readings = readings;
+            Util.ensure(pairs != null && pairs.size() > 0);
+            this.pairs = pairs;
             startUploadOfPendingReading();
             progressCallback.uploadProgress(numCompleted, getTotalNumReadings());
         }
@@ -69,18 +76,18 @@ public class MultiReadingUploader {
 
     public void abortUpload() {
         state = State.DONE;
-        readings.clear();
+        pairs.clear();
     }
 
     public void resumeUploadBySkip() {
         if (state != State.PAUSED) {
             Log.e(TAG, "ERROR: Not in paused state");
         } else {
-            Util.ensure(readings != null && readings.size() > 0);
+            Util.ensure(pairs != null && pairs.size() > 0);
 
             // skip
-            readings.remove(0);
-            if (readings.size() > 0) {
+            pairs.remove(0);
+            if (pairs.size() > 0) {
                 startUploadOfPendingReading();
             } else {
                 state = State.DONE;
@@ -93,7 +100,7 @@ public class MultiReadingUploader {
         if (state != State.PAUSED) {
             Log.e(TAG, "ERROR: Not in paused state");
         } else {
-            Util.ensure(readings != null && readings.size() > 0);
+            Util.ensure(pairs != null && pairs.size() > 0);
             startUploadOfPendingReading();
             progressCallback.uploadProgress(numCompleted, getTotalNumReadings());
         }
@@ -122,7 +129,7 @@ public class MultiReadingUploader {
     }
 
     public int getNumRemaining() {
-        return readings.size();
+        return pairs.size();
     }
 
     public int getTotalNumReadings() {
@@ -130,20 +137,20 @@ public class MultiReadingUploader {
     }
 
     // CONSTRUCT DATA ZIP FILES
-    private File zipReading(Reading reading) throws IOException {
+    private File zipReading(Pair<Patient, Reading> pair) throws IOException {
         List<File> filesToZip = new ArrayList<>();
 
         // 1. CRADLE screenshot (if any)
         if (settings.shouldUploadImages()) {
-            if (reading.pathToPhoto != null && reading.pathToPhoto.length() > 0) {
-                filesToZip.add(new File(reading.pathToPhoto));
+            if (pair.getSecond().getMetadata().getPhotoPath() != null && pair.getSecond().getMetadata().getPhotoPath().length() > 0) {
+                filesToZip.add(new File(pair.getSecond().getMetadata().getPhotoPath()));
             }
         }
 
         // 2. JSON of reading data
         File jsonFile = new File(context.getCacheDir(),
-                "reading_" + reading.patient.patientId + "@" + DateUtil.getISODateForFilename(ZonedDateTime.now()) + ".json");
-        String jsonData = GsonUtil.getJsonForSyncingToServer(reading, settings);
+                "reading_" + pair.getFirst().getId() + "@" + DateUtil.getISODateForFilename(ZonedDateTime.now()) + ".json");
+        String jsonData = marshalService.marshalToUploadJson(pair.getFirst(), pair.getSecond()).toString();
         try (FileWriter writer = new FileWriter(jsonFile)) {
             writer.write(jsonData);
         }
@@ -156,18 +163,21 @@ public class MultiReadingUploader {
 
     // INTERNAL STATE MACHINE OPERATIONS
     private void startUploadOfPendingReading() {
-        Util.ensure(readings.size() > 0);
+        Util.ensure(pairs.size() > 0);
         state = State.UPLOADING;
 
         File zipFile = null;
         try {
             // zip data
-            zipFile = zipReading(readings.get(0));
+            zipFile = zipReading(pairs.get(0));
 
             // generate zip of encrypted data
             String encryptedZipFileFolder = context.getCacheDir().getAbsolutePath();
 
-            String readingJson = Reading.getJsonObj(readings.get(0), sharedPreferences.getString(LoginActivity.USER_ID, ""));
+            Patient patient = pairs.get(0).getFirst();
+            Reading reading = pairs.get(0).getSecond();
+            String readingJson = marshalService.marshalToUploadJson(patient, reading).toString();
+//            String readingJson = Reading.getJsonObj(readings.get(0), sharedPreferences.getString(LoginActivity.USER_ID, ""));
             // start upload
             Uploader uploader = new Uploader(
                     settings.getReadingServerUrl(),
@@ -179,7 +189,7 @@ public class MultiReadingUploader {
             Log.e(TAG, "Exception with encrypting and transmitting data!", ex);
             state = State.PAUSED;
             progressCallback.uploadPausedOnError("Encrypting data for upload failed (" + ex.getMessage() + ")");
-        } catch (JSONException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             // cleanup
@@ -196,14 +206,14 @@ public class MultiReadingUploader {
             }
 
             // current reading uploaded successfully
-            Util.ensure(readings.size() > 0);
-            progressCallback.uploadReadingSucceeded(readings.get(0));
-            readings.remove(0);
+            Util.ensure(pairs.size() > 0);
+            progressCallback.uploadReadingSucceeded(pairs.get(0));
+            pairs.remove(0);
             numCompleted++;
             progressCallback.uploadProgress(numCompleted, getTotalNumReadings());
 
             // advance to next reading
-            if (readings.size() > 0) {
+            if (pairs.size() > 0) {
                 startUploadOfPendingReading();
             } else {
                 state = State.DONE;
@@ -256,7 +266,7 @@ public class MultiReadingUploader {
     public interface ProgressCallback {
         void uploadProgress(int numCompleted, int numTotal);
 
-        void uploadReadingSucceeded(Reading reading);
+        void uploadReadingSucceeded(Pair<Patient, Reading> pair);
 
         void uploadPausedOnError(String message);
     }

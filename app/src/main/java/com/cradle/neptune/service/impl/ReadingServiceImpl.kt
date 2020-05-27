@@ -4,10 +4,10 @@ import android.util.Log
 import com.cradle.neptune.database.CradleDatabase
 import com.cradle.neptune.database.ReadingEntity
 import com.cradle.neptune.model.*
-import com.cradle.neptune.service.DatabaseService
+import com.cradle.neptune.service.ReadingService
 import org.threeten.bp.ZonedDateTime
 
-class DatabaseServiceImpl(private val database: CradleDatabase) : DatabaseService {
+class ReadingServiceImpl(private val database: CradleDatabase) : ReadingService {
 
     private val readingDao get() = database.readingDaoAccess()
 

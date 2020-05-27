@@ -3,14 +3,10 @@ package com.cradle.neptune.service
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.RetestGroup
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 
 /**
- * Service for interfacing with the database.
+ * Service for interfacing with readings stored in the database.
  *
  * This service is used to abstract away the raw database schema which prefers
  * to store data as JSON instead of using actual database constructs.
@@ -21,7 +17,7 @@ import kotlinx.coroutines.runBlocking
  * the `Async` variant. For methods which return a value, the `Blocking`
  * variants may be used but remember that those will block the current thread.
  */
-interface DatabaseService {
+interface ReadingService {
 
     /**
      * Adds a new reading to the database.

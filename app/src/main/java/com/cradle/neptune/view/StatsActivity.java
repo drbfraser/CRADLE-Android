@@ -12,7 +12,7 @@ import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingAnalysis;
-import com.cradle.neptune.model.ReadingManager;
+import com.cradle.neptune.service.ReadingService;
 import com.cradle.neptune.utilitiles.BarGraphValueFormatter;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
@@ -22,17 +22,19 @@ import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import kotlin.Pair;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
 public class StatsActivity extends AppCompatActivity {
 
     @Inject
-    ReadingManager readingManager;
+    ReadingService readingService;
 
     List<Reading> readings;
 
@@ -42,8 +44,11 @@ public class StatsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_stats);
 
         ((MyApp) getApplication()).getAppComponent().inject(this);
-        readings = readingManager.getReadings(this);
-        Collections.sort(readings, new Reading.ComparatorByDate());
+        readings = readingService.getAllReadingsBlocking()
+                .stream()
+                .map(Pair::getSecond)
+                .collect(Collectors.toList());
+        Collections.sort(readings, Reading.AscendingDataComparator.INSTANCE);
 
         if (readings.size() > 0) {
             setupBasicStats();
@@ -103,7 +108,7 @@ public class StatsActivity extends AppCompatActivity {
         int redUp = 0;
 
         for (int i = 0; i < readings.size(); i++) {
-            ReadingAnalysis analysis = ReadingAnalysis.analyze(readings.get(i));
+            ReadingAnalysis analysis = readings.get(i).getBloodPressure().getAnalysis();
             if (analysis == ReadingAnalysis.RED_DOWN) {
                 redDown++;
             } else if (analysis == ReadingAnalysis.GREEN) {
@@ -173,9 +178,9 @@ public class StatsActivity extends AppCompatActivity {
 
         for (int i = 0; i < readings.size(); i++) {
             Reading reading = readings.get(i);
-            diastolicEntry.add(new Entry(i + 1, reading.bpDiastolic));
-            systolicEntry.add(new Entry(i + 1, reading.bpSystolic));
-            heartrateEntry.add(new Entry(i + 1, reading.heartRateBPM));
+            diastolicEntry.add(new Entry(i + 1, reading.getBloodPressure().getDiastolic()));
+            systolicEntry.add(new Entry(i + 1, reading.getBloodPressure().getSystolic()));
+            heartrateEntry.add(new Entry(i + 1, reading.getBloodPressure().getHeartRate()));
         }
 
         LineDataSet diastolicDataSet = new LineDataSet(diastolicEntry, "BP Diastolic");

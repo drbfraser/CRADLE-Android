@@ -8,7 +8,6 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -26,10 +25,11 @@ import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingFollowUp;
-import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
+import com.cradle.neptune.service.ReadingService;
 import com.cradle.neptune.utilitiles.DateUtil;
 import com.cradle.neptune.view.ui.network_volley.MultiReadingUploader;
 import com.google.android.material.snackbar.Snackbar;
@@ -37,6 +37,8 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import kotlin.NotImplementedError;
+import kotlin.Pair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -57,7 +59,7 @@ public class UploadActivity extends AppCompatActivity {
 
     // Data Model
     @Inject
-    ReadingManager readingManager;
+    ReadingService readingService;
     @Inject
     SharedPreferences sharedPreferences;
     @Inject
@@ -113,7 +115,7 @@ public class UploadActivity extends AppCompatActivity {
                         .setTitle("Downloading patient data")
                         .setPositiveButton("OK", (dialogInterface, i)
                                 -> {
-                            LoginActivity.getAllMyPatients(token, readingManager, UploadActivity.this);
+                            LoginActivity.getAllMyPatients(token, readingService, UploadActivity.this);
                         })
                         .setNegativeButton("Cancel", (dialogInterface, i) -> {
 
@@ -244,21 +246,25 @@ public class UploadActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-        List<Reading> readings = readingManager.getReadings(this);
-        Map<String, Reading> readingMap = new HashMap<String, Reading>();
-        for (Reading reading : readings) {
-            readingMap.put(reading.readingId, reading);
+//        List<Reading> readings = readingManager.getReadings(this);
+        List<Pair<Patient, Reading>> pairs = readingService.getAllReadingsBlocking();
+        Map<String, Pair<Patient, Reading>> readingMap = new HashMap<>();
+        for (Pair<Patient, Reading> pair : pairs) {
+            readingMap.put(pair.getSecond().getId(), pair);
         }
         //update the followups
         for (ReadingFollowUp followUp : readingsFollowUps) {
-            Reading reading = readingMap.get(followUp.getReadingServerId());
-            if (reading != null) {
-                reading.readingFollowUp = followUp;
-                reading.patient.medicalHistoryList = new ArrayList<>();
-                reading.patient.drugHistoryList = new ArrayList<>();
-                reading.patient.medicalHistoryList.add(followUp.getPatientMedInfoUpdate().toLowerCase());
-                reading.patient.drugHistoryList.add(followUp.getPatientDrugInfoUpdate().toLowerCase());
-                readingManager.updateReading(this, reading);
+            Pair<Patient, Reading> pair = readingMap.get(followUp.getReadingServerId());
+            if (pair != null) {
+                pair.getSecond().setFollowUp(followUp);
+                pair.getFirst().getMedicalHistoryList().add(followUp.getPatientMedInfoUpdate().toLowerCase());
+                pair.getFirst().getDrugHistoryList().add(followUp.getPatientDrugInfoUpdate().toLowerCase());
+                readingService.updateReadingAsync(pair.getFirst(), pair.getSecond());
+//                reading.patient.medicalHistoryList = new ArrayList<>();
+//                reading.patient.drugHistoryList = new ArrayList<>();
+//                reading.patient.medicalHistoryList.add(followUp.getPatientMedInfoUpdate().toLowerCase());
+//                reading.patient.drugHistoryList.add(followUp.getPatientDrugInfoUpdate().toLowerCase());
+//                readingManager.updateReading(this, reading);
             }
         }
     }
@@ -285,7 +291,8 @@ public class UploadActivity extends AppCompatActivity {
 
     private void updateReadingUploadLabels() {
         // reading count
-        int numReadingsToUpload = readingManager.getUnuploadedReadings().size();
+        int numReadingsToUpload = readingService.getUnUploadedReadingsBlocking().size();
+//        int numReadingsToUpload = readingManager.getUnuploadedReadings().size();
         TextView tvReadingCount = findViewById(R.id.tvReadingsToUpload);
         tvReadingCount.setText(String.format("%d patient readings ready to upload", numReadingsToUpload));
 
@@ -314,69 +321,70 @@ public class UploadActivity extends AppCompatActivity {
     todo: remove uploading directly to firebase and send to server for authentication first and find a better way to do this
      */
     private void setupUploadImageButton() {
-        Button btnStart = findViewById(R.id.uploadImagesButton);
-        btnStart.setOnClickListener(view -> {
-            List<Reading> readings = readingManager.getReadings(this);
-            List<Reading> readingsToUpload = new ArrayList<>();
-            for (int i = 0; i < readings.size(); i++) {
-                Reading reading = readings.get(i);
-                if (reading.pathToPhoto != null) {
-                    File file = new File(reading.pathToPhoto);
-                    if (!reading.isImageUploaded && file.exists()) {
-
-                        readingsToUpload.add(reading);
-                    }
-                }
-            }
-            if (readingsToUpload.size() == 0) {
-                Toast.makeText(this, "No more Images to upload!", Toast.LENGTH_LONG).show();
-                return;
-            }
-            final boolean[] stopuploading = {false};
-
-            ProgressBar progressBar = findViewById(R.id.progressBar);
-            Button stopButton = findViewById(R.id.stopuploading);
-            stopButton.setVisibility(View.VISIBLE);
-            stopButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    stopuploading[0] = true;
-                    progressBar.setVisibility(View.INVISIBLE);
-                    stopButton.setVisibility(View.GONE);
-                }
-            });
-            progressBar.setMax(readingsToUpload.size());
-            progressBar.setProgress(0);
-            progressBar.setVisibility(View.VISIBLE);
-
-            FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
-            StorageReference storageReference = firebaseStorage.getReference();
-
-            for (int i = 0; i < readingsToUpload.size(); i++) {
-                if (stopuploading[0]) {
-                    return;
-                }
-
-                Reading r = readingsToUpload.get(i);
-                Uri file = Uri.fromFile(new File(r.pathToPhoto));
-
-                StorageReference storageReference1 = storageReference.child("cradle-test-images/" + file.getLastPathSegment());
-                UploadTask uploadTask = storageReference1.putFile(file);
-                uploadTask.addOnSuccessListener(taskSnapshot -> {
-                    r.isImageUploaded = true;
-                    readingManager.updateReading(this, r);
-                    progressBar.setProgress(progressBar.getProgress() + 1);
-                    if (stopuploading[0]) {
-                        progressBar.setVisibility(View.INVISIBLE);
-                        stopButton.setVisibility(View.GONE);
-                        Toast.makeText(this, "All Images uploaded.", Toast.LENGTH_LONG).show();
-                    }
-                });
-                if (readingsToUpload.size() - 1 == i) {
-                    stopuploading[0] = true;
-                }
-            }
-        });
+        throw new NotImplementedError("TODO: Implement Me!");
+//        Button btnStart = findViewById(R.id.uploadImagesButton);
+//        btnStart.setOnClickListener(view -> {
+//            List<Reading> readings = readingManager.getReadings(this);
+//            List<Reading> readingsToUpload = new ArrayList<>();
+//            for (int i = 0; i < readings.size(); i++) {
+//                Reading reading = readings.get(i);
+//                if (reading.pathToPhoto != null) {
+//                    File file = new File(reading.pathToPhoto);
+//                    if (!reading.isImageUploaded && file.exists()) {
+//
+//                        readingsToUpload.add(reading);
+//                    }
+//                }
+//            }
+//            if (readingsToUpload.size() == 0) {
+//                Toast.makeText(this, "No more Images to upload!", Toast.LENGTH_LONG).show();
+//                return;
+//            }
+//            final boolean[] stopuploading = {false};
+//
+//            ProgressBar progressBar = findViewById(R.id.progressBar);
+//            Button stopButton = findViewById(R.id.stopuploading);
+//            stopButton.setVisibility(View.VISIBLE);
+//            stopButton.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//                    stopuploading[0] = true;
+//                    progressBar.setVisibility(View.INVISIBLE);
+//                    stopButton.setVisibility(View.GONE);
+//                }
+//            });
+//            progressBar.setMax(readingsToUpload.size());
+//            progressBar.setProgress(0);
+//            progressBar.setVisibility(View.VISIBLE);
+//
+//            FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
+//            StorageReference storageReference = firebaseStorage.getReference();
+//
+//            for (int i = 0; i < readingsToUpload.size(); i++) {
+//                if (stopuploading[0]) {
+//                    return;
+//                }
+//
+//                Reading r = readingsToUpload.get(i);
+//                Uri file = Uri.fromFile(new File(r.pathToPhoto));
+//
+//                StorageReference storageReference1 = storageReference.child("cradle-test-images/" + file.getLastPathSegment());
+//                UploadTask uploadTask = storageReference1.putFile(file);
+//                uploadTask.addOnSuccessListener(taskSnapshot -> {
+//                    r.isImageUploaded = true;
+//                    readingManager.updateReading(this, r);
+//                    progressBar.setProgress(progressBar.getProgress() + 1);
+//                    if (stopuploading[0]) {
+//                        progressBar.setVisibility(View.INVISIBLE);
+//                        stopButton.setVisibility(View.GONE);
+//                        Toast.makeText(this, "All Images uploaded.", Toast.LENGTH_LONG).show();
+//                    }
+//                });
+//                if (readingsToUpload.size() - 1 == i) {
+//                    stopuploading[0] = true;
+//                }
+//            }
+//        });
     }
 
     private void setupErrorHandlingButtons() {
@@ -462,16 +470,17 @@ public class UploadActivity extends AppCompatActivity {
 //        }
 
         // discover un-uploaded readings
-        List<Reading> readingsToUpload = readingManager.getUnuploadedReadings();
+        List<Pair<Patient, Reading>> pairs = readingService.getUnUploadedReadingsBlocking();
+//        List<Reading> readingsToUpload = readingManager.getUnuploadedReadings();
         // abort if no readings
-        if (readingsToUpload.size() == 0) {
+        if (pairs.size() == 0) {
             Toast.makeText(this, "No readings needing to be uploaded.", Toast.LENGTH_LONG).show();
             return;
         }
 
         // upload multiple readings
         multiUploader = new MultiReadingUploader(this, settings, sharedPreferences.getString(LoginActivity.TOKEN, ""), getProgressCallbackListener());
-        multiUploader.startUpload(readingsToUpload);
+        multiUploader.startUpload(pairs);
         setUploadUiElementVisibility(true);
     }
 
@@ -502,10 +511,10 @@ public class UploadActivity extends AppCompatActivity {
             }
 
             @Override
-            public void uploadReadingSucceeded(Reading reading) {
+            public void uploadReadingSucceeded(Pair<Patient, Reading> pair) {
                 // mark reading as uploaded
-                reading.dateUploadedToServer = ZonedDateTime.now();
-                readingManager.updateReading(UploadActivity.this, reading);
+                pair.getSecond().getMetadata().setDateUploadedToServer(ZonedDateTime.now());
+                readingService.updateReadingAsync(pair.getFirst(), pair.getSecond());
 
                 // record that we did a successful upload
                 String dateStr = DateUtil.getFullDateString(ZonedDateTime.now());

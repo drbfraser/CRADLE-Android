@@ -57,7 +57,7 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
         if (reading.getFollowUp() != null) {
             patientViewHolder.referralImg.setImageResource(R.drawable.ic_check_circle_black_24dp);
             patientViewHolder.referralImg.setVisibility(View.VISIBLE);
-        } else if (reading.isReferredToHealthCenter()) {
+        } else if (reading.isReferredToHealthCentre()) {
             patientViewHolder.referralImg.setImageResource(R.drawable.ic_pending_referral_black_24dp);
             patientViewHolder.referralImg.setVisibility(View.VISIBLE);
         }

@@ -28,7 +28,7 @@ import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.*;
-import com.cradle.neptune.service.DatabaseService;
+import com.cradle.neptune.service.ReadingService;
 import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter;
 import com.github.mikephil.charting.charts.LineChart;
@@ -38,11 +38,9 @@ import com.github.mikephil.charting.data.LineDataSet;
 
 import kotlin.Pair;
 import kotlin.Unit;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,7 +72,7 @@ public class PatientProfileActivity extends AppCompatActivity {
 //    @Inject
 //    ReadingManager readingManager;
     @Inject
-    DatabaseService databaseService;
+    ReadingService readingService;
     @Inject
     SharedPreferences sharedPreferences;
     // ..inject this even if not needed because it forces it to load at startup and initialize.
@@ -131,7 +129,7 @@ public class PatientProfileActivity extends AppCompatActivity {
                         Patient patient = result.getFirst();
                         List<Reading> readings = result.getSecond();
                         for (Reading reading : readings) {
-                            databaseService.addReadingAsync(patient, reading);
+                            readingService.addReadingAsync(patient, reading);
                         }
                         setupReadingsRecyclerView();
                         progressDialog.cancel();
@@ -367,7 +365,7 @@ public class PatientProfileActivity extends AppCompatActivity {
     }
 
     private List<Reading> getThisPatientsReadings() {
-        return databaseService.getReadingsByPatientIdBlocking(currPatient.getId())
+        return readingService.getReadingsByPatientIdBlocking(currPatient.getId())
                 .stream()
                 .map(Pair::getSecond)
                 .sorted(Reading.DescendingDateComparator.INSTANCE)
@@ -435,7 +433,7 @@ public class PatientProfileActivity extends AppCompatActivity {
                 .setMessage("Delete reading?")
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setPositiveButton(android.R.string.yes, (dialog1, whichButton) -> {
-                    databaseService.deleteReadingByIdAsync(readingId);
+                    readingService.deleteReadingByIdAsync(readingId);
                     updateUi();
                 })
                 .setNegativeButton(android.R.string.no, null);

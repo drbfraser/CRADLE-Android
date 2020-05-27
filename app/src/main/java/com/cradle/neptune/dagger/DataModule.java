@@ -13,8 +13,10 @@ import com.cradle.neptune.model.Settings;
 
 import javax.inject.Singleton;
 
-import com.cradle.neptune.service.DatabaseService;
-import com.cradle.neptune.service.impl.DatabaseServiceImpl;
+import com.cradle.neptune.service.HealthCentreService;
+import com.cradle.neptune.service.ReadingService;
+import com.cradle.neptune.service.impl.HealthCentreServiceImpl;
+import com.cradle.neptune.service.impl.ReadingServiceImpl;
 import dagger.Module;
 import dagger.Provides;
 
@@ -24,23 +26,36 @@ import dagger.Provides;
  */
 @Module
 public class DataModule {
+
+    private CradleDatabase database = null;
+
+    private CradleDatabase lazyInitDatabase(Application application) {
+        if (database == null) {
+            database = Room.databaseBuilder(application, CradleDatabase.class, "room-readingDB")
+                    .allowMainThreadQueries()
+                    .build();
+        }
+        return database;
+    }
+
     @Provides
     @Singleton
     public ReadingManager provideReadingManager(Application application) {
 //        return new ReadingManagerAsList();
         //allowing queries on main thread but should use a seperate thread for large queeries
-        CradleDatabase r = Room.databaseBuilder(application,
-                CradleDatabase.class, "room-readingDB").allowMainThreadQueries().build();
-        return new RoomDatabaseManager(r);
+        return new RoomDatabaseManager(lazyInitDatabase(application));
     }
 
     @Provides
     @Singleton
-    public DatabaseService provideDatabaseService(Application application) {
-        CradleDatabase r = Room.databaseBuilder(application, CradleDatabase.class, "room-readingDB")
-                .allowMainThreadQueries()
-                .build();
-        return new DatabaseServiceImpl(r);
+    public ReadingService provideReadingService(Application application) {
+        return new ReadingServiceImpl(lazyInitDatabase(application));
+    }
+
+    @Provides
+    @Singleton
+    public HealthCentreService provideHealthCentreService(Application application) {
+        return new HealthCentreServiceImpl(lazyInitDatabase(application));
     }
 
     @Provides

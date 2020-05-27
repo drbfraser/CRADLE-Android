@@ -5,19 +5,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
-import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -28,12 +24,10 @@ import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
-import com.cradle.neptune.service.DatabaseService;
+import com.cradle.neptune.service.ReadingService;
 import com.cradle.neptune.viewmodel.PatientsViewAdapter;
 
 import kotlin.Pair;
-import org.threeten.bp.ZonedDateTime;
-import org.threeten.bp.temporal.ChronoUnit;
 
 import java.util.*;
 
@@ -46,7 +40,7 @@ public class PatientsActivity extends AppCompatActivity {
     ReadingManager readingManager;
 
     @Inject
-    DatabaseService databaseService;
+    ReadingService readingService;
 
     @Inject
     SharedPreferences sharedPreferences;
@@ -139,7 +133,7 @@ public class PatientsActivity extends AppCompatActivity {
         HashMap<String, Pair<Patient, Reading>> patientHashMap = new HashMap<>();
 
 //        List<Reading> allReadings = readingManager.getReadings(this);
-        List<Pair<Patient, Reading>> allReadings = databaseService.getAllReadingsBlocking();
+        List<Pair<Patient, Reading>> allReadings = readingService.getAllReadingsBlocking();
         Collections.sort(allReadings, Comparator.comparing(o -> o.getSecond().getDateTimeTaken()));
 
 
