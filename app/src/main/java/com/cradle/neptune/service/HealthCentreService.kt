@@ -76,6 +76,16 @@ interface HealthCentreService {
     fun getAllBlocking() = runBlocking { getAll() }
 
     /**
+     * Async variant of [getAllSelectedByUser].
+     */
+    fun getAllSelectedByUserAsync() = GlobalScope.async(Dispatchers.IO) { getAllSelectedByUser() }
+
+    /**
+     * Blocking variant of [getAllSelectedByUser].
+     */
+    fun getAllSelectedByUserBlocking() = runBlocking { getAllSelectedByUser() }
+
+    /**
      * Async variant of [add].
      */
     fun addAsync(entity: HealthFacilityEntity) = GlobalScope.async(Dispatchers.IO) { add(entity) }

@@ -17,7 +17,6 @@ import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
-import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.service.ReadingService;
 import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.view.ui.reading.BaseFragment;
@@ -38,9 +37,6 @@ public class ReadingActivity
     private static final String EXTRA_READING_ID = "ID of reading to load";
     private static final String EXTRA_START_TAB = "idx of tab to start on";
     // Data Model
-    @Inject
-    ReadingManager readingManager;
-
     @Inject
     ReadingService readingService;
 
@@ -370,8 +366,8 @@ public class ReadingActivity
     }
 
     @Override
-    public ReadingManager getReadingManager() {
-        return readingManager;
+    public ReadingService getReadingService() {
+        return readingService;
     }
 
     // Return true if saved; false if rejected

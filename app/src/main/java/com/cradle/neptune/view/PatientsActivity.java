@@ -22,7 +22,6 @@ import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
-import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.service.ReadingService;
 import com.cradle.neptune.viewmodel.PatientsViewAdapter;
@@ -36,9 +35,6 @@ import javax.inject.Inject;
 public class PatientsActivity extends AppCompatActivity {
 
     // Data Model
-    @Inject
-    ReadingManager readingManager;
-
     @Inject
     ReadingService readingService;
 

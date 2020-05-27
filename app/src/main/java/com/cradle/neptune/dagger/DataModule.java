@@ -7,8 +7,6 @@ import android.preference.PreferenceManager;
 import androidx.room.Room;
 
 import com.cradle.neptune.database.CradleDatabase;
-import com.cradle.neptune.model.ReadingManager;
-import com.cradle.neptune.model.RoomDatabaseManager;
 import com.cradle.neptune.model.Settings;
 
 import javax.inject.Singleton;
@@ -36,14 +34,6 @@ public class DataModule {
                     .build();
         }
         return database;
-    }
-
-    @Provides
-    @Singleton
-    public ReadingManager provideReadingManager(Application application) {
-//        return new ReadingManagerAsList();
-        //allowing queries on main thread but should use a seperate thread for large queeries
-        return new RoomDatabaseManager(lazyInitDatabase(application));
     }
 
     @Provides

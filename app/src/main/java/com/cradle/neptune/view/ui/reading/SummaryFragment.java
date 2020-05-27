@@ -85,7 +85,7 @@ public class SummaryFragment extends BaseFragment {
         // TODO: switch to Data Binding for more efficient code?
         // https://www.androidauthority.com/data-binding-in-android-709747/
 
-        RetestGroup retestGroup = viewModel.buildRetestGroup(readingManager);
+        RetestGroup retestGroup = viewModel.buildRetestGroup(readingService);
 //        ReadingRetestAnalysis readingRetestAnalysis
 //                = new ReadingRetestAnalysis(viewModel, readingManager, getContext());
 

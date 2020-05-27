@@ -7,7 +7,7 @@ import android.view.inputmethod.InputMethodManager;
 
 import androidx.fragment.app.Fragment;
 
-import com.cradle.neptune.model.ReadingManager;
+import com.cradle.neptune.service.ReadingService;
 import com.cradle.neptune.viewmodel.PatientReadingViewModel;
 
 /**
@@ -24,7 +24,7 @@ abstract public class BaseFragment extends Fragment {
 
     protected MyFragmentInteractionListener activityCallbackListener;
     protected PatientReadingViewModel viewModel;
-    protected ReadingManager readingManager;
+    protected ReadingService readingService;
 
     protected long MASK_USER_HAS_SELECTED_THE_NO_SYMPTOM = 0x0001;
     protected long MASK_USER_HAS_CHANGED_FOLLOW_UP = 0x0002;
@@ -62,7 +62,7 @@ abstract public class BaseFragment extends Fragment {
         }
         activityCallbackListener = (MyFragmentInteractionListener) context;
         viewModel = activityCallbackListener.getViewModel();
-        readingManager = activityCallbackListener.getReadingManager();
+        readingService = activityCallbackListener.getReadingService();
     }
 
     @Override

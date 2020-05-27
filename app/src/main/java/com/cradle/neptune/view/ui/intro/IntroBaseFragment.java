@@ -8,7 +8,7 @@ import android.view.inputmethod.InputMethodManager;
 import androidx.fragment.app.Fragment;
 
 import com.cradle.neptune.model.Reading;
-import com.cradle.neptune.model.ReadingManager;
+import com.cradle.neptune.service.ReadingService;
 
 /**
  * Base class for other ReadingFragments
@@ -24,7 +24,7 @@ abstract public class IntroBaseFragment extends Fragment {
 
     protected MyIntroFragmentInteractionListener activityCallbackListener;
     protected Reading currentReading;
-    protected ReadingManager readingManager;
+    protected ReadingService readingService;
 
     protected long MASK_USER_HAS_SELECTED_THE_NO_SYMPTOM = 0x0001;
     protected long MASK_USER_HAS_CHANGED_FOLLOW_UP = 0x0002;

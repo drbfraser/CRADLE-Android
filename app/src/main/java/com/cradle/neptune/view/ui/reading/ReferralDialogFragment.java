@@ -32,6 +32,7 @@ import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.database.HealthFacilityEntity;
 import com.cradle.neptune.model.*;
+import com.cradle.neptune.service.HealthCentreService;
 import com.cradle.neptune.utilitiles.DateUtil;
 import com.cradle.neptune.view.LoginActivity;
 import com.cradle.neptune.view.ui.settings.SettingsActivity;
@@ -102,7 +103,7 @@ public class ReferralDialogFragment extends DialogFragment {
     @Inject
     SharedPreferences sharedPreferences;
     @Inject
-    ReadingManager readingManager;
+    HealthCentreService healthCentreService;
     // UI elements
     TextView tvSendingStatus;
     // Current state
@@ -259,7 +260,7 @@ public class ReferralDialogFragment extends DialogFragment {
 //        // source: https://mobiforge.com/design-development/sms-messaging-android
 //
 //        // check for data errors:
-        if (readingManager.getUserSelectedFacilities().size() == 0) {
+        if (healthCentreService.getAllSelectedByUserBlocking().size() == 0) {
             tvSendingStatus.setText("ERROR: No known health centres.\nPlease go to settings to enter them.");
             tvSendingStatus.setVisibility(View.VISIBLE);
             // return;
@@ -457,7 +458,7 @@ public class ReferralDialogFragment extends DialogFragment {
     private void setupHealthCentreSpinner(Dialog dialog) {
         Spinner sp = dialog.findViewById(R.id.spinnerHealthCentre);
         ArrayList<String> options = new ArrayList<>();
-        List<HealthFacilityEntity> healthFacilityEntities = readingManager.getUserSelectedFacilities();
+        List<HealthFacilityEntity> healthFacilityEntities = healthCentreService.getAllSelectedByUserBlocking();
 
         for (HealthFacilityEntity h : healthFacilityEntities) {
             options.add(h.getName());
