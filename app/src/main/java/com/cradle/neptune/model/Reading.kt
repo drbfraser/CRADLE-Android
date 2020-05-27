@@ -3,7 +3,6 @@ package com.cradle.neptune.model
 import android.content.Context
 import com.cradle.neptune.R
 import com.cradle.neptune.database.ReadingEntity
-import com.cradle.neptune.utilitiles.DateUtil
 import org.threeten.bp.ZonedDateTime
 import org.threeten.bp.temporal.ChronoUnit
 
@@ -106,14 +105,14 @@ data class Reading(
     override fun marshal(): JsonObject = with(JsonObject()) {
         put(ReadingField.ID, id)
         put(ReadingField.PATIENT_ID, patientId)
-        put(ReadingField.DATE_TIME_TAKEN, dateTimeTaken.toEpochSecond())
+        put(ReadingField.DATE_TIME_TAKEN, dateTimeTaken)
 
         union(bloodPressure)
         union(referral)
         put(ReadingField.URINE_TEST, urineTest)
         put(ReadingField.SYMPTOMS, symptomsString)
 
-        put(ReadingField.DATE_RECHECK_VITALS_NEEDED, dateRecheckVitalsNeeded?.toInstant()?.epochSecond)
+        put(ReadingField.DATE_RECHECK_VITALS_NEEDED, dateRecheckVitalsNeeded)
         put(ReadingField.IS_FLAGGED_FOR_FOLLOWUP, isFlaggedForFollowUp)
 
         put(ReadingField.PREVIOUS_READING_IDS, previousReadingIds)
@@ -136,22 +135,20 @@ data class Reading(
          */
         override fun unmarshal(data: JsonObject): Reading {
             val id = data.stringField(ReadingField.ID)
-            val patientId = data.stringField(ReadingField.PATIENT_ID)
-            val dateTimeTaken = DateUtil.getZoneTimeFromLong(data.optLongField(ReadingField.DATE_TIME_TAKEN))
+
+            val patientId = data.optStringField(ReadingField.PATIENT_ID) ?:
+                data.getJSONObject("patient").getString("patientId")
+
+            val dateTimeTaken = data.dateField(ReadingField.DATE_TIME_TAKEN)
 
             val bloodPressure = BloodPressure.unmarshal(data)
             val referral = maybeUnmarshal(Referral, data)
-            val urineTest = if (data.hasNonNullField(ReadingField.URINE_TEST)) {
-                UrineTest.unmarshal(data.objectField(ReadingField.URINE_TEST))
-            } else {
-                null
-            }
+            val urineTest = UrineTest.maybeUnmarshal(data)
 
             // TODO: Encode symptoms as a JSON array and not a comma separated string
             val symptoms = data.optStringField(ReadingField.SYMPTOMS)?.split(", ") ?: emptyList()
 
-            val dateRecheckVitalsNeeded =
-                DateUtil.getZoneTimeFromLong(data.optLongField(ReadingField.DATE_RECHECK_VITALS_NEEDED))
+            val dateRecheckVitalsNeeded = data.optDateField(ReadingField.DATE_RECHECK_VITALS_NEEDED)
             val isFlaggedForFollowUp = data.optBooleanField(ReadingField.IS_FLAGGED_FOR_FOLLOWUP) ?: false
 
             val previousReadingIds = data.optArrayField(ReadingField.PREVIOUS_READING_IDS)?.let {
@@ -306,7 +303,7 @@ data class Referral(
          * @throws JsonException if any of the required fields are missing
          */
         override fun unmarshal(data: JsonObject): Referral {
-            val messageSendTime = DateUtil.getZoneTimeFromLong(data.longField(ReferralField.MESSAGE_SEND_TIME))
+            val messageSendTime = data.dateField(ReferralField.MESSAGE_SEND_TIME)
             val healthCentre = data.stringField(ReferralField.HEALTH_CENTRE)
             val comment = data.stringField(ReferralField.COMMENT)
             return Referral(messageSendTime, healthCentre, comment)
@@ -402,8 +399,8 @@ data class ReadingMetadata(
     override fun marshal() = with(JsonObject()) {
         put(MetadataField.APP_VERSION, appVersion)
         put(MetadataField.DEVICE_INFO, deviceInfo)
-        put(MetadataField.DATE_LAST_SAVED, dateLastSaved?.toEpochSecond())
-        put(MetadataField.DATE_UPLOADED_TO_SERVER, dateUploadedToServer?.toEpochSecond())
+        put(MetadataField.DATE_LAST_SAVED, dateLastSaved)
+        put(MetadataField.DATE_UPLOADED_TO_SERVER, dateUploadedToServer)
         put(MetadataField.PHOTO_PATH, photoPath)
         put(MetadataField.IS_IMAGE_UPLOADED, isImageUploaded)
         put(MetadataField.TOTAL_OCR_SECONDS, totalOcrSeconds?.toDouble())
@@ -414,9 +411,8 @@ data class ReadingMetadata(
         override fun unmarshal(data: JsonObject): ReadingMetadata {
             val appVersion = data.optStringField(MetadataField.APP_VERSION)
             val deviceInfo = data.optStringField(MetadataField.DEVICE_INFO)
-            val dateLastSaved = DateUtil.getZoneTimeFromLong(data.optLongField(MetadataField.DATE_LAST_SAVED))
-            val dateUploadedToServer =
-                DateUtil.getZoneTimeFromLong(data.optLongField(MetadataField.DATE_UPLOADED_TO_SERVER))
+            val dateLastSaved = data.optDateField(MetadataField.DATE_LAST_SAVED)
+            val dateUploadedToServer = data.optDateField(MetadataField.DATE_UPLOADED_TO_SERVER)
             val photoPath = data.optStringField(MetadataField.PHOTO_PATH)
             val isImageUploaded = data.booleanField(MetadataField.IS_IMAGE_UPLOADED)
             val totalOcrSeconds = data.optDoubleField(MetadataField.TOTAL_OCR_SECONDS)?.toFloat()

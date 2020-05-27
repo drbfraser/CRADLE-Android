@@ -1,8 +1,10 @@
 package com.cradle.neptune.model
 
+import com.cradle.neptune.utilitiles.DateUtil
 import org.json.JSONArray
 import org.json.JSONObject
 import org.json.JSONException
+import org.threeten.bp.ZonedDateTime
 
 /**
  * An alias of [JSONObject] with a name consistent with other class names.
@@ -86,6 +88,23 @@ fun <F : Field> JsonObject.put(field: F, value: String?): JsonObject = put(field
  * @return This object.
  */
 fun <F: Field> JsonObject.put(field: F, value: Double?): JsonObject = put(field.text, value)
+
+/**
+ * Maps [field] to [value].
+ *
+ * We prefer to store [ZonedDateTime] values as the number of seconds since
+ * epoch. However, for legacy support, the inverse getter method supports both
+ * unmarshalling epoch seconds as well as formatted strings.
+ *
+ * If [value] is `null` then the mapping for [field] will be removed from this
+ * object.
+ *
+ * @return This object.
+ */
+fun <F: Field> JsonObject.put(field: F, value: ZonedDateTime?): JsonObject {
+    val epochSeconds = value?.toEpochSecond()
+    return put(field, epochSeconds)
+}
 
 /**
  * Maps [field] to [value].
@@ -227,6 +246,38 @@ fun <F : Field> JsonObject.optBooleanField(field: F): Boolean? = try {
 }
 
 /**
+ * Returns the date value for the specified field.
+ *
+ * The date may either be encoded in JSON as a long containing the number of
+ * seconds since the epoch or a formatted string.
+ *
+ * @throws JsonException If not such field exists.
+ */
+fun <F : Field> JsonObject.dateField(field: F): ZonedDateTime {
+    // Try epoch seconds first.
+    val date = optLongField(field)?.let { DateUtil.getZoneTimeFromLong(it) }
+    if (date != null) {
+        return date
+    }
+
+    // If not epoch seconds then try formatted string.
+    return ZonedDateTime.parse(stringField(field))
+}
+
+/**
+ * Returns the date value for the specified field or `null` if not such field
+ * exists.
+ *
+ * The date may either be encoded in JSON as a long containing the number of
+ * seconds since the epoch or a formatted string.
+ */
+fun <F : Field> JsonObject.optDateField(field: F): ZonedDateTime? = try {
+    dateField(field)
+} catch (e: JsonException) {
+    null
+}
+
+/**
  * Returns the object value for the specified field.
  *
  * @throws JsonException If no such field exists.
@@ -262,6 +313,21 @@ fun <F : Field> JsonObject.optArrayField(field: F): JsonArray? = try {
  * @throws JsonException If no such field exists.
  */
 fun <T, F : Field> JsonObject.mapField(field: F, transform: (String) -> T): T = transform(stringField(field))
+
+/**
+ * Interprets the value for the specified field as a string then passes it to
+ * [transform] which maps the string to some other type. If the field does not
+ * exist, then `null` is returned.
+ *
+ * @param field The field to return.
+ * @param transform The transformation to apply to the string value obtained
+ * from the field.
+ * @return The result of [transform] or `null` if the field doesn't exist.
+ */
+fun <T, F : Field> JsonObject.mapOptField(field: F, transform: (String) -> T): T? {
+    val str = optStringField(field) ?: return null
+    return transform(str)
+}
 
 /**
  * True if [field] exists and is not the string `"null"`.

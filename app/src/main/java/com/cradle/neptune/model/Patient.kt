@@ -74,14 +74,10 @@ data class Patient(
          * cannot be converted into said enum.
          */
         override fun unmarshal(data: JsonObject): Patient = Patient().apply {
-            id = data.stringField(PatientField.ID)
-            name = data.stringField(PatientField.NAME)
+            id = data.optStringField(PatientField.ID) ?: ""
+            name = data.optStringField(PatientField.NAME) ?: ""
             dob = data.optStringField(PatientField.DOB)
-            age = try {
-                data.intField(PatientField.AGE)
-            } catch (e: JsonException) {
-                null
-            }
+            age = data.optIntField(PatientField.AGE)
             gestationalAge = maybeUnmarshal(GestationalAge, data)
             sex = data.mapField(PatientField.SEX, Sex::valueOf)
             isPregnant = data.booleanField(PatientField.IS_PREGNANT)
@@ -97,8 +93,8 @@ data class Patient(
                 }
             }
 
-            drugHistoryList = data.mapField(PatientField.DRUG_HISTORY, stringToList)
-            medicalHistoryList = data.mapField(PatientField.MEDICAL_HISTORY, stringToList)
+            drugHistoryList = data.mapOptField(PatientField.DRUG_HISTORY, stringToList) ?: emptyList()
+            medicalHistoryList = data.mapOptField(PatientField.MEDICAL_HISTORY, stringToList) ?: emptyList()
         }
     }
 }

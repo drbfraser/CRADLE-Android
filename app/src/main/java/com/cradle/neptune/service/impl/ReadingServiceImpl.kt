@@ -4,10 +4,15 @@ import android.util.Log
 import com.cradle.neptune.database.CradleDatabase
 import com.cradle.neptune.database.ReadingEntity
 import com.cradle.neptune.model.*
+import com.cradle.neptune.service.MarshalService
 import com.cradle.neptune.service.ReadingService
 import org.threeten.bp.ZonedDateTime
+import javax.inject.Inject
 
-class ReadingServiceImpl(private val database: CradleDatabase) : ReadingService {
+class ReadingServiceImpl @Inject constructor(
+    private val database: CradleDatabase,
+    private val marshalService: MarshalService
+) : ReadingService {
 
     private val readingDao get() = database.readingDaoAccess()
 
@@ -106,9 +111,7 @@ class ReadingServiceImpl(private val database: CradleDatabase) : ReadingService 
             return null
         }
         val json = JsonObject(jsonString)
-        val patient = Patient.unmarshal(json.objectField(ReadingEntityField.PATIENT))
-        val reading = Reading.unmarshal(json)
-        return Pair(patient, reading)
+        return marshalService.unmarshalDatabaseJson(json)
     }
 }
 

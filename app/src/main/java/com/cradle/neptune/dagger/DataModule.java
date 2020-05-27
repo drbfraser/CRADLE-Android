@@ -12,6 +12,7 @@ import com.cradle.neptune.model.Settings;
 import javax.inject.Singleton;
 
 import com.cradle.neptune.service.HealthCentreService;
+import com.cradle.neptune.service.MarshalService;
 import com.cradle.neptune.service.ReadingService;
 import com.cradle.neptune.service.impl.HealthCentreServiceImpl;
 import com.cradle.neptune.service.impl.ReadingServiceImpl;
@@ -25,27 +26,24 @@ import dagger.Provides;
 @Module
 public class DataModule {
 
-    private CradleDatabase database = null;
-
-    private CradleDatabase lazyInitDatabase(Application application) {
-        if (database == null) {
-            database = Room.databaseBuilder(application, CradleDatabase.class, "room-readingDB")
-                    .allowMainThreadQueries()
-                    .build();
-        }
-        return database;
+    @Provides
+    @Singleton
+    public CradleDatabase provideDatabase(Application application) {
+        return Room.databaseBuilder(application, CradleDatabase.class, "room-readingDB")
+                .allowMainThreadQueries()
+                .build();
     }
 
     @Provides
     @Singleton
-    public ReadingService provideReadingService(Application application) {
-        return new ReadingServiceImpl(lazyInitDatabase(application));
+    public ReadingService provideReadingService(CradleDatabase database, MarshalService marshalService) {
+        return new ReadingServiceImpl(database, marshalService);
     }
 
     @Provides
     @Singleton
-    public HealthCentreService provideHealthCentreService(Application application) {
-        return new HealthCentreServiceImpl(lazyInitDatabase(application));
+    public HealthCentreService provideHealthCentreService(CradleDatabase database) {
+        return new HealthCentreServiceImpl(database);
     }
 
     @Provides
