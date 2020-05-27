@@ -1,7 +1,5 @@
-package com.cradle.neptune.model.model
+package com.cradle.neptune.model
 
-import com.cradle.neptune.model.JsonObject
-import com.cradle.neptune.model.union
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 

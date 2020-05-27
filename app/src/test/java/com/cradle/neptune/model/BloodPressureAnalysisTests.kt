@@ -1,11 +1,5 @@
-package com.cradle.neptune.model.model
+package com.cradle.neptune.model
 
-import com.cradle.neptune.model.BloodPressure
-import com.cradle.neptune.model.RED_DIASTOLIC
-import com.cradle.neptune.model.RED_SYSTOLIC
-import com.cradle.neptune.model.ReadingAnalysis
-import com.cradle.neptune.model.YELLOW_DIASTOLIC
-import com.cradle.neptune.model.YELLOW_SYSTOLIC
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
