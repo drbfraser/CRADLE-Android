@@ -1,4 +1,26 @@
-unit_tests:
+image: cangol/android-gradle
+stages:
+  - build
+  - test
+
+# Set Gradle home to within the project directory so that we can cache it.
+before_script:
+    - export GRADLE_USER_HOME=`pwd`/.gradle
+
+# Cache Gradle files.
+cache:
+  paths:
+     - .gradle/wrapper/
+     - .gradle/caches/
+
+# Compile and assmeble a debug version of the application.
+build:
+  stage: build
   script:
-    - chmod +x gradlew
+    - ./gradlew assembleDebug
+
+# Run local unit tests
+test:
+  stage: test
+  script:
     - ./gradlew test
