@@ -1,5 +1,6 @@
 package com.cradle.neptune.model
 
+import java.io.Serializable
 import java.util.Locale
 
 // TODO: Figure out which of these fields must be optional and which are never
@@ -37,7 +38,7 @@ data class Patient(
     var villageNumber: String? = null,
     var drugHistoryList: List<String> = emptyList(),
     var medicalHistoryList: List<String> = emptyList()
-) : Marshal<JsonObject> {
+) : Marshal<JsonObject>, Serializable {
 
     /**
      * Constructs a [JsonObject] from this object.
@@ -188,9 +189,21 @@ class GestationalAgeMonths(months: Int) : GestationalAge(months) {
  * A temporal duration expressed in weeks and days.
  */
 data class WeeksAndDays(val weeks: Int, val days: Int) {
+
+    /**
+     * This value in number of weeks.
+     */
+    fun asWeeks(): Double = weeks.toDouble() + (days.toDouble() / DAYS_PER_WEEK)
+
+    /**
+     * This value in number of months.
+     */
+    fun asMonths(): Double = (weeks.toDouble() / WEEKS_PER_MONTH) + (days.toDouble() / DAYS_PER_MONTH)
+
     companion object {
         private const val DAYS_PER_MONTH = 30
         private const val DAYS_PER_WEEK = 7
+        private const val WEEKS_PER_MONTH = 4.34524
 
         fun weeks(weeks: Int) = WeeksAndDays(weeks, 0)
 

@@ -27,11 +27,8 @@ import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
-import com.cradle.neptune.database.ParsePatientInformationAsyncTask;
-import com.cradle.neptune.model.Patient;
-import com.cradle.neptune.model.Reading;
-import com.cradle.neptune.model.ReadingManager;
-import com.cradle.neptune.model.Settings;
+import com.cradle.neptune.model.*;
+import com.cradle.neptune.service.DatabaseService;
 import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter;
 import com.github.mikephil.charting.charts.LineChart;
@@ -39,6 +36,8 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 
+import kotlin.Pair;
+import kotlin.Unit;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -47,6 +46,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -71,8 +71,10 @@ public class PatientProfileActivity extends AppCompatActivity {
     Patient currPatient;
     List<Reading> patientReadings;
     // Data Model
+//    @Inject
+//    ReadingManager readingManager;
     @Inject
-    ReadingManager readingManager;
+    DatabaseService databaseService;
     @Inject
     SharedPreferences sharedPreferences;
     // ..inject this even if not needed because it forces it to load at startup and initialize.
@@ -121,21 +123,40 @@ public class PatientProfileActivity extends AppCompatActivity {
         ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Updating patient");
         progressDialog.setCancelable(false);
-        JsonRequest<JSONObject> jsonArrayRequest = new JsonObjectRequest(Request.Method.GET, Settings.DEFAULT_SERVER_URL + "/patient/reading/" + currPatient.patientId,
+        JsonRequest<JSONObject> jsonArrayRequest = new JsonObjectRequest(Request.Method.GET, Settings.DEFAULT_SERVER_URL + "/patient/reading/" + currPatient.getId(),
                 null, response -> {
-            try {
-                List<Reading> readings =
-                        ParsePatientInformationAsyncTask.parseReadingsAndPatientFromJson(response);
-                readingManager.addAllReadings(this, readings);
-                setupReadingsRecyclerView();
-                progressDialog.cancel();
-                Toast.makeText(PatientProfileActivity.this, "Patient updated!", Toast.LENGTH_SHORT).show();
-            } catch (JSONException e) {
-                e.printStackTrace();
-                progressDialog.cancel();
-                Toast.makeText(PatientProfileActivity.this, "Patient update fail!", Toast.LENGTH_SHORT).show();
-
-            }
+            ApiKt.legacyUnmarshallPatientAndReadings(
+                    response,
+                    result -> {
+                        Patient patient = result.getFirst();
+                        List<Reading> readings = result.getSecond();
+                        for (Reading reading : readings) {
+                            databaseService.addReadingAsync(patient, reading);
+                        }
+                        setupReadingsRecyclerView();
+                        progressDialog.cancel();
+                        Toast.makeText(PatientProfileActivity.this, "Patient updated!", Toast.LENGTH_SHORT).show();
+                        return Unit.INSTANCE;
+                    },
+                    error -> {
+                        error.printStackTrace();
+                        progressDialog.cancel();
+                        Toast.makeText(PatientProfileActivity.this, "Patient update fail!", Toast.LENGTH_SHORT).show();
+                        return Unit.INSTANCE;
+                    });
+//            try {
+//                List<Reading> readings =
+//                        ParsePatientInformationAsyncTask.parseReadingsAndPatientFromJson(response);
+//                readingManager.addAllReadings(this, readings);
+//                setupReadingsRecyclerView();
+//                progressDialog.cancel();
+//                Toast.makeText(PatientProfileActivity.this, "Patient updated!", Toast.LENGTH_SHORT).show();
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//                progressDialog.cancel();
+//                Toast.makeText(PatientProfileActivity.this, "Patient update fail!", Toast.LENGTH_SHORT).show();
+//
+//            }
             //Log.d("bugg","pass: "+ response.toString());
         }, error -> {
             Log.d("bugg", "failed: " + error);
@@ -178,22 +199,22 @@ public class PatientProfileActivity extends AppCompatActivity {
     }
 
     void populatePatientInfo(Patient patient) {
-        patientID.setText(patient.patientId);
-        patientName.setText(patient.patientName);
-        if (!Util.stringNullOrEmpty(patient.dob)) {
-            patientDOB.setText(patient.dob);
+        patientID.setText(patient.getId());
+        patientName.setText(patient.getName());
+        if (!Util.stringNullOrEmpty(patient.getDob())) {
+            patientDOB.setText(patient.getDob());
         }
-        if (!Util.stringNullOrEmpty(patient.age + "")) {
-            patientAge.setText(patient.age + "");
+        if (!Util.stringNullOrEmpty(patient.getAge() + "")) {
+            patientAge.setText(patient.getAge() + "");
         }
-        patientSex.setText(patient.patientSex.toString());
-        if (!Util.stringNullOrEmpty(patient.villageNumber)) {
-            villageNo.setText(patient.villageNumber);
+        patientSex.setText(patient.getSex().toString());
+        if (!Util.stringNullOrEmpty(patient.getVillageNumber())) {
+            villageNo.setText(patient.getVillageNumber());
         }
-        if (!Util.stringNullOrEmpty(patient.zone)) {
-            patientZone.setText(patient.zone);
+        if (!Util.stringNullOrEmpty(patient.getZone())) {
+            patientZone.setText(patient.getZone());
         }
-        if (patient.isPregnant) {
+        if (patient.isPregnant()) {
             pregnant.setText("Yes");
             setupGestationalInfo(patient);
         } else {
@@ -201,15 +222,15 @@ public class PatientProfileActivity extends AppCompatActivity {
             pregnancyInfoLayout.setVisibility(View.GONE);
         }
 
-        if (patient.drugHistoryList != null && !patient.drugHistoryList.isEmpty()) {
+        if (patient.getDrugHistoryList() != null && !patient.getDrugHistoryList().isEmpty()) {
             TextView drugHistroy = findViewById(R.id.drugHistroyTxt);
-            drugHistroy.setText(patient.drugHistoryList.get(0));
+            drugHistroy.setText(patient.getDrugHistoryList().get(0));
 
         }
-        if (patient.medicalHistoryList != null && !patient.medicalHistoryList.isEmpty()) {
+        if (patient.getMedicalHistoryList() != null && !patient.getMedicalHistoryList().isEmpty()) {
 
             TextView medHistory = findViewById(R.id.medHistoryText);
-            medHistory.setText(patient.medicalHistoryList.get(0));
+            medHistory.setText(patient.getMedicalHistoryList().get(0));
         }
     }
 
@@ -226,14 +247,13 @@ public class PatientProfileActivity extends AppCompatActivity {
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
                 double val = -1;
                 if (i == R.id.monthradiobutton) {
-                    val = convertGestationAgeToMonth(patient);
-                    if (val < 0) {
-                        gestationalAge.setText("N/A");
-                    } else {
-                        gestationalAge.setText(val + "");
+                    if (patient.getGestationalAge() != null) {
+                        val = patient.getGestationalAge().getAge().asMonths();
                     }
                 } else {
-                    val = convertGestationAgeToWeek(patient);
+                    if (patient.getGestationalAge() != null) {
+                        val = patient.getGestationalAge().getAge().asWeeks();
+                    }
                 }
                 if (val < 0) {
                     gestationalAge.setText("N/A");
@@ -245,51 +265,51 @@ public class PatientProfileActivity extends AppCompatActivity {
         radioGroup.check(R.id.monthradiobutton);
     }
 
-    private double convertGestationAgeToWeek(Patient patient) {
-        double age = 0;
-        if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS && patient.isPregnant) {
-            try {
-                age = Double.parseDouble(patient.gestationalAgeValue);
-            } catch (NumberFormatException e) {
-                age = -1;
-                e.printStackTrace();
-            }
-            double week = age * WEEKS_IN_MONTH;
-            double weekRounded = Math.round(week * 100D) / 100D;
-            return weekRounded;
-        } else if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS && patient.isPregnant) {
-            try {
-                age = Double.parseDouble(patient.gestationalAgeValue);
-            } catch (NumberFormatException e) {
-                age = -1;
-                e.printStackTrace();
-            }
-        }
-        return age;
-    }
+//    private double convertGestationAgeToWeek(Patient patient) {
+//        double age = 0;
+//        if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS && patient.isPregnant) {
+//            try {
+//                age = Double.parseDouble(patient.gestationalAgeValue);
+//            } catch (NumberFormatException e) {
+//                age = -1;
+//                e.printStackTrace();
+//            }
+//            double week = age * WEEKS_IN_MONTH;
+//            double weekRounded = Math.round(week * 100D) / 100D;
+//            return weekRounded;
+//        } else if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS && patient.isPregnant) {
+//            try {
+//                age = Double.parseDouble(patient.gestationalAgeValue);
+//            } catch (NumberFormatException e) {
+//                age = -1;
+//                e.printStackTrace();
+//            }
+//        }
+//        return age;
+//    }
 
-    private double convertGestationAgeToMonth(Patient patient) {
-        double age = 0;
-        if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS && patient.isPregnant) {
-            try {
-                age = Double.parseDouble(patient.gestationalAgeValue);
-            } catch (NumberFormatException e) {
-                age = -1;
-                e.printStackTrace();
-            }
-            double months = age / WEEKS_IN_MONTH;
-            double monthRounded = Math.round(months * 100D) / 100D;
-            return monthRounded;
-        } else if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS && patient.isPregnant) {
-            try {
-                age = Double.parseDouble(patient.gestationalAgeValue);
-            } catch (NumberFormatException e) {
-                age = -1;
-                e.printStackTrace();
-            }
-        }
-        return age;
-    }
+//    private double convertGestationAgeToMonth(Patient patient) {
+//        double age = 0;
+//        if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS && patient.isPregnant) {
+//            try {
+//                age = Double.parseDouble(patient.gestationalAgeValue);
+//            } catch (NumberFormatException e) {
+//                age = -1;
+//                e.printStackTrace();
+//            }
+//            double months = age / WEEKS_IN_MONTH;
+//            double monthRounded = Math.round(months * 100D) / 100D;
+//            return monthRounded;
+//        } else if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS && patient.isPregnant) {
+//            try {
+//                age = Double.parseDouble(patient.gestationalAgeValue);
+//            } catch (NumberFormatException e) {
+//                age = -1;
+//                e.printStackTrace();
+//            }
+//        }
+//        return age;
+//    }
 
     private void setupLineChart() {
         LineChart lineChart = findViewById(R.id.patientLineChart);
@@ -303,9 +323,9 @@ public class PatientProfileActivity extends AppCompatActivity {
         //put data sets in chronological order
         int index = patientReadings.size();
         for (Reading reading : patientReadings) {
-            sBPs.add(0, new Entry(index, reading.bpSystolic));
-            dBPs.add(0, new Entry(index, reading.bpDiastolic));
-            bPMs.add(0, new Entry(index, reading.heartRateBPM));
+            sBPs.add(0, new Entry(index, reading.getBloodPressure().getSystolic()));
+            dBPs.add(0, new Entry(index, reading.getBloodPressure().getDiastolic()));
+            bPMs.add(0, new Entry(index, reading.getBloodPressure().getHeartRate()));
             index--;
         }
 
@@ -346,13 +366,20 @@ public class PatientProfileActivity extends AppCompatActivity {
 
     }
 
+    private List<Reading> getThisPatientsReadings() {
+        return databaseService.getReadingsByPatientIdBlocking(currPatient.getId())
+                .stream()
+                .map(Pair::getSecond)
+                .sorted(Reading.DescendingDateComparator.INSTANCE)
+                .collect(Collectors.toList());
+    }
+
     private void setupCreatePatientReadingButton() {
         Button createButton = findViewById(R.id.newPatientReadingButton);
 
-        List<Reading> readings = readingManager.getReadingByPatientID(this, currPatient.patientId);
-        Collections.sort(readings, new Reading.ComparatorByDateReverse());
+        List<Reading> readings = getThisPatientsReadings();
         boolean readingFound = false;
-        Reading latestReading = new Reading();
+        Reading latestReading = null;
 
         if (readings.size() > 0) {
             readingFound = true;
@@ -360,7 +387,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         }
         //button only works if a reading exist, which it always should
         if (readingFound) {
-            String readingID = latestReading.readingId;
+            String readingID = latestReading.getId();
             createButton.setOnClickListener(v -> {
                 Intent intent = ReadingActivity.makeIntentForNewReadingExistingPatient(PatientProfileActivity.this, readingID);
                 startActivityForResult(intent, READING_ACTIVITY_DONE);
@@ -369,10 +396,7 @@ public class PatientProfileActivity extends AppCompatActivity {
     }
 
     private void setupReadingsRecyclerView() {
-
-
-        patientReadings = readingManager.getReadingByPatientID(this, currPatient.patientId);
-        Collections.sort(patientReadings, new Reading.ComparatorByDateReverse());
+        patientReadings = getThisPatientsReadings();
 
         // use linear layout
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
@@ -411,7 +435,7 @@ public class PatientProfileActivity extends AppCompatActivity {
                 .setMessage("Delete reading?")
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setPositiveButton(android.R.string.yes, (dialog1, whichButton) -> {
-                    readingManager.deleteReadingById(this, readingId);
+                    databaseService.deleteReadingByIdAsync(readingId);
                     updateUi();
                 })
                 .setNegativeButton(android.R.string.no, null);

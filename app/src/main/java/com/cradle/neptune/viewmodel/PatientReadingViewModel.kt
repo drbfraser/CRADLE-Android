@@ -244,6 +244,7 @@ class PatientReadingViewModel() {
             urineTest = urineTest,
             symptoms = symptoms ?: emptyList(),
             referral = referral,
+            followUp = null,
             dateRecheckVitalsNeeded = dateRecheckVitalsNeeded,
             isFlaggedForFollowUp = isFlaggedForFollowUp ?: false,
             previousReadingIds = previousReadingIds ?: emptyList(),

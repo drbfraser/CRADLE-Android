@@ -48,6 +48,7 @@ data class Reading(
     var symptoms: List<String>,
 
     var referral: Referral?,
+    var followUp: ReadingFollowUp?,
 
     var dateRecheckVitalsNeeded: ZonedDateTime?,
     var isFlaggedForFollowUp: Boolean,
@@ -56,6 +57,11 @@ data class Reading(
 
     var metadata: ReadingMetadata
 ) : Marshal<JsonObject> {
+
+    /**
+     * True if this reading has a referral attached to it.
+     */
+    val isReferredToHealthCenter: Boolean  get() = referral != null
 
     /**
      * True if this reading notes that a vital recheck is required.
@@ -168,6 +174,7 @@ data class Reading(
                 symptoms = symptoms,
 
                 referral = referral,
+                followUp = null,
 
                 dateRecheckVitalsNeeded = dateRecheckVitalsNeeded,
                 isFlaggedForFollowUp = isFlaggedForFollowUp,

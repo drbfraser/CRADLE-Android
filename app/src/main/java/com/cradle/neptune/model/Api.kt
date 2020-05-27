@@ -79,6 +79,34 @@ fun legacyUnmarshallAllInfoAsync(array: JsonArray, callback: (List<Pair<Patient,
 }
 
 /**
+ * A legacy version of [unmarshalPatientAndReadings] which runs on the IO
+ * dispatcher.
+ *
+ * The function is meant as a legacy interface between the old Java concurrency
+ * model and Kotlin's coroutine model and should be removed at a later date.
+ *
+ * @param json the JSON to unmarshal
+ * @param onOk a callback to execute once successfully constructing models
+ * @param onError a callback to execute if an error occurred.
+ */
+fun legacyUnmarshallPatientAndReadings(
+    json: JsonObject,
+    onOk: (Pair<Patient, List<Reading>>) -> Unit,
+    onError: (Exception) -> Unit
+) {
+    legacyAsync<JsonObject, Unit> { params ->
+        coroutineScope {
+            try {
+                val result = unmarshalPatientAndReadings(params[0])
+                onOk(result)
+            } catch (e: Exception) {
+                onError(e)
+            }
+        }
+    }.execute(json)
+}
+
+/**
  * Wraps a `suspend` function in an [AsyncTask] which executes the contents
  * of [job] using the IO dispatcher as to not interrupt the UI thread.
  *

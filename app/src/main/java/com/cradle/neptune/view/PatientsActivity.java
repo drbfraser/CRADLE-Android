@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,16 +28,14 @@ import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
+import com.cradle.neptune.service.DatabaseService;
 import com.cradle.neptune.viewmodel.PatientsViewAdapter;
 
+import kotlin.Pair;
 import org.threeten.bp.ZonedDateTime;
 import org.threeten.bp.temporal.ChronoUnit;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 import javax.inject.Inject;
 
@@ -47,6 +44,9 @@ public class PatientsActivity extends AppCompatActivity {
     // Data Model
     @Inject
     ReadingManager readingManager;
+
+    @Inject
+    DatabaseService databaseService;
 
     @Inject
     SharedPreferences sharedPreferences;
@@ -138,13 +138,14 @@ public class PatientsActivity extends AppCompatActivity {
 
         HashMap<String, Pair<Patient, Reading>> patientHashMap = new HashMap<>();
 
-        List<Reading> allReadings = readingManager.getReadings(this);
-        Collections.sort(allReadings, new Reading.ComparatorByDateReverse());
+//        List<Reading> allReadings = readingManager.getReadings(this);
+        List<Pair<Patient, Reading>> allReadings = databaseService.getAllReadingsBlocking();
+        Collections.sort(allReadings, Comparator.comparing(o -> o.getSecond().getDateTimeTaken()));
 
 
-        for (Reading reading : allReadings) {
-            if (!patientHashMap.containsKey(reading.patient.patientId)) {
-                patientHashMap.put(reading.patient.patientId, new Pair<>(reading.patient, reading));
+        for (Pair<Patient, Reading> pair : allReadings) {
+            if (!patientHashMap.containsKey(pair.getSecond().getPatientId())) {
+                patientHashMap.put(pair.getSecond().getPatientId(), pair);
             }
         }
         List<Pair<Patient, Reading>> patients = new ArrayList<>(patientHashMap.values());

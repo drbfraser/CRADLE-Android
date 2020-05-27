@@ -3,7 +3,6 @@ package com.cradle.neptune.viewmodel;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +19,7 @@ import com.cradle.neptune.R;
 import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.view.PatientProfileActivity;
+import kotlin.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,16 +48,16 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
     @Override
     public void onBindViewHolder(@NonNull PatientViewHolder patientViewHolder, int i) {
         Pair<Patient, Reading> pair = filteredpatientList.get(i);
-        Patient patient = pair.first;
-        Reading reading = pair.second;
-        patientViewHolder.patientVillage.setText(patient.villageNumber);
-        patientViewHolder.patientName.setText(patient.patientName);
-        patientViewHolder.patientId.setText(patient.patientId);
+        Patient patient = pair.getFirst();
+        Reading reading = pair.getSecond();
+        patientViewHolder.patientVillage.setText(patient.getVillageNumber());
+        patientViewHolder.patientName.setText(patient.getName());
+        patientViewHolder.patientId.setText(patient.getId());
 
-        if (reading.readingFollowUp != null) {
+        if (reading.getFollowUp() != null) {
             patientViewHolder.referralImg.setImageResource(R.drawable.ic_check_circle_black_24dp);
             patientViewHolder.referralImg.setVisibility(View.VISIBLE);
-        } else if (reading.isReferredToHealthCentre()) {
+        } else if (reading.isReferredToHealthCenter()) {
             patientViewHolder.referralImg.setImageResource(R.drawable.ic_pending_referral_black_24dp);
             patientViewHolder.referralImg.setVisibility(View.VISIBLE);
         }
@@ -86,9 +86,9 @@ public class PatientsViewAdapter extends RecyclerView.Adapter<PatientsViewAdapte
                 } else {
                     List<Pair<Patient, Reading>> filteredList = new ArrayList<>();
                     for (Pair<Patient,Reading> pair : patientList) {
-                        if (pair.first.patientId.contains(charString) ||
-                                pair.first.patientName.toLowerCase().contains(charString.toLowerCase())){
-                            Log.d("bugg","matching: search: "+ charString+ " matchID: "+pair.first.patientId+ " NAME: "+pair.first.patientName);
+                        if (pair.getFirst().getId().contains(charString) ||
+                                pair.getFirst().getName().toLowerCase().contains(charString.toLowerCase())){
+                            Log.d("bugg","matching: search: "+ charString+ " matchID: "+pair.getFirst().getId()+ " NAME: "+pair.getFirst().getName());
 
                             filteredList.add(pair);
                         }
