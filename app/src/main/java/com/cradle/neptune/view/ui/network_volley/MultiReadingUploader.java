@@ -13,13 +13,10 @@ import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.service.MarshalService;
 import com.cradle.neptune.utilitiles.DateUtil;
-import com.cradle.neptune.utilitiles.GsonUtil;
 import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.utilitiles.Zipper;
-import com.cradle.neptune.view.LoginActivity;
 
 import kotlin.Pair;
-import org.json.JSONException;
 import org.threeten.bp.ZonedDateTime;
 
 import java.io.File;
