@@ -1,7 +1,10 @@
 package com.cradle.neptune.model
 
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.threeten.bp.Instant
+import org.threeten.bp.ZoneId
+import org.threeten.bp.ZonedDateTime
 
 class JsonObjectTests {
     @Test
@@ -10,9 +13,9 @@ class JsonObjectTests {
         val b = JsonObject("""{"b":2}""")
         a.union(b)
 
-        Assertions.assertEquals(1, a.get("a"))
-        Assertions.assertEquals(2, a.get("b"))
-        Assertions.assertEquals("world", a.get("hello"))
+        assertEquals(1, a.get("a"))
+        assertEquals(2, a.get("b"))
+        assertEquals("world", a.get("hello"))
     }
 
     @Test
@@ -21,7 +24,35 @@ class JsonObjectTests {
         val b = JsonObject("""{"a":2}""")
         a.union(b)
 
-        Assertions.assertEquals(2, a.get("a"))
-        Assertions.assertEquals("world", a.get("hello"))
+        assertEquals(2, a.get("a"))
+        assertEquals("world", a.get("hello"))
+    }
+
+    @Test
+    fun jsonObject_ifDateIsEpochSeconds_parseIt() {
+        val time: Long = 1590701531
+        val a = JsonObject("""{"date":$time}""")
+
+        val instant = Instant.ofEpochSecond(time)
+        val expected = ZonedDateTime.ofInstant(instant, ZoneId.of("America/Los_Angeles"))
+        assertEquals(expected, a.dateField(Field.fromString("date")))
+    }
+
+    @Test
+    fun jsonObject_ifDateIsISOZonedDateTime_parseIt() {
+        val time = "2019-08-29T17:52:40-07:00"
+        val a = JsonObject("""{"date":"$time"}""")
+
+        val expected = ZonedDateTime.parse("2019-08-29T17:52:40-07:00")
+        assertEquals(expected, a.dateField(Field.fromString("date")))
+    }
+
+    @Test
+    fun jsonObject_ifDateContainsTimeZoneName_parseIt() {
+        val time = "2019-08-29T17:52:40-07:00[America/Los_Angeles]"
+        val a = JsonObject("""{"date":"$time"}""")
+
+        val expected = ZonedDateTime.parse("2019-08-29T17:52:40-07:00")
+        assertEquals(expected, a.dateField(Field.fromString("date")))
     }
 }

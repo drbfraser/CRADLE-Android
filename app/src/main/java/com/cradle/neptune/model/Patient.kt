@@ -82,8 +82,8 @@ data class Patient(
             sex = data.mapField(PatientField.SEX, Sex::valueOf)
             isPregnant = data.booleanField(PatientField.IS_PREGNANT)
             // needsAssessment = data.booleanField(PatientField.NEEDS_ASSESSMENT)
-            zone = data.stringField(PatientField.ZONE)
-            villageNumber = data.stringField(PatientField.VILLAGE_NUMBER)
+            zone = data.optStringField(PatientField.ZONE)
+            villageNumber = data.optStringField(PatientField.VILLAGE_NUMBER)
 
             val stringToList: (String) -> List<String> = {
                 if (it.toLowerCase(Locale.getDefault()) == "null") {
@@ -155,6 +155,39 @@ sealed class GestationalAge(val value: Int) : Marshal<JsonObject> {
             }
         }
     }
+
+    /**
+     * True if `this` and [other] are an instance of the same class and have the
+     * same [value].
+     *
+     * This means that a gestational age in weeks is never equal to a
+     * gestational age in months even if they represent the same amount of time.
+     */
+    override fun equals(other: Any?): Boolean {
+        if (this.hashCode() != other.hashCode()) {
+            return false
+        }
+
+        return when (other) {
+            is GestationalAgeWeeks -> if (this is GestationalAgeWeeks) {
+                this.value == other.value
+            } else {
+                false
+            }
+            is GestationalAgeMonths -> if (this is GestationalAgeMonths) {
+                this.value == other.value
+            } else {
+                false
+            }
+            else -> false
+        }
+    }
+
+    override fun hashCode(): Int {
+        var result = value
+        result = 31 * result + age.hashCode()
+        return result
+    }
 }
 
 /**
@@ -220,7 +253,7 @@ private enum class PatientField(override val text: String) : Field {
     ID("patientId"),
     NAME("patientName"),
     DOB("dob"),
-    AGE("AGE"),
+    AGE("age"),
     GESTATIONAL_AGE_UNIT("gestationalAgeUnit"),
     GESTATIONAL_AGE_VALUE("gestationalAgeValue"),
     SEX("patientSex"),

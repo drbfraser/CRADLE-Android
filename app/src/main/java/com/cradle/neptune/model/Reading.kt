@@ -91,15 +91,6 @@ data class Reading(
     val hasReferral get() = referral != null
 
     /**
-     * The list of symptoms formatted as a comma separated string.
-     */
-    val symptomsString
-        get() = symptoms
-            .map(String::trim)
-            .filter(String::isNotEmpty)
-            .joinToString(separator = ", ")
-
-    /**
      * Converts this [Reading] object into a [JsonObject].
      */
     override fun marshal(): JsonObject = with(JsonObject()) {
@@ -110,7 +101,7 @@ data class Reading(
         union(bloodPressure)
         union(referral)
         put(ReadingField.URINE_TEST, urineTest)
-        put(ReadingField.SYMPTOMS, symptomsString)
+        put(ReadingField.SYMPTOMS, symptoms)
 
         put(ReadingField.DATE_RECHECK_VITALS_NEEDED, dateRecheckVitalsNeeded)
         put(ReadingField.IS_FLAGGED_FOR_FOLLOWUP, isFlaggedForFollowUp)
@@ -146,7 +137,37 @@ data class Reading(
             val urineTest = UrineTest.maybeUnmarshal(data)
 
             // TODO: Encode symptoms as a JSON array and not a comma separated string
-            val symptoms = data.optStringField(ReadingField.SYMPTOMS)?.split(", ") ?: emptyList()
+            // var symptoms = data.optStringField(ReadingField.SYMPTOMS)?.split(", ") ?: emptyList()
+            val symptomsJsonArray = data.arrayField(ReadingField.SYMPTOMS)
+            val symptoms = mutableListOf<String>()
+
+            // For some reason, legacy symptoms were encoded in JSON as an
+            // array of a single, comma separated string.
+            //
+            // Something like:
+            //   ["ABDO PAIN, FEVERISH, HEADACHE, BLEEDING"]
+            //
+            // In order to handle this, and not incorrectly split up a user-
+            // supplied symptom, we'll check to see if the JSON array only
+            // contains a single element and if we can split it using a ','
+            // separator. Since there is no enumeration which defines the
+            // set of hard-coded symptoms, this is the best we can to for
+            // legacy support.
+            if (symptomsJsonArray.length() == 1) {
+                val symptomString = symptomsJsonArray.getString(0)
+                val split = symptomString.split(',')
+                    .map { it.trim() }
+                    .filterNot { it.isEmpty() }
+                if (split.size != 1) {
+                    symptoms.addAll(split)
+                } else {
+                    symptoms.add(symptomString)
+                }
+            } else {
+                for (i in 0..symptomsJsonArray.length()) {
+                    symptoms.add(symptomsJsonArray.getString(i))
+                }
+            }
 
             val dateRecheckVitalsNeeded = data.optDateField(ReadingField.DATE_RECHECK_VITALS_NEEDED)
             val isFlaggedForFollowUp = data.optBooleanField(ReadingField.IS_FLAGGED_FOR_FOLLOWUP) ?: false
@@ -415,7 +436,15 @@ data class ReadingMetadata(
             val dateUploadedToServer = data.optDateField(MetadataField.DATE_UPLOADED_TO_SERVER)
             val photoPath = data.optStringField(MetadataField.PHOTO_PATH)
             val isImageUploaded = data.booleanField(MetadataField.IS_IMAGE_UPLOADED)
-            val totalOcrSeconds = data.optDoubleField(MetadataField.TOTAL_OCR_SECONDS)?.toFloat()
+
+
+            var totalOcrSeconds = data.optDoubleField(MetadataField.TOTAL_OCR_SECONDS)?.toFloat()
+            // The legacy implementation used -1 to represent `null` for this
+            // field so we handle that case here.
+            if (totalOcrSeconds?.let { it < 0 } == true) {
+                totalOcrSeconds = null
+            }
+
             val gpsLocation = data.optStringField(MetadataField.GPS_LOCATION)
 
             return ReadingMetadata(

@@ -119,6 +119,11 @@ dependencies {
     //   The actual one is baked into the Android SDK so it fails if we try to test it
     testImplementation "org.json:json:20200518"
 
+    // A different version of this library for testing. The one used for the actual
+    // application must be initialized before it can be used which we can't do when
+    // testing hence this other version.
+    testImplementation "org.threeten:threetenbp:1.3.8"
+
     // required if you want to use Mockito for unit tests
     testImplementation 'org.mockito:mockito-core:2.22.0'
     // required if you want to use Mockito for Android tests

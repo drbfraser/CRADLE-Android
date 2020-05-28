@@ -5,6 +5,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.json.JSONException
 import org.threeten.bp.ZonedDateTime
+import org.threeten.bp.format.DateTimeFormatter
 
 /**
  * An alias of [JSONObject] with a name consistent with other class names.
@@ -37,6 +38,21 @@ interface Field {
      * final field called `name` we can't use that.
      */
     val text: String
+
+    companion object {
+        /**
+         * Returns an anonymous [Field] object with a [text] field equal to
+         * [string].
+         *
+         * This method is intended for testing purposes or one-off uses of
+         * [JsonObject]'s `field` methods. It is strongly encouraged to define
+         * an enumeration which implements this interface instead of using this
+         * method.
+         */
+        fun fromString(string: String): Field = object : Field {
+            override val text = string
+        }
+    }
 }
 
 /**
@@ -164,7 +180,18 @@ fun <F : Field> JsonObject.stringField(field: F): String = getString(field.text)
  * @return The string value contained in the field.
  */
 fun <F : Field> JsonObject.optStringField(field: F): String? = try {
-    getString(field.text)
+    val value = getString(field.text)
+
+    // Sometimes, we'll use the string "null" to mean a real `null` and no the
+    // text "null" (yes very confusing, I know). To compensate for this, when
+    // parsing an optional string, the text "null" will be treated as a literal
+    // `null` and not the string "null". Note that this is not the case for the
+    // non-optional variant of this method.
+    if (value == "null") {
+        null
+    } else {
+        value
+    }
 } catch (e: JsonException) {
     null
 }
@@ -261,7 +288,23 @@ fun <F : Field> JsonObject.dateField(field: F): ZonedDateTime {
     }
 
     // If not epoch seconds then try formatted string.
-    return ZonedDateTime.parse(stringField(field))
+    //
+    // Legacy strings may be in the form:
+    //     1969-12-31T16:00:00-08:00[America/Los_Angeles]
+    // which cannot be parsed by ZonedDateTime. I have no idea how this ever
+    // worked originally (probably some Gson magic), but in order for it to
+    // work new we need to remove the timezone name enclosed in '[' ']' and
+    // then parse the date using the ISO zoned date-time format.
+    val dateString = stringField(field)
+    // If dateString is not an actual date string the splitting at the first
+    // '[' wont make it any more parsable the it was originally so we don't
+    // need to worry about validating before we split.
+    val dateTimePart = dateString.split('[').first()
+    return try {
+        ZonedDateTime.parse(dateTimePart, DateTimeFormatter.ISO_ZONED_DATE_TIME)
+    } catch (e: Exception) {
+        throw JsonException("unable to parse date string", e)
+    }
 }
 
 /**
