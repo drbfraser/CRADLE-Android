@@ -36,8 +36,23 @@ class MarshalService @Inject constructor(private val settings: Settings) {
     }
 
     /**
+     * Composes a [patient] and [reading] into a JSON format suitable to be
+     * stored in the phone's onboard database.
+     *
+     * The inverse operation is implemented by [unmarshalDatabaseJson].
+     *
+     * @param patient the patient associated with [reading]
+     * @param reading the reading to marshal
+     */
+    fun marshalToDatabaseJson(patient: Patient, reading: Reading) = with(reading.marshal()) {
+        put(DatabaseJsonField.PATIENT, patient)
+    }
+
+    /**
      * Constructs a [Patient] and [Reading] object from a [JsonObject]
      * retrieved from the database.
+     *
+     * The inverse operation is implemented by [marshalToDatabaseJson].
      */
     fun unmarshalDatabaseJson(json: JsonObject): Pair<Patient, Reading> {
         val patientJson = json.objectField(DatabaseJsonField.PATIENT)

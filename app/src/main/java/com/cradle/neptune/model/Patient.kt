@@ -1,7 +1,6 @@
 package com.cradle.neptune.model
 
 import java.io.Serializable
-import java.util.Locale
 
 // TODO: Figure out which of these fields must be optional and which are never
 //  used at all.
@@ -19,7 +18,6 @@ import java.util.Locale
  * @property gestationalAge The gestational age of this patient if applicable.
  * @property sex This patient's sex.
  * @property isPregnant Whether this patient is pregnant or not.
- * // @property needsAssessment Whether this patient needs assessment or not.
  * @property zone The zone in which this patient lives.
  * @property villageNumber The number of the village in which this patient lives.
  * @property drugHistoryList A list of drug history for the patient.
@@ -33,7 +31,6 @@ data class Patient(
     var gestationalAge: GestationalAge? = null,
     var sex: Sex = Sex.OTHER,
     var isPregnant: Boolean = false,
-    // var needsAssessment: Boolean = false,
     var zone: String? = null,
     var villageNumber: String? = null,
     var drugHistoryList: List<String> = emptyList(),
@@ -51,13 +48,13 @@ data class Patient(
         put(PatientField.ID, id)
         put(PatientField.NAME, name)
         put(PatientField.DOB, dob)
+        put(PatientField.AGE, age)
         put(PatientField.SEX, sex.name)
         put(PatientField.IS_PREGNANT, isPregnant)
-        // put(PatientField.NEEDS_ASSESSMENT, needsAssessment)
         put(PatientField.ZONE, zone)
         put(PatientField.VILLAGE_NUMBER, villageNumber)
-
-        // FIXME: Original implementation does not handle drug or medical history?
+        put(PatientField.DRUG_HISTORY, drugHistoryList)
+        put(PatientField.MEDICAL_HISTORY, medicalHistoryList)
     }
 
     companion object : Unmarshal<Patient, JsonObject> {
@@ -85,16 +82,8 @@ data class Patient(
             zone = data.optStringField(PatientField.ZONE)
             villageNumber = data.optStringField(PatientField.VILLAGE_NUMBER)
 
-            val stringToList: (String) -> List<String> = {
-                if (it.toLowerCase(Locale.getDefault()) == "null") {
-                    emptyList()
-                } else {
-                    listOf(it)
-                }
-            }
-
-            drugHistoryList = data.mapOptField(PatientField.DRUG_HISTORY, stringToList) ?: emptyList()
-            medicalHistoryList = data.mapOptField(PatientField.MEDICAL_HISTORY, stringToList) ?: emptyList()
+            drugHistoryList = data.optArrayField(PatientField.DRUG_HISTORY)?.toList(JsonArray::getString) ?: emptyList()
+            medicalHistoryList = data.optArrayField(PatientField.MEDICAL_HISTORY)?.toList(JsonArray::getString) ?: emptyList()
         }
     }
 }
@@ -197,7 +186,8 @@ class GestationalAgeWeeks(weeks: Int) : GestationalAge(weeks) {
     override val age = WeeksAndDays.weeks(value)
 
     override fun marshal(): JsonObject = with(JsonObject()) {
-        put(PatientField.GESTATIONAL_AGE_VALUE, value)
+        // For legacy interop we store the value as a string instead of an int.
+        put(PatientField.GESTATIONAL_AGE_VALUE, value.toString())
         put(PatientField.GESTATIONAL_AGE_UNIT, UNIT_VALUE_WEEKS)
     }
 }
@@ -209,7 +199,8 @@ class GestationalAgeMonths(months: Int) : GestationalAge(months) {
     override val age = WeeksAndDays.months(value)
 
     override fun marshal(): JsonObject = with(JsonObject()) {
-        put(PatientField.GESTATIONAL_AGE_VALUE, value)
+        // For legacy interop we store the value as a string instead of an int.
+        put(PatientField.GESTATIONAL_AGE_VALUE, value.toString())
         put(PatientField.GESTATIONAL_AGE_UNIT, UNIT_VALUE_MONTHS)
     }
 }

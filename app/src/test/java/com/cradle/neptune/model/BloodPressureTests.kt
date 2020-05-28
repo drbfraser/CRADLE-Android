@@ -3,7 +3,15 @@ package com.cradle.neptune.model
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-class BloodPressureAnalysisTests {
+class BloodPressureTests {
+
+    @Test
+    fun unmarshal_isInverseOf_marshal() {
+        val bp = BloodPressure(110, 90, 75)
+        val json = bp.marshal()
+        val actual = unmarshal(BloodPressure, json)
+        assertEquals(bp, actual)
+    }
 
     @Test
     fun bloodPressure_ifInSevereShock_thenRedDown() {

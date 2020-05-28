@@ -4,6 +4,7 @@ import com.cradle.neptune.utilitiles.DateUtil
 import org.json.JSONArray
 import org.json.JSONObject
 import org.json.JSONException
+import org.threeten.bp.ZoneId
 import org.threeten.bp.ZonedDateTime
 import org.threeten.bp.format.DateTimeFormatter
 
@@ -289,19 +290,12 @@ fun <F : Field> JsonObject.dateField(field: F): ZonedDateTime {
 
     // If not epoch seconds then try formatted string.
     //
-    // Legacy strings may be in the form:
-    //     1969-12-31T16:00:00-08:00[America/Los_Angeles]
-    // which cannot be parsed by ZonedDateTime. I have no idea how this ever
-    // worked originally (probably some Gson magic), but in order for it to
-    // work new we need to remove the timezone name enclosed in '[' ']' and
-    // then parse the date using the ISO zoned date-time format.
+    // We try and parse using the system's default zoned id. This may cause
+    // problems if the string is encoded using a different zone id hence the
+    // move to storing dates as seconds from epoch.
     val dateString = stringField(field)
-    // If dateString is not an actual date string the splitting at the first
-    // '[' wont make it any more parsable the it was originally so we don't
-    // need to worry about validating before we split.
-    val dateTimePart = dateString.split('[').first()
     return try {
-        ZonedDateTime.parse(dateTimePart, DateTimeFormatter.ISO_ZONED_DATE_TIME)
+        ZonedDateTime.parse(dateString, DateTimeFormatter.ISO_ZONED_DATE_TIME.withZone(ZoneId.systemDefault()))
     } catch (e: Exception) {
         throw JsonException("unable to parse date string", e)
     }
@@ -326,6 +320,16 @@ fun <F : Field> JsonObject.optDateField(field: F): ZonedDateTime? = try {
  * @throws JsonException If no such field exists.
  */
 fun <F : Field> JsonObject.objectField(field: F): JsonObject = getJSONObject(field.text)
+
+/**
+ * Returns the object value for the specified field or `null` if not such field
+ * exists.
+ */
+fun <F : Field> JsonObject.optObjectField(field: F): JsonObject? = try {
+    objectField(field)
+} catch (e: JsonException) {
+    null
+}
 
 /**
  * Returns the array value for the specified field.
@@ -396,8 +400,8 @@ fun JsonObject.union(other: JsonObject?): JsonObject {
 
     val names = other.names()
     if (names != null) {
-        for (i in 0..names.length()) {
-            val name = names[0] as String
+        for (i in 0 until names.length()) {
+            val name = names[i] as String
             put(name, other.get(name))
         }
     }
@@ -414,3 +418,28 @@ fun JsonObject.union(other: JsonObject?): JsonObject {
  * @return This object.
  */
 fun <M : Marshal<JsonObject>> JsonObject.union(other: M?): JsonObject = union(other?.marshal())
+
+/**
+ * Maps each element in a [JsonArray].
+ *
+ * Since we don't know how to interpret each element in the array a [producer]
+ * function must be provided to extract each element from the array before
+ * [mapper] can be called to transform the element.
+ *
+ * The value for [producer] will usually be a method reference to once of
+ * [JsonArray]'s methods (e.g., `JsonArray::getString`).
+ */
+fun <T, U> JsonArray.map(producer: (JsonArray, Int) -> T, mapper: (T) -> U): List<U> {
+    val list = mutableListOf<U>()
+    for (i in 0 until this.length()) {
+        list.add(mapper(producer(this, i)))
+    }
+    return list
+}
+
+/**
+ * Equivalent to [map] where `mapper` is the identity function.
+ *
+ * Useful for converting a [JsonArray] to a list without mapping anything.
+ */
+fun <T> JsonArray.toList(producer: (JsonArray, Int) -> T): List<T> = map(producer) { x -> x}

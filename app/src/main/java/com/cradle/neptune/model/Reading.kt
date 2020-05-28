@@ -134,10 +134,11 @@ data class Reading(
 
             val bloodPressure = BloodPressure.unmarshal(data)
             val referral = maybeUnmarshal(Referral, data)
-            val urineTest = UrineTest.maybeUnmarshal(data)
+            val urineTest = data.optObjectField(ReadingField.URINE_TEST)?.let {
+                maybeUnmarshal(UrineTest, it)
+            }
 
-            // TODO: Encode symptoms as a JSON array and not a comma separated string
-            // var symptoms = data.optStringField(ReadingField.SYMPTOMS)?.split(", ") ?: emptyList()
+
             val symptomsJsonArray = data.arrayField(ReadingField.SYMPTOMS)
             val symptoms = mutableListOf<String>()
 
@@ -164,7 +165,7 @@ data class Reading(
                     symptoms.add(symptomString)
                 }
             } else {
-                for (i in 0..symptomsJsonArray.length()) {
+                for (i in 0 until symptomsJsonArray.length()) {
                     symptoms.add(symptomsJsonArray.getString(i))
                 }
             }
@@ -174,7 +175,7 @@ data class Reading(
 
             val previousReadingIds = data.optArrayField(ReadingField.PREVIOUS_READING_IDS)?.let {
                 val list = mutableListOf<String>()
-                for (i in 0..it.length()) {
+                for (i in 0 until it.length()) {
                     list.add(it.getString(i))
                 }
                 list

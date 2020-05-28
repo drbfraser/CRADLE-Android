@@ -93,8 +93,7 @@ class ReadingServiceImpl @Inject constructor(
      * Composes a [Patient] and [Reading] into a [ReadingEntity].
      */
     private fun constructEntity(patient: Patient, reading: Reading): ReadingEntity {
-        val json = reading.marshal()
-        json.put(ReadingEntityField.PATIENT, patient)
+        val json = marshalService.marshalToDatabaseJson(patient, reading)
         return ReadingEntity(reading.id, reading.patientId, json.toString(), reading.metadata.isUploaded)
     }
 

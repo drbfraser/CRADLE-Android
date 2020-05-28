@@ -3,14 +3,20 @@ package com.cradle.neptune.service
 import com.cradle.neptune.model.BloodPressure
 import com.cradle.neptune.model.GestationalAgeWeeks
 import com.cradle.neptune.model.JsonObject
+import com.cradle.neptune.model.Patient
+import com.cradle.neptune.model.Reading
+import com.cradle.neptune.model.ReadingMetadata
+import com.cradle.neptune.model.Referral
 import com.cradle.neptune.model.Settings
 import com.cradle.neptune.model.Sex
+import com.cradle.neptune.model.UrineTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
+import org.threeten.bp.ZoneId
 import org.threeten.bp.ZonedDateTime
 import org.threeten.bp.format.DateTimeFormatter
 
@@ -65,19 +71,19 @@ class MarshalServiceTests {
 
         assertEquals(BloodPressure(75, 72, 65), reading.bloodPressure)
         assertEquals(
-            parseDate("1969-12-31T16:00:00-08:00"),
+            parseDate("1969-12-31T16:00:00-08:00[America/Los_Angeles]"),
             reading.metadata.dateLastSaved
         )
         assertEquals(
-            parseDate("1969-12-31T16:00:00-08:00"),
+            parseDate("1969-12-31T16:00:00-08:00[America/Los_Angeles]"),
             reading.dateRecheckVitalsNeeded
         )
         assertEquals(
-            parseDate("2019-08-29T17:52:40-07:00"),
+            parseDate("2019-08-29T17:52:40-07:00[America/Los_Angeles]"),
             reading.dateTimeTaken
         )
         assertEquals(
-            parseDate("1969-12-31T16:00:00-08:00"),
+            parseDate("1969-12-31T16:00:00-08:00[America/Los_Angeles]"),
             reading.metadata.dateUploadedToServer
         )
         assertEquals(false, reading.isFlaggedForFollowUp)
@@ -98,5 +104,55 @@ class MarshalServiceTests {
         assertNull(reading.metadata.totalOcrSeconds)
     }
 
-    private fun parseDate(date: String) = ZonedDateTime.parse(date, DateTimeFormatter.ISO_ZONED_DATE_TIME)
+    @Test
+    fun unmarshalDatabaseJson_isTheInverseOf_marshalToDatabaseJson() {
+        val patient = Patient(
+            "5414842504",
+            "AB",
+            null,
+            32,
+            GestationalAgeWeeks(28),
+            Sex.FEMALE,
+            true,
+            null,
+            null,
+            listOf("drug-1", "drug-2", "drug-3"),
+            listOf("hist-1", "hist-2", "hist-3")
+        )
+
+        val reading = Reading(
+            "1234-abcd-5678-ef00",
+            "5414842504",
+            parseDate("2019-08-29T17:52:40-07:00[America/Los_Angeles]"),
+            BloodPressure(110, 70, 65),
+            UrineTest("+", "++", "-", "-", "-"),
+            listOf("headache", "blurred vision", "pain"),
+            Referral(parseDate("2019-08-29T17:52:40-07:00"), "HC101", "a comment"),
+            null,
+            parseDate("2019-08-29T17:52:40-07:00[America/Los_Angeles]"),
+            true,
+            listOf("1", "2", "3"),
+            ReadingMetadata(
+                "0.1.0-alpha",
+                "some-info",
+                parseDate("2019-08-29T17:52:40-07:00[America/Los_Angeles]"),
+                parseDate("2019-08-29T17:52:40-07:00[America/Los_Angeles]"),
+                null,
+                false,
+                null,
+                null
+            )
+        )
+
+        val json = marshalService.marshalToDatabaseJson(patient, reading)
+        val (actualPatient, actualReading) = marshalService.unmarshalDatabaseJson(json)
+
+        assertEquals(patient, actualPatient)
+        assertEquals(reading, actualReading)
+    }
+
+    private fun parseDate(date: String) = ZonedDateTime.parse(
+        date,
+        DateTimeFormatter.ISO_ZONED_DATE_TIME.withZone(ZoneId.of("America/Los_Angeles"))
+    )
 }
