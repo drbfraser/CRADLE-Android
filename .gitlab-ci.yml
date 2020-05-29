@@ -13,14 +13,18 @@ cache:
      - .gradle/wrapper/
      - .gradle/caches/
 
-# Compile and assmeble a debug version of the application.
+# Compile and assemble a debug version of the application.
 build:
   stage: build
   script:
     - ./gradlew assembleDebug
+  tags:
+    - build
 
 # Run local unit tests
 test:
   stage: test
   script:
-    - ./gradlew test
+    - ./gradlew test --stacktrace
+  tags:
+    - build
