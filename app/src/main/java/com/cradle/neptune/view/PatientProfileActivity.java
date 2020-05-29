@@ -256,7 +256,7 @@ public class PatientProfileActivity extends AppCompatActivity {
                 if (val < 0) {
                     gestationalAge.setText("N/A");
                 } else {
-                    gestationalAge.setText(val + "");
+                    gestationalAge.setText(String.format("%.2f", val));
                 }
             }
         });
