@@ -113,7 +113,7 @@ sealed class PatientAge
  * @see GestationalAgeWeeks
  * @see GestationalAgeMonths
  */
-sealed class GestationalAge(val value: Int) : Marshal<JsonObject> {
+sealed class GestationalAge(val value: Int) : Marshal<JsonObject>, Serializable {
     /**
      * The age in weeks and days.
      *
@@ -182,7 +182,7 @@ sealed class GestationalAge(val value: Int) : Marshal<JsonObject> {
 /**
  * Variant of [GestationalAge] which stores age in number of weeks.
  */
-class GestationalAgeWeeks(weeks: Int) : GestationalAge(weeks) {
+class GestationalAgeWeeks(weeks: Int) : GestationalAge(weeks), Serializable {
     override val age = WeeksAndDays.weeks(value)
 
     override fun marshal(): JsonObject = with(JsonObject()) {
@@ -195,7 +195,7 @@ class GestationalAgeWeeks(weeks: Int) : GestationalAge(weeks) {
 /**
  * Variant of [GestationalAge] which stores age in number of months.
  */
-class GestationalAgeMonths(months: Int) : GestationalAge(months) {
+class GestationalAgeMonths(months: Int) : GestationalAge(months), Serializable {
     override val age = WeeksAndDays.months(value)
 
     override fun marshal(): JsonObject = with(JsonObject()) {
@@ -208,7 +208,7 @@ class GestationalAgeMonths(months: Int) : GestationalAge(months) {
 /**
  * A temporal duration expressed in weeks and days.
  */
-data class WeeksAndDays(val weeks: Int, val days: Int) {
+data class WeeksAndDays(val weeks: Int, val days: Int) : Serializable {
 
     /**
      * This value in number of weeks.
