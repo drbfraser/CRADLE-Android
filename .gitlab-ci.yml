@@ -25,6 +25,6 @@ build:
 test:
   stage: test
   script:
-    - ./gradlew test --stacktrace
+    - ./gradlew test
   tags:
     - build
