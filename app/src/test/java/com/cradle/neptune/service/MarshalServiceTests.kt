@@ -153,6 +153,6 @@ class MarshalServiceTests {
 
     private fun parseDate(date: String) = ZonedDateTime.parse(
         date,
-        DateTimeFormatter.ISO_ZONED_DATE_TIME.withZone(ZoneId.of("America/Los_Angeles"))
+        DateTimeFormatter.ISO_ZONED_DATE_TIME.withZone(ZoneId.systemDefault())
     )
 }

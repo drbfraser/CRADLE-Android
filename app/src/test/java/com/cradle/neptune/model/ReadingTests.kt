@@ -10,9 +10,8 @@ class ReadingTests {
     @Test
     fun unmarshal_isTheInverseOf_marshal() {
         val date = ZonedDateTime.parse(
-            "2019-08-29T17:52:40-07:00[America/Los_Angeles]",
-            DateTimeFormatter.ISO_ZONED_DATE_TIME.withZone(
-            ZoneId.of("America/Los_Angeles"))
+            "2019-08-29T17:52:40-07:00",
+            DateTimeFormatter.ISO_ZONED_DATE_TIME.withZone(ZoneId.systemDefault())
         )
         val reading = Reading(
             "1234-abcd-5678-ef00",
@@ -38,7 +37,7 @@ class ReadingTests {
             )
         )
 
-        val json = reading.marshal();
+        val json = reading.marshal()
         val actual = unmarshal(Reading, json)
         assertEquals(reading, actual)
     }
