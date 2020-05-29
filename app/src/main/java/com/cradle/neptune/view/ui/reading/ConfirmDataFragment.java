@@ -89,8 +89,8 @@ public class ConfirmDataFragment extends BaseFragment {
 
         makingProgramaticChangeToVitals = true;
         setTextBox(R.id.etSystolic, mapNullable(viewModel.getBloodPressure(), BloodPressure::getSystolic));
-        setTextBox(R.id.etSystolic, mapNullable(viewModel.getBloodPressure(), BloodPressure::getDiastolic));
-        setTextBox(R.id.etSystolic, mapNullable(viewModel.getBloodPressure(), BloodPressure::getHeartRate));
+        setTextBox(R.id.etDiastolic, mapNullable(viewModel.getBloodPressure(), BloodPressure::getDiastolic));
+        setTextBox(R.id.etHeartRate, mapNullable(viewModel.getBloodPressure(), BloodPressure::getHeartRate));
 //        setTextBox(R.id.etSystolic, currentReading.bpSystolic);
 //        setTextBox(R.id.etDiastolic, currentReading.bpDiastolic);
 //        setTextBox(R.id.etHeartRate, currentReading.heartRateBPM);

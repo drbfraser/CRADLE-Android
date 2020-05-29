@@ -5,6 +5,7 @@ import com.cradle.neptune.R
 import com.cradle.neptune.database.ReadingEntity
 import org.threeten.bp.ZonedDateTime
 import org.threeten.bp.temporal.ChronoUnit
+import java.util.UUID
 
 const val RED_SYSTOLIC = 160
 const val RED_DIASTOLIC = 110
@@ -23,7 +24,8 @@ const val MIN_HEART_RATE = 40
 /**
  * Holds information about a reading.
  *
- * @property id The identifier for this reading.
+ * @property id The identifier for this reading. If not supplied, a random UUID
+ * will be generated for this field.
  * @property patientId The identifier for the patient this reading is
  * associated with.
  * @property dateTimeTaken The time at which this reading was taken.
@@ -35,10 +37,13 @@ const val MIN_HEART_RATE = 40
  * @property dateRecheckVitalsNeeded The date at which this patient's vitals
  * should be rechecked (if applicable).
  * @property isFlaggedForFollowUp Whether this patient requires a followup.
- * @property metadata Some internal metadata associated with this reading.
+ * @property previousReadingIds A list of previous readings associated with
+ * this one. By default this is empty.
+ * @property metadata Some internal metadata associated with this reading. By
+ * default an empty metadata object (with all `null` values) will be used.
  */
 data class Reading(
-    var id: String,
+    var id: String = UUID.randomUUID().toString(),
     var patientId: String,
     var dateTimeTaken: ZonedDateTime,
 
@@ -52,9 +57,9 @@ data class Reading(
     var dateRecheckVitalsNeeded: ZonedDateTime?,
     var isFlaggedForFollowUp: Boolean,
 
-    var previousReadingIds: List<String>,
+    var previousReadingIds: List<String> = emptyList(),
 
-    var metadata: ReadingMetadata
+    var metadata: ReadingMetadata = ReadingMetadata()
 ) : Marshal<JsonObject> {
 
     /**

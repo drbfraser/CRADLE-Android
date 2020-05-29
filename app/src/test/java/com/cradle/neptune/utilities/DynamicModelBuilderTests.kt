@@ -84,11 +84,12 @@ class DynamicModelBuilderTests {
 
     @Test
     fun dynamicModelBuilder_ifMissingField_returnNull() {
-        val person = with(DynamicModelBuilder()) {
-            set(Person::name, "Maya")
-            build<Person>()
+        assertThrows(java.lang.IllegalArgumentException::class.java) {
+            with(DynamicModelBuilder()) {
+                set(Person::name, "Maya")
+                build<Person>()
+            }
         }
-        assertNull(person)
     }
 }
 

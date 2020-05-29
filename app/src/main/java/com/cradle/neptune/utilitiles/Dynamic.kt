@@ -1,5 +1,6 @@
 package com.cradle.neptune.utilitiles
 
+import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KProperty
@@ -184,19 +185,20 @@ open class DynamicModelBuilder {
     /**
      * Attempts to build an instance of type [T] returning `null` if unable
      * to do so because of missing arguments.
+     *
+     * @throws IllegalArgumentException if any of the required parameters are
+     * missing
      */
-    fun <T : Any> build(k: KClass<T>): T? = try {
-        val model by constructor(k)
-        model
-    } catch (e: IllegalArgumentException) {
-        null
-    }
+    fun <T : Any> build(k: KClass<T>): T = constructor(k).getValue()
 
     /**
      * Attempts to build an instance of type [T] returning `null` if unable
      * to do so because of missing arguments.
+     *
+     * @throws IllegalArgumentException if any of the required parameters are
+     * missing
      */
-    inline fun <reified T : Any> build(): T? = build(T::class)
+    inline fun <reified T : Any> build(): T = build(T::class)
 
     /**
      * Returns a dynamic constructor used to construct object instances.

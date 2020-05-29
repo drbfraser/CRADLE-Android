@@ -26,6 +26,7 @@ import com.cradle.neptune.viewmodel.PatientReadingViewModel;
 import com.google.android.material.tabs.TabLayout;
 
 import kotlin.Pair;
+import org.threeten.bp.ZonedDateTime;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -389,6 +390,13 @@ public class ReadingActivity
             displayValidDataDialog();
             Log.i("validation", "Data out of range");
             return false;
+        }
+
+        // If dateTimeTaken has not been filled in for the reading, for example
+        // in the case of creating a new reading instead of updating an
+        // existing one, we set it to the current time.
+        if (viewModel.getDateTimeTaken() == null) {
+            viewModel.setDateTimeTaken(ZonedDateTime.now());
         }
 
         Pair<Patient, Reading> models = viewModel.constructModels();

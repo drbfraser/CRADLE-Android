@@ -14,6 +14,7 @@ import com.cradle.neptune.utilitiles.DynamicModelBuilder
 import com.cradle.neptune.utilitiles.discard
 import org.threeten.bp.ZonedDateTime
 import org.threeten.bp.temporal.ChronoUnit
+import java.lang.IllegalArgumentException
 
 /**
  * A bridge between the legacy model API used by the new model structures.
@@ -47,7 +48,12 @@ class PatientReadingViewModel() {
     /* Patient Info */
     var patientId: String?
         get() = patientBuilder.get(Patient::id) as String?
-        set(value) = patientBuilder.set(Patient::id, value).discard()
+        set(value) {
+            patientBuilder.set(Patient::id, value)
+            // The reading also requires the patient's id so whenever we update
+            // it we need to update the reading builder as well.
+            readingBuilder.set(Reading::patientId, value)
+        }
 
     var patientName: String?
         get() = patientBuilder.get(Patient::name) as String?
@@ -140,7 +146,7 @@ class PatientReadingViewModel() {
      * and the implication "patient is pregnant" -> "gestational age not null"
      * must be true.
      */
-    val isDataInvalid: Boolean get() = bloodPressure?.isValid ?: false
+    val isDataInvalid: Boolean get() = !(bloodPressure?.isValid ?: false)
         || (patientIsPregnant ?: false && patientGestationalAge == null)
 
     val symptomsString get() = symptoms?.joinToString(", ")
@@ -206,20 +212,28 @@ class PatientReadingViewModel() {
 
     /**
      * Constructs [Patient] and [Reading] models based on the information
-     * contained in this class.
+     * contained in this object.
+     *
+     * @throws IllegalArgumentException if any of the required parameters are
+     * missing
      */
-    fun constructModels(): Pair<Patient, Reading> = maybeConstructModels()!!
+    fun constructModels(): Pair<Patient, Reading> {
+        val patient = patientBuilder.build<Patient>()
+        val reading = readingBuilder.build<Reading>()
+        return Pair(patient, reading)
+    }
 
     /**
      * Constructs [Patient] and [Reading] models based on the information
-     * contained in this class.
-     *
-     * Returns `null` if unable to construct models due to missing data.
+     * contained in this object. If unable to construct these readings due to
+     * missing mandatory fields for example, then `null` is returned.
      */
-    fun maybeConstructModels(): Pair<Patient, Reading>? {
-        val patient = patientBuilder.build<Patient>() ?: return null
-        val reading = readingBuilder.build<Reading>() ?: return null
-        return Pair(patient, reading)
+    fun maybeConstructModels(): Pair<Patient, Reading>? = try {
+        constructModels()
+    } catch (e: IllegalArgumentException) {
+        null
+    } catch (e: kotlin.IllegalArgumentException) { // Exception may also be the Kotlin version
+        null
     }
 
     /**

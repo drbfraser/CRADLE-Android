@@ -250,7 +250,7 @@ public class PatientInfoFragment extends BaseFragment {
         EditText etValue = v.findViewById(R.id.etGestationalAgeValue);
 
         Integer gestationalAgeValue = null;
-        if (etValue.getText() != null && !etValue.getText().toString().isEmpty()) {
+        if (etValue.getText() != null && !etValue.getText().toString().isEmpty() && !etValue.getText().toString().equals("N/A")) {
             gestationalAgeValue = Integer.parseInt(etValue.getText().toString());
         }
         if (gestationalAgeValue != null) {

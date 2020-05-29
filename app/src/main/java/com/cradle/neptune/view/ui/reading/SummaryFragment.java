@@ -89,17 +89,15 @@ public class SummaryFragment extends BaseFragment {
 //        ReadingRetestAnalysis readingRetestAnalysis
 //                = new ReadingRetestAnalysis(viewModel, readingManager, getContext());
 
-        updateUI_PatientInfo(retestGroup);
-
         if (retestGroup != null) {
+            updateUI_PatientInfo(retestGroup);
             updateUI_Readings(retestGroup);
+            updateUI_Advice(retestGroup);
+            updateUI_RecheckVitals(retestGroup);
+            updateUI_Referral(retestGroup);
+            updateUI_Followup(retestGroup);
+            updateUI_Uploaded(retestGroup);
         }
-
-        updateUI_Advice(retestGroup);
-        updateUI_RecheckVitals(retestGroup);
-        updateUI_Referral(retestGroup);
-        updateUI_Followup(retestGroup);
-        updateUI_Uploaded(retestGroup);
     }
 
     private void updateUI_PatientInfo(RetestGroup retestAnalysis) {
