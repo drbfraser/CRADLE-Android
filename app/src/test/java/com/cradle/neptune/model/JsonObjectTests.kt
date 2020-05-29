@@ -35,7 +35,7 @@ class JsonObjectTests {
         val a = JsonObject("""{"date":$time}""")
 
         val instant = Instant.ofEpochSecond(time)
-        val expected = ZonedDateTime.ofInstant(instant, ZoneId.of("America/Los_Angeles"))
+        val expected = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault())
         assertEquals(expected, a.dateField(Field.fromString("date")))
     }
 
