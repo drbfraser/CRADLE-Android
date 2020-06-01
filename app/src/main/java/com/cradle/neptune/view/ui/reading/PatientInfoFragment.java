@@ -162,7 +162,7 @@ public class PatientInfoFragment extends BaseFragment {
         if (viewModel.getPatientDob() != null && !viewModel.getPatientDob().isEmpty()) {
             dobET.setText(viewModel.getPatientDob());
         } else if (viewModel.getPatientAge() != null && viewModel.getPatientAge() >= -1) {
-            ageET.setText(viewModel.getPatientAge());
+            ageET.setText(viewModel.getPatientAge().toString());
         }
 //        if (currentReading.patient.dob != null && !currentReading.patient.dob.isEmpty()) {
 //            dobET.setText(currentReading.patient.dob);
