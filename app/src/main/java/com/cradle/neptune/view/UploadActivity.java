@@ -25,10 +25,7 @@ import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
-import com.cradle.neptune.model.Patient;
-import com.cradle.neptune.model.Reading;
-import com.cradle.neptune.model.ReadingFollowUp;
-import com.cradle.neptune.model.Settings;
+import com.cradle.neptune.model.*;
 import com.cradle.neptune.service.ReadingService;
 import com.cradle.neptune.utilitiles.DateUtil;
 import com.cradle.neptune.view.ui.network_volley.MultiReadingUploader;
@@ -196,7 +193,7 @@ public class UploadActivity extends AppCompatActivity {
     }
 
     private void getReadingFollowFromTheResponse(JSONArray response) {
-        List<ReadingFollowUp> readingsFollowUps = new ArrayList<>();
+        List<FollowUp> readingsFollowUps = new ArrayList<>();
         for (int i = 0; i < response.length(); i++) {
             try {
                 JSONObject jsonObject = response.getJSONObject(i);
@@ -228,7 +225,7 @@ public class UploadActivity extends AppCompatActivity {
                 String drugInfo = patient.getString("drugHistory");
                 String patientId = patient.getString("patientId");
 
-                ReadingFollowUp readingFollowUp = new ReadingFollowUp(readingServerId, followUpAction,
+                FollowUp readingFollowUp = new FollowUp(readingServerId, followUpAction,
                         treatment, diagnosis, hfName, dateAssessed, assessedBy, referredBy);
                 readingFollowUp.setPatientDrugInfoUpdate(drugInfo);
                 readingFollowUp.setPatientMedInfoUpdate(medicalInfo);
@@ -236,9 +233,9 @@ public class UploadActivity extends AppCompatActivity {
                 readingsFollowUps.add(readingFollowUp);
 
                 readingFollowUp.setFollowUpNeeded(followUpNeeded);
-                readingFollowUp.setFollowupNeededTill(followupNeededTill);
-                readingFollowUp.setFollowupFrequencyUnit(followupFrequencyUnit);
-                readingFollowUp.setFollowupFrequencyValue(followupFrequencyValue);
+                readingFollowUp.setFollowUpNeededTill(followupNeededTill);
+                readingFollowUp.setFollowUpFrequencyUnit(followupFrequencyUnit);
+                readingFollowUp.setFollowUpFrequencyValue(followupFrequencyValue);
                 readingFollowUp.setMedicationPrescribed(medicationPrescribed);
                 readingFollowUp.setSpecialInvestigation(specialInvestigation);
 
@@ -253,7 +250,7 @@ public class UploadActivity extends AppCompatActivity {
             readingMap.put(pair.getSecond().getId(), pair);
         }
         //update the followups
-        for (ReadingFollowUp followUp : readingsFollowUps) {
+        for (FollowUp followUp : readingsFollowUps) {
             Pair<Patient, Reading> pair = readingMap.get(followUp.getReadingServerId());
             if (pair != null) {
                 pair.getSecond().setFollowUp(followUp);

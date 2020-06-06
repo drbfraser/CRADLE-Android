@@ -12,10 +12,7 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cradle.neptune.R;
-import com.cradle.neptune.model.Reading;
-import com.cradle.neptune.model.ReadingAnalysis;
-import com.cradle.neptune.model.ReadingFollowUp;
-import com.cradle.neptune.model.UrineTest;
+import com.cradle.neptune.model.*;
 import com.cradle.neptune.utilitiles.DateUtil;
 
 import java.text.ParseException;
@@ -54,7 +51,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
 
     @Override
     public int getItemViewType(int position) {
-        ReadingFollowUp followUpAction = readings.get(position).getFollowUp();
+        FollowUp followUpAction = readings.get(position).getFollowUp();
         if (followUpAction == null) {
             return NO_ASSESSMENT_TYPE;
         }
@@ -143,7 +140,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             }
 
         } else if (myViewHolder.getItemViewType() == ASSESSMENT_TYPE) {
-            ReadingFollowUp readingFollowUp = currReading.getFollowUp();
+            FollowUp readingFollowUp = currReading.getFollowUp();
             myViewHolder.diagnosis.setText(readingFollowUp.getDiagnosis());
             myViewHolder.treatment.setText(readingFollowUp.getTreatment());
             myViewHolder.hcName.setText(readingFollowUp.getHealthcare());
@@ -161,12 +158,12 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             TextView medPrescribed = v.findViewById(R.id.medPrescibedTxt);
             specialInvestigation.setText(readingFollowUp.getSpecialInvestigation());
             medPrescribed.setText(readingFollowUp.getMedicationPrescribed());
-            if (readingFollowUp.isFollowUpNeeded()) {
+            if (readingFollowUp.getFollowUpNeeded()) {
                 myViewHolder.followUp.setText(readingFollowUp.getFollowUpAction());
                 TextView frequencyTxt = v.findViewById(R.id.followupFrequencyTxt);
                 frequencyTxt.setVisibility(View.VISIBLE);
-                String txt = "Every " + readingFollowUp.getFollowupFrequencyValue() + " " + readingFollowUp.getFollowupFrequencyUnit().toLowerCase()
-                        + " till: " + readingFollowUp.getFollowupNeededTill();
+                String txt = "Every " + readingFollowUp.getFollowUpFrequencyValue() + " " + readingFollowUp.getFollowUpFrequencyUnit().toLowerCase()
+                        + " till: " + readingFollowUp.getFollowUpNeededTill();
                 frequencyTxt.setText(txt);
             } else {
                 TextView frequencyTxt = v.findViewById(R.id.followupFrequencyTxt);
