@@ -318,70 +318,69 @@ public class UploadActivity extends AppCompatActivity {
     todo: remove uploading directly to firebase and send to server for authentication first and find a better way to do this
      */
     private void setupUploadImageButton() {
-        throw new NotImplementedError("TODO: Implement Me!");
-//        Button btnStart = findViewById(R.id.uploadImagesButton);
-//        btnStart.setOnClickListener(view -> {
-//            List<Reading> readings = readingManager.getReadings(this);
-//            List<Reading> readingsToUpload = new ArrayList<>();
-//            for (int i = 0; i < readings.size(); i++) {
-//                Reading reading = readings.get(i);
-//                if (reading.pathToPhoto != null) {
-//                    File file = new File(reading.pathToPhoto);
-//                    if (!reading.isImageUploaded && file.exists()) {
-//
-//                        readingsToUpload.add(reading);
-//                    }
-//                }
-//            }
-//            if (readingsToUpload.size() == 0) {
-//                Toast.makeText(this, "No more Images to upload!", Toast.LENGTH_LONG).show();
-//                return;
-//            }
-//            final boolean[] stopuploading = {false};
-//
-//            ProgressBar progressBar = findViewById(R.id.progressBar);
-//            Button stopButton = findViewById(R.id.stopuploading);
-//            stopButton.setVisibility(View.VISIBLE);
-//            stopButton.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View view) {
-//                    stopuploading[0] = true;
-//                    progressBar.setVisibility(View.INVISIBLE);
-//                    stopButton.setVisibility(View.GONE);
-//                }
-//            });
-//            progressBar.setMax(readingsToUpload.size());
-//            progressBar.setProgress(0);
-//            progressBar.setVisibility(View.VISIBLE);
-//
-//            FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
-//            StorageReference storageReference = firebaseStorage.getReference();
-//
-//            for (int i = 0; i < readingsToUpload.size(); i++) {
-//                if (stopuploading[0]) {
-//                    return;
-//                }
-//
-//                Reading r = readingsToUpload.get(i);
-//                Uri file = Uri.fromFile(new File(r.pathToPhoto));
-//
-//                StorageReference storageReference1 = storageReference.child("cradle-test-images/" + file.getLastPathSegment());
-//                UploadTask uploadTask = storageReference1.putFile(file);
-//                uploadTask.addOnSuccessListener(taskSnapshot -> {
-//                    r.isImageUploaded = true;
-//                    readingManager.updateReading(this, r);
-//                    progressBar.setProgress(progressBar.getProgress() + 1);
-//                    if (stopuploading[0]) {
-//                        progressBar.setVisibility(View.INVISIBLE);
-//                        stopButton.setVisibility(View.GONE);
-//                        Toast.makeText(this, "All Images uploaded.", Toast.LENGTH_LONG).show();
-//                    }
-//                });
-//                if (readingsToUpload.size() - 1 == i) {
-//                    stopuploading[0] = true;
-//                }
-//            }
-//        });
+        Button btnStart = findViewById(R.id.uploadImagesButton);
+        btnStart.setOnClickListener(view -> {
+            List<Pair<Patient, Reading>> readings = readingService.getAllReadingsBlocking();
+            List<Pair<Patient, Reading>> readingsToUpload = new ArrayList<>();
+            for (int i = 0; i < readings.size(); i++) {
+                Pair<Patient, Reading> reading = readings.get(i);
+                if (reading.getSecond().getMetadata().getPhotoPath() != null) {
+                    File file = new File(reading.getSecond().getMetadata().getPhotoPath());
+                    if (!reading.getSecond().getMetadata().isImageUploaded() && file.exists()) {
+
+                        readingsToUpload.add(reading);
+                    }
+                }
+            }
+            if (readingsToUpload.size() == 0) {
+                Toast.makeText(this, "No more Images to upload!", Toast.LENGTH_LONG).show();
+                return;
+            }
+            final boolean[] stopuploading = {false};
+
+            ProgressBar progressBar = findViewById(R.id.progressBar);
+            Button stopButton = findViewById(R.id.stopuploading);
+            stopButton.setVisibility(View.VISIBLE);
+            stopButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    stopuploading[0] = true;
+                    progressBar.setVisibility(View.INVISIBLE);
+                    stopButton.setVisibility(View.GONE);
+                }
+            });
+            progressBar.setMax(readingsToUpload.size());
+            progressBar.setProgress(0);
+            progressBar.setVisibility(View.VISIBLE);
+
+            FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
+            StorageReference storageReference = firebaseStorage.getReference();
+
+            for (int i = 0; i < readingsToUpload.size(); i++) {
+                if (stopuploading[0]) {
+                    return;
+                }
+
+                Pair<Patient, Reading> r = readingsToUpload.get(i);
+                Uri file = Uri.fromFile(new File(r.getSecond().getMetadata().getPhotoPath()));
+
+                StorageReference storageReference1 = storageReference.child("cradle-test-images/" + file.getLastPathSegment());
+                UploadTask uploadTask = storageReference1.putFile(file);
+                uploadTask.addOnSuccessListener(taskSnapshot -> {
+                    r.getSecond().getMetadata().setImageUploaded(true);
+                    readingService.updateReadingAsync(r.getFirst(), r.getSecond());
+                    progressBar.setProgress(progressBar.getProgress() + 1);
+                    if (stopuploading[0]) {
+                        progressBar.setVisibility(View.INVISIBLE);
+                        stopButton.setVisibility(View.GONE);
+                        Toast.makeText(this, "All Images uploaded.", Toast.LENGTH_LONG).show();
+                    }
+                });
+                if (readingsToUpload.size() - 1 == i) {
+                    stopuploading[0] = true;
+                }
+            }
+        });
     }
 
     private void setupErrorHandlingButtons() {

@@ -143,7 +143,19 @@ data class Reading(
                 maybeUnmarshal(UrineTest, it)
             }
 
-            val symptomsJsonArray = data.arrayField(ReadingField.SYMPTOMS)
+            val symptomsJsonArray = try {
+                data.arrayField(ReadingField.SYMPTOMS)
+            } catch (e: JsonException) {
+                // Sometimes the symptoms array is encoded as a comma separated
+                // string and not an actual array. To handle this we first try
+                // and unmarshal an array and if that fails then we try a
+                // string.
+                val list = data.stringField(ReadingField.SYMPTOMS)
+                    .split(",")
+                    .map { it.trim() }
+                    .filterNot { it.isEmpty() }
+                JsonArray(list)
+            }
             val symptoms = mutableListOf<String>()
 
             // For some reason, legacy symptoms were encoded in JSON as an
@@ -440,7 +452,7 @@ data class ReadingMetadata(
             val dateLastSaved = data.optDateField(MetadataField.DATE_LAST_SAVED)
             val dateUploadedToServer = data.optDateField(MetadataField.DATE_UPLOADED_TO_SERVER)
             val photoPath = data.optStringField(MetadataField.PHOTO_PATH)
-            val isImageUploaded = data.booleanField(MetadataField.IS_IMAGE_UPLOADED)
+            val isImageUploaded = data.optBooleanField(MetadataField.IS_IMAGE_UPLOADED) ?: false
 
             var totalOcrSeconds = data.optDoubleField(MetadataField.TOTAL_OCR_SECONDS)?.toFloat()
             // The legacy implementation used -1 to represent `null` for this

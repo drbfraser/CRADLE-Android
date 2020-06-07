@@ -19,7 +19,7 @@ import kotlinx.coroutines.runBlocking
 suspend fun unmarshalAllInfoArray(array: JsonArray): List<Pair<Patient, List<Reading>>> {
     return coroutineScope {
         val asyncInfo = mutableListOf<Deferred<Pair<Patient, List<Reading>>>>()
-        for (i in 0..array.length()) {
+        for (i in 0 until array.length()) {
             asyncInfo.add(async { unmarshalPatientAndReadings(array.getJSONObject(i)) })
         }
 
@@ -47,7 +47,7 @@ suspend fun unmarshalPatientAndReadings(json: JsonObject): Pair<Patient, List<Re
     val readings = coroutineScope {
         val jsonReadings = json.arrayField(AllInfoFields.READINGS)
         val asyncReadings = mutableListOf<Deferred<Reading>>()
-        for (i in 0..jsonReadings.length()) {
+        for (i in 0 until jsonReadings.length()) {
             asyncReadings.add(async { Reading.unmarshal(jsonReadings.getJSONObject(i)) })
         }
 
