@@ -31,7 +31,7 @@ public class Settings {
     public static final String PREF_KEY_OCR_DEBUG_ENABLED = "setting_ocr_debug_enabled";
 //    public static String DEFAULT_SERVER_URL = "https://cmpt373.csil.sfu.ca:8048/api";
     //testing with local server
-    public static String DEFAULT_SERVER_URL = "http://10.0.2.2:5000/api";
+    public static String DEFAULT_SERVER_URL = "https://cmpt373-lockdown.cs.surrey.sfu.ca/api";
 
     public static String DEFAULT_SERVER_USERNAME = "user";
     public static String DEFAULT_SERVER_USERPASSWORD = "just4testing";
