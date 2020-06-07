@@ -1,5 +1,6 @@
 package com.cradle.neptune.service
 
+import android.content.SharedPreferences
 import com.cradle.neptune.model.BloodPressure
 import com.cradle.neptune.model.GestationalAgeWeeks
 import com.cradle.neptune.model.JsonObject
@@ -24,6 +25,9 @@ class MarshalServiceTests {
 
     @Mock
     private lateinit var settings: Settings
+
+    @Mock
+    private lateinit var sharedPreferences: SharedPreferences
 
     @InjectMocks
     private lateinit var marshalService: MarshalService
