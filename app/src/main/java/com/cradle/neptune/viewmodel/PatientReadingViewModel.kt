@@ -48,12 +48,7 @@ class PatientReadingViewModel() {
     /* Patient Info */
     var patientId: String?
         get() = patientBuilder.get(Patient::id) as String?
-        set(value) {
-            patientBuilder.set(Patient::id, value)
-            // The reading also requires the patient's id so whenever we update
-            // it we need to update the reading builder as well.
-            readingBuilder.set(Reading::patientId, value)
-        }
+        set(value) = patientBuilder.set(Patient::id, value).discard()
 
     var patientName: String?
         get() = patientBuilder.get(Patient::name) as String?
@@ -218,6 +213,11 @@ class PatientReadingViewModel() {
      * missing
      */
     fun constructModels(): Pair<Patient, Reading> {
+        // The reading requires the patient's id so we'll copy it over before
+        // building the models.
+        val patientId = patientBuilder.get(Patient::id)
+        readingBuilder.set(Reading::patientId, patientId)
+
         val patient = patientBuilder.build<Patient>()
         val reading = readingBuilder.build<Reading>()
         return Pair(patient, reading)
