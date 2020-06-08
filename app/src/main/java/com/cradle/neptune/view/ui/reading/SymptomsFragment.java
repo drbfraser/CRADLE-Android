@@ -22,7 +22,6 @@ import com.cradle.neptune.R;
 import com.cradle.neptune.model.UrineTest;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -226,7 +225,7 @@ public class SymptomsFragment extends BaseFragment {
             otherSymptoms.clearFocus();
             otherSymptoms.setText("");
 
-            viewModel.setSymptoms(Collections.emptyList());
+            viewModel.setSymptoms(new ArrayList<>());
 //            viewModel.setHasNoSymptoms(true);
 //            currentReading.userHasSelectedNoSymptoms = true;
         } else {
