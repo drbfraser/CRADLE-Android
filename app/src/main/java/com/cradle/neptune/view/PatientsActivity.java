@@ -23,7 +23,7 @@ import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.Settings;
-import com.cradle.neptune.service.ReadingService;
+import com.cradle.neptune.manager.ReadingManager;
 import com.cradle.neptune.viewmodel.PatientsViewAdapter;
 
 import kotlin.Pair;
@@ -36,7 +36,7 @@ public class PatientsActivity extends AppCompatActivity {
 
     // Data Model
     @Inject
-    ReadingService readingService;
+    ReadingManager readingManager;
 
     @Inject
     SharedPreferences sharedPreferences;
@@ -129,7 +129,7 @@ public class PatientsActivity extends AppCompatActivity {
         HashMap<String, Pair<Patient, Reading>> patientHashMap = new HashMap<>();
 
 //        List<Reading> allReadings = readingManager.getReadings(this);
-        List<Pair<Patient, Reading>> allReadings = readingService.getAllReadingsBlocking();
+        List<Pair<Patient, Reading>> allReadings = readingManager.getAllReadingsBlocking();
         Collections.sort(allReadings, Comparator.comparing(o -> o.getSecond().getDateTimeTaken()));
 
 

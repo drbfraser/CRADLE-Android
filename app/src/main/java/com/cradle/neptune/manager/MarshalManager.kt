@@ -1,4 +1,4 @@
-package com.cradle.neptune.service
+package com.cradle.neptune.manager
 
 import android.content.SharedPreferences
 import com.cradle.neptune.model.Field
@@ -16,7 +16,7 @@ import javax.inject.Inject
  * Provides custom marshalling methods tailored to specific API endpoint
  * formats.
  */
-class MarshalService @Inject constructor(
+class MarshalManager @Inject constructor(
     private val settings: Settings,
     private val sharedPreferences: SharedPreferences
 ) {

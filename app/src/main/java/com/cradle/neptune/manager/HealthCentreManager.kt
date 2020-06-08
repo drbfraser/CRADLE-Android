@@ -1,4 +1,4 @@
-package com.cradle.neptune.service
+package com.cradle.neptune.manager
 
 import com.cradle.neptune.database.HealthFacilityEntity
 import kotlinx.coroutines.*
@@ -6,7 +6,7 @@ import kotlinx.coroutines.*
 /**
  * Service for interfacing with health centres stored in the database.
  */
-interface HealthCentreService {
+interface HealthCentreManager {
 
     /**
      * Returns the health centre with a given [id] if it exists.

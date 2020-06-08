@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.database.HealthFacilityEntity;
-import com.cradle.neptune.service.HealthCentreService;
+import com.cradle.neptune.manager.HealthCentreManager;
 import com.cradle.neptune.viewmodel.HealthFacilitiesAdapter;
 
 import java.util.List;
@@ -26,7 +26,7 @@ import javax.inject.Inject;
 public class HealthFacilitiesActivity extends AppCompatActivity {
 
     @Inject
-    HealthCentreService healthCentreService;
+    HealthCentreManager healthCentreManager;
     private SearchView searchView;
     private HealthFacilitiesAdapter healthFacilitiesAdapter;
 
@@ -46,7 +46,7 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
 
     private void setupRecyclerview() {
         RecyclerView recyclerView = findViewById(R.id.hfRecyclerView);
-        List<HealthFacilityEntity> healthFacilityEntities = healthCentreService.getAllBlocking();
+        List<HealthFacilityEntity> healthFacilityEntities = healthCentreManager.getAllBlocking();
         healthFacilitiesAdapter = new HealthFacilitiesAdapter(healthFacilityEntities);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
 
@@ -64,7 +64,7 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
                     .setTitle(healthFacilityEntity.getName()).setMessage(msg)
                     .setCancelable(true).setPositiveButton("YES", (dialogInterface, i) -> {
                 healthFacilityEntity.setUserSelected(!healthFacilityEntity.isUserSelected());
-                healthCentreService.updateAsync(healthFacilityEntity);
+                healthCentreManager.updateAsync(healthFacilityEntity);
                 setupRecyclerview();
             }).setNegativeButton("NO", (dialogInterface, i) -> {}).create().show();
         });

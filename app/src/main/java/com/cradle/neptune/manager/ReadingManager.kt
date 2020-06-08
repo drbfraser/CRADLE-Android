@@ -1,4 +1,4 @@
-package com.cradle.neptune.service
+package com.cradle.neptune.manager
 
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
@@ -17,7 +17,7 @@ import kotlinx.coroutines.*
  * the `Async` variant. For methods which return a value, the `Blocking`
  * variants may be used but remember that those will block the current thread.
  */
-interface ReadingService {
+interface ReadingManager {
 
     /**
      * Adds a new reading to the database.

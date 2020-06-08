@@ -11,7 +11,7 @@ import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.Settings;
-import com.cradle.neptune.service.MarshalService;
+import com.cradle.neptune.manager.MarshalManager;
 import com.cradle.neptune.utilitiles.DateUtil;
 import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.utilitiles.Zipper;
@@ -39,7 +39,7 @@ public class MultiReadingUploader {
     SharedPreferences sharedPreferences;
 
     @Inject
-    MarshalService marshalService;
+    MarshalManager marshalManager;
 
     private Context context;
     private Settings settings;
@@ -147,7 +147,7 @@ public class MultiReadingUploader {
         // 2. JSON of reading data
         File jsonFile = new File(context.getCacheDir(),
                 "reading_" + pair.getFirst().getId() + "@" + DateUtil.getISODateForFilename(ZonedDateTime.now()) + ".json");
-        String jsonData = marshalService.marshalToUploadJson(pair.getFirst(), pair.getSecond()).toString();
+        String jsonData = marshalManager.marshalToUploadJson(pair.getFirst(), pair.getSecond()).toString();
         try (FileWriter writer = new FileWriter(jsonFile)) {
             writer.write(jsonData);
         }
@@ -173,7 +173,7 @@ public class MultiReadingUploader {
 
             Patient patient = pairs.get(0).getFirst();
             Reading reading = pairs.get(0).getSecond();
-            String readingJson = marshalService.marshalToUploadJson(patient, reading).toString();
+            String readingJson = marshalManager.marshalToUploadJson(patient, reading).toString();
 //            String readingJson = Reading.getJsonObj(readings.get(0), sharedPreferences.getString(LoginActivity.USER_ID, ""));
             // start upload
             Uploader uploader = new Uploader(

@@ -11,11 +11,11 @@ import com.cradle.neptune.model.Settings;
 
 import javax.inject.Singleton;
 
-import com.cradle.neptune.service.HealthCentreService;
-import com.cradle.neptune.service.MarshalService;
-import com.cradle.neptune.service.ReadingService;
-import com.cradle.neptune.service.impl.HealthCentreServiceImpl;
-import com.cradle.neptune.service.impl.ReadingServiceImpl;
+import com.cradle.neptune.manager.HealthCentreManager;
+import com.cradle.neptune.manager.MarshalManager;
+import com.cradle.neptune.manager.ReadingManager;
+import com.cradle.neptune.manager.impl.HealthCentreManagerImpl;
+import com.cradle.neptune.manager.impl.ReadingManagerImpl;
 import dagger.Module;
 import dagger.Provides;
 
@@ -36,14 +36,14 @@ public class DataModule {
 
     @Provides
     @Singleton
-    public ReadingService provideReadingService(CradleDatabase database, MarshalService marshalService) {
-        return new ReadingServiceImpl(database, marshalService);
+    public ReadingManager provideReadingService(CradleDatabase database, MarshalManager marshalManager) {
+        return new ReadingManagerImpl(database, marshalManager);
     }
 
     @Provides
     @Singleton
-    public HealthCentreService provideHealthCentreService(CradleDatabase database) {
-        return new HealthCentreServiceImpl(database);
+    public HealthCentreManager provideHealthCentreService(CradleDatabase database) {
+        return new HealthCentreManagerImpl(database);
     }
 
     @Provides

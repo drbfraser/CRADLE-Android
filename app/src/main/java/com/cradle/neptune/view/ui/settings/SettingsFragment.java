@@ -19,8 +19,8 @@ import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.Settings;
-import com.cradle.neptune.service.HealthCentreService;
-import com.cradle.neptune.service.ReadingService;
+import com.cradle.neptune.manager.HealthCentreManager;
+import com.cradle.neptune.manager.ReadingManager;
 import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.view.LoginActivity;
 import com.cradle.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity;
@@ -44,10 +44,10 @@ public class SettingsFragment extends PreferenceFragmentCompat
     Settings settings;
 
     @Inject
-    ReadingService readingService;
+    ReadingManager readingManager;
 
     @Inject
-    HealthCentreService healthCentreService;
+    HealthCentreManager healthCentreManager;
 
 //    private SharedPreferences sharedPreferences;
 
@@ -70,7 +70,7 @@ public class SettingsFragment extends PreferenceFragmentCompat
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
 
-                    List<Pair<Patient, Reading>> unUploadedReadings = readingService.getUnUploadedReadingsBlocking();
+                    List<Pair<Patient, Reading>> unUploadedReadings = readingManager.getUnUploadedReadingsBlocking();
 
                     String description = getString(R.string.normalSignoutMessage);
                     if (!unUploadedReadings.isEmpty()) {
@@ -97,7 +97,7 @@ public class SettingsFragment extends PreferenceFragmentCompat
         editor.putString(LoginActivity.TOKEN, "");
         editor.putString(LoginActivity.USER_ID, "");
         editor.apply();
-        readingService.deleteAllDataAsync();
+        readingManager.deleteAllDataAsync();
         Intent intent = new Intent(getActivity(), LoginActivity.class);
         startActivity(intent);
         getActivity().finishAffinity();
@@ -181,7 +181,7 @@ public class SettingsFragment extends PreferenceFragmentCompat
 
         // health centres
         else if (pref.getKey().equals("setting_health_centres")) {
-            String summary = healthCentreService.getAllSelectedByUserBlocking().size() + " configured health centres";
+            String summary = healthCentreManager.getAllSelectedByUserBlocking().size() + " configured health centres";
             pref.setSummary(summary);
         }
 

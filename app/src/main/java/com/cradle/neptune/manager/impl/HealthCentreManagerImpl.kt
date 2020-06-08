@@ -1,10 +1,10 @@
-package com.cradle.neptune.service.impl
+package com.cradle.neptune.manager.impl
 
 import com.cradle.neptune.database.CradleDatabase
 import com.cradle.neptune.database.HealthFacilityEntity
-import com.cradle.neptune.service.HealthCentreService
+import com.cradle.neptune.manager.HealthCentreManager
 
-class HealthCentreServiceImpl(private val database: CradleDatabase) : HealthCentreService {
+class HealthCentreManagerImpl(private val database: CradleDatabase) : HealthCentreManager {
 
     private val dao get() = database.healthFacilityDaoAccess()
 

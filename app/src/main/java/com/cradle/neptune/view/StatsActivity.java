@@ -12,7 +12,7 @@ import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingAnalysis;
-import com.cradle.neptune.service.ReadingService;
+import com.cradle.neptune.manager.ReadingManager;
 import com.cradle.neptune.utilitiles.BarGraphValueFormatter;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
@@ -34,7 +34,7 @@ import javax.inject.Inject;
 public class StatsActivity extends AppCompatActivity {
 
     @Inject
-    ReadingService readingService;
+    ReadingManager readingManager;
 
     List<Reading> readings;
 
@@ -44,7 +44,7 @@ public class StatsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_stats);
 
         ((MyApp) getApplication()).getAppComponent().inject(this);
-        readings = readingService.getAllReadingsBlocking()
+        readings = readingManager.getAllReadingsBlocking()
                 .stream()
                 .map(Pair::getSecond)
                 .collect(Collectors.toList());

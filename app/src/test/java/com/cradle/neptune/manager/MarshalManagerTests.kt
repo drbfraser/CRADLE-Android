@@ -1,4 +1,4 @@
-package com.cradle.neptune.service
+package com.cradle.neptune.manager
 
 import android.content.SharedPreferences
 import com.cradle.neptune.model.BloodPressure
@@ -21,7 +21,7 @@ import org.threeten.bp.ZoneId
 import org.threeten.bp.ZonedDateTime
 import org.threeten.bp.format.DateTimeFormatter
 
-class MarshalServiceTests {
+class MarshalManagerTests {
 
     @Mock
     private lateinit var settings: Settings
@@ -30,7 +30,7 @@ class MarshalServiceTests {
     private lateinit var sharedPreferences: SharedPreferences
 
     @InjectMocks
-    private lateinit var marshalService: MarshalService
+    private lateinit var marshalManager: MarshalManager
 
     @BeforeEach
     fun injectMocks() {
@@ -71,7 +71,7 @@ class MarshalServiceTests {
             "\"totalOcrSeconds\":-1.0" +
             "}"
 
-        val (patient, reading) = marshalService.unmarshalDatabaseJson(JsonObject(databaseJsonString))
+        val (patient, reading) = marshalManager.unmarshalDatabaseJson(JsonObject(databaseJsonString))
 
         assertEquals(BloodPressure(75, 72, 65), reading.bloodPressure)
         assertEquals(
@@ -148,8 +148,8 @@ class MarshalServiceTests {
             )
         )
 
-        val json = marshalService.marshalToDatabaseJson(patient, reading)
-        val (actualPatient, actualReading) = marshalService.unmarshalDatabaseJson(json)
+        val json = marshalManager.marshalToDatabaseJson(patient, reading)
+        val (actualPatient, actualReading) = marshalManager.unmarshalDatabaseJson(json)
 
         assertEquals(patient, actualPatient)
         assertEquals(reading, actualReading)

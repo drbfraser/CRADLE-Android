@@ -26,7 +26,7 @@ import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.*;
-import com.cradle.neptune.service.ReadingService;
+import com.cradle.neptune.manager.ReadingManager;
 import com.cradle.neptune.utilitiles.DateUtil;
 import com.cradle.neptune.view.ui.network_volley.MultiReadingUploader;
 import com.google.android.material.snackbar.Snackbar;
@@ -34,7 +34,6 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
-import kotlin.NotImplementedError;
 import kotlin.Pair;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -56,7 +55,7 @@ public class UploadActivity extends AppCompatActivity {
 
     // Data Model
     @Inject
-    ReadingService readingService;
+    ReadingManager readingManager;
     @Inject
     SharedPreferences sharedPreferences;
     @Inject
@@ -112,7 +111,7 @@ public class UploadActivity extends AppCompatActivity {
                         .setTitle("Downloading patient data")
                         .setPositiveButton("OK", (dialogInterface, i)
                                 -> {
-                            LoginActivity.getAllMyPatients(token, readingService, UploadActivity.this);
+                            LoginActivity.getAllMyPatients(token, readingManager, UploadActivity.this);
                         })
                         .setNegativeButton("Cancel", (dialogInterface, i) -> {
 
@@ -244,7 +243,7 @@ public class UploadActivity extends AppCompatActivity {
             }
         }
 //        List<Reading> readings = readingManager.getReadings(this);
-        List<Pair<Patient, Reading>> pairs = readingService.getAllReadingsBlocking();
+        List<Pair<Patient, Reading>> pairs = readingManager.getAllReadingsBlocking();
         Map<String, Pair<Patient, Reading>> readingMap = new HashMap<>();
         for (Pair<Patient, Reading> pair : pairs) {
             readingMap.put(pair.getSecond().getId(), pair);
@@ -256,7 +255,7 @@ public class UploadActivity extends AppCompatActivity {
                 pair.getSecond().setFollowUp(followUp);
                 pair.getFirst().getMedicalHistoryList().add(followUp.getPatientMedInfoUpdate().toLowerCase());
                 pair.getFirst().getDrugHistoryList().add(followUp.getPatientDrugInfoUpdate().toLowerCase());
-                readingService.updateReadingAsync(pair.getFirst(), pair.getSecond());
+                readingManager.updateReadingAsync(pair.getFirst(), pair.getSecond());
 //                reading.patient.medicalHistoryList = new ArrayList<>();
 //                reading.patient.drugHistoryList = new ArrayList<>();
 //                reading.patient.medicalHistoryList.add(followUp.getPatientMedInfoUpdate().toLowerCase());
@@ -288,7 +287,7 @@ public class UploadActivity extends AppCompatActivity {
 
     private void updateReadingUploadLabels() {
         // reading count
-        int numReadingsToUpload = readingService.getUnUploadedReadingsBlocking().size();
+        int numReadingsToUpload = readingManager.getUnUploadedReadingsBlocking().size();
 //        int numReadingsToUpload = readingManager.getUnuploadedReadings().size();
         TextView tvReadingCount = findViewById(R.id.tvReadingsToUpload);
         tvReadingCount.setText(String.format("%d patient readings ready to upload", numReadingsToUpload));
@@ -320,7 +319,7 @@ public class UploadActivity extends AppCompatActivity {
     private void setupUploadImageButton() {
         Button btnStart = findViewById(R.id.uploadImagesButton);
         btnStart.setOnClickListener(view -> {
-            List<Pair<Patient, Reading>> readings = readingService.getAllReadingsBlocking();
+            List<Pair<Patient, Reading>> readings = readingManager.getAllReadingsBlocking();
             List<Pair<Patient, Reading>> readingsToUpload = new ArrayList<>();
             for (int i = 0; i < readings.size(); i++) {
                 Pair<Patient, Reading> reading = readings.get(i);
@@ -368,7 +367,7 @@ public class UploadActivity extends AppCompatActivity {
                 UploadTask uploadTask = storageReference1.putFile(file);
                 uploadTask.addOnSuccessListener(taskSnapshot -> {
                     r.getSecond().getMetadata().setImageUploaded(true);
-                    readingService.updateReadingAsync(r.getFirst(), r.getSecond());
+                    readingManager.updateReadingAsync(r.getFirst(), r.getSecond());
                     progressBar.setProgress(progressBar.getProgress() + 1);
                     if (stopuploading[0]) {
                         progressBar.setVisibility(View.INVISIBLE);
@@ -466,7 +465,7 @@ public class UploadActivity extends AppCompatActivity {
 //        }
 
         // discover un-uploaded readings
-        List<Pair<Patient, Reading>> pairs = readingService.getUnUploadedReadingsBlocking();
+        List<Pair<Patient, Reading>> pairs = readingManager.getUnUploadedReadingsBlocking();
 //        List<Reading> readingsToUpload = readingManager.getUnuploadedReadings();
         // abort if no readings
         if (pairs.size() == 0) {
@@ -510,7 +509,7 @@ public class UploadActivity extends AppCompatActivity {
             public void uploadReadingSucceeded(Pair<Patient, Reading> pair) {
                 // mark reading as uploaded
                 pair.getSecond().getMetadata().setDateUploadedToServer(ZonedDateTime.now());
-                readingService.updateReadingAsync(pair.getFirst(), pair.getSecond());
+                readingManager.updateReadingAsync(pair.getFirst(), pair.getSecond());
 
                 // record that we did a successful upload
                 String dateStr = DateUtil.getFullDateString(ZonedDateTime.now());

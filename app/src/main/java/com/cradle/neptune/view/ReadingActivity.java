@@ -17,7 +17,7 @@ import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
-import com.cradle.neptune.service.ReadingService;
+import com.cradle.neptune.manager.ReadingManager;
 import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.view.ui.reading.BaseFragment;
 import com.cradle.neptune.view.ui.reading.MyFragmentInteractionListener;
@@ -39,7 +39,7 @@ public class ReadingActivity
     private static final String EXTRA_START_TAB = "idx of tab to start on";
     // Data Model
     @Inject
-    ReadingService readingService;
+    ReadingManager readingManager;
 
     private ViewPager mPager;
     private SectionsPagerAdapter mPagerAdapter;
@@ -114,7 +114,7 @@ public class ReadingActivity
             case LAUNCH_REASON_EDIT:
                 readingId = intent.getStringExtra(EXTRA_READING_ID);
                 Util.ensure((readingId != null && !readingId.equals("")));
-                originalData = readingService.getReadingByIdBlocking(readingId);
+                originalData = readingManager.getReadingByIdBlocking(readingId);
                 assert originalData != null;
                 viewModel = new PatientReadingViewModel(originalData.getFirst(), originalData.getSecond());
 //                currentReading = GsonUtil.cloneViaGson(originalReading, Reading.class);
@@ -122,7 +122,7 @@ public class ReadingActivity
             case LAUNCH_REASON_RECHECK:
                 readingId = getIntent().getStringExtra(EXTRA_READING_ID);
                 Util.ensure((readingId != null && !readingId.equals("")));
-                originalData = readingService.getReadingByIdBlocking(readingId);
+                originalData = readingManager.getReadingByIdBlocking(readingId);
                 assert originalData != null;
                 viewModel = new PatientReadingViewModel(originalData.getFirst());
 
@@ -138,7 +138,7 @@ public class ReadingActivity
             case LAUNCH_REASON_EXISTINGNEW:
                 readingId = getIntent().getStringExtra(EXTRA_READING_ID);
                 Util.ensure((readingId != null && !readingId.equals("")));
-                originalData = readingService.getReadingByIdBlocking(readingId);
+                originalData = readingManager.getReadingByIdBlocking(readingId);
                 assert originalData != null;
                 viewModel = new PatientReadingViewModel(originalData.getFirst());
 //                originalReading = readingManager.getReadingById(this, readingId);
@@ -367,8 +367,8 @@ public class ReadingActivity
     }
 
     @Override
-    public ReadingService getReadingService() {
-        return readingService;
+    public ReadingManager getReadingManager() {
+        return readingManager;
     }
 
     // Return true if saved; false if rejected
@@ -404,12 +404,12 @@ public class ReadingActivity
             case LAUNCH_REASON_NEW: // fallthrough
             case LAUNCH_REASON_RECHECK: // fallthrough
             case LAUNCH_REASON_EXISTINGNEW:
-                readingService.addReadingAsync(models.getFirst(), models.getSecond());
+                readingManager.addReadingAsync(models.getFirst(), models.getSecond());
                 break;
             case LAUNCH_REASON_EDIT:
                 // overwrite if any changes
                 if (!models.equals(originalData)) {
-                    readingService.updateReadingAsync(models.getFirst(), models.getSecond());
+                    readingManager.updateReadingAsync(models.getFirst(), models.getSecond());
                 }
                 break;
             default:

@@ -29,8 +29,8 @@ import com.cradle.neptune.database.HealthFacilityEntity;
 //import com.cradle.neptune.database.ParsePatientInformationAsyncTask;
 import com.cradle.neptune.model.*;
 
-import com.cradle.neptune.service.HealthCentreService;
-import com.cradle.neptune.service.ReadingService;
+import com.cradle.neptune.manager.HealthCentreManager;
+import com.cradle.neptune.manager.ReadingManager;
 import kotlin.Pair;
 import kotlin.Unit;
 import org.json.JSONArray;
@@ -65,9 +65,9 @@ public class LoginActivity extends AppCompatActivity {
     public static final String TWILIO_PHONE_NUMBER = "16042298878";
     public static int loginBruteForceAttempts = 3;
     @Inject
-    ReadingService readingService;
+    ReadingManager readingManager;
     @Inject
-    HealthCentreService healthCentreService;
+    HealthCentreManager healthCentreManager;
     @Inject
     SharedPreferences sharedPreferences;
 
@@ -78,7 +78,7 @@ public class LoginActivity extends AppCompatActivity {
      *
      * @param token token for the user
      */
-    public static void getAllMyPatients(String token, ReadingService readingService, Context context) {
+    public static void getAllMyPatients(String token, ReadingManager readingManager, Context context) {
         JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, Settings.patientGetAllInfoByUserIdUrl,
                 null, response -> {
 
@@ -86,7 +86,7 @@ public class LoginActivity extends AppCompatActivity {
                 // Populate the database with the patients and readings.
                 for (Pair<Patient, ? extends List<Reading>> pair : result) {
                     for (Reading reading : pair.getSecond()) {
-                        readingService.addReadingAsync(pair.getFirst(), reading);
+                        readingManager.addReadingAsync(pair.getFirst(), reading);
                     }
                 }
 
@@ -187,7 +187,7 @@ public class LoginActivity extends AppCompatActivity {
                     editor.putString(USER_ID, response.getString("userId"));
                     editor.apply();
                     String token = response.get(TOKEN).toString();
-                    getAllMyPatients(token, readingService, this);
+                    getAllMyPatients(token, readingManager, this);
                     // only for testing
                     populateHealthFacilities();
                 } catch (JSONException e) {
@@ -233,7 +233,7 @@ public class LoginActivity extends AppCompatActivity {
 
                     healthFacilityEntities.add(healthFacilityEntity);
                 }
-                healthCentreService.addAllAsync(healthFacilityEntities);
+                healthCentreManager.addAllAsync(healthFacilityEntities);
             } catch (JSONException e) {
                 e.printStackTrace();
             }

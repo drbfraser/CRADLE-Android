@@ -1,6 +1,6 @@
 package com.cradle.neptune.view.ui.reading;
 
-import com.cradle.neptune.service.ReadingService;
+import com.cradle.neptune.manager.ReadingManager;
 import com.cradle.neptune.viewmodel.PatientReadingViewModel;
 
 /**
@@ -12,7 +12,7 @@ import com.cradle.neptune.viewmodel.PatientReadingViewModel;
 public interface MyFragmentInteractionListener {
     PatientReadingViewModel getViewModel();
 
-    ReadingService getReadingService();
+    ReadingManager getReadingManager();
 
     void advanceToNextPage();
 

@@ -9,7 +9,7 @@ import com.cradle.neptune.model.Referral
 import com.cradle.neptune.model.RetestGroup
 import com.cradle.neptune.model.Sex
 import com.cradle.neptune.model.UrineTest
-import com.cradle.neptune.service.ReadingService
+import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.utilitiles.DynamicModelBuilder
 import com.cradle.neptune.utilitiles.discard
 import org.threeten.bp.ZonedDateTime
@@ -245,7 +245,7 @@ class PatientReadingViewModel() {
      * what we have, giving some defaults if needed; the UI will just have to
      * deal with it.
      */
-    fun buildRetestGroup(readingService: ReadingService): RetestGroup? {
+    fun buildRetestGroup(readingManager: ReadingManager): RetestGroup? {
         if (bloodPressure == null) {
             return null
         }
@@ -264,6 +264,6 @@ class PatientReadingViewModel() {
             previousReadingIds = previousReadingIds ?: emptyList(),
             metadata = metadata
         )
-        return readingService.getRetestGroupBlocking(reading)
+        return readingManager.getRetestGroupBlocking(reading)
     }
 }

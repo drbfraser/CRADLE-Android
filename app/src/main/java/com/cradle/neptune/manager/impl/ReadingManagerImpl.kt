@@ -1,18 +1,18 @@
-package com.cradle.neptune.service.impl
+package com.cradle.neptune.manager.impl
 
 import android.util.Log
 import com.cradle.neptune.database.CradleDatabase
 import com.cradle.neptune.database.ReadingEntity
 import com.cradle.neptune.model.*
-import com.cradle.neptune.service.MarshalService
-import com.cradle.neptune.service.ReadingService
+import com.cradle.neptune.manager.MarshalManager
+import com.cradle.neptune.manager.ReadingManager
 import org.threeten.bp.ZonedDateTime
 import javax.inject.Inject
 
-class ReadingServiceImpl @Inject constructor(
+class ReadingManagerImpl @Inject constructor(
     private val database: CradleDatabase,
-    private val marshalService: MarshalService
-) : ReadingService {
+    private val marshalManager: MarshalManager
+) : ReadingManager {
 
     private val readingDao get() = database.readingDaoAccess()
 
@@ -93,7 +93,7 @@ class ReadingServiceImpl @Inject constructor(
      * Composes a [Patient] and [Reading] into a [ReadingEntity].
      */
     private fun constructEntity(patient: Patient, reading: Reading): ReadingEntity {
-        val json = marshalService.marshalToDatabaseJson(patient, reading)
+        val json = marshalManager.marshalToDatabaseJson(patient, reading)
         return ReadingEntity(reading.id, reading.patientId, json.toString(), reading.metadata.isUploaded)
     }
 
@@ -110,7 +110,7 @@ class ReadingServiceImpl @Inject constructor(
             return null
         }
         val json = JsonObject(jsonString)
-        return marshalService.unmarshalDatabaseJson(json)
+        return marshalManager.unmarshalDatabaseJson(json)
     }
 }
 
