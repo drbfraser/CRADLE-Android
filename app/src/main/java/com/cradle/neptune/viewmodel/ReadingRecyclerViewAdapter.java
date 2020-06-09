@@ -1,6 +1,5 @@
 package com.cradle.neptune.viewmodel;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,10 +12,7 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cradle.neptune.R;
-import com.cradle.neptune.model.Reading;
-import com.cradle.neptune.model.ReadingAnalysis;
-import com.cradle.neptune.model.ReadingFollowUp;
-import com.cradle.neptune.model.UrineTestResult;
+import com.cradle.neptune.model.*;
 import com.cradle.neptune.utilitiles.DateUtil;
 
 import java.text.ParseException;
@@ -55,7 +51,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
 
     @Override
     public int getItemViewType(int position) {
-        ReadingFollowUp followUpAction = readings.get(position).readingFollowUp;
+        FollowUp followUpAction = readings.get(position).getFollowUp();
         if (followUpAction == null) {
             return NO_ASSESSMENT_TYPE;
         }
@@ -67,19 +63,19 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
     public void onBindViewHolder(@NonNull MyViewHolder myViewHolder, int i) {
         Reading currReading = readings.get(i);
 
-        ReadingAnalysis analysis = ReadingAnalysis.analyze(currReading);
+        ReadingAnalysis analysis = currReading.getBloodPressure().getAnalysis();
 
-        myViewHolder.readingDate.setText(DateUtil.getConciseDateString(currReading.dateTimeTaken));
-        myViewHolder.sysBP.setText(new StringBuilder().append(currReading.bpSystolic).append("").toString());
-        myViewHolder.diaBP.setText(new StringBuilder().append(currReading.bpDiastolic).append("").toString());
-        myViewHolder.heartRate.setText(new StringBuilder().append(currReading.heartRateBPM).append("").toString());
+        myViewHolder.readingDate.setText(DateUtil.getConciseDateString(currReading.getDateTimeTaken()));
+        myViewHolder.sysBP.setText(new StringBuilder().append(currReading.getBloodPressure().getSystolic()).append("").toString());
+        myViewHolder.diaBP.setText(new StringBuilder().append(currReading.getBloodPressure().getDiastolic()).append("").toString());
+        myViewHolder.heartRate.setText(new StringBuilder().append(currReading.getBloodPressure().getHeartRate()).append("").toString());
 
-        if (currReading.urineTestResult != null && !currReading.urineTestResult.equals("")) {
-            myViewHolder.urineTest.setText(getUrineTestFormattedTxt(currReading.urineTestResult));
+        if (currReading.getUrineTest() != null) {
+            myViewHolder.urineTest.setText(getUrineTestFormattedTxt(currReading.getUrineTest()));
         }
-        if (currReading.symptoms!=null && !currReading.symptoms.isEmpty()){
+        if (currReading.getSymptoms()!=null && !currReading.getSymptoms().isEmpty()){
             String symptoms ="";
-            for (String s:currReading.symptoms){
+            for (String s:currReading.getSymptoms()){
                 symptoms+=s+", ";
             }
             myViewHolder.symptomTxt.setText(symptoms);
@@ -88,13 +84,13 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         myViewHolder.arrow.setImageResource(ReadingAnalysisViewSupport.getArrowImageId(analysis));
 
         View v = myViewHolder.view;
-        myViewHolder.cardView.setOnClickListener(view -> onClickElementListener.onClick(currReading.readingId));
-        myViewHolder.cardView.setOnLongClickListener(view -> onClickElementListener.onLongClick(currReading.readingId));
+        myViewHolder.cardView.setOnClickListener(view -> onClickElementListener.onClick(currReading.getId()));
+        myViewHolder.cardView.setOnLongClickListener(view -> onClickElementListener.onLongClick(currReading.getId()));
         if (myViewHolder.getItemViewType() == NO_ASSESSMENT_TYPE) {
 
-            if (currReading.isNeedRecheckVitals()) {
+            if (currReading.isVitalRecheckRequired()) {
                 myViewHolder.retakeVitalButton.setVisibility(View.VISIBLE);
-                myViewHolder.retakeVitalButton.setOnClickListener(view -> onClickElementListener.onClickRecheckReading(currReading.readingId));
+                myViewHolder.retakeVitalButton.setOnClickListener(view -> onClickElementListener.onClickRecheckReading(currReading.getId()));
             }
 
             if (currReading.isReferredToHealthCentre()) {
@@ -104,14 +100,14 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             myViewHolder.arrow.setImageResource(ReadingAnalysisViewSupport.getArrowImageId(analysis));
 
             //upload button
-            setVisibilityForImageAndText(v, R.id.imgNotUploaded, R.id.tvNotUploaded, !currReading.isUploaded());
+            setVisibilityForImageAndText(v, R.id.imgNotUploaded, R.id.tvNotUploaded, !currReading.getMetadata().isUploaded());
 
             //referral
             setVisibilityForImageAndText(v, R.id.imgReferred, R.id.txtReferred, currReading.isReferredToHealthCentre());
             if (currReading.isReferredToHealthCentre()) {
                 String message;
-                if (currReading.referralHealthCentre != null && currReading.referralHealthCentre.length() > 0) {
-                    message = v.getContext().getString(R.string.reading_referred_to_health_centre, currReading.referralHealthCentre);
+                if (currReading.getReferral() != null && currReading.getReferral().getHealthCentre().length() > 0) {
+                    message = v.getContext().getString(R.string.reading_referred_to_health_centre, currReading.getReferral().getHealthCentre());
                 } else {
                     message = v.getContext().getString(R.string.reading_referred_to_health_centre_unknown);
                 }
@@ -122,16 +118,16 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
 
 
             // populate: follow-up
-            setVisibilityForImageAndText(v, R.id.imgFollowUp, R.id.txtFollowUp, currReading.isFlaggedForFollowup());
+            setVisibilityForImageAndText(v, R.id.imgFollowUp, R.id.txtFollowUp, currReading.isFlaggedForFollowUp());
 
             // populate: recheck vitals
-            setVisibilityForImageAndText(v, R.id.imgRecheckVitals, R.id.txtRecheckVitals, currReading.isNeedRecheckVitals());
-            if (currReading.isNeedRecheckVitals()) {
+            setVisibilityForImageAndText(v, R.id.imgRecheckVitals, R.id.txtRecheckVitals, currReading.isVitalRecheckRequired());
+            if (currReading.isVitalRecheckRequired()) {
                 String message;
-                if (currReading.isNeedRecheckVitalsNow()) {
+                if (currReading.isVitalRecheckRequiredNow()) {
                     message = v.getContext().getString(R.string.reading_recheck_vitals_now);
                 } else {
-                    long minutes = currReading.getMinutesUntilNeedRecheckVitals();
+                    long minutes = currReading.getMinutesUtilVitalRecheck();
                     if (minutes == 1) {
                         message = v.getContext().getString(R.string.reading_recheck_vitals_in_one_minute);
                     } else {
@@ -144,7 +140,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             }
 
         } else if (myViewHolder.getItemViewType() == ASSESSMENT_TYPE) {
-            ReadingFollowUp readingFollowUp = currReading.readingFollowUp;
+            FollowUp readingFollowUp = currReading.getFollowUp();
             myViewHolder.diagnosis.setText(readingFollowUp.getDiagnosis());
             myViewHolder.treatment.setText(readingFollowUp.getTreatment());
             myViewHolder.hcName.setText(readingFollowUp.getHealthcare());
@@ -162,12 +158,12 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             TextView medPrescribed = v.findViewById(R.id.medPrescibedTxt);
             specialInvestigation.setText(readingFollowUp.getSpecialInvestigation());
             medPrescribed.setText(readingFollowUp.getMedicationPrescribed());
-            if (readingFollowUp.isFollowUpNeeded()) {
+            if (readingFollowUp.getFollowUpNeeded()) {
                 myViewHolder.followUp.setText(readingFollowUp.getFollowUpAction());
                 TextView frequencyTxt = v.findViewById(R.id.followupFrequencyTxt);
                 frequencyTxt.setVisibility(View.VISIBLE);
-                String txt = "Every " + readingFollowUp.getFollowupFrequencyValue() + " " + readingFollowUp.getFollowupFrequencyUnit().toLowerCase()
-                        + " till: " + readingFollowUp.getFollowupNeededTill();
+                String txt = "Every " + readingFollowUp.getFollowUpFrequencyValue() + " " + readingFollowUp.getFollowUpFrequencyUnit().toLowerCase()
+                        + " till: " + readingFollowUp.getFollowUpNeededTill();
                 frequencyTxt.setText(txt);
             } else {
                 TextView frequencyTxt = v.findViewById(R.id.followupFrequencyTxt);
@@ -177,7 +173,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
 
     }
 
-    private String getUrineTestFormattedTxt(UrineTestResult urineTestResult) {
+    private String getUrineTestFormattedTxt(UrineTest urineTestResult) {
         return "Leukocytes: " + urineTestResult.getLeukocytes() + " , " +
                 "Nitrites: " + urineTestResult.getNitrites() + " , " +
                 "Protein: " + urineTestResult.getProtein() + " \n " +
@@ -211,7 +207,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
 
     private void onClick(View view) {
         int itemPosition = recyclerView.getChildLayoutPosition(view);
-        String readingId = readings.get(itemPosition).readingId;
+        String readingId = readings.get(itemPosition).getId();
         if (onClickElementListener != null) {
             onClickElementListener.onClick(readingId);
         }

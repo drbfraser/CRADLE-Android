@@ -31,3 +31,11 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+// Log testing output
+//   ref: https://stackoverflow.com/a/31665341
+tasks.withType(Test) {
+    testLogging {
+        events "started", "passed", "skipped", "failed"
+    }
+}

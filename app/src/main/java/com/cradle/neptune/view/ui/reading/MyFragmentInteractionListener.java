@@ -1,7 +1,7 @@
 package com.cradle.neptune.view.ui.reading;
 
-import com.cradle.neptune.model.Reading;
-import com.cradle.neptune.model.ReadingManager;
+import com.cradle.neptune.manager.ReadingManager;
+import com.cradle.neptune.viewmodel.PatientReadingViewModel;
 
 /**
  * This interface must be implemented by activities that contain this
@@ -10,7 +10,7 @@ import com.cradle.neptune.model.ReadingManager;
  * activity.
  */
 public interface MyFragmentInteractionListener {
-    Reading getCurrentReading();
+    PatientReadingViewModel getViewModel();
 
     ReadingManager getReadingManager();
 

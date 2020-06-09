@@ -26,10 +26,13 @@ import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.database.HealthFacilityEntity;
-import com.cradle.neptune.database.ParsePatientInformationAsyncTask;
-import com.cradle.neptune.model.ReadingManager;
-import com.cradle.neptune.model.Settings;
+//import com.cradle.neptune.database.ParsePatientInformationAsyncTask;
+import com.cradle.neptune.model.*;
 
+import com.cradle.neptune.manager.HealthCentreManager;
+import com.cradle.neptune.manager.ReadingManager;
+import kotlin.Pair;
+import kotlin.Unit;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -64,6 +67,8 @@ public class LoginActivity extends AppCompatActivity {
     @Inject
     ReadingManager readingManager;
     @Inject
+    HealthCentreManager healthCentreManager;
+    @Inject
     SharedPreferences sharedPreferences;
 
     /**
@@ -77,9 +82,20 @@ public class LoginActivity extends AppCompatActivity {
         JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, Settings.patientGetAllInfoByUserIdUrl,
                 null, response -> {
 
-            ParsePatientInformationAsyncTask parsePatientInformationAsyncTask =
-                    new ParsePatientInformationAsyncTask(response, context.getApplicationContext(), readingManager);
-            parsePatientInformationAsyncTask.execute();
+            ApiKt.legacyUnmarshallAllInfoAsync(response, result -> {
+                // Populate the database with the patients and readings.
+                for (Pair<Patient, ? extends List<Reading>> pair : result) {
+                    for (Reading reading : pair.getSecond()) {
+                        readingManager.addReadingAsync(pair.getFirst(), reading);
+                    }
+                }
+
+                // FIXME: Doesn't send the notification once finished like the original does.
+                return Unit.INSTANCE;
+            });
+//            ParsePatientInformationAsyncTask parsePatientInformationAsyncTask =
+//                    new ParsePatientInformationAsyncTask(response, context.getApplicationContext(), readingManager);
+//            parsePatientInformationAsyncTask.execute();
         }, error -> {
             Log.d("bugg", "failed: " + error);
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context.getApplicationContext());
@@ -217,7 +233,7 @@ public class LoginActivity extends AppCompatActivity {
 
                     healthFacilityEntities.add(healthFacilityEntity);
                 }
-                readingManager.insertAll(healthFacilityEntities);
+                healthCentreManager.addAllAsync(healthFacilityEntities);
             } catch (JSONException e) {
                 e.printStackTrace();
             }

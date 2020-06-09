@@ -8,7 +8,7 @@ import android.view.inputmethod.InputMethodManager;
 import androidx.fragment.app.Fragment;
 
 import com.cradle.neptune.model.Reading;
-import com.cradle.neptune.model.ReadingManager;
+import com.cradle.neptune.manager.ReadingManager;
 
 /**
  * Base class for other ReadingFragments

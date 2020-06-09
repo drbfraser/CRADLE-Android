@@ -16,12 +16,15 @@ import androidx.preference.PreferenceGroup;
 
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
-import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
+import com.cradle.neptune.manager.HealthCentreManager;
+import com.cradle.neptune.manager.ReadingManager;
 import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.view.LoginActivity;
 import com.cradle.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity;
+import kotlin.Pair;
 
 import java.util.Arrays;
 import java.util.List;
@@ -36,10 +39,15 @@ public class SettingsFragment extends PreferenceFragmentCompat
     // Data Model
     @Inject
     SharedPreferences sharedPreferences;
+
     @Inject
     Settings settings;
+
     @Inject
     ReadingManager readingManager;
+
+    @Inject
+    HealthCentreManager healthCentreManager;
 
 //    private SharedPreferences sharedPreferences;
 
@@ -62,7 +70,7 @@ public class SettingsFragment extends PreferenceFragmentCompat
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
 
-                    List<Reading> unUploadedReadings = readingManager.getUnuploadedReadings();
+                    List<Pair<Patient, Reading>> unUploadedReadings = readingManager.getUnUploadedReadingsBlocking();
 
                     String description = getString(R.string.normalSignoutMessage);
                     if (!unUploadedReadings.isEmpty()) {
@@ -89,7 +97,7 @@ public class SettingsFragment extends PreferenceFragmentCompat
         editor.putString(LoginActivity.TOKEN, "");
         editor.putString(LoginActivity.USER_ID, "");
         editor.apply();
-        readingManager.deleteAllData(getActivity());
+        readingManager.deleteAllDataAsync();
         Intent intent = new Intent(getActivity(), LoginActivity.class);
         startActivity(intent);
         getActivity().finishAffinity();
@@ -173,7 +181,7 @@ public class SettingsFragment extends PreferenceFragmentCompat
 
         // health centres
         else if (pref.getKey().equals("setting_health_centres")) {
-            String summary = readingManager.getUserSelectedFacilities().size() + " configured health centres";
+            String summary = healthCentreManager.getAllSelectedByUserBlocking().size() + " configured health centres";
             pref.setSummary(summary);
         }
 

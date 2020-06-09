@@ -22,9 +22,7 @@ import android.widget.TextView;
 
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
-import com.cradle.neptune.model.Reading;
-import com.cradle.neptune.model.ReadingAnalysis;
-import com.cradle.neptune.model.Settings;
+import com.cradle.neptune.model.*;
 import com.cradle.neptune.ocr.BorderedText;
 import com.cradle.neptune.ocr.CradleOverlay;
 import com.cradle.neptune.ocr.OcrDigitDetector;
@@ -35,6 +33,8 @@ import com.wonderkiln.blurkit.BlurKit;
 import java.util.List;
 
 import javax.inject.Inject;
+
+import static com.cradle.neptune.utilitiles.Util.mapNullable;
 
 /**
  * Allow user to confirm data from the CRADLE photo.
@@ -88,21 +88,27 @@ public class ConfirmDataFragment extends BaseFragment {
         hideKeyboard();
 
         makingProgramaticChangeToVitals = true;
-        setTextBox(R.id.etSystolic, currentReading.bpSystolic);
-        setTextBox(R.id.etDiastolic, currentReading.bpDiastolic);
-        setTextBox(R.id.etHeartRate, currentReading.heartRateBPM);
+        setTextBox(R.id.etSystolic, mapNullable(viewModel.getBloodPressure(), BloodPressure::getSystolic));
+        setTextBox(R.id.etDiastolic, mapNullable(viewModel.getBloodPressure(), BloodPressure::getDiastolic));
+        setTextBox(R.id.etHeartRate, mapNullable(viewModel.getBloodPressure(), BloodPressure::getHeartRate));
+//        setTextBox(R.id.etSystolic, currentReading.bpSystolic);
+//        setTextBox(R.id.etDiastolic, currentReading.bpDiastolic);
+//        setTextBox(R.id.etHeartRate, currentReading.heartRateBPM);
         makingProgramaticChangeToVitals = false;
 
         // display photo
-        if (currentReading.pathToPhoto != null) {
+        if (viewModel.getMetadata().getPhotoPath() != null) {
+//        if (currentReading.pathToPhoto != null) {
             ImageView iv = getView().findViewById(R.id.imageViewPhoto);
-            Bitmap bitmap = BitmapFactory.decodeFile(currentReading.pathToPhoto);
+            Bitmap bitmap = BitmapFactory.decodeFile(viewModel.getMetadata().getPhotoPath());
+//            Bitmap bitmap = BitmapFactory.decodeFile(currentReading.pathToPhoto);
             iv.setImageBitmap(bitmap);
         }
 
         // display no-photo warning
         TextView tv = getView().findViewById(R.id.txtNoPhotoWarning);
-        tv.setVisibility(currentReading.pathToPhoto == null ? View.VISIBLE : View.GONE);
+        tv.setVisibility(viewModel.getMetadata().getPhotoPath() == null ? View.VISIBLE : View.GONE);
+//        tv.setVisibility(currentReading.pathToPhoto == null ? View.VISIBLE : View.GONE);
 
         setupTextEdits();
         setupTagPhotonFiles();
@@ -110,10 +116,14 @@ public class ConfirmDataFragment extends BaseFragment {
         doOcrOnCurrentImage();
     }
 
+    public static final int MANUAL_USER_ENTRY_SYSTOLIC = 1;
+    public static final int MANUAL_USER_ENTRY_DIASTOLIC = 2;
+    public static final int MANUAL_USER_ENTRY_HEARTRATE = 4;
+
     private void setupTextEdits() {
-        watchForUserTextEntry(R.id.etSystolic, Reading.MANUAL_USER_ENTRY_SYSTOLIC);
-        watchForUserTextEntry(R.id.etDiastolic, Reading.MANUAL_USER_ENTRY_DIASTOLIC);
-        watchForUserTextEntry(R.id.etHeartRate, Reading.MANUAL_USER_ENTRY_HEARTRATE);
+        watchForUserTextEntry(R.id.etSystolic, MANUAL_USER_ENTRY_SYSTOLIC);
+        watchForUserTextEntry(R.id.etDiastolic, MANUAL_USER_ENTRY_DIASTOLIC);
+        watchForUserTextEntry(R.id.etHeartRate, MANUAL_USER_ENTRY_HEARTRATE);
     }
 
     private void watchForUserTextEntry(int id, int mask) {
@@ -126,7 +136,7 @@ public class ConfirmDataFragment extends BaseFragment {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 if (!makingProgramaticChangeToVitals) {
-                    currentReading.setAManualChangeOcrResultsFlags(mask);
+//                    currentReading.setAManualChangeOcrResultsFlags(mask);
                 }
             }
 
@@ -150,9 +160,17 @@ public class ConfirmDataFragment extends BaseFragment {
         if (getView() == null) {
             return true;
         }
-        currentReading.bpSystolic = getEditTextValue(R.id.etSystolic);
-        currentReading.bpDiastolic = getEditTextValue(R.id.etDiastolic);
-        currentReading.heartRateBPM = getEditTextValue(R.id.etHeartRate);
+        Integer bpSystolic = getEditTextValue(R.id.etSystolic);
+        Integer bpDiastolic = getEditTextValue(R.id.etDiastolic);
+        Integer heartRateBPM = getEditTextValue(R.id.etHeartRate);
+        if (bpSystolic == null || bpDiastolic == null || heartRateBPM == null) {
+            viewModel.setBloodPressure(null);
+        } else {
+            viewModel.setBloodPressure(new BloodPressure(bpSystolic, bpDiastolic, heartRateBPM));
+        }
+//        currentReading.bpSystolic = getEditTextValue(R.id.etSystolic);
+//        currentReading.bpDiastolic = getEditTextValue(R.id.etDiastolic);
+//        currentReading.heartRateBPM = getEditTextValue(R.id.etHeartRate);
         return true;
     }
 
@@ -195,7 +213,8 @@ public class ConfirmDataFragment extends BaseFragment {
             return;
         }
 
-        Bitmap savedImage = BitmapFactory.decodeFile(currentReading.pathToPhoto);
+        Bitmap savedImage = BitmapFactory.decodeFile(viewModel.getMetadata().getPhotoPath());
+//        Bitmap savedImage = BitmapFactory.decodeFile(currentReading.pathToPhoto);
         if (savedImage != null) {
             ocrOneLine(0, savedImage, CradleOverlay.OverlayRegion.OVERLAY_REGION_SYS);
             ocrOneLine(1, savedImage, CradleOverlay.OverlayRegion.OVERLAY_REGION_DIA);
@@ -270,8 +289,8 @@ public class ConfirmDataFragment extends BaseFragment {
 
                 // if ensure it's a number and within range (min to max)
                 String displayText = extractedText;
-                int[] minValues = {ReadingAnalysis.MIN_SYSTOLIC, ReadingAnalysis.MIN_DIASTOLIC, ReadingAnalysis.MIN_HEART_RATE};
-                int[] maxValues = {ReadingAnalysis.MAX_SYSTOLIC, ReadingAnalysis.MAX_DIASTOLIC, ReadingAnalysis.MAX_HEART_RATE};
+                int[] minValues = {ReadingKt.MIN_SYSTOLIC, ReadingKt.MIN_DIASTOLIC, ReadingKt.MIN_HEART_RATE};
+                int[] maxValues = {ReadingKt.MAX_SYSTOLIC, ReadingKt.MAX_DIASTOLIC, ReadingKt.MAX_HEART_RATE};
                 try {
                     int extractedInt = Integer.parseInt(extractedText);
                     if (extractedInt < minValues[rowNumber] || extractedInt > maxValues[rowNumber]) {

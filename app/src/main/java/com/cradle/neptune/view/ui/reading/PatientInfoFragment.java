@@ -21,8 +21,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.cradle.neptune.R;
-import com.cradle.neptune.model.Patient;
-import com.cradle.neptune.model.Reading;
+import com.cradle.neptune.model.*;
 import com.cradle.neptune.utilitiles.Util;
 
 import java.util.ArrayList;
@@ -80,7 +79,8 @@ public class PatientInfoFragment extends BaseFragment {
                 public void onDateSet(DatePicker datePicker, int year, int month, int day) {
                     String date = year + "-" + month + "-" + day;
                     et.setText(date);
-                    currentReading.patient.dob = date;
+                    viewModel.setPatientDob(date);
+//                    currentReading.patient.dob = date;
                 }
             }, 2010, 1, 1);
             datePickerDialog.show();
@@ -102,7 +102,8 @@ public class PatientInfoFragment extends BaseFragment {
                     ageET.setText("");
                     ageET.setEnabled(false);
                     ageET.setClickable(false);
-                    currentReading.patient.age = null;
+                    viewModel.setPatientAge(null);
+//                    currentReading.patient.age = null;
                 } else {
                     dobtxt.setEnabled(false);
                     dobtxt.setText("");
@@ -110,7 +111,8 @@ public class PatientInfoFragment extends BaseFragment {
                     dobtxt.setText("");
                     ageET.setEnabled(true);
                     ageET.setClickable(true);
-                    currentReading.patient.dob = null;
+                    viewModel.setPatientDob(null);
+//                    currentReading.patient.dob = null;
                 }
             }
         });
@@ -146,20 +148,27 @@ public class PatientInfoFragment extends BaseFragment {
         EditText et;
         // id
         et = mView.findViewById(R.id.etPatientId);
-        et.setText(currentReading.patient.patientId);
+        et.setText(viewModel.getPatientId());
+//        et.setText(currentReading.patient.patientId);
 
         // initials
         et = mView.findViewById(R.id.etPatientName);
-        et.setText(currentReading.patient.patientName);
+        et.setText(viewModel.getPatientName());
+//        et.setText(currentReading.patient.patientName);
 
         // age
         EditText dobET = mView.findViewById(R.id.dobTxt);
         EditText ageET = mView.findViewById(R.id.patientAgeEditTxt);
-        if (currentReading.patient.dob != null && !currentReading.patient.dob.isEmpty()) {
-            dobET.setText(currentReading.patient.dob);
-        } else if (currentReading.patient.age != null && currentReading.patient.age >= -1) {
-            ageET.setText(currentReading.patient.age + "");
+        if (viewModel.getPatientDob() != null && !viewModel.getPatientDob().isEmpty()) {
+            dobET.setText(viewModel.getPatientDob());
+        } else if (viewModel.getPatientAge() != null && viewModel.getPatientAge() >= -1) {
+            ageET.setText(viewModel.getPatientAge().toString());
         }
+//        if (currentReading.patient.dob != null && !currentReading.patient.dob.isEmpty()) {
+//            dobET.setText(currentReading.patient.dob);
+//        } else if (currentReading.patient.age != null && currentReading.patient.age >= -1) {
+//            ageET.setText(currentReading.patient.age + "");
+//        }
         setupSexSpinner(mView, true);
 
     }
@@ -168,11 +177,13 @@ public class PatientInfoFragment extends BaseFragment {
         EditText et;
         // id
         et = mView.findViewById(R.id.etPatientId);
-        currentReading.patient.patientId = et.getText().toString();
+        viewModel.setPatientId(et.getText().toString());
+//        currentReading.patient.patientId = et.getText().toString();
 
         // initials
         et = mView.findViewById(R.id.etPatientName);
-        currentReading.patient.patientName = et.getText().toString();
+        viewModel.setPatientName(et.getText().toString());
+//        currentReading.patient.patientName = et.getText().toString();
 
         // age
         EditText dobET = mView.findViewById(R.id.dobTxt);
@@ -180,20 +191,26 @@ public class PatientInfoFragment extends BaseFragment {
         String dobStr = dobET.getText().toString().trim();
         String ageStr = ageET.getText().toString().trim();
         if (!dobStr.isEmpty()) {
-            currentReading.patient.dob = dobStr;
-            currentReading.patient.age = null;
+            viewModel.setPatientDob(dobStr);
+            viewModel.setPatientAge(null);
+//            currentReading.patient.dob = dobStr;
+//            currentReading.patient.age = null;
         } else if (!ageStr.isEmpty()) {
-            currentReading.patient.age = Integer.parseInt(ageStr);
-            currentReading.patient.dob = null;
+            viewModel.setPatientAge(Integer.parseInt(ageStr));
+            viewModel.setPatientDob(null);
+//            currentReading.patient.age = Integer.parseInt(ageStr);
+//            currentReading.patient.dob = null;
         }
 
         // village number
         et = mView.findViewById(R.id.etVillageNumber);
-        currentReading.patient.villageNumber = et.getText().toString();
+        viewModel.setPatientVillageNumber(et.getText().toString());
+//        currentReading.patient.villageNumber = et.getText().toString();
 
         // zone no
         et = mView.findViewById(R.id.etZone);
-        currentReading.patient.zone = et.getText().toString();
+        viewModel.setPatientZone(et.getText().toString());
+//        currentReading.patient.zone = et.getText().toString();
 
     }
 
@@ -232,22 +249,30 @@ public class PatientInfoFragment extends BaseFragment {
         Spinner spin = v.findViewById(R.id.spinnerGestationalAgeUnits);
         EditText etValue = v.findViewById(R.id.etGestationalAgeValue);
 
-        switch (spin.getSelectedItemPosition()) {
+        Integer gestationalAgeValue = null;
+        if (etValue.getText() != null && !etValue.getText().toString().isEmpty() && !etValue.getText().toString().equals("N/A")) {
+            gestationalAgeValue = Integer.parseInt(etValue.getText().toString());
+        }
+        if (gestationalAgeValue != null) {
+            switch (spin.getSelectedItemPosition()) {
 //            case GA_UNIT_INDEX_NONE:
 //                currentReading.patient.gestationalAgeUnit = Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_NONE;
 //                break;
-            case GA_UNIT_INDEX_WEEKS:
-                currentReading.patient.gestationalAgeUnit = Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS;
-                break;
-            case GA_UNIT_INDEX_MOTHS:
-                currentReading.patient.gestationalAgeUnit = Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS;
-                break;
-            default:
-                Util.ensure(false);
+                case GA_UNIT_INDEX_WEEKS:
+                    viewModel.setPatientGestationalAge(new GestationalAgeWeeks(gestationalAgeValue));
+//                currentReading.patient.gestationalAgeUnit = Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS;
+                    break;
+                case GA_UNIT_INDEX_MOTHS:
+                    viewModel.setPatientGestationalAge(new GestationalAgeMonths(gestationalAgeValue));
+//                    currentReading.patient.gestationalAgeUnit = Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS;
+                    break;
+                default:
+                    Util.ensure(false);
+            }
         }
 
         // save value
-        currentReading.patient.gestationalAgeValue = etValue.getText().toString();
+//        currentReading.patient.gestationalAgeValue = etValue.getText().toString();
     }
 
     private void updateGA_onSpinnerChange(View v) {
@@ -301,20 +326,25 @@ public class PatientInfoFragment extends BaseFragment {
 
 
         if (fromOldReading) {
-            if (currentReading.patient.patientSex == Patient.PATIENTSEX.FEMALE) {
+            if (viewModel.getPatientSex() == Sex.FEMALE) {
+//            if (currentReading.patient.patientSex == Patient.PATIENTSEX.FEMALE) {
                 isPregnant.setEnabled(true);
                 spin.setSelection(1);
-            } else if (currentReading.patient.patientSex == Patient.PATIENTSEX.MALE) {
+            } else if (viewModel.getPatientSex() == Sex.MALE) {
+//            } else if (currentReading.patient.patientSex == Patient.PATIENTSEX.MALE) {
                 spin.setSelection(0);
             } else {
                 spin.setSelection(2);
             }
-            if (currentReading.patient.isPregnant) {
+            if (viewModel.getPatientIsPregnant()) {
+//            if (currentReading.patient.isPregnant) {
                 isPregnant.setChecked(true);
                 etValue.setEnabled(true);
-                etValue.setText(currentReading.patient.gestationalAgeValue);
+                etValue.setText(Integer.toString(viewModel.getPatientGestationalAge().getValue()));
+//                etValue.setText(currentReading.patient.gestationalAgeValue);
                 spinGA.setEnabled(true);
-                if (currentReading.patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS) {
+                if (viewModel.getPatientGestationalAge() instanceof GestationalAgeWeeks) {
+//                if (currentReading.patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS) {
                     spinGA.setSelection(0);
                 } else {
                     spinGA.setSelection(2);
@@ -369,17 +399,23 @@ public class PatientInfoFragment extends BaseFragment {
 
         switch (spin.getSelectedItemPosition()) {
             case PATIENT_SEX_MALE:
-                currentReading.patient.patientSex = Patient.PATIENTSEX.MALE;
+                viewModel.setPatientSex(Sex.MALE);
+//                currentReading.patient.patientSex = Patient.PATIENTSEX.MALE;
                 isPregnant.setChecked(false);
-                currentReading.patient.isPregnant = false;
+                viewModel.setPatientIsPregnant(false);
+//                currentReading.patient.isPregnant = false;
                 break;
             case PATIENT_SEX_FEMALE:
-                currentReading.patient.patientSex = Patient.PATIENTSEX.FEMALE;
-                currentReading.patient.isPregnant = isPregnant.isChecked();
+                viewModel.setPatientSex(Sex.FEMALE);
+                viewModel.setPatientIsPregnant(isPregnant.isChecked());
+//                currentReading.patient.patientSex = Patient.PATIENTSEX.FEMALE;
+//                currentReading.patient.isPregnant = isPregnant.isChecked();
                 break;
             case PATIENT_SEX_INTERSEX:
-                currentReading.patient.patientSex = Patient.PATIENTSEX.OTHERS;
-                currentReading.patient.isPregnant = isPregnant.isChecked();
+                viewModel.setPatientSex(Sex.OTHER);
+                viewModel.setPatientIsPregnant(isPregnant.isChecked());
+//                currentReading.patient.patientSex = Patient.PATIENTSEX.OTHERS;
+//                currentReading.patient.isPregnant = isPregnant.isChecked();
                 break;
             default:
                 Util.ensure(false);

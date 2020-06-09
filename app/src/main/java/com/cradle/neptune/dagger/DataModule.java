@@ -7,12 +7,15 @@ import android.preference.PreferenceManager;
 import androidx.room.Room;
 
 import com.cradle.neptune.database.CradleDatabase;
-import com.cradle.neptune.database.RoomDatabaseManager;
-import com.cradle.neptune.model.ReadingManager;
 import com.cradle.neptune.model.Settings;
 
 import javax.inject.Singleton;
 
+import com.cradle.neptune.manager.HealthCentreManager;
+import com.cradle.neptune.manager.MarshalManager;
+import com.cradle.neptune.manager.ReadingManager;
+import com.cradle.neptune.manager.impl.HealthCentreManagerImpl;
+import com.cradle.neptune.manager.impl.ReadingManagerImpl;
 import dagger.Module;
 import dagger.Provides;
 
@@ -22,14 +25,25 @@ import dagger.Provides;
  */
 @Module
 public class DataModule {
+
     @Provides
     @Singleton
-    public ReadingManager provideReadingManager(Application application) {
-//        return new ReadingManagerAsList();
-        //allowing queries on main thread but should use a seperate thread for large queeries
-        CradleDatabase r = Room.databaseBuilder(application,
-                CradleDatabase.class, "room-readingDB").allowMainThreadQueries().build();
-        return new RoomDatabaseManager(r);
+    public CradleDatabase provideDatabase(Application application) {
+        return Room.databaseBuilder(application, CradleDatabase.class, "room-readingDB")
+                .allowMainThreadQueries()
+                .build();
+    }
+
+    @Provides
+    @Singleton
+    public ReadingManager provideReadingService(CradleDatabase database, MarshalManager marshalManager) {
+        return new ReadingManagerImpl(database, marshalManager);
+    }
+
+    @Provides
+    @Singleton
+    public HealthCentreManager provideHealthCentreService(CradleDatabase database) {
+        return new HealthCentreManagerImpl(database);
     }
 
     @Provides
