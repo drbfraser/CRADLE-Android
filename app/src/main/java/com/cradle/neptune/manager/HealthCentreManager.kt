@@ -37,7 +37,7 @@ interface HealthCentreManager {
      *
      * @param entities the list of health centres to add
      */
-    suspend fun addAll(entities: List<HealthFacilityEntity>) = entities.forEach { add(it) }
+    suspend fun addAll(entities: List<HealthFacilityEntity>)
 
     /**
      * Updates an existing heath centre.

@@ -14,9 +14,9 @@ class HealthCentreManagerImpl(private val database: CradleDatabase) : HealthCent
 
     override suspend fun getAllSelectedByUser() = dao.allUserSelectedHealthFacilities
 
-    override suspend fun add(entity: HealthFacilityEntity) {
-        dao.insert(entity)
-    }
+    override suspend fun add(entity: HealthFacilityEntity) = dao.insert(entity)
+
+    override suspend fun addAll(entities: List<HealthFacilityEntity>) = dao.insertAll(entities)
 
     override suspend fun update(entity: HealthFacilityEntity) {
         dao.update(entity)
