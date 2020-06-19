@@ -89,8 +89,8 @@ class Left<T, U>(val value: T) : Either<T, U>() {
  * By convention, this variant carries the good, or "right", value.
  */
 class Right<T, U>(val value: U) : Either<T, U>() {
-    override val isLeft = true
-    override val isRight = false
+    override val isLeft = false
+    override val isRight = true
 
     override val left
         get() = throw RuntimeException("unwrap right variant of left either")
