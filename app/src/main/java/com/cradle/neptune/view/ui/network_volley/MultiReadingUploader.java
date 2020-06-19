@@ -8,6 +8,7 @@ import android.util.Log;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Response;
 import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.manager.UrlManager;
 import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.Settings;
@@ -40,6 +41,9 @@ public class MultiReadingUploader {
 
     @Inject
     MarshalManager marshalManager;
+
+    @Inject
+    UrlManager urlManager;
 
     private Context context;
     private Settings settings;
@@ -138,11 +142,12 @@ public class MultiReadingUploader {
         List<File> filesToZip = new ArrayList<>();
 
         // 1. CRADLE screenshot (if any)
-        if (settings.shouldUploadImages()) {
-            if (pair.getSecond().getMetadata().getPhotoPath() != null && pair.getSecond().getMetadata().getPhotoPath().length() > 0) {
-                filesToZip.add(new File(pair.getSecond().getMetadata().getPhotoPath()));
-            }
-        }
+        // TODO: Re-enable this once we actually have this figured out
+//        if (settings.shouldUploadImages()) {
+//            if (pair.getSecond().getMetadata().getPhotoPath() != null && pair.getSecond().getMetadata().getPhotoPath().length() > 0) {
+//                filesToZip.add(new File(pair.getSecond().getMetadata().getPhotoPath()));
+//            }
+//        }
 
         // 2. JSON of reading data
         File jsonFile = new File(context.getCacheDir(),
@@ -176,10 +181,7 @@ public class MultiReadingUploader {
             String readingJson = marshalManager.marshalToUploadJson(patient, reading).toString();
 //            String readingJson = Reading.getJsonObj(readings.get(0), sharedPreferences.getString(LoginActivity.USER_ID, ""));
             // start upload
-            Uploader uploader = new Uploader(
-                    settings.getReadingServerUrl(),
-                    settings.getServerUserName(),
-                    settings.getServerPassword(), token);
+            Uploader uploader = new Uploader(urlManager.getReading(), "", "", token);
             uploader.doUpload(readingJson, getSuccessCallback(), getErrorCallback());
 
         } catch (IOException ex) {

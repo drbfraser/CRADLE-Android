@@ -1,6 +1,6 @@
 package com.cradle.neptune.manager
 
-import com.cradle.neptune.model.SettingsNew
+import com.cradle.neptune.model.Settings
 import com.nhaarman.mockitokotlin2.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
@@ -9,7 +9,7 @@ class UrlManagerTests {
 
     @Test
     fun base_portIsNull_constructUrlWithoutPort() {
-        val mockSettings: SettingsNew = mock()
+        val mockSettings: Settings = mock()
         whenever(mockSettings.networkUseHttps)
             .thenReturn(true)
         whenever(mockSettings.networkHostname)
@@ -23,8 +23,23 @@ class UrlManagerTests {
     }
 
     @Test
+    fun base_portIsBlank_constructUrlWithoutPort() {
+        val mockSettings: Settings = mock()
+        whenever(mockSettings.networkUseHttps)
+            .thenReturn(true)
+        whenever(mockSettings.networkHostname)
+            .thenReturn("sample.domain.com")
+        whenever(mockSettings.networkPort)
+            .thenReturn("")
+
+        val url = UrlManager(mockSettings)
+
+        assertEquals("https://sample.domain.com", url.base)
+    }
+
+    @Test
     fun base_portIsNotNull_constructUrlWithPort() {
-        val mockSettings: SettingsNew = mock()
+        val mockSettings: Settings = mock()
         whenever(mockSettings.networkUseHttps)
             .thenReturn(false)
         whenever(mockSettings.networkHostname)

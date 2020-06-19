@@ -1,13 +1,13 @@
 package com.cradle.neptune.manager
 
 import android.util.Log
-import com.cradle.neptune.model.SettingsNew
+import com.cradle.neptune.model.Settings
 import javax.inject.Inject
 
 /**
  * Constructs the various URLs required for communicating with the server.
  */
-class UrlManager @Inject constructor(val settings: SettingsNew) {
+class UrlManager @Inject constructor(val settings: Settings) {
 
     /**
      * Endpoint for authenticating the user.
@@ -43,7 +43,7 @@ class UrlManager @Inject constructor(val settings: SettingsNew) {
      * Endpoint for retrieving follow up information.
      */
     val followUp: String
-        get() = "$base/summarized/follow_up"
+        get() = "$base/mobile/summarized/follow_up"
 
     /**
      * The base server URL.
@@ -56,20 +56,24 @@ class UrlManager @Inject constructor(val settings: SettingsNew) {
                 "http://"
             }
 
-            val hostname = settings.networkHostname.also {
-                if (it == null) {
-                    val msg = "Network hostname was null"
-                    Log.wtf(this::class.simpleName, msg)
-                    throw NullPointerException(msg)
-                }
+            val hostname = settings.networkHostname
+            if (hostname == null) {
+                val msg = "Network hostname was null"
+                Log.wtf(this::class.simpleName, msg)
+                throw NullPointerException(msg)
             }
 
-            val port = if (settings.networkPort != null) {
-                ":" + settings.networkPort
-            } else {
+            val port = if (settings.networkPort.isNullOrBlank()) {
                 ""
+            } else {
+                ":" + settings.networkPort
             }
 
-            return protocol + hostname + port
+            return "$protocol$hostname$port/api"
         }
+
+    /**
+     * Endpoint for retrieving all readings associated with a given patient id.
+     */
+    fun readingsForPatient(patientId: String) = "$base/patient/reading/$patientId"
 }

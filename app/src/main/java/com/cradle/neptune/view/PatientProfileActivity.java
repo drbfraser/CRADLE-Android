@@ -27,6 +27,7 @@ import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.manager.UrlManager;
 import com.cradle.neptune.model.*;
 import com.cradle.neptune.manager.ReadingManager;
 import com.cradle.neptune.utilitiles.Util;
@@ -78,6 +79,8 @@ public class PatientProfileActivity extends AppCompatActivity {
     // ..inject this even if not needed because it forces it to load at startup and initialize.
     @Inject
     Settings settings;
+    @Inject
+    UrlManager urlManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,7 +124,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Updating patient");
         progressDialog.setCancelable(false);
-        JsonRequest<JSONObject> jsonArrayRequest = new JsonObjectRequest(Request.Method.GET, Settings.DEFAULT_SERVER_URL + "/patient/reading/" + currPatient.getId(),
+        JsonRequest<JSONObject> jsonArrayRequest = new JsonObjectRequest(Request.Method.GET, urlManager.readingsForPatient(currPatient.getId()),
                 null, response -> {
             ApiKt.legacyUnmarshallPatientAndReadings(
                     response,

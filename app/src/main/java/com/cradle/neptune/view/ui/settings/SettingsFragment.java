@@ -41,9 +41,6 @@ public class SettingsFragment extends PreferenceFragmentCompat
     SharedPreferences sharedPreferences;
 
     @Inject
-    Settings settings;
-
-    @Inject
     ReadingManager readingManager;
 
     @Inject
@@ -158,8 +155,6 @@ public class SettingsFragment extends PreferenceFragmentCompat
             setSummary(pref);
         }
         Log.d("bugg", "setting: " + pref);
-        settings.loadFromSharedPrefs();
-
     }
 
 

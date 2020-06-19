@@ -9,7 +9,7 @@ import javax.inject.Inject
 /**
  * Holds app-wide settings which are persisted in Android's shared preference.
  */
-open class SettingsNew @Inject constructor(val sharedPreferences: SharedPreferences) {
+open class Settings @Inject constructor(val sharedPreferences: SharedPreferences) {
 
     /* Network */
 
@@ -31,7 +31,6 @@ open class SettingsNew @Inject constructor(val sharedPreferences: SharedPreferen
     open val networkUseHttps: Boolean
         get() = sharedPreferences.getBoolean("setting_server_use_https", true)
 
-
     /* VHT Info */
 
     /**
@@ -46,7 +45,6 @@ open class SettingsNew @Inject constructor(val sharedPreferences: SharedPreferen
     open val region: String?
         get() = sharedPreferences.getString("setting_region", null)
 
-
     /* OCR */
 
     /**
@@ -60,4 +58,16 @@ open class SettingsNew @Inject constructor(val sharedPreferences: SharedPreferen
      */
     open val isOcrDebugEnabled: Boolean
         get() = sharedPreferences.getBoolean("setting_ocr_debug_enabled", false)
+
+    /* Internal Metadata */
+
+    /**
+     * The last time follow up information was downloaded.
+     */
+    open var lastTimeFollowUpDownloaded: String?
+        get() = sharedPreferences.getString("lastSavedTime", "No previous time")
+        set(value) = sharedPreferences
+            .edit()
+            .putString("lastSavedTime", value)
+            .apply()
 }
