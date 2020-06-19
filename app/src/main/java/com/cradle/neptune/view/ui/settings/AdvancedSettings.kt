@@ -8,8 +8,8 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
-import com.cradle.neptune.utilitiles.functional.Left
-import com.cradle.neptune.utilitiles.functional.Right
+import com.cradle.neptune.utilitiles.validateHostname
+import com.cradle.neptune.utilitiles.validatePort
 import javax.inject.Inject
 
 class AdvancedSettingsActivity : AppCompatActivity() {
@@ -49,25 +49,11 @@ class AdvancedSettingsFragment : PreferenceFragmentCompat() {
         preferenceScreen
             .findPreference<Preference>("setting_server_hostname")
             ?.useDynamicSummary()
+            ?.withValidator(::validateHostname)
 
         preferenceScreen
             .findPreference<Preference>("setting_server_port")
             ?.useDynamicSummary { v -> if (v.isNullOrEmpty()) "(default)" else v }
-            ?.withValidator { value: String ->
-                // Allow black values as they will be treated as the default port number
-                if (value.isEmpty()) {
-                    return@withValidator Right(Unit)
-                }
-
-                // Ensure that the port is actually a number
-                val int = value.toIntOrNull() ?: return@withValidator Left("Port must be a number")
-
-                // Check to make sure it is a valid port number
-                if (int !in 0..49151) {
-                    return@withValidator Left("'$value' is not a valid port number")
-                }
-
-                Right(Unit)
-            }
+            ?.withValidator(::validatePort)
     }
 }
