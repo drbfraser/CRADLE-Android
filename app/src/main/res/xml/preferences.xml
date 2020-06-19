@@ -16,110 +16,22 @@
             android:singleLine="true"
             android:summary="The country or region you are working in."
             android:title="Your Region" />
-        <!--<EditTextPreference-->
-        <!--android:title="PIN"-->
-        <!--android:key="setting_pin"-->
-        <!--android:selectAllOnFocus="true"-->
-        <!--android:singleLine="true"-->
-        <!--/>-->
-        <!--<EditTextPreference-->
-        <!--android:title="Region"-->
-        <!--android:key="setting_region"-->
-        <!--android:defaultValue="Uganda"-->
-        <!--android:selectAllOnFocus="true"-->
-        <!--android:singleLine="true"-->
-        <!--/>-->
-        <!--<ListPreference-->
-        <!--android:title="Usual location"-->
-        <!--android:entries="@array/settings_work_locations"-->
-        <!--android:key="setting_usual_location"-->
-        <!--/>-->
-        <!--<EditTextPreference-->
-        <!--android:title="Hold screen on while taking a reading"-->
-        <!--android:summary="3 minutes"-->
-        <!--android:key="setting_keep_awake_during_reading"-->
-        <!--android:defaultValue="Default value"-->
-        <!--android:selectAllOnFocus="true"-->
-        <!--android:singleLine="true"-->
-        <!--/>-->
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Referrals">
-
         <Preference
             android:key="setting_health_centres"
             android:title="Health centres" />
-
-        <!--<android.support.v7.preference.SwitchPreferenceCompat-->
-        <!--android:title="Community health officer"-->
-        <!--android:summary="Also gets copy of referrals &#45;&#45; XXX"-->
-        <!--android:key="setting_community_health_officer"-->
-        <!--android:defaultValue="true"-->
-        <!--/>-->
-
-        <!--<EditTextPreference-->
-        <!--android:title="Community health officer cell"-->
-        <!--android:summary="+256 78 321 7651 &#45;&#45; XXX"-->
-        <!--android:key="setting_community_health_cell"-->
-        <!--android:selectAllOnFocus="true"-->
-        <!--android:singleLine="true"-->
-        <!--/>-->
     </PreferenceCategory>
 
-    <Preference
-        android:title="Advanced"
-        android:key="settings_advanced" />
+    <PreferenceCategory>
+        <Preference
+            android:title="Advanced"
+            android:key="settings_advanced" />
 
-    <PreferenceCategory android:title="Upload to Server">
-        <EditTextPreference
-            android:defaultValue="@string/settings_reading_server_url"
-            android:key="settings_upload_server"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:title="Server URL" />
-        <EditTextPreference
-            android:defaultValue="@string/settings_default_server_username"
-            android:key="settings_upload_username"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:title="User name on server" />
-        <EditTextPreference
-            android:defaultValue="@string/settings_default_server_password"
-            android:inputType="textPassword"
-            android:key="settings_upload_password"
-            android:password="true"
-            android:title="Password" />
-        <EditTextPreference
-            android:defaultValue="@string/settings_default_server_rsa"
-            android:key="settings_upload_rsapubkey"
-            android:selectAllOnFocus="true"
-            android:singleLine="false"
-            android:title="Public key (for encryption)"
-            android:typeface="monospace" />
-
-
-        <SwitchPreference
-            android:defaultValue="true"
-            android:key="settings_upload_images"
-            android:summary="CRADLE VSA screenshots are useful for app development but make uploading slower."
-            android:title="Upload images to server" />
+        <Preference
+            android:key="signout"
+            android:summary="@string/normalSignoutMessage"
+            android:title="Sign Out" />
     </PreferenceCategory>
-
-
-    <PreferenceCategory android:title="Optical Character Recognition">
-        <SwitchPreference
-            android:defaultValue="true"
-            android:key="setting_ocr_enabled"
-            android:title="Enable OCR" />
-        <SwitchPreference
-            android:defaultValue="false"
-            android:key="setting_ocr_debug_enabled"
-            android:title="Show OCR debugging info" />
-    </PreferenceCategory>
-
-
-    <Preference
-        android:key="signout"
-        android:summary="@string/normalSignoutMessage"
-        android:title="Sign Out" />
 </PreferenceScreen>

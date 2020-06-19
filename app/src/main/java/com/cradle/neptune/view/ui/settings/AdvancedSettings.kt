@@ -18,7 +18,7 @@ class AdvancedSettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         Log.v(this::class.simpleName, "Created advanced settings activity")
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = "Advanced Settings"
+        supportActionBar?.title = "Advanced"
 
         supportFragmentManager
             .beginTransaction()
