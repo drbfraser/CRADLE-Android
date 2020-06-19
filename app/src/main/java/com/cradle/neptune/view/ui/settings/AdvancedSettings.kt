@@ -3,16 +3,13 @@ package com.cradle.neptune.view.ui.settings
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
-import com.cradle.neptune.utilitiles.functional.Either
 import com.cradle.neptune.utilitiles.functional.Left
 import com.cradle.neptune.utilitiles.functional.Right
-import com.cradle.neptune.utilitiles.functional.coalesce
 import javax.inject.Inject
 
 class AdvancedSettingsActivity : AppCompatActivity() {
@@ -56,7 +53,7 @@ class AdvancedSettingsFragment : PreferenceFragmentCompat() {
         preferenceScreen
             .findPreference<Preference>("setting_server_port")
             ?.useDynamicSummary { v -> if (v.isNullOrEmpty()) "(default)" else v }
-            ?.withValidator { value ->
+            ?.withValidator { value: String ->
                 // Allow black values as they will be treated as the default port number
                 if (value.isEmpty()) {
                     return@withValidator Right(Unit)
@@ -72,53 +69,5 @@ class AdvancedSettingsFragment : PreferenceFragmentCompat() {
 
                 Right(Unit)
             }
-    }
-
-    /**
-     * Tells this preference to use a dynamically generated summary by pulling
-     * data from [SharedPreferences] using its key.
-     *
-     * @param transform Transforms the value retrieved from shared preferences
-     * before setting it as this preference's summary. If not supplied, no
-     * transformation is applied.
-     */
-    private fun Preference.useDynamicSummary(transform: ((String?) -> String)? = null): Preference {
-        summaryProvider = Preference.SummaryProvider<Preference> { _ ->
-            val value = sharedPreferences.getString(key, null)
-            if (transform == null) {
-                value
-            } else {
-                transform(value)
-            }
-        }
-        return this
-    }
-
-    /**
-     * Registers a validator with this preference which is called to validate
-     * any new values set by the user.
-     *
-     * If an invalid value is found (i.e., [validator] returns false) then a
-     * toast is shown to the user containing the error message returned from
-     * the validator.
-     *
-     * @param validator A predicate returning `Right(Unit)` if the new value is
-     * valid or a [Left] variant containing an error message otherwise.
-     */
-    private fun Preference.withValidator(validator: (String) -> Either<String, Unit>): Preference {
-        this.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, obj ->
-            if (obj !is String) {
-                Log.wtf(this::class.simpleName, "Preference $key has a non-string value: $obj")
-                throw IllegalArgumentException("Preference value is not a string")
-            }
-            validator(obj)
-                .mapRight { _ -> true }
-                .mapLeft { value ->
-                    Toast.makeText(context, value, Toast.LENGTH_SHORT).show()
-                    false
-                }
-                .coalesce()
-        }
-        return this
     }
 }
