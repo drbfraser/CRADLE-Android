@@ -60,6 +60,7 @@ public class SettingsFragment extends PreferenceFragmentCompat
         setPreferencesFromResource(R.xml.preferences, rootKey);
 
         setupHealthCentres();
+        setupAdvancedSettings();
         setupSignOut();
     }
 
@@ -114,6 +115,17 @@ public class SettingsFragment extends PreferenceFragmentCompat
                     startActivity(intent);
                     return true;
                 }
+            });
+        }
+    }
+
+    private void setupAdvancedSettings() {
+        Preference pref = findPreference("settings_advanced");
+        if (pref != null) {
+            pref.setOnPreferenceClickListener(p -> {
+                Intent intent = new Intent(getActivity(), AdvancedSettingsActivity.class);
+                startActivity(intent);
+                return true;
             });
         }
     }

@@ -66,6 +66,10 @@
         <!--/>-->
     </PreferenceCategory>
 
+    <Preference
+        android:title="Advanced"
+        android:key="settings_advanced" />
+
     <PreferenceCategory android:title="Upload to Server">
         <EditTextPreference
             android:defaultValue="@string/settings_reading_server_url"

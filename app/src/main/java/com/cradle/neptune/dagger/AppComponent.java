@@ -11,6 +11,7 @@ import com.cradle.neptune.view.UploadActivity;
 import com.cradle.neptune.view.ui.network_volley.MultiReadingUploader;
 import com.cradle.neptune.view.ui.reading.ConfirmDataFragment;
 import com.cradle.neptune.view.ui.reading.ReferralDialogFragment;
+import com.cradle.neptune.view.ui.settings.AdvancedSettingsFragment;
 import com.cradle.neptune.view.ui.settings.SettingsFragment;
 import com.cradle.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity;
 
@@ -37,6 +38,8 @@ public interface AppComponent {
     void inject(ReferralDialogFragment fragment);
 
     void inject(SettingsFragment fragment);
+
+    void inject(AdvancedSettingsFragment fragment);
 
     void inject(IntroActivity activity);
 

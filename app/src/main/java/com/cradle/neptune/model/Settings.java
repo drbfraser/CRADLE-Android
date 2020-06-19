@@ -2,6 +2,8 @@ package com.cradle.neptune.model;
 
 import android.content.SharedPreferences;
 
+import javax.inject.Inject;
+
 /**
  * Store app-wide settings.
  * To add a new setting:
@@ -74,6 +76,7 @@ public class Settings {
     private SharedPreferences sharedPref;
 
     // constructor
+    @Inject
     public Settings(SharedPreferences sharedPreferences) {
         this.sharedPref = sharedPreferences;
 

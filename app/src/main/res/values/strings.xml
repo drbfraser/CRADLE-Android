@@ -131,22 +131,8 @@
 
     <!-- Default Settings Values-->
     <!-- (should be removed once app able to read settings from a 2D barcode -->
-    <!--  **  Home server and settings **-->
-    <!--<string name="settings_default_server_url">http://192.168.86.204:8086/unhcr/upload.php</string>-->
-    <!--<string name="settings_default_server_username">user</string>-->
-    <!--<string name="settings_default_server_password">just4testing</string>-->
-    <!--<string name="settings_default_server_rsa">-->
-    <!-- -&#45;&#45;&#45;&#45;BEGIN PUBLIC KEY-&#45;&#45;&#45;&#45;                                      \n-->
-    <!--MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA8/2NBuEDyLiClu+wkHCP\n-->
-    <!--BVGxgwDj8PDLBah7Ge9bYgmM7Jcmc5F15VVQG/RWSFnxD/+/rTGYRju6JYxtnw6G\n-->
-    <!--JT0ZyzmoRQ4pArIfAvqwUYcQ08fDyA6mhqbny9FAOwhm643gg+0bnqUw7gPd6z58\n-->
-    <!--gW70abOJUfy81EZ2Q7CmuSh5WwMQKu6/q9umvn5iGC6rcxcrg/kqs6cW6E3tMZU8\n-->
-    <!--XzVRYK0ctV1m45LitL286h2cflTmIkyeGRPM7quBYuQ2PAN2QMdMaZGXyHJz9AqX\n-->
-    <!--w1wKQF+cc9G+pKNNWJDerGTKtmARge2N/3IpT6yQNhVpf6iezISnWrDgcj1jvemR\n-->
-    <!--3QIDAQAB                                                        \n-->
-    <!-- -&#45;&#45;&#45;&#45;END PUBLIC KEY-&#45;&#45;&#45;&#45;-->
-    <!--</string>-->
-    <!--    <string name="settings_default_server_url">https://cmpt276-1177-bf.cmpt.sfu.ca/unhcr/upload.php</string>-->
+    <string name="settings_server_hostname">cmpt373-lockdown.cs.surrey.sfu.ca</string>
+
     <string name="settings_reading_server_url">http://cradle-platform.herokuapp.com/patient/reading</string>
 
     <string name="settings_default_server_username">user</string>
