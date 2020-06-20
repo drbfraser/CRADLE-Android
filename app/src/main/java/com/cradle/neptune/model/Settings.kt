@@ -1,6 +1,6 @@
 package com.cradle.neptune.model
 
-import android.app.Application
+import android.content.Context
 import android.content.SharedPreferences
 import com.cradle.neptune.R
 import javax.inject.Inject
@@ -11,7 +11,7 @@ import javax.inject.Inject
 /**
  * Holds app-wide settings which are persisted in Android's shared preference.
  */
-open class Settings @Inject constructor(val sharedPreferences: SharedPreferences, val context: Application) {
+open class Settings @Inject constructor(val sharedPreferences: SharedPreferences, val context: Context) {
 
     /* Network */
 
