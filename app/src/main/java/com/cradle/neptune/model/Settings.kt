@@ -17,7 +17,7 @@ open class Settings @Inject constructor(val sharedPreferences: SharedPreferences
      * The network hostname as configured in Settings > Advanced.
      */
     open val networkHostname: String?
-        get() = sharedPreferences.getString("setting_server_hostname", null)
+        get() = sharedPreferences.getString("setting_server_hostname", "cmpt373-lockdown.cs.surrey.sfu.ca")
 
     /**
      * The network port as configured in Settings > Advanced.
