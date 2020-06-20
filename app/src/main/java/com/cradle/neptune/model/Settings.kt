@@ -1,6 +1,8 @@
 package com.cradle.neptune.model
 
+import android.app.Application
 import android.content.SharedPreferences
+import com.cradle.neptune.R
 import javax.inject.Inject
 
 // Implementation note: this class and all it's properties are marked `open`
@@ -9,7 +11,7 @@ import javax.inject.Inject
 /**
  * Holds app-wide settings which are persisted in Android's shared preference.
  */
-open class Settings @Inject constructor(val sharedPreferences: SharedPreferences) {
+open class Settings @Inject constructor(val sharedPreferences: SharedPreferences, val context: Application) {
 
     /* Network */
 
@@ -17,7 +19,10 @@ open class Settings @Inject constructor(val sharedPreferences: SharedPreferences
      * The network hostname as configured in Settings > Advanced.
      */
     open val networkHostname: String?
-        get() = sharedPreferences.getString("setting_server_hostname", "cmpt373-lockdown.cs.surrey.sfu.ca")
+        get() = sharedPreferences.getString(
+            "setting_server_hostname",
+            context.getString(R.string.settings_default_server_hostname)
+        )
 
     /**
      * The network port as configured in Settings > Advanced.
