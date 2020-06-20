@@ -56,6 +56,11 @@ interface HealthCentreManager {
     suspend fun removeById(id: String)
 
     /**
+     * Deletes all health centres registered in the database.
+     */
+    suspend fun deleteAllData()
+
+    /**
      * Async variant of [getById].
      */
     fun getByIdAsync(id: String) = GlobalScope.async(Dispatchers.IO) { getById(id) }

@@ -26,4 +26,6 @@ class HealthCentreManagerImpl(private val database: CradleDatabase) : HealthCent
         val entity = getById(id) ?: return
         dao.delete(entity)
     }
+
+    override suspend fun deleteAllData() = dao.deleteAll()
 }

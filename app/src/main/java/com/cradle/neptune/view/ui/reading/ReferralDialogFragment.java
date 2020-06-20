@@ -497,7 +497,7 @@ public class ReferralDialogFragment extends DialogFragment {
         // settings button
         ImageView iv = dialog.findViewById(R.id.ivSettings);
         iv.setOnClickListener(view -> {
-            Intent intent = SettingsActivity.makeLaunchIntent(getActivity());
+            Intent intent = SettingsActivity.Companion.makeLaunchIntent(getActivity());
             getActivity().startActivity(intent);
         });
     }

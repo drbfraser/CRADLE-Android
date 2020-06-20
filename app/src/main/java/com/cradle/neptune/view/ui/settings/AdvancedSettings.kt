@@ -46,13 +46,11 @@ class AdvancedSettingsFragment : PreferenceFragmentCompat() {
         Log.v(this::class.simpleName, "Loading advanced settings from resource")
         setPreferencesFromResource(R.xml.advanced_preferences, rootKey)
 
-        preferenceScreen
-            .findPreference<Preference>("setting_server_hostname")
+        findPreference<Preference>("setting_server_hostname")
             ?.useDynamicSummary()
             ?.withValidator(::validateHostname)
 
-        preferenceScreen
-            .findPreference<Preference>("setting_server_port")
+        findPreference<Preference>("setting_server_port")
             ?.useDynamicSummary { v -> if (v.isNullOrEmpty()) "(default)" else v }
             ?.withValidator(::validatePort)
     }
