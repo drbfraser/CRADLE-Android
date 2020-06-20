@@ -19,7 +19,7 @@ class UrlManagerTests {
 
         val url = UrlManager(mockSettings)
 
-        assertEquals("https://sample.domain.com", url.base)
+        assertEquals("https://sample.domain.com/api", url.base)
     }
 
     @Test
@@ -34,7 +34,7 @@ class UrlManagerTests {
 
         val url = UrlManager(mockSettings)
 
-        assertEquals("https://sample.domain.com", url.base)
+        assertEquals("https://sample.domain.com/api", url.base)
     }
 
     @Test
@@ -49,6 +49,6 @@ class UrlManagerTests {
 
         val url = UrlManager(mockSettings)
 
-        assertEquals("http://sample.domain.com:8080", url.base)
+        assertEquals("http://sample.domain.com:8080/api", url.base)
     }
 }
