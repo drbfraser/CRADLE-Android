@@ -49,8 +49,6 @@ public interface AppComponent {
 
     void inject(StatsActivity statsActivity);
 
-    // void inject(MyFragment fragment);
-    // void inject(MyService service);
     void inject(LoginActivity loginActivity);
 
     void inject(MultiReadingUploader multiReadingUploader);
