@@ -48,7 +48,7 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
             // Return instance of required fragments
             switch (position) {
                 case TAB_NUMBER_PATIENT:
-                    thisFragment = PatientInfoFragment.newInstance();
+                    thisFragment = new PatientInfoFragment();
                     break;
                 case TAB_NUMBER_SYMPTOMS:
                     thisFragment = SymptomsFragment.newInstance();
