@@ -130,7 +130,7 @@ public class PatientsActivity extends AppCompatActivity {
 
 //        List<Reading> allReadings = readingManager.getReadings(this);
         List<Pair<Patient, Reading>> allReadings = readingManager.getAllReadingsBlocking();
-        Collections.sort(allReadings, Comparator.comparing(o -> o.getSecond().getDateTimeTaken()));
+        Collections.sort(allReadings, (a, b) -> a.getSecond().getDateTimeTaken().compareTo(b.getSecond().getDateTimeTaken()));
 
 
         for (Pair<Patient, Reading> pair : allReadings) {

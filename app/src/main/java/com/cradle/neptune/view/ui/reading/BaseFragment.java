@@ -39,6 +39,9 @@ abstract public class BaseFragment extends Fragment {
      */
     public void hideKeyboard() {
         // SOURCE: https://stackoverflow.com/questions/1109022/close-hide-the-android-soft-keyboard
+        if (this.getActivity() == null) {
+            return;
+        }
         Context context = getContext();
         View view = this.getActivity().getCurrentFocus();
         if (view != null) {

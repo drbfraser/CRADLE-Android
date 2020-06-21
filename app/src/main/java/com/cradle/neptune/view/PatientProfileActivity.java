@@ -42,6 +42,8 @@ import kotlin.Unit;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -368,11 +370,15 @@ public class PatientProfileActivity extends AppCompatActivity {
     }
 
     private List<Reading> getThisPatientsReadings() {
-        return readingManager.getReadingsByPatientIdBlocking(currPatient.getId())
-                .stream()
-                .map(Pair::getSecond)
-                .sorted(Reading.DescendingDateComparator.INSTANCE)
-                .collect(Collectors.toList());
+        // Since we can't use streams in API 17 we end up having to use this mess.
+        List<Pair<Patient, Reading>> pairs = readingManager.getReadingsByPatientIdBlocking(currPatient.getId());
+        List<Reading> readings = new ArrayList<>();
+        for (Pair<Patient, Reading> pair : pairs) {
+            readings.add(pair.getSecond());
+        }
+        Comparator<Reading> comparator = Reading.DescendingDateComparator.INSTANCE;
+        Collections.sort(readings, comparator);
+        return readings;
     }
 
     private void setupCreatePatientReadingButton() {
