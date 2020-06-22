@@ -1,6 +1,5 @@
 package com.cradle.neptune.view.ui.settings
 
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -9,7 +8,6 @@ import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.utilitiles.validateHostname
 import com.cradle.neptune.utilitiles.validatePort
-import javax.inject.Inject
 
 class AdvancedSettingsActivity : AppCompatActivity() {
 
@@ -33,9 +31,6 @@ class AdvancedSettingsActivity : AppCompatActivity() {
 }
 
 class AdvancedSettingsFragment : PreferenceFragmentCompat() {
-
-    @Inject
-    lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         (activity?.application as MyApp)
