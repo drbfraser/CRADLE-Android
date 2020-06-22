@@ -31,6 +31,7 @@ import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.database.HealthFacilityEntity;
+import com.cradle.neptune.manager.UrlManager;
 import com.cradle.neptune.model.*;
 import com.cradle.neptune.manager.HealthCentreManager;
 import com.cradle.neptune.utilitiles.DateUtil;
@@ -99,6 +100,8 @@ public class ReferralDialogFragment extends DialogFragment {
     // Data Model
     @Inject
     Settings settings;
+    @Inject
+    UrlManager urlManager;
     @Inject
     SharedPreferences sharedPreferences;
     @Inject
@@ -184,7 +187,7 @@ public class ReferralDialogFragment extends DialogFragment {
         dialog.setCancelable(false);
         dialog.show();
         RequestQueue queue = Volley.newRequestQueue(getActivity());
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(JsonObjectRequest.Method.POST, settings.getReferralsServerUrl(), getReferralJson(false),
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(JsonObjectRequest.Method.POST, urlManager.getReferral(), getReferralJson(false),
                 response -> {
                     Referral referral = new Referral(ZonedDateTime.now(), selectedHealthCentreName, enteredComment);
                     currentReading.setReferral(referral);
@@ -494,7 +497,7 @@ public class ReferralDialogFragment extends DialogFragment {
         // settings button
         ImageView iv = dialog.findViewById(R.id.ivSettings);
         iv.setOnClickListener(view -> {
-            Intent intent = SettingsActivity.makeLaunchIntent(getActivity());
+            Intent intent = SettingsActivity.Companion.makeLaunchIntent(getActivity());
             getActivity().startActivity(intent);
         });
     }

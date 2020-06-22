@@ -71,8 +71,8 @@ public class ConfirmDataFragment extends BaseFragment {
         // inject:
         ((MyApp) getActivity().getApplication()).getAppComponent().inject(this);
 
-        Log.d(TAG, "OCR?       " + settings.getOcrEnabled());
-        Log.d(TAG, "OCR Debug? " + settings.getOcrDebugEnabled());
+        Log.d(TAG, "OCR?       " + settings.isOcrEnabled());
+        Log.d(TAG, "OCR Debug? " + settings.isOcrDebugEnabled());
 
 
         // Inflate the layout for this fragment
@@ -200,15 +200,15 @@ public class ConfirmDataFragment extends BaseFragment {
 
         // show / hide OCR turned off warning
         TextView tvNoOcrWarning = getView().findViewById(R.id.tvOcrDisabled);
-        tvNoOcrWarning.setVisibility(settings.getOcrEnabled() ? View.GONE : View.VISIBLE);
+        tvNoOcrWarning.setVisibility(settings.isOcrEnabled() ? View.GONE : View.VISIBLE);
 
         // show / hide OCR debugging content
         View vDebug = getView().findViewById(R.id.groupDebugOcr);
-        vDebug.setVisibility(settings.getOcrDebugEnabled() ? View.VISIBLE : View.GONE);
+        vDebug.setVisibility(settings.isOcrDebugEnabled() ? View.VISIBLE : View.GONE);
     }
 
     private void doOcrOnCurrentImage() {
-        if (!settings.getOcrEnabled()) {
+        if (!settings.isOcrEnabled()) {
             Log.i(TAG, "OCR Disabled; skipping OCR");
             return;
         }
@@ -240,7 +240,7 @@ public class ConfirmDataFragment extends BaseFragment {
             @Override
             public void notifyOfBoundingBoxes(List<Classifier.Recognition> recognitions) {
                 // ensure OCR debug enabled
-                if (!settings.getOcrDebugEnabled()) {
+                if (!settings.isOcrDebugEnabled()) {
                     return;
                 }
 
@@ -259,7 +259,7 @@ public class ConfirmDataFragment extends BaseFragment {
             @Override
             public void notifyOfRawBoundingBoxes(Bitmap inputToNeuralNetBmp, List<Classifier.Recognition> recognitions) {
                 // ensure OCR debug enabled
-                if (!settings.getOcrDebugEnabled()) {
+                if (!settings.isOcrDebugEnabled()) {
                     return;
                 }
 
@@ -303,7 +303,7 @@ public class ConfirmDataFragment extends BaseFragment {
 
                 // put text into UI edit text
                 makingProgramaticChangeToVitals = true;
-                Util.ensure(settings.getOcrEnabled());
+                Util.ensure(settings.isOcrEnabled());
                 int[] textIds = {R.id.etSystolic, R.id.etDiastolic, R.id.etHeartRate};
                 int etId = textIds[rowNumber];
                 EditText et = getView().findViewById(etId);

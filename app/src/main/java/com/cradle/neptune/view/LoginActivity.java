@@ -27,6 +27,7 @@ import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.database.HealthFacilityEntity;
 //import com.cradle.neptune.database.ParsePatientInformationAsyncTask;
+import com.cradle.neptune.manager.UrlManager;
 import com.cradle.neptune.model.*;
 
 import com.cradle.neptune.manager.HealthCentreManager;
@@ -70,6 +71,8 @@ public class LoginActivity extends AppCompatActivity {
     HealthCentreManager healthCentreManager;
     @Inject
     SharedPreferences sharedPreferences;
+    @Inject
+    UrlManager urlManager;
 
     /**
      * makes the volley call to get all the  past readings from this user.
@@ -78,8 +81,8 @@ public class LoginActivity extends AppCompatActivity {
      *
      * @param token token for the user
      */
-    public static void getAllMyPatients(String token, ReadingManager readingManager, Context context) {
-        JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, Settings.patientGetAllInfoByUserIdUrl,
+    public static void getAllMyPatients(String token, ReadingManager readingManager, UrlManager urlManager, Context context) {
+        JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, urlManager.getAllPatientInfo(),
                 null, response -> {
 
             ApiKt.legacyUnmarshallAllInfoAsync(response, result -> {
@@ -176,7 +179,7 @@ public class LoginActivity extends AppCompatActivity {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Settings.authServerUrl, jsonObject, response -> {
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, urlManager.getAuthentication(), jsonObject, response -> {
                 progressDialog.cancel();
                 //put it into sharedpref for offline login.
                 saveUserNamePasswordSharedPref(emailET.getText().toString(), passwordET.getText().toString());
@@ -187,7 +190,7 @@ public class LoginActivity extends AppCompatActivity {
                     editor.putString(USER_ID, response.getString("userId"));
                     editor.apply();
                     String token = response.get(TOKEN).toString();
-                    getAllMyPatients(token, readingManager, this);
+                    getAllMyPatients(token, readingManager, urlManager, this);
                     // only for testing
                     populateHealthFacilities();
                 } catch (JSONException e) {
@@ -211,7 +214,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void populateHealthFacilities() {
 
-        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, Settings.healthFacilityUrl, null, response -> {
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, urlManager.getHealthFacility(), null, response -> {
             try {
                 List<HealthFacilityEntity> healthFacilityEntities = new ArrayList<>();
                 //adding our default one for twilio

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Default Preference Values -->
+
+<resources>
+    <!-- Network -->
+    <string name="settings_default_server_hostname">cmpt373-lockdown.cs.surrey.sfu.ca</string>
+    <string name="settings_default_server_port" />
+    <string name="settings_default_server_use_https">true</string>
+
+    <!-- OCR -->
+    <string name="settings_default_ocr_enabled">true</string>
+    <string name="settings_default_ocr_show_debug_info">false</string>
+</resources>

@@ -40,8 +40,7 @@ class MarshalManager @Inject constructor(
         put(UploadJsonField.READING, readingJson)
         put(UploadJsonField.VHT_NAME, settings.vhtName)
         put(UploadJsonField.REGION, settings.region)
-        put(UploadJsonField.OCR_ENABLED, settings.ocrEnabled)
-        put(UploadJsonField.UPLOAD_IMAGES, settings.shouldUploadImages())
+        put(UploadJsonField.OCR_ENABLED, settings.isOcrEnabled)
     }
 
     /**

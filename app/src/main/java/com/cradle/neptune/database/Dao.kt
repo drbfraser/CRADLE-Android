@@ -135,6 +135,12 @@ interface HealthFacilityDaoAccess {
     fun delete(healthFacilityEntity: HealthFacilityEntity)
 
     /**
+     * Deletes all health centres in the database.
+     */
+    @Query("DELETE FROM HealthFacilityEntity")
+    fun deleteAll()
+
+    /**
      * All health facilities stored in the database.
      */
     @get:Query("SELECT * FROM HealthFacilityEntity")

@@ -25,6 +25,7 @@ import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.manager.UrlManager;
 import com.cradle.neptune.model.*;
 import com.cradle.neptune.manager.ReadingManager;
 import com.cradle.neptune.utilitiles.DateUtil;
@@ -60,6 +61,8 @@ public class UploadActivity extends AppCompatActivity {
     SharedPreferences sharedPreferences;
     @Inject
     Settings settings;
+    @Inject
+    UrlManager urlManager;
 
     MultiReadingUploader multiUploader;
 
@@ -111,7 +114,7 @@ public class UploadActivity extends AppCompatActivity {
                         .setTitle("Downloading patient data")
                         .setPositiveButton("OK", (dialogInterface, i)
                                 -> {
-                            LoginActivity.getAllMyPatients(token, readingManager, UploadActivity.this);
+                            LoginActivity.getAllMyPatients(token, readingManager, urlManager, UploadActivity.this);
                         })
                         .setNegativeButton("Cancel", (dialogInterface, i) -> {
 
@@ -157,7 +160,7 @@ public class UploadActivity extends AppCompatActivity {
         dialog.setTitle("Syncing");
         dialog.setCancelable(false);
         dialog.show();
-        JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, settings.getReferralSummeriesServerUrl(),
+        JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, urlManager.getFollowUp(),
                 null, response -> {
             getReadingFollowFromTheResponse(response);
             dialog.cancel();
@@ -266,7 +269,7 @@ public class UploadActivity extends AppCompatActivity {
     }
 
     private void upDateLastDownloadTime(ZonedDateTime now) {
-        settings.saveLastTimeFollowUpDownloaded(now.toString());
+        settings.setLastTimeFollowUpDownloaded(now.toString());
     }
 
     @Override
@@ -447,7 +450,7 @@ public class UploadActivity extends AppCompatActivity {
             return;
         }
         // ensure settings OK
-        if (settings.getReadingServerUrl() == null || settings.getReadingServerUrl().length() == 0) {
+        if (urlManager.getReading() == null || urlManager.getReading().length() == 0) {
             Toast.makeText(this, "Error: Must set server URL in settings", Toast.LENGTH_LONG).show();
             return;
         }

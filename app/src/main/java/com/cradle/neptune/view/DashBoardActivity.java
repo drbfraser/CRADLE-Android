@@ -85,7 +85,7 @@ public class DashBoardActivity extends AppCompatActivity implements View.OnClick
         int id = item.getItemId();
 
         if (id == R.id.action_settings) {
-            Intent intent = SettingsActivity.makeLaunchIntent(this);
+            Intent intent = SettingsActivity.Companion.makeLaunchIntent(this);
             startActivityForResult(intent, TAB_ACTIVITY_BASE_SETTINGS_DONE);
             return true;
         }

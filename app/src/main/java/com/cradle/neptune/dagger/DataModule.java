@@ -2,7 +2,7 @@ package com.cradle.neptune.dagger;
 
 import android.app.Application;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
+import androidx.preference.PreferenceManager;
 
 import androidx.room.Room;
 
@@ -50,11 +50,5 @@ public class DataModule {
     @Singleton
     public SharedPreferences providesSharedPreferences(Application application) {
         return PreferenceManager.getDefaultSharedPreferences(application);
-    }
-
-    @Provides
-    @Singleton
-    public Settings providesSettings(Application application) {
-        return new Settings(providesSharedPreferences(application));
     }
 }
