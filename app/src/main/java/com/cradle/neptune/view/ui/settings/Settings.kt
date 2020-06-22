@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
@@ -59,7 +58,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         // Summary for this preference is not generated through shared
         // preferences so we have to update it manually here.
-        findPreference<Preference>("setting_health_centres")?.apply {
+        findPreference(R.string.key_health_centres_settings_button)?.apply {
             val hcCount = healthCentreManager.getAllSelectedByUserBlocking().size
             summary = "$hcCount configured health centres"
         }
@@ -72,13 +71,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         setPreferencesFromResource(R.xml.preferences, rootKey)
 
-        findPreference<Preference>("setting_health_centres")
+        findPreference(R.string.key_health_centres_settings_button)
             ?.withLaunchActivityOnClick(this, HealthFacilitiesActivity::class.java)
 
-        findPreference<Preference>("settings_advanced")
+        findPreference(R.string.key_advanced_settings_settings_button)
             ?.withLaunchActivityOnClick(this, AdvancedSettingsActivity::class.java)
 
-        findPreference<Preference>("signout")
+        findPreference(R.string.key_sign_out)
             ?.withOnClickListener {
                 val unUploadedReadings = readingManager.getUnUploadedReadingsBlocking()
                 val description = if (unUploadedReadings.isEmpty()) {
@@ -99,10 +98,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 true
             }
 
-        findPreference<Preference>("setting_vht_name")
+        findPreference(R.string.key_vht_name)
             ?.useDynamicSummary()
 
-        findPreference<Preference>("setting_region")
+        findPreference(R.string.key_region)
             ?.useDynamicSummary()
     }
 

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+    Preference Key Values
+
+    We store them here so that they are in one place and we can access them
+    through both other XML resource files as well as the source code.
+-->
+
+<resources>
+    <string name="key_server_hostname">settings_server_hostname</string>
+    <string name="key_server_port">settings_server_port</string>
+    <string name="key_vht_name">setting_vht_name</string>
+    <string name="key_region">setting_region</string>
+    <string name="key_health_centres_settings_button">setting_health_centres</string>
+    <string name="key_advanced_settings_settings_button">settings_advanced</string>
+    <string name="key_sign_out">settings_sign_out</string>
+</resources>

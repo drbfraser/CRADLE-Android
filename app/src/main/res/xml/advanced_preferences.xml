@@ -3,12 +3,12 @@
     <PreferenceCategory android:title="Network">
         <EditTextPreference
             android:title="Hostname"
-            android:key="setting_server_hostname"
+            android:key="@string/key_server_hostname"
             android:defaultValue="@string/settings_default_server_hostname" />
 
         <EditTextPreference
             android:title="Port"
-            android:key="setting_server_port"
+            android:key="@string/key_server_port"
             android:defaultValue="@string/settings_default_server_port" />
 
         <SwitchPreference

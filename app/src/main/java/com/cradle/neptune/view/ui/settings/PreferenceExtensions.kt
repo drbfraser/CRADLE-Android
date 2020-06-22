@@ -6,8 +6,15 @@ import android.util.Log
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.preference.Preference
+import androidx.preference.PreferenceFragmentCompat
 import com.cradle.neptune.utilitiles.functional.Either
 import com.cradle.neptune.utilitiles.functional.coalesce
+
+/**
+ * Finds a preference with a key matching the value of a given resource identifier.
+ */
+fun PreferenceFragmentCompat.findPreference(id: Int) =
+    context?.getString(id)?.let { findPreference<Preference>(it) }
 
 /**
  * Tells this preference to use a dynamically generated summary by pulling

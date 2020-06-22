@@ -4,7 +4,6 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
@@ -46,11 +45,11 @@ class AdvancedSettingsFragment : PreferenceFragmentCompat() {
         Log.v(this::class.simpleName, "Loading advanced settings from resource")
         setPreferencesFromResource(R.xml.advanced_preferences, rootKey)
 
-        findPreference<Preference>("setting_server_hostname")
+        findPreference(R.string.key_server_hostname)
             ?.useDynamicSummary()
             ?.withValidator(::validateHostname)
 
-        findPreference<Preference>("setting_server_port")
+        findPreference(R.string.key_server_port)
             ?.useDynamicSummary { v -> if (v.isNullOrEmpty()) "(default)" else v }
             ?.withValidator(::validatePort)
     }

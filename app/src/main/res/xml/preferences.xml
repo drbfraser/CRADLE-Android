@@ -5,13 +5,13 @@
     <PreferenceCategory android:title="General">
         <EditTextPreference
             android:defaultValue="No name entered"
-            android:key="setting_vht_name"
+            android:key="@string/key_vht_name"
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:title="Your Name" />
         <EditTextPreference
             android:defaultValue="Uganda"
-            android:key="setting_region"
+            android:key="@string/key_region"
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:summary="The country or region you are working in."
@@ -20,17 +20,17 @@
 
     <PreferenceCategory android:title="Referrals">
         <Preference
-            android:key="setting_health_centres"
+            android:key="@string/key_health_centres_settings_button"
             android:title="Health centres" />
     </PreferenceCategory>
 
     <PreferenceCategory>
         <Preference
             android:title="Advanced"
-            android:key="settings_advanced" />
+            android:key="@string/key_advanced_settings_settings_button" />
 
         <Preference
-            android:key="signout"
+            android:key="@string/key_sign_out"
             android:summary="@string/normalSignoutMessage"
             android:title="Sign Out" />
     </PreferenceCategory>
