@@ -32,13 +32,33 @@ class SettingsActivity : AppCompatActivity() {
             .commit()
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        // Register a listener with the back stack to update the action bar title
+        // based on what fragment is on top.
+        supportFragmentManager.addOnBackStackChangedListener {
+            val count = supportFragmentManager.backStackEntryCount
+            var title = "Settings"
+            if (count != 0) {
+                val name = supportFragmentManager.getBackStackEntryAt(count - 1).name
+                if (name == "advanced_settings") {
+                    title = "Advanced"
+                }
+            }
+            supportActionBar?.title = title
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == android.R.id.home) {
-            finish()
-        }
+        onBackPressed()
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onBackPressed() {
+        if (supportFragmentManager.backStackEntryCount == 0) {
+            super.onBackPressed()
+        } else {
+            supportFragmentManager.popBackStack()
+        }
     }
 }
 
@@ -75,7 +95,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
             ?.withLaunchActivityOnClick(this, HealthFacilitiesActivity::class.java)
 
         findPreference(R.string.key_advanced_settings_settings_button)
-            ?.withLaunchActivityOnClick(this, AdvancedSettingsActivity::class.java)
+            ?.withOnClickListener {
+                parentFragmentManager
+                    .beginTransaction()
+                    .replace(android.R.id.content, AdvancedSettingsFragment())
+                    .addToBackStack("advanced_settings") // add to back stack with name
+                    .commit()
+                true
+            }
 
         findPreference(R.string.key_sign_out)
             ?.withOnClickListener {
