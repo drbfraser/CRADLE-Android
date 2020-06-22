@@ -40,7 +40,7 @@ class SettingsActivity : AppCompatActivity() {
             var title = "Settings"
             if (count != 0) {
                 val name = supportFragmentManager.getBackStackEntryAt(count - 1).name
-                if (name == "advanced_settings") {
+                if (name == AdvancedSettingsFragment::class.qualifiedName) {
                     title = "Advanced"
                 }
             }
@@ -99,7 +99,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 parentFragmentManager
                     .beginTransaction()
                     .replace(android.R.id.content, AdvancedSettingsFragment())
-                    .addToBackStack("advanced_settings") // add to back stack with name
+                    .addToBackStack(AdvancedSettingsFragment::class.qualifiedName) // add to back stack with name
                     .commit()
                 true
             }
