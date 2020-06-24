@@ -69,9 +69,7 @@ class UrlManager @Inject constructor(val settings: Settings) {
                 ":" + settings.networkPort
             }
 
-            return "$protocol$hostname$port/api".also {
-                Log.d(this::class.simpleName, "Server base url: $it")
-            }
+            return "$protocol$hostname$port/api"
         }
 
     /**
