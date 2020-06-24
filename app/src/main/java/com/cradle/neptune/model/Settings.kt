@@ -20,7 +20,7 @@ open class Settings @Inject constructor(val sharedPreferences: SharedPreferences
      */
     open val networkHostname: String?
         get() = sharedPreferences.getString(
-            "setting_server_hostname",
+            context.getString(R.string.key_server_hostname),
             context.getString(R.string.settings_default_server_hostname)
         )
 
@@ -28,13 +28,19 @@ open class Settings @Inject constructor(val sharedPreferences: SharedPreferences
      * The network port as configured in Settings > Advanced.
      */
     open val networkPort: String?
-        get() = sharedPreferences.getString("setting_server_port", null)
+        get() = sharedPreferences.getString(
+            context.getString(R.string.key_server_port),
+            null
+        )
 
     /**
      * Whether to use HTTPS or not, configured in Settings > Advanced.
      */
     open val networkUseHttps: Boolean
-        get() = sharedPreferences.getBoolean("setting_server_use_https", true)
+        get() = sharedPreferences.getBoolean(
+            context.getString(R.string.key_server_use_https),
+            true
+        )
 
     /* VHT Info */
 
@@ -42,13 +48,19 @@ open class Settings @Inject constructor(val sharedPreferences: SharedPreferences
      * The user's name as configured in Settings.
      */
     open val vhtName: String?
-        get() = sharedPreferences.getString("setting_vht_name", null)
+        get() = sharedPreferences.getString(
+            context.getString(R.string.key_vht_name),
+            null
+        )
 
     /**
      * The user's region as configured in Settings.
      */
     open val region: String?
-        get() = sharedPreferences.getString("setting_region", null)
+        get() = sharedPreferences.getString(
+            context.getString(R.string.key_region),
+            null
+        )
 
     /* OCR */
 

@@ -13,7 +13,7 @@
 
         <SwitchPreference
             android:title="Use HTTPS"
-            android:key="setting_server_use_https"
+            android:key="@string/key_server_use_https"
             android:defaultValue="@string/settings_default_server_use_https" />
     </PreferenceCategory>
 
