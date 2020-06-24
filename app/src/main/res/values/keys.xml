@@ -10,6 +10,7 @@
 <resources>
     <string name="key_server_hostname">settings_server_hostname</string>
     <string name="key_server_port">settings_server_port</string>
+    <string name="key_server_use_https">settings_server_use_https</string>
     <string name="key_vht_name">setting_vht_name</string>
     <string name="key_region">setting_region</string>
     <string name="key_health_centres_settings_button">setting_health_centres</string>
