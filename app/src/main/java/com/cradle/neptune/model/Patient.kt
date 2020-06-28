@@ -95,8 +95,6 @@ enum class Sex {
     MALE, FEMALE, OTHER
 }
 
-sealed class PatientAge
-
 /**
  * Holds data about the gestational age of a patient.
  *
@@ -244,12 +242,11 @@ private enum class PatientField(override val text: String) : Field {
     ID("patientId"),
     NAME("patientName"),
     DOB("dob"),
-    AGE("age"),
+    AGE("patientAge"),
     GESTATIONAL_AGE_UNIT("gestationalAgeUnit"),
     GESTATIONAL_AGE_VALUE("gestationalAgeValue"),
     SEX("patientSex"),
     IS_PREGNANT("isPregnant"),
-    NEEDS_ASSESSMENT("needsAssessment"),
     ZONE("zone"),
     VILLAGE_NUMBER("villageNumber"),
     DRUG_HISTORY("drugHistory"),

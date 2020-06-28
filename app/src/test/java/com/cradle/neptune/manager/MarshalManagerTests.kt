@@ -51,7 +51,7 @@ class MarshalManagerTests {
             "\"isImageUploaded\":false," +
             "\"manuallyChangeOcrResults\":-1," +
             "\"patient\":{" +
-            "\"age\":35," +
+            "\"patientAge\":35," +
             "\"dob\":\"null\"," +
             "\"drugHistoryList\":[]," +
             "\"gestationalAgeUnit\":\"GESTATIONAL_AGE_UNITS_WEEKS\"," +
