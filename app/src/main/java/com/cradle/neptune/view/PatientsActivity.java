@@ -25,6 +25,7 @@ import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.manager.ReadingManager;
 import com.cradle.neptune.viewmodel.PatientsViewAdapter;
+import com.google.android.material.button.MaterialButton;
 
 import kotlin.Pair;
 
@@ -73,6 +74,15 @@ public class PatientsActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+        setupGlobalPatientSearchButton();
+    }
+
+    private void setupGlobalPatientSearchButton() {
+        MaterialButton globalSearchButton = findViewById(R.id.globalPatientSearch);
+        globalSearchButton.setOnClickListener(v -> {
+            startActivityForResult(new Intent(PatientsActivity.this,
+                    GlobalPatientSearchActivity.class),99);
+        });
     }
 
     @Override

@@ -18,7 +18,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".view.ui.settings.ui.healthFacility.HealthFacilitiesActivity"></activity>
+        <activity android:name=".view.GlobalPatientSearchActivity"></activity>
+        <activity android:name=".view.ui.settings.ui.healthFacility.HealthFacilitiesActivity" />
         <activity android:name=".view.PdfViewActivity" />
         <activity android:name=".view.EducationActivity" />
         <activity android:name=".view.StatsActivity" />
