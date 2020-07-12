@@ -26,6 +26,8 @@ import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.manager.ReadingManager;
 import com.cradle.neptune.viewmodel.PatientsViewAdapter;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import kotlin.Pair;
 
@@ -67,12 +69,13 @@ public class PatientsActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle("My Patients");
         }
         setupGlobalPatientSearchButton();
     }
 
     private void setupGlobalPatientSearchButton() {
-        MaterialButton globalSearchButton = findViewById(R.id.globalPatientSearch);
+        ExtendedFloatingActionButton globalSearchButton = findViewById(R.id.globalPatientSearch);
         globalSearchButton.setOnClickListener(v -> {
             startActivity(new Intent(PatientsActivity.this,
                     GlobalPatientSearchActivity.class));

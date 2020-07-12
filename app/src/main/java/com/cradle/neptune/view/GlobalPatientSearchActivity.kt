@@ -40,7 +40,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         (application as MyApp).appComponent.inject(this)
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
+        supportActionBar?.title = getString(R.string.global_patient_search)
         setupGlobalPatientSearch()
     }
 
