@@ -107,7 +107,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
             jsonObject.getString("patientName"), jsonObject
                     .getString("villageNumber")))
         }
-        val globalPatientAdapter = GlobalPatientAdapter(globalPatientList)
+        val globalPatientAdapter = GlobalPatientAdapter(globalPatientList,context = this)
         val layout = LinearLayoutManager(this)
         val recyclerView = findViewById<RecyclerView>(R.id.globalPatientrecyclerview)
         recyclerView.layoutManager = layout
