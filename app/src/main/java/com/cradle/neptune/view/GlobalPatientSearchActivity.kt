@@ -9,14 +9,13 @@ import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.recyclerview.widget.RecyclerView
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
-import com.android.volley.RetryPolicy
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonArrayRequest
-import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.UrlManager
+import com.cradle.neptune.model.GlobalPatient
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.HashMap
@@ -69,7 +68,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
      val jsonArrayRequest = object :JsonArrayRequest(Request.Method.GET,searchUrl,null,
          { response: JSONArray? ->
             Log.d("bugg","success: "+response?.toString(4))
-             setupPatientsRecycler()
+             setupPatientsRecycler(response as (JSONArray))
          },{ error: VolleyError? ->
              Log.d("bugg","error: "+error?.toString())
          }) {
@@ -90,7 +89,18 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         queue.add<JSONArray>(jsonArrayRequest)
     }
 
-    private fun setupPatientsRecycler() {
+    private fun setupPatientsRecycler(response: JSONArray?) {
+        if (response==null ||response.length()==0){
+            return
+        }
+        val globalPatientList = ArrayList<GlobalPatient>()
+        for (i in 0 until response.length()){
+            val jsonObject: JSONObject = response[i] as JSONObject
+            globalPatientList.add(GlobalPatient(jsonObject.getString("patientId"),
+            jsonObject.getString("patientName"), jsonObject
+                    .getString("villageNumber")))
+        }
+
         val recyclerView = findViewById<RecyclerView>(R.id.globalPatientrecyclerview)
 
     }

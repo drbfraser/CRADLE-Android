@@ -49,12 +49,6 @@ public class PatientsActivity extends AppCompatActivity {
     private PatientsViewAdapter patientsViewAdapter;
     private SearchView searchView;
 
-
-    // set who we are for tab code
-    public PatientsActivity() {
-        //super(R.id.nav_patients);
-    }
-
     public static Intent makeIntent(Context context) {
         return new Intent(context, PatientsActivity.class);
     }
@@ -80,8 +74,8 @@ public class PatientsActivity extends AppCompatActivity {
     private void setupGlobalPatientSearchButton() {
         MaterialButton globalSearchButton = findViewById(R.id.globalPatientSearch);
         globalSearchButton.setOnClickListener(v -> {
-            startActivityForResult(new Intent(PatientsActivity.this,
-                    GlobalPatientSearchActivity.class),99);
+            startActivity(new Intent(PatientsActivity.this,
+                    GlobalPatientSearchActivity.class));
         });
     }
 
