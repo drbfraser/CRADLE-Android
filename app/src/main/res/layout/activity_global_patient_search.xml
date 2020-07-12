@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context="com.cradle.neptune.view.GlobalPatientSearchActivity">
 
-    <SearchView
+    <androidx.appcompat.widget.SearchView
         android:id="@+id/globalPatientSearchView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

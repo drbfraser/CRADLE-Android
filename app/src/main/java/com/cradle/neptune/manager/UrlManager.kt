@@ -22,6 +22,12 @@ class UrlManager @Inject constructor(val settings: Settings) {
         get() = "$base/patient/allinfo"
 
     /**
+     * Search the database for a list of patient by Id or Initials
+     * /patient/global/<String>
+     */
+    val globalPatientSearch: String
+        get() = "$base/patient/global/"
+    /**
      * Endpoint for retrieving health facility information.
      */
     val healthFacility: String
