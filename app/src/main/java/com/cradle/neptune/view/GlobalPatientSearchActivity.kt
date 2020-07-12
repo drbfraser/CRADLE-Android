@@ -3,9 +3,13 @@ package com.cradle.neptune.view
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.ImageView
+import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
@@ -16,6 +20,7 @@ import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.UrlManager
 import com.cradle.neptune.model.GlobalPatient
+import com.cradle.neptune.viewmodel.GlobalPatientAdapter
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.HashMap
@@ -33,9 +38,9 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         setContentView(R.layout.activity_global_patient_search)
         // inject:
         (application as MyApp).appComponent.inject(this)
-        if (supportActionBar != null) {
-            supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-        }
+
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
         setupGlobalPatientSearch()
     }
 
@@ -67,7 +72,6 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
     private fun searchServerForThePatient(searchUrl: String) {
      val jsonArrayRequest = object :JsonArrayRequest(Request.Method.GET,searchUrl,null,
          { response: JSONArray? ->
-            Log.d("bugg","success: "+response?.toString(4))
              setupPatientsRecycler(response as (JSONArray))
          },{ error: VolleyError? ->
              Log.d("bugg","error: "+error?.toString())
@@ -93,15 +97,22 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         if (response==null ||response.length()==0){
             return
         }
+        val emptyView = findViewById<ImageView>(R.id.emptyView)
+        emptyView.visibility = View.GONE
         val globalPatientList = ArrayList<GlobalPatient>()
+
         for (i in 0 until response.length()){
             val jsonObject: JSONObject = response[i] as JSONObject
             globalPatientList.add(GlobalPatient(jsonObject.getString("patientId"),
             jsonObject.getString("patientName"), jsonObject
                     .getString("villageNumber")))
         }
-
+        val globalPatientAdapter = GlobalPatientAdapter(globalPatientList)
+        val layout = LinearLayoutManager(this)
         val recyclerView = findViewById<RecyclerView>(R.id.globalPatientrecyclerview)
+        recyclerView.layoutManager = layout
+        recyclerView.adapter = globalPatientAdapter
+        globalPatientAdapter.notifyDataSetChanged()
 
     }
 }
