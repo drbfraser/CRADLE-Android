@@ -6,13 +6,18 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
+import androidx.recyclerview.widget.RecyclerView
+import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
+import com.android.volley.RetryPolicy
 import com.android.volley.VolleyError
+import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.UrlManager
+import org.json.JSONArray
 import org.json.JSONObject
 import java.util.HashMap
 import javax.inject.Inject
@@ -52,7 +57,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
             override fun onQueryTextSubmit(query: String): Boolean {
                 if (query=="")
                     return false
-                val searchUrl = urlManager.globalPatientSearch+ query
+                val searchUrl = urlManager.globalPatientSearch+ "/$query"
                 searchServerForThePatient(searchUrl)
                 return true
             }
@@ -61,9 +66,10 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
     }
 
     private fun searchServerForThePatient(searchUrl: String) {
-     var jsonObjectRequest = object :JsonObjectRequest(Request.Method.GET,searchUrl,null,
-         { response: JSONObject? ->
+     val jsonArrayRequest = object :JsonArrayRequest(Request.Method.GET,searchUrl,null,
+         { response: JSONArray? ->
             Log.d("bugg","success: "+response?.toString(4))
+             setupPatientsRecycler()
          },{ error: VolleyError? ->
              Log.d("bugg","error: "+error?.toString())
          }) {
@@ -79,7 +85,13 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
              return headers
          }
      }
+        jsonArrayRequest.retryPolicy = DefaultRetryPolicy(8000,DefaultRetryPolicy.DEFAULT_MAX_RETRIES,DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
         val queue = Volley.newRequestQueue(MyApp.getInstance())
-        queue.add<JSONObject>(jsonObjectRequest)
+        queue.add<JSONArray>(jsonArrayRequest)
+    }
+
+    private fun setupPatientsRecycler() {
+        val recyclerView = findViewById<RecyclerView>(R.id.globalPatientrecyclerview)
+
     }
 }
