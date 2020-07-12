@@ -135,11 +135,10 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ((MyApp) getApplication()).getAppComponent().inject(this);
+        checkSharedPrefForLogin();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        ((MyApp) getApplication()).getAppComponent().inject(this);
-
-        checkSharedPrefForLogin();
         setupLogin();
     }
 
@@ -154,6 +153,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void startIntroActivity() {
         Intent intent = new Intent(LoginActivity.this, IntroActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         startActivity(intent);
         finish();
     }
