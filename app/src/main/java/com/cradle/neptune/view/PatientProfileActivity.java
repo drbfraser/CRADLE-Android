@@ -78,23 +78,21 @@ public class PatientProfileActivity extends AppCompatActivity {
     ReadingManager readingManager;
     @Inject
     SharedPreferences sharedPreferences;
-    // ..inject this even if not needed because it forces it to load at startup and initialize.
-    @Inject
-    Settings settings;
     @Inject
     UrlManager urlManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_patient_profile);
-
-        PreferenceManager.setDefaultValues(
-                this, R.xml.preferences, false);
-
-        // inject:
         ((MyApp) getApplication()).getAppComponent().inject(this);
 
+        currPatient = (Patient) getIntent().getSerializableExtra("patient");
+        if (currPatient == null) {
+            // no point in doing anything if patient is null
+            return;
+        }
+
+        setContentView(R.layout.activity_patient_profile);
         patientID = findViewById(R.id.patientId);
         patientName = findViewById(R.id.patientName);
         patientDOB = findViewById(R.id.patientDOB);
@@ -107,7 +105,6 @@ public class PatientProfileActivity extends AppCompatActivity {
         pregnancyInfoLayout = findViewById(R.id.pregnancyLayout);
         readingRecyclerview = findViewById(R.id.readingRecyclerview);
 
-        currPatient = (Patient) getIntent().getSerializableExtra("patient");
         populatePatientInfo(currPatient);
 
         setupReadingsRecyclerView();
@@ -122,7 +119,7 @@ public class PatientProfileActivity extends AppCompatActivity {
 
     }
 
-    private void setupUpdatePatient() {
+    void setupUpdatePatient() {
         ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Updating patient");
         progressDialog.setCancelable(false);
@@ -179,6 +176,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         };
 
         Button updateBtn = findViewById(R.id.updatePatientBtn);
+        updateBtn.setVisibility(View.VISIBLE);
         updateBtn.setOnClickListener(view -> {
             progressDialog.show();
             RequestQueue queue = Volley.newRequestQueue(MyApp.getInstance());
@@ -314,7 +312,7 @@ public class PatientProfileActivity extends AppCompatActivity {
 //        return age;
 //    }
 
-    private void setupLineChart() {
+    void setupLineChart() {
         LineChart lineChart = findViewById(R.id.patientLineChart);
         CardView lineChartCard = findViewById(R.id.patientLineChartCard);
         lineChartCard.setVisibility(View.VISIBLE);
@@ -369,7 +367,7 @@ public class PatientProfileActivity extends AppCompatActivity {
 
     }
 
-    private List<Reading> getThisPatientsReadings() {
+     private List<Reading> getThisPatientsReadings() {
         // Since we can't use streams in API 17 we end up having to use this mess.
         List<Pair<Patient, Reading>> pairs = readingManager.getReadingsByPatientIdBlocking(currPatient.getId());
         List<Reading> readings = new ArrayList<>();
@@ -381,7 +379,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         return readings;
     }
 
-    private void setupCreatePatientReadingButton() {
+     void setupCreatePatientReadingButton() {
         Button createButton = findViewById(R.id.newPatientReadingButton);
 
         List<Reading> readings = getThisPatientsReadings();
@@ -402,7 +400,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         }
     }
 
-    private void setupReadingsRecyclerView() {
+     void setupReadingsRecyclerView() {
         patientReadings = getThisPatientsReadings();
 
         // use linear layout

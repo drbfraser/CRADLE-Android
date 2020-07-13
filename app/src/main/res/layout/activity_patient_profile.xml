@@ -423,9 +423,24 @@
             android:id="@+id/updatePatientBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
             android:text="Update Patient"
+            android:visibility="gone"
             app:backgroundTint="@color/colorPrimaryLight"
+            app:layout_constraintEnd_toStartOf="@id/newPatientReadingButton"
             app:layout_constraintStart_toStartOf="@+id/medicalCard"
+            app:layout_constraintTop_toTopOf="@+id/newPatientReadingButton" />
+
+        <Button
+            android:id="@+id/addToMyPatientButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="Add to my patient"
+            android:visibility="gone"
+            app:backgroundTint="@color/colorPrimaryLight"
+            app:layout_constraintEnd_toStartOf="@+id/newPatientReadingButton"
+            app:layout_constraintStart_toStartOf="@id/medicalCard"
             app:layout_constraintTop_toTopOf="@+id/newPatientReadingButton" />
 
 

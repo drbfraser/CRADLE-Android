@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.cradle.neptune">
+    package="com.cradle.neptune" >
     <!-- Use "old" Camera API for support for devices running < v5.0. -->
     <uses-permission android:name="android.permission.CAMERA" /> <!-- Removed autofocus because preventing install on some older phones. -->
     <uses-feature android:name="android.hardware.camera" />
@@ -17,9 +17,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true" >
+        <activity android:name=".view.GlobalPatientProfileActivity"/>
         <activity android:name=".view.GlobalPatientSearchActivity"
-            android:windowSoftInputMode="adjustNothing"/>
+            android:windowSoftInputMode="adjustNothing" />
         <activity android:name=".view.ui.settings.ui.healthFacility.HealthFacilitiesActivity" />
         <activity android:name=".view.PdfViewActivity" />
         <activity android:name=".view.EducationActivity" />

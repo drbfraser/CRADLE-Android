@@ -15,7 +15,7 @@ import com.cradle.neptune.R
 import com.cradle.neptune.model.GlobalPatient
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Sex
-import com.cradle.neptune.view.PatientProfileActivity
+import com.cradle.neptune.view.GlobalPatientProfileActivity
 
 class GlobalPatientAdapter(private val patientList:List<GlobalPatient>, private val context: Context):
     RecyclerView.Adapter<GlobalPatientAdapter.GlobalPatientViewHolder>() {
@@ -59,7 +59,7 @@ class GlobalPatientAdapter(private val patientList:List<GlobalPatient>, private 
             //todo replace it with an actual api call
             val patient = Patient(globalPatient.id,globalPatient.initials,null,33,null,Sex.FEMALE,false,"ZONE123",globalPatient.villageNum,
                 emptyList(), emptyList())
-            val intent = Intent(context, PatientProfileActivity::class.java)
+            val intent = Intent(context, GlobalPatientProfileActivity::class.java)
             intent.putExtra("patient", patient)
             context.startActivity(intent)
         })
