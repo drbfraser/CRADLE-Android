@@ -123,7 +123,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         return (currPatient!=null);
     }
 
-    private void setupUpdatePatient() {
+     void setupUpdatePatient() {
         ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Updating patient");
         progressDialog.setCancelable(false);
@@ -245,7 +245,7 @@ public class PatientProfileActivity extends AppCompatActivity {
      *
      * @param patient current patient
      */
-    private void setupGestationalInfo(Patient patient) {
+    void setupGestationalInfo(Patient patient) {
         RadioGroup radioGroup = findViewById(R.id.gestationradioGroup);
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -385,7 +385,7 @@ public class PatientProfileActivity extends AppCompatActivity {
 
      void setupCreatePatientReadingButton() {
         Button createButton = findViewById(R.id.newPatientReadingButton);
-
+        createButton.setVisibility(View.VISIBLE);
         List<Reading> readings = getThisPatientsReadings();
         boolean readingFound = false;
         Reading latestReading = null;
