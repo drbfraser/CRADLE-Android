@@ -123,7 +123,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         return (currPatient!=null);
     }
 
-    void setupUpdatePatient() {
+    private void setupUpdatePatient() {
         ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Updating patient");
         progressDialog.setCancelable(false);

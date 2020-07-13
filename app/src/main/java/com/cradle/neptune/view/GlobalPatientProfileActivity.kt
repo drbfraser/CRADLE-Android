@@ -1,6 +1,7 @@
 package com.cradle.neptune.view
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradle.neptune.model.BloodPressure
@@ -10,6 +11,9 @@ import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.ReadingMetadata
 import com.cradle.neptune.model.Sex
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter
+import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter.OnClickElement
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.android.synthetic.main.reading_card_assesment.*
 import org.threeten.bp.ZonedDateTime
 import java.util.UUID
 
@@ -52,22 +56,31 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
                 null,null, ZonedDateTime.now(),(i%2 ==0), emptyList(),ReadingMetadata()
             ))
         }
+        val listAdapter = ReadingRecyclerViewAdapter(patientReadings)
+        listAdapter.setOnClickElementListener(object : OnClickElement {
+            override fun onClick(readingId: String) {
+                Snackbar.make(view,"You must add this patient to your patient lists " +
+                    "before editing anything",Snackbar.LENGTH_LONG).show()
+            }
+
+            override fun onLongClick(readingId: String): Boolean {
+                return true
+            }
+
+            override fun onClickRecheckReading(readingId: String) {
+                Snackbar.make(view,"You must add this patient to your patient lists " +
+                    "before creating a new reading",Snackbar.LENGTH_LONG).show()
+            }
+        })
 
         // use linear layout
         val layoutManager: RecyclerView.LayoutManager = LinearLayoutManager(this)
         readingRecyclerview.layoutManager = layoutManager
         readingRecyclerview.isNestedScrollingEnabled = false
-        val listAdapter = ReadingRecyclerViewAdapter(patientReadings)
         readingRecyclerview.adapter = listAdapter
     }
 
     override fun setupLineChart() {
 
     }
-
-    override fun setupUpdatePatient() {
-
-    }
-
-
 }
