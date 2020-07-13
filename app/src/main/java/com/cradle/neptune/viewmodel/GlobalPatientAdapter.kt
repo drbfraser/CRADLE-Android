@@ -56,11 +56,9 @@ class GlobalPatientAdapter(private val patientList:List<GlobalPatient>, private 
         })
 
         holder.cardview.setOnClickListener(View.OnClickListener {
-            //todo replace it with an actual api call
-            val patient = Patient(globalPatient.id,globalPatient.initials,null,33,null,Sex.FEMALE,false,"ZONE123",globalPatient.villageNum,
-                emptyList(), emptyList())
+
             val intent = Intent(context, GlobalPatientProfileActivity::class.java)
-            intent.putExtra("patient", patient)
+            intent.putExtra("globalPatient", globalPatient)
             context.startActivity(intent)
         })
 

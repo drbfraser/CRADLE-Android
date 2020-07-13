@@ -16,7 +16,6 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
-import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -47,7 +46,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -84,27 +82,14 @@ public class PatientProfileActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ((MyApp) getApplication()).getAppComponent().inject(this);
-
-        currPatient = (Patient) getIntent().getSerializableExtra("patient");
-        if (currPatient == null) {
-            // no point in doing anything if patient is null
-            return;
-        }
 
         setContentView(R.layout.activity_patient_profile);
-        patientID = findViewById(R.id.patientId);
-        patientName = findViewById(R.id.patientName);
-        patientDOB = findViewById(R.id.patientDOB);
-        patientAge = findViewById(R.id.patientAge);
-        patientSex = findViewById(R.id.patientSex);
-        villageNo = findViewById(R.id.patientVillage);
-        patientZone = findViewById(R.id.patientZone);
-        pregnant = findViewById(R.id.textView20);
-        gestationalAge = findViewById(R.id.gestationalAge);
-        pregnancyInfoLayout = findViewById(R.id.pregnancyLayout);
-        readingRecyclerview = findViewById(R.id.readingRecyclerview);
-
+        ((MyApp) getApplication()).getAppComponent().inject(this);
+        initAllFields();
+        if (!getLocalPatient()){
+            //no point in populating anything since we dont have a patient
+            return;
+        }
         populatePatientInfo(currPatient);
 
         setupReadingsRecyclerView();
@@ -117,6 +102,25 @@ public class PatientProfileActivity extends AppCompatActivity {
             getSupportActionBar().setTitle(R.string.patient_summary);
         }
 
+    }
+
+    private void initAllFields() {
+        patientID = findViewById(R.id.patientId);
+        patientName = findViewById(R.id.patientName);
+        patientDOB = findViewById(R.id.patientDOB);
+        patientAge = findViewById(R.id.patientAge);
+        patientSex = findViewById(R.id.patientSex);
+        villageNo = findViewById(R.id.patientVillage);
+        patientZone = findViewById(R.id.patientZone);
+        pregnant = findViewById(R.id.textView20);
+        gestationalAge = findViewById(R.id.gestationalAge);
+        pregnancyInfoLayout = findViewById(R.id.pregnancyLayout);
+        readingRecyclerview = findViewById(R.id.readingRecyclerview);
+    }
+
+    boolean getLocalPatient() {
+        currPatient = (Patient) getIntent().getSerializableExtra("patient");
+        return (currPatient!=null);
     }
 
     void setupUpdatePatient() {
