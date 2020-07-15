@@ -53,9 +53,6 @@ import static com.cradle.neptune.utilitiles.NotificationUtils.PatientDownloadFai
 import static com.cradle.neptune.utilitiles.NotificationUtils.PatientDownloadingNotificationID;
 import static com.cradle.neptune.utilitiles.NotificationUtils.buildNotification;
 
-//import com.cradle.neptune.database.ParsePatientInformationAsyncTask;
-
-
 public class LoginActivity extends AppCompatActivity {
 
     public static final String LOGIN_EMAIL = "loginEmail";

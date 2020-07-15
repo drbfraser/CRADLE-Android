@@ -40,6 +40,8 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
 
     private lateinit var searchView: SearchView
 
+    val TAG = GlobalPatientSearchActivity::javaClass.name
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_global_patient_search)
@@ -86,7 +88,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
                 progressDialog.cancel()
                 searchView.hideKeyboard()
             }, { error: VolleyError? ->
-                Log.d("bugg", "error: " + error?.toString())
+                Log.e(TAG, "error: " + error?.message)
                 progressDialog.cancel()
                 Toast.makeText(this, "Sorry unable to fetch the patients", Toast.LENGTH_LONG).show()
             }) {
@@ -124,8 +126,8 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
             globalPatientList.add(
                 GlobalPatient(
                     jsonObject.getString("patientId"),
-                    jsonObject.getString("patientName"), jsonObject
-                        .getString("villageNumber"),
+                    jsonObject.getString("patientName"),
+                    jsonObject.getString("villageNumber"),
                     false
                 )
             )
@@ -164,6 +166,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
                         .setMessage("Are you sure you want to add this patient as your own? ")
                         .setPositiveButton("OK") { _: DialogInterface, _: Int ->
                             //todo make a network call to fetch the patient and update the recyclerview
+                            //todo make the O^n better, maybe globalPatientList can be a map?
                             for (it in globalPatientList) {
                                 if (it.id == patient.id) {
                                     it.isMyPatient = true
