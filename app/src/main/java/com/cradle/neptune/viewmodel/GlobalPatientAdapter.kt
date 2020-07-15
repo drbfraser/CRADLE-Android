@@ -43,7 +43,7 @@ class GlobalPatientAdapter(private val patientList:List<GlobalPatient>, private 
         holder.id.text = globalPatient.id
         holder.name.text = globalPatient.initials
 
-        holder.addToMyPatientButton.setOnClickListener(View.OnClickListener {
+        holder.addToMyPatientButton.setOnClickListener {
             val alertDialog = AlertDialog.Builder(context).setTitle("Are you sure?")
                 .setMessage("Are you sure you want to add this patient as your own? ")
                 .setPositiveButton("OK") { _: DialogInterface, i: Int ->
@@ -53,14 +53,12 @@ class GlobalPatientAdapter(private val patientList:List<GlobalPatient>, private 
                 .setNegativeButton("NO") { _: DialogInterface, _: Int -> }
                 .setIcon(R.drawable.ic_sync)
             alertDialog.show()
-        })
+        }
 
-        holder.cardview.setOnClickListener(View.OnClickListener {
-
+        holder.cardview.setOnClickListener {
             val intent = Intent(context, GlobalPatientProfileActivity::class.java)
             intent.putExtra("globalPatient", globalPatient)
             context.startActivity(intent)
-        })
-
+        }
     }
 }
