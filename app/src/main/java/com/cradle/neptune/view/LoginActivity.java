@@ -32,8 +32,10 @@ import com.cradle.neptune.model.*;
 
 import com.cradle.neptune.manager.HealthCentreManager;
 import com.cradle.neptune.manager.ReadingManager;
+
 import kotlin.Pair;
 import kotlin.Unit;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -136,6 +138,7 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         ((MyApp) getApplication()).getAppComponent().inject(this);
+        // no need to load anything if already logged in.
         checkSharedPrefForLogin();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);

@@ -38,6 +38,7 @@ import com.github.mikephil.charting.data.LineDataSet;
 
 import kotlin.Pair;
 import kotlin.Unit;
+
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -86,8 +87,8 @@ public class PatientProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_patient_profile);
         ((MyApp) getApplication()).getAppComponent().inject(this);
         initAllFields();
-        if (!getLocalPatient()){
-            //no point in populating anything since we dont have a patient
+        if (!getLocalPatient()) {
+            //not a local patient, might be a child class so we let the child do the init stuff
             return;
         }
         populatePatientInfo(currPatient);
@@ -120,10 +121,10 @@ public class PatientProfileActivity extends AppCompatActivity {
 
     boolean getLocalPatient() {
         currPatient = (Patient) getIntent().getSerializableExtra("patient");
-        return (currPatient!=null);
+        return (currPatient != null);
     }
 
-     private void setupUpdatePatient() {
+    private void setupUpdatePatient() {
         ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Updating patient");
         progressDialog.setCancelable(false);
@@ -371,7 +372,7 @@ public class PatientProfileActivity extends AppCompatActivity {
 
     }
 
-     private List<Reading> getThisPatientsReadings() {
+    private List<Reading> getThisPatientsReadings() {
         // Since we can't use streams in API 17 we end up having to use this mess.
         List<Pair<Patient, Reading>> pairs = readingManager.getReadingsByPatientIdBlocking(currPatient.getId());
         List<Reading> readings = new ArrayList<>();
@@ -383,7 +384,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         return readings;
     }
 
-     private void setupCreatePatientReadingButton() {
+    private void setupCreatePatientReadingButton() {
         Button createButton = findViewById(R.id.newPatientReadingButton);
         createButton.setVisibility(View.VISIBLE);
         List<Reading> readings = getThisPatientsReadings();
@@ -404,7 +405,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         }
     }
 
-     void setupReadingsRecyclerView() {
+    void setupReadingsRecyclerView() {
         patientReadings = getThisPatientsReadings();
 
         // use linear layout

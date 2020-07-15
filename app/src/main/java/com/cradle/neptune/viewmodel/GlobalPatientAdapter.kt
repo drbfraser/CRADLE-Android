@@ -13,8 +13,6 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.cradle.neptune.R
 import com.cradle.neptune.model.GlobalPatient
-import com.cradle.neptune.model.Patient
-import com.cradle.neptune.model.Sex
 import com.cradle.neptune.view.GlobalPatientProfileActivity
 
 class GlobalPatientAdapter(private val patientList:List<GlobalPatient>, private val context: Context):

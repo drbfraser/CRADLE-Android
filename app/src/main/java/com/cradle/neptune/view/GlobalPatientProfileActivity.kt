@@ -28,12 +28,14 @@ import kotlinx.coroutines.withContext
 import org.threeten.bp.ZonedDateTime
 import java.util.UUID
 
+/**
+ * This is a child class of [PatientProfileActivity] and uses some functions from the parent class.
+ */
 class GlobalPatientProfileActivity : PatientProfileActivity() {
 
     //mock variable for now
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //make the network call
         getGlobalPatient()
         setupAddToMyPatientList()
     }
@@ -42,11 +44,11 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         val addToMyListButton = findViewById<Button>(R.id.addToMyPatientButton)
         addToMyListButton.visibility = VISIBLE
         addToMyListButton.setOnClickListener(View.OnClickListener {
-                AlertDialog.Builder(this).setTitle("Are you sure?").setMessage("This is not reversible")
-                    .setPositiveButton("OK") { _: DialogInterface, _: Int ->
-                        setupCallLocalPatientActivity()
-                    }.setNegativeButton("NO") { _: DialogInterface, _: Int ->
-                    }.show()
+            AlertDialog.Builder(this).setTitle("Are you sure?").setMessage("This is not reversible")
+                .setPositiveButton("OK") { _: DialogInterface, _: Int ->
+                    setupCallLocalPatientActivity()
+                }.setNegativeButton("NO") { _: DialogInterface, _: Int ->
+                }.show()
         })
     }
 
@@ -59,28 +61,31 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
             patientReadings.forEach {
                 readingManager.addReading(currPatient, it)
             }
-            val intent = Intent(this@GlobalPatientProfileActivity, PatientProfileActivity::class.java)
+            val intent =
+                Intent(this@GlobalPatientProfileActivity, PatientProfileActivity::class.java)
             intent.putExtra("patient", currPatient)
             startActivity(intent)
-            withContext(Dispatchers.Main){
+            withContext(Dispatchers.Main) {
                 progressDialog.cancel()
             }
             finish()
         }
     }
 
-    private fun getGlobalPatient(){
-         val globalPatient = intent.getSerializableExtra("globalPatient") as GlobalPatient
-        // make the network call to get the patient
-        // for now we will mock it.
-        currPatient = Patient(globalPatient.id,globalPatient.initials,null,33,null,
-            Sex.FEMALE,false,"ZONE123",globalPatient.villageNum,
-            emptyList(), emptyList())
+    private fun getGlobalPatient() {
+        val globalPatient = intent.getSerializableExtra("globalPatient") as GlobalPatient
+        // todo make the network call to get the patient
+        // for now we will mock it since we dont have api
+        currPatient = Patient(
+            globalPatient.id, globalPatient.initials, null, 33, null,
+            Sex.FEMALE, false, "ZONE123", globalPatient.villageNum,
+            emptyList(), emptyList()
+        )
         populatePatientInfo(currPatient)
         setupReadingsRecyclerView()
         setupLineChart()
-
     }
+
     /**
      * Should always return false here since we dont have any local patient
      */
@@ -89,20 +94,25 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
     }
 
     override fun setupReadingsRecyclerView() {
-        //todo get the actual readings
+        //todo the readings will probably be passed in as a json from the previous network call
         patientReadings = ArrayList()
         //random reading for now
-        for (i in 0 until 10){
-            patientReadings.add(Reading(UUID.randomUUID().toString(),currPatient.id, ZonedDateTime.now(),
-                BloodPressure(67+i,78+i,71+i),null, emptyList(),
-                null,null, ZonedDateTime.now(),(i%2 ==0), emptyList(),ReadingMetadata()
-            ))
+        for (i in 0 until 10) {
+            patientReadings.add(
+                Reading(
+                    UUID.randomUUID().toString(), currPatient.id, ZonedDateTime.now(),
+                    BloodPressure(67 + i, 78 + i, 71 + i), null, emptyList(),
+                    null, null, ZonedDateTime.now(), (i % 2 == 0), emptyList(), ReadingMetadata()
+                )
+            )
         }
         val listAdapter = ReadingRecyclerViewAdapter(patientReadings)
         listAdapter.setOnClickElementListener(object : OnClickElement {
             override fun onClick(readingId: String) {
-                Snackbar.make(view,"You must add this patient to your patient lists " +
-                    "before editing anything",Snackbar.LENGTH_LONG).show()
+                Snackbar.make(
+                    view, "You must add this patient to your patient lists " +
+                        "before editing anything", Snackbar.LENGTH_LONG
+                ).show()
             }
 
             override fun onLongClick(readingId: String): Boolean {
@@ -110,12 +120,13 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
             }
 
             override fun onClickRecheckReading(readingId: String) {
-                Snackbar.make(view,"You must add this patient to your patient lists " +
-                    "before creating a new reading",Snackbar.LENGTH_LONG).show()
+                Snackbar.make(
+                    view, "You must add this patient to your patient lists " +
+                        "before creating a new reading", Snackbar.LENGTH_LONG
+                ).show()
             }
         })
 
-        // use linear layout
         val layoutManager: RecyclerView.LayoutManager = LinearLayoutManager(this)
         readingRecyclerview.layoutManager = layoutManager
         readingRecyclerview.isNestedScrollingEnabled = false
