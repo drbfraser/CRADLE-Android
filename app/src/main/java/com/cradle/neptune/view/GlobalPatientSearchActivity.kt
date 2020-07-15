@@ -70,7 +70,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
             override fun onQueryTextSubmit(query: String): Boolean {
                 if (query == "")
                     return false
-                val searchUrl = urlManager.globalPatientSearch + "/$query"
+                val searchUrl = urlManager.getGlobalPatientSearch(query)
                 searchServerForThePatient(searchUrl)
                 return true
             }
