@@ -10,13 +10,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.cradle.neptune.R
 import com.cradle.neptune.model.GlobalPatient
 
-class GlobalPatientAdapter(private val patientList:List<GlobalPatient>):
+class GlobalPatientAdapter(private val patientList: List<GlobalPatient>) :
     RecyclerView.Adapter<GlobalPatientAdapter.GlobalPatientViewHolder>() {
 
     private val onPatientClickObserverList = ArrayList<OnGlobalPatientClickListener>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GlobalPatientViewHolder {
-        val v = LayoutInflater.from(parent.context).inflate(R.layout.global_patient_card,parent,false)
+        val v =
+            LayoutInflater.from(parent.context).inflate(R.layout.global_patient_card, parent, false)
         return GlobalPatientViewHolder(v)
     }
 
@@ -29,7 +30,7 @@ class GlobalPatientAdapter(private val patientList:List<GlobalPatient>):
         holder.village.text = globalPatient.villageNum
         holder.id.text = globalPatient.id
         holder.name.text = globalPatient.initials
-        if (globalPatient.isMyPatient){
+        if (globalPatient.isMyPatient) {
             holder.addToMyPatientButton.background =
                 holder.addToMyPatientButton.context.resources.getDrawable(R.drawable.ic_check_circle_black_24dp)
         }
@@ -42,15 +43,14 @@ class GlobalPatientAdapter(private val patientList:List<GlobalPatient>):
         }
     }
 
-    fun addPatientClickObserver(onGlobalPatientClickListener: OnGlobalPatientClickListener)
-        = onPatientClickObserverList.add(onGlobalPatientClickListener)
+    fun addPatientClickObserver(onGlobalPatientClickListener: OnGlobalPatientClickListener) =
+        onPatientClickObserverList.add(onGlobalPatientClickListener)
 
-    private fun onCardClicked(patient:GlobalPatient) =
+    private fun onCardClicked(patient: GlobalPatient) =
         onPatientClickObserverList.forEach { it.onCardClick(patient) }
 
     private fun onAddClicked(patient: GlobalPatient) =
         onPatientClickObserverList.forEach { it.onAddToLocalClicked(patient) }
-
 
     interface OnGlobalPatientClickListener {
 
@@ -59,12 +59,11 @@ class GlobalPatientAdapter(private val patientList:List<GlobalPatient>):
         fun onAddToLocalClicked(patient: GlobalPatient)
     }
 
-
     inner class GlobalPatientViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var name: TextView = itemView.findViewById(R.id.patientName)
         var id: TextView = itemView.findViewById(R.id.patientID)
         var village: TextView = itemView.findViewById(R.id.patientVillage)
-        var addToMyPatientButton:ImageButton = itemView.findViewById(R.id.addToMyPatientFab)
+        var addToMyPatientButton: ImageButton = itemView.findViewById(R.id.addToMyPatientFab)
         var cardview = itemView.findViewById<CardView>(R.id.patientCardview)
     }
 }

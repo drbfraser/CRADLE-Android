@@ -34,10 +34,11 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
 
     @Inject
     lateinit var urlManager: UrlManager
-    @Inject
-    lateinit var sharedPreferences:SharedPreferences
 
-    private lateinit var searchView:SearchView
+    @Inject
+    lateinit var sharedPreferences: SharedPreferences
+
+    private lateinit var searchView: SearchView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,23 +56,22 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         return true
     }
 
-    private fun setupGlobalPatientSearch(){
+    private fun setupGlobalPatientSearch() {
         searchView = findViewById(R.id.globalPatientSearchView)
 
-        searchView.setOnQueryTextListener(object :OnQueryTextListener {
+        searchView.setOnQueryTextListener(object : OnQueryTextListener {
 
             override fun onQueryTextChange(newText: String): Boolean {
                 return false
             }
 
             override fun onQueryTextSubmit(query: String): Boolean {
-                if (query=="")
+                if (query == "")
                     return false
-                val searchUrl = urlManager.globalPatientSearch+ "/$query"
+                val searchUrl = urlManager.globalPatientSearch + "/$query"
                 searchServerForThePatient(searchUrl)
                 return true
             }
-
         })
     }
 
@@ -80,48 +80,55 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         progressDialog.setMessage("Fetching the patients")
         progressDialog.setCancelable(false)
         progressDialog.show()
-        val jsonArrayRequest = object :JsonArrayRequest(Method.GET,searchUrl,null,
-         { response: JSONArray? ->
-             setupPatientsRecycler(response as (JSONArray))
-             progressDialog.cancel()
-             searchView.hideKeyboard()
-         },{ error: VolleyError? ->
-             Log.d("bugg","error: "+error?.toString())
+        val jsonArrayRequest = object : JsonArrayRequest(Method.GET, searchUrl, null,
+            { response: JSONArray? ->
+                setupPatientsRecycler(response as (JSONArray))
                 progressDialog.cancel()
-                Toast.makeText(this,"Sorry unable to fetch the patients",Toast.LENGTH_LONG).show()
-         }) {
-         /**
-          * Passing some request headers
-          */
-         override fun getHeaders(): Map<String, String>? {
-             val headers =
-                 HashMap<String, String>()
-             val token =
-                 sharedPreferences.getString(LoginActivity.TOKEN, LoginActivity.DEFAULT_TOKEN)
-             headers[LoginActivity.AUTH] = "Bearer $token"
-             return headers
-         }
+                searchView.hideKeyboard()
+            }, { error: VolleyError? ->
+                Log.d("bugg", "error: " + error?.toString())
+                progressDialog.cancel()
+                Toast.makeText(this, "Sorry unable to fetch the patients", Toast.LENGTH_LONG).show()
+            }) {
+            /**
+             * Passing some request headers
+             */
+            override fun getHeaders(): Map<String, String>? {
+                val headers =
+                    HashMap<String, String>()
+                val token =
+                    sharedPreferences.getString(LoginActivity.TOKEN, LoginActivity.DEFAULT_TOKEN)
+                headers[LoginActivity.AUTH] = "Bearer $token"
+                return headers
+            }
         }
-        jsonArrayRequest.retryPolicy = DefaultRetryPolicy(8000,DefaultRetryPolicy.DEFAULT_MAX_RETRIES,DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+        jsonArrayRequest.retryPolicy = DefaultRetryPolicy(
+            8000,
+            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+        )
         val queue = Volley.newRequestQueue(MyApp.getInstance())
         queue.add<JSONArray>(jsonArrayRequest)
     }
 
     private fun setupPatientsRecycler(response: JSONArray?) {
-        if (response==null ||response.length()==0){
+        if (response == null || response.length() == 0) {
             return
         }
         val emptyView = findViewById<ImageView>(R.id.emptyView)
         emptyView.visibility = View.GONE
         val globalPatientList = ArrayList<GlobalPatient>()
 
-        for (i in 0 until response.length()){
+        for (i in 0 until response.length()) {
             val jsonObject: JSONObject = response[i] as JSONObject
-            globalPatientList.add(GlobalPatient(
-                jsonObject.getString("patientId"),
-                jsonObject.getString("patientName"), jsonObject
+            globalPatientList.add(
+                GlobalPatient(
+                    jsonObject.getString("patientId"),
+                    jsonObject.getString("patientName"), jsonObject
                         .getString("villageNumber"),
-            false))
+                    false
+                )
+            )
         }
         val globalPatientAdapter = GlobalPatientAdapter(globalPatientList)
         val layout = LinearLayoutManager(this)
@@ -132,32 +139,41 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         globalPatientAdapter.notifyDataSetChanged()
 
         //adding onclick for adapter
-        globalPatientAdapter.addPatientClickObserver (object :GlobalPatientAdapter.OnGlobalPatientClickListener{
+        globalPatientAdapter.addPatientClickObserver(object :
+            GlobalPatientAdapter.OnGlobalPatientClickListener {
             override fun onCardClick(patient: GlobalPatient) {
-                val intent = Intent(this@GlobalPatientSearchActivity, GlobalPatientProfileActivity::class.java)
+                val intent = Intent(
+                    this@GlobalPatientSearchActivity,
+                    GlobalPatientProfileActivity::class.java
+                )
                 intent.putExtra("globalPatient", patient)
                 startActivity(intent)
             }
 
             override fun onAddToLocalClicked(patient: GlobalPatient) {
-                if (patient.isMyPatient){
-                    Toast.makeText(this@GlobalPatientSearchActivity,"Patient already add to the table",Toast.LENGTH_LONG).show()
+                if (patient.isMyPatient) {
+                    Toast.makeText(
+                        this@GlobalPatientSearchActivity,
+                        "Patient already add to the table",
+                        Toast.LENGTH_LONG
+                    ).show()
                     return
                 }
-                val alertDialog = AlertDialog.Builder(this@GlobalPatientSearchActivity).setTitle("Are you sure?")
-                    .setMessage("Are you sure you want to add this patient as your own? ")
-                    .setPositiveButton("OK") { _: DialogInterface, _: Int ->
-                        //todo make a network call to fetch the patient and update the recyclerview
-                        for (it in globalPatientList) {
-                            if (it.id == patient.id){
-                                it.isMyPatient = true
-                                break
+                val alertDialog =
+                    AlertDialog.Builder(this@GlobalPatientSearchActivity).setTitle("Are you sure?")
+                        .setMessage("Are you sure you want to add this patient as your own? ")
+                        .setPositiveButton("OK") { _: DialogInterface, _: Int ->
+                            //todo make a network call to fetch the patient and update the recyclerview
+                            for (it in globalPatientList) {
+                                if (it.id == patient.id) {
+                                    it.isMyPatient = true
+                                    break
+                                }
                             }
+                            globalPatientAdapter.notifyDataSetChanged()
                         }
-                        globalPatientAdapter.notifyDataSetChanged()
-                    }
-                    .setNegativeButton("NO") { _: DialogInterface, _: Int -> }
-                    .setIcon(R.drawable.ic_sync)
+                        .setNegativeButton("NO") { _: DialogInterface, _: Int -> }
+                        .setIcon(R.drawable.ic_sync)
                 alertDialog.show()
             }
         })

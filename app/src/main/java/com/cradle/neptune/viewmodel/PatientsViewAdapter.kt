@@ -29,6 +29,7 @@ class PatientsViewAdapter(
     init {
         filteredList = patientList
     }
+
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): PatientViewHolder {
         val v = LayoutInflater.from(viewGroup.context)
             .inflate(R.layout.patient_card, viewGroup, false)
@@ -72,8 +73,11 @@ class PatientsViewAdapter(
                         ArrayList()
                     for (pair in patientList) {
                         if (pair.first.id.contains(charString) ||
-                            pair.first.name.toLowerCase(Locale.ROOT).contains(charString.toLowerCase(
-                                Locale.ROOT))
+                            pair.first.name.toLowerCase(Locale.ROOT).contains(
+                                charString.toLowerCase(
+                                    Locale.ROOT
+                                )
+                            )
                         ) {
                             filteredList.add(pair)
                         }

@@ -26,18 +26,17 @@ import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
-import com.cradle.neptune.manager.UrlManager;
-import com.cradle.neptune.model.*;
 import com.cradle.neptune.manager.ReadingManager;
+import com.cradle.neptune.manager.UrlManager;
+import com.cradle.neptune.model.ApiKt;
+import com.cradle.neptune.model.Patient;
+import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
-
-import kotlin.Pair;
-import kotlin.Unit;
 
 import org.json.JSONObject;
 
@@ -49,6 +48,9 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+
+import kotlin.Pair;
+import kotlin.Unit;
 
 import static com.cradle.neptune.view.DashBoardActivity.READING_ACTIVITY_DONE;
 
