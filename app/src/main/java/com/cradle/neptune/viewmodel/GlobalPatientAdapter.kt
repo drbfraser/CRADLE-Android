@@ -1,9 +1,5 @@
 package com.cradle.neptune.viewmodel
 
-import android.app.AlertDialog
-import android.content.Context
-import android.content.DialogInterface
-import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,18 +9,11 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.cradle.neptune.R
 import com.cradle.neptune.model.GlobalPatient
-import com.cradle.neptune.view.GlobalPatientProfileActivity
 
-class GlobalPatientAdapter(private val patientList:List<GlobalPatient>, private val context: Context):
+class GlobalPatientAdapter(private val patientList:List<GlobalPatient>):
     RecyclerView.Adapter<GlobalPatientAdapter.GlobalPatientViewHolder>() {
 
-    inner class GlobalPatientViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        var name: TextView = itemView.findViewById(R.id.patientName)
-        var id: TextView = itemView.findViewById(R.id.patientID)
-        var village: TextView = itemView.findViewById(R.id.patientVillage)
-        var addToMyPatientButton:ImageButton = itemView.findViewById(R.id.addToMyPatientFab)
-        var cardview = itemView.findViewById<CardView>(R.id.patientCardview)
-    }
+    private val onPatientClickObserverList = ArrayList<OnGlobalPatientClickListener>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GlobalPatientViewHolder {
         val v = LayoutInflater.from(parent.context).inflate(R.layout.global_patient_card,parent,false)
@@ -40,23 +29,42 @@ class GlobalPatientAdapter(private val patientList:List<GlobalPatient>, private 
         holder.village.text = globalPatient.villageNum
         holder.id.text = globalPatient.id
         holder.name.text = globalPatient.initials
-
+        if (globalPatient.isMyPatient){
+            holder.addToMyPatientButton.background =
+                holder.addToMyPatientButton.context.resources.getDrawable(R.drawable.ic_check_circle_black_24dp)
+        }
         holder.addToMyPatientButton.setOnClickListener {
-            val alertDialog = AlertDialog.Builder(context).setTitle("Are you sure?")
-                .setMessage("Are you sure you want to add this patient as your own? ")
-                .setPositiveButton("OK") { _: DialogInterface, i: Int ->
-                    holder.addToMyPatientButton.background = context.resources.getDrawable(R.drawable.ic_check_circle_black_24dp)
-                    holder.addToMyPatientButton.isEnabled = false
-                }
-                .setNegativeButton("NO") { _: DialogInterface, _: Int -> }
-                .setIcon(R.drawable.ic_sync)
-            alertDialog.show()
+            onAddClicked(globalPatient)
         }
 
         holder.cardview.setOnClickListener {
-            val intent = Intent(context, GlobalPatientProfileActivity::class.java)
-            intent.putExtra("globalPatient", globalPatient)
-            context.startActivity(intent)
+            onCardClicked(globalPatient)
         }
+    }
+
+    fun addPatientClickObserver(onGlobalPatientClickListener: OnGlobalPatientClickListener)
+        = onPatientClickObserverList.add(onGlobalPatientClickListener)
+
+    private fun onCardClicked(patient:GlobalPatient) =
+        onPatientClickObserverList.forEach { it.onCardClick(patient) }
+
+    private fun onAddClicked(patient: GlobalPatient) =
+        onPatientClickObserverList.forEach { it.onAddToLocalClicked(patient) }
+
+
+    interface OnGlobalPatientClickListener {
+
+        fun onCardClick(patient: GlobalPatient)
+
+        fun onAddToLocalClicked(patient: GlobalPatient)
+    }
+
+
+    inner class GlobalPatientViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        var name: TextView = itemView.findViewById(R.id.patientName)
+        var id: TextView = itemView.findViewById(R.id.patientID)
+        var village: TextView = itemView.findViewById(R.id.patientVillage)
+        var addToMyPatientButton:ImageButton = itemView.findViewById(R.id.addToMyPatientFab)
+        var cardview = itemView.findViewById<CardView>(R.id.patientCardview)
     }
 }

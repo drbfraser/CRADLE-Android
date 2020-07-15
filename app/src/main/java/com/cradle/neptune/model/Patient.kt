@@ -256,5 +256,9 @@ private enum class PatientField(override val text: String) : Field {
 /**
  * data class for patient list we get on a global search
  */
-data class GlobalPatient(val id:String, val initials:String, val villageNum:String):Serializable {
-}
+data class GlobalPatient(
+    val id: String,
+    val initials: String,
+    val villageNum: String,
+    var isMyPatient: Boolean
+):Serializable

@@ -1,6 +1,9 @@
 package com.cradle.neptune.view
 
+import android.app.AlertDialog
 import android.app.ProgressDialog
+import android.content.DialogInterface
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
@@ -114,16 +117,49 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
 
         for (i in 0 until response.length()){
             val jsonObject: JSONObject = response[i] as JSONObject
-            globalPatientList.add(GlobalPatient(jsonObject.getString("patientId"),
-            jsonObject.getString("patientName"), jsonObject
-                    .getString("villageNumber")))
+            globalPatientList.add(GlobalPatient(
+                jsonObject.getString("patientId"),
+                jsonObject.getString("patientName"), jsonObject
+                        .getString("villageNumber"),
+            false))
         }
-        val globalPatientAdapter = GlobalPatientAdapter(globalPatientList,context = this)
+        val globalPatientAdapter = GlobalPatientAdapter(globalPatientList)
         val layout = LinearLayoutManager(this)
         val recyclerView = findViewById<RecyclerView>(R.id.globalPatientrecyclerview)
         recyclerView.layoutManager = layout
         recyclerView.adapter = globalPatientAdapter
+
         globalPatientAdapter.notifyDataSetChanged()
 
+        //adding onclick for adapter
+        globalPatientAdapter.addPatientClickObserver (object :GlobalPatientAdapter.OnGlobalPatientClickListener{
+            override fun onCardClick(patient: GlobalPatient) {
+                val intent = Intent(this@GlobalPatientSearchActivity, GlobalPatientProfileActivity::class.java)
+                intent.putExtra("globalPatient", patient)
+                startActivity(intent)
+            }
+
+            override fun onAddToLocalClicked(patient: GlobalPatient) {
+                if (patient.isMyPatient){
+                    Toast.makeText(this@GlobalPatientSearchActivity,"Patient already add to the table",Toast.LENGTH_LONG).show()
+                    return
+                }
+                val alertDialog = AlertDialog.Builder(this@GlobalPatientSearchActivity).setTitle("Are you sure?")
+                    .setMessage("Are you sure you want to add this patient as your own? ")
+                    .setPositiveButton("OK") { _: DialogInterface, _: Int ->
+                        //todo make a network call to fetch the patient and update the recyclerview
+                        for (it in globalPatientList) {
+                            if (it.id == patient.id){
+                                it.isMyPatient = true
+                                break
+                            }
+                        }
+                        globalPatientAdapter.notifyDataSetChanged()
+                    }
+                    .setNegativeButton("NO") { _: DialogInterface, _: Int -> }
+                    .setIcon(R.drawable.ic_sync)
+                alertDialog.show()
+            }
+        })
     }
 }
