@@ -1,6 +1,7 @@
 package com.cradle.neptune.view
 
 import android.app.AlertDialog
+import android.app.ProgressDialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
@@ -23,6 +24,7 @@ import kotlinx.android.synthetic.main.reading_card_assesment.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.threeten.bp.ZonedDateTime
 import java.util.UUID
 
@@ -49,13 +51,20 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
     }
 
     private fun setupCallLocalPatientActivity() {
-        GlobalScope.launch(Dispatchers.Main) {
+        val progressDialog = ProgressDialog(this)
+        progressDialog.setCancelable(false)
+        progressDialog.setMessage("Adding to your patient's list")
+        progressDialog.show()
+        GlobalScope.launch(Dispatchers.IO) {
             patientReadings.forEach {
                 readingManager.addReading(currPatient, it)
             }
             val intent = Intent(this@GlobalPatientProfileActivity, PatientProfileActivity::class.java)
             intent.putExtra("patient", currPatient)
             startActivity(intent)
+            withContext(Dispatchers.Main){
+                progressDialog.cancel()
+            }
             finish()
         }
     }
@@ -77,12 +86,6 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
      */
     override fun getLocalPatient(): Boolean {
         return false
-    }
-
-    override fun setupCreatePatientReadingButton() {
-        val createButton =
-            findViewById<Button>(R.id.newPatientReadingButton)
-        createButton.visibility = View.VISIBLE
     }
 
     override fun setupReadingsRecyclerView() {

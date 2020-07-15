@@ -123,7 +123,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         return (currPatient!=null);
     }
 
-     void setupUpdatePatient() {
+     private void setupUpdatePatient() {
         ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Updating patient");
         progressDialog.setCancelable(false);
@@ -383,7 +383,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         return readings;
     }
 
-     void setupCreatePatientReadingButton() {
+     private void setupCreatePatientReadingButton() {
         Button createButton = findViewById(R.id.newPatientReadingButton);
         createButton.setVisibility(View.VISIBLE);
         List<Reading> readings = getThisPatientsReadings();

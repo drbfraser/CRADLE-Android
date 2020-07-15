@@ -1,23 +1,24 @@
 package com.cradle.neptune.view
 
+import android.app.ProgressDialog
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
-import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.android.volley.DefaultRetryPolicy
-import com.android.volley.Request
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.Volley
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
+import com.cradle.neptune.ext.hideKeyboard
 import com.cradle.neptune.manager.UrlManager
 import com.cradle.neptune.model.GlobalPatient
 import com.cradle.neptune.viewmodel.GlobalPatientAdapter
@@ -32,6 +33,8 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
     lateinit var urlManager: UrlManager
     @Inject
     lateinit var sharedPreferences:SharedPreferences
+
+    private lateinit var searchView:SearchView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,7 +53,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
     }
 
     private fun setupGlobalPatientSearch(){
-        val searchView:SearchView = findViewById(R.id.globalPatientSearchView)
+        searchView = findViewById(R.id.globalPatientSearchView)
 
         searchView.setOnQueryTextListener(object :OnQueryTextListener {
 
@@ -70,11 +73,19 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
     }
 
     private fun searchServerForThePatient(searchUrl: String) {
-     val jsonArrayRequest = object :JsonArrayRequest(Request.Method.GET,searchUrl,null,
+        val progressDialog = ProgressDialog(this)
+        progressDialog.setMessage("Fetching the patients")
+        progressDialog.setCancelable(false)
+        progressDialog.show()
+        val jsonArrayRequest = object :JsonArrayRequest(Method.GET,searchUrl,null,
          { response: JSONArray? ->
              setupPatientsRecycler(response as (JSONArray))
+             progressDialog.cancel()
+             searchView.hideKeyboard()
          },{ error: VolleyError? ->
              Log.d("bugg","error: "+error?.toString())
+                progressDialog.cancel()
+                Toast.makeText(this,"Sorry unable to fetch the patients",Toast.LENGTH_LONG).show()
          }) {
          /**
           * Passing some request headers
@@ -87,7 +98,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
              headers[LoginActivity.AUTH] = "Bearer $token"
              return headers
          }
-     }
+        }
         jsonArrayRequest.retryPolicy = DefaultRetryPolicy(8000,DefaultRetryPolicy.DEFAULT_MAX_RETRIES,DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
         val queue = Volley.newRequestQueue(MyApp.getInstance())
         queue.add<JSONArray>(jsonArrayRequest)
