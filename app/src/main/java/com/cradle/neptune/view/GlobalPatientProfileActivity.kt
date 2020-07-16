@@ -45,7 +45,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         addToMyListButton.visibility = VISIBLE
         addToMyListButton.setOnClickListener(View.OnClickListener {
             AlertDialog.Builder(this).setTitle("Are you sure?").setMessage("This is not reversible")
-                .setPositiveButton("OK") { _: DialogInterface, _: Int ->
+                .setPositiveButton("YES") { _: DialogInterface, _: Int ->
                     setupCallLocalPatientActivity()
                 }.setNegativeButton("NO") { _: DialogInterface, _: Int ->
                 }.show()
@@ -64,6 +64,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
             val intent =
                 Intent(this@GlobalPatientProfileActivity, PatientProfileActivity::class.java)
             intent.putExtra("patient", currPatient)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
             startActivity(intent)
             withContext(Dispatchers.Main) {
                 progressDialog.cancel()
