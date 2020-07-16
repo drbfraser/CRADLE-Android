@@ -26,14 +26,13 @@ import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.database.HealthFacilityEntity;
-//import com.cradle.neptune.database.ParsePatientInformationAsyncTask;
-import com.cradle.neptune.manager.UrlManager;
-import com.cradle.neptune.model.*;
-
 import com.cradle.neptune.manager.HealthCentreManager;
 import com.cradle.neptune.manager.ReadingManager;
-import kotlin.Pair;
-import kotlin.Unit;
+import com.cradle.neptune.manager.UrlManager;
+import com.cradle.neptune.model.ApiKt;
+import com.cradle.neptune.model.Patient;
+import com.cradle.neptune.model.Reading;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -47,10 +46,12 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 
+import kotlin.Pair;
+import kotlin.Unit;
+
 import static com.cradle.neptune.utilitiles.NotificationUtils.PatientDownloadFailNotificationID;
 import static com.cradle.neptune.utilitiles.NotificationUtils.PatientDownloadingNotificationID;
 import static com.cradle.neptune.utilitiles.NotificationUtils.buildNotification;
-
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -135,11 +136,11 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ((MyApp) getApplication()).getAppComponent().inject(this);
+        // no need to load anything if already logged in.
+        checkSharedPrefForLogin();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        ((MyApp) getApplication()).getAppComponent().inject(this);
-
-        checkSharedPrefForLogin();
         setupLogin();
     }
 
@@ -154,6 +155,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void startIntroActivity() {
         Intent intent = new Intent(LoginActivity.this, IntroActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         startActivity(intent);
         finish();
     }

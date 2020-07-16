@@ -1,9 +1,10 @@
 package com.cradle.neptune.dagger;
 
+import com.cradle.neptune.view.GlobalPatientSearchActivity;
 import com.cradle.neptune.view.HelpActivity;
 import com.cradle.neptune.view.IntroActivity;
-import com.cradle.neptune.view.LoginActivity;
 import com.cradle.neptune.view.PatientProfileActivity;
+import com.cradle.neptune.view.LoginActivity;
 import com.cradle.neptune.view.PatientsActivity;
 import com.cradle.neptune.view.ReadingActivity;
 import com.cradle.neptune.view.StatsActivity;
@@ -54,4 +55,6 @@ public interface AppComponent {
     void inject(MultiReadingUploader multiReadingUploader);
 
     void inject(HealthFacilitiesActivity healthFacilitiesActivity);
+
+    void inject(GlobalPatientSearchActivity globalPatientSearchActivity);
 }

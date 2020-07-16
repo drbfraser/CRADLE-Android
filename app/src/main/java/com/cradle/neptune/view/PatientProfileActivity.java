@@ -16,7 +16,6 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
-import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -27,9 +26,11 @@ import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
-import com.cradle.neptune.manager.UrlManager;
-import com.cradle.neptune.model.*;
 import com.cradle.neptune.manager.ReadingManager;
+import com.cradle.neptune.manager.UrlManager;
+import com.cradle.neptune.model.ApiKt;
+import com.cradle.neptune.model.Patient;
+import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter;
 import com.github.mikephil.charting.charts.LineChart;
@@ -37,8 +38,6 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 
-import kotlin.Pair;
-import kotlin.Unit;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -47,9 +46,11 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+
+import kotlin.Pair;
+import kotlin.Unit;
 
 import static com.cradle.neptune.view.DashBoardActivity.READING_ACTIVITY_DONE;
 
@@ -78,36 +79,20 @@ public class PatientProfileActivity extends AppCompatActivity {
     ReadingManager readingManager;
     @Inject
     SharedPreferences sharedPreferences;
-    // ..inject this even if not needed because it forces it to load at startup and initialize.
-    @Inject
-    Settings settings;
     @Inject
     UrlManager urlManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_patient_profile);
-
-        PreferenceManager.setDefaultValues(
-                this, R.xml.preferences, false);
-
-        // inject:
         ((MyApp) getApplication()).getAppComponent().inject(this);
-
-        patientID = findViewById(R.id.patientId);
-        patientName = findViewById(R.id.patientName);
-        patientDOB = findViewById(R.id.patientDOB);
-        patientAge = findViewById(R.id.patientAge);
-        patientSex = findViewById(R.id.patientSex);
-        villageNo = findViewById(R.id.patientVillage);
-        patientZone = findViewById(R.id.patientZone);
-        pregnant = findViewById(R.id.textView20);
-        gestationalAge = findViewById(R.id.gestationalAge);
-        pregnancyInfoLayout = findViewById(R.id.pregnancyLayout);
-        readingRecyclerview = findViewById(R.id.readingRecyclerview);
-
-        currPatient = (Patient) getIntent().getSerializableExtra("patient");
+        initAllFields();
+        if (!getLocalPatient()) {
+            //not a local patient, might be a child class so we let the child do the init stuff
+            return;
+        }
         populatePatientInfo(currPatient);
 
         setupReadingsRecyclerView();
@@ -120,6 +105,25 @@ public class PatientProfileActivity extends AppCompatActivity {
             getSupportActionBar().setTitle(R.string.patient_summary);
         }
 
+    }
+
+    private void initAllFields() {
+        patientID = findViewById(R.id.patientId);
+        patientName = findViewById(R.id.patientName);
+        patientDOB = findViewById(R.id.patientDOB);
+        patientAge = findViewById(R.id.patientAge);
+        patientSex = findViewById(R.id.patientSex);
+        villageNo = findViewById(R.id.patientVillage);
+        patientZone = findViewById(R.id.patientZone);
+        pregnant = findViewById(R.id.textView20);
+        gestationalAge = findViewById(R.id.gestationalAge);
+        pregnancyInfoLayout = findViewById(R.id.pregnancyLayout);
+        readingRecyclerview = findViewById(R.id.readingRecyclerview);
+    }
+
+    boolean getLocalPatient() {
+        currPatient = (Patient) getIntent().getSerializableExtra("patient");
+        return (currPatient != null);
     }
 
     private void setupUpdatePatient() {
@@ -179,6 +183,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         };
 
         Button updateBtn = findViewById(R.id.updatePatientBtn);
+        updateBtn.setVisibility(View.VISIBLE);
         updateBtn.setOnClickListener(view -> {
             progressDialog.show();
             RequestQueue queue = Volley.newRequestQueue(MyApp.getInstance());
@@ -243,7 +248,7 @@ public class PatientProfileActivity extends AppCompatActivity {
      *
      * @param patient current patient
      */
-    private void setupGestationalInfo(Patient patient) {
+    void setupGestationalInfo(Patient patient) {
         RadioGroup radioGroup = findViewById(R.id.gestationradioGroup);
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -314,7 +319,7 @@ public class PatientProfileActivity extends AppCompatActivity {
 //        return age;
 //    }
 
-    private void setupLineChart() {
+    void setupLineChart() {
         LineChart lineChart = findViewById(R.id.patientLineChart);
         CardView lineChartCard = findViewById(R.id.patientLineChartCard);
         lineChartCard.setVisibility(View.VISIBLE);
@@ -383,7 +388,7 @@ public class PatientProfileActivity extends AppCompatActivity {
 
     private void setupCreatePatientReadingButton() {
         Button createButton = findViewById(R.id.newPatientReadingButton);
-
+        createButton.setVisibility(View.VISIBLE);
         List<Reading> readings = getThisPatientsReadings();
         boolean readingFound = false;
         Reading latestReading = null;
@@ -402,7 +407,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         }
     }
 
-    private void setupReadingsRecyclerView() {
+    void setupReadingsRecyclerView() {
         patientReadings = getThisPatientsReadings();
 
         // use linear layout
