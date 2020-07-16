@@ -9,7 +9,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
@@ -25,6 +24,7 @@ import com.cradle.neptune.ext.hideKeyboard
 import com.cradle.neptune.manager.UrlManager
 import com.cradle.neptune.model.GlobalPatient
 import com.cradle.neptune.viewmodel.GlobalPatientAdapter
+import com.google.android.material.snackbar.Snackbar
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.HashMap
@@ -90,7 +90,9 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
             }, { error: VolleyError? ->
                 Log.e(TAG, "error: " + error?.message)
                 progressDialog.cancel()
-                Toast.makeText(this, "Sorry unable to fetch the patients", Toast.LENGTH_LONG).show()
+                searchView.hideKeyboard()
+                setupPatientsRecycler(null)
+                Snackbar.make(searchView,"Sorry unable to fetch the patients",Snackbar.LENGTH_LONG).show()
             }) {
             /**
              * Passing some request headers
@@ -114,11 +116,15 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
     }
 
     private fun setupPatientsRecycler(response: JSONArray?) {
+        val emptyView = findViewById<ImageView>(R.id.emptyView)
+        val recyclerView = findViewById<RecyclerView>(R.id.globalPatientrecyclerview)
         if (response == null || response.length() == 0) {
+            recyclerView.visibility =View.GONE
+            emptyView.visibility = View.VISIBLE
             return
         }
-        val emptyView = findViewById<ImageView>(R.id.emptyView)
         emptyView.visibility = View.GONE
+        recyclerView.visibility = View.VISIBLE
         val globalPatientList = ArrayList<GlobalPatient>()
 
         for (i in 0 until response.length()) {
@@ -134,10 +140,8 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         }
         val globalPatientAdapter = GlobalPatientAdapter(globalPatientList)
         val layout = LinearLayoutManager(this)
-        val recyclerView = findViewById<RecyclerView>(R.id.globalPatientrecyclerview)
         recyclerView.layoutManager = layout
         recyclerView.adapter = globalPatientAdapter
-
         globalPatientAdapter.notifyDataSetChanged()
 
         //adding onclick for adapter
@@ -154,11 +158,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
 
             override fun onAddToLocalClicked(patient: GlobalPatient) {
                 if (patient.isMyPatient) {
-                    Toast.makeText(
-                        this@GlobalPatientSearchActivity,
-                        "Patient already add to the table",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Snackbar.make(searchView,"This patient already added as your patient",Snackbar.LENGTH_LONG).show()
                     return
                 }
                 val alertDialog =
