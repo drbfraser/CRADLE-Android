@@ -40,8 +40,6 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
 
     private lateinit var searchView: SearchView
 
-    val TAG = GlobalPatientSearchActivity::javaClass.name
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_global_patient_search)
@@ -88,7 +86,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
                 progressDialog.cancel()
                 searchView.hideKeyboard()
             }, { error: VolleyError? ->
-                Log.e(TAG, "error: " + error?.message)
+                Log.e(Companion.TAG, "error: " + error?.message)
                 progressDialog.cancel()
                 searchView.hideKeyboard()
                 setupPatientsRecycler(null)
@@ -180,5 +178,9 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
                 alertDialog.show()
             }
         })
+    }
+
+    companion object {
+        val TAG = GlobalPatientSearchActivity::javaClass.name
     }
 }

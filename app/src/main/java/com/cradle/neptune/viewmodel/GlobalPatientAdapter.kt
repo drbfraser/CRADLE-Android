@@ -36,7 +36,7 @@ class GlobalPatientAdapter(private val patientList: List<GlobalPatient>) :
         } else {
             // There seems to be a bug in recycler view's recycling method
             // if the else statement is not here, it will recycle old views with the if
-             // statement from above.
+            // statement from above.
             holder.addToMyPatientButton.background =
                 holder.addToMyPatientButton.context.resources.getDrawable(R.drawable.ic_add_circle_black_24dp)
         }

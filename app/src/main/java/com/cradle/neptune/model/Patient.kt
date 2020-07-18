@@ -82,8 +82,10 @@ data class Patient(
             zone = data.optStringField(PatientField.ZONE)
             villageNumber = data.optStringField(PatientField.VILLAGE_NUMBER)
 
-            drugHistoryList = data.optArrayField(PatientField.DRUG_HISTORY)?.toList(JsonArray::getString) ?: emptyList()
-            medicalHistoryList = data.optArrayField(PatientField.MEDICAL_HISTORY)?.toList(JsonArray::getString) ?: emptyList()
+            drugHistoryList = data.optArrayField(PatientField.DRUG_HISTORY)
+                ?.toList(JsonArray::getString) ?: emptyList()
+            medicalHistoryList = data.optArrayField(PatientField.MEDICAL_HISTORY)
+                ?.toList(JsonArray::getString) ?: emptyList()
         }
     }
 }

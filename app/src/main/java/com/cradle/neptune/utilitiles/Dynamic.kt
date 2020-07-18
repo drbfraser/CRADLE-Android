@@ -40,6 +40,7 @@ inline fun <reified T : Any> dynamic(map: Map<String, Any?>) = DynamicConstructo
  *
  * @see dynamic
  */
+@Suppress
 class DynamicConstructor<T : Any>(k: KClass<T>, private val map: Map<String, Any?>) {
 
     private val constructor: KFunction<T> = k.constructors.firstOrNull()
