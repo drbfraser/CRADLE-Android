@@ -102,6 +102,15 @@ interface PatientDaoAccess {
 
     @Delete
     fun delete(patientEntity: PatientEntity)
+
+    @get:Query("SELECT * FROM PatientEntity")
+    val allPatients: List<PatientEntity>
+
+    @Query("SELECT * FROM PatientEntity WHERE id LIKE :id LIMIT 1")
+    fun getPatientById(id: String): PatientEntity?
+
+    @Query("DELETE FROM ReadingEntity")
+    fun deleteAllPatients()
 }
 
 /**
