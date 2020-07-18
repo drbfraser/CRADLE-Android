@@ -25,7 +25,7 @@ fun validatePort(port: String): Either<String, Unit> {
     val n = port.toIntOrNull() ?: return Left("Port must be a number")
 
     // Check to make sure it is a valid port number
-    if (n !in 1..655353) {
+    if (n !in 1..MAX_PORT_NUM) {
         return Left("'$port' is not a valid port number")
     }
 
@@ -46,6 +46,7 @@ fun validatePort(port: String): Either<String, Unit> {
  */
 fun validateHostname(hostname: String): Either<String, Unit> {
     // We don't allow blank values.
+
     if (hostname.isBlank()) {
         return Left("Hostname may not be blank")
     }
@@ -53,7 +54,7 @@ fun validateHostname(hostname: String): Either<String, Unit> {
     val isValid = hostname.split('.')
         .all { subDomain ->
             subDomain.isNotEmpty() && subDomain.all { c ->
-                val isAscii = c.toInt() < 128
+                val isAscii = c.toInt() < NUM_ASCII_CHAR
                 isAscii && (c.isLetterOrDigit() || c == '-')
             }
         }
@@ -64,3 +65,5 @@ fun validateHostname(hostname: String): Either<String, Unit> {
         Left("'$hostname' is not a valid hostname")
     }
 }
+const val NUM_ASCII_CHAR = 128
+const val MAX_PORT_NUM = 655353

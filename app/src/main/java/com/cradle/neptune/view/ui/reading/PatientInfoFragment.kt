@@ -144,7 +144,7 @@ class PatientInfoFragment : BaseFragment() {
                 viewModel.patientDob = date
             }
 
-            val dialog = DatePickerDialog(activity!!, listener, 2000, 0, 1)
+            val dialog = DatePickerDialog(requireActivity(), listener, DatePickerDefaultYear, 0, 1)
             dialog.show()
         }
     }
@@ -272,6 +272,10 @@ class PatientInfoFragment : BaseFragment() {
             }
         }
         return spinner
+    }
+
+    companion object {
+        private val DatePickerDefaultYear = 2000
     }
 }
 

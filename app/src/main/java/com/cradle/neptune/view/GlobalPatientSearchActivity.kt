@@ -105,7 +105,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
             }
         }
         jsonArrayRequest.retryPolicy = DefaultRetryPolicy(
-            8000,
+            networkTimeOutInMS,
             DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
             DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
         )
@@ -182,5 +182,6 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
 
     companion object {
         val TAG = GlobalPatientSearchActivity::javaClass.name
+        const val networkTimeOutInMS = 8000
     }
 }

@@ -82,6 +82,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         }
     }
 
+    @Suppress("MagicNumber")
     private fun getGlobalPatient() {
         val globalPatient = intent.getSerializableExtra("globalPatient") as GlobalPatient
         // todo make the network call to get the patient
@@ -103,15 +104,21 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         return false
     }
 
+    @Suppress("MagicNumber")
     override fun setupReadingsRecyclerView() {
         // todo the readings will probably be passed in as a json from the previous network call
         patientReadings = ArrayList()
         // random reading for now
-        for (i in 0 until 10) {
+        val systolic = 67
+        val diastolic = 78
+        val heartRate = 71
+        val numReadings = 10
+
+        for (i in 0 until numReadings) {
             patientReadings.add(
                 Reading(
                     UUID.randomUUID().toString(), currPatient.id, ZonedDateTime.now(),
-                    BloodPressure(67 + i, 78 + i, 71 + i), null, emptyList(),
+                    BloodPressure(systolic + i, diastolic + i, heartRate + i), null, emptyList(),
                     null, null, ZonedDateTime.now(), (i % 2 == 0), emptyList(), ReadingMetadata()
                 )
             )
