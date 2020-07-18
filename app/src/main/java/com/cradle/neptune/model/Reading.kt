@@ -324,13 +324,13 @@ data class BloodPressure(
  * @property comment A comment to be included along with the referral.
  */
 data class Referral(
-    val messageSendTime: ZonedDateTime,
+    val messageSendTime: Long,
     val healthCentre: String,
     val comment: String
 ) : Marshal<JsonObject> {
 
     override fun marshal(): JsonObject = with(JsonObject()) {
-        put(ReferralField.MESSAGE_SEND_TIME, messageSendTime.toEpochSecond())
+        put(ReferralField.MESSAGE_SEND_TIME, messageSendTime/ MS_IN_SECOND)
         put(ReferralField.HEALTH_CENTRE, healthCentre)
         put(ReferralField.COMMENT, comment)
     }
@@ -342,11 +342,13 @@ data class Referral(
          * @throws JsonException if any of the required fields are missing
          */
         override fun unmarshal(data: JsonObject): Referral {
-            val messageSendTime = data.dateField(ReferralField.MESSAGE_SEND_TIME)
+            val messageSendTime = data.longField(ReferralField.MESSAGE_SEND_TIME)
             val healthCentre = data.stringField(ReferralField.HEALTH_CENTRE)
             val comment = data.stringField(ReferralField.COMMENT)
             return Referral(messageSendTime, healthCentre, comment)
         }
+
+        const val MS_IN_SECOND = 1000
     }
 }
 

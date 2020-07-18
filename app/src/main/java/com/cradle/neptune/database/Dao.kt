@@ -91,6 +91,18 @@ interface ReadingDaoAccess {
     fun deleteAllReading()
 }
 
+interface PatientDaoAccess {
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(patientEntity: PatientEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertAll(patientEntity: List<PatientEntity>)
+
+    @Delete
+    fun delete(patientId:String)
+}
+
 /**
  * Data Access Object (DAO) for [HealthFacilityEntity] entities.
  *
@@ -161,3 +173,4 @@ interface HealthFacilityDaoAccess {
     @get:Query("SELECT * FROM HealthFacilityEntity WHERE isUserSelected = 1")
     val allUserSelectedHealthFacilities: List<HealthFacilityEntity>
 }
+
