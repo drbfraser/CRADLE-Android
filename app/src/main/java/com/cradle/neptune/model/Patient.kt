@@ -22,6 +22,7 @@ import java.io.Serializable
  * @property villageNumber The number of the village in which this patient lives.
  * @property drugHistoryList A list of drug history for the patient.
  * @property medicalHistoryList A list of medical history for the patient.
+ * @property lastEdited Last time patient info was edited
  */
 data class Patient(
     var id: String = "",
@@ -34,7 +35,8 @@ data class Patient(
     var zone: String? = null,
     var villageNumber: String? = null,
     var drugHistoryList: List<String> = emptyList(),
-    var medicalHistoryList: List<String> = emptyList()
+    var medicalHistoryList: List<String> = emptyList(),
+    var lastEdited:Long? = null
 ) : Marshal<JsonObject>, Serializable {
 
     /**
@@ -55,6 +57,7 @@ data class Patient(
         put(PatientField.VILLAGE_NUMBER, villageNumber)
         put(PatientField.DRUG_HISTORY, drugHistoryList)
         put(PatientField.MEDICAL_HISTORY, medicalHistoryList)
+        put(PatientField.LAST_EDITED,lastEdited)
     }
 
     companion object : Unmarshal<Patient, JsonObject> {
@@ -86,6 +89,7 @@ data class Patient(
                 ?.toList(JsonArray::getString) ?: emptyList()
             medicalHistoryList = data.optArrayField(PatientField.MEDICAL_HISTORY)
                 ?.toList(JsonArray::getString) ?: emptyList()
+            lastEdited = data.optLongField(PatientField.LAST_EDITED)
         }
     }
 }
@@ -253,6 +257,7 @@ private enum class PatientField(override val text: String) : Field {
     VILLAGE_NUMBER("villageNumber"),
     DRUG_HISTORY("drugHistory"),
     MEDICAL_HISTORY("medicalHistory"),
+    LAST_EDITED("lastEdited")
 }
 
 /**
