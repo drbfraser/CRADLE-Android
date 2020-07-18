@@ -82,8 +82,10 @@ data class Patient(
             zone = data.optStringField(PatientField.ZONE)
             villageNumber = data.optStringField(PatientField.VILLAGE_NUMBER)
 
-            drugHistoryList = data.optArrayField(PatientField.DRUG_HISTORY)?.toList(JsonArray::getString) ?: emptyList()
-            medicalHistoryList = data.optArrayField(PatientField.MEDICAL_HISTORY)?.toList(JsonArray::getString) ?: emptyList()
+            drugHistoryList = data.optArrayField(PatientField.DRUG_HISTORY)
+                ?.toList(JsonArray::getString) ?: emptyList()
+            medicalHistoryList = data.optArrayField(PatientField.MEDICAL_HISTORY)
+                ?.toList(JsonArray::getString) ?: emptyList()
         }
     }
 }
@@ -123,8 +125,8 @@ sealed class GestationalAge(val value: Int) : Marshal<JsonObject>, Serializable 
     companion object : Unmarshal<GestationalAge, JsonObject> {
 
         // These need to be marked static so we can share them with implementors.
-        @JvmStatic protected val UNIT_VALUE_WEEKS =  "GESTATIONAL_AGE_UNITS_WEEKS"
-        @JvmStatic protected val UNIT_VALUE_MONTHS =  "GESTATIONAL_AGE_UNITS_MONTHS"
+        @JvmStatic protected val UNIT_VALUE_WEEKS = "GESTATIONAL_AGE_UNITS_WEEKS"
+        @JvmStatic protected val UNIT_VALUE_MONTHS = "GESTATIONAL_AGE_UNITS_MONTHS"
 
         /**
          * Constructs a [GestationalAge] variant from a [JsonObject].
@@ -261,4 +263,4 @@ data class GlobalPatient(
     val initials: String,
     val villageNum: String,
     var isMyPatient: Boolean
-):Serializable
+) : Serializable

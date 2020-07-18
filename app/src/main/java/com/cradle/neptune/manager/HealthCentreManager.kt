@@ -1,7 +1,10 @@
 package com.cradle.neptune.manager
 
 import com.cradle.neptune.database.HealthFacilityEntity
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 
 /**
  * Service for interfacing with health centres stored in the database.

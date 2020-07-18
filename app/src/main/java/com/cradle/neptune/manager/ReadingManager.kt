@@ -3,8 +3,11 @@ package com.cradle.neptune.manager
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.RetestGroup
-import kotlinx.coroutines.*
-
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 /**
  * Service for interfacing with readings stored in the database.
  *

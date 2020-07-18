@@ -25,10 +25,10 @@ import com.cradle.neptune.manager.UrlManager
 import com.cradle.neptune.model.GlobalPatient
 import com.cradle.neptune.viewmodel.GlobalPatientAdapter
 import com.google.android.material.snackbar.Snackbar
-import org.json.JSONArray
-import org.json.JSONObject
 import java.util.HashMap
 import javax.inject.Inject
+import org.json.JSONArray
+import org.json.JSONObject
 
 class GlobalPatientSearchActivity : AppCompatActivity() {
 
@@ -39,8 +39,6 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
     lateinit var sharedPreferences: SharedPreferences
 
     private lateinit var searchView: SearchView
-
-    val TAG = GlobalPatientSearchActivity::javaClass.name
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,11 +86,11 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
                 progressDialog.cancel()
                 searchView.hideKeyboard()
             }, { error: VolleyError? ->
-                Log.e(TAG, "error: " + error?.message)
+                Log.e(Companion.TAG, "error: " + error?.message)
                 progressDialog.cancel()
                 searchView.hideKeyboard()
                 setupPatientsRecycler(null)
-                Snackbar.make(searchView,"Sorry unable to fetch the patients",Snackbar.LENGTH_LONG).show()
+                Snackbar.make(searchView, "Sorry unable to fetch the patients", Snackbar.LENGTH_LONG).show()
             }) {
             /**
              * Passing some request headers
@@ -107,7 +105,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
             }
         }
         jsonArrayRequest.retryPolicy = DefaultRetryPolicy(
-            8000,
+            networkTimeOutInMS,
             DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
             DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
         )
@@ -119,7 +117,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         val emptyView = findViewById<ImageView>(R.id.emptyView)
         val recyclerView = findViewById<RecyclerView>(R.id.globalPatientrecyclerview)
         if (response == null || response.length() == 0) {
-            recyclerView.visibility =View.GONE
+            recyclerView.visibility = View.GONE
             emptyView.visibility = View.VISIBLE
             return
         }
@@ -144,7 +142,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         recyclerView.adapter = globalPatientAdapter
         globalPatientAdapter.notifyDataSetChanged()
 
-        //adding onclick for adapter
+        // adding onclick for adapter
         globalPatientAdapter.addPatientClickObserver(object :
             GlobalPatientAdapter.OnGlobalPatientClickListener {
             override fun onCardClick(patient: GlobalPatient) {
@@ -158,15 +156,15 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
 
             override fun onAddToLocalClicked(patient: GlobalPatient) {
                 if (patient.isMyPatient) {
-                    Snackbar.make(searchView,"This patient already added as your patient",Snackbar.LENGTH_LONG).show()
+                    Snackbar.make(searchView, "This patient already added as your patient", Snackbar.LENGTH_LONG).show()
                     return
                 }
                 val alertDialog =
                     AlertDialog.Builder(this@GlobalPatientSearchActivity).setTitle("Are you sure?")
                         .setMessage("Are you sure you want to add this patient as your own? ")
                         .setPositiveButton("OK") { _: DialogInterface, _: Int ->
-                            //todo make a network call to fetch the patient and update the recyclerview
-                            //todo make the O^n better, maybe globalPatientList can be a map?
+                            // todo make a network call to fetch the patient and update the recyclerview
+                            // todo make the O^n better, maybe globalPatientList can be a map?
                             for (it in globalPatientList) {
                                 if (it.id == patient.id) {
                                     it.isMyPatient = true
@@ -180,5 +178,10 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
                 alertDialog.show()
             }
         })
+    }
+
+    companion object {
+        val TAG = GlobalPatientSearchActivity::javaClass.name
+        const val networkTimeOutInMS = 8000
     }
 }

@@ -30,6 +30,7 @@ private const val PATIENT_SEX_OTHER = 2
  * Logic for the UI fragment which collects patient information when creating
  * or updating a reading.
  */
+@Suppress("LargeClass")
 class PatientInfoFragment : BaseFragment() {
 
     private lateinit var mView: View
@@ -143,7 +144,7 @@ class PatientInfoFragment : BaseFragment() {
                 viewModel.patientDob = date
             }
 
-            val dialog = DatePickerDialog(activity!!, listener, 2000, 0, 1)
+            val dialog = DatePickerDialog(requireActivity(), listener, DatePickerDefaultYear, 0, 1)
             dialog.show()
         }
     }
@@ -202,6 +203,7 @@ class PatientInfoFragment : BaseFragment() {
      *
      * Pushes values from the UI elements into the view model to persist them.
      */
+    @Suppress("NestedBlockDepth")
     override fun onMyBeingHidden(): Boolean = with(viewModel) {
         if (!this@PatientInfoFragment::mView.isInitialized) {
             return true
@@ -270,6 +272,10 @@ class PatientInfoFragment : BaseFragment() {
             }
         }
         return spinner
+    }
+
+    companion object {
+        private val DatePickerDefaultYear = 2000
     }
 }
 

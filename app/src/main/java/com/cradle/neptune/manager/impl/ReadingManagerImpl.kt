@@ -3,12 +3,17 @@ package com.cradle.neptune.manager.impl
 import android.util.Log
 import com.cradle.neptune.database.CradleDatabase
 import com.cradle.neptune.database.ReadingEntity
-import com.cradle.neptune.model.*
 import com.cradle.neptune.manager.MarshalManager
 import com.cradle.neptune.manager.ReadingManager
-import org.threeten.bp.ZonedDateTime
+import com.cradle.neptune.model.Field
+import com.cradle.neptune.model.JsonObject
+import com.cradle.neptune.model.Patient
+import com.cradle.neptune.model.Reading
+import com.cradle.neptune.model.RetestGroup
 import javax.inject.Inject
+import org.threeten.bp.ZonedDateTime
 
+@Suppress("TooManyFunctions")
 class ReadingManagerImpl @Inject constructor(
     private val database: CradleDatabase,
     private val marshalManager: MarshalManager

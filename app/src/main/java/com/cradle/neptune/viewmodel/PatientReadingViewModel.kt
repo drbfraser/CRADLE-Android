@@ -1,5 +1,6 @@
 package com.cradle.neptune.viewmodel
 
+import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.model.BloodPressure
 import com.cradle.neptune.model.GestationalAge
 import com.cradle.neptune.model.Patient
@@ -9,12 +10,11 @@ import com.cradle.neptune.model.Referral
 import com.cradle.neptune.model.RetestGroup
 import com.cradle.neptune.model.Sex
 import com.cradle.neptune.model.UrineTest
-import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.utilitiles.DynamicModelBuilder
 import com.cradle.neptune.utilitiles.discard
+import java.lang.IllegalArgumentException
 import org.threeten.bp.ZonedDateTime
 import org.threeten.bp.temporal.ChronoUnit
-import java.lang.IllegalArgumentException
 
 /**
  * A bridge between the legacy model API used by the new model structures.
@@ -82,7 +82,6 @@ class PatientReadingViewModel() {
         get() = patientBuilder.get(Patient::villageNumber) as String?
         set(value) = patientBuilder.set(Patient::villageNumber, value).discard()
 
-
     /* Blood Pressure Info */
     var bloodPressure: BloodPressure?
         get() = readingBuilder.get(Reading::bloodPressure) as BloodPressure?
@@ -131,8 +130,8 @@ class PatientReadingViewModel() {
      * True if any of the required fields are missing.
      */
     val isMissingAnything: Boolean
-        get() = missingPatientInfoDescription() == null
-            && missingVitalInformationDescription() == null
+        get() = missingPatientInfoDescription() == null &&
+            missingVitalInformationDescription() == null
 
     /**
      * True if the data in this view model is invalid.
@@ -141,8 +140,8 @@ class PatientReadingViewModel() {
      * and the implication "patient is pregnant" -> "gestational age not null"
      * must be true.
      */
-    val isDataInvalid: Boolean get() = !(bloodPressure?.isValid ?: false)
-        || (patientIsPregnant ?: false && patientGestationalAge == null)
+    val isDataInvalid: Boolean get() = !(bloodPressure?.isValid ?: false) ||
+        (patientIsPregnant ?: false && patientGestationalAge == null)
 
     val symptomsString get() = symptoms?.joinToString(", ")
 

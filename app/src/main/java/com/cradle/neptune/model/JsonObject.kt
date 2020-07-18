@@ -2,8 +2,8 @@ package com.cradle.neptune.model
 
 import com.cradle.neptune.utilitiles.DateUtil
 import org.json.JSONArray
-import org.json.JSONObject
 import org.json.JSONException
+import org.json.JSONObject
 import org.threeten.bp.ZoneId
 import org.threeten.bp.ZonedDateTime
 import org.threeten.bp.format.DateTimeFormatter
@@ -104,7 +104,7 @@ fun <F : Field> JsonObject.put(field: F, value: String?): JsonObject = put(field
  *
  * @return This object.
  */
-fun <F: Field> JsonObject.put(field: F, value: Double?): JsonObject = put(field.text, value)
+fun <F : Field> JsonObject.put(field: F, value: Double?): JsonObject = put(field.text, value)
 
 /**
  * Maps [field] to [value].
@@ -118,7 +118,7 @@ fun <F: Field> JsonObject.put(field: F, value: Double?): JsonObject = put(field.
  *
  * @return This object.
  */
-fun <F: Field> JsonObject.put(field: F, value: ZonedDateTime?): JsonObject {
+fun <F : Field> JsonObject.put(field: F, value: ZonedDateTime?): JsonObject {
     val epochSeconds = value?.toEpochSecond()
     return put(field, epochSeconds)
 }
@@ -154,7 +154,7 @@ fun <F : Field> JsonObject.put(field: F, value: JsonArray?): JsonObject = put(fi
  *
  * @return This object.
  */
-fun <F : Field> JsonObject.put(field: F, value: List<String>?): JsonObject = put(field, value?.let{ JsonArray(it) })
+fun <F : Field> JsonObject.put(field: F, value: List<String>?): JsonObject = put(field, value?.let { JsonArray(it) })
 
 /**
  * Marshals [value] to JSON then stores it as a sub-object under the field name.
@@ -408,7 +408,6 @@ fun JsonObject.union(other: JsonObject?): JsonObject {
     return this
 }
 
-
 /**
  * Unions this object with the one constructed by marshalling [other].
  *
@@ -442,4 +441,4 @@ fun <T, U> JsonArray.map(producer: (JsonArray, Int) -> T, mapper: (T) -> U): Lis
  *
  * Useful for converting a [JsonArray] to a list without mapping anything.
  */
-fun <T> JsonArray.toList(producer: (JsonArray, Int) -> T): List<T> = map(producer) { x -> x}
+fun <T> JsonArray.toList(producer: (JsonArray, Int) -> T): List<T> = map(producer) { x -> x }

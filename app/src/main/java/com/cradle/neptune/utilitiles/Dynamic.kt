@@ -40,6 +40,7 @@ inline fun <reified T : Any> dynamic(map: Map<String, Any?>) = DynamicConstructo
  *
  * @see dynamic
  */
+@Suppress
 class DynamicConstructor<T : Any>(k: KClass<T>, private val map: Map<String, Any?>) {
 
     private val constructor: KFunction<T> = k.constructors.firstOrNull()
@@ -173,7 +174,7 @@ open class DynamicModelBuilder {
      * constructor meaning that construction may still fail if the values
      * present in [map] differ from those required by the constructor.
      */
-    fun <T : Any> isConstructable(k : KClass<T>) = missingParameters(k).isEmpty()
+    fun <T : Any> isConstructable(k: KClass<T>) = missingParameters(k).isEmpty()
 
     /**
      * True if an instance of type [T] is constructable by this builder.
