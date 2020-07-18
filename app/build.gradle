@@ -150,6 +150,10 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.2.0"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+
+    detekt "io.gitlab.arturbosch.detekt:detekt-formatting:$detekt_version"
+    detekt("io.gitlab.arturbosch.detekt:detekt-cli:$detekt_version")
+
 }
 
 // TensorFlow Lite: select only the ABI's we (likely) need
