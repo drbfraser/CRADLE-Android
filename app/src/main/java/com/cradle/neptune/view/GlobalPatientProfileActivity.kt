@@ -38,6 +38,16 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         super.onCreate(savedInstanceState)
         getGlobalPatient()
         setupAddToMyPatientList()
+        if (supportActionBar!=null){
+            supportActionBar?.title = "Patient: "+currPatient.name
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        }
+
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return true
     }
 
     private fun setupAddToMyPatientList() {
