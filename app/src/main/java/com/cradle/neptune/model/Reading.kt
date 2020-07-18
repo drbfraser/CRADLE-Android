@@ -3,9 +3,9 @@ package com.cradle.neptune.model
 import android.content.Context
 import com.cradle.neptune.R
 import com.cradle.neptune.database.ReadingEntity
+import java.util.UUID
 import org.threeten.bp.ZonedDateTime
 import org.threeten.bp.temporal.ChronoUnit
-import java.util.UUID
 
 const val RED_SYSTOLIC = 160
 const val RED_DIASTOLIC = 110
@@ -288,9 +288,9 @@ data class BloodPressure(
      * within bounds).
      */
     val isValid: Boolean
-        get() = systolic in MIN_SYSTOLIC..MAX_SYSTOLIC
-            && diastolic in MIN_DIASTOLIC..MAX_DIASTOLIC
-            && heartRate in MIN_HEART_RATE..MAX_HEART_RATE
+        get() = systolic in MIN_SYSTOLIC..MAX_SYSTOLIC &&
+            diastolic in MIN_DIASTOLIC..MAX_DIASTOLIC &&
+            heartRate in MIN_HEART_RATE..MAX_HEART_RATE
 
     /**
      * Marshals this object to JSON.

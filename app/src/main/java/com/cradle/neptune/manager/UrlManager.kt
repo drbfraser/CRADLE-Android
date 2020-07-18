@@ -81,5 +81,5 @@ class UrlManager @Inject constructor(val settings: Settings) {
      * Search the database for a list of patient by Id or Initials
      * /patient/global/<String>
      */
-    fun getGlobalPatientSearch(query:String) = "$base/patient/global/$query"
+    fun getGlobalPatientSearch(query: String) = "$base/patient/global/$query"
 }

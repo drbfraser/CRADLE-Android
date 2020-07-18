@@ -11,7 +11,7 @@ fun unreachable(msg: String? = null): Nothing {
     throw UnreachableException(msg)
 }
 
-private class UnreachableException(msg: String?) : AssertionError(formatUnreachableMessage(msg)) {}
+private class UnreachableException(msg: String?) : AssertionError(formatUnreachableMessage(msg))
 
 private fun formatUnreachableMessage(msg: String?) =
     "Unreachable code entered${if (msg == null) "" else " : $msg"}"

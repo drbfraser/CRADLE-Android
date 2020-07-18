@@ -3,11 +3,11 @@ package com.cradle.neptune.manager.impl
 import android.util.Log
 import com.cradle.neptune.database.CradleDatabase
 import com.cradle.neptune.database.ReadingEntity
-import com.cradle.neptune.model.*
 import com.cradle.neptune.manager.MarshalManager
 import com.cradle.neptune.manager.ReadingManager
-import org.threeten.bp.ZonedDateTime
+import com.cradle.neptune.model.*
 import javax.inject.Inject
+import org.threeten.bp.ZonedDateTime
 
 class ReadingManagerImpl @Inject constructor(
     private val database: CradleDatabase,

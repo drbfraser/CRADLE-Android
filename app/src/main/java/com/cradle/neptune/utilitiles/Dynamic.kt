@@ -173,7 +173,7 @@ open class DynamicModelBuilder {
      * constructor meaning that construction may still fail if the values
      * present in [map] differ from those required by the constructor.
      */
-    fun <T : Any> isConstructable(k : KClass<T>) = missingParameters(k).isEmpty()
+    fun <T : Any> isConstructable(k: KClass<T>) = missingParameters(k).isEmpty()
 
     /**
      * True if an instance of type [T] is constructable by this builder.

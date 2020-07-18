@@ -20,29 +20,28 @@ import com.cradle.neptune.model.Sex
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter.OnClickElement
 import com.google.android.material.snackbar.Snackbar
+import java.util.UUID
 import kotlinx.android.synthetic.main.reading_card_assesment.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.threeten.bp.ZonedDateTime
-import java.util.UUID
 
 /**
  * This is a child class of [PatientProfileActivity] and uses some functions from the parent class.
  */
 class GlobalPatientProfileActivity : PatientProfileActivity() {
 
-    //mock variable for now
+    // mock variable for now
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         getGlobalPatient()
         setupAddToMyPatientList()
-        if (supportActionBar!=null){
-            supportActionBar?.title = "Patient: "+currPatient.name
+        if (supportActionBar != null) {
+            supportActionBar?.title = "Patient: " + currPatient.name
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
         }
-
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -105,9 +104,9 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
     }
 
     override fun setupReadingsRecyclerView() {
-        //todo the readings will probably be passed in as a json from the previous network call
+        // todo the readings will probably be passed in as a json from the previous network call
         patientReadings = ArrayList()
-        //random reading for now
+        // random reading for now
         for (i in 0 until 10) {
             patientReadings.add(
                 Reading(
