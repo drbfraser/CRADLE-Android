@@ -319,18 +319,18 @@ data class BloodPressure(
 /**
  * Holds information about a referral.
  *
- * @property messageSendTime The time at which this referral message was sent.
+ * @property messageSendTimeInMS The time at which this referral message was sent.
  * @property healthCentre The health center this referral should be sent to.
  * @property comment A comment to be included along with the referral.
  */
 data class Referral(
-    val messageSendTime: Long,
+    val messageSendTimeInMS: Long,
     val healthCentre: String,
     val comment: String
 ) : Marshal<JsonObject> {
 
     override fun marshal(): JsonObject = with(JsonObject()) {
-        put(ReferralField.MESSAGE_SEND_TIME, messageSendTime/ MS_IN_SECOND)
+        put(ReferralField.MESSAGE_SEND_TIME, messageSendTimeInMS/ MS_IN_SECOND)
         put(ReferralField.HEALTH_CENTRE, healthCentre)
         put(ReferralField.COMMENT, comment)
     }

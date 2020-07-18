@@ -376,7 +376,7 @@ public class SummaryFragment extends BaseFragment {
         } else {
             tv.setText(getString(R.string.reading_referral_sent,
                     viewModel.getReferral().getHealthCentre(),
-                    DateUtil.getFullDateString(viewModel.getReferral().getMessageSendTime())));
+                    DateUtil.getFullDateFromMilliSeconds(viewModel.getReferral().getMessageSendTimeInMS())));
 //            tv.setText(getString(R.string.reading_referral_sent,
 //                    currentReading.referralHealthCentre,
 //                    DateUtil.getFullDateString(currentReading.referralMessageSendTime)
@@ -438,7 +438,7 @@ public class SummaryFragment extends BaseFragment {
             tv.setText(getString(R.string.reading_not_uploaded_to_server));
         } else {
             tv.setText(getString(R.string.reading_uploaded_to_server,
-                    DateUtil.getFullDateString(viewModel.getMetadata().getDateUploadedToServer())));
+                    DateUtil.getFullDateFromMilliSeconds(viewModel.getMetadata().getDateUploadedToServer().toEpochSecond()*Referral.MS_IN_SECOND)));
 //            tv.setText(getString(R.string.reading_uploaded_to_server,
 //                    DateUtil.getFullDateString(currentReading.dateUploadedToServer)));
         }

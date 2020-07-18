@@ -128,8 +128,9 @@ public class UploadActivity extends AppCompatActivity {
         //get last updated time
         TextView lastDownloadText = findViewById(R.id.lastDownloadTimeTxt);
         try {
+            //todo: this will probably be removed with new sync but also need to save long rather than string
             ZonedDateTime zonedDateTime = ZonedDateTime.parse(settings.getLastTimeFollowUpDownloaded());
-            lastDownloadText.setText(DateUtil.getFullDateString(zonedDateTime));
+            lastDownloadText.setText(DateUtil.getFullDateFromMilliSeconds(zonedDateTime.toEpochSecond()*Referral.MS_IN_SECOND));
 
         } catch (Exception e) {
             lastDownloadText.setText(settings.getLastTimeFollowUpDownloaded());
@@ -515,7 +516,8 @@ public class UploadActivity extends AppCompatActivity {
                 readingManager.updateReadingAsync(pair.getFirst(), pair.getSecond());
 
                 // record that we did a successful upload
-                String dateStr = DateUtil.getFullDateString(ZonedDateTime.now());
+                //todo change so that saved as a long
+                String dateStr = DateUtil.getFullDateFromMilliSeconds(ZonedDateTime.now().toEpochSecond()*Referral.MS_IN_SECOND);
                 sharedPreferences.edit().putString(LAST_UPLOAD_DATE, dateStr).apply();
             }
 

@@ -189,7 +189,7 @@ public class ReferralDialogFragment extends DialogFragment {
         RequestQueue queue = Volley.newRequestQueue(getActivity());
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(JsonObjectRequest.Method.POST, urlManager.getReferral(), getReferralJson(false),
                 response -> {
-                    Referral referral = new Referral(ZonedDateTime.now(), selectedHealthCentreName, enteredComment);
+                    Referral referral = new Referral(System.currentTimeMillis(), selectedHealthCentreName, enteredComment);
                     currentReading.setReferral(referral);
                     dialog.cancel();
                     dismiss();
@@ -366,7 +366,7 @@ public class ReferralDialogFragment extends DialogFragment {
     }
 
     private void onFinishedSendingSMS(Dialog dialog) {
-        Referral referral = new Referral(ZonedDateTime.now(), selectedHealthCentreName, enteredComment);
+        Referral referral = new Referral(System.currentTimeMillis(), selectedHealthCentreName, enteredComment);
         currentReading.setReferral(referral);
         callback.sentTextMessage(smsTextMessage);
         dialog.dismiss();
@@ -542,7 +542,7 @@ public class ReferralDialogFragment extends DialogFragment {
             tv.setText(getString(
                     R.string.reading_referral_sent,
                     currentReading.getReferral().getHealthCentre(),
-                    DateUtil.getFullDateString(currentReading.getReferral().getMessageSendTime())
+                    DateUtil.getFullDateFromMilliSeconds(currentReading.getReferral().getMessageSendTimeInMS())
             ));
             tv.setVisibility(View.VISIBLE);
         } else {
