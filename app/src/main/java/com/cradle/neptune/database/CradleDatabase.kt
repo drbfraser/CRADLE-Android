@@ -2,6 +2,7 @@ package com.cradle.neptune.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 
 /**
  * Interface for the local cradle database.
@@ -11,6 +12,7 @@ import androidx.room.RoomDatabase
     version = 1,
     exportSchema = false
 )
+@TypeConverters(DatabaseTypeConverters::class)
 abstract class CradleDatabase : RoomDatabase() {
     /**
      * Returns the data access object for [ReadingEntity] entities.

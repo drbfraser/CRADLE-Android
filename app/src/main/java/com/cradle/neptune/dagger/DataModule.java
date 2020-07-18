@@ -7,7 +7,7 @@ import androidx.preference.PreferenceManager;
 import androidx.room.Room;
 
 import com.cradle.neptune.database.CradleDatabase;
-import com.cradle.neptune.model.Settings;
+import com.cradle.neptune.manager.PatientManager;
 
 import javax.inject.Singleton;
 
@@ -44,6 +44,12 @@ public class DataModule {
     @Singleton
     public HealthCentreManager provideHealthCentreService(CradleDatabase database) {
         return new HealthCentreManagerImpl(database);
+    }
+
+    @Provides
+    @Singleton
+    public PatientManager providePatientManager(CradleDatabase database){
+        return new PatientManager(database.patientDaoAccess());
     }
 
     @Provides

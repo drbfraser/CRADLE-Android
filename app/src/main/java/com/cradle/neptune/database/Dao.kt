@@ -91,6 +91,7 @@ interface ReadingDaoAccess {
     fun deleteAllReading()
 }
 
+@Dao
 interface PatientDaoAccess {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -100,7 +101,7 @@ interface PatientDaoAccess {
     fun insertAll(patientEntity: List<PatientEntity>)
 
     @Delete
-    fun delete(patientId:String)
+    fun delete(patientEntity: PatientEntity)
 }
 
 /**

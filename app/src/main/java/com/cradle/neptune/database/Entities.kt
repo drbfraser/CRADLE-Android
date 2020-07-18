@@ -6,6 +6,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.cradle.neptune.model.GestationalAge
 import com.cradle.neptune.model.Sex
+import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 import java.util.SimpleTimeZone
 
