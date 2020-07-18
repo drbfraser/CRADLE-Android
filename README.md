@@ -21,6 +21,21 @@ Android application for the CRADLE VSA System, a technological health care syste
 
 Install [Android Studio](https://developer.android.com/studio/) and import the project.
 
+
+## Pre-push hooks
+#### For Mac, run the following command
+
+     ln -s -f ../../hooks/pre-push.sh .git/hooks/pre-push
+  May need to set pre-push as an executable
+
+      chmod +x  .git/hooks/pre-push
+
+#### For Windows, run the following command as an Admin
+
+     mklink .git\hooks\pre-push ..\..\hooks\pre-push.sh
+
+#### For PowerShell, run the following command as an Admin
+     New-Item -ItemType SymbolicLink -Path .\.git\hooks -Name pre-push -Value .\hooks\pre-push.sh
 #### Creating a Production Release
 
 Create a new file in the root directory to hold the secure keystore details:
