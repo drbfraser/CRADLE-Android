@@ -117,9 +117,9 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         for (i in 0 until numReadings) {
             patientReadings.add(
                 Reading(
-                    UUID.randomUUID().toString(), currPatient.id, ZonedDateTime.now(),
+                    UUID.randomUUID().toString(), currPatient.id, ZonedDateTime.now().toEpochSecond(),
                     BloodPressure(systolic + i, diastolic + i, heartRate + i), null, emptyList(),
-                    null, null, ZonedDateTime.now(), (i % 2 == 0), emptyList(), ReadingMetadata()
+                    null, null, ZonedDateTime.now().toEpochSecond(), (i % 2 == 0), emptyList(), ReadingMetadata()
                 )
             )
         }

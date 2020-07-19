@@ -252,13 +252,13 @@ class PatientReadingViewModel() {
         val reading = Reading(
             id = readingId ?: "in-progress",
             patientId = patientId ?: "",
-            dateTimeTaken = dateTimeTaken ?: ZonedDateTime.now(),
+            dateTimeTaken = dateTimeTaken?.toEpochSecond() ?: ZonedDateTime.now().toEpochSecond(),
             bloodPressure = bloodPressure!!,
             urineTest = urineTest,
             symptoms = symptoms ?: emptyList(),
             referral = referral,
             followUp = null,
-            dateRecheckVitalsNeeded = dateRecheckVitalsNeeded,
+            dateRecheckVitalsNeeded = dateRecheckVitalsNeeded?.toEpochSecond(),
             isFlaggedForFollowUp = isFlaggedForFollowUp ?: false,
             previousReadingIds = previousReadingIds ?: emptyList(),
             metadata = metadata

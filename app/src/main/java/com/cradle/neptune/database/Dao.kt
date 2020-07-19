@@ -10,7 +10,7 @@ import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
 
 /**
- * Data Access Object (DAO) for [ReadingEntity] entities.
+ * Data Access Object (DAO) for [Reading] entities.
  *
  * Provides methods for adding, updating, and removing entities from a database
  * along with a series of query methods.
@@ -23,10 +23,10 @@ interface ReadingDaoAccess {
      * If a conflicting element already exists in the database it will be
      * replaced with the new one.
      *
-     * @param readingEntity The entity to insert into the database.
+     * @param Reading The entity to insert into the database.
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertReading(readingEntity: ReadingEntity)
+    fun insertReading(reading: Reading)
 
     /**
      * Inserts each reading in the supplied list into the database.
@@ -37,29 +37,29 @@ interface ReadingDaoAccess {
      * @param readingEntities A list of entities to insert.
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAll(readingEntities: List<ReadingEntity>)
+    fun insertAll(readingEntities: List<Reading>)
 
     /**
      * Updates an existing reading in the database.
      *
-     * @param readingEntity An entity containing updated data.
+     * @param Reading An entity containing updated data.
      */
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    fun update(readingEntity: ReadingEntity)
+    fun update(reading: Reading)
 
     /**
      * Removes an entity from the database.
      *
-     * @param readingEntity The entity to remove.
+     * @param Reading The entity to remove.
      */
     @Delete
-    fun delete(readingEntity: ReadingEntity)
+    fun delete(reading: Reading?)
 
     /**
      * All of the readings in the database.
      */
-    @get:Query("SELECT * FROM ReadingEntity")
-    val allReadingEntities: List<ReadingEntity>
+    @get:Query("SELECT * FROM Reading")
+    val allReadingEntities: List<Reading>
 
     /**
      * Returns the first reading who's id matches a given pattern.
@@ -69,7 +69,7 @@ interface ReadingDaoAccess {
      *
      * @param id The reading id to search for.
      */
-    @Query("SELECT * FROM Reading WHERE readingId LIKE :id LIMIT 1")
+    @Query("SELECT * FROM Reading WHERE id LIKE :id LIMIT 1")
     fun getReadingById(id: String): Reading?
 
     /**

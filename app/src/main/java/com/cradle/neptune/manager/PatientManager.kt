@@ -15,6 +15,4 @@ class PatientManager(private val daoAccess: PatientDaoAccess) {
     fun getAllPatients(): List<Patient> = daoAccess.allPatients
 
     fun getPatientById(id: String): Patient? = daoAccess.getPatientById(id)
-
-    fun deleteAllPatients() = daoAccess.deleteAllPatients()
 }

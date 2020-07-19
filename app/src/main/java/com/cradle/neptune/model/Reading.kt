@@ -64,7 +64,8 @@ data class Reading(
 
     @ColumnInfo var previousReadingIds: List<String> = emptyList(),
 
-    @ColumnInfo var metadata: ReadingMetadata = ReadingMetadata()
+    @ColumnInfo var metadata: ReadingMetadata = ReadingMetadata(),
+    @ColumnInfo var isUploadedToServer: Boolean = false
 ) : Marshal<JsonObject> {
 
     /**
@@ -82,7 +83,7 @@ data class Reading(
      */
     val isVitalRecheckRequiredNow
         get() = isVitalRecheckRequired &&
-            (dateRecheckVitalsNeeded- Instant.now() ?: false)
+            (dateRecheckVitalsNeeded?.equals(Instant.now()) ?: false)
 
     /**
      * The number of minutes until a vital recheck is required.
@@ -92,7 +93,7 @@ data class Reading(
     val minutesUtilVitalRecheck: Long?
         get() {
             val recheckTime = dateRecheckVitalsNeeded ?: return null
-            return ChronoUnit.SECONDS.between(ZonedDateTime.now(), recheckTime)
+            return (ZonedDateTime.now().toEpochSecond() - recheckTime)/ SECONDS_IN_MIN
         }
 
     /**
@@ -182,9 +183,12 @@ data class Reading(
 
                 previousReadingIds = previousReadingIds,
 
-                metadata = metadata
+                metadata = metadata,
+                isUploadedToServer = true
             )
         }
+
+        const val SECONDS_IN_MIN = 60
     }
 
     object AscendingDataComparator : Comparator<Reading> {

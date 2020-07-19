@@ -15,7 +15,6 @@ import com.cradle.neptune.manager.HealthCentreManager;
 import com.cradle.neptune.manager.MarshalManager;
 import com.cradle.neptune.manager.ReadingManager;
 import com.cradle.neptune.manager.impl.HealthCentreManagerImpl;
-import com.cradle.neptune.manager.impl.ReadingManagerImpl;
 import dagger.Module;
 import dagger.Provides;
 
@@ -37,7 +36,7 @@ public class DataModule {
     @Provides
     @Singleton
     public ReadingManager provideReadingService(CradleDatabase database, MarshalManager marshalManager) {
-        return new ReadingManagerImpl(database, marshalManager);
+        return new ReadingManager(database.readingDaoAccess());
     }
 
     @Provides
