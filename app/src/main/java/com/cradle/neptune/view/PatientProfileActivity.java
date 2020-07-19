@@ -376,7 +376,7 @@ public class PatientProfileActivity extends AppCompatActivity {
 
     private List<Reading> getThisPatientsReadings() {
         // Since we can't use streams in API 17 we end up having to use this mess.
-        List<Pair<Patient, Reading>> pairs = readingManager.getReadingsByPatientIdBlocking(currPatient.getId());
+        List<Pair<Patient, Reading>> pairs = readingManager.getReadingsByPatientId(currPatient.getId());
         List<Reading> readings = new ArrayList<>();
         for (Pair<Patient, Reading> pair : pairs) {
             readings.add(pair.getSecond());
@@ -447,7 +447,7 @@ public class PatientProfileActivity extends AppCompatActivity {
                 .setMessage("Delete reading?")
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setPositiveButton(android.R.string.yes, (dialog1, whichButton) -> {
-                    readingManager.deleteReadingByIdAsync(readingId);
+                    readingManager.deleteReadingById(readingId);
                     updateUi();
                 })
                 .setNegativeButton(android.R.string.no, null);

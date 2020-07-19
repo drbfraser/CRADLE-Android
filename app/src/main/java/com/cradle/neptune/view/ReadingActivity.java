@@ -122,7 +122,7 @@ public class ReadingActivity
             case LAUNCH_REASON_RECHECK:
                 readingId = getIntent().getStringExtra(EXTRA_READING_ID);
                 Util.ensure((readingId != null && !readingId.equals("")));
-                originalData = readingManager.getReadingByIdBlocking(readingId);
+                originalData = readingManager.getReadingById(readingId);
                 assert originalData != null;
                 viewModel = new PatientReadingViewModel(originalData.getFirst());
 
@@ -138,7 +138,7 @@ public class ReadingActivity
             case LAUNCH_REASON_EXISTINGNEW:
                 readingId = getIntent().getStringExtra(EXTRA_READING_ID);
                 Util.ensure((readingId != null && !readingId.equals("")));
-                originalData = readingManager.getReadingByIdBlocking(readingId);
+                originalData = readingManager.getReadingById(readingId);
                 assert originalData != null;
                 viewModel = new PatientReadingViewModel(originalData.getFirst());
 //                originalReading = readingManager.getReadingById(this, readingId);
@@ -404,12 +404,12 @@ public class ReadingActivity
             case LAUNCH_REASON_NEW: // fallthrough
             case LAUNCH_REASON_RECHECK: // fallthrough
             case LAUNCH_REASON_EXISTINGNEW:
-                readingManager.addReadingAsync(models.getFirst(), models.getSecond());
+                readingManager.addReading(models.getFirst(), models.getSecond());
                 break;
             case LAUNCH_REASON_EDIT:
                 // overwrite if any changes
                 if (!models.equals(originalData)) {
-                    readingManager.updateReadingAsync(models.getFirst(), models.getSecond());
+                    readingManager.updateReading(models.getFirst(), models.getSecond());
                 }
                 break;
             default:

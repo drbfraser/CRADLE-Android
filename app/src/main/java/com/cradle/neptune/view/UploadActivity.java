@@ -250,7 +250,7 @@ public class UploadActivity extends AppCompatActivity {
             }
         }
 //        List<Reading> readings = readingManager.getReadings(this);
-        List<Pair<Patient, Reading>> pairs = readingManager.getAllReadingsBlocking();
+        List<Pair<Patient, Reading>> pairs = readingManager.getAllReadings();
         Map<String, Pair<Patient, Reading>> readingMap = new HashMap<>();
         for (Pair<Patient, Reading> pair : pairs) {
             readingMap.put(pair.getSecond().getId(), pair);
@@ -262,7 +262,7 @@ public class UploadActivity extends AppCompatActivity {
                 pair.getSecond().setFollowUp(followUp);
                 pair.getFirst().getMedicalHistoryList().add(followUp.getPatientMedInfoUpdate().toLowerCase());
                 pair.getFirst().getDrugHistoryList().add(followUp.getPatientDrugInfoUpdate().toLowerCase());
-                readingManager.updateReadingAsync(pair.getFirst(), pair.getSecond());
+                readingManager.updateReading(pair.getFirst(), pair.getSecond());
 //                reading.patient.medicalHistoryList = new ArrayList<>();
 //                reading.patient.drugHistoryList = new ArrayList<>();
 //                reading.patient.medicalHistoryList.add(followUp.getPatientMedInfoUpdate().toLowerCase());
@@ -294,7 +294,7 @@ public class UploadActivity extends AppCompatActivity {
 
     private void updateReadingUploadLabels() {
         // reading count
-        int numReadingsToUpload = readingManager.getUnUploadedReadingsBlocking().size();
+        int numReadingsToUpload = readingManager.getUnUploadedReadings().size();
 //        int numReadingsToUpload = readingManager.getUnuploadedReadings().size();
         TextView tvReadingCount = findViewById(R.id.tvReadingsToUpload);
         tvReadingCount.setText(String.format("%d patient readings ready to upload", numReadingsToUpload));
@@ -326,7 +326,7 @@ public class UploadActivity extends AppCompatActivity {
     private void setupUploadImageButton() {
         Button btnStart = findViewById(R.id.uploadImagesButton);
         btnStart.setOnClickListener(view -> {
-            List<Pair<Patient, Reading>> readings = readingManager.getAllReadingsBlocking();
+            List<Pair<Patient, Reading>> readings = readingManager.getAllReadings();
             List<Pair<Patient, Reading>> readingsToUpload = new ArrayList<>();
             for (int i = 0; i < readings.size(); i++) {
                 Pair<Patient, Reading> reading = readings.get(i);
@@ -374,7 +374,7 @@ public class UploadActivity extends AppCompatActivity {
                 UploadTask uploadTask = storageReference1.putFile(file);
                 uploadTask.addOnSuccessListener(taskSnapshot -> {
                     r.getSecond().getMetadata().setImageUploaded(true);
-                    readingManager.updateReadingAsync(r.getFirst(), r.getSecond());
+                    readingManager.updateReading(r.getFirst(), r.getSecond());
                     progressBar.setProgress(progressBar.getProgress() + 1);
                     if (stopuploading[0]) {
                         progressBar.setVisibility(View.INVISIBLE);
@@ -472,7 +472,7 @@ public class UploadActivity extends AppCompatActivity {
 //        }
 
         // discover un-uploaded readings
-        List<Pair<Patient, Reading>> pairs = readingManager.getUnUploadedReadingsBlocking();
+        List<Pair<Patient, Reading>> pairs = readingManager.getUnUploadedReadings();
 //        List<Reading> readingsToUpload = readingManager.getUnuploadedReadings();
         // abort if no readings
         if (pairs.size() == 0) {
@@ -516,7 +516,7 @@ public class UploadActivity extends AppCompatActivity {
             public void uploadReadingSucceeded(Pair<Patient, Reading> pair) {
                 // mark reading as uploaded
                 pair.getSecond().getMetadata().setDateUploadedToServer(ZonedDateTime.now());
-                readingManager.updateReadingAsync(pair.getFirst(), pair.getSecond());
+                readingManager.updateReading(pair.getFirst(), pair.getSecond());
 
                 // record that we did a successful upload
                 //todo change so that saved as a long
@@ -534,28 +534,4 @@ public class UploadActivity extends AppCompatActivity {
         };
     }
 
-
-//    private void downloadPage() {
-//        // Instantiate the RequestQueue.
-//        RequestQueue queue = Volley.newRequestQueue(this);
-//
-//        // Request a string response from the provided URL.
-//        StringRequest stringRequest = new StringRequest(Request.Method.GET, SERVER_URL,
-//                new Response.Listener<String>() {
-//                    @Override
-//                    public void onResponse(String response) {
-//                        // Display the first 500 characters of the response string.
-//                        Log.d(TAG, "Response is: "+ response.substring(0,500));
-//                        Toast.makeText(UploadActivity.this, "Completed GET", Toast.LENGTH_SHORT).show();
-//                    }
-//                }, new Response.ErrorListener() {
-//            @Override
-//            public void onErrorResponse(VolleyError error) {
-//                Toast.makeText(UploadActivity.this, "GET failed: " + error.networkResponse, Toast.LENGTH_SHORT).show();
-//            }
-//        });
-//
-//        // Add the request to the RequestQueue.
-//        queue.add(stringRequest);
-//    }
 }

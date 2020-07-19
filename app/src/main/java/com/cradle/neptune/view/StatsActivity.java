@@ -44,7 +44,7 @@ public class StatsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_stats);
 
         ((MyApp) getApplication()).getAppComponent().inject(this);
-        readings = readingManager.getAllReadingsBlocking()
+        readings = readingManager.getAllReadings()
                 .stream()
                 .map(Pair::getSecond)
                 .collect(Collectors.toList());

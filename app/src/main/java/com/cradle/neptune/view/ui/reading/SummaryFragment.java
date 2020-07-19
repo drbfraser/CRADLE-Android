@@ -438,7 +438,7 @@ public class SummaryFragment extends BaseFragment {
             tv.setText(getString(R.string.reading_not_uploaded_to_server));
         } else {
             tv.setText(getString(R.string.reading_uploaded_to_server,
-                    DateUtil.getFullDateFromMilliSeconds(viewModel.getMetadata().getDateUploadedToServer().toEpochSecond()*Referral.MS_IN_SECOND)));
+                    DateUtil.getFullDateFromMilliSeconds(viewModel.getMetadata().getDateUploadedToServer()*Referral.MS_IN_SECOND)));
 //            tv.setText(getString(R.string.reading_uploaded_to_server,
 //                    DateUtil.getFullDateString(currentReading.dateUploadedToServer)));
         }
