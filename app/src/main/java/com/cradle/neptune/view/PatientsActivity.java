@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.manager.PatientManager;
 import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.Settings;
@@ -37,19 +38,17 @@ import javax.inject.Inject;
 
 public class PatientsActivity extends AppCompatActivity {
 
-    // Data Model
     @Inject
     ReadingManager readingManager;
-
+    @Inject
+    PatientManager patientManager;
     @Inject
     SharedPreferences sharedPreferences;
-
     @Inject
     Settings settings;
 
     private RecyclerView patientRecyclerview;
     private PatientsViewAdapter patientsViewAdapter;
-    private SearchView searchView;
 
     public static Intent makeIntent(Context context) {
         return new Intent(context, PatientsActivity.class);
@@ -88,7 +87,7 @@ public class PatientsActivity extends AppCompatActivity {
 
         // Associate searchable configuration with the SearchView
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        searchView = (SearchView) menu.findItem(R.id.searchPatients)
+        SearchView searchView = (SearchView) menu.findItem(R.id.searchPatients)
                 .getActionView();
         searchView.setSearchableInfo(searchManager
                 .getSearchableInfo(getComponentName()));
@@ -133,19 +132,13 @@ public class PatientsActivity extends AppCompatActivity {
 
     private void setupPatientRecyclerview() {
 
-        HashMap<String, Pair<Patient, Reading>> patientHashMap = new HashMap<>();
+        List<Patient> patientList = patientManager.getAllPatients();
+        List<Pair<Patient, Reading>> patients = new ArrayList<>();
 
-//        List<Reading> allReadings = readingManager.getReadings(this);
-        List<Pair<Patient, Reading>> allReadings = readingManager.getAllReadingsBlocking();
-        Collections.sort(allReadings, (a, b) -> a.getSecond().getDateTimeTaken().compareTo(b.getSecond().getDateTimeTaken()));
-
-
-        for (Pair<Patient, Reading> pair : allReadings) {
-            if (!patientHashMap.containsKey(pair.getSecond().getPatientId())) {
-                patientHashMap.put(pair.getSecond().getPatientId(), pair);
-            }
+        for (Patient patient: patientList){
+            patients.add(new Pair<>(patient,readingManager.getNewestReadingByPatientId(patient.getId())));
         }
-        List<Pair<Patient, Reading>> patients = new ArrayList<>(patientHashMap.values());
+
         TextView textView = findViewById(R.id.emptyView);
         if (patients.size() == 0) {
             textView.setVisibility(View.VISIBLE);

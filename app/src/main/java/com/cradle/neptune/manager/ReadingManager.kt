@@ -90,6 +90,11 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
     }
 
     /**
+     * Get the newest reading of a patient
+     */
+    fun getNewestReadingByPatientId(id: String) = daoAccess.getNewestReadingByPatientId(id)
+
+    /**
      * Deletes all readings from the database.
      */
     fun deleteAllData(){

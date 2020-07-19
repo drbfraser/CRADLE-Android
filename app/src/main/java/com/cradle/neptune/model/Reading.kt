@@ -8,7 +8,6 @@ import com.cradle.neptune.R
 import org.threeten.bp.Instant
 import java.util.UUID
 import org.threeten.bp.ZonedDateTime
-import org.threeten.bp.temporal.ChronoUnit
 import java.io.Serializable
 
 const val RED_SYSTOLIC = 160
@@ -32,13 +31,13 @@ const val MIN_HEART_RATE = 40
  * will be generated for this field.
  * @property patientId The identifier for the patient this reading is
  * associated with.
- * @property dateTimeTaken The time at which this reading was taken.
+ * @property dateTimeTaken unix time at which this reading was taken.
  * @property bloodPressure The result of a blood pressure test.
  * @property urineTest The result of a urine test.
  * @property symptoms A list of symptoms that the patient has at the time this
  * reading was taken.
  * @property referral An optional referral associated with this reading.
- * @property dateRecheckVitalsNeeded The date at which this patient's vitals
+ * @property dateRecheckVitalsNeeded unix time at which this patient's vitals
  * should be rechecked (if applicable).
  * @property isFlaggedForFollowUp Whether this patient requires a followup.
  * @property previousReadingIds A list of previous readings associated with

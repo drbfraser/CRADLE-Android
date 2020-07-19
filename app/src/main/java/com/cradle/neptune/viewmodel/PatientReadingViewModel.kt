@@ -263,6 +263,6 @@ class PatientReadingViewModel() {
             previousReadingIds = previousReadingIds ?: emptyList(),
             metadata = metadata
         )
-        return readingManager.getRetestGroupBlocking(reading)
+        return readingManager.getRetestGroup(reading)
     }
 }

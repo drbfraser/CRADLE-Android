@@ -68,7 +68,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         progressDialog.show()
         GlobalScope.launch(Dispatchers.IO) {
             patientReadings.forEach {
-                readingManager.addReading(currPatient, it)
+                readingManager.addReading(it)
             }
             val intent =
                 Intent(this@GlobalPatientProfileActivity, PatientProfileActivity::class.java)

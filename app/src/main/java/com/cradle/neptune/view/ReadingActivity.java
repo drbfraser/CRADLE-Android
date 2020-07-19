@@ -114,7 +114,7 @@ public class ReadingActivity
             case LAUNCH_REASON_EDIT:
                 readingId = intent.getStringExtra(EXTRA_READING_ID);
                 Util.ensure((readingId != null && !readingId.equals("")));
-                originalData = readingManager.getReadingByIdBlocking(readingId);
+                originalData = readingManager.getReadingById(readingId);
                 assert originalData != null;
                 viewModel = new PatientReadingViewModel(originalData.getFirst(), originalData.getSecond());
 //                currentReading = GsonUtil.cloneViaGson(originalReading, Reading.class);

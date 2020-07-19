@@ -109,7 +109,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         findPreference(R.string.key_sign_out)
             ?.withOnClickListener {
-                val unUploadedReadings = readingManager.getUnUploadedReadingsBlocking()
+                val unUploadedReadings = readingManager.getUnUploadedReadings()
                 val description = if (unUploadedReadings.isEmpty()) {
                     getString(R.string.normalSignoutMessage)
                 } else {

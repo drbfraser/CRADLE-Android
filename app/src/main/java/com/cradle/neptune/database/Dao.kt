@@ -87,6 +87,11 @@ interface ReadingDaoAccess {
     val allUnUploadedReading: List<Reading>
 
     /**
+     * Newest reading of a perticular patient
+     */
+    @Query("SELECT MAX(dateTimeTaken) FROM READING WHERE patientId LIKE :id")
+    fun getNewestReadingByPatientId(id:String): Reading
+    /**
      * Deletes all readings from the database.
      */
     @Query("DELETE FROM Reading")
