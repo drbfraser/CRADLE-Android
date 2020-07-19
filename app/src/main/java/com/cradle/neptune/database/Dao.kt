@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.cradle.neptune.model.Patient
 
 /**
  * Data Access Object (DAO) for [ReadingEntity] entities.
@@ -95,19 +96,19 @@ interface ReadingDaoAccess {
 interface PatientDaoAccess {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(patientEntity: PatientEntity)
+    fun insert(patient: Patient)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAll(patientEntity: List<PatientEntity>)
+    fun insertAll(patients: List<Patient>)
 
     @Delete
-    fun delete(patientEntity: PatientEntity)
+    fun delete(patient: Patient)
 
-    @get:Query("SELECT * FROM PatientEntity")
-    val allPatients: List<PatientEntity>
+    @get:Query("SELECT * FROM Patient")
+    val allPatients: List<Patient>
 
-    @Query("SELECT * FROM PatientEntity WHERE id LIKE :id LIMIT 1")
-    fun getPatientById(id: String): PatientEntity?
+    @Query("SELECT * FROM Patient WHERE id LIKE :id LIMIT 1")
+    fun getPatientById(id: String): Patient?
 
     @Query("DELETE FROM ReadingEntity")
     fun deleteAllPatients()

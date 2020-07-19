@@ -300,6 +300,7 @@ class LoginActivity : AppCompatActivity() {
                                     readingList.add(Reading.unmarshal(readingArray[j] as JsonObject))
                                 }
                             }
+                            patientManager.addAll(patientList)
                         }
                     },
                     Response.ErrorListener { error: VolleyError ->

@@ -3,12 +3,13 @@ package com.cradle.neptune.database
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.cradle.neptune.model.Patient
 
 /**
  * Interface for the local cradle database.
  */
 @Database(
-    entities = [ReadingEntity::class, PatientEntity::class, HealthFacilityEntity::class],
+    entities = [ReadingEntity::class, Patient::class, HealthFacilityEntity::class],
     version = 1,
     exportSchema = false
 )

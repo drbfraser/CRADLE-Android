@@ -24,21 +24,6 @@ data class ReadingEntity(
     @ColumnInfo var isUploadedToServer: Boolean
 ) : Serializable
 
-@Entity
-data class PatientEntity(
-    @PrimaryKey var id: String,
-    @ColumnInfo var name: String,
-    @ColumnInfo var dob: String?,
-    @ColumnInfo var age: Int?,
-    @ColumnInfo var gestationalAge: GestationalAge?,
-    @ColumnInfo var sex: Sex,
-    @ColumnInfo var isPregnant: Boolean,
-    @ColumnInfo var zone: String?,
-    @ColumnInfo var villageNumber: String?,
-    @ColumnInfo var drugHistory: List<String>,
-    @ColumnInfo var medicalHistory: List<String>,
-    @ColumnInfo var lastEdited: Long?
-) : Serializable
 /**
  * A health facility database entity.
  *

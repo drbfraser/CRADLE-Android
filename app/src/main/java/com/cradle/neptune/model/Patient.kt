@@ -1,5 +1,8 @@
 package com.cradle.neptune.model
 
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import java.io.Serializable
 
 // TODO: Figure out which of these fields must be optional and which are never
@@ -24,19 +27,21 @@ import java.io.Serializable
  * @property medicalHistoryList A list of medical history for the patient.
  * @property lastEdited Last time patient info was edited
  */
+@Entity
 data class Patient(
-    var id: String = "",
-    var name: String = "",
-    var dob: String? = null,
-    var age: Int? = null,
-    var gestationalAge: GestationalAge? = null,
-    var sex: Sex = Sex.OTHER,
-    var isPregnant: Boolean = false,
-    var zone: String? = null,
-    var villageNumber: String? = null,
-    var drugHistoryList: List<String> = emptyList(),
-    var medicalHistoryList: List<String> = emptyList(),
-    var lastEdited: Long? = null
+    @PrimaryKey
+    @ColumnInfo var id: String = "",
+    @ColumnInfo var name: String = "",
+    @ColumnInfo var dob: String? = null,
+    @ColumnInfo var age: Int? = null,
+    @ColumnInfo var gestationalAge: GestationalAge? = null,
+    @ColumnInfo var sex: Sex = Sex.OTHER,
+    @ColumnInfo var isPregnant: Boolean = false,
+    @ColumnInfo var zone: String? = null,
+    @ColumnInfo var villageNumber: String? = null,
+    @ColumnInfo var drugHistoryList: List<String> = emptyList(),
+    @ColumnInfo var medicalHistoryList: List<String> = emptyList(),
+    @ColumnInfo var lastEdited: Long? = null
 ) : Marshal<JsonObject>, Serializable {
 
     /**

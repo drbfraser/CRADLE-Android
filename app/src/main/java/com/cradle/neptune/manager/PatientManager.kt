@@ -1,19 +1,20 @@
 package com.cradle.neptune.manager
 
 import com.cradle.neptune.database.PatientDaoAccess
-import com.cradle.neptune.database.PatientEntity
+import com.cradle.neptune.model.Patient
+import java.util.ArrayList
 
 class PatientManager(private val daoAccess: PatientDaoAccess) {
 
-    fun add(patientEntity: PatientEntity) = daoAccess.insert(patientEntity)
+    fun add(patient: Patient) = daoAccess.insert(patient)
 
-    fun addAll(patientEntities: List<PatientEntity>) = daoAccess.insertAll(patientEntities)
+    fun addAll(patients: ArrayList<Patient>) = daoAccess.insertAll(patients)
 
-    fun delete(patientEntity: PatientEntity) = daoAccess.delete(patientEntity)
+    fun delete(patient: Patient) = daoAccess.delete(patient)
 
-    fun getAllPatients(): List<PatientEntity> = daoAccess.allPatients
+    fun getAllPatients(): List<Patient> = daoAccess.allPatients
 
-    fun getPatientById(id: String): PatientEntity? = daoAccess.getPatientById(id)
+    fun getPatientById(id: String): Patient? = daoAccess.getPatientById(id)
 
     fun deleteAllPatients() = daoAccess.deleteAllPatients()
 }
