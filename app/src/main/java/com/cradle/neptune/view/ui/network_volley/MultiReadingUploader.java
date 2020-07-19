@@ -8,6 +8,7 @@ import android.util.Log;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Response;
 import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.manager.PatientManager;
 import com.cradle.neptune.manager.UrlManager;
 import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
@@ -38,7 +39,8 @@ public class MultiReadingUploader {
     private static final String TAG = "MultiReadingUploader";
     @Inject
     SharedPreferences sharedPreferences;
-
+    @Inject
+    PatientManager patientManager;
     @Inject
     MarshalManager marshalManager;
 
@@ -176,18 +178,14 @@ public class MultiReadingUploader {
             // generate zip of encrypted data
             String encryptedZipFileFolder = context.getCacheDir().getAbsolutePath();
 
-            Patient patient = readingsToUpload.get(0).getFirst();
-            Reading reading = readingsToUpload.get(0).getSecond();
+            Patient patient = patientManager.getPatientById(readingsToUpload.get(0).getPatientId());
+            Reading reading = readingsToUpload.get(0);
             String readingJson = marshalManager.marshalToUploadJson(patient, reading).toString();
 //            String readingJson = Reading.getJsonObj(readings.get(0), sharedPreferences.getString(LoginActivity.USER_ID, ""));
             // start upload
             Uploader uploader = new Uploader(urlManager.getReading(), "", "", token);
             uploader.doUpload(readingJson, getSuccessCallback(), getErrorCallback());
 
-        } catch (IOException ex) {
-            Log.e(TAG, "Exception with encrypting and transmitting data!", ex);
-            state = State.PAUSED;
-            progressCallback.uploadPausedOnError("Encrypting data for upload failed (" + ex.getMessage() + ")");
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -206,7 +204,9 @@ public class MultiReadingUploader {
 
             // current reading uploaded successfully
             Util.ensure(readingsToUpload.size() > 0);
-            progressCallback.uploadReadingSucceeded(readingsToUpload.get(0));
+            Patient patient = patientManager.getPatientById(readingsToUpload.get(0).getPatientId());
+
+            progressCallback.uploadReadingSucceeded(new Pair<>(patient,readingsToUpload.get(0)));
             readingsToUpload.remove(0);
             numCompleted++;
             progressCallback.uploadProgress(numCompleted, getTotalNumReadings());
@@ -265,7 +265,7 @@ public class MultiReadingUploader {
     public interface ProgressCallback {
         void uploadProgress(int numCompleted, int numTotal);
 
-        void uploadReadingSucceeded(Pair<Patient, Reading> pair);
+        void uploadReadingSucceeded(Pair<Patient, Reading>r);
 
         void uploadPausedOnError(String message);
     }

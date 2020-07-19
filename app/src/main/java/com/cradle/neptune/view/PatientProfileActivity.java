@@ -26,6 +26,7 @@ import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.manager.PatientManager;
 import com.cradle.neptune.manager.ReadingManager;
 import com.cradle.neptune.manager.UrlManager;
 import com.cradle.neptune.model.ApiKt;
@@ -77,6 +78,8 @@ public class PatientProfileActivity extends AppCompatActivity {
 //    ReadingManager readingManager;
     @Inject
     ReadingManager readingManager;
+    @Inject
+    PatientManager patientManager;
     @Inject
     SharedPreferences sharedPreferences;
     @Inject
@@ -136,10 +139,12 @@ public class PatientProfileActivity extends AppCompatActivity {
                     response,
                     result -> {
                         Patient patient = result.getFirst();
+                        patientManager.add(patient);
                         List<Reading> readings = result.getSecond();
                         for (Reading reading : readings) {
-                            readingManager.addReadingAsync(patient, reading);
+                            readingManager.addReading(reading);
                         }
+
                         setupReadingsRecyclerView();
                         progressDialog.cancel();
                         Toast.makeText(PatientProfileActivity.this, "Patient updated!", Toast.LENGTH_SHORT).show();
@@ -375,12 +380,7 @@ public class PatientProfileActivity extends AppCompatActivity {
     }
 
     private List<Reading> getThisPatientsReadings() {
-        // Since we can't use streams in API 17 we end up having to use this mess.
-        List<Pair<Patient, Reading>> pairs = readingManager.getReadingsByPatientId(currPatient.getId());
-        List<Reading> readings = new ArrayList<>();
-        for (Pair<Patient, Reading> pair : pairs) {
-            readings.add(pair.getSecond());
-        }
+        List<Reading> readings = readingManager.getReadingsByPatientId(currPatient.getId());
         Comparator<Reading> comparator = Reading.DescendingDateComparator.INSTANCE;
         Collections.sort(readings, comparator);
         return readings;

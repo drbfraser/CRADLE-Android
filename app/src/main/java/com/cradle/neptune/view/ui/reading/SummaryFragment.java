@@ -202,7 +202,7 @@ public class SummaryFragment extends BaseFragment {
             layoutReadings.addView(v);
 
             // date & condition summary
-            String time = DateUtil.getDateString(reading.getDateTimeTaken());
+            String time = DateUtil.getDateString(DateUtil.getZoneTimeFromLong(reading.getDateTimeTaken()));
             String analysisText = analysis.getAnalysisText(getContext());
             tv = v.findViewById(R.id.txtReadingHeading);
             tv.setText(getString(R.string.reading_time_summary,

@@ -446,13 +446,12 @@ public class UploadActivity extends AppCompatActivity {
             @Override
             public void uploadReadingSucceeded(Pair<Patient, Reading> pair) {
                 // mark reading as uploaded
-                pair.getSecond().getMetadata().setDateUploadedToServer(ZonedDateTime.now());
-                readingManager.updateReading(pair.getFirst(), pair.getSecond());
+                pair.getSecond().getMetadata().setDateUploadedToServer(ZonedDateTime.now().toEpochSecond());
+                readingManager.updateReading(pair.getSecond());
 
                 // record that we did a successful upload
-                //todo change so that saved as a long
-                String dateStr = DateUtil.getFullDateFromMilliSeconds(ZonedDateTime.now().toEpochSecond()*Referral.MS_IN_SECOND);
-                sharedPreferences.edit().putString(LAST_UPLOAD_DATE, dateStr).apply();
+                sharedPreferences.edit().putLong(LAST_UPLOAD_DATE,
+                        ZonedDateTime.now().toEpochSecond()).apply();
             }
 
             @Override
