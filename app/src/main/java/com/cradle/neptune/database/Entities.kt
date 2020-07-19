@@ -8,23 +8,6 @@ import com.cradle.neptune.model.Sex
 import java.io.Serializable
 
 /**
- * A reading database entity.
- *
- * @property readingId Identifier for this reading; the entity's primary key.
- * @property patientId Identifier for the patient this reading is associated with.
- * @property readDataJsonString A JSON string containing data about the reading.
- * @property isUploadedToServer Whether this reading has been uploaded to the
- * server or not.
- */
-@Entity
-data class ReadingEntity(
-    @PrimaryKey var readingId: String,
-    @ColumnInfo var patientId: String?,
-    @ColumnInfo var readDataJsonString: String?,
-    @ColumnInfo var isUploadedToServer: Boolean
-) : Serializable
-
-/**
  * A health facility database entity.
  *
  * @property id Identifier for this health facility; the entity's primary key.

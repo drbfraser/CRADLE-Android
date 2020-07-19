@@ -1,5 +1,7 @@
 package com.cradle.neptune.model
 
+import java.io.Serializable
+
 /**
  * Holds information about a urine test.
  */
@@ -9,7 +11,7 @@ data class UrineTest(
     var protein: String,
     var blood: String,
     var glucose: String
-) : Marshal<JsonObject> {
+) : Serializable, Marshal<JsonObject> {
 
     /**
      * Converts this object to JSON.

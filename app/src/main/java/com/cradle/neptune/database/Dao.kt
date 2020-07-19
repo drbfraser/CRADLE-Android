@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.cradle.neptune.model.Patient
+import com.cradle.neptune.model.Reading
 
 /**
  * Data Access Object (DAO) for [ReadingEntity] entities.
@@ -68,27 +69,27 @@ interface ReadingDaoAccess {
      *
      * @param id The reading id to search for.
      */
-    @Query("SELECT * FROM ReadingEntity WHERE readingId LIKE :id LIMIT 1")
-    fun getReadingById(id: String): ReadingEntity?
+    @Query("SELECT * FROM Reading WHERE readingId LIKE :id LIMIT 1")
+    fun getReadingById(id: String): Reading?
 
     /**
      * Returns all of the readings associated with a specified patient.
      *
      * @param id The id of the patient to find readings for.
      */
-    @Query("SELECT * FROM ReadingEntity WHERE patientId LIKE :id")
-    fun getAllReadingByPatientId(id: String): List<ReadingEntity>
+    @Query("SELECT * FROM Reading WHERE patientId LIKE :id")
+    fun getAllReadingByPatientId(id: String): List<Reading>
 
     /**
      * All readings which have not yet been uploaded to the server.
      */
-    @get:Query("SELECT * FROM ReadingEntity WHERE isUploadedToServer = 0")
-    val allUnUploadedReading: List<ReadingEntity>
+    @get:Query("SELECT * FROM Reading WHERE isUploadedToServer = 0")
+    val allUnUploadedReading: List<Reading>
 
     /**
      * Deletes all readings from the database.
      */
-    @Query("DELETE FROM ReadingEntity")
+    @Query("DELETE FROM Reading")
     fun deleteAllReading()
 }
 
@@ -110,8 +111,6 @@ interface PatientDaoAccess {
     @Query("SELECT * FROM Patient WHERE id LIKE :id LIMIT 1")
     fun getPatientById(id: String): Patient?
 
-    @Query("DELETE FROM ReadingEntity")
-    fun deleteAllPatients()
 }
 
 /**

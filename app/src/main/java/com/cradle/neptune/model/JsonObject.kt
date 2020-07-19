@@ -273,46 +273,6 @@ fun <F : Field> JsonObject.optBooleanField(field: F): Boolean? = try {
     null
 }
 
-/**
- * Returns the date value for the specified field.
- *
- * The date may either be encoded in JSON as a long containing the number of
- * seconds since the epoch or a formatted string.
- *
- * @throws JsonException If not such field exists.
- */
-fun <F : Field> JsonObject.dateField(field: F): ZonedDateTime {
-    // Try epoch seconds first.
-    val date = optLongField(field)?.let { DateUtil.getZoneTimeFromLong(it) }
-    if (date != null) {
-        return date
-    }
-
-    // If not epoch seconds then try formatted string.
-    //
-    // We try and parse using the system's default zoned id. This may cause
-    // problems if the string is encoded using a different zone id hence the
-    // move to storing dates as seconds from epoch.
-    val dateString = stringField(field)
-    return try {
-        ZonedDateTime.parse(dateString, DateTimeFormatter.ISO_ZONED_DATE_TIME.withZone(ZoneId.systemDefault()))
-    } catch (e: Exception) {
-        throw JsonException("unable to parse date string", e)
-    }
-}
-
-/**
- * Returns the date value for the specified field or `null` if not such field
- * exists.
- *
- * The date may either be encoded in JSON as a long containing the number of
- * seconds since the epoch or a formatted string.
- */
-fun <F : Field> JsonObject.optDateField(field: F): ZonedDateTime? = try {
-    dateField(field)
-} catch (e: JsonException) {
-    null
-}
 
 /**
  * Returns the object value for the specified field.

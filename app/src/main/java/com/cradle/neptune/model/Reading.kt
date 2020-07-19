@@ -1,11 +1,15 @@
 package com.cradle.neptune.model
 
 import android.content.Context
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.cradle.neptune.R
-import com.cradle.neptune.database.ReadingEntity
+import org.threeten.bp.Instant
 import java.util.UUID
 import org.threeten.bp.ZonedDateTime
 import org.threeten.bp.temporal.ChronoUnit
+import java.io.Serializable
 
 const val RED_SYSTOLIC = 160
 const val RED_DIASTOLIC = 110
@@ -42,24 +46,25 @@ const val MIN_HEART_RATE = 40
  * @property metadata Some internal metadata associated with this reading. By
  * default an empty metadata object (with all `null` values) will be used.
  */
+@Entity
 data class Reading(
-    var id: String = UUID.randomUUID().toString(),
-    var patientId: String,
-    var dateTimeTaken: ZonedDateTime,
+    @PrimaryKey
+    @ColumnInfo var id: String = UUID.randomUUID().toString(),
+    @ColumnInfo var patientId: String,
+    @ColumnInfo var dateTimeTaken: Long,
+    @ColumnInfo var bloodPressure: BloodPressure,
+    @ColumnInfo var urineTest: UrineTest?,
+    @ColumnInfo var symptoms: List<String>,
 
-    var bloodPressure: BloodPressure,
-    var urineTest: UrineTest?,
-    var symptoms: List<String>,
+    @ColumnInfo var referral: Referral?,
+    @ColumnInfo var followUp: FollowUp?,
 
-    var referral: Referral?,
-    var followUp: FollowUp?,
+    @ColumnInfo var dateRecheckVitalsNeeded: Long?,
+    @ColumnInfo var isFlaggedForFollowUp: Boolean,
 
-    var dateRecheckVitalsNeeded: ZonedDateTime?,
-    var isFlaggedForFollowUp: Boolean,
+    @ColumnInfo var previousReadingIds: List<String> = emptyList(),
 
-    var previousReadingIds: List<String> = emptyList(),
-
-    var metadata: ReadingMetadata = ReadingMetadata()
+    @ColumnInfo var metadata: ReadingMetadata = ReadingMetadata()
 ) : Marshal<JsonObject> {
 
     /**
@@ -77,7 +82,7 @@ data class Reading(
      */
     val isVitalRecheckRequiredNow
         get() = isVitalRecheckRequired &&
-            (dateRecheckVitalsNeeded?.isBefore(ZonedDateTime.now()) ?: false)
+            (dateRecheckVitalsNeeded- Instant.now() ?: false)
 
     /**
      * The number of minutes until a vital recheck is required.
@@ -117,13 +122,6 @@ data class Reading(
         union(metadata)
     }
 
-    /**
-     * Converts this reading into a [ReadingEntity] object.
-     */
-    fun toEntity(): ReadingEntity {
-        return ReadingEntity(id, patientId, marshal().toString(), metadata.isUploaded)
-    }
-
     companion object : Unmarshal<Reading, JsonObject> {
         /**
          * Constructs a [Reading] object form a [JsonObject].
@@ -136,7 +134,7 @@ data class Reading(
             val patientId =
                 data.optStringField(ReadingField.PATIENT_ID) ?: data.getJSONObject("patient").getString("patientId")
 
-            val dateTimeTaken = data.dateField(ReadingField.DATE_TIME_TAKEN)
+            val dateTimeTaken = data.longField(ReadingField.DATE_TIME_TAKEN)
 
             val bloodPressure = BloodPressure.unmarshal(data)
             val referral = maybeUnmarshal(Referral, data)
@@ -154,7 +152,7 @@ data class Reading(
                 }
             }
 
-            val dateRecheckVitalsNeeded = data.optDateField(ReadingField.DATE_RECHECK_VITALS_NEEDED)
+            val dateRecheckVitalsNeeded = data.optLongField(ReadingField.DATE_RECHECK_VITALS_NEEDED)
             val isFlaggedForFollowUp = data.optBooleanField(ReadingField.IS_FLAGGED_FOR_FOLLOWUP) ?: false
 
             val previousReadingIds = data.optArrayField(ReadingField.PREVIOUS_READING_IDS)?.let {
@@ -218,7 +216,7 @@ data class BloodPressure(
     val systolic: Int,
     val diastolic: Int,
     val heartRate: Int
-) : Marshal<JsonObject> {
+) : Serializable,Marshal<JsonObject> {
     /**
      * The shock index for this blood pressure result.
      */
@@ -294,7 +292,7 @@ data class Referral(
     val messageSendTimeInMS: Long,
     val healthCentre: String,
     val comment: String
-) : Marshal<JsonObject> {
+) : Serializable, Marshal<JsonObject> {
 
     override fun marshal(): JsonObject = with(JsonObject()) {
         put(ReferralField.MESSAGE_SEND_TIME, messageSendTimeInMS / MS_IN_SECOND)
@@ -388,8 +386,8 @@ data class ReadingMetadata(
     /* Application Data */
     var appVersion: String? = null,
     var deviceInfo: String? = null,
-    var dateLastSaved: ZonedDateTime? = null,
-    var dateUploadedToServer: ZonedDateTime? = null,
+    var dateLastSaved: Long? = null,
+    var dateUploadedToServer: Long? = null,
 
     /* Image Data */
     var photoPath: String? = null,
@@ -398,7 +396,7 @@ data class ReadingMetadata(
 
     /* GPS Data */
     var gpsLocation: String? = null
-) : Marshal<JsonObject> {
+) : Serializable, Marshal<JsonObject> {
     /**
      * True if this reading has been uploaded to the server.
      */
@@ -419,8 +417,8 @@ data class ReadingMetadata(
         override fun unmarshal(data: JsonObject): ReadingMetadata {
             val appVersion = data.optStringField(MetadataField.APP_VERSION)
             val deviceInfo = data.optStringField(MetadataField.DEVICE_INFO)
-            val dateLastSaved = data.optDateField(MetadataField.DATE_LAST_SAVED)
-            val dateUploadedToServer = data.optDateField(MetadataField.DATE_UPLOADED_TO_SERVER)
+            val dateLastSaved = data.optLongField(MetadataField.DATE_LAST_SAVED)
+            val dateUploadedToServer = data.optLongField(MetadataField.DATE_UPLOADED_TO_SERVER)
             val photoPath = data.optStringField(MetadataField.PHOTO_PATH)
             val isImageUploaded = data.optBooleanField(MetadataField.IS_IMAGE_UPLOADED) ?: false
 
