@@ -12,10 +12,12 @@ import com.google.gson.JsonArray
 class DatabaseTypeConverters {
 
     @TypeConverter
-    fun gestationalAgeToString(gestationalAge: GestationalAge?): String? = Gson().toJson(gestationalAge)
+    fun gestationalAgeToString(gestationalAge: GestationalAge?): String? =
+        Gson().toJson(gestationalAge)
 
     @TypeConverter
-    fun stringToGestationalAge(string: String?): GestationalAge? = Gson().fromJson(string, GestationalAge::class.java)
+    fun stringToGestationalAge(string: String?): GestationalAge? =
+        Gson().fromJson(string, GestationalAge::class.java)
 
     @TypeConverter
     fun stringToSex(string: String): Sex = enumValueOf(string)
@@ -32,6 +34,7 @@ class DatabaseTypeConverters {
         return jsonArray.toString()
     }
 
-   @TypeConverter
-   fun toList(string: String): List<String> = Gson().fromJson(string, mutableListOf<String>().javaClass)
+    @TypeConverter
+    fun toList(string: String): List<String> =
+        Gson().fromJson(string, mutableListOf<String>().javaClass)
 }

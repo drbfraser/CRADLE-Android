@@ -58,27 +58,6 @@ suspend fun unmarshalPatientAndReadings(json: JsonObject): Pair<Patient, List<Re
 }
 
 /**
- * A legacy version of [unmarshalAllInfoArray] which runs on the IO dispatcher.
- *
- * Provides a [callback] parameter to execute some arbitrary code once the
- * array has been converted to models.
- *
- * The function is meant as a legacy interface between the old Java concurrency
- * model and Kotlin's coroutine model and should be removed at a later date.
- *
- * @param array the array to unmarshal
- * @param callback a callback to execute once finished
- */
-fun legacyUnmarshallAllInfoAsync(array: JsonArray, callback: (List<Pair<Patient, List<Reading>>>) -> Unit) {
-    legacyAsync<JsonArray, Unit> { params ->
-        coroutineScope {
-            val result = unmarshalAllInfoArray(params[0])
-            callback(result)
-        }
-    }.execute(array)
-}
-
-/**
  * A legacy version of [unmarshalPatientAndReadings] which runs on the IO
  * dispatcher.
  *

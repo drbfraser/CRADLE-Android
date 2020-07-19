@@ -114,7 +114,7 @@ public class UploadActivity extends AppCompatActivity {
                         .setTitle("Downloading patient data")
                         .setPositiveButton("OK", (dialogInterface, i)
                                 -> {
-                            LoginActivity.getAllMyPatients(token, readingManager, urlManager, UploadActivity.this);
+                            LoginActivity.Companion.getAllMyPatients(token, readingManager, urlManager, UploadActivity.this);
                         })
                         .setNegativeButton("Cancel", (dialogInterface, i) -> {
 
