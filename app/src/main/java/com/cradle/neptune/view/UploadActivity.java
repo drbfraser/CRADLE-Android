@@ -25,6 +25,7 @@ import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.manager.PatientManager;
 import com.cradle.neptune.manager.UrlManager;
 import com.cradle.neptune.model.*;
 import com.cradle.neptune.manager.ReadingManager;
@@ -63,6 +64,8 @@ public class UploadActivity extends AppCompatActivity {
     Settings settings;
     @Inject
     UrlManager urlManager;
+    @Inject
+    PatientManager patientManager;
 
     MultiReadingUploader multiUploader;
 
@@ -114,7 +117,7 @@ public class UploadActivity extends AppCompatActivity {
                         .setTitle("Downloading patient data")
                         .setPositiveButton("OK", (dialogInterface, i)
                                 -> {
-                            LoginActivity.Companion.getAllMyPatients(token, readingManager, urlManager, UploadActivity.this);
+                            LoginActivity.Companion.getAllMyPatients(token, readingManager, urlManager, patientManager,UploadActivity.this);
                         })
                         .setNegativeButton("Cancel", (dialogInterface, i) -> {
 

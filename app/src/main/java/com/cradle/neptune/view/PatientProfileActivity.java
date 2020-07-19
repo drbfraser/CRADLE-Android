@@ -176,7 +176,7 @@ public class PatientProfileActivity extends AppCompatActivity {
             @Override
             public Map<String, String> getHeaders() {
                 HashMap<String, String> headers = new HashMap<>();
-                String token = sharedPreferences.getString(LoginActivity.TOKEN, LoginActivity.DEFAULT_TOKEN);
+                String token = sharedPreferences.getString(LoginActivity.TOKEN, "");
                 headers.put(LoginActivity.AUTH, "Bearer " + token);
                 return headers;
             }

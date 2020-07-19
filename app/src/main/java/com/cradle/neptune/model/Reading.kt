@@ -107,7 +107,7 @@ data class Reading(
         union(referral)
         put(ReadingField.URINE_TEST, urineTest)
         // TODO: Convert back to array once the server can handle it.
-        put(ReadingField.SYMPTOMS, symptoms.joinToString(", "))
+        put(ReadingField.SYMPTOMS, symptoms)
 
         put(ReadingField.DATE_RECHECK_VITALS_NEEDED, dateRecheckVitalsNeeded)
         put(ReadingField.IS_FLAGGED_FOR_FOLLOWUP, isFlaggedForFollowUp)
@@ -144,46 +144,13 @@ data class Reading(
                 maybeUnmarshal(UrineTest, it)
             }
 
-            val symptomsJsonArray = try {
-                data.arrayField(ReadingField.SYMPTOMS)
-            } catch (e: JsonException) {
-                // Sometimes the symptoms array is encoded as a comma separated
-                // string and not an actual array. To handle this we first try
-                // and unmarshal an array and if that fails then we try a
-                // string.
-                val list = data.stringField(ReadingField.SYMPTOMS)
-                    .split(",")
-                    .map { it.trim() }
-                    .filterNot { it.isEmpty() }
-                JsonArray(list)
-            }
-            val symptoms = mutableListOf<String>()
+            val symptomsJsonArray =
+                data.optArrayField(ReadingField.SYMPTOMS)
+            val symptoms = ArrayList<String>()
 
-            // For some reason, legacy symptoms were encoded in JSON as an
-            // array of a single, comma separated string.
-            //
-            // Something like:
-            //   ["ABDO PAIN, FEVERISH, HEADACHE, BLEEDING"]
-            //
-            // In order to handle this, and not incorrectly split up a user-
-            // supplied symptom, we'll check to see if the JSON array only
-            // contains a single element and if we can split it using a ','
-            // separator. Since there is no enumeration which defines the
-            // set of hard-coded symptoms, this is the best we can to for
-            // legacy support.
-            if (symptomsJsonArray.length() == 1) {
-                val symptomString = symptomsJsonArray.getString(0)
-                val split = symptomString.split(',')
-                    .map { it.trim() }
-                    .filterNot { it.isEmpty() }
-                if (split.size != 1) {
-                    symptoms.addAll(split)
-                } else {
-                    symptoms.add(symptomString)
-                }
-            } else {
-                for (i in 0 until symptomsJsonArray.length()) {
-                    symptoms.add(symptomsJsonArray.getString(i))
+            symptomsJsonArray?.apply {
+                for (i in 0 until this.length()) {
+                    symptoms.add(this[i] as String)
                 }
             }
 

@@ -29,15 +29,22 @@ import com.cradle.neptune.manager.HealthCentreManager
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.manager.UrlManager
+import com.cradle.neptune.model.JsonObject
+import com.cradle.neptune.model.Patient
+import com.cradle.neptune.model.Reading
 import com.cradle.neptune.utilitiles.NotificationUtils
-import org.json.JSONArray
-import org.json.JSONException
-import org.json.JSONObject
 import java.io.UnsupportedEncodingException
+import java.nio.charset.Charset
 import java.util.ArrayList
 import java.util.HashMap
 import java.util.UUID
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
 
 class LoginActivity : AppCompatActivity() {
 
@@ -133,6 +140,7 @@ class LoginActivity : AppCompatActivity() {
                             token,
                             readingManager,
                             urlManager,
+                            patientManager,
                             this
                         )
                         // only for testing
@@ -264,20 +272,34 @@ class LoginActivity : AppCompatActivity() {
          */
         fun getAllMyPatients(
             token: String,
-            readingManager: ReadingManager?,
-            urlManager: UrlManager?,
+            readingManager: ReadingManager,
+            urlManager: UrlManager,
+            patientManager: PatientManager,
             context: Context
         ) {
             val jsonArrayRequest: JsonRequest<JSONArray> =
                 object : JsonArrayRequest(
                     Method.GET,
-                    urlManager!!.allPatientInfo,
+                    urlManager.allPatientInfo,
                     null,
                     Response.Listener { response: JSONArray ->
                         try {
                             Log.d("bugg", response.toString(4))
                         } catch (e: JSONException) {
                             e.printStackTrace()
+                        }
+
+                        GlobalScope.launch(Dispatchers.IO) {
+                            val patientList = ArrayList<Patient>()
+                            val readingList = ArrayList<Reading>()
+                            for (i in 0 until response.length()) {
+                                // get all the readings
+                                patientList.add(Patient.unmarshal(response[i] as JsonObject))
+                                val readingArray = (response[i] as JsonObject).getJSONArray("readings")
+                                for (j in 0 until readingArray.length()) {
+                                    readingList.add(Reading.unmarshal(readingArray[j] as JsonObject))
+                                }
+                            }
                         }
                     },
                     Response.ErrorListener { error: VolleyError ->
@@ -296,7 +318,7 @@ class LoginActivity : AppCompatActivity() {
                             if (error.networkResponse != null) {
                                 val json = String(
                                     error.networkResponse.data,
-                                    HttpHeaderParser.parseCharset(error.networkResponse.headers)
+                                    HttpHeaderParser.parseCharset(error.networkResponse.headers) as Charset
                                 )
                                 Log.d(
                                     "bugg1",
