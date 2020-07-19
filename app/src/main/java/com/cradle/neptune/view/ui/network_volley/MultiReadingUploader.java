@@ -47,7 +47,7 @@ public class MultiReadingUploader {
 
     private Context context;
     private Settings settings;
-    private List<Pair<Patient, Reading>> pairs;
+    private List<Reading> readingsToUpload;
     private ProgressCallback progressCallback;
     private State state = State.IDLE;
     private int numCompleted = 0;
@@ -64,12 +64,12 @@ public class MultiReadingUploader {
     }
 
     // OPERATIONS
-    public void startUpload(List<Pair<Patient, Reading>> pairs) {
+    public void startUpload(List< Reading> readings) {
         if (state != State.IDLE) {
             Log.e(TAG, "ERROR: Not in idle state");
         } else {
-            Util.ensure(pairs != null && pairs.size() > 0);
-            this.pairs = pairs;
+            Util.ensure(readings != null && readings.size() > 0);
+            this.readingsToUpload = readings;
             startUploadOfPendingReading();
             progressCallback.uploadProgress(numCompleted, getTotalNumReadings());
         }
@@ -77,18 +77,18 @@ public class MultiReadingUploader {
 
     public void abortUpload() {
         state = State.DONE;
-        pairs.clear();
+        readingsToUpload.clear();
     }
 
     public void resumeUploadBySkip() {
         if (state != State.PAUSED) {
             Log.e(TAG, "ERROR: Not in paused state");
         } else {
-            Util.ensure(pairs != null && pairs.size() > 0);
+            Util.ensure(readingsToUpload != null && readingsToUpload.size() > 0);
 
             // skip
-            pairs.remove(0);
-            if (pairs.size() > 0) {
+            readingsToUpload.remove(0);
+            if (readingsToUpload.size() > 0) {
                 startUploadOfPendingReading();
             } else {
                 state = State.DONE;
@@ -101,7 +101,7 @@ public class MultiReadingUploader {
         if (state != State.PAUSED) {
             Log.e(TAG, "ERROR: Not in paused state");
         } else {
-            Util.ensure(pairs != null && pairs.size() > 0);
+            Util.ensure(readingsToUpload != null && readingsToUpload.size() > 0);
             startUploadOfPendingReading();
             progressCallback.uploadProgress(numCompleted, getTotalNumReadings());
         }
@@ -130,7 +130,7 @@ public class MultiReadingUploader {
     }
 
     public int getNumRemaining() {
-        return pairs.size();
+        return readingsToUpload.size();
     }
 
     public int getTotalNumReadings() {
@@ -165,19 +165,19 @@ public class MultiReadingUploader {
 
     // INTERNAL STATE MACHINE OPERATIONS
     private void startUploadOfPendingReading() {
-        Util.ensure(pairs.size() > 0);
+        Util.ensure(readingsToUpload.size() > 0);
         state = State.UPLOADING;
 
         File zipFile = null;
         try {
             // zip data
-            zipFile = zipReading(pairs.get(0));
+            //zipFile = zipReading(readingsToUpload.get(0));
 
             // generate zip of encrypted data
             String encryptedZipFileFolder = context.getCacheDir().getAbsolutePath();
 
-            Patient patient = pairs.get(0).getFirst();
-            Reading reading = pairs.get(0).getSecond();
+            Patient patient = readingsToUpload.get(0).getFirst();
+            Reading reading = readingsToUpload.get(0).getSecond();
             String readingJson = marshalManager.marshalToUploadJson(patient, reading).toString();
 //            String readingJson = Reading.getJsonObj(readings.get(0), sharedPreferences.getString(LoginActivity.USER_ID, ""));
             // start upload
@@ -205,14 +205,14 @@ public class MultiReadingUploader {
             }
 
             // current reading uploaded successfully
-            Util.ensure(pairs.size() > 0);
-            progressCallback.uploadReadingSucceeded(pairs.get(0));
-            pairs.remove(0);
+            Util.ensure(readingsToUpload.size() > 0);
+            progressCallback.uploadReadingSucceeded(readingsToUpload.get(0));
+            readingsToUpload.remove(0);
             numCompleted++;
             progressCallback.uploadProgress(numCompleted, getTotalNumReadings());
 
             // advance to next reading
-            if (pairs.size() > 0) {
+            if (readingsToUpload.size() > 0) {
                 startUploadOfPendingReading();
             } else {
                 state = State.DONE;

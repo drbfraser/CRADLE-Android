@@ -199,77 +199,7 @@ public class UploadActivity extends AppCompatActivity {
     }
 
     private void getReadingFollowFromTheResponse(JSONArray response) {
-        List<FollowUp> readingsFollowUps = new ArrayList<>();
-        for (int i = 0; i < response.length(); i++) {
-            try {
-                JSONObject jsonObject = response.getJSONObject(i);
-
-                String readingServerId = jsonObject.getString("readingId");
-                //follow up info
-                String followUpAction = jsonObject.optString("followUpAction","N/A");
-                String treatment = jsonObject.getString("treatment");
-                String diagnosis = jsonObject.getString("diagnosis");
-                String referredBy = jsonObject.getString("referredBy");
-                String dateAssessed = jsonObject.getString("dateAssessed");
-
-                //follow up actions
-                boolean followUpNeeded = jsonObject.optBoolean("followupNeeded",false);
-                String followupNeededTill = jsonObject.optString("followUpNeededTill","N/A");
-                String medicationPrescribed = jsonObject.optString("medicationPrescribed","N/A");
-                String followupFrequencyUnit = jsonObject.optString("followupFrequencyUnit","N/A");
-                int followupFrequencyValue = jsonObject.optInt("followupFrequencyValue");
-                String specialInvestigation = jsonObject.optString("specialInvestigations","N/A");
-
-                // health facility info
-                JSONObject healthFacility = jsonObject.getJSONObject("healthFacility");
-                String hfName = healthFacility.getString("name");
-                String assessedBy = healthFacility
-                        .getJSONObject("healthcareWorker").getString("email");
-                //patient info
-                JSONObject patient = jsonObject.getJSONObject("patient");
-                String medicalInfo = patient.getString("medicalHistory");
-                String drugInfo = patient.getString("drugHistory");
-                String patientId = patient.getString("patientId");
-
-                FollowUp readingFollowUp = new FollowUp(readingServerId, followUpAction,
-                        treatment, diagnosis, hfName, dateAssessed, assessedBy, referredBy);
-                readingFollowUp.setPatientDrugInfoUpdate(drugInfo);
-                readingFollowUp.setPatientMedInfoUpdate(medicalInfo);
-                readingFollowUp.setPatientId(patientId);
-                readingsFollowUps.add(readingFollowUp);
-
-                readingFollowUp.setFollowUpNeeded(followUpNeeded);
-                readingFollowUp.setFollowUpNeededTill(followupNeededTill);
-                readingFollowUp.setFollowUpFrequencyUnit(followupFrequencyUnit);
-                readingFollowUp.setFollowUpFrequencyValue(followupFrequencyValue);
-                readingFollowUp.setMedicationPrescribed(medicationPrescribed);
-                readingFollowUp.setSpecialInvestigation(specialInvestigation);
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-//        List<Reading> readings = readingManager.getReadings(this);
-        List<Pair<Patient, Reading>> pairs = readingManager.getAllReadings();
-        Map<String, Pair<Patient, Reading>> readingMap = new HashMap<>();
-        for (Pair<Patient, Reading> pair : pairs) {
-            readingMap.put(pair.getSecond().getId(), pair);
-        }
-        //update the followups
-        for (FollowUp followUp : readingsFollowUps) {
-            Pair<Patient, Reading> pair = readingMap.get(followUp.getReadingServerId());
-            if (pair != null) {
-                pair.getSecond().setFollowUp(followUp);
-                pair.getFirst().getMedicalHistoryList().add(followUp.getPatientMedInfoUpdate().toLowerCase());
-                pair.getFirst().getDrugHistoryList().add(followUp.getPatientDrugInfoUpdate().toLowerCase());
-                readingManager.updateReading(pair.getFirst(), pair.getSecond());
-//                reading.patient.medicalHistoryList = new ArrayList<>();
-//                reading.patient.drugHistoryList = new ArrayList<>();
-//                reading.patient.medicalHistoryList.add(followUp.getPatientMedInfoUpdate().toLowerCase());
-//                reading.patient.drugHistoryList.add(followUp.getPatientDrugInfoUpdate().toLowerCase());
-//                readingManager.updateReading(this, reading);
-            }
-        }
+            //TODO update based on the new model
     }
 
     private void upDateLastDownloadTime(ZonedDateTime now) {
@@ -326,13 +256,14 @@ public class UploadActivity extends AppCompatActivity {
     private void setupUploadImageButton() {
         Button btnStart = findViewById(R.id.uploadImagesButton);
         btnStart.setOnClickListener(view -> {
-            List<Pair<Patient, Reading>> readings = readingManager.getAllReadings();
-            List<Pair<Patient, Reading>> readingsToUpload = new ArrayList<>();
+            List<Reading> readings = readingManager.getAllReadings();
+
+            List<Reading> readingsToUpload = new ArrayList<>();
             for (int i = 0; i < readings.size(); i++) {
-                Pair<Patient, Reading> reading = readings.get(i);
-                if (reading.getSecond().getMetadata().getPhotoPath() != null) {
-                    File file = new File(reading.getSecond().getMetadata().getPhotoPath());
-                    if (!reading.getSecond().getMetadata().isImageUploaded() && file.exists()) {
+                Reading reading = readings.get(i);
+                if (reading.getMetadata().getPhotoPath() != null) {
+                    File file = new File(reading.getMetadata().getPhotoPath());
+                    if (!reading.getMetadata().isImageUploaded() && file.exists()) {
 
                         readingsToUpload.add(reading);
                     }
@@ -367,14 +298,14 @@ public class UploadActivity extends AppCompatActivity {
                     return;
                 }
 
-                Pair<Patient, Reading> r = readingsToUpload.get(i);
-                Uri file = Uri.fromFile(new File(r.getSecond().getMetadata().getPhotoPath()));
+                Reading r = readingsToUpload.get(i);
+                Uri file = Uri.fromFile(new File(r.getMetadata().getPhotoPath()));
 
                 StorageReference storageReference1 = storageReference.child("cradle-test-images/" + file.getLastPathSegment());
                 UploadTask uploadTask = storageReference1.putFile(file);
                 uploadTask.addOnSuccessListener(taskSnapshot -> {
-                    r.getSecond().getMetadata().setImageUploaded(true);
-                    readingManager.updateReading(r.getFirst(), r.getSecond());
+                    r.getMetadata().setImageUploaded(true);
+                    readingManager.updateReading(r);
                     progressBar.setProgress(progressBar.getProgress() + 1);
                     if (stopuploading[0]) {
                         progressBar.setVisibility(View.INVISIBLE);
@@ -472,17 +403,17 @@ public class UploadActivity extends AppCompatActivity {
 //        }
 
         // discover un-uploaded readings
-        List<Pair<Patient, Reading>> pairs = readingManager.getUnUploadedReadings();
+        List<Reading> unUploadedReadings = readingManager.getUnUploadedReadings();
 //        List<Reading> readingsToUpload = readingManager.getUnuploadedReadings();
         // abort if no readings
-        if (pairs.size() == 0) {
+        if (unUploadedReadings.size() == 0) {
             Toast.makeText(this, "No readings needing to be uploaded.", Toast.LENGTH_LONG).show();
             return;
         }
 
         // upload multiple readings
         multiUploader = new MultiReadingUploader(this, settings, sharedPreferences.getString(LoginActivity.TOKEN, ""), getProgressCallbackListener());
-        multiUploader.startUpload(pairs);
+        multiUploader.startUpload(unUploadedReadings);
         setUploadUiElementVisibility(true);
     }
 
