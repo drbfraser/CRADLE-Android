@@ -36,7 +36,7 @@ data class Patient(
     var villageNumber: String? = null,
     var drugHistoryList: List<String> = emptyList(),
     var medicalHistoryList: List<String> = emptyList(),
-    var lastEdited:Long? = null
+    var lastEdited: Long? = null
 ) : Marshal<JsonObject>, Serializable {
 
     /**
@@ -57,7 +57,7 @@ data class Patient(
         put(PatientField.VILLAGE_NUMBER, villageNumber)
         put(PatientField.DRUG_HISTORY, drugHistoryList)
         put(PatientField.MEDICAL_HISTORY, medicalHistoryList)
-        put(PatientField.LAST_EDITED,lastEdited)
+        put(PatientField.LAST_EDITED, lastEdited)
     }
 
     companion object : Unmarshal<Patient, JsonObject> {

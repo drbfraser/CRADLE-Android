@@ -8,7 +8,7 @@ import androidx.room.TypeConverters
  * Interface for the local cradle database.
  */
 @Database(
-    entities = [ReadingEntity::class, PatientEntity::class,HealthFacilityEntity::class],
+    entities = [ReadingEntity::class, PatientEntity::class, HealthFacilityEntity::class],
     version = 1,
     exportSchema = false
 )

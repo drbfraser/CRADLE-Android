@@ -1,14 +1,11 @@
 package com.cradle.neptune.database
 
-import android.service.autofill.FillEventHistory
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.cradle.neptune.model.GestationalAge
 import com.cradle.neptune.model.Sex
-import com.google.gson.annotations.SerializedName
 import java.io.Serializable
-import java.util.SimpleTimeZone
 
 /**
  * A reading database entity.
@@ -31,17 +28,17 @@ data class ReadingEntity(
 data class PatientEntity(
     @PrimaryKey var id: String,
     @ColumnInfo var name: String,
-    @ColumnInfo var dob:String?,
-    @ColumnInfo var age:Int?,
+    @ColumnInfo var dob: String?,
+    @ColumnInfo var age: Int?,
     @ColumnInfo var gestationalAge: GestationalAge?,
     @ColumnInfo var sex: Sex,
-    @ColumnInfo var isPregnant:Boolean,
+    @ColumnInfo var isPregnant: Boolean,
     @ColumnInfo var zone: String?,
-    @ColumnInfo var villageNumber:String?,
+    @ColumnInfo var villageNumber: String?,
     @ColumnInfo var drugHistory: List<String>,
     @ColumnInfo var medicalHistory: List<String>,
     @ColumnInfo var lastEdited: Long?
-):Serializable
+) : Serializable
 /**
  * A health facility database entity.
  *

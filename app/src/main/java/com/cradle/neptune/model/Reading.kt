@@ -330,7 +330,7 @@ data class Referral(
 ) : Marshal<JsonObject> {
 
     override fun marshal(): JsonObject = with(JsonObject()) {
-        put(ReferralField.MESSAGE_SEND_TIME, messageSendTimeInMS/ MS_IN_SECOND)
+        put(ReferralField.MESSAGE_SEND_TIME, messageSendTimeInMS / MS_IN_SECOND)
         put(ReferralField.HEALTH_CENTRE, healthCentre)
         put(ReferralField.COMMENT, comment)
     }

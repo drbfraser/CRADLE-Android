@@ -183,4 +183,3 @@ interface HealthFacilityDaoAccess {
     @get:Query("SELECT * FROM HealthFacilityEntity WHERE isUserSelected = 1")
     val allUserSelectedHealthFacilities: List<HealthFacilityEntity>
 }
-

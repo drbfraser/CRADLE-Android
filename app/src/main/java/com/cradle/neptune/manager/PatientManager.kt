@@ -7,13 +7,13 @@ class PatientManager(private val daoAccess: PatientDaoAccess) {
 
     fun add(patientEntity: PatientEntity) = daoAccess.insert(patientEntity)
 
-    fun addAll(patientEntities:List<PatientEntity>) = daoAccess.insertAll(patientEntities)
+    fun addAll(patientEntities: List<PatientEntity>) = daoAccess.insertAll(patientEntities)
 
     fun delete(patientEntity: PatientEntity) = daoAccess.delete(patientEntity)
 
-    fun getAllPatients():List<PatientEntity> = daoAccess.allPatients
+    fun getAllPatients(): List<PatientEntity> = daoAccess.allPatients
 
-    fun getPatientById(id:String):PatientEntity? = daoAccess.getPatientById(id)
+    fun getPatientById(id: String): PatientEntity? = daoAccess.getPatientById(id)
 
     fun deleteAllPatients() = daoAccess.deleteAllPatients()
 }
