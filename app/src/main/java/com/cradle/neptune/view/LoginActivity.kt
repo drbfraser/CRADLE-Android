@@ -301,6 +301,7 @@ class LoginActivity : AppCompatActivity() {
                                 }
                             }
                             patientManager.addAll(patientList)
+                            readingManager.addAllReadings(readingList)
                         }
                     },
                     Response.ErrorListener { error: VolleyError ->

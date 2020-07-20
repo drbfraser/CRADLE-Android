@@ -85,7 +85,7 @@ data class Patient(
             age = data.optIntField(PatientField.AGE)
             gestationalAge = maybeUnmarshal(GestationalAge, data)
             sex = data.mapField(PatientField.SEX, Sex::valueOf)
-            isPregnant = data.booleanField(PatientField.IS_PREGNANT)
+            isPregnant = data.optBooleanField(PatientField.IS_PREGNANT)
             // needsAssessment = data.booleanField(PatientField.NEEDS_ASSESSMENT)
             zone = data.optStringField(PatientField.ZONE)
             villageNumber = data.optStringField(PatientField.VILLAGE_NUMBER)

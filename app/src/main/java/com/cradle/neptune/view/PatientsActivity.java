@@ -26,9 +26,7 @@ import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.manager.ReadingManager;
 import com.cradle.neptune.viewmodel.PatientsViewAdapter;
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import kotlin.Pair;
 
