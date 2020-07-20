@@ -5,10 +5,10 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.cradle.neptune.R
-import org.threeten.bp.Instant
-import java.util.UUID
-import org.threeten.bp.ZonedDateTime
 import java.io.Serializable
+import java.util.UUID
+import org.threeten.bp.Instant
+import org.threeten.bp.ZonedDateTime
 
 const val RED_SYSTOLIC = 160
 const val RED_DIASTOLIC = 110
@@ -92,7 +92,7 @@ data class Reading(
     val minutesUtilVitalRecheck: Long?
         get() {
             val recheckTime = dateRecheckVitalsNeeded ?: return null
-            return (ZonedDateTime.now().toEpochSecond() - recheckTime)/ SECONDS_IN_MIN
+            return (ZonedDateTime.now().toEpochSecond() - recheckTime) / SECONDS_IN_MIN
         }
 
     /**
@@ -219,7 +219,7 @@ data class BloodPressure(
     val systolic: Int,
     val diastolic: Int,
     val heartRate: Int
-) : Serializable,Marshal<JsonObject> {
+) : Serializable, Marshal<JsonObject> {
     /**
      * The shock index for this blood pressure result.
      */

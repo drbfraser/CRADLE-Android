@@ -90,7 +90,7 @@ interface ReadingDaoAccess {
      * Newest reading of a perticular patient
      */
     @Query("SELECT *,MAX(dateTimeTaken) FROM READING WHERE patientId LIKE :id")
-    fun getNewestReadingByPatientId(id:String): Reading?
+    fun getNewestReadingByPatientId(id: String): Reading?
     /**
      * Deletes all readings from the database.
      */
@@ -115,7 +115,6 @@ interface PatientDaoAccess {
 
     @Query("SELECT * FROM Patient WHERE id LIKE :id LIMIT 1")
     fun getPatientById(id: String): Patient?
-
 }
 
 /**

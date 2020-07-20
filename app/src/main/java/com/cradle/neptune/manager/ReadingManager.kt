@@ -26,11 +26,11 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
      *
      * @param reading the reading to insert
      */
-    fun addReading(reading: Reading){
+    fun addReading(reading: Reading) {
         daoAccess.insertReading(reading)
     }
 
-    fun addAllReadings(readings:List<Reading>){
+    fun addAllReadings(readings: List<Reading>) {
         daoAccess.insertAll(readings)
     }
 
@@ -42,7 +42,7 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
      *
      * @param reading the reading to update
      */
-     fun updateReading(reading: Reading){
+    fun updateReading(reading: Reading) {
         daoAccess.update(reading)
     }
 
@@ -50,7 +50,7 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
      * Returns a list of all readings (and their associated patients) in the
      * database.
      */
-    fun getAllReadings(): List<Reading>{
+    fun getAllReadings(): List<Reading> {
         return daoAccess.allReadingEntities
     }
 
@@ -58,7 +58,7 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
      * Returns the reading (and its associated patient) with a given [id] from
      * the database. Returns `null` if unable to find such a reading.
      */
-    fun getReadingById(id: String): Reading?{
+    fun getReadingById(id: String): Reading? {
         return daoAccess.getReadingById(id)
     }
 
@@ -96,12 +96,13 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
     /**
      * Get the newest reading of a patient
      */
-    fun getNewestReadingByPatientId(id: String): Reading? = daoAccess.getNewestReadingByPatientId(id)
+    fun getNewestReadingByPatientId(id: String): Reading? =
+        daoAccess.getNewestReadingByPatientId(id)
 
     /**
      * Deletes all readings from the database.
      */
-    fun deleteAllData(){
+    fun deleteAllData() {
         daoAccess.deleteAllReading()
     }
 }

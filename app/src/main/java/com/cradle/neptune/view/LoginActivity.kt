@@ -261,7 +261,8 @@ class LoginActivity : AppCompatActivity() {
         const val DEFAULT_PASSWORD = -1
         val DEFAULT_TOKEN: String? = null
         const val AUTH_PREF = "authSharefPref"
-        var loginBruteForceAttempts = 3
+        const val loginBruteForceAttempts = 3
+        const val FETCH_PATIENT_TIMEOUT_MS = 150000
 
         /**
          * makes the volley call to get all the  past readings from this user.
@@ -284,7 +285,6 @@ class LoginActivity : AppCompatActivity() {
                     null,
                     Response.Listener { response: JSONArray ->
                         try {
-                            Log.d("bugg", response.toString(4))
                         } catch (e: JSONException) {
                             e.printStackTrace()
                         }
@@ -348,9 +348,9 @@ class LoginActivity : AppCompatActivity() {
                 "Downloading patient's information, Check the status bar for progress.",
                 Toast.LENGTH_LONG
             ).show()
-            // timeout to 15 second if there are alot of patients
+            // timeout to 15 second if there are a lot of patients
             jsonArrayRequest.retryPolicy = DefaultRetryPolicy(
-                150000,
+                FETCH_PATIENT_TIMEOUT_MS,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_TIMEOUT_MS.toFloat()
             )

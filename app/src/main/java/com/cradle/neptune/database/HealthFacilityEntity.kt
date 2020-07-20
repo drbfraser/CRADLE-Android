@@ -3,9 +3,6 @@ package com.cradle.neptune.database
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.cradle.neptune.model.GestationalAge
-import com.cradle.neptune.model.Sex
-import java.io.Serializable
 
 /**
  * A health facility database entity.

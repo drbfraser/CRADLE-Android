@@ -1,12 +1,9 @@
 package com.cradle.neptune.model
 
-import com.cradle.neptune.utilitiles.DateUtil
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import org.threeten.bp.ZoneId
 import org.threeten.bp.ZonedDateTime
-import org.threeten.bp.format.DateTimeFormatter
 
 /**
  * An alias of [JSONObject] with a name consistent with other class names.
@@ -259,7 +256,7 @@ fun <F : Field> JsonObject.optDoubleField(field: F): Double? = try {
  *
  * @throws JsonException If no such field exists.
  */
-fun <F : Field> JsonObject.booleanField(field: F): Boolean = optBoolean(field.text,false)
+fun <F : Field> JsonObject.booleanField(field: F): Boolean = optBoolean(field.text, false)
 
 /**
  * Returns the boolean value for the specified field or `null` if it does not
@@ -267,8 +264,7 @@ fun <F : Field> JsonObject.booleanField(field: F): Boolean = optBoolean(field.te
  *
  * @throws JsonException If no such field exists.
  */
-fun <F : Field> JsonObject.optBooleanField(field: F): Boolean = optBoolean(field.text,false)
-
+fun <F : Field> JsonObject.optBooleanField(field: F): Boolean = optBoolean(field.text, false)
 
 /**
  * Returns the object value for the specified field.

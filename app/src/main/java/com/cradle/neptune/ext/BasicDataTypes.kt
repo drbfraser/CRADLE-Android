@@ -1,13 +1,15 @@
 package com.cradle.neptune.ext
 
-import com.cradle.neptune.model.Referral
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
 import org.threeten.bp.ZonedDateTime
-import java.util.Calendar
 
-fun Long.ConvertToZoneTimeFromUnix(): ZonedDateTime {
+/**
+ * Converts any [Long] to [ZonedDateTime]
+ * The value must be in unix timestamp
+ */
+fun Long.convertToZoneTimeFromUnix(): ZonedDateTime {
     val i = Instant.ofEpochSecond(this)
     return ZonedDateTime.ofInstant(
-        i,ZoneId.systemDefault())
+        i, ZoneId.systemDefault())
 }

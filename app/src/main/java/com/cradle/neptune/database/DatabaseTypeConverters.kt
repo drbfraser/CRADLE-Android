@@ -45,41 +45,41 @@ class DatabaseTypeConverters {
 
     @TypeConverter
     fun toBloodPressure(string: String): BloodPressure =
-        Gson().fromJson(string,BloodPressure::class.java)
+        Gson().fromJson(string, BloodPressure::class.java)
 
     @TypeConverter
-    fun fromBloodPressure(bloodPressure: BloodPressure):String =
+    fun fromBloodPressure(bloodPressure: BloodPressure): String =
         Gson().toJson(bloodPressure)
 
     @TypeConverter
     fun toUrineTest(string: String): UrineTest? =
-        Gson().fromJson(string,UrineTest::class.java)
+        Gson().fromJson(string, UrineTest::class.java)
 
     @TypeConverter
-    fun fromUrineTest(urineTest: UrineTest?):String =
+    fun fromUrineTest(urineTest: UrineTest?): String =
         Gson().toJson(urineTest)
 
     @TypeConverter
     fun toReferral(string: String): Referral? =
-        Gson().fromJson(string,Referral::class.java)
+        Gson().fromJson(string, Referral::class.java)
 
     @TypeConverter
-    fun FromReferral(referral: Referral?):String =
+    fun fromReferral(referral: Referral?): String =
         Gson().toJson(referral)
 
     @TypeConverter
     fun toFollowUp(string: String): FollowUp? =
-        Gson().fromJson(string,FollowUp::class.java)
+        Gson().fromJson(string, FollowUp::class.java)
 
     @TypeConverter
-    fun FromFollowUp(followUp: FollowUp?):String =
+    fun fromFollowUp(followUp: FollowUp?): String =
         Gson().toJson(followUp)
 
     @TypeConverter
     fun toReadingMetaData(string: String): ReadingMetadata? =
-        Gson().fromJson(string,ReadingMetadata::class.java)
+        Gson().fromJson(string, ReadingMetadata::class.java)
 
     @TypeConverter
-    fun fromUrineTest(readingMetadata: ReadingMetadata?):String =
+    fun fromUrineTest(readingMetadata: ReadingMetadata?): String =
         Gson().toJson(readingMetadata)
 }
