@@ -291,7 +291,7 @@ public class SummaryFragment extends BaseFragment {
         }
         // ..setup initial state
         if (swNow.isChecked() && viewModel.getDateRecheckVitalsNeeded() == null) {
-            viewModel.setDateRecheckVitalsNeeded(ZonedDateTime.now());
+            viewModel.setDateRecheckVitalsNeeded(ZonedDateTime.now().toEpochSecond());
         }
 //        if (swNow.isChecked() && currentReading.dateRecheckVitalsNeeded == null) {
 //            currentReading.dateRecheckVitalsNeeded = ZonedDateTime.now();
@@ -301,7 +301,7 @@ public class SummaryFragment extends BaseFragment {
 //            currentReading.setATemporaryFlag(MASK_USER_HAS_CHANGED_RECHECK_OPTION);
             if (swNow.isChecked()) {
                 swIn15.setChecked(false);
-                viewModel.setDateRecheckVitalsNeeded(ZonedDateTime.now());
+                viewModel.setDateRecheckVitalsNeeded(ZonedDateTime.now().toEpochSecond());
 //                currentReading.dateRecheckVitalsNeeded = ZonedDateTime.now();
             }
 
@@ -322,7 +322,7 @@ public class SummaryFragment extends BaseFragment {
         }
         // ..setup initial state
         if (swIn15.isChecked() && viewModel.getDateRecheckVitalsNeeded() == null) {
-            viewModel.setDateRecheckVitalsNeeded(ZonedDateTime.now().plus(15, ChronoUnit.MINUTES));
+            viewModel.setDateRecheckVitalsNeeded(ZonedDateTime.now().toEpochSecond()+ NUM_SECONDS_IN_15_MIN);
         }
 //        if (swIn15.isChecked() && currentReading.dateRecheckVitalsNeeded == null) {
 //            currentReading.dateRecheckVitalsNeeded =
@@ -332,7 +332,8 @@ public class SummaryFragment extends BaseFragment {
 //            currentReading.setATemporaryFlag(MASK_USER_HAS_CHANGED_RECHECK_OPTION);
             if (swIn15.isChecked()) {
                 swNow.setChecked(false);
-                viewModel.setDateRecheckVitalsNeeded(ZonedDateTime.now().plus(15, ChronoUnit.MINUTES));
+                // add 15 minutes
+                viewModel.setDateRecheckVitalsNeeded(ZonedDateTime.now().toEpochSecond()+ NUM_SECONDS_IN_15_MIN);
 //                currentReading.dateRecheckVitalsNeeded =
 //                        ZonedDateTime.now().plus(15, ChronoUnit.MINUTES);
             }
@@ -486,5 +487,5 @@ public class SummaryFragment extends BaseFragment {
         dialog.show();
     }
 
-
+    static long NUM_SECONDS_IN_15_MIN = 900;
 }

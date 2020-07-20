@@ -72,7 +72,7 @@ public class ReadingActivity
         Intent intent = new Intent(context, ReadingActivity.class);
         intent.putExtra(EXTRA_LAUNCH_REASON, LaunchReason.LAUNCH_REASON_RECHECK);
         intent.putExtra(EXTRA_READING_ID, readingId);
-        intent.putExtra(EXTRA_START_TAB, SectionsPagerAdapter.TAB_NUMBER_CAMERA);
+        intent.putExtra(EXTRA_START_TAB, SectionsPagerAdapter.TAB_NUMBER_SYMPTOMS);
         return intent;
     }
 
@@ -110,9 +110,6 @@ public class ReadingActivity
         switch (reasonForLaunch) {
             case LAUNCH_REASON_NEW:
                 viewModel = new PatientReadingViewModel();
-//                originalReading = null;
-//                currentReading = Reading.makeNewReading(ZonedDateTime.now());
-//                currentReading.dateTimeTaken = ZonedDateTime.now();
                 break;
             case LAUNCH_REASON_EDIT:
                 readingId = intent.getStringExtra(EXTRA_READING_ID);
@@ -399,7 +396,7 @@ public class ReadingActivity
         // in the case of creating a new reading instead of updating an
         // existing one, we set it to the current time.
         if (viewModel.getDateTimeTaken() == null) {
-            viewModel.setDateTimeTaken(ZonedDateTime.now());
+            viewModel.setDateTimeTaken(ZonedDateTime.now().toEpochSecond());
         }
 
         Pair<Patient, Reading> models = viewModel.constructModels();
