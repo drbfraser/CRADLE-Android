@@ -82,7 +82,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         // Summary for this preference is not generated through shared
         // preferences so we have to update it manually here.
         findPreference(R.string.key_health_centres_settings_button)?.apply {
-            val hcCount = healthCentreManager.getAllSelectedByUserBlocking().size
+            val hcCount = healthCentreManager.getAllSelectedByUser().size
             summary = "$hcCount configured health centres"
         }
     }
@@ -116,7 +116,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     "${unUploadedReadings.size} ${getString(R.string.unUploadedReadingSignoutMessage)}"
                 }
 
-                AlertDialog.Builder(activity!!)
+                AlertDialog.Builder(requireActivity())
                     .setTitle("Sign out?")
                     .setMessage(description)
                     .setPositiveButton("Yes") { _, _ -> onSignOut() }
@@ -146,7 +146,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         MainScope().launch { readingManager.deleteAllData() }
         MainScope().launch { healthCentreManager.deleteAllData() }
         startActivity(Intent(activity, LoginActivity::class.java))
-        activity!!.finishAffinity()
+        requireActivity().finishAffinity()
     }
 }
 

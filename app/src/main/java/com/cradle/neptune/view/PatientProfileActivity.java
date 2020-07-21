@@ -51,7 +51,6 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import kotlin.Unit;
 
 import static com.cradle.neptune.view.DashBoardActivity.READING_ACTIVITY_DONE;
 

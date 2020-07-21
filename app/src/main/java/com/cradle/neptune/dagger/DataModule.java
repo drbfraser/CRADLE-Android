@@ -14,7 +14,7 @@ import javax.inject.Singleton;
 import com.cradle.neptune.manager.HealthCentreManager;
 import com.cradle.neptune.manager.MarshalManager;
 import com.cradle.neptune.manager.ReadingManager;
-import com.cradle.neptune.manager.impl.HealthCentreManagerImpl;
+
 import dagger.Module;
 import dagger.Provides;
 
@@ -28,9 +28,7 @@ public class DataModule {
     @Provides
     @Singleton
     public CradleDatabase provideDatabase(Application application) {
-        return Room.databaseBuilder(application, CradleDatabase.class, "room-readingDB")
-                .allowMainThreadQueries()
-                .build();
+        return Room.databaseBuilder(application, CradleDatabase.class, "room-readingDB").build();
     }
 
     @Provides
@@ -42,7 +40,7 @@ public class DataModule {
     @Provides
     @Singleton
     public HealthCentreManager provideHealthCentreService(CradleDatabase database) {
-        return new HealthCentreManagerImpl(database);
+        return new HealthCentreManager(database);
     }
 
     @Provides

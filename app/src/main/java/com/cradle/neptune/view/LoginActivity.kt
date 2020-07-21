@@ -205,7 +205,7 @@ class LoginActivity : AppCompatActivity() {
                         )
                         healthFacilityEntities.add(healthFacilityEntity)
                     }
-                    healthCentreManager.addAllAsync(healthFacilityEntities)
+                    healthCentreManager.addAll(healthFacilityEntities)
                 } catch (e: JSONException) {
                     e.printStackTrace()
                 }

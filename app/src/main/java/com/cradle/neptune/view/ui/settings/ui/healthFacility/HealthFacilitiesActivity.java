@@ -46,7 +46,7 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
 
     private void setupRecyclerview() {
         RecyclerView recyclerView = findViewById(R.id.hfRecyclerView);
-        List<HealthFacilityEntity> healthFacilityEntities = healthCentreManager.getAllBlocking();
+        List<HealthFacilityEntity> healthFacilityEntities = healthCentreManager.getAll();
         healthFacilitiesAdapter = new HealthFacilitiesAdapter(healthFacilityEntities);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
 
@@ -64,7 +64,7 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
                     .setTitle(healthFacilityEntity.getName()).setMessage(msg)
                     .setCancelable(true).setPositiveButton("YES", (dialogInterface, i) -> {
                 healthFacilityEntity.setUserSelected(!healthFacilityEntity.isUserSelected());
-                healthCentreManager.updateAsync(healthFacilityEntity);
+                healthCentreManager.update(healthFacilityEntity);
                 setupRecyclerview();
             }).setNegativeButton("NO", (dialogInterface, i) -> {}).create().show();
         });

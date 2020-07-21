@@ -262,7 +262,7 @@ public class ReferralDialogFragment extends DialogFragment {
 //        // source: https://mobiforge.com/design-development/sms-messaging-android
 //
 //        // check for data errors:
-        if (healthCentreManager.getAllSelectedByUserBlocking().size() == 0) {
+        if (healthCentreManager.getAllSelectedByUser().size() == 0) {
             tvSendingStatus.setText("ERROR: No known health centres.\nPlease go to settings to enter them.");
             tvSendingStatus.setVisibility(View.VISIBLE);
             // return;
@@ -460,7 +460,7 @@ public class ReferralDialogFragment extends DialogFragment {
     private void setupHealthCentreSpinner(Dialog dialog) {
         Spinner sp = dialog.findViewById(R.id.spinnerHealthCentre);
         ArrayList<String> options = new ArrayList<>();
-        List<HealthFacilityEntity> healthFacilityEntities = healthCentreManager.getAllSelectedByUserBlocking();
+        List<HealthFacilityEntity> healthFacilityEntities = healthCentreManager.getAllSelectedByUser();
 
         for (HealthFacilityEntity h : healthFacilityEntities) {
             options.add(h.getName());
