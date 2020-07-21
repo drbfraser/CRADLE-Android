@@ -22,7 +22,7 @@ const val MIN_SYSTOLIC = 10
 const val MAX_DIASTOLIC = 300
 const val MIN_DIASTOLIC = 10
 const val MAX_HEART_RATE = 200
-const val MIN_HEART_RATE = 40
+const val MIN_HEART_RATE = 30
 
 /**
  * Holds information about a reading.

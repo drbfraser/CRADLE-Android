@@ -39,6 +39,7 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -50,7 +51,6 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import kotlin.Pair;
 import kotlin.Unit;
 
 import static com.cradle.neptune.view.DashBoardActivity.READING_ACTIVITY_DONE;
@@ -133,43 +133,13 @@ public class PatientProfileActivity extends AppCompatActivity {
         ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Updating patient");
         progressDialog.setCancelable(false);
-        JsonRequest<JSONObject> jsonArrayRequest = new JsonObjectRequest(Request.Method.GET, urlManager.readingsForPatient(currPatient.getId()),
+        JsonRequest<JSONObject> jsonArrayRequest = new JsonObjectRequest(Request.Method.GET, urlManager.getPatientInfoById(currPatient.getId()),
                 null, response -> {
-            ApiKt.legacyUnmarshallPatientAndReadings(
-                    response,
-                    result -> {
-                        Patient patient = result.getFirst();
-                        patientManager.add(patient);
-                        List<Reading> readings = result.getSecond();
-                        for (Reading reading : readings) {
-                            readingManager.addReading(reading);
-                        }
-
-                        setupReadingsRecyclerView();
-                        progressDialog.cancel();
-                        Toast.makeText(PatientProfileActivity.this, "Patient updated!", Toast.LENGTH_SHORT).show();
-                        return Unit.INSTANCE;
-                    },
-                    error -> {
-                        error.printStackTrace();
-                        progressDialog.cancel();
-                        Toast.makeText(PatientProfileActivity.this, "Patient update fail!", Toast.LENGTH_SHORT).show();
-                        return Unit.INSTANCE;
-                    });
-//            try {
-//                List<Reading> readings =
-//                        ParsePatientInformationAsyncTask.parseReadingsAndPatientFromJson(response);
-//                readingManager.addAllReadings(this, readings);
-//                setupReadingsRecyclerView();
-//                progressDialog.cancel();
-//                Toast.makeText(PatientProfileActivity.this, "Patient updated!", Toast.LENGTH_SHORT).show();
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//                progressDialog.cancel();
-//                Toast.makeText(PatientProfileActivity.this, "Patient update fail!", Toast.LENGTH_SHORT).show();
-//
-//            }
-            //Log.d("bugg","pass: "+ response.toString());
+            try {
+                Log.d("bugg","json: "+ response.toString(4));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }, error -> {
             Log.d("bugg", "failed: " + error);
             progressDialog.cancel();

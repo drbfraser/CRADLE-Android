@@ -69,13 +69,13 @@ class UrlManager @Inject constructor(val settings: Settings) {
                 ":" + settings.networkPort
             }
 
-            return "http://10.0.2.2:5000/api"
+            return "https://cmpt373-lockdown.cs.surrey.sfu.ca/api"
         }
 
     /**
      * Endpoint for retrieving all readings associated with a given patient id.
      */
-    fun readingsForPatient(patientId: String) = "$base/patient/reading/$patientId"
+    fun getPatientInfoById(patientId: String) = "$base/patient/$patientId"
 
     /**
      * Search the database for a list of patient by Id or Initials
