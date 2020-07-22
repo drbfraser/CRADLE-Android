@@ -256,7 +256,7 @@ public class UploadActivity extends AppCompatActivity {
     private void setupUploadImageButton() {
         Button btnStart = findViewById(R.id.uploadImagesButton);
         btnStart.setOnClickListener(view -> {
-            List<Reading> readings = readingManager.getAllReadings();
+            List<Reading> readings = readingManager.getAllReadingBlocking();
 
             List<Reading> readingsToUpload = new ArrayList<>();
             for (int i = 0; i < readings.size(); i++) {

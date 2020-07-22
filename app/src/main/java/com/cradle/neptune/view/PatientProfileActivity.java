@@ -247,52 +247,6 @@ public class PatientProfileActivity extends AppCompatActivity {
         radioGroup.check(R.id.monthradiobutton);
     }
 
-//    private double convertGestationAgeToWeek(Patient patient) {
-//        double age = 0;
-//        if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS && patient.isPregnant) {
-//            try {
-//                age = Double.parseDouble(patient.gestationalAgeValue);
-//            } catch (NumberFormatException e) {
-//                age = -1;
-//                e.printStackTrace();
-//            }
-//            double week = age * WEEKS_IN_MONTH;
-//            double weekRounded = Math.round(week * 100D) / 100D;
-//            return weekRounded;
-//        } else if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS && patient.isPregnant) {
-//            try {
-//                age = Double.parseDouble(patient.gestationalAgeValue);
-//            } catch (NumberFormatException e) {
-//                age = -1;
-//                e.printStackTrace();
-//            }
-//        }
-//        return age;
-//    }
-
-//    private double convertGestationAgeToMonth(Patient patient) {
-//        double age = 0;
-//        if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS && patient.isPregnant) {
-//            try {
-//                age = Double.parseDouble(patient.gestationalAgeValue);
-//            } catch (NumberFormatException e) {
-//                age = -1;
-//                e.printStackTrace();
-//            }
-//            double months = age / WEEKS_IN_MONTH;
-//            double monthRounded = Math.round(months * 100D) / 100D;
-//            return monthRounded;
-//        } else if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS && patient.isPregnant) {
-//            try {
-//                age = Double.parseDouble(patient.gestationalAgeValue);
-//            } catch (NumberFormatException e) {
-//                age = -1;
-//                e.printStackTrace();
-//            }
-//        }
-//        return age;
-//    }
-
     void setupLineChart() {
         LineChart lineChart = findViewById(R.id.patientLineChart);
         CardView lineChartCard = findViewById(R.id.patientLineChartCard);
@@ -349,7 +303,7 @@ public class PatientProfileActivity extends AppCompatActivity {
     }
 
     private List<Reading> getThisPatientsReadings() {
-        List<Reading> readings = readingManager.getReadingsByPatientId(currPatient.getId());
+        List<Reading> readings = readingManager.getReadingByPatientIdBlocking(currPatient.getId());
         Comparator<Reading> comparator = Reading.DescendingDateComparator.INSTANCE;
         Collections.sort(readings, comparator);
         return readings;

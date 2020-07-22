@@ -114,16 +114,16 @@ public class ReadingActivity
             case LAUNCH_REASON_EDIT:
                 readingId = intent.getStringExtra(EXTRA_READING_ID);
                 Util.ensure((readingId != null && !readingId.equals("")));
-                reading = readingManager.getReadingById(readingId);
-                patient = patientManager.getPatientById(reading.getPatientId());
+                reading = readingManager.getReadingByIdBlocking(readingId);
+                patient = (Patient) patientManager.getPatientByIdBlocking(reading.getPatientId());
                 viewModel = new PatientReadingViewModel(patient, reading);
 //                currentReading = GsonUtil.cloneViaGson(originalReading, Reading.class);
                 break;
             case LAUNCH_REASON_RECHECK:
                 readingId = getIntent().getStringExtra(EXTRA_READING_ID);
                 Util.ensure((readingId != null && !readingId.equals("")));
-                reading = readingManager.getReadingById(readingId);
-                patient = patientManager.getPatientById(reading.getPatientId());
+                reading = readingManager.getReadingByIdBlocking(readingId);
+                patient = patientManager.getPatientByIdBlocking(reading.getPatientId());
                 viewModel = new PatientReadingViewModel(patient);
 
                 // Add the old reading to the previous list of the new reading.
@@ -138,8 +138,8 @@ public class ReadingActivity
             case LAUNCH_REASON_EXISTINGNEW:
                 readingId = getIntent().getStringExtra(EXTRA_READING_ID);
                 Util.ensure((readingId != null && !readingId.equals("")));
-                reading = readingManager.getReadingById(readingId);
-                patient = patientManager.getPatientById(reading.getPatientId());
+                reading = readingManager.getReadingByIdBlocking(readingId);
+                patient = patientManager.getPatientByIdBlocking(reading.getPatientId());
                 viewModel = new PatientReadingViewModel(patient);
 //                originalReading = readingManager.getReadingById(this, readingId);
 //                currentReading = Reading.makeNewExistingPatientReading(originalReading, ZonedDateTime.now());
