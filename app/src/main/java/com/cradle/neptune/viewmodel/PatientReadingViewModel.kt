@@ -12,6 +12,7 @@ import com.cradle.neptune.model.Sex
 import com.cradle.neptune.model.UrineTest
 import com.cradle.neptune.utilitiles.DynamicModelBuilder
 import com.cradle.neptune.utilitiles.discard
+import kotlinx.coroutines.runBlocking
 import java.lang.IllegalArgumentException
 import org.threeten.bp.ZonedDateTime
 
@@ -262,6 +263,6 @@ class PatientReadingViewModel() {
             previousReadingIds = previousReadingIds ?: emptyList(),
             metadata = metadata
         )
-        return readingManager.getRetestGroup(reading)
+        return  runBlocking { readingManager.getRetestGroup(reading)}
     }
 }

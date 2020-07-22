@@ -130,11 +130,11 @@ public class PatientsActivity extends AppCompatActivity {
 
     private void setupPatientRecyclerview() {
 
-        List<Patient> patientList = patientManager.getAllPatients();
+        List<Patient> patientList = patientManager.getAllPatientsBlocking();
         List<Pair<Patient, Reading>> patients = new ArrayList<>();
 
         for (Patient patient: patientList){
-            patients.add(new Pair<>(patient,readingManager.getNewestReadingByPatientId(patient.getId())));
+            patients.add(new Pair<Patient, B>(patient,readingManager.getNewestReadingByPatientIdBlocking(patient.getId())));
         }
 
         TextView textView = findViewById(R.id.emptyView);

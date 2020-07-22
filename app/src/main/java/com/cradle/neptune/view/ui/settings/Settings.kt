@@ -12,14 +12,18 @@ import androidx.preference.PreferenceFragmentCompat
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.HealthCentreManager
+import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.utilitiles.validateHostname
 import com.cradle.neptune.utilitiles.validatePort
 import com.cradle.neptune.view.LoginActivity
 import com.cradle.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import javax.inject.Inject
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class SettingsActivity : AppCompatActivity() {
     companion object {
@@ -75,6 +79,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     @Inject
     lateinit var readingManager: ReadingManager
+    @Inject
+    lateinit var patientManager: PatientManager
 
     override fun onResume() {
         super.onResume()
@@ -109,22 +115,25 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         findPreference(R.string.key_sign_out)
             ?.withOnClickListener {
-                val unUploadedReadings = readingManager.getUnUploadedReadings()
-                val description = if (unUploadedReadings.isEmpty()) {
-                    getString(R.string.normalSignoutMessage)
-                } else {
-                    "${unUploadedReadings.size} ${getString(R.string.unUploadedReadingSignoutMessage)}"
+                GlobalScope.launch (Dispatchers.IO) {
+                    val unUploadedReadings = readingManager.getUnUploadedReadings()
+                    val description = if (unUploadedReadings.isEmpty()) {
+                        getString(R.string.normalSignoutMessage)
+                    } else {
+                        "${unUploadedReadings.size} ${getString(R.string.unUploadedReadingSignoutMessage)}"
+                    }
+                    //need to switch the context to main thread since ui is always created on main thread
+                    withContext(Dispatchers.Main) {
+                        AlertDialog.Builder(requireActivity())
+                            .setTitle("Sign out?")
+                            .setMessage(description)
+                            .setPositiveButton("Yes") { _, _ -> onSignOut() }
+                            .setNegativeButton("No", null)
+                            .setIcon(R.drawable.ic_sync)
+                            .create()
+                            .show()
+                    }
                 }
-
-                AlertDialog.Builder(requireActivity())
-                    .setTitle("Sign out?")
-                    .setMessage(description)
-                    .setPositiveButton("Yes") { _, _ -> onSignOut() }
-                    .setNegativeButton("No", null)
-                    .setIcon(R.drawable.ic_sync)
-                    .create()
-                    .show()
-
                 true
             }
 
@@ -143,8 +152,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
         editor.putString(LoginActivity.TOKEN, "")
         editor.putString(LoginActivity.USER_ID, "")
         editor.apply()
-        MainScope().launch { readingManager.deleteAllData() }
-        MainScope().launch { healthCentreManager.deleteAllData() }
+        GlobalScope.launch(Dispatchers.IO) { readingManager.deleteAllData() }
+        GlobalScope.launch(Dispatchers.IO) { healthCentreManager.deleteAllData() }
+        GlobalScope.launch(Dispatchers.IO) { patientManager.deleteAll() }
         startActivity(Intent(activity, LoginActivity::class.java))
         requireActivity().finishAffinity()
     }

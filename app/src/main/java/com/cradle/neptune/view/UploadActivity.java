@@ -224,7 +224,7 @@ public class UploadActivity extends AppCompatActivity {
 
     private void updateReadingUploadLabels() {
         // reading count
-        int numReadingsToUpload = readingManager.getUnUploadedReadings().size();
+        int numReadingsToUpload = readingManager.getUnUploadedReadingsBlocking().size();
 //        int numReadingsToUpload = readingManager.getUnuploadedReadings().size();
         TextView tvReadingCount = findViewById(R.id.tvReadingsToUpload);
         tvReadingCount.setText(String.format("%d patient readings ready to upload", numReadingsToUpload));
@@ -389,23 +389,9 @@ public class UploadActivity extends AppCompatActivity {
             Toast.makeText(this, "Error: Must set server URL in settings", Toast.LENGTH_LONG).show();
             return;
         }
-//        if (settings.getRsaPubKey() == null || settings.getRsaPubKey().length() == 0) {
-//            Toast.makeText(this, "Error: Must set RSA Public Key in settings", Toast.LENGTH_LONG).show();
-//            return;
-//        }
-        // do a small sanity check on key
-        // note: Many errors in key will seem valid here! No way to validate.
-//        try {
-//            HybridFileEncrypter.convertRsaPemToPublicKey(settings.getRsaPubKey());
-//        } catch (Exception e) {
-//            Toast.makeText(this, "Error: Invalid public key in settings: \r\n" + e.getMessage(), Toast.LENGTH_LONG).show();
-//            return;
-//        }
 
-        // discover un-uploaded readings
-        List<Reading> unUploadedReadings = readingManager.getUnUploadedReadings();
-//        List<Reading> readingsToUpload = readingManager.getUnuploadedReadings();
-        // abort if no readings
+        List<Reading> unUploadedReadings = readingManager.getUnUploadedReadingsBlocking();
+
         if (unUploadedReadings.size() == 0) {
             Toast.makeText(this, "No readings needing to be uploaded.", Toast.LENGTH_LONG).show();
             return;

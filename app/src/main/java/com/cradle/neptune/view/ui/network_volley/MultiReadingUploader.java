@@ -178,7 +178,7 @@ public class MultiReadingUploader {
             // generate zip of encrypted data
             String encryptedZipFileFolder = context.getCacheDir().getAbsolutePath();
 
-            Patient patient = patientManager.getPatientById(readingsToUpload.get(0).getPatientId());
+            Patient patient = patientManager.getPatientByIdBlocking(readingsToUpload.get(0).getPatientId());
             Reading reading = readingsToUpload.get(0);
             String readingJson = marshalManager.marshalToUploadJson(patient, reading).toString();
 //            String readingJson = Reading.getJsonObj(readings.get(0), sharedPreferences.getString(LoginActivity.USER_ID, ""));
@@ -204,7 +204,7 @@ public class MultiReadingUploader {
 
             // current reading uploaded successfully
             Util.ensure(readingsToUpload.size() > 0);
-            Patient patient = patientManager.getPatientById(readingsToUpload.get(0).getPatientId());
+            Patient patient = patientManager.getPatientByIdBlocking(readingsToUpload.get(0).getPatientId());
 
             progressCallback.uploadReadingSucceeded(new Pair<>(patient,readingsToUpload.get(0)));
             readingsToUpload.remove(0);

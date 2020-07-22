@@ -115,6 +115,9 @@ interface PatientDaoAccess {
 
     @Query("SELECT * FROM Patient WHERE id LIKE :id LIMIT 1")
     suspend fun  getPatientById(id: String): Patient?
+
+    @Query("DELETE FROM Patient")
+    suspend fun  deleteAllPatients()
 }
 
 /**

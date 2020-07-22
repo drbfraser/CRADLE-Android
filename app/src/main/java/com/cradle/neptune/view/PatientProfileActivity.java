@@ -370,7 +370,7 @@ public class PatientProfileActivity extends AppCompatActivity {
                 .setMessage("Delete reading?")
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setPositiveButton(android.R.string.yes, (dialog1, whichButton) -> {
-                    readingManager.deleteReadingById(readingId);
+                    readingManager.deleteReadingByIdBlocking(readingId);
                     updateUi();
                 })
                 .setNegativeButton(android.R.string.no, null);

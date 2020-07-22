@@ -103,10 +103,19 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
 
     /**
      * Returns all readings which have not been uploaded to the server yet.
+     *suspending seems redundent but we want to force this to run on a coroutine
      */
     suspend fun getUnUploadedReadings(): List<Reading> {
         return daoAccess.allUnUploadedReading
     }
+
+    /**
+     * TODO: once all the java classes calling this method are turned into Kotlin,
+     * remove this function and call the corressponding method.
+     * This is only for legacy java code still calling this function.
+     */
+    @Deprecated("Please avoid using this function in Kotlin files.")
+    fun getUnUploadedReadingsBlocking() = runBlocking { getUnUploadedReadings() }
 
     /**
      * Constructs a [RetestGroup] for a given [reading].
@@ -126,11 +135,26 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
     }
 
     /**
+     * TODO: once all the java classes calling this method are turned into Kotlin,
+     * remove this function and call the corressponding method.
+     * This is only for legacy java code still calling this function.
+     */
+    @Deprecated("Please avoid using this function in Kotlin files.")
+    fun deleteReadingByIdBlocking(id: String) = runBlocking { deleteReadingById(id) }
+
+    /**
      * Get the newest reading of a patient
      */
     suspend fun getNewestReadingByPatientId(id: String): Reading? =
         daoAccess.getNewestReadingByPatientId(id)
 
+    /**
+     * TODO: once all the java classes calling this method are turned into Kotlin,
+     * remove this function and call the corressponding method.
+     * This is only for legacy java code still calling this function.
+     */
+    @Deprecated("Please avoid using this function in Kotlin files.")
+    fun getNewestReadingByPatientIdBlocking(id: String) = runBlocking { getNewestReadingByPatientId(id) }
     /**
      * Deletes all readings from the database.
      */

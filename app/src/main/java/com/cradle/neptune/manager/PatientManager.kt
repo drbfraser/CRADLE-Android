@@ -15,7 +15,17 @@ class PatientManager(private val daoAccess: PatientDaoAccess) {
 
     suspend fun delete(patient: Patient) = daoAccess.delete(patient)
 
+    suspend fun deleteAll() = daoAccess.deleteAllPatients()
+
     suspend fun getAllPatients(): List<Patient> = daoAccess.allPatients
+
+    /**
+     * TODO: once all the java classes calling this method are turned into Kotlin,
+     * remove this function and call the corressponding method.
+     * This is only for legacy java code still calling this function.
+     */
+    @Deprecated("Please avoid using this function in Kotlin files.")
+    fun getAllPatientsBlocking() = runBlocking { getAllPatients() }
 
     suspend fun getPatientById(id: String): Patient? = daoAccess.getPatientById(id)
 
