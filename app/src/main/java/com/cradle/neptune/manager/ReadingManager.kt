@@ -26,11 +26,11 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
      *
      * @param reading the reading to insert
      */
-    fun addReading(reading: Reading) {
+    suspend fun  addReading(reading: Reading) {
         daoAccess.insertReading(reading)
     }
 
-    fun addAllReadings(readings: List<Reading>) {
+    suspend fun  addAllReadings(readings: List<Reading>) {
         daoAccess.insertAll(readings)
     }
 
@@ -42,7 +42,7 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
      *
      * @param reading the reading to update
      */
-    fun updateReading(reading: Reading) {
+    suspend fun  updateReading(reading: Reading) {
         daoAccess.update(reading)
     }
 
@@ -50,7 +50,7 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
      * Returns a list of all readings (and their associated patients) in the
      * database.
      */
-    fun getAllReadings(): List<Reading> {
+    suspend fun  getAllReadings(): List<Reading> {
         return daoAccess.allReadingEntities
     }
 
@@ -58,28 +58,28 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
      * Returns the reading (and its associated patient) with a given [id] from
      * the database. Returns `null` if unable to find such a reading.
      */
-    fun getReadingById(id: String): Reading? {
+    suspend fun  getReadingById(id: String): Reading? {
         return daoAccess.getReadingById(id)
     }
 
     /**
      * Returns all readings associated with a specific patient [id].
      */
-    fun getReadingsByPatientId(id: String): List<Reading> {
+    suspend fun  getReadingsByPatientId(id: String): List<Reading> {
         return daoAccess.getAllReadingByPatientId(id)
     }
 
     /**
      * Returns all readings which have not been uploaded to the server yet.
      */
-    fun getUnUploadedReadings(): List<Reading> {
+    suspend fun  getUnUploadedReadings(): List<Reading> {
         return daoAccess.allUnUploadedReading
     }
 
     /**
      * Constructs a [RetestGroup] for a given [reading].
      */
-    fun getRetestGroup(reading: Reading): RetestGroup {
+    suspend fun  getRetestGroup(reading: Reading): RetestGroup {
         val readings = mutableListOf<Reading>()
         readings.addAll(reading.previousReadingIds.mapNotNull { getReadingById(it) })
         readings.add(reading)
@@ -89,20 +89,20 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
     /**
      * Deletes the reading with a specific [id] from the database.
      */
-    fun deleteReadingById(id: String) {
+    suspend fun  deleteReadingById(id: String) {
         return daoAccess.delete(getReadingById(id))
     }
 
     /**
      * Get the newest reading of a patient
      */
-    fun getNewestReadingByPatientId(id: String): Reading? =
+    suspend fun  getNewestReadingByPatientId(id: String): Reading? =
         daoAccess.getNewestReadingByPatientId(id)
 
     /**
      * Deletes all readings from the database.
      */
-    fun deleteAllData() {
+    suspend fun  deleteAllData() {
         daoAccess.deleteAllReading()
     }
 }

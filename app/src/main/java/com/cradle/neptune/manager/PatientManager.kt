@@ -6,13 +6,13 @@ import java.util.ArrayList
 
 class PatientManager(private val daoAccess: PatientDaoAccess) {
 
-    fun add(patient: Patient) = daoAccess.insert(patient)
+    suspend fun add(patient: Patient) = daoAccess.insert(patient)
 
-    fun addAll(patients: ArrayList<Patient>) = daoAccess.insertAll(patients)
+    suspend fun addAll(patients: ArrayList<Patient>) = daoAccess.insertAll(patients)
 
-    fun delete(patient: Patient) = daoAccess.delete(patient)
+    suspend fun delete(patient: Patient) = daoAccess.delete(patient)
 
-    fun getAllPatients(): List<Patient> = daoAccess.allPatients
+    suspend fun getAllPatients(): List<Patient> = daoAccess.allPatients
 
-    fun getPatientById(id: String): Patient? = daoAccess.getPatientById(id)
+    suspend fun getPatientById(id: String): Patient? = daoAccess.getPatientById(id)
 }
