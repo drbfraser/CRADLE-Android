@@ -175,6 +175,10 @@ public class PatientProfileActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        if (!getLocalPatient()) {
+            //not a local patient, might be a child class
+            return;
+        }
         setupLineChart();
         setupReadingsRecyclerView();
 
