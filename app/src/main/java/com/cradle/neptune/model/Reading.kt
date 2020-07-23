@@ -48,7 +48,7 @@ const val MIN_HEART_RATE = 30
 @Entity
 data class Reading(
     @PrimaryKey
-    @ColumnInfo var id: String = UUID.randomUUID().toString(),
+    @ColumnInfo(name = "readingId") var id: String = UUID.randomUUID().toString(),
     @ColumnInfo var patientId: String,
     @ColumnInfo var dateTimeTaken: Long,
     @ColumnInfo var bloodPressure: BloodPressure,
@@ -65,7 +65,7 @@ data class Reading(
 
     @ColumnInfo var metadata: ReadingMetadata = ReadingMetadata(),
     @ColumnInfo var isUploadedToServer: Boolean = false
-) : Marshal<JsonObject> {
+) : Serializable, Marshal<JsonObject> {
 
     /**
      * True if this reading has a referral attached to it.

@@ -80,6 +80,6 @@ class DatabaseTypeConverters {
         Gson().fromJson(string, ReadingMetadata::class.java)
 
     @TypeConverter
-    fun fromUrineTest(readingMetadata: ReadingMetadata?): String =
+    fun fromReadingMetaData(readingMetadata: ReadingMetadata?): String =
         Gson().toJson(readingMetadata)
 }

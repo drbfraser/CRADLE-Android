@@ -3,9 +3,11 @@ package com.cradle.neptune.manager
 import com.cradle.neptune.database.ReadingDaoAccess
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.RetestGroup
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 /**
  * Service for interfacing with readings stored in the database.
@@ -29,7 +31,7 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
      *
      * @param reading the reading to insert
      */
-     fun addReading(reading: Reading) {
+    fun addReading(reading: Reading) {
         GlobalScope.launch {
             daoAccess.insertReading(reading)
         }
@@ -49,8 +51,7 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
      *
      * @param reading the reading to update
      */
-    fun updateReading(reading: Reading) = GlobalScope.launch { daoAccess.update(reading)}
-
+    fun updateReading(reading: Reading) = GlobalScope.launch { daoAccess.update(reading) }
 
     /**
      * Returns a list of all readings (and their associated patients) in the
@@ -66,7 +67,7 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
      * This is only for legacy java code still calling this function.
      */
     @Deprecated("Please avoid using this function in Kotlin files.")
-    fun getAllReadingBlocking() = runBlocking { getAllReadings() }
+    fun getAllReadingBlocking() = runBlocking { withContext(Dispatchers.IO) { getAllReadings() } }
 
     /**
      * Returns the reading (and its associated patient) with a given [id] from
@@ -81,9 +82,8 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
      * remove this function and call the corressponding method.
      * This is only for legacy java code still calling this function.
      */
-    @Deprecated("Please avoid using this function in Kotlin files.")
-    fun getReadingByIdBlocking(id: String):Reading? {
-        return runBlocking { getReadingById(id) };
+    fun getReadingByIdBlocking(id: String): Reading? {
+        return runBlocking { withContext(Dispatchers.IO) { getReadingById(id) } }
     }
 
     /**
@@ -99,7 +99,9 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
      * This is only for legacy java code still calling this function.
      */
     @Deprecated("Please avoid using this function in Kotlin files.")
-    fun getReadingByPatientIdBlocking(id: String) = runBlocking { getReadingsByPatientId(id) }
+    fun getReadingByPatientIdBlocking(id: String) = runBlocking {
+        withContext(Dispatchers.IO) { getReadingsByPatientId(id) }
+    }
 
     /**
      * Returns all readings which have not been uploaded to the server yet.
@@ -115,7 +117,8 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
      * This is only for legacy java code still calling this function.
      */
     @Deprecated("Please avoid using this function in Kotlin files.")
-    fun getUnUploadedReadingsBlocking() = runBlocking { getUnUploadedReadings() }
+    fun getUnUploadedReadingsBlocking() =
+        runBlocking { withContext(Dispatchers.IO) { getUnUploadedReadings() } }
 
     /**
      * Constructs a [RetestGroup] for a given [reading].
@@ -140,7 +143,8 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
      * This is only for legacy java code still calling this function.
      */
     @Deprecated("Please avoid using this function in Kotlin files.")
-    fun deleteReadingByIdBlocking(id: String) = runBlocking { deleteReadingById(id) }
+    fun deleteReadingByIdBlocking(id: String) =
+        runBlocking { withContext(Dispatchers.IO) { deleteReadingById(id) } }
 
     /**
      * Get the newest reading of a patient
@@ -154,7 +158,10 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
      * This is only for legacy java code still calling this function.
      */
     @Deprecated("Please avoid using this function in Kotlin files.")
-    fun getNewestReadingByPatientIdBlocking(id: String) = runBlocking { getNewestReadingByPatientId(id) }
+    fun getNewestReadingByPatientIdBlocking(id: String) = runBlocking {
+        withContext(Dispatchers.IO) { getNewestReadingByPatientId(id) }
+    }
+
     /**
      * Deletes all readings from the database.
      */

@@ -46,7 +46,7 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
 
     private void setupRecyclerview() {
         RecyclerView recyclerView = findViewById(R.id.hfRecyclerView);
-        List<HealthFacilityEntity> healthFacilityEntities = healthCentreManager.getAll();
+        List<HealthFacilityEntity> healthFacilityEntities = healthCentreManager.getAllBlocking();
         healthFacilitiesAdapter = new HealthFacilitiesAdapter(healthFacilityEntities);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
 

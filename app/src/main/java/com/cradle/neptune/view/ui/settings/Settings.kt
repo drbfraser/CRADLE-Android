@@ -18,10 +18,9 @@ import com.cradle.neptune.utilitiles.validateHostname
 import com.cradle.neptune.utilitiles.validatePort
 import com.cradle.neptune.view.LoginActivity
 import com.cradle.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import javax.inject.Inject
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -88,8 +87,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
         // Summary for this preference is not generated through shared
         // preferences so we have to update it manually here.
         findPreference(R.string.key_health_centres_settings_button)?.apply {
-            val hcCount = healthCentreManager.getAllSelectedByUser().size
-            summary = "$hcCount configured health centres"
+            GlobalScope.launch(Dispatchers.IO) {
+                val hcCount = healthCentreManager.getAllSelectedByUser().size
+                summary = "$hcCount configured health centres"
+            }
         }
     }
 
@@ -115,14 +116,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         findPreference(R.string.key_sign_out)
             ?.withOnClickListener {
-                GlobalScope.launch (Dispatchers.IO) {
+                GlobalScope.launch(Dispatchers.IO) {
                     val unUploadedReadings = readingManager.getUnUploadedReadings()
                     val description = if (unUploadedReadings.isEmpty()) {
                         getString(R.string.normalSignoutMessage)
                     } else {
                         "${unUploadedReadings.size} ${getString(R.string.unUploadedReadingSignoutMessage)}"
                     }
-                    //need to switch the context to main thread since ui is always created on main thread
+                    // need to switch the context to main thread since ui is always created on main thread
                     withContext(Dispatchers.Main) {
                         AlertDialog.Builder(requireActivity())
                             .setTitle("Sign out?")

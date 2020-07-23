@@ -12,8 +12,10 @@ import com.cradle.neptune.model.Sex
 import com.cradle.neptune.model.UrineTest
 import com.cradle.neptune.utilitiles.DynamicModelBuilder
 import com.cradle.neptune.utilitiles.discard
-import kotlinx.coroutines.runBlocking
 import java.lang.IllegalArgumentException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.threeten.bp.ZonedDateTime
 
 /**
@@ -263,6 +265,6 @@ class PatientReadingViewModel() {
             previousReadingIds = previousReadingIds ?: emptyList(),
             metadata = metadata
         )
-        return  runBlocking { readingManager.getRetestGroup(reading)}
+        return runBlocking { withContext(Dispatchers.IO) { readingManager.getRetestGroup(reading) } }
     }
 }

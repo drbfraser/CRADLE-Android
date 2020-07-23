@@ -70,6 +70,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
             patientReadings.forEach {
                 readingManager.addReading(it)
             }
+            patientManager.add(currPatient)
             val intent =
                 Intent(this@GlobalPatientProfileActivity, PatientProfileActivity::class.java)
             intent.putExtra("patient", currPatient)

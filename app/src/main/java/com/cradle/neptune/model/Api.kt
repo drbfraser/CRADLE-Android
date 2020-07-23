@@ -54,7 +54,6 @@ suspend fun unmarshalPatientAndReadings(json: JsonObject): Pair<Patient, List<Re
     return Pair(patient, readings)
 }
 
-
 /**
  * Fields specific to marshalling responses to the `/api/patient/allinfo`
  * API request.

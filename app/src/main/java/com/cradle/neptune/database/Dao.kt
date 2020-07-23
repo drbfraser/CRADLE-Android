@@ -26,7 +26,7 @@ interface ReadingDaoAccess {
      * @param Reading The entity to insert into the database.
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun  insertReading(reading: Reading)
+    fun insertReading(reading: Reading)
 
     /**
      * Inserts each reading in the supplied list into the database.
@@ -37,7 +37,7 @@ interface ReadingDaoAccess {
      * @param readingEntities A list of entities to insert.
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun  insertAll(readingEntities: List<Reading>)
+    fun insertAll(readingEntities: List<Reading>)
 
     /**
      * Updates an existing reading in the database.
@@ -45,7 +45,7 @@ interface ReadingDaoAccess {
      * @param Reading An entity containing updated data.
      */
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun  update(reading: Reading)
+    fun update(reading: Reading)
 
     /**
      * Removes an entity from the database.
@@ -53,7 +53,7 @@ interface ReadingDaoAccess {
      * @param Reading The entity to remove.
      */
     @Delete
-    suspend fun  delete(reading: Reading?)
+    fun delete(reading: Reading?)
 
     /**
      * All of the readings in the database.
@@ -69,8 +69,8 @@ interface ReadingDaoAccess {
      *
      * @param id The reading id to search for.
      */
-    @Query("SELECT * FROM Reading WHERE id LIKE :id LIMIT 1")
-    suspend fun  getReadingById(id: String): Reading?
+    @Query("SELECT * FROM Reading WHERE readingId LIKE :id LIMIT 1")
+    fun getReadingById(id: String): Reading?
 
     /**
      * Returns all of the readings associated with a specified patient.
@@ -78,7 +78,7 @@ interface ReadingDaoAccess {
      * @param id The id of the patient to find readings for.
      */
     @Query("SELECT * FROM Reading WHERE patientId LIKE :id")
-    suspend fun  getAllReadingByPatientId(id: String): List<Reading>
+    fun getAllReadingByPatientId(id: String): List<Reading>
 
     /**
      * All readings which have not yet been uploaded to the server.
@@ -89,35 +89,35 @@ interface ReadingDaoAccess {
     /**
      * Newest reading of a perticular patient
      */
-    @Query("SELECT *,MAX(dateTimeTaken) FROM READING WHERE patientId LIKE :id")
-    suspend fun  getNewestReadingByPatientId(id: String): Reading?
+    @Query("SELECT * FROM READING WHERE patientId LIKE :id ORDER BY dateTimeTaken LIMIT 1 ")
+    fun getNewestReadingByPatientId(id: String): Reading?
     /**
      * Deletes all readings from the database.
      */
     @Query("DELETE FROM Reading")
-    suspend fun  deleteAllReading()
+    fun deleteAllReading()
 }
 
 @Dao
 interface PatientDaoAccess {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun  insert(patient: Patient)
+    fun insert(patient: Patient)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun  insertAll(patients: List<Patient>)
+    fun insertAll(patients: List<Patient>)
 
     @Delete
-    suspend fun  delete(patient: Patient)
+    fun delete(patient: Patient)
 
     @get:Query("SELECT * FROM Patient")
     val allPatients: List<Patient>
 
     @Query("SELECT * FROM Patient WHERE id LIKE :id LIMIT 1")
-    suspend fun  getPatientById(id: String): Patient?
+    fun getPatientById(id: String): Patient?
 
     @Query("DELETE FROM Patient")
-    suspend fun  deleteAllPatients()
+    fun deleteAllPatients()
 }
 
 /**
@@ -137,7 +137,7 @@ interface HealthFacilityDaoAccess {
      * @param healthFacilityEntity The health facility to insert.
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun  insert(healthFacilityEntity: HealthFacilityEntity)
+    fun insert(healthFacilityEntity: HealthFacilityEntity)
 
     /**
      * Inserts each health facility in the supplied list into the database.
@@ -145,7 +145,7 @@ interface HealthFacilityDaoAccess {
      * @param healthFacilityEntities The list of facilities to insert.
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun  insertAll(healthFacilityEntities: List<HealthFacilityEntity>)
+    fun insertAll(healthFacilityEntities: List<HealthFacilityEntity>)
 
     /**
      * Updates an existing health facility.
@@ -153,7 +153,7 @@ interface HealthFacilityDaoAccess {
      * @param healthFacilityEntity An entity containing updated data.
      */
     @Update
-    suspend fun  update(healthFacilityEntity: HealthFacilityEntity)
+    fun update(healthFacilityEntity: HealthFacilityEntity)
 
     /**
      * Removes an entity from the database.
@@ -161,13 +161,13 @@ interface HealthFacilityDaoAccess {
      * @param healthFacilityEntity The entity to remove.
      */
     @Delete
-    suspend fun  delete(healthFacilityEntity: HealthFacilityEntity)
+    fun delete(healthFacilityEntity: HealthFacilityEntity)
 
     /**
      * Deletes all health centres in the database.
      */
     @Query("DELETE FROM HealthFacilityEntity")
-    suspend fun  deleteAll()
+    fun deleteAll()
 
     /**
      * All health facilities stored in the database.
@@ -182,7 +182,7 @@ interface HealthFacilityDaoAccess {
      * @param id The id of the health facility to retrieve.
      */
     @Query("SELECT * FROM HealthFacilityEntity WHERE id LIKE :id LIMIT 1")
-    suspend fun  getHealthFacilityById(id: String): HealthFacilityEntity?
+    fun getHealthFacilityById(id: String): HealthFacilityEntity?
 
     /**
      * All health facilities which the user has selected to be visible.

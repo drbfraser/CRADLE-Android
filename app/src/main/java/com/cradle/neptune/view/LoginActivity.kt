@@ -178,36 +178,39 @@ class LoginActivity : AppCompatActivity() {
             urlManager.healthFacility,
             null,
             Response.Listener { response: JSONArray ->
-                try {
-                    val healthFacilityEntities: MutableList<HealthFacilityEntity> =
-                        ArrayList()
-                    // adding our default one for twilio
-                    val hf = HealthFacilityEntity(
-                        UUID.randomUUID().toString(),
-                        "Neptune's five star care",
-                        "Planet Neptune",
-                        "TWILIO_PHONE_NUMBER",
-                        "Default TWILIO",
-                        "TW"
-                    )
-                    hf.isUserSelected = true
-                    healthFacilityEntities.add(hf)
-                    for (i in 0 until response.length()) {
-                        val jsonObject = response.getJSONObject(i)
-                        val id = UUID.randomUUID().toString()
-                        // todo get hcf id from the server, currently server doesnt have one
-                        val healthFacilityEntity = HealthFacilityEntity(
-                            id, jsonObject.getString("healthFacilityName"),
-                            jsonObject.getString("location"),
-                            jsonObject.getString("healthFacilityPhoneNumber"),
-                            jsonObject.getString("about"),
-                            jsonObject.getString("facilityType")
+                GlobalScope.launch {
+                    try {
+                        val healthFacilityEntities: MutableList<HealthFacilityEntity> =
+                            ArrayList()
+                        // adding our default one for twilio
+                        val hf = HealthFacilityEntity(
+                            UUID.randomUUID().toString(),
+                            "Neptune's five star care",
+                            "Planet Neptune",
+                            "TWILIO_PHONE_NUMBER",
+                            "Default TWILIO",
+                            "TW"
                         )
-                        healthFacilityEntities.add(healthFacilityEntity)
+                        hf.isUserSelected = true
+                        healthFacilityEntities.add(hf)
+                        for (i in 0 until response.length()) {
+                            val jsonObject = response.getJSONObject(i)
+                            val id = UUID.randomUUID().toString()
+                            // todo get hcf id from the server, currently server doesnt have one
+                            val healthFacilityEntity = HealthFacilityEntity(
+                                id, jsonObject.getString("healthFacilityName"),
+                                jsonObject.getString("location"),
+                                jsonObject.getString("healthFacilityPhoneNumber"),
+                                jsonObject.getString("about"),
+                                jsonObject.getString("facilityType")
+                            )
+                            healthFacilityEntities.add(healthFacilityEntity)
+                        }
+
+                        healthCentreManager.addAll(healthFacilityEntities)
+                    } catch (e: JSONException) {
+                        e.printStackTrace()
                     }
-                    healthCentreManager.addAll(healthFacilityEntities)
-                } catch (e: JSONException) {
-                    e.printStackTrace()
                 }
             },
             Response.ErrorListener { error: VolleyError ->

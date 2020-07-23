@@ -134,7 +134,7 @@ public class PatientsActivity extends AppCompatActivity {
         List<Pair<Patient, Reading>> patients = new ArrayList<>();
 
         for (Patient patient: patientList){
-            patients.add(new Pair<Patient, B>(patient,readingManager.getNewestReadingByPatientIdBlocking(patient.getId())));
+            patients.add(new Pair<>(patient,readingManager.getNewestReadingByPatientIdBlocking(patient.getId())));
         }
 
         TextView textView = findViewById(R.id.emptyView);

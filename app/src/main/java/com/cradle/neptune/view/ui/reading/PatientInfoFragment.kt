@@ -121,7 +121,7 @@ class PatientInfoFragment : BaseFragment() {
                 ageEditText.isClickable = false
                 ageEditText.setText("")
 
-                viewModel.patientAge = null
+                viewModel?.patientAge = null
             } else {
                 dobEditText.isEnabled = false
                 dobEditText.isClickable = false
@@ -130,7 +130,7 @@ class PatientInfoFragment : BaseFragment() {
                 ageEditText.isEnabled = true
                 ageEditText.isClickable = true
 
-                viewModel.patientDob = null
+                viewModel?.patientDob = null
             }
         }
 
@@ -141,7 +141,7 @@ class PatientInfoFragment : BaseFragment() {
                 // Month ordinals are zero indexed.
                 val date = "$year-${month + 1}-$dayOfMonth"
                 dobEditText.setText(date)
-                viewModel.patientDob = date
+                viewModel?.patientDob = date
             }
 
             val dialog = DatePickerDialog(requireActivity(), listener, DatePickerDefaultYear, 0, 1)
@@ -165,31 +165,31 @@ class PatientInfoFragment : BaseFragment() {
         hideKeyboard()
 
         // Pull data from view model and update UI elements.
-        mView.findViewById<EditText>(R.id.etPatientId).setText(viewModel.patientId)
-        mView.findViewById<EditText>(R.id.etPatientName).setText(viewModel.patientName)
-        mView.findViewById<EditText>(R.id.dobTxt).setText(viewModel.patientDob)
-        mView.findViewById<EditText>(R.id.patientAgeEditTxt).setText(viewModel.patientAge?.toString())
+        mView.findViewById<EditText>(R.id.etPatientId).setText(viewModel?.patientId)
+        mView.findViewById<EditText>(R.id.etPatientName).setText(viewModel?.patientName)
+        mView.findViewById<EditText>(R.id.dobTxt).setText(viewModel?.patientDob)
+        mView.findViewById<EditText>(R.id.patientAgeEditTxt).setText(viewModel?.patientAge?.toString())
         // Check the dob switch if we have a dob value or we don't have either value.
-        dobSwitch.isChecked = viewModel.patientDob != null || viewModel.patientAge == null
-        mView.findViewById<EditText>(R.id.etVillageNumber).setText(viewModel.patientVillageNumber)
-        mView.findViewById<EditText>(R.id.etZone).setText(viewModel.patientZone)
+        dobSwitch.isChecked = viewModel?.patientDob != null || viewModel?.patientAge == null
+        mView.findViewById<EditText>(R.id.etVillageNumber).setText(viewModel?.patientVillageNumber)
+        mView.findViewById<EditText>(R.id.etZone).setText(viewModel?.patientZone)
 
         // If for some reason, both date of birth and patient age are present
         // in the view model, prefer date of birth.
-        if (viewModel.patientDob != null && viewModel.patientAge != null) {
+        if (viewModel?.patientDob != null && viewModel?.patientAge != null) {
             mView.findViewById<EditText>(R.id.patientAgeEditTxt).text = null
         }
 
         // Pull pregnancy and sex data fro the view model and update the UI accordingly.
-        pregnantSwitch.isEnabled = viewModel.patientSex != Sex.MALE
-        sexSpinner.setSelection(viewModel.patientSex?.let { sexIndex(it) } ?: PATIENT_SEX_MALE)
-        if (viewModel.patientIsPregnant == true) {
+        pregnantSwitch.isEnabled = viewModel?.patientSex != Sex.MALE
+        sexSpinner.setSelection(viewModel?.patientSex?.let { sexIndex(it) } ?: PATIENT_SEX_MALE)
+        if (viewModel?.patientIsPregnant == true) {
             pregnantSwitch.isChecked = true
             gestationalAgeEditText.isEnabled = true
-            gestationalAgeEditText.setText(viewModel.patientGestationalAge?.value?.toString())
+            gestationalAgeEditText.setText(viewModel?.patientGestationalAge?.value?.toString())
             gestationalAgeSpinner.isEnabled = true
             gestationalAgeSpinner.setSelection(
-                when (viewModel.patientGestationalAge) {
+                when (viewModel?.patientGestationalAge) {
                     null -> GA_UNIT_INDEX_WEEKS // weeks is the default unit
                     is GestationalAgeWeeks -> GA_UNIT_INDEX_WEEKS
                     is GestationalAgeMonths -> GA_UNIT_INDEX_MONTHS
@@ -209,23 +209,23 @@ class PatientInfoFragment : BaseFragment() {
             return true
         }
 
-        patientId = mView.editText(R.id.etPatientId).nullIfEmpty()
-        patientName = mView.editText(R.id.etPatientName).nullIfEmpty()
+        this?.patientId = mView.editText(R.id.etPatientId).nullIfEmpty()
+        this?.patientName = mView.editText(R.id.etPatientName).nullIfEmpty()
 
-        patientDob = mView.editText(R.id.dobTxt).nullIfEmpty()
-        patientAge = mView.editText(R.id.patientAgeEditTxt).toIntOrNull()
+        this?.patientDob = mView.editText(R.id.dobTxt).nullIfEmpty()
+        this?.patientAge = mView.editText(R.id.patientAgeEditTxt).toIntOrNull()
         // If for some reason both age and dob have been populated, prefer dob.
-        if (patientDob != null && patientAge != null) {
+        if (!(this?.patientDob?.equals(null) ?: (true)) && this?.patientAge != null) {
             patientAge = null
         }
 
-        patientVillageNumber = mView.editText(R.id.etVillageNumber).nullIfEmpty()
-        patientZone = mView.editText(R.id.etZone).nullIfEmpty()
+        this?.patientVillageNumber = mView.editText(R.id.etVillageNumber).nullIfEmpty()
+        this?.patientZone = mView.editText(R.id.etZone).nullIfEmpty()
 
-        patientSex = sexFromIndex(sexSpinner.selectedItemPosition)
-        patientIsPregnant = pregnantSwitch.isChecked
+        this?.patientSex = sexFromIndex(sexSpinner.selectedItemPosition)
+        this?.patientIsPregnant = pregnantSwitch.isChecked
 
-        patientGestationalAge = run {
+        this?.patientGestationalAge = run {
             val value = mView.editText(R.id.etGestationalAgeValue).toIntOrNull()
             if (value != null) {
                 when (gestationalAgeSpinner.selectedItemPosition) {
