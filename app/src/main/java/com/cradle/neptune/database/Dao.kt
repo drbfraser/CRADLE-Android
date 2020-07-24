@@ -87,7 +87,7 @@ interface ReadingDaoAccess {
     val allUnUploadedReading: List<Reading>
 
     /**
-     * Newest reading of a perticular patient
+     * get the newest reading of a particular patient
      */
     @Query("SELECT * FROM READING WHERE patientId LIKE :id ORDER BY dateTimeTaken LIMIT 1 ")
     fun getNewestReadingByPatientId(id: String): Reading?
@@ -101,21 +101,39 @@ interface ReadingDaoAccess {
 @Dao
 interface PatientDaoAccess {
 
+    /**
+     * inserts a patient into patient table
+     */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(patient: Patient)
 
+    /**
+     * insert a list of patients into the patient tavle
+     */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(patients: List<Patient>)
 
+    /**
+     * Deletes a patient from the patient table.
+     */
     @Delete
     fun delete(patient: Patient)
 
+    /**
+     *get list of all the patients
+     */
     @get:Query("SELECT * FROM Patient")
     val allPatients: List<Patient>
 
+    /**
+     * get a single patient by id if exists
+     */
     @Query("SELECT * FROM Patient WHERE id LIKE :id LIMIT 1")
     fun getPatientById(id: String): Patient?
 
+    /**
+     * delete all patients
+     */
     @Query("DELETE FROM Patient")
     fun deleteAllPatients()
 }

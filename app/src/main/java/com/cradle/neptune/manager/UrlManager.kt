@@ -69,7 +69,7 @@ class UrlManager @Inject constructor(val settings: Settings) {
                 ":" + settings.networkPort
             }
 
-            return "https://cmpt373-lockdown.cs.surrey.sfu.ca/api"
+            return "http://10.0.2.2:5000/api"
         }
 
     /**

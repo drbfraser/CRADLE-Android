@@ -11,14 +11,31 @@ import kotlinx.coroutines.withContext
 
 class PatientManager(private val daoAccess: PatientDaoAccess) {
 
+    /**
+     * add a single patient
+     */
     fun add(patient: Patient) = GlobalScope.launch { daoAccess.insert(patient) }
 
-    suspend fun addAll(patients: ArrayList<Patient>) = GlobalScope.launch { daoAccess.insertAll(patients) }
+    /**
+     * add all patients
+     */
+    fun addAll(patients: ArrayList<Patient>) = GlobalScope.launch { daoAccess.insertAll(patients) }
 
-    suspend fun delete(patient: Patient) = daoAccess.delete(patient)
+    /**
+     * delete a patient by id
+     */
+    suspend fun delete(id: String) {
+        getPatientById(id)?.let { daoAccess.delete(it) }
+    }
 
+    /**
+     * delete all the patients
+     */
     suspend fun deleteAll() = daoAccess.deleteAllPatients()
 
+    /**
+     * get all the patients
+     */
     suspend fun getAllPatients(): List<Patient> = daoAccess.allPatients
 
     /**
@@ -31,6 +48,9 @@ class PatientManager(private val daoAccess: PatientDaoAccess) {
         withContext(Dispatchers.IO) { getAllPatients() }
     }
 
+    /**
+     * get individual patient by id if exists
+     */
     suspend fun getPatientById(id: String): Patient? = daoAccess.getPatientById(id)
 
     /**

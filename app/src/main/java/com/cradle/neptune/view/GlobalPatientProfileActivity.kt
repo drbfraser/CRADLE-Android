@@ -11,7 +11,6 @@ import android.view.View.VISIBLE
 import android.widget.Button
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
@@ -26,6 +25,8 @@ import com.cradle.neptune.model.ReadingMetadata
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter.OnClickElement
 import com.google.android.material.snackbar.Snackbar
+import java.util.HashMap
+import java.util.UUID
 import kotlinx.android.synthetic.main.reading_card_assesment.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -33,8 +34,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.threeten.bp.ZonedDateTime
-import java.util.HashMap
-import java.util.UUID
 
 /**
  * This is a child class of [PatientProfileActivity] and uses some functions from the parent class.
@@ -46,11 +45,10 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         getGlobalPatient()
         setupAddToMyPatientList()
         if (supportActionBar != null) {
-            //supportActionBar?.title = "Patient: " + currPatient.name
+            // supportActionBar?.title = "Patient: " + currPatient.name
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
         }
     }
-
 
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
@@ -93,22 +91,23 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
 
     @Suppress("MagicNumber")
     private fun getGlobalPatient() {
-        val globalPatient = intent.getSerializableExtra("globalPatient") as GlobalPatient
+        val globalPatient =
+            intent.getSerializableExtra("globalPatient") as GlobalPatient
 
-        val jsonObjectRequest = object: JsonObjectRequest(Request.Method.GET,urlManager.getPatientInfoById(globalPatient.id),null,
-        Response.Listener { response ->
-            Log.d("bugg",response.toString(4))
+        val jsonObjectRequest = object : JsonObjectRequest(Method.GET,
+            urlManager.getPatientInfoById(globalPatient.id), null,
+            Response.Listener { response ->
+            Log.d("bugg", response.toString(4))
             currPatient = Patient.unmarshal(response)
             val readingArray = response.getJSONArray("readings")
-            for (i in 0 until readingArray.length()){
-                patientReadings.add(0,Reading.unmarshal(readingArray[i] as JsonObject))
+            for (i in 0 until readingArray.length()) {
+                patientReadings.add(0, Reading.unmarshal(readingArray[i] as JsonObject))
             }
             setupReadingsRecyclerView()
             setupLineChart()
-
-        },Response.ErrorListener { error ->
-                Log.d("bugg","error: "+ error)
-            }){
+        }, Response.ErrorListener { error ->
+                Log.d("bugg", "error: " + error)
+            }) {
             /**
              * Passing some request headers
              */
@@ -123,7 +122,6 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         }
         val queue = Volley.newRequestQueue(MyApp.getInstance())
         queue.add<JSONObject>(jsonObjectRequest)
-
 
         // todo make the network call to get the patient
         // for now we will mock it since we dont have api

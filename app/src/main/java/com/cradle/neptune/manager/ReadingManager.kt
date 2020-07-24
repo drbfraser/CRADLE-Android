@@ -25,11 +25,9 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
 
     /**
      * Adds a new reading to the database.
-     *
-     * Due to how the database schema is setup, if we also need to supply
-     * patient information whenever we want to create a new reading.
-     *
      * @param reading the reading to insert
+     * todo once all the class using this api is converted to kotlin, we can move coroutine out
+     * of this class and make this a [suspend] function
      */
     fun addReading(reading: Reading) {
         GlobalScope.launch {
@@ -37,6 +35,11 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
         }
     }
 
+    /**
+     * Get all the readings.
+     * todo once all the class using this api is converted to kotlin, we can move coroutine out
+     * of this class and make this a [suspend] function
+     */
     fun addAllReadings(readings: List<Reading>) {
         GlobalScope.launch {
             daoAccess.insertAll(readings)
@@ -45,10 +48,8 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
 
     /**
      * Updates an existing reading in the database.
-     *
-     * Due to how the database schema is setup, we need to supply patient
-     * information along with the reading we wish to update.
-     *
+     * todo once all the class using this api is converted to kotlin, we can move coroutine out
+     * of this class and make this a [suspend] function
      * @param reading the reading to update
      */
     fun updateReading(reading: Reading) = GlobalScope.launch { daoAccess.update(reading) }

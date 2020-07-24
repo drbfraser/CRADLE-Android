@@ -154,7 +154,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         editor.putString(LoginActivity.USER_ID, "")
         editor.apply()
         GlobalScope.launch(Dispatchers.IO) { readingManager.deleteAllData() }
-        GlobalScope.launch(Dispatchers.IO) { healthCentreManager.deleteAllData() }
+        GlobalScope.launch(Dispatchers.IO) { healthCentreManager.deleteAll() }
         GlobalScope.launch(Dispatchers.IO) { patientManager.deleteAll() }
         startActivity(Intent(activity, LoginActivity::class.java))
         requireActivity().finishAffinity()
