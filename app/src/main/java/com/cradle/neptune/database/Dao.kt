@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.cradle.neptune.model.HealthFacility
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
 
@@ -139,7 +140,7 @@ interface PatientDaoAccess {
 }
 
 /**
- * Data Access Object (DAO) for [HealthFacilityEntity] entities.
+ * Data Access Object (DAO) for [HealthFacility] entities.
  *
  * Provides methods for adding, updating, and removing entities from a database
  * along with a series of query methods.
@@ -152,46 +153,46 @@ interface HealthFacilityDaoAccess {
      * If a conflicting element already exists in the database it will be
      * replaced with the new one.
      *
-     * @param healthFacilityEntity The health facility to insert.
+     * @param healthFacility The health facility to insert.
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(healthFacilityEntity: HealthFacilityEntity)
+    fun insert(healthFacility: HealthFacility)
 
     /**
      * Inserts each health facility in the supplied list into the database.
      *
-     * @param healthFacilityEntities The list of facilities to insert.
+     * @param healthFacilities The list of facilities to insert.
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAll(healthFacilityEntities: List<HealthFacilityEntity>)
+    fun insertAll(healthFacilities: List<HealthFacility>)
 
     /**
      * Updates an existing health facility.
      *
-     * @param healthFacilityEntity An entity containing updated data.
+     * @param healthFacility An entity containing updated data.
      */
     @Update
-    fun update(healthFacilityEntity: HealthFacilityEntity)
+    fun update(healthFacility: HealthFacility)
 
     /**
      * Removes an entity from the database.
      *
-     * @param healthFacilityEntity The entity to remove.
+     * @param healthFacility The entity to remove.
      */
     @Delete
-    fun delete(healthFacilityEntity: HealthFacilityEntity)
+    fun delete(healthFacility: HealthFacility)
 
     /**
      * Deletes all health centres in the database.
      */
-    @Query("DELETE FROM HealthFacilityEntity")
+    @Query("DELETE FROM HealthFacility")
     fun deleteAll()
 
     /**
      * All health facilities stored in the database.
      */
-    @get:Query("SELECT * FROM HealthFacilityEntity")
-    val allHealthFacilities: List<HealthFacilityEntity>
+    @get:Query("SELECT * FROM HealthFacility")
+    val allHealthFacilities: List<HealthFacility>
 
     /**
      * Returns the first health facility from the database who's id matches
@@ -199,12 +200,12 @@ interface HealthFacilityDaoAccess {
      *
      * @param id The id of the health facility to retrieve.
      */
-    @Query("SELECT * FROM HealthFacilityEntity WHERE id LIKE :id LIMIT 1")
-    fun getHealthFacilityById(id: String): HealthFacilityEntity?
+    @Query("SELECT * FROM HealthFacility WHERE id LIKE :id LIMIT 1")
+    fun getHealthFacilityById(id: String): HealthFacility?
 
     /**
      * All health facilities which the user has selected to be visible.
      */
-    @get:Query("SELECT * FROM HealthFacilityEntity WHERE isUserSelected = 1")
-    val allUserSelectedHealthFacilities: List<HealthFacilityEntity>
+    @get:Query("SELECT * FROM HealthFacility WHERE isUserSelected = 1")
+    val allUserSelectedHealthFacilities: List<HealthFacility>
 }

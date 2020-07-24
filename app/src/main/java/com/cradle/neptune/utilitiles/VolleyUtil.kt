@@ -71,8 +71,6 @@ class VolleyUtil {
         private fun getHttpHeaders(sharedPreferences: SharedPreferences): Map<String, String> {
             val token = sharedPreferences.getString(LoginActivity.TOKEN, LoginActivity.DEFAULT_TOKEN)
             return mapOf(Pair(LoginActivity.AUTH, "Bearer $token"))
-
         }
-
     }
 }

@@ -1,7 +1,7 @@
 package com.cradle.neptune.manager
 
 import com.cradle.neptune.database.CradleDatabase
-import com.cradle.neptune.database.HealthFacilityEntity
+import com.cradle.neptune.model.HealthFacility
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -11,7 +11,7 @@ class HealthCentreManager(private val database: CradleDatabase) {
     private val dao get() = database.healthFacilityDaoAccess()
 
     /**
-     * get a [HealthFacilityEntity] by id
+     * get a [HealthFacility] by id
      */
     suspend fun getById(id: String) = dao.getHealthFacilityById(id)
 
@@ -29,7 +29,7 @@ class HealthCentreManager(private val database: CradleDatabase) {
     fun getAllBlocking() = runBlocking { getAll() }
 
     /**
-     * get all the [HealthFacilityEntity] selected by the current user.
+     * get all the [HealthFacility] selected by the current user.
      */
     suspend fun getAllSelectedByUser() = dao.allUserSelectedHealthFacilities
 
@@ -44,17 +44,17 @@ class HealthCentreManager(private val database: CradleDatabase) {
     /**
      * add a single health facility
      */
-    suspend fun add(entity: HealthFacilityEntity) = dao.insert(entity)
+    suspend fun add(entity: HealthFacility) = dao.insert(entity)
 
     /**
      * Add all the health facilities
      */
-    suspend fun addAll(entities: List<HealthFacilityEntity>) = dao.insertAll(entities)
+    suspend fun addAll(entities: List<HealthFacility>) = dao.insertAll(entities)
 
     /**
      * update a single Health Facility
      */
-    fun update(entity: HealthFacilityEntity) = GlobalScope.launch { dao.update(entity) }
+    fun update(entity: HealthFacility) = GlobalScope.launch { dao.update(entity) }
 
     /**
      * delete a health facility by id
@@ -65,7 +65,7 @@ class HealthCentreManager(private val database: CradleDatabase) {
     }
 
     /**
-     * delete all [HealthFacilityEntity] from the DB
+     * delete all [HealthFacility] from the DB
      */
     suspend fun deleteAll() = dao.deleteAll()
 }

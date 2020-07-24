@@ -24,7 +24,7 @@ import com.android.volley.toolbox.JsonRequest
 import com.android.volley.toolbox.Volley
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
-import com.cradle.neptune.database.HealthFacilityEntity
+import com.cradle.neptune.model.HealthFacility
 import com.cradle.neptune.manager.HealthCentreManager
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
@@ -180,10 +180,10 @@ class LoginActivity : AppCompatActivity() {
             Response.Listener { response: JSONArray ->
                 GlobalScope.launch {
                     try {
-                        val healthFacilityEntities: MutableList<HealthFacilityEntity> =
+                        val healthFacilities: MutableList<HealthFacility> =
                             ArrayList()
                         // adding our default one for twilio
-                        val hf = HealthFacilityEntity(
+                        val hf = HealthFacility(
                             UUID.randomUUID().toString(),
                             "Neptune's five star care",
                             "Planet Neptune",
@@ -192,22 +192,23 @@ class LoginActivity : AppCompatActivity() {
                             "TW"
                         )
                         hf.isUserSelected = true
-                        healthFacilityEntities.add(hf)
+                        healthFacilities.add(hf)
                         for (i in 0 until response.length()) {
                             val jsonObject = response.getJSONObject(i)
                             val id = UUID.randomUUID().toString()
                             // todo get hcf id from the server, currently server doesnt have one
-                            val healthFacilityEntity = HealthFacilityEntity(
-                                id, jsonObject.getString("healthFacilityName"),
-                                jsonObject.getString("location"),
-                                jsonObject.getString("healthFacilityPhoneNumber"),
-                                jsonObject.getString("about"),
-                                jsonObject.getString("facilityType")
-                            )
-                            healthFacilityEntities.add(healthFacilityEntity)
+                            val healthFacility =
+                                HealthFacility(
+                                    id, jsonObject.getString("healthFacilityName"),
+                                    jsonObject.getString("location"),
+                                    jsonObject.getString("healthFacilityPhoneNumber"),
+                                    jsonObject.getString("about"),
+                                    jsonObject.getString("facilityType")
+                                )
+                            healthFacilities.add(healthFacility)
                         }
 
-                        healthCentreManager.addAll(healthFacilityEntities)
+                        healthCentreManager.addAll(healthFacilities)
                     } catch (e: JSONException) {
                         e.printStackTrace()
                     }

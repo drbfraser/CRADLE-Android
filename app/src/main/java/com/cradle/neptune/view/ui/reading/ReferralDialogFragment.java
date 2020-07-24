@@ -30,7 +30,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
-import com.cradle.neptune.database.HealthFacilityEntity;
+import com.cradle.neptune.model.HealthFacility;
 import com.cradle.neptune.manager.UrlManager;
 import com.cradle.neptune.model.*;
 import com.cradle.neptune.manager.HealthCentreManager;
@@ -460,9 +460,9 @@ public class ReferralDialogFragment extends DialogFragment {
     private void setupHealthCentreSpinner(Dialog dialog) {
         Spinner sp = dialog.findViewById(R.id.spinnerHealthCentre);
         ArrayList<String> options = new ArrayList<>();
-        List<HealthFacilityEntity> healthFacilityEntities = healthCentreManager.getAllSelectedByUserBlocking();
+        List<HealthFacility> healthFacilityEntities = healthCentreManager.getAllSelectedByUserBlocking();
 
-        for (HealthFacilityEntity h : healthFacilityEntities) {
+        for (HealthFacility h : healthFacilityEntities) {
             options.add(h.getName());
         }
         //options.addAll(settings.getHealthCentreNames());

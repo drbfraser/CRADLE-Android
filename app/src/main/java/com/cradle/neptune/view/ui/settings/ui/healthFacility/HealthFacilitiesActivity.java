@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
-import com.cradle.neptune.database.HealthFacilityEntity;
+import com.cradle.neptune.model.HealthFacility;
 import com.cradle.neptune.manager.HealthCentreManager;
 import com.cradle.neptune.viewmodel.HealthFacilitiesAdapter;
 
@@ -46,7 +46,7 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
 
     private void setupRecyclerview() {
         RecyclerView recyclerView = findViewById(R.id.hfRecyclerView);
-        List<HealthFacilityEntity> healthFacilityEntities = healthCentreManager.getAllBlocking();
+        List<HealthFacility> healthFacilityEntities = healthCentreManager.getAllBlocking();
         healthFacilitiesAdapter = new HealthFacilitiesAdapter(healthFacilityEntities);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
 
@@ -54,17 +54,17 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
         healthFacilitiesAdapter.notifyDataSetChanged();
 
-        healthFacilitiesAdapter.setAdapterClicker(healthFacilityEntity -> {
+        healthFacilitiesAdapter.setAdapterClicker(healthFacility -> {
             String msg = "Add this facility to your list?";
 
-            if (healthFacilityEntity.isUserSelected()) {
+            if (healthFacility.isUserSelected()) {
                 msg = "Remove this facility from your list?";
             }
             new AlertDialog.Builder(HealthFacilitiesActivity.this)
-                    .setTitle(healthFacilityEntity.getName()).setMessage(msg)
+                    .setTitle(healthFacility.getName()).setMessage(msg)
                     .setCancelable(true).setPositiveButton("YES", (dialogInterface, i) -> {
-                healthFacilityEntity.setUserSelected(!healthFacilityEntity.isUserSelected());
-                healthCentreManager.update(healthFacilityEntity);
+                healthFacility.setUserSelected(!healthFacility.isUserSelected());
+                healthCentreManager.update(healthFacility);
                 setupRecyclerview();
             }).setNegativeButton("NO", (dialogInterface, i) -> {}).create().show();
         });
@@ -120,7 +120,7 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
     }
 
     public interface AdapterClicker {
-        void onClick(HealthFacilityEntity healthFacilityEntity);
+        void onClick(HealthFacility healthFacility);
     }
 
 }

@@ -13,7 +13,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cradle.neptune.R;
-import com.cradle.neptune.database.HealthFacilityEntity;
+import com.cradle.neptune.model.HealthFacility;
 import com.cradle.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity;
 
 import java.util.ArrayList;
@@ -22,11 +22,11 @@ import java.util.List;
 
 public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFacilitiesAdapter.HealthFacilityViewHolder> implements Filterable {
 
-    private List<HealthFacilityEntity> healthFacilityEntities;
-    private List<HealthFacilityEntity> filteredList;
+    private List<HealthFacility> healthFacilityEntities;
+    private List<HealthFacility> filteredList;
     private HealthFacilitiesActivity.AdapterClicker AdapterClicker;
 
-    public HealthFacilitiesAdapter(List<HealthFacilityEntity> healthFacilityEntities) {
+    public HealthFacilitiesAdapter(List<HealthFacility> healthFacilityEntities) {
         this.healthFacilityEntities = healthFacilityEntities;
         this.filteredList = healthFacilityEntities;
     }
@@ -46,18 +46,18 @@ public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFaciliti
     @Override
     public void onBindViewHolder(@NonNull HealthFacilityViewHolder holder, int position) {
 
-        HealthFacilityEntity healthFacilityEntity = filteredList.get(position);
+        HealthFacility healthFacility = filteredList.get(position);
 
-        holder.locationTxt.setText(healthFacilityEntity.getLocation());
-        holder.nameTxt.setText(healthFacilityEntity.getName());
-        holder.phoneTxt.setText(healthFacilityEntity.getPhoneNumber());
-        holder.typeTxt.setText(healthFacilityEntity.getType());
-        holder.aboutTxt.setText(healthFacilityEntity.getAbout());
-        if (healthFacilityEntity.isUserSelected()) {
+        holder.locationTxt.setText(healthFacility.getLocation());
+        holder.nameTxt.setText(healthFacility.getName());
+        holder.phoneTxt.setText(healthFacility.getPhoneNumber());
+        holder.typeTxt.setText(healthFacility.getType());
+        holder.aboutTxt.setText(healthFacility.getAbout());
+        if (healthFacility.isUserSelected()) {
             holder.statusImg.setVisibility(View.VISIBLE);
         }
         holder.layout.setOnClickListener(view ->
-                AdapterClicker.onClick(healthFacilityEntity));
+                AdapterClicker.onClick(healthFacility));
 
     }
 
@@ -75,8 +75,8 @@ public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFaciliti
                 if (charString.isEmpty()) {
                     filteredList = healthFacilityEntities;
                 } else {
-                    List<HealthFacilityEntity> newFilteredList = new ArrayList<>();
-                    for (HealthFacilityEntity hf : healthFacilityEntities) {
+                    List<HealthFacility> newFilteredList = new ArrayList<>();
+                    for (HealthFacility hf : healthFacilityEntities) {
                         if (hf.getLocation().toLowerCase().contains(charSequence.toString()) ||
                                 hf.getName().toLowerCase().contains(charSequence.toString()) ||
                                 hf.getType().toLowerCase().contains(charSequence.toString()) ||
@@ -93,7 +93,7 @@ public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFaciliti
 
             @Override
             protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-                filteredList = (ArrayList<HealthFacilityEntity>) filterResults.values;
+                filteredList = (ArrayList<HealthFacility>) filterResults.values;
                 notifyDataSetChanged();
             }
         };

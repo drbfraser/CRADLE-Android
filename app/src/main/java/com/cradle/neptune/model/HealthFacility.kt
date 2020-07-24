@@ -1,4 +1,4 @@
-package com.cradle.neptune.database
+package com.cradle.neptune.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
@@ -17,7 +17,7 @@ import androidx.room.PrimaryKey
  * in their drop down menu.
  */
 @Entity
-data class HealthFacilityEntity(
+data class HealthFacility(
     @PrimaryKey var id: String,
     @ColumnInfo var name: String?,
     @ColumnInfo var location: String?,
