@@ -256,7 +256,7 @@ fun <F : Field> JsonObject.optDoubleField(field: F): Double? = try {
  *
  * @throws JsonException If no such field exists.
  */
-fun <F : Field> JsonObject.booleanField(field: F): Boolean = optBoolean(field.text, false)
+fun <F : Field> JsonObject.booleanField(field: F): Boolean = getBoolean(field.text)
 
 /**
  * Returns the boolean value for the specified field or `null` if it does not

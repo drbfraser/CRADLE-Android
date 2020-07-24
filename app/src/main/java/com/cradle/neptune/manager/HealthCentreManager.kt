@@ -2,12 +2,15 @@ package com.cradle.neptune.manager
 
 import com.cradle.neptune.database.CradleDatabase
 import com.cradle.neptune.model.HealthFacility
+import com.cradle.neptune.model.Patient
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 /**
- *
+ *  * manager to interact with the [HealthFacility] table
+ *Added [suspend] function so that there is compile time error when inserting on DB through
+ * main thread rather than run time error
  */
 @Suppress("RedundantSuspendModifier")
 class HealthCentreManager(private val database: CradleDatabase) {

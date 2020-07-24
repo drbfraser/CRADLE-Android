@@ -20,6 +20,9 @@ import kotlinx.coroutines.withContext
  * or `Blocking` variants. For call-and-forget methods like [addReading], use
  * the `Async` variant. For methods which return a value, the `Blocking`
  * variants may be used but remember that those will block the current thread.
+ *
+ *Added [suspend] function so that there is compile time error when inserting on DB through
+ * main thread rather than run time error
  */
 @Suppress("RedundantSuspendModifier")
 class ReadingManager(private val daoAccess: ReadingDaoAccess) {

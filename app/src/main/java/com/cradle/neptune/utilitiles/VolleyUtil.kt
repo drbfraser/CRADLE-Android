@@ -19,7 +19,7 @@ class VolleyUtil {
          * returns [JsonObjectRequest] with headers
          */
         @Suppress("LongParameterList")
-        fun makeMeJsonObjectRequest(
+        fun makeJsonObjectRequest(
             method: Int,
             url: String,
             jsonRequest: JSONObject?,
@@ -44,7 +44,7 @@ class VolleyUtil {
          * returns [JsonArrayRequest] with headers
          */
         @Suppress("LongParameterList")
-        fun makeMeJsonArrayRequest(
+        fun makeJsonArrayRequest(
             method: Int,
             url: String,
             jsonRequest: JSONArray?,

@@ -9,6 +9,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
+/**
+ * manager to interact with the [Patient] table
+ *Added [suspend] function so that there is compile time error when inserting on DB through
+ * main thread rather than run time error
+ */
 @Suppress("RedundantSuspendModifier")
 class PatientManager(private val daoAccess: PatientDaoAccess) {
 
