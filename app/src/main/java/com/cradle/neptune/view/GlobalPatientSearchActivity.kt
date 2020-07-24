@@ -80,8 +80,8 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         progressDialog.setCancelable(false)
         progressDialog.show()
 
-        val jsonArrayRequest = VolleyUtil.makeMeJsonArrayRequest(Request.Method.GET,searchUrl,null,
-        Response.Listener {response: JSONArray? ->
+        val jsonArrayRequest = VolleyUtil.makeMeJsonArrayRequest(Request.Method.GET, searchUrl, null,
+        Response.Listener { response: JSONArray? ->
             setupPatientsRecycler(response as (JSONArray))
             progressDialog.cancel()
             searchView.hideKeyboard()

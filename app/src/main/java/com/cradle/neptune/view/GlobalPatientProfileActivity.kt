@@ -72,17 +72,17 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         progressDialog.setCancelable(false)
         progressDialog.setMessage("Adding to your patient's list")
         progressDialog.show()
-        //make the patient- user relationship
+        // make the patient- user relationship
         val jsonObject = JSONObject()
-        jsonObject.put("patientId",currPatient.id)
+        jsonObject.put("patientId", currPatient.id)
 
         val associationRequest = VolleyUtil.makeMeJsonObjectRequest(Request.Method.POST,
-            urlManager.userPatientAssociation,jsonObject, Response.Listener {
+            urlManager.userPatientAssociation, jsonObject, Response.Listener {
                 addThePatientInfoToLocalDb(progressDialog)
             }, Response.ErrorListener {
-                Log.i(TAG,"error: "+ it.localizedMessage)
+                Log.i(TAG, "error: " + it.localizedMessage)
                 progressDialog.cancel()
-            },sharedPreferences)
+            }, sharedPreferences)
 
         val queue = Volley.newRequestQueue(MyApp.getInstance())
         queue.add<JSONObject>(associationRequest)
@@ -91,7 +91,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
     /**
      * adds patient info to local db and starts [PatientProfileActivity]
      */
-    private fun addThePatientInfoToLocalDb(progressDialog:ProgressDialog) {
+    private fun addThePatientInfoToLocalDb(progressDialog: ProgressDialog) {
         GlobalScope.launch(Dispatchers.IO) {
             patientReadings.forEach {
                 readingManager.addReading(it)
@@ -121,8 +121,9 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         progressDialog.setMessage("Fetching the patient...")
         progressDialog.show()
         // make a request to fetch all the patient info and readings
-        val jsonObjectRequest = VolleyUtil.makeMeJsonObjectRequest(Request.Method.GET,urlManager.getPatientInfoById(globalPatient.id),
-        null,Response.Listener { response: JSONObject ->
+        val jsonObjectRequest = VolleyUtil.makeMeJsonObjectRequest(Request.Method.GET,
+            urlManager.getPatientInfoById(globalPatient.id), null,
+            Response.Listener { response: JSONObject ->
                 // extract all the patient info and readings
                 currPatient = Patient.unmarshal(response)
                 patientReadings = ArrayList()
@@ -130,18 +131,17 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
                 for (i in 0 until readingArray.length()) {
                     patientReadings.add(0, Reading.unmarshal(readingArray[i] as JsonObject))
                 }
-                //follow up with the rest of the initialization
+                // follow up with the rest of the initialization
                 setupToolBar()
                 populatePatientInfo(currPatient)
                 setupReadingsRecyclerView()
                 setupLineChart()
                 progressDialog.cancel()
-            }, Response.ErrorListener {error ->
+            }, Response.ErrorListener { error ->
                 progressDialog.cancel()
-                Snackbar.make(readingRecyclerview,"Unable to fetch the patient Information..." +
+                Snackbar.make(readingRecyclerview, "Unable to fetch the patient Information..." +
                     "\n${error.localizedMessage}", Snackbar.LENGTH_INDEFINITE).show()
-
-            },sharedPreferences)
+            }, sharedPreferences)
 
         val queue = Volley.newRequestQueue(MyApp.getInstance())
         queue.add<JSONObject>(jsonObjectRequest)

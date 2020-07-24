@@ -5,9 +5,9 @@ import com.android.volley.Response
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.cradle.neptune.view.LoginActivity
+import java.util.HashMap
 import org.json.JSONArray
 import org.json.JSONObject
-import java.util.HashMap
 
 /**
  * Basic volley requests
@@ -19,9 +19,15 @@ class VolleyUtil {
         /**
          * returns [JsonObjectRequest] with headers
          */
-        fun makeMeJsonObjectRequest(method:Int, url: String,jsonRequest:JSONObject?,
-            successListener: Response.Listener<JSONObject>, errorListener: Response.ErrorListener,
-            sharedPreferences:SharedPreferences  ): JsonObjectRequest {
+        @Suppress("LongParameterList")
+        fun makeMeJsonObjectRequest(
+            method: Int,
+            url: String,
+            jsonRequest: JSONObject?,
+            successListener: Response.Listener<JSONObject>,
+            errorListener: Response.ErrorListener,
+            sharedPreferences: SharedPreferences
+        ): JsonObjectRequest {
 
             return object : JsonObjectRequest(method,
                 url, jsonRequest,
@@ -43,9 +49,15 @@ class VolleyUtil {
         /**
          * returns [JsonArrayRequest] with headers
          */
-        fun makeMeJsonArrayRequest(method:Int, url: String,jsonRequest:JSONArray?,
-            successListener: Response.Listener<JSONArray>, errorListener: Response.ErrorListener,
-            sharedPreferences: SharedPreferences ): JsonArrayRequest {
+        @Suppress("LongParameterList")
+        fun makeMeJsonArrayRequest(
+            method: Int,
+            url: String,
+            jsonRequest: JSONArray?,
+            successListener: Response.Listener<JSONArray>,
+            errorListener: Response.ErrorListener,
+            sharedPreferences: SharedPreferences
+        ): JsonArrayRequest {
 
             return object : JsonArrayRequest(method,
                 url, jsonRequest,
@@ -64,6 +76,4 @@ class VolleyUtil {
             }
         }
     }
-
-
 }
