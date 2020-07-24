@@ -51,6 +51,9 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         return true
     }
 
+    /**
+     * starts the process to add the patient to current user's patient's list
+     */
     private fun setupAddToMyPatientList() {
         val addToMyListButton = findViewById<Button>(R.id.addToMyPatientButton)
         addToMyListButton.visibility = VISIBLE
@@ -63,6 +66,9 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         })
     }
 
+    /**
+     * adds current patient to the current vht list.
+     */
     private fun setupCallLocalPatientActivity() {
         val progressDialog = ProgressDialog(this)
         progressDialog.setCancelable(false)
@@ -85,6 +91,9 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         }
     }
 
+    /**
+     * makes a web request to get full patient info
+     */
     private fun getGlobalPatient() {
         val globalPatient =
             intent.getSerializableExtra("globalPatient") as GlobalPatient
@@ -93,16 +102,17 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         progressDialog.setCancelable(false)
         progressDialog.setMessage("Fetching the patient...")
         progressDialog.show()
-
+        // make a request to fetch all the patient info and readings
         val jsonObjectRequest = VolleyUtil.makeMeJsonObjectRequest(Request.Method.GET,urlManager.getPatientInfoById(globalPatient.id),
         null,Response.Listener { response: JSONObject ->
-                Log.d("bugg",response.toString(4))
+                // extract all the patient info and readings
                 currPatient = Patient.unmarshal(response)
                 patientReadings = ArrayList()
                 val readingArray = response.getJSONArray("readings")
                 for (i in 0 until readingArray.length()) {
                     patientReadings.add(0, Reading.unmarshal(readingArray[i] as JsonObject))
                 }
+                //follow up with the rest of the initialization
                 setupToolBar()
                 populatePatientInfo(currPatient)
                 setupReadingsRecyclerView()
@@ -126,6 +136,9 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         return false
     }
 
+    /**
+     * simple function to setup the recyclerview
+     */
     override fun setupReadingsRecyclerView() {
         val listAdapter = ReadingRecyclerViewAdapter(patientReadings)
         listAdapter.setOnClickElementListener(object : OnClickElement {

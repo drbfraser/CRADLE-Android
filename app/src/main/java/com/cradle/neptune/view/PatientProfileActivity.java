@@ -372,6 +372,10 @@ public class PatientProfileActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * shows a dialog to confirm deleting a reading
+     * @param readingId id of the reading to delete
+     */
     private void askToDeleteReading(String readingId) {
         AlertDialog.Builder dialog = new AlertDialog.Builder(this)
                 .setMessage("Delete reading?")
