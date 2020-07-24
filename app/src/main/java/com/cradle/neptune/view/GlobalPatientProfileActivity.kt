@@ -35,6 +35,9 @@ import org.json.JSONObject
  */
 class GlobalPatientProfileActivity : PatientProfileActivity() {
 
+    companion object {
+        val TAG = GlobalPatientProfileActivity::class.java.canonicalName
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         getGlobalPatient()
@@ -75,10 +78,9 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
 
         val associationRequest = VolleyUtil.makeMeJsonObjectRequest(Request.Method.POST,
             urlManager.userPatientAssociation,jsonObject, Response.Listener {
-                Log.d("bugg",it.toString(4))
                 addThePatientInfoToLocalDb(progressDialog)
             }, Response.ErrorListener {
-                Log.d("bugg","error: "+ it.localizedMessage)
+                Log.i(TAG,"error: "+ it.localizedMessage)
                 progressDialog.cancel()
             },sharedPreferences)
 
