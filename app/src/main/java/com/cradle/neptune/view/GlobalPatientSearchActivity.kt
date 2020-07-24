@@ -14,18 +14,17 @@ import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.android.volley.DefaultRetryPolicy
-import com.android.volley.VolleyError
-import com.android.volley.toolbox.JsonArrayRequest
+import com.android.volley.Request
+import com.android.volley.Response
 import com.android.volley.toolbox.Volley
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.ext.hideKeyboard
 import com.cradle.neptune.manager.UrlManager
 import com.cradle.neptune.model.GlobalPatient
+import com.cradle.neptune.utilitiles.VolleyUtil
 import com.cradle.neptune.viewmodel.GlobalPatientAdapter
 import com.google.android.material.snackbar.Snackbar
-import java.util.HashMap
 import javax.inject.Inject
 import org.json.JSONArray
 import org.json.JSONObject
@@ -80,35 +79,20 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         progressDialog.setMessage("Fetching the patients")
         progressDialog.setCancelable(false)
         progressDialog.show()
-        val jsonArrayRequest = object : JsonArrayRequest(Method.GET, searchUrl, null,
-            { response: JSONArray? ->
-                setupPatientsRecycler(response as (JSONArray))
-                progressDialog.cancel()
-                searchView.hideKeyboard()
-            }, { error: VolleyError? ->
-                Log.e(Companion.TAG, "error: " + error?.message)
+
+        val jsonArrayRequest = VolleyUtil.makeMeJsonArrayRequest(Request.Method.GET,searchUrl,null,
+        Response.Listener {response: JSONArray? ->
+            setupPatientsRecycler(response as (JSONArray))
+            progressDialog.cancel()
+            searchView.hideKeyboard()
+        }, Response.ErrorListener { error ->
+                Log.e(TAG, "error: " + error?.message)
                 progressDialog.cancel()
                 searchView.hideKeyboard()
                 setupPatientsRecycler(null)
                 Snackbar.make(searchView, "Sorry unable to fetch the patients", Snackbar.LENGTH_LONG).show()
-            }) {
-            /**
-             * Passing some request headers
-             */
-            override fun getHeaders(): Map<String, String>? {
-                val headers =
-                    HashMap<String, String>()
-                val token =
-                    sharedPreferences.getString(LoginActivity.TOKEN, LoginActivity.DEFAULT_TOKEN)
-                headers[LoginActivity.AUTH] = "Bearer $token"
-                return headers
-            }
-        }
-        jsonArrayRequest.retryPolicy = DefaultRetryPolicy(
-            networkTimeOutInMS,
-            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
-        )
+            }, sharedPreferences)
+
         val queue = Volley.newRequestQueue(MyApp.getInstance())
         queue.add<JSONArray>(jsonArrayRequest)
     }

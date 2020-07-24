@@ -1,0 +1,69 @@
+package com.cradle.neptune.utilitiles
+
+import android.content.SharedPreferences
+import com.android.volley.Response
+import com.android.volley.toolbox.JsonArrayRequest
+import com.android.volley.toolbox.JsonObjectRequest
+import com.cradle.neptune.view.LoginActivity
+import org.json.JSONArray
+import org.json.JSONObject
+import java.util.HashMap
+
+/**
+ * Basic volley requests
+ */
+class VolleyUtil {
+
+    companion object {
+
+        /**
+         * returns [JsonObjectRequest] with headers
+         */
+        fun makeMeJsonObjectRequest(method:Int, url: String,jsonRequest:JSONObject?,
+            successListener: Response.Listener<JSONObject>, errorListener: Response.ErrorListener,
+            sharedPreferences:SharedPreferences  ): JsonObjectRequest {
+
+            return object : JsonObjectRequest(method,
+                url, jsonRequest,
+                successListener, errorListener) {
+                /**
+                 * Passing some request headers
+                 */
+                override fun getHeaders(): Map<String, String>? {
+                    val headers =
+                        HashMap<String, String>()
+                    val token =
+                        sharedPreferences.getString(LoginActivity.TOKEN, LoginActivity.DEFAULT_TOKEN)
+                    headers[LoginActivity.AUTH] = "Bearer $token"
+                    return headers
+                }
+            }
+        }
+
+        /**
+         * returns [JsonArrayRequest] with headers
+         */
+        fun makeMeJsonArrayRequest(method:Int, url: String,jsonRequest:JSONArray?,
+            successListener: Response.Listener<JSONArray>, errorListener: Response.ErrorListener,
+            sharedPreferences: SharedPreferences ): JsonArrayRequest {
+
+            return object : JsonArrayRequest(method,
+                url, jsonRequest,
+                successListener, errorListener) {
+                /**
+                 * Passing some request headers
+                 */
+                override fun getHeaders(): Map<String, String>? {
+                    val headers =
+                        HashMap<String, String>()
+                    val token =
+                        sharedPreferences.getString(LoginActivity.TOKEN, LoginActivity.DEFAULT_TOKEN)
+                    headers[LoginActivity.AUTH] = "Bearer $token"
+                    return headers
+                }
+            }
+        }
+    }
+
+
+}
