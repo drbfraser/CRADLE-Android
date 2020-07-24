@@ -75,7 +75,7 @@ class UrlManager @Inject constructor(val settings: Settings) {
     /**
      * Endpoint for retrieving all readings associated with a given patient id.
      */
-    fun getPatientInfoById(patientId: String) = "$base/patient/$patientId"
+    fun getPatientInfoById(patientId: String) = "$base/patients/$patientId"
 
     /**
      * Search the database for a list of patient by Id or Initials

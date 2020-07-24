@@ -29,7 +29,6 @@ import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.manager.PatientManager;
 import com.cradle.neptune.manager.ReadingManager;
 import com.cradle.neptune.manager.UrlManager;
-import com.cradle.neptune.model.ApiKt;
 import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.utilitiles.Util;
@@ -101,13 +100,17 @@ public class PatientProfileActivity extends AppCompatActivity {
         setupCreatePatientReadingButton();
         setupLineChart();
         setupUpdatePatient();
+        setupToolBar();
+    }
 
+    void setupToolBar(){
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle(R.string.patient_summary);
+            getSupportActionBar().setTitle(currPatient.getName());
         }
-
     }
+
+
 
     private void initAllFields() {
         patientID = findViewById(R.id.patientId);

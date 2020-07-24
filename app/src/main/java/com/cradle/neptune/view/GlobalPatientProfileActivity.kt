@@ -44,10 +44,6 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         super.onCreate(savedInstanceState)
         getGlobalPatient()
         setupAddToMyPatientList()
-        if (supportActionBar != null) {
-            // supportActionBar?.title = "Patient: " + currPatient.name
-            supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        }
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -93,17 +89,29 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         val globalPatient =
             intent.getSerializableExtra("globalPatient") as GlobalPatient
 
+        val progressDialog = ProgressDialog(this)
+        progressDialog.setCancelable(false)
+        progressDialog.setMessage("Fetching the patient...")
+        progressDialog.show()
+
         val jsonObjectRequest = VolleyUtil.makeMeJsonObjectRequest(Request.Method.GET,urlManager.getPatientInfoById(globalPatient.id),
-        null,Response.Listener { response ->
+        null,Response.Listener { response: JSONObject ->
+                Log.d("bugg",response.toString(4))
                 currPatient = Patient.unmarshal(response)
+                patientReadings = ArrayList()
                 val readingArray = response.getJSONArray("readings")
                 for (i in 0 until readingArray.length()) {
                     patientReadings.add(0, Reading.unmarshal(readingArray[i] as JsonObject))
                 }
+                setupToolBar()
+                populatePatientInfo(currPatient)
                 setupReadingsRecyclerView()
                 setupLineChart()
+                progressDialog.cancel()
             }, Response.ErrorListener {error ->
-                Log.d("bugg", "error: " + error)
+                progressDialog.cancel()
+                Snackbar.make(readingRecyclerview,"Unable to fetch the patient Information..." +
+                    "\n${error.localizedMessage}", Snackbar.LENGTH_INDEFINITE).show()
 
             },sharedPreferences)
 
@@ -118,30 +126,12 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         return false
     }
 
-    @Suppress("MagicNumber")
     override fun setupReadingsRecyclerView() {
-        // todo the readings will probably be passed in as a json from the previous network call
-        patientReadings = ArrayList()
-        // random reading for now
-        val systolic = 67
-        val diastolic = 78
-        val heartRate = 71
-        val numReadings = 10
-
-        for (i in 0 until numReadings) {
-            patientReadings.add(
-                Reading(
-                    UUID.randomUUID().toString(), currPatient.id, ZonedDateTime.now().toEpochSecond(),
-                    BloodPressure(systolic + i, diastolic + i, heartRate + i), null, emptyList(),
-                    null, null, ZonedDateTime.now().toEpochSecond(), (i % 2 == 0), emptyList(), ReadingMetadata()
-                )
-            )
-        }
         val listAdapter = ReadingRecyclerViewAdapter(patientReadings)
         listAdapter.setOnClickElementListener(object : OnClickElement {
             override fun onClick(readingId: String) {
                 Snackbar.make(
-                    view, "You must add this patient to your patient lists " +
+                    readingRecyclerview, "You must add this patient to your patient lists " +
                         "before editing anything", Snackbar.LENGTH_LONG
                 ).show()
             }
@@ -152,7 +142,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
 
             override fun onClickRecheckReading(readingId: String) {
                 Snackbar.make(
-                    view, "You must add this patient to your patient lists " +
+                    readingRecyclerview, "You must add this patient to your patient lists " +
                         "before creating a new reading", Snackbar.LENGTH_LONG
                 ).show()
             }
