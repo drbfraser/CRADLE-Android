@@ -106,7 +106,7 @@ public class PatientProfileActivity extends AppCompatActivity {
     void setupToolBar(){
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle(currPatient.getName());
+            getSupportActionBar().setTitle(R.string.patient_summary);
         }
     }
 

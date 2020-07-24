@@ -82,4 +82,6 @@ class UrlManager @Inject constructor(val settings: Settings) {
      * /patient/global/<String>
      */
     fun getGlobalPatientSearch(query: String) = "$base/patient/global/$query"
+
+    val userPatientAssociation = "$base/associations"
 }

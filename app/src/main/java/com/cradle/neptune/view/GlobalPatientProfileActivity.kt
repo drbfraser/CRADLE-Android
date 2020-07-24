@@ -16,24 +16,19 @@ import com.android.volley.Response
 import com.android.volley.toolbox.Volley
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
-import com.cradle.neptune.model.BloodPressure
 import com.cradle.neptune.model.GlobalPatient
 import com.cradle.neptune.model.JsonObject
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
-import com.cradle.neptune.model.ReadingMetadata
 import com.cradle.neptune.utilitiles.VolleyUtil
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter.OnClickElement
 import com.google.android.material.snackbar.Snackbar
-import java.util.UUID
-import kotlinx.android.synthetic.main.reading_card_assesment.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import org.threeten.bp.ZonedDateTime
 
 /**
  * This is a child class of [PatientProfileActivity] and uses some functions from the parent class.
@@ -60,7 +55,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         addToMyListButton.setOnClickListener(View.OnClickListener {
             AlertDialog.Builder(this).setTitle("Are you sure?").setMessage("This is not reversible")
                 .setPositiveButton("YES") { _: DialogInterface, _: Int ->
-                    setupCallLocalPatientActivity()
+                    setupAddingPatientLocally()
                 }.setNegativeButton("NO") { _: DialogInterface, _: Int ->
                 }.show()
         })
@@ -69,11 +64,32 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
     /**
      * adds current patient to the current vht list.
      */
-    private fun setupCallLocalPatientActivity() {
+    private fun setupAddingPatientLocally() {
         val progressDialog = ProgressDialog(this)
         progressDialog.setCancelable(false)
         progressDialog.setMessage("Adding to your patient's list")
         progressDialog.show()
+        //make the patient- user relationship
+        val jsonObject = JSONObject()
+        jsonObject.put("patientId",currPatient.id)
+
+        val associationRequest = VolleyUtil.makeMeJsonObjectRequest(Request.Method.POST,
+            urlManager.userPatientAssociation,jsonObject, Response.Listener {
+                Log.d("bugg",it.toString(4))
+                addThePatientInfoToLocalDb(progressDialog)
+            }, Response.ErrorListener {
+                Log.d("bugg","error: "+ it.localizedMessage)
+                progressDialog.cancel()
+            },sharedPreferences)
+
+        val queue = Volley.newRequestQueue(MyApp.getInstance())
+        queue.add<JSONObject>(associationRequest)
+    }
+
+    /**
+     * adds patient info to local db and starts [PatientProfileActivity]
+     */
+    private fun addThePatientInfoToLocalDb(progressDialog:ProgressDialog) {
         GlobalScope.launch(Dispatchers.IO) {
             patientReadings.forEach {
                 readingManager.addReading(it)
