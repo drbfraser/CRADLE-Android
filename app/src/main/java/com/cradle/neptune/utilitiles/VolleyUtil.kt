@@ -5,7 +5,6 @@ import com.android.volley.Response
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.cradle.neptune.view.LoginActivity
-import java.util.HashMap
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -36,12 +35,7 @@ class VolleyUtil {
                  * Passing some request headers
                  */
                 override fun getHeaders(): Map<String, String>? {
-                    val headers =
-                        HashMap<String, String>()
-                    val token =
-                        sharedPreferences.getString(LoginActivity.TOKEN, LoginActivity.DEFAULT_TOKEN)
-                    headers[LoginActivity.AUTH] = "Bearer $token"
-                    return headers
+                    return getHttpHeaders(sharedPreferences)
                 }
             }
         }
@@ -66,14 +60,19 @@ class VolleyUtil {
                  * Passing some request headers
                  */
                 override fun getHeaders(): Map<String, String>? {
-                    val headers =
-                        HashMap<String, String>()
-                    val token =
-                        sharedPreferences.getString(LoginActivity.TOKEN, LoginActivity.DEFAULT_TOKEN)
-                    headers[LoginActivity.AUTH] = "Bearer $token"
-                    return headers
+                    return getHttpHeaders(sharedPreferences)
                 }
             }
         }
+
+        /**
+         * Returns the Http headers for use with requests.
+         */
+        private fun getHttpHeaders(sharedPreferences: SharedPreferences): Map<String, String> {
+            val token = sharedPreferences.getString(LoginActivity.TOKEN, LoginActivity.DEFAULT_TOKEN)
+            return mapOf(Pair(LoginActivity.AUTH, "Bearer $token"))
+
+        }
+
     }
 }
