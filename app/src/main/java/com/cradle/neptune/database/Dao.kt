@@ -24,7 +24,7 @@ interface ReadingDaoAccess {
      * If a conflicting element already exists in the database it will be
      * replaced with the new one.
      *
-     * @param Reading The entity to insert into the database.
+     * @param reading The entity to insert into the database.
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertReading(reading: Reading)
@@ -43,7 +43,7 @@ interface ReadingDaoAccess {
     /**
      * Updates an existing reading in the database.
      *
-     * @param Reading An entity containing updated data.
+     * @param reading An entity containing updated data.
      */
     @Update(onConflict = OnConflictStrategy.REPLACE)
     fun update(reading: Reading)
@@ -51,7 +51,7 @@ interface ReadingDaoAccess {
     /**
      * Removes an entity from the database.
      *
-     * @param Reading The entity to remove.
+     * @param reading The entity to remove.
      */
     @Delete
     fun delete(reading: Reading?)

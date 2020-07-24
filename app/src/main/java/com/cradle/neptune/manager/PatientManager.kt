@@ -9,6 +9,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
+@Suppress("RedundantSuspendModifier")
 class PatientManager(private val daoAccess: PatientDaoAccess) {
 
     /**

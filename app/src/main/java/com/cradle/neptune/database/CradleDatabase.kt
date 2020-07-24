@@ -18,12 +18,12 @@ import com.cradle.neptune.model.Reading
 @TypeConverters(DatabaseTypeConverters::class)
 abstract class CradleDatabase : RoomDatabase() {
     /**
-     * Returns the data access object for [ReadingEntity] entities.
+     * Returns the data access object for [Reading] entities.
      */
     abstract fun readingDaoAccess(): ReadingDaoAccess
 
     /**
-     * Return the data access object for [PatientEntity] entities
+     * Return the data access object for [Patient] entities
      */
     abstract fun patientDaoAccess(): PatientDaoAccess
 

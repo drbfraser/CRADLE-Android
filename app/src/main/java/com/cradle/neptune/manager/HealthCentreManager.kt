@@ -6,6 +6,10 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
+/**
+ *
+ */
+@Suppress("RedundantSuspendModifier")
 class HealthCentreManager(private val database: CradleDatabase) {
 
     private val dao get() = database.healthFacilityDaoAccess()

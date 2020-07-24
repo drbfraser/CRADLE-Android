@@ -21,6 +21,7 @@ import kotlinx.coroutines.withContext
  * the `Async` variant. For methods which return a value, the `Blocking`
  * variants may be used but remember that those will block the current thread.
  */
+@Suppress("RedundantSuspendModifier")
 class ReadingManager(private val daoAccess: ReadingDaoAccess) {
 
     /**
