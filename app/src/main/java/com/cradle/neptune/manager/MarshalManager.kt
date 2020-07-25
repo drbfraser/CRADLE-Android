@@ -6,9 +6,7 @@ import com.cradle.neptune.model.JsonObject
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.Settings
-import com.cradle.neptune.model.objectField
 import com.cradle.neptune.model.put
-import com.cradle.neptune.model.unmarshal
 import com.cradle.neptune.view.LoginActivity
 import javax.inject.Inject
 
