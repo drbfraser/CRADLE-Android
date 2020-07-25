@@ -128,6 +128,12 @@ interface PatientDaoAccess {
     val allPatients: List<Patient>
 
     /**
+     * get a list of patient Ids
+     */
+    @get:Query("SELECT id FROM Patient")
+    val patientIdsList: List<String>
+
+    /**
      * get a single patient by id if exists
      */
     @Query("SELECT * FROM Patient WHERE id LIKE :id LIMIT 1")

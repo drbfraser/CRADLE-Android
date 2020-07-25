@@ -4,6 +4,7 @@ import androidx.room.TypeConverter
 import com.cradle.neptune.model.BloodPressure
 import com.cradle.neptune.model.FollowUp
 import com.cradle.neptune.model.GestationalAge
+import com.cradle.neptune.model.JsonObject
 import com.cradle.neptune.model.ReadingMetadata
 import com.cradle.neptune.model.Referral
 import com.cradle.neptune.model.Sex
@@ -18,11 +19,11 @@ class DatabaseTypeConverters {
 
     @TypeConverter
     fun gestationalAgeToString(gestationalAge: GestationalAge?): String? =
-        Gson().toJson(gestationalAge)
+        gestationalAge?.marshal()?.toString()
 
     @TypeConverter
     fun stringToGestationalAge(string: String?): GestationalAge? =
-        Gson().fromJson(string, GestationalAge::class.java)
+        string?.let { GestationalAge.maybeUnmarshal(JsonObject(it)) }
 
     @TypeConverter
     fun stringToSex(string: String): Sex = enumValueOf(string)

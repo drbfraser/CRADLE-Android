@@ -20,12 +20,15 @@ import com.android.volley.toolbox.Volley
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.ext.hideKeyboard
+import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.UrlManager
 import com.cradle.neptune.model.GlobalPatient
 import com.cradle.neptune.utilitiles.VolleyUtil
 import com.cradle.neptune.viewmodel.GlobalPatientAdapter
 import com.google.android.material.snackbar.Snackbar
 import javax.inject.Inject
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -36,6 +39,8 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
+    @Inject
+    lateinit var patientManager: PatientManager
 
     private lateinit var searchView: SearchView
 
@@ -82,14 +87,18 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
 
         val jsonArrayRequest = VolleyUtil.makeJsonArrayRequest(Request.Method.GET, searchUrl, null,
         Response.Listener { response: JSONArray? ->
-            setupPatientsRecycler(response as (JSONArray))
-            progressDialog.cancel()
+            MainScope().launch {
+                setupPatientsRecycler(response as (JSONArray))
+                progressDialog.cancel()
+            }
             searchView.hideKeyboard()
         }, Response.ErrorListener { error ->
                 Log.e(TAG, "error: " + error?.message)
                 progressDialog.cancel()
                 searchView.hideKeyboard()
-                setupPatientsRecycler(null)
+                MainScope().launch {
+                    setupPatientsRecycler(null)
+                }
                 Snackbar.make(searchView, "Sorry unable to fetch the patients", Snackbar.LENGTH_LONG).show()
             }, sharedPreferences)
 
@@ -97,7 +106,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         queue.add<JSONArray>(jsonArrayRequest)
     }
 
-    private fun setupPatientsRecycler(response: JSONArray?) {
+    private suspend fun setupPatientsRecycler(response: JSONArray?) {
         val emptyView = findViewById<ImageView>(R.id.emptyView)
         val recyclerView = findViewById<RecyclerView>(R.id.globalPatientrecyclerview)
         if (response == null || response.length() == 0) {
@@ -107,16 +116,20 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         }
         emptyView.visibility = View.GONE
         recyclerView.visibility = View.VISIBLE
+
+        // get patient set so we can compare for our patients
+        val patientSet = patientManager.getPatientIdsOnly().toSet()
         val globalPatientList = ArrayList<GlobalPatient>()
 
         for (i in 0 until response.length()) {
             val jsonObject: JSONObject = response[i] as JSONObject
+            val patientId = jsonObject.getString("patientId")
             globalPatientList.add(
                 GlobalPatient(
-                    jsonObject.getString("patientId"),
+                    patientId,
                     jsonObject.getString("patientName"),
                     jsonObject.getString("villageNumber"),
-                    false
+                    patientSet.contains(patientId)
                 )
             )
         }

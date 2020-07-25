@@ -90,7 +90,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             // if the reading is uploaded to the server, we dont want to change it locally.
             if (currReading.isUploadedToServer()){
                 Snackbar.make(v,"This reading is already uploaded to the server, " +
-                        "unable to make changes to it.",Snackbar.LENGTH_LONG);
+                        "unable to make changes to it.",Snackbar.LENGTH_LONG).show();
             }else {
                 onClickElementListener.onClick(currReading.getId());
             }
@@ -99,7 +99,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             // if the reading is uploaded to the server, we dont want to delete it locally.
             if (currReading.isUploadedToServer()) {
                 Snackbar.make(v,"This reading is already uploaded to the server, " +
-                        "Cannot delete the reading.",Snackbar.LENGTH_LONG);
+                        "Cannot delete the reading.",Snackbar.LENGTH_LONG).show();
             }else {
                 onClickElementListener.onLongClick(currReading.getId());
             }

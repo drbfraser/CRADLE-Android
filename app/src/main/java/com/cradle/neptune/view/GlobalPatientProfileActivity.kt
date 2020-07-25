@@ -24,6 +24,7 @@ import com.cradle.neptune.utilitiles.VolleyUtil
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter.OnClickElement
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.android.synthetic.main.reading_card_assesment.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -41,7 +42,6 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         getGlobalPatient()
-        setupAddToMyPatientList()
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -94,7 +94,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
     private fun addThePatientInfoToLocalDb(progressDialog: ProgressDialog) {
         GlobalScope.launch(Dispatchers.IO) {
             patientReadings.forEach {
-                readingManager.addReading(it)
+                readingManager.addReading(it.apply { isUploadedToServer = true })
             }
             patientManager.add(currPatient)
             val intent =
@@ -129,10 +129,10 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
                 patientReadings = ArrayList()
                 val readingArray = response.getJSONArray("readings")
                 for (i in 0 until readingArray.length()) {
-                    patientReadings.add(0, Reading.unmarshal(readingArray[i] as JsonObject)
-                        .apply { isUploadedToServer = true })
+                    patientReadings.add(0, Reading.unmarshal(readingArray[i] as JsonObject))
                 }
                 // follow up with the rest of the initialization
+                setupAddToMyPatientList()
                 setupToolBar()
                 populatePatientInfo(currPatient)
                 setupReadingsRecyclerView()
@@ -163,7 +163,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         listAdapter.setOnClickElementListener(object : OnClickElement {
             override fun onClick(readingId: String) {
                 Snackbar.make(
-                    readingRecyclerview, "You must add this patient to your patient lists " +
+                    view, "You must add this patient to your patient lists " +
                         "before editing anything", Snackbar.LENGTH_LONG
                 ).show()
             }
@@ -174,7 +174,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
 
             override fun onClickRecheckReading(readingId: String) {
                 Snackbar.make(
-                    readingRecyclerview, "You must add this patient to your patient lists " +
+                    view, "You must add this patient to your patient lists " +
                         "before creating a new reading", Snackbar.LENGTH_LONG
                 ).show()
             }
