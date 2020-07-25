@@ -3,6 +3,7 @@ package com.cradle.neptune.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.util.UUID
 
 /**
  * A health facility database entity.
@@ -18,23 +19,52 @@ import androidx.room.PrimaryKey
  */
 @Entity
 data class HealthFacility(
-    @PrimaryKey var id: String,
-    @ColumnInfo var name: String?,
-    @ColumnInfo var location: String?,
-    @ColumnInfo var phoneNumber: String?,
-    @ColumnInfo var about: String?,
-    @ColumnInfo var type: String?,
-    @ColumnInfo var isUserSelected: Boolean
-) {
+    @PrimaryKey var id: String = "",
+    @ColumnInfo var name: String = "",
+    @ColumnInfo var location: String = "",
+    @ColumnInfo var phoneNumber: String = "",
+    @ColumnInfo var about: String = "",
+    @ColumnInfo var type: String = "",
+    @ColumnInfo var isUserSelected: Boolean = false
+) : Marshal<JsonObject> {
+
     /**
-     * Constructs a health facility entity setting [isUserSelected] to `false`.
+     * Constructs a [JsonObject] from this object.
      */
-    constructor(
-        id: String,
-        name: String?,
-        location: String?,
-        phoneNumber: String?,
-        about: String?,
-        type: String?
-    ) : this(id, name, location, phoneNumber, about, type, false)
+    override fun marshal(): JsonObject = with(JsonObject()) {
+        put(HealthFacilityField.NAME, name)
+        put(HealthFacilityField.ABOUT, about)
+        put(HealthFacilityField.LOCATION, location)
+        put(HealthFacilityField.ID, id)
+        put(HealthFacilityField.TYPE, type)
+    }
+
+    companion object : Unmarshal<HealthFacility, JsonObject> {
+        /**
+         *
+         */
+        override fun unmarshal(data: JsonObject): HealthFacility = HealthFacility().apply {
+            name = data.stringField(HealthFacilityField.NAME)
+            about = data.stringField(HealthFacilityField.ABOUT)
+            location = data.stringField(HealthFacilityField.LOCATION)
+            phoneNumber = data.stringField(HealthFacilityField.PHONE_NUMBER)
+            // server doesnt have an id yet.. so we are creating one for local DB
+            id = UUID.randomUUID().toString()
+        }
+    }
+}
+
+/**
+ * The collection of JSON fields which make up a [HealthFacility] object.
+ *
+ * These fields are defined here to ensure that the marshal and unmarshal
+ * methods use the same field names.
+ */
+private enum class HealthFacilityField(override val text: String) : Field {
+    TYPE("facilityType"),
+    LOCATION("location"),
+    ABOUT("about"),
+    PHONE_NUMBER("healthFacilityPhoneNumber"),
+    NAME("healthFacilityName"),
+    ID("id");
 }

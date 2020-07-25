@@ -109,7 +109,6 @@ public class UploadActivity extends AppCompatActivity {
         uploadBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String token = sharedPreferences.getString(LoginActivity.TOKEN, "");
                 new AlertDialog.Builder(UploadActivity.this)
                         .setMessage("Downloading the patient data might take a while, please " +
                                 "do not close the application. Check the status of download" +
@@ -117,7 +116,7 @@ public class UploadActivity extends AppCompatActivity {
                         .setTitle("Downloading patient data")
                         .setPositiveButton("OK", (dialogInterface, i)
                                 -> {
-                            LoginActivity.Companion.getAllMyPatients(token, readingManager, urlManager, patientManager,UploadActivity.this);
+                            LoginActivity.Companion.getAllMyPatients(sharedPreferences, readingManager, urlManager, patientManager,UploadActivity.this);
                         })
                         .setNegativeButton("Cancel", (dialogInterface, i) -> {
 

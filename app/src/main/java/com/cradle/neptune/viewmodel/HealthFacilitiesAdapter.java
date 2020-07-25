@@ -22,13 +22,13 @@ import java.util.List;
 
 public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFacilitiesAdapter.HealthFacilityViewHolder> implements Filterable {
 
-    private List<HealthFacility> healthFacilityEntities;
+    private List<HealthFacility> healthFacilityList;
     private List<HealthFacility> filteredList;
     private HealthFacilitiesActivity.AdapterClicker AdapterClicker;
 
-    public HealthFacilitiesAdapter(List<HealthFacility> healthFacilityEntities) {
-        this.healthFacilityEntities = healthFacilityEntities;
-        this.filteredList = healthFacilityEntities;
+    public HealthFacilitiesAdapter() {
+        healthFacilityList = new ArrayList<>();
+        filteredList = new ArrayList<>();
     }
 
     public void setAdapterClicker(HealthFacilitiesActivity.AdapterClicker adapterClicker) {
@@ -55,6 +55,9 @@ public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFaciliti
         holder.aboutTxt.setText(healthFacility.getAbout());
         if (healthFacility.isUserSelected()) {
             holder.statusImg.setVisibility(View.VISIBLE);
+        } else {
+            holder.statusImg.setVisibility(View.GONE);
+
         }
         holder.layout.setOnClickListener(view ->
                 AdapterClicker.onClick(healthFacility));
@@ -73,10 +76,10 @@ public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFaciliti
             protected FilterResults performFiltering(CharSequence charSequence) {
                 String charString = charSequence.toString().toLowerCase();
                 if (charString.isEmpty()) {
-                    filteredList = healthFacilityEntities;
+                    filteredList = healthFacilityList;
                 } else {
                     List<HealthFacility> newFilteredList = new ArrayList<>();
-                    for (HealthFacility hf : healthFacilityEntities) {
+                    for (HealthFacility hf : healthFacilityList) {
                         if (hf.getLocation().toLowerCase().contains(charSequence.toString()) ||
                                 hf.getName().toLowerCase().contains(charSequence.toString()) ||
                                 hf.getType().toLowerCase().contains(charSequence.toString()) ||
@@ -97,6 +100,11 @@ public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFaciliti
                 notifyDataSetChanged();
             }
         };
+    }
+    public void setData(List<HealthFacility> newData) {
+        this.filteredList = newData;
+        this.healthFacilityList = newData;
+        notifyDataSetChanged();
     }
 
     static class HealthFacilityViewHolder extends RecyclerView.ViewHolder {

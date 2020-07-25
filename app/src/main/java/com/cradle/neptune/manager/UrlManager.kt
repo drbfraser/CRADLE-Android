@@ -24,8 +24,8 @@ class UrlManager @Inject constructor(val settings: Settings) {
     /**
      * Endpoint for retrieving health facility information.
      */
-    val healthFacility: String
-        get() = "$base/health_facility"
+    val healthFacilities: String
+        get() = "$base/facilities"
 
     /**
      * Endpoint for retrieving information about a reading.

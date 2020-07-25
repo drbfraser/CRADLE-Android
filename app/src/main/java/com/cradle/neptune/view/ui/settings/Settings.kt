@@ -89,7 +89,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
         findPreference(R.string.key_health_centres_settings_button)?.apply {
             GlobalScope.launch(Dispatchers.IO) {
                 val hcCount = healthCentreManager.getAllSelectedByUser().size
-                summary = "$hcCount configured health centres"
+                // need to update UI by main thread
+                withContext(Dispatchers.Main) { summary = "$hcCount configured health centres" }
             }
         }
     }

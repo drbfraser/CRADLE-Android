@@ -1,5 +1,6 @@
 package com.cradle.neptune.database
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -208,4 +209,10 @@ interface HealthFacilityDaoAccess {
      */
     @get:Query("SELECT * FROM HealthFacility WHERE isUserSelected = 1")
     val allUserSelectedHealthFacilities: List<HealthFacility>
+
+    /**
+     * Returns a live list of facilities
+     */
+    @get:Query("SELECT * FROM HealthFacility")
+    val allFacilitiesLiveData: LiveData<List<HealthFacility>>
 }
