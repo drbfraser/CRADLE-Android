@@ -111,14 +111,12 @@ data class Reading(
         union(bloodPressure)
         union(referral)
         put(ReadingField.URINE_TEST, urineTest)
-        // TODO: Convert back to array once the server can handle it.
         put(ReadingField.SYMPTOMS, symptoms)
 
         put(ReadingField.DATE_RECHECK_VITALS_NEEDED, dateRecheckVitalsNeeded)
         put(ReadingField.IS_FLAGGED_FOR_FOLLOWUP, isFlaggedForFollowUp)
 
         put(ReadingField.PREVIOUS_READING_IDS, previousReadingIds)
-
         union(metadata)
     }
 
@@ -183,7 +181,7 @@ data class Reading(
                 previousReadingIds = previousReadingIds,
 
                 metadata = metadata,
-                isUploadedToServer = true
+                isUploadedToServer = false
             )
         }
 
@@ -287,18 +285,18 @@ data class BloodPressure(
 /**
  * Holds information about a referral.
  *
- * @property messageSendTimeInMS The time at which this referral message was sent.
+ * @property messageSendTimeUnix The time at which this referral message was sent.
  * @property healthCentre The health center this referral should be sent to.
  * @property comment A comment to be included along with the referral.
  */
 data class Referral(
-    val messageSendTimeInMS: Long,
+    val messageSendTimeUnix: Long,
     val healthCentre: String,
     val comment: String
 ) : Serializable, Marshal<JsonObject> {
 
     override fun marshal(): JsonObject = with(JsonObject()) {
-        put(ReferralField.MESSAGE_SEND_TIME, messageSendTimeInMS / MS_IN_SECOND)
+        put(ReferralField.MESSAGE_SEND_TIME, messageSendTimeUnix)
         put(ReferralField.HEALTH_CENTRE, healthCentre)
         put(ReferralField.COMMENT, comment)
     }
@@ -315,8 +313,7 @@ data class Referral(
             val comment = data.stringField(ReferralField.COMMENT)
             return Referral(messageSendTime, healthCentre, comment)
         }
-
-        const val MS_IN_SECOND = 1000
+        const val MS_IN_SECOND = 1000L
     }
 }
 

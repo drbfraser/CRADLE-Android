@@ -34,7 +34,7 @@ class PatientReadingViewModelTests {
 
         // Emulate the clicking the save button which injects the current time
         // into the dateTimeTaken field.
-        val time = ZonedDateTime.now()
+        val time = ZonedDateTime.now().toEpochSecond()
         model.dateTimeTaken = time
 
         val (patient, reading) = model.constructModels()

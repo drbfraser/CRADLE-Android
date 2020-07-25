@@ -56,11 +56,11 @@ public class DateUtil {
         return date.format(formatter);
     }
 
-    public static String getFullDateFromMilliSeconds(Long date) {
+    public static String getFullDateFromUnix(Long date) {
         if (date == null) {
             return "";
         }
-        Instant i = Instant.ofEpochSecond(date/ Referral.MS_IN_SECOND);
+        Instant i = Instant.ofEpochSecond(date);
         ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(i, ZoneId.of(Calendar.getInstance().getTimeZone().getID()));
 
         DateTimeFormatter formatter;

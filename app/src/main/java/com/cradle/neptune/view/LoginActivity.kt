@@ -210,7 +210,7 @@ class LoginActivity : AppCompatActivity() {
                             patientList.add(Patient.unmarshal(response[i] as JsonObject))
                             val readingArray = (response[i] as JsonObject).getJSONArray("readings")
                             for (j in 0 until readingArray.length()) {
-                                readingList.add(Reading.unmarshal(readingArray[j] as JsonObject))
+                                readingList.add(Reading.unmarshal(readingArray[j] as JsonObject).apply { isUploadedToServer = true })
                             }
                         }
                         patientManager.addAll(patientList)

@@ -129,7 +129,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
                 patientReadings = ArrayList()
                 val readingArray = response.getJSONArray("readings")
                 for (i in 0 until readingArray.length()) {
-                    patientReadings.add(0, Reading.unmarshal(readingArray[i] as JsonObject))
+                    patientReadings.add(0, Reading.unmarshal(readingArray[i] as JsonObject).apply { isUploadedToServer = true })
                 }
                 // follow up with the rest of the initialization
                 setupToolBar()

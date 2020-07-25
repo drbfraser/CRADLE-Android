@@ -23,12 +23,6 @@ import org.threeten.bp.format.DateTimeFormatter
 
 class MarshalManagerTests {
 
-    @Mock
-    private lateinit var settings: Settings
-
-    @Mock
-    private lateinit var sharedPreferences: SharedPreferences
-
     @InjectMocks
     private lateinit var marshalManager: MarshalManager
 
@@ -123,24 +117,25 @@ class MarshalManagerTests {
             listOf("drug-1", "drug-2", "drug-3"),
             listOf("hist-1", "hist-2", "hist-3")
         )
+        val unixTime:Long = 1595645893
 
         val reading = Reading(
             "1234-abcd-5678-ef00",
             "5414842504",
-            parseDate("2019-08-29T17:52:40-07:00"),
+            unixTime,
             BloodPressure(110, 70, 65),
             UrineTest("+", "++", "-", "-", "-"),
             listOf("headache", "blurred vision", "pain"),
-            Referral(parseDate("2019-08-29T17:52:40-07:00"), "HC101", "a comment"),
+            Referral(unixTime, "HC101", "a comment"),
             null,
-            parseDate("2019-08-29T17:52:40-07:00"),
+            unixTime,
             true,
             listOf("1", "2", "3"),
             ReadingMetadata(
                 "0.1.0-alpha",
                 "some-info",
-                parseDate("2019-08-29T17:52:40-07:00"),
-                parseDate("2019-08-29T17:52:40-07:00"),
+                unixTime,
+                unixTime,
                 null,
                 false,
                 null,

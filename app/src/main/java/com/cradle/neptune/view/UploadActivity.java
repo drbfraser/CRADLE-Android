@@ -38,8 +38,6 @@ import com.google.firebase.storage.UploadTask;
 
 import kotlin.Pair;
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.threeten.bp.ZonedDateTime;
 
 import java.io.File;
@@ -132,7 +130,7 @@ public class UploadActivity extends AppCompatActivity {
         try {
             //todo: this will probably be removed with new sync but also need to save long rather than string
             ZonedDateTime zonedDateTime = ZonedDateTime.parse(settings.getLastTimeFollowUpDownloaded());
-            lastDownloadText.setText(DateUtil.getFullDateFromMilliSeconds(zonedDateTime.toEpochSecond()*Referral.MS_IN_SECOND));
+            lastDownloadText.setText(DateUtil.getFullDateFromUnix(zonedDateTime.toEpochSecond()));
 
         } catch (Exception e) {
             lastDownloadText.setText(settings.getLastTimeFollowUpDownloaded());

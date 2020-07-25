@@ -25,7 +25,6 @@ import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.viewmodel.ReadingAnalysisViewSupport;
 
 import org.threeten.bp.ZonedDateTime;
-import org.threeten.bp.temporal.ChronoUnit;
 
 import static com.cradle.neptune.utilitiles.Util.mapNullable;
 
@@ -377,7 +376,7 @@ public class SummaryFragment extends BaseFragment {
         } else {
             tv.setText(getString(R.string.reading_referral_sent,
                     viewModel.getReferral().getHealthCentre(),
-                    DateUtil.getFullDateFromMilliSeconds(viewModel.getReferral().getMessageSendTimeInMS())));
+                    DateUtil.getFullDateFromUnix(viewModel.getReferral().getMessageSendTimeUnix())));
 //            tv.setText(getString(R.string.reading_referral_sent,
 //                    currentReading.referralHealthCentre,
 //                    DateUtil.getFullDateString(currentReading.referralMessageSendTime)
@@ -439,7 +438,7 @@ public class SummaryFragment extends BaseFragment {
             tv.setText(getString(R.string.reading_not_uploaded_to_server));
         } else {
             tv.setText(getString(R.string.reading_uploaded_to_server,
-                    DateUtil.getFullDateFromMilliSeconds(viewModel.getMetadata().getDateUploadedToServer()*Referral.MS_IN_SECOND)));
+                    DateUtil.getFullDateFromUnix(viewModel.getMetadata().getDateUploadedToServer())));
 //            tv.setText(getString(R.string.reading_uploaded_to_server,
 //                    DateUtil.getFullDateString(currentReading.dateUploadedToServer)));
         }
