@@ -1,11 +1,8 @@
 package com.cradle.neptune.model
 
-import android.os.AsyncTask
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.runBlocking
 
 /**
  * Asynchronously converts a [JsonArray] containing patient's paired with their
@@ -55,75 +52,6 @@ suspend fun unmarshalPatientAndReadings(json: JsonObject): Pair<Patient, List<Re
     }
 
     return Pair(patient, readings)
-}
-
-/**
- * A legacy version of [unmarshalAllInfoArray] which runs on the IO dispatcher.
- *
- * Provides a [callback] parameter to execute some arbitrary code once the
- * array has been converted to models.
- *
- * The function is meant as a legacy interface between the old Java concurrency
- * model and Kotlin's coroutine model and should be removed at a later date.
- *
- * @param array the array to unmarshal
- * @param callback a callback to execute once finished
- */
-fun legacyUnmarshallAllInfoAsync(array: JsonArray, callback: (List<Pair<Patient, List<Reading>>>) -> Unit) {
-    legacyAsync<JsonArray, Unit> { params ->
-        coroutineScope {
-            val result = unmarshalAllInfoArray(params[0])
-            callback(result)
-        }
-    }.execute(array)
-}
-
-/**
- * A legacy version of [unmarshalPatientAndReadings] which runs on the IO
- * dispatcher.
- *
- * The function is meant as a legacy interface between the old Java concurrency
- * model and Kotlin's coroutine model and should be removed at a later date.
- *
- * @param json the JSON to unmarshal
- * @param onOk a callback to execute once successfully constructing models
- * @param onError a callback to execute if an error occurred.
- */
-fun legacyUnmarshallPatientAndReadings(
-    json: JsonObject,
-    onOk: (Pair<Patient, List<Reading>>) -> Unit,
-    onError: (Exception) -> Unit
-) {
-    legacyAsync<JsonObject, Unit> { params ->
-        coroutineScope {
-            try {
-                val result = unmarshalPatientAndReadings(params[0])
-                onOk(result)
-            } catch (e: Exception) {
-                onError(e)
-            }
-        }
-    }.execute(json)
-}
-
-/**
- * Wraps a `suspend` function in an [AsyncTask] which executes the contents
- * of [job] using the IO dispatcher as to not interrupt the UI thread.
- *
- * The function is meant as a legacy interface between the old Java concurrency
- * model and Kotlin's coroutine model and should be removed at a later date.
- *
- * @param job the job to execute
- * @return a legacy [AsyncTask] object for the job
- */
-private fun <Params, T> legacyAsync(job: suspend (Array<out Params>) -> T): AsyncTask<Params, Void, T> {
-    return object : AsyncTask<Params, Void, T>() {
-        override fun doInBackground(vararg params: Params): T {
-            // Run the actual job on Kotlin's dispatcher. The only work that
-            // this task does is wait for the job to complete.
-            return runBlocking(Dispatchers.IO) { job(params) }
-        }
-    }
 }
 
 /**

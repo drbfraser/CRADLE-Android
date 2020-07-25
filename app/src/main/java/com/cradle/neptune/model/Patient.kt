@@ -1,5 +1,8 @@
 package com.cradle.neptune.model
 
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import java.io.Serializable
 
 // TODO: Figure out which of these fields must be optional and which are never
@@ -22,19 +25,23 @@ import java.io.Serializable
  * @property villageNumber The number of the village in which this patient lives.
  * @property drugHistoryList A list of drug history for the patient.
  * @property medicalHistoryList A list of medical history for the patient.
+ * @property lastEdited Last time patient info was edited
  */
+@Entity
 data class Patient(
-    var id: String = "",
-    var name: String = "",
-    var dob: String? = null,
-    var age: Int? = null,
-    var gestationalAge: GestationalAge? = null,
-    var sex: Sex = Sex.OTHER,
-    var isPregnant: Boolean = false,
-    var zone: String? = null,
-    var villageNumber: String? = null,
-    var drugHistoryList: List<String> = emptyList(),
-    var medicalHistoryList: List<String> = emptyList()
+    @PrimaryKey
+    @ColumnInfo var id: String = "",
+    @ColumnInfo var name: String = "",
+    @ColumnInfo var dob: String? = null,
+    @ColumnInfo var age: Int? = null,
+    @ColumnInfo var gestationalAge: GestationalAge? = null,
+    @ColumnInfo var sex: Sex = Sex.OTHER,
+    @ColumnInfo var isPregnant: Boolean = false,
+    @ColumnInfo var zone: String? = null,
+    @ColumnInfo var villageNumber: String? = null,
+    @ColumnInfo var drugHistoryList: List<String> = emptyList(),
+    @ColumnInfo var medicalHistoryList: List<String> = emptyList(),
+    @ColumnInfo var lastEdited: Long? = null
 ) : Marshal<JsonObject>, Serializable {
 
     /**
@@ -55,6 +62,7 @@ data class Patient(
         put(PatientField.VILLAGE_NUMBER, villageNumber)
         put(PatientField.DRUG_HISTORY, drugHistoryList)
         put(PatientField.MEDICAL_HISTORY, medicalHistoryList)
+        put(PatientField.LAST_EDITED, lastEdited)
     }
 
     companion object : Unmarshal<Patient, JsonObject> {
@@ -77,7 +85,7 @@ data class Patient(
             age = data.optIntField(PatientField.AGE)
             gestationalAge = maybeUnmarshal(GestationalAge, data)
             sex = data.mapField(PatientField.SEX, Sex::valueOf)
-            isPregnant = data.booleanField(PatientField.IS_PREGNANT)
+            isPregnant = data.optBooleanField(PatientField.IS_PREGNANT)
             // needsAssessment = data.booleanField(PatientField.NEEDS_ASSESSMENT)
             zone = data.optStringField(PatientField.ZONE)
             villageNumber = data.optStringField(PatientField.VILLAGE_NUMBER)
@@ -86,6 +94,7 @@ data class Patient(
                 ?.toList(JsonArray::getString) ?: emptyList()
             medicalHistoryList = data.optArrayField(PatientField.MEDICAL_HISTORY)
                 ?.toList(JsonArray::getString) ?: emptyList()
+            lastEdited = data.optLongField(PatientField.LAST_EDITED)
         }
     }
 }
@@ -253,6 +262,7 @@ private enum class PatientField(override val text: String) : Field {
     VILLAGE_NUMBER("villageNumber"),
     DRUG_HISTORY("drugHistory"),
     MEDICAL_HISTORY("medicalHistory"),
+    LAST_EDITED("lastEdited")
 }
 
 /**

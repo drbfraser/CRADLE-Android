@@ -26,9 +26,9 @@ import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.manager.PatientManager;
 import com.cradle.neptune.manager.ReadingManager;
 import com.cradle.neptune.manager.UrlManager;
-import com.cradle.neptune.model.ApiKt;
 import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.utilitiles.Util;
@@ -38,6 +38,7 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -49,8 +50,6 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import kotlin.Pair;
-import kotlin.Unit;
 
 import static com.cradle.neptune.view.DashBoardActivity.READING_ACTIVITY_DONE;
 
@@ -78,6 +77,8 @@ public class PatientProfileActivity extends AppCompatActivity {
     @Inject
     ReadingManager readingManager;
     @Inject
+    PatientManager patientManager;
+    @Inject
     SharedPreferences sharedPreferences;
     @Inject
     UrlManager urlManager;
@@ -99,13 +100,17 @@ public class PatientProfileActivity extends AppCompatActivity {
         setupCreatePatientReadingButton();
         setupLineChart();
         setupUpdatePatient();
+        setupToolBar();
+    }
 
+    void setupToolBar(){
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle(R.string.patient_summary);
         }
-
     }
+
+
 
     private void initAllFields() {
         patientID = findViewById(R.id.patientId);
@@ -130,41 +135,13 @@ public class PatientProfileActivity extends AppCompatActivity {
         ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Updating patient");
         progressDialog.setCancelable(false);
-        JsonRequest<JSONObject> jsonArrayRequest = new JsonObjectRequest(Request.Method.GET, urlManager.readingsForPatient(currPatient.getId()),
+        JsonRequest<JSONObject> jsonArrayRequest = new JsonObjectRequest(Request.Method.GET, urlManager.getPatientInfoById(currPatient.getId()),
                 null, response -> {
-            ApiKt.legacyUnmarshallPatientAndReadings(
-                    response,
-                    result -> {
-                        Patient patient = result.getFirst();
-                        List<Reading> readings = result.getSecond();
-                        for (Reading reading : readings) {
-                            readingManager.addReadingAsync(patient, reading);
-                        }
-                        setupReadingsRecyclerView();
-                        progressDialog.cancel();
-                        Toast.makeText(PatientProfileActivity.this, "Patient updated!", Toast.LENGTH_SHORT).show();
-                        return Unit.INSTANCE;
-                    },
-                    error -> {
-                        error.printStackTrace();
-                        progressDialog.cancel();
-                        Toast.makeText(PatientProfileActivity.this, "Patient update fail!", Toast.LENGTH_SHORT).show();
-                        return Unit.INSTANCE;
-                    });
-//            try {
-//                List<Reading> readings =
-//                        ParsePatientInformationAsyncTask.parseReadingsAndPatientFromJson(response);
-//                readingManager.addAllReadings(this, readings);
-//                setupReadingsRecyclerView();
-//                progressDialog.cancel();
-//                Toast.makeText(PatientProfileActivity.this, "Patient updated!", Toast.LENGTH_SHORT).show();
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//                progressDialog.cancel();
-//                Toast.makeText(PatientProfileActivity.this, "Patient update fail!", Toast.LENGTH_SHORT).show();
-//
-//            }
-            //Log.d("bugg","pass: "+ response.toString());
+            try {
+                Log.d("bugg","json: "+ response.toString(4));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }, error -> {
             Log.d("bugg", "failed: " + error);
             progressDialog.cancel();
@@ -176,7 +153,7 @@ public class PatientProfileActivity extends AppCompatActivity {
             @Override
             public Map<String, String> getHeaders() {
                 HashMap<String, String> headers = new HashMap<>();
-                String token = sharedPreferences.getString(LoginActivity.TOKEN, LoginActivity.DEFAULT_TOKEN);
+                String token = sharedPreferences.getString(LoginActivity.TOKEN, "");
                 headers.put(LoginActivity.AUTH, "Bearer " + token);
                 return headers;
             }
@@ -201,6 +178,10 @@ public class PatientProfileActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        if (!getLocalPatient()) {
+            //not a local patient, might be a child class
+            return;
+        }
         setupLineChart();
         setupReadingsRecyclerView();
 
@@ -273,52 +254,6 @@ public class PatientProfileActivity extends AppCompatActivity {
         radioGroup.check(R.id.monthradiobutton);
     }
 
-//    private double convertGestationAgeToWeek(Patient patient) {
-//        double age = 0;
-//        if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS && patient.isPregnant) {
-//            try {
-//                age = Double.parseDouble(patient.gestationalAgeValue);
-//            } catch (NumberFormatException e) {
-//                age = -1;
-//                e.printStackTrace();
-//            }
-//            double week = age * WEEKS_IN_MONTH;
-//            double weekRounded = Math.round(week * 100D) / 100D;
-//            return weekRounded;
-//        } else if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS && patient.isPregnant) {
-//            try {
-//                age = Double.parseDouble(patient.gestationalAgeValue);
-//            } catch (NumberFormatException e) {
-//                age = -1;
-//                e.printStackTrace();
-//            }
-//        }
-//        return age;
-//    }
-
-//    private double convertGestationAgeToMonth(Patient patient) {
-//        double age = 0;
-//        if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_WEEKS && patient.isPregnant) {
-//            try {
-//                age = Double.parseDouble(patient.gestationalAgeValue);
-//            } catch (NumberFormatException e) {
-//                age = -1;
-//                e.printStackTrace();
-//            }
-//            double months = age / WEEKS_IN_MONTH;
-//            double monthRounded = Math.round(months * 100D) / 100D;
-//            return monthRounded;
-//        } else if (patient.gestationalAgeUnit == Reading.GestationalAgeUnit.GESTATIONAL_AGE_UNITS_MONTHS && patient.isPregnant) {
-//            try {
-//                age = Double.parseDouble(patient.gestationalAgeValue);
-//            } catch (NumberFormatException e) {
-//                age = -1;
-//                e.printStackTrace();
-//            }
-//        }
-//        return age;
-//    }
-
     void setupLineChart() {
         LineChart lineChart = findViewById(R.id.patientLineChart);
         CardView lineChartCard = findViewById(R.id.patientLineChartCard);
@@ -375,12 +310,7 @@ public class PatientProfileActivity extends AppCompatActivity {
     }
 
     private List<Reading> getThisPatientsReadings() {
-        // Since we can't use streams in API 17 we end up having to use this mess.
-        List<Pair<Patient, Reading>> pairs = readingManager.getReadingsByPatientIdBlocking(currPatient.getId());
-        List<Reading> readings = new ArrayList<>();
-        for (Pair<Patient, Reading> pair : pairs) {
-            readings.add(pair.getSecond());
-        }
+        List<Reading> readings = readingManager.getReadingByPatientIdBlocking(currPatient.getId());
         Comparator<Reading> comparator = Reading.DescendingDateComparator.INSTANCE;
         Collections.sort(readings, comparator);
         return readings;
@@ -442,12 +372,16 @@ public class PatientProfileActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * shows a dialog to confirm deleting a reading
+     * @param readingId id of the reading to delete
+     */
     private void askToDeleteReading(String readingId) {
         AlertDialog.Builder dialog = new AlertDialog.Builder(this)
                 .setMessage("Delete reading?")
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setPositiveButton(android.R.string.yes, (dialog1, whichButton) -> {
-                    readingManager.deleteReadingByIdAsync(readingId);
+                    readingManager.deleteReadingByIdBlocking(readingId);
                     updateUi();
                 })
                 .setNegativeButton(android.R.string.no, null);

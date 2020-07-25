@@ -30,7 +30,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
-import com.cradle.neptune.database.HealthFacilityEntity;
+import com.cradle.neptune.model.HealthFacility;
 import com.cradle.neptune.manager.UrlManager;
 import com.cradle.neptune.model.*;
 import com.cradle.neptune.manager.HealthCentreManager;
@@ -189,7 +189,7 @@ public class ReferralDialogFragment extends DialogFragment {
         RequestQueue queue = Volley.newRequestQueue(getActivity());
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(JsonObjectRequest.Method.POST, urlManager.getReferral(), getReferralJson(false),
                 response -> {
-                    Referral referral = new Referral(ZonedDateTime.now(), selectedHealthCentreName, enteredComment);
+                    Referral referral = new Referral(System.currentTimeMillis()/Referral.MS_IN_SECOND, selectedHealthCentreName, enteredComment);
                     currentReading.setReferral(referral);
                     dialog.cancel();
                     dismiss();
@@ -366,7 +366,7 @@ public class ReferralDialogFragment extends DialogFragment {
     }
 
     private void onFinishedSendingSMS(Dialog dialog) {
-        Referral referral = new Referral(ZonedDateTime.now(), selectedHealthCentreName, enteredComment);
+        Referral referral = new Referral(System.currentTimeMillis()/Referral.MS_IN_SECOND, selectedHealthCentreName, enteredComment);
         currentReading.setReferral(referral);
         callback.sentTextMessage(smsTextMessage);
         dialog.dismiss();
@@ -460,9 +460,9 @@ public class ReferralDialogFragment extends DialogFragment {
     private void setupHealthCentreSpinner(Dialog dialog) {
         Spinner sp = dialog.findViewById(R.id.spinnerHealthCentre);
         ArrayList<String> options = new ArrayList<>();
-        List<HealthFacilityEntity> healthFacilityEntities = healthCentreManager.getAllSelectedByUserBlocking();
+        List<HealthFacility> healthFacilityEntities = healthCentreManager.getAllSelectedByUserBlocking();
 
-        for (HealthFacilityEntity h : healthFacilityEntities) {
+        for (HealthFacility h : healthFacilityEntities) {
             options.add(h.getName());
         }
         //options.addAll(settings.getHealthCentreNames());
@@ -542,7 +542,7 @@ public class ReferralDialogFragment extends DialogFragment {
             tv.setText(getString(
                     R.string.reading_referral_sent,
                     currentReading.getReferral().getHealthCentre(),
-                    DateUtil.getFullDateString(currentReading.getReferral().getMessageSendTime())
+                    DateUtil.getFullDateFromUnix(currentReading.getReferral().getMessageSendTimeUnix())
             ));
             tv.setVisibility(View.VISIBLE);
         } else {

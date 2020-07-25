@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.cradle.neptune.R;
 import com.cradle.neptune.model.*;
 import com.cradle.neptune.utilitiles.DateUtil;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -65,7 +66,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
 
         ReadingAnalysis analysis = currReading.getBloodPressure().getAnalysis();
 
-        myViewHolder.readingDate.setText(DateUtil.getConciseDateString(currReading.getDateTimeTaken()));
+        myViewHolder.readingDate.setText(DateUtil.getConciseDateString(DateUtil.getZoneTimeFromLong(currReading.getDateTimeTaken())));
         myViewHolder.sysBP.setText(new StringBuilder().append(currReading.getBloodPressure().getSystolic()).append("").toString());
         myViewHolder.diaBP.setText(new StringBuilder().append(currReading.getBloodPressure().getDiastolic()).append("").toString());
         myViewHolder.heartRate.setText(new StringBuilder().append(currReading.getBloodPressure().getHeartRate()).append("").toString());
@@ -73,19 +74,38 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         if (currReading.getUrineTest() != null) {
             myViewHolder.urineTest.setText(getUrineTestFormattedTxt(currReading.getUrineTest()));
         }
-        if (currReading.getSymptoms()!=null && !currReading.getSymptoms().isEmpty()){
-            String symptoms ="";
+        if (!currReading.getSymptoms().isEmpty()){
+            StringBuilder symptoms = new StringBuilder();
             for (String s:currReading.getSymptoms()){
-                symptoms+=s+", ";
+                symptoms.append(s).append(", ");
             }
-            myViewHolder.symptomTxt.setText(symptoms);
+            myViewHolder.symptomTxt.setText(symptoms.toString());
         }
         myViewHolder.trafficLight.setImageResource(ReadingAnalysisViewSupport.getColorCircleImageId(analysis));
         myViewHolder.arrow.setImageResource(ReadingAnalysisViewSupport.getArrowImageId(analysis));
 
         View v = myViewHolder.view;
-        myViewHolder.cardView.setOnClickListener(view -> onClickElementListener.onClick(currReading.getId()));
-        myViewHolder.cardView.setOnLongClickListener(view -> onClickElementListener.onLongClick(currReading.getId()));
+
+        myViewHolder.cardView.setOnClickListener(view -> {
+            // if the reading is uploaded to the server, we dont want to change it locally.
+            if (currReading.isUploadedToServer()){
+                Snackbar.make(v,"This reading is already uploaded to the server, " +
+                        "unable to make changes to it.",Snackbar.LENGTH_LONG).show();
+            }else {
+                onClickElementListener.onClick(currReading.getId());
+            }
+        });
+        myViewHolder.cardView.setOnLongClickListener(view -> {
+            // if the reading is uploaded to the server, we dont want to delete it locally.
+            if (currReading.isUploadedToServer()) {
+                Snackbar.make(v,"This reading is already uploaded to the server, " +
+                        "Cannot delete the reading.",Snackbar.LENGTH_LONG).show();
+            }else {
+                onClickElementListener.onLongClick(currReading.getId());
+            }
+            return false;
+        });
+
         if (myViewHolder.getItemViewType() == NO_ASSESSMENT_TYPE) {
 
             if (currReading.isVitalRecheckRequired()) {

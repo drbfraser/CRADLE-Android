@@ -7,15 +7,14 @@ import androidx.preference.PreferenceManager;
 import androidx.room.Room;
 
 import com.cradle.neptune.database.CradleDatabase;
-import com.cradle.neptune.model.Settings;
+import com.cradle.neptune.manager.PatientManager;
 
 import javax.inject.Singleton;
 
 import com.cradle.neptune.manager.HealthCentreManager;
 import com.cradle.neptune.manager.MarshalManager;
 import com.cradle.neptune.manager.ReadingManager;
-import com.cradle.neptune.manager.impl.HealthCentreManagerImpl;
-import com.cradle.neptune.manager.impl.ReadingManagerImpl;
+
 import dagger.Module;
 import dagger.Provides;
 
@@ -29,21 +28,25 @@ public class DataModule {
     @Provides
     @Singleton
     public CradleDatabase provideDatabase(Application application) {
-        return Room.databaseBuilder(application, CradleDatabase.class, "room-readingDB")
-                .allowMainThreadQueries()
-                .build();
+        return Room.databaseBuilder(application, CradleDatabase.class, "room-readingDB").build();
     }
 
     @Provides
     @Singleton
     public ReadingManager provideReadingService(CradleDatabase database, MarshalManager marshalManager) {
-        return new ReadingManagerImpl(database, marshalManager);
+        return new ReadingManager(database.readingDaoAccess());
     }
 
     @Provides
     @Singleton
     public HealthCentreManager provideHealthCentreService(CradleDatabase database) {
-        return new HealthCentreManagerImpl(database);
+        return new HealthCentreManager(database);
+    }
+
+    @Provides
+    @Singleton
+    public PatientManager providePatientManager(CradleDatabase database){
+        return new PatientManager(database.patientDaoAccess());
     }
 
     @Provides

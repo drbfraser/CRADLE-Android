@@ -1,115 +1,63 @@
 package com.cradle.neptune.manager
 
-import com.cradle.neptune.database.HealthFacilityEntity
+import androidx.lifecycle.LiveData
+import com.cradle.neptune.database.CradleDatabase
+import com.cradle.neptune.model.HealthFacility
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 /**
- * Service for interfacing with health centres stored in the database.
+ *  * manager to interact with the [HealthFacility] table
+ *Added [suspend] function so that there is compile time error when inserting on DB through
+ * main thread rather than run time error
  */
-interface HealthCentreManager {
+@Suppress("RedundantSuspendModifier")
+class HealthCentreManager(private val database: CradleDatabase) {
+
+    private val dao get() = database.healthFacilityDaoAccess()
 
     /**
-     * Returns the health centre with a given [id] if it exists.
-     *
-     * @param id the id to search for
+     * get a [HealthFacility] by id
      */
-    suspend fun getById(id: String): HealthFacilityEntity?
+    suspend fun getById(id: String) = dao.getHealthFacilityById(id)
 
     /**
-     * Returns all heath centres stored in the database.
+     * get all the [HealthFacility] selected by the current user.
      */
-    suspend fun getAll(): List<HealthFacilityEntity>
+    suspend fun getAllSelectedByUser() = dao.allUserSelectedHealthFacilities
 
     /**
-     * Returns all heath centres in the database which the user has selected.
+     * TODO: once all the java classes calling this method are turned into Kotlin,
+     * remove this function and call the corressponding method.
+     * This is only for legacy java code still calling this function.
      */
-    suspend fun getAllSelectedByUser(): List<HealthFacilityEntity>
-
-    /**
-     * Adds a new health centre to the database.
-     *
-     * @param entity the health centre to add
-     */
-    suspend fun add(entity: HealthFacilityEntity)
-
-    /**
-     * Adds a list of health centres to the database.
-     *
-     * @param entities the list of health centres to add
-     */
-    suspend fun addAll(entities: List<HealthFacilityEntity>)
-
-    /**
-     * Updates an existing heath centre.
-     *
-     * @param entity the entity to update
-     */
-    suspend fun update(entity: HealthFacilityEntity)
-
-    /**
-     * Removes the health centre with a given [id].
-     *
-     * If no such health centre exists, then this method should do nothing.
-     *
-     * @param id the id of the health centre to remove
-     */
-    suspend fun removeById(id: String)
-
-    /**
-     * Deletes all health centres registered in the database.
-     */
-    suspend fun deleteAllData()
-
-    /**
-     * Async variant of [getById].
-     */
-    fun getByIdAsync(id: String) = GlobalScope.async(Dispatchers.IO) { getById(id) }
-
-    /**
-     * Blocking variant of [getById].
-     */
-    fun getByIdBlocking(id: String) = runBlocking { getById(id) }
-
-    /**
-     * Async variant of [getAll].
-     */
-    fun getAllAsync() = GlobalScope.async(Dispatchers.IO) { getAll() }
-
-    /**
-     * Blocking variant of [getAll].
-     */
-    fun getAllBlocking() = runBlocking { getAll() }
-
-    /**
-     * Async variant of [getAllSelectedByUser].
-     */
-    fun getAllSelectedByUserAsync() = GlobalScope.async(Dispatchers.IO) { getAllSelectedByUser() }
-
-    /**
-     * Blocking variant of [getAllSelectedByUser].
-     */
+    @Deprecated("Please avoid using this function in Kotlin files.")
     fun getAllSelectedByUserBlocking() = runBlocking { getAllSelectedByUser() }
 
     /**
-     * Async variant of [add].
+     * add a single health facility
      */
-    fun addAsync(entity: HealthFacilityEntity) = GlobalScope.async(Dispatchers.IO) { add(entity) }
+    fun add(facility: HealthFacility) = GlobalScope.launch(Dispatchers.IO) { dao.insert(facility) }
 
     /**
-     * Async variant of [addAll].
+     * Add all the health facilities
      */
-    fun addAllAsync(entities: List<HealthFacilityEntity>) = GlobalScope.async(Dispatchers.IO) { addAll(entities) }
+    fun addAll(facilities: List<HealthFacility>) = GlobalScope.launch(Dispatchers.IO) { dao.insertAll(facilities) }
 
     /**
-     * Async variant of [update].
+     * update a single Health Facility
      */
-    fun updateAsync(entity: HealthFacilityEntity) = GlobalScope.async(Dispatchers.IO) { update(entity) }
+    fun update(facility: HealthFacility) = GlobalScope.launch { dao.update(facility) }
 
     /**
-     * Async variant of [removeById].
+     * returns a live list of the facilities
      */
-    fun removeByIdAsync(id: String) = GlobalScope.async(Dispatchers.IO) { removeById(id) }
+    val getLiveList: LiveData<List<HealthFacility>> = dao.allFacilitiesLiveData
+
+    /**
+     * delete all [HealthFacility] from the DB
+     */
+    suspend fun deleteAll() = dao.deleteAll()
 }

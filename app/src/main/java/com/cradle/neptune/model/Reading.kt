@@ -1,11 +1,14 @@
 package com.cradle.neptune.model
 
 import android.content.Context
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.cradle.neptune.R
-import com.cradle.neptune.database.ReadingEntity
+import java.io.Serializable
 import java.util.UUID
+import org.threeten.bp.Instant
 import org.threeten.bp.ZonedDateTime
-import org.threeten.bp.temporal.ChronoUnit
 
 const val RED_SYSTOLIC = 160
 const val RED_DIASTOLIC = 110
@@ -19,7 +22,7 @@ const val MIN_SYSTOLIC = 10
 const val MAX_DIASTOLIC = 300
 const val MIN_DIASTOLIC = 10
 const val MAX_HEART_RATE = 200
-const val MIN_HEART_RATE = 40
+const val MIN_HEART_RATE = 30
 
 /**
  * Holds information about a reading.
@@ -28,13 +31,13 @@ const val MIN_HEART_RATE = 40
  * will be generated for this field.
  * @property patientId The identifier for the patient this reading is
  * associated with.
- * @property dateTimeTaken The time at which this reading was taken.
+ * @property dateTimeTaken unix time at which this reading was taken.
  * @property bloodPressure The result of a blood pressure test.
  * @property urineTest The result of a urine test.
  * @property symptoms A list of symptoms that the patient has at the time this
  * reading was taken.
  * @property referral An optional referral associated with this reading.
- * @property dateRecheckVitalsNeeded The date at which this patient's vitals
+ * @property dateRecheckVitalsNeeded unix time at which this patient's vitals
  * should be rechecked (if applicable).
  * @property isFlaggedForFollowUp Whether this patient requires a followup.
  * @property previousReadingIds A list of previous readings associated with
@@ -42,25 +45,27 @@ const val MIN_HEART_RATE = 40
  * @property metadata Some internal metadata associated with this reading. By
  * default an empty metadata object (with all `null` values) will be used.
  */
+@Entity
 data class Reading(
-    var id: String = UUID.randomUUID().toString(),
-    var patientId: String,
-    var dateTimeTaken: ZonedDateTime,
+    @PrimaryKey
+    @ColumnInfo(name = "readingId") var id: String = UUID.randomUUID().toString(),
+    @ColumnInfo var patientId: String,
+    @ColumnInfo var dateTimeTaken: Long,
+    @ColumnInfo var bloodPressure: BloodPressure,
+    @ColumnInfo var urineTest: UrineTest?,
+    @ColumnInfo var symptoms: List<String>,
 
-    var bloodPressure: BloodPressure,
-    var urineTest: UrineTest?,
-    var symptoms: List<String>,
+    @ColumnInfo var referral: Referral?,
+    @ColumnInfo var followUp: FollowUp?,
 
-    var referral: Referral?,
-    var followUp: FollowUp?,
+    @ColumnInfo var dateRecheckVitalsNeeded: Long?,
+    @ColumnInfo var isFlaggedForFollowUp: Boolean,
 
-    var dateRecheckVitalsNeeded: ZonedDateTime?,
-    var isFlaggedForFollowUp: Boolean,
+    @ColumnInfo var previousReadingIds: List<String> = emptyList(),
 
-    var previousReadingIds: List<String> = emptyList(),
-
-    var metadata: ReadingMetadata = ReadingMetadata()
-) : Marshal<JsonObject> {
+    @ColumnInfo var metadata: ReadingMetadata = ReadingMetadata(),
+    @ColumnInfo var isUploadedToServer: Boolean = false
+) : Serializable, Marshal<JsonObject> {
 
     /**
      * True if this reading has a referral attached to it.
@@ -77,7 +82,7 @@ data class Reading(
      */
     val isVitalRecheckRequiredNow
         get() = isVitalRecheckRequired &&
-            (dateRecheckVitalsNeeded?.isBefore(ZonedDateTime.now()) ?: false)
+            (dateRecheckVitalsNeeded?.equals(Instant.now()) ?: false)
 
     /**
      * The number of minutes until a vital recheck is required.
@@ -87,7 +92,7 @@ data class Reading(
     val minutesUtilVitalRecheck: Long?
         get() {
             val recheckTime = dateRecheckVitalsNeeded ?: return null
-            return ChronoUnit.SECONDS.between(ZonedDateTime.now(), recheckTime)
+            return (ZonedDateTime.now().toEpochSecond() - recheckTime) / SECONDS_IN_MIN
         }
 
     /**
@@ -106,22 +111,13 @@ data class Reading(
         union(bloodPressure)
         union(referral)
         put(ReadingField.URINE_TEST, urineTest)
-        // TODO: Convert back to array once the server can handle it.
-        put(ReadingField.SYMPTOMS, symptoms.joinToString(", "))
+        put(ReadingField.SYMPTOMS, symptoms)
 
         put(ReadingField.DATE_RECHECK_VITALS_NEEDED, dateRecheckVitalsNeeded)
         put(ReadingField.IS_FLAGGED_FOR_FOLLOWUP, isFlaggedForFollowUp)
 
         put(ReadingField.PREVIOUS_READING_IDS, previousReadingIds)
-
         union(metadata)
-    }
-
-    /**
-     * Converts this reading into a [ReadingEntity] object.
-     */
-    fun toEntity(): ReadingEntity {
-        return ReadingEntity(id, patientId, marshal().toString(), metadata.isUploaded)
     }
 
     companion object : Unmarshal<Reading, JsonObject> {
@@ -136,7 +132,7 @@ data class Reading(
             val patientId =
                 data.optStringField(ReadingField.PATIENT_ID) ?: data.getJSONObject("patient").getString("patientId")
 
-            val dateTimeTaken = data.dateField(ReadingField.DATE_TIME_TAKEN)
+            val dateTimeTaken = data.longField(ReadingField.DATE_TIME_TAKEN)
 
             val bloodPressure = BloodPressure.unmarshal(data)
             val referral = maybeUnmarshal(Referral, data)
@@ -144,50 +140,17 @@ data class Reading(
                 maybeUnmarshal(UrineTest, it)
             }
 
-            val symptomsJsonArray = try {
-                data.arrayField(ReadingField.SYMPTOMS)
-            } catch (e: JsonException) {
-                // Sometimes the symptoms array is encoded as a comma separated
-                // string and not an actual array. To handle this we first try
-                // and unmarshal an array and if that fails then we try a
-                // string.
-                val list = data.stringField(ReadingField.SYMPTOMS)
-                    .split(",")
-                    .map { it.trim() }
-                    .filterNot { it.isEmpty() }
-                JsonArray(list)
-            }
-            val symptoms = mutableListOf<String>()
+            val symptomsJsonArray =
+                data.optArrayField(ReadingField.SYMPTOMS)
+            val symptoms = ArrayList<String>()
 
-            // For some reason, legacy symptoms were encoded in JSON as an
-            // array of a single, comma separated string.
-            //
-            // Something like:
-            //   ["ABDO PAIN, FEVERISH, HEADACHE, BLEEDING"]
-            //
-            // In order to handle this, and not incorrectly split up a user-
-            // supplied symptom, we'll check to see if the JSON array only
-            // contains a single element and if we can split it using a ','
-            // separator. Since there is no enumeration which defines the
-            // set of hard-coded symptoms, this is the best we can to for
-            // legacy support.
-            if (symptomsJsonArray.length() == 1) {
-                val symptomString = symptomsJsonArray.getString(0)
-                val split = symptomString.split(',')
-                    .map { it.trim() }
-                    .filterNot { it.isEmpty() }
-                if (split.size != 1) {
-                    symptoms.addAll(split)
-                } else {
-                    symptoms.add(symptomString)
-                }
-            } else {
-                for (i in 0 until symptomsJsonArray.length()) {
-                    symptoms.add(symptomsJsonArray.getString(i))
+            symptomsJsonArray?.apply {
+                for (i in 0 until this.length()) {
+                    symptoms.add(this[i] as String)
                 }
             }
 
-            val dateRecheckVitalsNeeded = data.optDateField(ReadingField.DATE_RECHECK_VITALS_NEEDED)
+            val dateRecheckVitalsNeeded = data.optLongField(ReadingField.DATE_RECHECK_VITALS_NEEDED)
             val isFlaggedForFollowUp = data.optBooleanField(ReadingField.IS_FLAGGED_FOR_FOLLOWUP) ?: false
 
             val previousReadingIds = data.optArrayField(ReadingField.PREVIOUS_READING_IDS)?.let {
@@ -217,9 +180,12 @@ data class Reading(
 
                 previousReadingIds = previousReadingIds,
 
-                metadata = metadata
+                metadata = metadata,
+                isUploadedToServer = false
             )
         }
+
+        const val SECONDS_IN_MIN = 60
     }
 
     object AscendingDataComparator : Comparator<Reading> {
@@ -251,7 +217,7 @@ data class BloodPressure(
     val systolic: Int,
     val diastolic: Int,
     val heartRate: Int
-) : Marshal<JsonObject> {
+) : Serializable, Marshal<JsonObject> {
     /**
      * The shock index for this blood pressure result.
      */
@@ -319,18 +285,18 @@ data class BloodPressure(
 /**
  * Holds information about a referral.
  *
- * @property messageSendTime The time at which this referral message was sent.
+ * @property messageSendTimeUnix The time at which this referral message was sent.
  * @property healthCentre The health center this referral should be sent to.
  * @property comment A comment to be included along with the referral.
  */
 data class Referral(
-    val messageSendTime: ZonedDateTime,
+    val messageSendTimeUnix: Long,
     val healthCentre: String,
     val comment: String
-) : Marshal<JsonObject> {
+) : Serializable, Marshal<JsonObject> {
 
     override fun marshal(): JsonObject = with(JsonObject()) {
-        put(ReferralField.MESSAGE_SEND_TIME, messageSendTime.toEpochSecond())
+        put(ReferralField.MESSAGE_SEND_TIME, messageSendTimeUnix)
         put(ReferralField.HEALTH_CENTRE, healthCentre)
         put(ReferralField.COMMENT, comment)
     }
@@ -342,11 +308,12 @@ data class Referral(
          * @throws JsonException if any of the required fields are missing
          */
         override fun unmarshal(data: JsonObject): Referral {
-            val messageSendTime = data.dateField(ReferralField.MESSAGE_SEND_TIME)
+            val messageSendTime = data.longField(ReferralField.MESSAGE_SEND_TIME)
             val healthCentre = data.stringField(ReferralField.HEALTH_CENTRE)
             val comment = data.stringField(ReferralField.COMMENT)
             return Referral(messageSendTime, healthCentre, comment)
         }
+        const val MS_IN_SECOND = 1000L
     }
 }
 
@@ -419,8 +386,8 @@ data class ReadingMetadata(
     /* Application Data */
     var appVersion: String? = null,
     var deviceInfo: String? = null,
-    var dateLastSaved: ZonedDateTime? = null,
-    var dateUploadedToServer: ZonedDateTime? = null,
+    var dateLastSaved: Long? = null,
+    var dateUploadedToServer: Long? = null,
 
     /* Image Data */
     var photoPath: String? = null,
@@ -429,7 +396,7 @@ data class ReadingMetadata(
 
     /* GPS Data */
     var gpsLocation: String? = null
-) : Marshal<JsonObject> {
+) : Serializable, Marshal<JsonObject> {
     /**
      * True if this reading has been uploaded to the server.
      */
@@ -450,8 +417,8 @@ data class ReadingMetadata(
         override fun unmarshal(data: JsonObject): ReadingMetadata {
             val appVersion = data.optStringField(MetadataField.APP_VERSION)
             val deviceInfo = data.optStringField(MetadataField.DEVICE_INFO)
-            val dateLastSaved = data.optDateField(MetadataField.DATE_LAST_SAVED)
-            val dateUploadedToServer = data.optDateField(MetadataField.DATE_UPLOADED_TO_SERVER)
+            val dateLastSaved = data.optLongField(MetadataField.DATE_LAST_SAVED)
+            val dateUploadedToServer = data.optLongField(MetadataField.DATE_UPLOADED_TO_SERVER)
             val photoPath = data.optStringField(MetadataField.PHOTO_PATH)
             val isImageUploaded = data.optBooleanField(MetadataField.IS_IMAGE_UPLOADED) ?: false
 

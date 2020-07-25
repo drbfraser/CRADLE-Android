@@ -61,7 +61,7 @@ abstract public class BaseFragment extends Fragment {
         // ensure callback functions are implemented.
         if (!(context instanceof MyFragmentInteractionListener)) {
             throw new RuntimeException(context.toString()
-                    + " must implement MyFragmentInteractionListener");
+                + " must implement MyFragmentInteractionListener");
         }
         activityCallbackListener = (MyFragmentInteractionListener) context;
         viewModel = activityCallbackListener.getViewModel();

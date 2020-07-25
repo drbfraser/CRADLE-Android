@@ -15,6 +15,7 @@ import com.cradle.neptune.view.ui.reading.ReferralDialogFragment;
 import com.cradle.neptune.view.ui.settings.AdvancedSettingsFragment;
 import com.cradle.neptune.view.ui.settings.SettingsFragment;
 import com.cradle.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity;
+import com.cradle.neptune.viewmodel.HealthFacilityViewModel;
 
 import javax.inject.Singleton;
 
@@ -57,4 +58,6 @@ public interface AppComponent {
     void inject(HealthFacilitiesActivity healthFacilitiesActivity);
 
     void inject(GlobalPatientSearchActivity globalPatientSearchActivity);
+
+    void inject(HealthFacilityViewModel healthFacilityViewModel);
 }

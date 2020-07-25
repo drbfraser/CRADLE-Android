@@ -25,6 +25,7 @@ import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.manager.PatientManager;
 import com.cradle.neptune.manager.UrlManager;
 import com.cradle.neptune.model.*;
 import com.cradle.neptune.manager.ReadingManager;
@@ -37,8 +38,6 @@ import com.google.firebase.storage.UploadTask;
 
 import kotlin.Pair;
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.threeten.bp.ZonedDateTime;
 
 import java.io.File;
@@ -63,6 +62,8 @@ public class UploadActivity extends AppCompatActivity {
     Settings settings;
     @Inject
     UrlManager urlManager;
+    @Inject
+    PatientManager patientManager;
 
     MultiReadingUploader multiUploader;
 
@@ -106,7 +107,6 @@ public class UploadActivity extends AppCompatActivity {
         uploadBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String token = sharedPreferences.getString(LoginActivity.TOKEN, "");
                 new AlertDialog.Builder(UploadActivity.this)
                         .setMessage("Downloading the patient data might take a while, please " +
                                 "do not close the application. Check the status of download" +
@@ -114,7 +114,7 @@ public class UploadActivity extends AppCompatActivity {
                         .setTitle("Downloading patient data")
                         .setPositiveButton("OK", (dialogInterface, i)
                                 -> {
-                            LoginActivity.getAllMyPatients(token, readingManager, urlManager, UploadActivity.this);
+                            LoginActivity.Companion.getAllMyPatients(sharedPreferences, readingManager, urlManager, patientManager,UploadActivity.this);
                         })
                         .setNegativeButton("Cancel", (dialogInterface, i) -> {
 
@@ -128,8 +128,9 @@ public class UploadActivity extends AppCompatActivity {
         //get last updated time
         TextView lastDownloadText = findViewById(R.id.lastDownloadTimeTxt);
         try {
+            //todo: this will probably be removed with new sync but also need to save long rather than string
             ZonedDateTime zonedDateTime = ZonedDateTime.parse(settings.getLastTimeFollowUpDownloaded());
-            lastDownloadText.setText(DateUtil.getFullDateString(zonedDateTime));
+            lastDownloadText.setText(DateUtil.getFullDateFromUnix(zonedDateTime.toEpochSecond()));
 
         } catch (Exception e) {
             lastDownloadText.setText(settings.getLastTimeFollowUpDownloaded());
@@ -195,77 +196,7 @@ public class UploadActivity extends AppCompatActivity {
     }
 
     private void getReadingFollowFromTheResponse(JSONArray response) {
-        List<FollowUp> readingsFollowUps = new ArrayList<>();
-        for (int i = 0; i < response.length(); i++) {
-            try {
-                JSONObject jsonObject = response.getJSONObject(i);
-
-                String readingServerId = jsonObject.getString("readingId");
-                //follow up info
-                String followUpAction = jsonObject.optString("followUpAction","N/A");
-                String treatment = jsonObject.getString("treatment");
-                String diagnosis = jsonObject.getString("diagnosis");
-                String referredBy = jsonObject.getString("referredBy");
-                String dateAssessed = jsonObject.getString("dateAssessed");
-
-                //follow up actions
-                boolean followUpNeeded = jsonObject.optBoolean("followupNeeded",false);
-                String followupNeededTill = jsonObject.optString("followUpNeededTill","N/A");
-                String medicationPrescribed = jsonObject.optString("medicationPrescribed","N/A");
-                String followupFrequencyUnit = jsonObject.optString("followupFrequencyUnit","N/A");
-                int followupFrequencyValue = jsonObject.optInt("followupFrequencyValue");
-                String specialInvestigation = jsonObject.optString("specialInvestigations","N/A");
-
-                // health facility info
-                JSONObject healthFacility = jsonObject.getJSONObject("healthFacility");
-                String hfName = healthFacility.getString("name");
-                String assessedBy = healthFacility
-                        .getJSONObject("healthcareWorker").getString("email");
-                //patient info
-                JSONObject patient = jsonObject.getJSONObject("patient");
-                String medicalInfo = patient.getString("medicalHistory");
-                String drugInfo = patient.getString("drugHistory");
-                String patientId = patient.getString("patientId");
-
-                FollowUp readingFollowUp = new FollowUp(readingServerId, followUpAction,
-                        treatment, diagnosis, hfName, dateAssessed, assessedBy, referredBy);
-                readingFollowUp.setPatientDrugInfoUpdate(drugInfo);
-                readingFollowUp.setPatientMedInfoUpdate(medicalInfo);
-                readingFollowUp.setPatientId(patientId);
-                readingsFollowUps.add(readingFollowUp);
-
-                readingFollowUp.setFollowUpNeeded(followUpNeeded);
-                readingFollowUp.setFollowUpNeededTill(followupNeededTill);
-                readingFollowUp.setFollowUpFrequencyUnit(followupFrequencyUnit);
-                readingFollowUp.setFollowUpFrequencyValue(followupFrequencyValue);
-                readingFollowUp.setMedicationPrescribed(medicationPrescribed);
-                readingFollowUp.setSpecialInvestigation(specialInvestigation);
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-//        List<Reading> readings = readingManager.getReadings(this);
-        List<Pair<Patient, Reading>> pairs = readingManager.getAllReadingsBlocking();
-        Map<String, Pair<Patient, Reading>> readingMap = new HashMap<>();
-        for (Pair<Patient, Reading> pair : pairs) {
-            readingMap.put(pair.getSecond().getId(), pair);
-        }
-        //update the followups
-        for (FollowUp followUp : readingsFollowUps) {
-            Pair<Patient, Reading> pair = readingMap.get(followUp.getReadingServerId());
-            if (pair != null) {
-                pair.getSecond().setFollowUp(followUp);
-                pair.getFirst().getMedicalHistoryList().add(followUp.getPatientMedInfoUpdate().toLowerCase());
-                pair.getFirst().getDrugHistoryList().add(followUp.getPatientDrugInfoUpdate().toLowerCase());
-                readingManager.updateReadingAsync(pair.getFirst(), pair.getSecond());
-//                reading.patient.medicalHistoryList = new ArrayList<>();
-//                reading.patient.drugHistoryList = new ArrayList<>();
-//                reading.patient.medicalHistoryList.add(followUp.getPatientMedInfoUpdate().toLowerCase());
-//                reading.patient.drugHistoryList.add(followUp.getPatientDrugInfoUpdate().toLowerCase());
-//                readingManager.updateReading(this, reading);
-            }
-        }
+            //TODO update based on the new model
     }
 
     private void upDateLastDownloadTime(ZonedDateTime now) {
@@ -322,13 +253,14 @@ public class UploadActivity extends AppCompatActivity {
     private void setupUploadImageButton() {
         Button btnStart = findViewById(R.id.uploadImagesButton);
         btnStart.setOnClickListener(view -> {
-            List<Pair<Patient, Reading>> readings = readingManager.getAllReadingsBlocking();
-            List<Pair<Patient, Reading>> readingsToUpload = new ArrayList<>();
+            List<Reading> readings = readingManager.getAllReadingBlocking();
+
+            List<Reading> readingsToUpload = new ArrayList<>();
             for (int i = 0; i < readings.size(); i++) {
-                Pair<Patient, Reading> reading = readings.get(i);
-                if (reading.getSecond().getMetadata().getPhotoPath() != null) {
-                    File file = new File(reading.getSecond().getMetadata().getPhotoPath());
-                    if (!reading.getSecond().getMetadata().isImageUploaded() && file.exists()) {
+                Reading reading = readings.get(i);
+                if (reading.getMetadata().getPhotoPath() != null) {
+                    File file = new File(reading.getMetadata().getPhotoPath());
+                    if (!reading.getMetadata().isImageUploaded() && file.exists()) {
 
                         readingsToUpload.add(reading);
                     }
@@ -363,14 +295,14 @@ public class UploadActivity extends AppCompatActivity {
                     return;
                 }
 
-                Pair<Patient, Reading> r = readingsToUpload.get(i);
-                Uri file = Uri.fromFile(new File(r.getSecond().getMetadata().getPhotoPath()));
+                Reading r = readingsToUpload.get(i);
+                Uri file = Uri.fromFile(new File(r.getMetadata().getPhotoPath()));
 
                 StorageReference storageReference1 = storageReference.child("cradle-test-images/" + file.getLastPathSegment());
                 UploadTask uploadTask = storageReference1.putFile(file);
                 uploadTask.addOnSuccessListener(taskSnapshot -> {
-                    r.getSecond().getMetadata().setImageUploaded(true);
-                    readingManager.updateReadingAsync(r.getFirst(), r.getSecond());
+                    r.getMetadata().setImageUploaded(true);
+                    readingManager.updateReading(r);
                     progressBar.setProgress(progressBar.getProgress() + 1);
                     if (stopuploading[0]) {
                         progressBar.setVisibility(View.INVISIBLE);
@@ -454,31 +386,17 @@ public class UploadActivity extends AppCompatActivity {
             Toast.makeText(this, "Error: Must set server URL in settings", Toast.LENGTH_LONG).show();
             return;
         }
-//        if (settings.getRsaPubKey() == null || settings.getRsaPubKey().length() == 0) {
-//            Toast.makeText(this, "Error: Must set RSA Public Key in settings", Toast.LENGTH_LONG).show();
-//            return;
-//        }
-        // do a small sanity check on key
-        // note: Many errors in key will seem valid here! No way to validate.
-//        try {
-//            HybridFileEncrypter.convertRsaPemToPublicKey(settings.getRsaPubKey());
-//        } catch (Exception e) {
-//            Toast.makeText(this, "Error: Invalid public key in settings: \r\n" + e.getMessage(), Toast.LENGTH_LONG).show();
-//            return;
-//        }
 
-        // discover un-uploaded readings
-        List<Pair<Patient, Reading>> pairs = readingManager.getUnUploadedReadingsBlocking();
-//        List<Reading> readingsToUpload = readingManager.getUnuploadedReadings();
-        // abort if no readings
-        if (pairs.size() == 0) {
+        List<Reading> unUploadedReadings = readingManager.getUnUploadedReadingsBlocking();
+
+        if (unUploadedReadings.size() == 0) {
             Toast.makeText(this, "No readings needing to be uploaded.", Toast.LENGTH_LONG).show();
             return;
         }
 
         // upload multiple readings
         multiUploader = new MultiReadingUploader(this, settings, sharedPreferences.getString(LoginActivity.TOKEN, ""), getProgressCallbackListener());
-        multiUploader.startUpload(pairs);
+        multiUploader.startUpload(unUploadedReadings);
         setUploadUiElementVisibility(true);
     }
 
@@ -511,12 +429,12 @@ public class UploadActivity extends AppCompatActivity {
             @Override
             public void uploadReadingSucceeded(Pair<Patient, Reading> pair) {
                 // mark reading as uploaded
-                pair.getSecond().getMetadata().setDateUploadedToServer(ZonedDateTime.now());
-                readingManager.updateReadingAsync(pair.getFirst(), pair.getSecond());
+                pair.getSecond().getMetadata().setDateUploadedToServer(ZonedDateTime.now().toEpochSecond());
+                readingManager.updateReading(pair.getSecond());
 
                 // record that we did a successful upload
-                String dateStr = DateUtil.getFullDateString(ZonedDateTime.now());
-                sharedPreferences.edit().putString(LAST_UPLOAD_DATE, dateStr).apply();
+                sharedPreferences.edit().putLong(LAST_UPLOAD_DATE,
+                        ZonedDateTime.now().toEpochSecond()).apply();
             }
 
             @Override
@@ -529,28 +447,4 @@ public class UploadActivity extends AppCompatActivity {
         };
     }
 
-
-//    private void downloadPage() {
-//        // Instantiate the RequestQueue.
-//        RequestQueue queue = Volley.newRequestQueue(this);
-//
-//        // Request a string response from the provided URL.
-//        StringRequest stringRequest = new StringRequest(Request.Method.GET, SERVER_URL,
-//                new Response.Listener<String>() {
-//                    @Override
-//                    public void onResponse(String response) {
-//                        // Display the first 500 characters of the response string.
-//                        Log.d(TAG, "Response is: "+ response.substring(0,500));
-//                        Toast.makeText(UploadActivity.this, "Completed GET", Toast.LENGTH_SHORT).show();
-//                    }
-//                }, new Response.ErrorListener() {
-//            @Override
-//            public void onErrorResponse(VolleyError error) {
-//                Toast.makeText(UploadActivity.this, "GET failed: " + error.networkResponse, Toast.LENGTH_SHORT).show();
-//            }
-//        });
-//
-//        // Add the request to the RequestQueue.
-//        queue.add(stringRequest);
-//    }
 }

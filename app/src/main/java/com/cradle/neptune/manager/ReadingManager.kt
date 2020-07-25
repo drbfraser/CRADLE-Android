@@ -1,13 +1,14 @@
 package com.cradle.neptune.manager
 
-import com.cradle.neptune.model.Patient
+import com.cradle.neptune.database.ReadingDaoAccess
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.RetestGroup
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+
 /**
  * Service for interfacing with readings stored in the database.
  *
@@ -19,139 +20,157 @@ import kotlinx.coroutines.runBlocking
  * or `Blocking` variants. For call-and-forget methods like [addReading], use
  * the `Async` variant. For methods which return a value, the `Blocking`
  * variants may be used but remember that those will block the current thread.
+ *
+ *Added [suspend] function so that there is compile time error when inserting on DB through
+ * main thread rather than run time error
  */
-interface ReadingManager {
+@Suppress("RedundantSuspendModifier")
+class ReadingManager(private val daoAccess: ReadingDaoAccess) {
 
     /**
      * Adds a new reading to the database.
-     *
-     * Due to how the database schema is setup, if we also need to supply
-     * patient information whenever we want to create a new reading.
-     *
-     * @param patient the patient associated with the reading
      * @param reading the reading to insert
+     * todo once all the class using this api is converted to kotlin, we can move coroutine out
+     * of this class and make this a [suspend] function
      */
-    suspend fun addReading(patient: Patient, reading: Reading)
+    fun addReading(reading: Reading) {
+        GlobalScope.launch {
+            daoAccess.insertReading(reading)
+        }
+    }
+
+    /**
+     * Get all the readings.
+     * todo once all the class using this api is converted to kotlin, we can move coroutine out
+     * of this class and make this a [suspend] function
+     */
+    fun addAllReadings(readings: List<Reading>) {
+        GlobalScope.launch {
+            daoAccess.insertAll(readings)
+        }
+    }
 
     /**
      * Updates an existing reading in the database.
-     *
-     * Due to how the database schema is setup, we need to supply patient
-     * information along with the reading we wish to update.
-     *
-     * @param patient the patient associated with the reading
+     * todo once all the class using this api is converted to kotlin, we can move coroutine out
+     * of this class and make this a [suspend] function
      * @param reading the reading to update
      */
-    suspend fun updateReading(patient: Patient, reading: Reading)
+    fun updateReading(reading: Reading) = GlobalScope.launch { daoAccess.update(reading) }
 
     /**
      * Returns a list of all readings (and their associated patients) in the
      * database.
      */
-    suspend fun getAllReadings(): List<Pair<Patient, Reading>>
+    suspend fun getAllReadings(): List<Reading> {
+        return daoAccess.allReadingEntities
+    }
+
+    /**
+     * TODO: once all the java classes calling this method are turned into Kotlin,
+     * remove this function and call the corressponding method.
+     * This is only for legacy java code still calling this function.
+     */
+    @Deprecated("Please avoid using this function in Kotlin files.")
+    fun getAllReadingBlocking() = runBlocking { withContext(Dispatchers.IO) { getAllReadings() } }
 
     /**
      * Returns the reading (and its associated patient) with a given [id] from
      * the database. Returns `null` if unable to find such a reading.
      */
-    suspend fun getReadingById(id: String): Pair<Patient, Reading>?
+    suspend fun getReadingById(id: String): Reading? {
+        return daoAccess.getReadingById(id)
+    }
+
+    /**
+     * TODO: once all the java classes calling this method are turned into Kotlin,
+     * remove this function and call the corressponding method.
+     * This is only for legacy java code still calling this function.
+     */
+    fun getReadingByIdBlocking(id: String): Reading? {
+        return runBlocking { withContext(Dispatchers.IO) { getReadingById(id) } }
+    }
 
     /**
      * Returns all readings associated with a specific patient [id].
      */
-    suspend fun getReadingsByPatientId(id: String): List<Pair<Patient, Reading>>
+    suspend fun getReadingsByPatientId(id: String): List<Reading> {
+        return daoAccess.getAllReadingByPatientId(id)
+    }
+
+    /**
+     * TODO: once all the java classes calling this method are turned into Kotlin,
+     * remove this function and call the corressponding method.
+     * This is only for legacy java code still calling this function.
+     */
+    @Deprecated("Please avoid using this function in Kotlin files.")
+    fun getReadingByPatientIdBlocking(id: String) = runBlocking {
+        withContext(Dispatchers.IO) { getReadingsByPatientId(id) }
+    }
 
     /**
      * Returns all readings which have not been uploaded to the server yet.
+     *suspending seems redundent but we want to force this to run on a coroutine
      */
-    suspend fun getUnUploadedReadings(): List<Pair<Patient, Reading>>
+    suspend fun getUnUploadedReadings(): List<Reading> {
+        return daoAccess.allUnUploadedReading
+    }
+
+    /**
+     * TODO: once all the java classes calling this method are turned into Kotlin,
+     * remove this function and call the corressponding method.
+     * This is only for legacy java code still calling this function.
+     */
+    @Deprecated("Please avoid using this function in Kotlin files.")
+    fun getUnUploadedReadingsBlocking() =
+        runBlocking { withContext(Dispatchers.IO) { getUnUploadedReadings() } }
 
     /**
      * Constructs a [RetestGroup] for a given [reading].
      */
-    suspend fun getRetestGroup(reading: Reading): RetestGroup
+    suspend fun getRetestGroup(reading: Reading): RetestGroup {
+        val readings = mutableListOf<Reading>()
+        readings.addAll(reading.previousReadingIds.mapNotNull { getReadingById(it) })
+        readings.add(reading)
+        return RetestGroup(readings)
+    }
 
     /**
      * Deletes the reading with a specific [id] from the database.
      */
-    suspend fun deleteReadingById(id: String)
+    suspend fun deleteReadingById(id: String) {
+        return daoAccess.delete(getReadingById(id))
+    }
+
+    /**
+     * TODO: once all the java classes calling this method are turned into Kotlin,
+     * remove this function and call the corressponding method.
+     * This is only for legacy java code still calling this function.
+     */
+    @Deprecated("Please avoid using this function in Kotlin files.")
+    fun deleteReadingByIdBlocking(id: String) =
+        runBlocking { withContext(Dispatchers.IO) { deleteReadingById(id) } }
+
+    /**
+     * Get the newest reading of a patient
+     */
+    suspend fun getNewestReadingByPatientId(id: String): Reading? =
+        daoAccess.getNewestReadingByPatientId(id)
+
+    /**
+     * TODO: once all the java classes calling this method are turned into Kotlin,
+     * remove this function and call the corressponding method.
+     * This is only for legacy java code still calling this function.
+     */
+    @Deprecated("Please avoid using this function in Kotlin files.")
+    fun getNewestReadingByPatientIdBlocking(id: String) = runBlocking {
+        withContext(Dispatchers.IO) { getNewestReadingByPatientId(id) }
+    }
 
     /**
      * Deletes all readings from the database.
      */
-    suspend fun deleteAllData()
-
-    /**
-     * Async variant of [addReading].
-     */
-    fun addReadingAsync(patient: Patient, reading: Reading) = GlobalScope.launch(Dispatchers.IO) {
-        addReading(patient, reading)
+    suspend fun deleteAllData() {
+        daoAccess.deleteAllReading()
     }
-
-    /**
-     * Async variant of [updateReading].
-     */
-    fun updateReadingAsync(patient: Patient, reading: Reading) = GlobalScope.launch(Dispatchers.IO) {
-        updateReading(patient, reading)
-    }
-
-    /**
-     * Async variant of [getAllReadings].
-     */
-    fun getAllReadingsAsync() = GlobalScope.async(Dispatchers.IO) { getAllReadings() }
-
-    /**
-     * Blocking variant of [getAllReadings].
-     */
-    fun getAllReadingsBlocking() = runBlocking { getAllReadings() }
-
-    /**
-     * Async variant of [getReadingById].
-     */
-    fun getReadingByIdAsync(id: String) = GlobalScope.async(Dispatchers.IO) { getReadingById(id) }
-
-    /**
-     * Blocking variant of [getReadingById].
-     */
-    fun getReadingByIdBlocking(id: String) = runBlocking { getReadingById(id) }
-
-    /**
-     * Async variant of [getReadingsByPatientId].
-     */
-    fun getReadingsByPatientIdAsync(id: String) = GlobalScope.async(Dispatchers.IO) { getReadingsByPatientId(id) }
-
-    /**
-     * Blocking variant of [getReadingsByPatientId].
-     */
-    fun getReadingsByPatientIdBlocking(id: String) = runBlocking { getReadingsByPatientId(id) }
-
-    /**
-     * Async variant of [getUnUploadedReadings].
-     */
-    fun getUnUploadedReadingsAsync() = GlobalScope.async(Dispatchers.IO) { getUnUploadedReadings() }
-
-    /**
-     * Blocking variant of [getUnUploadedReadings].
-     */
-    fun getUnUploadedReadingsBlocking() = runBlocking { getUnUploadedReadings() }
-
-    /**
-     * Async variant of [getRetestGroup].
-     */
-    fun getRetestGroupAsync(reading: Reading) = GlobalScope.async(Dispatchers.IO) { getRetestGroup(reading) }
-
-    /**
-     * Blocking variant of [getRetestGroup].
-     */
-    fun getRetestGroupBlocking(reading: Reading) = runBlocking { getRetestGroup(reading) }
-
-    /**
-     * Async variant of [deleteReadingById].
-     */
-    fun deleteReadingByIdAsync(id: String) = GlobalScope.async(Dispatchers.IO) { deleteReadingById(id) }
-
-    /**
-     * Async variant of [deleteAllData].
-     */
-    fun deleteAllDataAsync() = GlobalScope.async(Dispatchers.IO) { deleteAllData() }
 }

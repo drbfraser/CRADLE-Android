@@ -13,8 +13,10 @@ import com.cradle.neptune.model.UrineTest
 import com.cradle.neptune.utilitiles.DynamicModelBuilder
 import com.cradle.neptune.utilitiles.discard
 import java.lang.IllegalArgumentException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.threeten.bp.ZonedDateTime
-import org.threeten.bp.temporal.ChronoUnit
 
 /**
  * A bridge between the legacy model API used by the new model structures.
@@ -102,8 +104,8 @@ class PatientReadingViewModel() {
         get() = readingBuilder.get(Reading::id) as String?
         set(value) = readingBuilder.set(Reading::id, value).discard()
 
-    var dateTimeTaken: ZonedDateTime?
-        get() = readingBuilder.get(Reading::dateTimeTaken) as ZonedDateTime?
+    var dateTimeTaken: Long?
+        get() = readingBuilder.get(Reading::dateTimeTaken) as Long?
         set(value) = readingBuilder.set(Reading::dateTimeTaken, value).discard()
 
     @Suppress("UNCHECKED_CAST")
@@ -111,8 +113,8 @@ class PatientReadingViewModel() {
         get() = readingBuilder.get(Reading::symptoms) as List<String>?
         set(value) = readingBuilder.set(Reading::symptoms, value).discard()
 
-    var dateRecheckVitalsNeeded: ZonedDateTime?
-        get() = readingBuilder.get(Reading::dateRecheckVitalsNeeded) as ZonedDateTime?
+    var dateRecheckVitalsNeeded: Long?
+        get() = readingBuilder.get(Reading::dateRecheckVitalsNeeded) as Long?
         set(value) = readingBuilder.set(Reading::dateRecheckVitalsNeeded, value).discard()
 
     var isFlaggedForFollowUp: Boolean?
@@ -153,9 +155,9 @@ class PatientReadingViewModel() {
     /**
      * True if a vital recheck is required right now.
      */
-    val isVitalRecheckRequiredNow
+    val isVitalRecheckRequiredNow: Boolean
         get() = isVitalRecheckRequired &&
-            (dateRecheckVitalsNeeded?.isBefore(ZonedDateTime.now()) ?: false)
+            (dateRecheckVitalsNeeded?.minus(ZonedDateTime.now().toEpochSecond())!! <= 0)
 
     /**
      * The number of minutes until a vital recheck is required.
@@ -165,7 +167,7 @@ class PatientReadingViewModel() {
     val minutesUtilVitalRecheck: Long?
         get() {
             val recheckTime = dateRecheckVitalsNeeded ?: return null
-            return ChronoUnit.SECONDS.between(ZonedDateTime.now(), recheckTime)
+            return ZonedDateTime.now().toEpochSecond() - recheckTime
         }
 
     /**
@@ -252,7 +254,7 @@ class PatientReadingViewModel() {
         val reading = Reading(
             id = readingId ?: "in-progress",
             patientId = patientId ?: "",
-            dateTimeTaken = dateTimeTaken ?: ZonedDateTime.now(),
+            dateTimeTaken = dateTimeTaken ?: ZonedDateTime.now().toEpochSecond(),
             bloodPressure = bloodPressure!!,
             urineTest = urineTest,
             symptoms = symptoms ?: emptyList(),
@@ -263,6 +265,6 @@ class PatientReadingViewModel() {
             previousReadingIds = previousReadingIds ?: emptyList(),
             metadata = metadata
         )
-        return readingManager.getRetestGroupBlocking(reading)
+        return runBlocking { withContext(Dispatchers.IO) { readingManager.getRetestGroup(reading) } }
     }
 }
