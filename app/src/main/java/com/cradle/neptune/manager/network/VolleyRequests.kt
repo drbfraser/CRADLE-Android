@@ -1,11 +1,15 @@
 package com.cradle.neptune.manager.network
 
 import android.content.SharedPreferences
+import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request.Method.GET
 import com.android.volley.Request.Method.POST
 import com.android.volley.Response
+import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
+import com.cradle.neptune.model.Patient
+import com.cradle.neptune.model.Reading
 import com.cradle.neptune.view.LoginActivity
 import org.json.JSONArray
 import org.json.JSONObject
@@ -15,8 +19,11 @@ import org.json.JSONObject
  */
 class VolleyRequests(private val sharedPreferences: SharedPreferences) {
 
+    companion object {
+        private const val FETCH_PATIENTS_TIMEOUT_MS = 150000
+    }
     /**
-     * returns a [POST] [JsonObjectRequest] type request
+     * returns a [GET] [JsonObjectRequest] type request
      */
     fun getJsonObjectRequest(
         url: String,
@@ -96,7 +103,34 @@ class VolleyRequests(private val sharedPreferences: SharedPreferences) {
         return mapOf(Pair(LoginActivity.AUTH, "Bearer $token"))
     }
 
+    /**
+     * policy to wait longer for requests, incase of poor connection
+     */
+    fun getRetryPolicy(): DefaultRetryPolicy {
+        return DefaultRetryPolicy(FETCH_PATIENTS_TIMEOUT_MS, DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+    }
+
+    /**
+     * Boolean callback for whether request was successful or not
+     */
     interface SuccessFullCallBack {
         fun isSuccessFull(isSuccessFull: Boolean)
+    }
+
+    /**
+     * callback interface for a list
+     */
+    interface ListCallBack {
+        fun <T> onSuccessFul(list: List<T>)
+        fun onFail(error: VolleyError?)
+    }
+
+    /**
+     * callback interface for a patient Information
+     */
+    interface PatientInfoCallBack {
+        fun onSuccessFul(patient: Patient, reading: List<Reading>)
+        fun onFail(error: VolleyError?)
     }
 }

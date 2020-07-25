@@ -3,14 +3,16 @@ package com.cradle.neptune.manager.network
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
-import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Response
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.HealthCentreManager
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.manager.UrlManager
+import com.cradle.neptune.manager.network.VolleyRequests.ListCallBack
+import com.cradle.neptune.manager.network.VolleyRequests.PatientInfoCallBack
 import com.cradle.neptune.manager.network.VolleyRequests.SuccessFullCallBack
+import com.cradle.neptune.model.GlobalPatient
 import com.cradle.neptune.model.HealthFacility
 import com.cradle.neptune.model.JsonObject
 import com.cradle.neptune.model.Patient
@@ -23,6 +25,9 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
+/**
+ * A request manager for all the web requests. This should be the only interface for all requests.
+ */
 class VolleyRequestManager(private val context: Context) {
 
     private val volleyRequestQueue = VolleyRequestQueue.getInstance(context)
@@ -37,6 +42,7 @@ class VolleyRequestManager(private val context: Context) {
     lateinit var patientManager: PatientManager
     @Inject
     lateinit var healthCentreManager: HealthCentreManager
+
     init {
         (context.applicationContext as MyApp).appComponent.inject(this)
 
@@ -44,11 +50,10 @@ class VolleyRequestManager(private val context: Context) {
     }
     companion object {
         private val TAG = VolleyRequestManager::class.java.canonicalName
-        private const val FETCH_PATIENTS_TIMEOUT_MS = 150000
     }
 
     /**
-     *Fetches all the patients from the server for the user.
+     *Fetches all the patients from the server for the user and saves them locally
      */
     fun fetchAllMyPatientsFromServer() {
 
@@ -76,18 +81,20 @@ class VolleyRequestManager(private val context: Context) {
                 // todo figure out how to let user know better? toast?
             })
         // give extra time in case too many patients.
-        request.retryPolicy = DefaultRetryPolicy(FETCH_PATIENTS_TIMEOUT_MS,
-            DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+        request.retryPolicy = volleyRequests.getRetryPolicy()
 
         volleyRequestQueue?.addRequest(request)
     }
 
     /**
      * authenticate the user and save the TOKEN/ username
+     * @param email email address for the user
+     * @param password for the user
+     * @param successFullCallBack a boolean callback to know whether request was successful or not
      */
-    fun authenticateTheUser(userName: String, password: String, successFullCallBack: SuccessFullCallBack) {
+    fun authenticateTheUser(email: String, password: String, successFullCallBack: SuccessFullCallBack) {
         val jsonObject = JSONObject()
-        jsonObject.put("email", userName)
+        jsonObject.put("email", email)
         jsonObject.put("password", password)
         val request = volleyRequests.postJsonObjectRequest(urlManager.authentication, jsonObject,
         Response.Listener {
@@ -95,7 +102,7 @@ class VolleyRequestManager(private val context: Context) {
             val editor = sharedPreferences.edit()
             editor.putString(LoginActivity.TOKEN, it.getString(LoginActivity.TOKEN))
             editor.putString(LoginActivity.USER_ID, it.getString("userId"))
-            editor.putString(LoginActivity.LOGIN_EMAIL, userName)
+            editor.putString(LoginActivity.LOGIN_EMAIL, email)
             editor.putInt(LoginActivity.LOGIN_PASSWORD, password.hashCode())
             editor.apply()
             // let the calling object know result
@@ -108,7 +115,7 @@ class VolleyRequestManager(private val context: Context) {
     }
 
     /**
-     * Get all the healthFacilities for the user
+     * Get all the healthFacilities for the user and save them locally.
      */
     fun getAllHealthFacilities() {
         val requests = volleyRequests.getJsonArrayRequest(urlManager.healthFacilities,
@@ -123,5 +130,71 @@ class VolleyRequestManager(private val context: Context) {
             })
 
         volleyRequestQueue?.addRequest(requests)
+    }
+
+    /**
+     * get all the patients from the server that matches the given criteria
+     * @param criteria could be id or initials
+     */
+    fun getAllPatientsFromServerByQuery(criteria: String, listCallBack: ListCallBack) {
+            val request = volleyRequests.getJsonArrayRequest(urlManager.getGlobalPatientSearch(criteria),
+            null, Response.Listener { response ->
+                    val globalPatientList = ArrayList<GlobalPatient>()
+
+                    for (i in 0 until response.length()) {
+                        val jsonObject: JSONObject = response[i] as JSONObject
+                        val patientId = jsonObject.getString("patientId")
+                        globalPatientList.add(
+                            GlobalPatient(
+                                patientId,
+                                jsonObject.getString("patientName"),
+                                jsonObject.getString("villageNumber"),
+                                false
+                            )
+                        )
+                    }
+                    listCallBack.onSuccessFul(globalPatientList)
+                }, Response.ErrorListener {
+                    listCallBack.onFail(it)
+                })
+        volleyRequestQueue?.addRequest(request)
+    }
+
+    /**
+     * fetch a single patient by id from the server
+     * @param id id of the patient
+     */
+    fun getSinglePatientById(id: String, patientInfoCallBack: PatientInfoCallBack) {
+        val request = volleyRequests.getJsonObjectRequest(urlManager.getPatientInfoById(id),
+        null, Response.Listener {
+                val readingArray = it.getJSONArray("readings")
+                val readingList = ArrayList<Reading>()
+                for (i in 0 until readingArray.length()) {
+                    readingList.add(Reading.unmarshal(readingArray[i] as JsonObject))
+                }
+                patientInfoCallBack.onSuccessFul(Patient.unmarshal(it), readingList)
+            }, Response.ErrorListener {
+                patientInfoCallBack.onFail(it)
+            })
+        volleyRequestQueue?.addRequest(request)
+    }
+    /**
+     * set user-patient assoication
+     * @param id patient id.
+     */
+    fun setUserPatientAssociation(id: String, successFullCallBack: SuccessFullCallBack) {
+
+        val jsonObject = JSONObject()
+        jsonObject.put("patientId", id)
+
+        val request = volleyRequests.postJsonObjectRequest(urlManager.userPatientAssociation, jsonObject,
+        Response.Listener {
+            successFullCallBack.isSuccessFull(true)
+        }, Response.ErrorListener {
+                successFullCallBack.isSuccessFull(false)
+                it.printStackTrace()
+            })
+
+        volleyRequestQueue?.addRequest(request)
     }
 }

@@ -5,22 +5,19 @@ import android.app.ProgressDialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.View.VISIBLE
 import android.widget.Button
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.android.volley.Request
-import com.android.volley.Response
-import com.android.volley.toolbox.Volley
+import com.android.volley.VolleyError
 import com.cradle.neptune.R
-import com.cradle.neptune.dagger.MyApp
+import com.cradle.neptune.manager.network.VolleyRequestManager
+import com.cradle.neptune.manager.network.VolleyRequests
 import com.cradle.neptune.model.GlobalPatient
-import com.cradle.neptune.model.JsonObject
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
-import com.cradle.neptune.utilitiles.VolleyUtil
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter.OnClickElement
 import com.google.android.material.snackbar.Snackbar
@@ -29,7 +26,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
 
 /**
  * This is a child class of [PatientProfileActivity] and uses some functions from the parent class.
@@ -39,8 +35,11 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
     companion object {
         val TAG = GlobalPatientProfileActivity::class.java.canonicalName
     }
+    lateinit var volleyRequestsManager: VolleyRequestManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        volleyRequestsManager = VolleyRequestManager(this)
         getGlobalPatient()
     }
 
@@ -72,20 +71,21 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         progressDialog.setCancelable(false)
         progressDialog.setMessage("Adding to your patient's list")
         progressDialog.show()
-        // make the patient- user relationship
-        val jsonObject = JSONObject()
-        jsonObject.put("patientId", currPatient.id)
 
-        val associationRequest = VolleyUtil.makeJsonObjectRequest(Request.Method.POST,
-            urlManager.userPatientAssociation, jsonObject, Response.Listener {
-                addThePatientInfoToLocalDb(progressDialog)
-            }, Response.ErrorListener {
-                Log.i(TAG, "error: " + it.localizedMessage)
-                progressDialog.cancel()
-            }, sharedPreferences)
-
-        val queue = Volley.newRequestQueue(MyApp.getInstance())
-        queue.add<JSONObject>(associationRequest)
+        volleyRequestsManager.setUserPatientAssociation(currPatient.id,
+            object : VolleyRequests.SuccessFullCallBack {
+                override fun isSuccessFull(isSuccessFull: Boolean) {
+                    if (isSuccessFull) {
+                        addThePatientInfoToLocalDb(progressDialog)
+                    } else {
+                        progressDialog.cancel()
+                        Toast.makeText(
+                            this@GlobalPatientProfileActivity,
+                            "Unable to make user-patient relationship", Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
+            })
     }
 
     /**
@@ -120,32 +120,27 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         progressDialog.setCancelable(false)
         progressDialog.setMessage("Fetching the patient...")
         progressDialog.show()
-        // make a request to fetch all the patient info and readings
-        val jsonObjectRequest = VolleyUtil.makeJsonObjectRequest(Request.Method.GET,
-            urlManager.getPatientInfoById(globalPatient.id), null,
-            Response.Listener { response: JSONObject ->
-                // extract all the patient info and readings
-                currPatient = Patient.unmarshal(response)
-                patientReadings = ArrayList()
-                val readingArray = response.getJSONArray("readings")
-                for (i in 0 until readingArray.length()) {
-                    patientReadings.add(0, Reading.unmarshal(readingArray[i] as JsonObject))
-                }
-                // follow up with the rest of the initialization
+
+        volleyRequestsManager.getSinglePatientById(globalPatient.id,
+        object : VolleyRequests.PatientInfoCallBack {
+
+            override fun onSuccessFul(patient: Patient, reading: List<Reading>) {
+                currPatient = patient
+                patientReadings = reading
                 setupAddToMyPatientList()
                 setupToolBar()
                 populatePatientInfo(currPatient)
                 setupReadingsRecyclerView()
                 setupLineChart()
                 progressDialog.cancel()
-            }, Response.ErrorListener { error ->
+            }
+
+            override fun onFail(error: VolleyError?) {
                 progressDialog.cancel()
                 Snackbar.make(readingRecyclerview, "Unable to fetch the patient Information..." +
-                    "\n${error.localizedMessage}", Snackbar.LENGTH_INDEFINITE).show()
-            }, sharedPreferences)
-
-        val queue = Volley.newRequestQueue(MyApp.getInstance())
-        queue.add<JSONObject>(jsonObjectRequest)
+                    "\n${error?.localizedMessage}", Snackbar.LENGTH_INDEFINITE).show()
+            }
+        })
     }
 
     /**
