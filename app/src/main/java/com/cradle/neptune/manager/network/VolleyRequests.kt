@@ -87,7 +87,8 @@ class VolleyRequests(private val sharedPreferences: SharedPreferences)  {
         return mapOf(Pair(LoginActivity.AUTH, "Bearer $token"))
     }
 
-    interface isSuccessFullCallBack{
+    interface SuccessFullCallBack{
         fun isSuccessFull(isSuccessFull:Boolean)
     }
+
 }

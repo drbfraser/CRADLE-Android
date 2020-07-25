@@ -8,12 +8,15 @@ import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.manager.UrlManager
+import com.cradle.neptune.manager.network.VolleyRequests.*
 import com.cradle.neptune.model.JsonObject
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
+import com.cradle.neptune.view.LoginActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 import java.util.ArrayList
 import javax.inject.Inject
 
@@ -69,5 +72,31 @@ class VolleyRequestManager(private val context: Context) {
             })
 
         volleyRequestQueue?.addRequest(request)
+    }
+
+    /**
+     * authonticate the user and save the TOKEN/ username
+     */
+    fun authenticateTheUser(userName:String, password:String, SuccessFullCallBack: SuccessFullCallBack) {
+        val jsonObject = JSONObject()
+        jsonObject.put("email", userName)
+        jsonObject.put("password", password)
+        val request = volleyRequests.putJsonObjectRequest(urlManager.authentication,jsonObject,
+        Response.Listener {
+            //save the user credentials
+            val editor = sharedPreferences.edit()
+            editor.putString(LoginActivity.TOKEN, it.getString(LoginActivity.TOKEN))
+            editor.putString(LoginActivity.USER_ID, it.getString("userId"))
+            editor.putString(LoginActivity.LOGIN_EMAIL, userName)
+            editor.putInt(LoginActivity.LOGIN_PASSWORD, password.hashCode())
+            editor.apply()
+            //let the calling object know result
+            SuccessFullCallBack.isSuccessFull(true)
+        }, Response.ErrorListener {
+                it.printStackTrace()
+                SuccessFullCallBack.isSuccessFull(false)
+            })
+        volleyRequestQueue?.addRequest(request);
+
     }
 }
