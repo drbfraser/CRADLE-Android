@@ -3,12 +3,15 @@ package com.cradle.neptune.manager.network
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Response
 import com.cradle.neptune.dagger.MyApp
+import com.cradle.neptune.manager.HealthCentreManager
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.manager.UrlManager
 import com.cradle.neptune.manager.network.VolleyRequests.*
+import com.cradle.neptune.model.HealthFacility
 import com.cradle.neptune.model.JsonObject
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
@@ -32,7 +35,8 @@ class VolleyRequestManager(private val context: Context) {
     lateinit var readingManager:ReadingManager
     @Inject
     lateinit var patientManager:PatientManager
-
+    @Inject
+    lateinit var healthCentreManager:HealthCentreManager
     init {
         (context.applicationContext as MyApp).appComponent.inject(this)
 
@@ -40,6 +44,7 @@ class VolleyRequestManager(private val context: Context) {
     }
     companion object {
         private val TAG = VolleyRequestManager::class.java.canonicalName
+        private const val FETCH_PATIENTS_TIMEOUT_MS = 150000
     }
 
     /**
@@ -70,18 +75,22 @@ class VolleyRequestManager(private val context: Context) {
                 it.printStackTrace()
                 //todo figure out how to let user know better? toast?
             })
+        // give extra time in case too many patients.
+        request.retryPolicy = DefaultRetryPolicy(FETCH_PATIENTS_TIMEOUT_MS,
+            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
 
         volleyRequestQueue?.addRequest(request)
     }
 
     /**
-     * authonticate the user and save the TOKEN/ username
+     * authenticate the user and save the TOKEN/ username
      */
     fun authenticateTheUser(userName:String, password:String, SuccessFullCallBack: SuccessFullCallBack) {
         val jsonObject = JSONObject()
         jsonObject.put("email", userName)
         jsonObject.put("password", password)
-        val request = volleyRequests.putJsonObjectRequest(urlManager.authentication,jsonObject,
+        Log.d("bugg","email: "+ userName+ " password: "+ password)
+        val request = volleyRequests.postJsonObjectRequest(urlManager.authentication,jsonObject,
         Response.Listener {
             //save the user credentials
             val editor = sharedPreferences.edit()
@@ -98,5 +107,23 @@ class VolleyRequestManager(private val context: Context) {
             })
         volleyRequestQueue?.addRequest(request);
 
+    }
+
+    /**
+     * Get all the healthFacilities for the user
+     */
+    fun getAllHealthFacilities(){
+        val requests = volleyRequests.getJsonArrayRequest(urlManager.healthFacilities,
+        null,Response.Listener {
+                val facilities = ArrayList<HealthFacility>()
+                for (i in 0 until it.length()) {
+                    facilities.add(HealthFacility.unmarshal(it[i] as JsonObject))
+                }
+                healthCentreManager.addAll(facilities)
+            }, Response.ErrorListener {
+                it.printStackTrace()
+            })
+
+        volleyRequestQueue?.addRequest(requests)
     }
 }
