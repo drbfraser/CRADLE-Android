@@ -13,10 +13,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.ext.hideKeyboard
-import com.cradle.neptune.manager.HealthCentreManager
-import com.cradle.neptune.manager.PatientManager
-import com.cradle.neptune.manager.ReadingManager
-import com.cradle.neptune.manager.UrlManager
 import com.cradle.neptune.manager.network.VolleyRequestManager
 import com.cradle.neptune.manager.network.VolleyRequests
 import javax.inject.Inject
@@ -67,7 +63,7 @@ class LoginActivity : AppCompatActivity() {
             passwordET.hideKeyboard()
 
             volleyRequestManager.authenticateTheUser(emailET.text.toString(), passwordET.text.toString(),
-            object : VolleyRequests.SuccessFullCallBack{
+            object : VolleyRequests.SuccessFullCallBack {
                 override fun isSuccessFull(isSuccessFull: Boolean) {
                     progressDialog.cancel()
                     if (isSuccessFull) {
@@ -104,6 +100,5 @@ class LoginActivity : AppCompatActivity() {
         const val DEFAULT_PASSWORD = -1
         val DEFAULT_TOKEN: String? = null
         private val TAG = LoginActivity::class.java.canonicalName
-
     }
 }

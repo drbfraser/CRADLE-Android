@@ -10,16 +10,16 @@ import com.android.volley.toolbox.Volley
  */
 class VolleyRequestQueue internal constructor(context: Context) {
 
-    private val requestQueue:RequestQueue = Volley.newRequestQueue(context.applicationContext)
+    private val requestQueue: RequestQueue = Volley.newRequestQueue(context.applicationContext)
 
-    fun <T>addRequest(request:Request<T>) {
+    fun <T> addRequest(request: Request<T>) {
         requestQueue.add(request)
     }
     companion object {
         private var volleyRequestQueue: VolleyRequestQueue? = null
 
-        fun getInstance(context: Context): VolleyRequestQueue?{
-            if (volleyRequestQueue == null){
+        fun getInstance(context: Context): VolleyRequestQueue? {
+            if (volleyRequestQueue == null) {
                 volleyRequestQueue = VolleyRequestQueue(context)
             }
             return volleyRequestQueue
