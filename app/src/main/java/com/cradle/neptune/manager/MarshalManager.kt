@@ -42,37 +42,6 @@ class MarshalManager @Inject constructor(
         put(UploadJsonField.REGION, settings.region)
         put(UploadJsonField.OCR_ENABLED, settings.isOcrEnabled)
     }
-
-    /**
-     * Composes a [patient] and [reading] into a JSON format suitable to be
-     * stored in the phone's onboard database.
-     *
-     * The inverse operation is implemented by [unmarshalDatabaseJson].
-     *
-     * @param patient the patient associated with [reading]
-     * @param reading the reading to marshal
-     */
-    fun marshalToDatabaseJson(patient: Patient, reading: Reading) = with(reading.marshal()) {
-        put(DatabaseJsonField.PATIENT, patient)
-    }
-
-    /**
-     * Constructs a [Patient] and [Reading] object from a [JsonObject]
-     * retrieved from the database.
-     *
-     * The inverse operation is implemented by [marshalToDatabaseJson].
-     */
-    fun unmarshalDatabaseJson(json: JsonObject): Pair<Patient, Reading> {
-        val patientJson = json.objectField(DatabaseJsonField.PATIENT)
-        val patient = unmarshal(Patient, patientJson)
-
-        // Legacy readings may not have a `patientId` field so we add it here
-        // to ensure that we can unmarshal the reading.
-        json.put("patientId", patient.id)
-
-        val reading = unmarshal(Reading, json)
-        return Pair(patient, reading)
-    }
 }
 
 /**
