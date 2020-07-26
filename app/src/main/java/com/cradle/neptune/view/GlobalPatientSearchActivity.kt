@@ -50,10 +50,10 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
     lateinit var patientManager: PatientManager
     @Inject
     lateinit var readingManager: ReadingManager
+    @Inject
+    lateinit var volleyRequestManager: VolleyRequestManager
 
     private lateinit var searchView: SearchView
-
-    lateinit var volleyRequestManager: VolleyRequestManager
 
     // local patient set to compare agains
     private lateinit var localPatientSet: HashSet<String>
@@ -63,7 +63,6 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         setContentView(R.layout.activity_global_patient_search)
         // inject:
         (application as MyApp).appComponent.inject(this)
-        volleyRequestManager = VolleyRequestManager(this)
         MainScope().launch {
             localPatientSet = patientManager.getPatientIdsOnly().toHashSet()
         }

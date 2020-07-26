@@ -1,5 +1,6 @@
 package com.cradle.neptune.manager.network
 
+import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
@@ -28,10 +29,8 @@ import org.json.JSONObject
 /**
  * A request manager for all the web requests. This should be the only interface for all requests.
  */
-class VolleyRequestManager(private val context: Context) {
+class VolleyRequestManager(application: Application) {
 
-    private val volleyRequestQueue = VolleyRequestQueue.getInstance(context)
-    private val volleyRequests: VolleyRequests
     @Inject
     lateinit var sharedPreferences: SharedPreferences
     @Inject
@@ -42,12 +41,18 @@ class VolleyRequestManager(private val context: Context) {
     lateinit var patientManager: PatientManager
     @Inject
     lateinit var healthCentreManager: HealthCentreManager
+    @Inject
+    lateinit var volleyRequestQueue: VolleyRequestQueue
+
+    private val volleyRequests: VolleyRequests
+
 
     init {
-        (context.applicationContext as MyApp).appComponent.inject(this)
+        (application as MyApp).appComponent.inject(this)
 
         volleyRequests = VolleyRequests(sharedPreferences)
     }
+
     companion object {
         private val TAG = VolleyRequestManager::class.java.canonicalName
     }
@@ -83,7 +88,7 @@ class VolleyRequestManager(private val context: Context) {
         // give extra time in case too many patients.
         request.retryPolicy = volleyRequests.getRetryPolicy()
 
-        volleyRequestQueue?.addRequest(request)
+        volleyRequestQueue.addRequest(request)
     }
 
     /**
@@ -111,7 +116,7 @@ class VolleyRequestManager(private val context: Context) {
                 it.printStackTrace()
                 successFullCallBack.isSuccessFull(false)
             })
-        volleyRequestQueue?.addRequest(request)
+        volleyRequestQueue.addRequest(request)
     }
 
     /**
@@ -129,7 +134,7 @@ class VolleyRequestManager(private val context: Context) {
                 it.printStackTrace()
             })
 
-        volleyRequestQueue?.addRequest(requests)
+        volleyRequestQueue.addRequest(requests)
     }
 
     /**
@@ -157,7 +162,7 @@ class VolleyRequestManager(private val context: Context) {
                 }, Response.ErrorListener {
                     listCallBack.onFail(it)
                 })
-        volleyRequestQueue?.addRequest(request)
+        volleyRequestQueue.addRequest(request)
     }
 
     /**
@@ -176,7 +181,7 @@ class VolleyRequestManager(private val context: Context) {
             }, Response.ErrorListener {
                 patientInfoCallBack.onFail(it)
             })
-        volleyRequestQueue?.addRequest(request)
+        volleyRequestQueue.addRequest(request)
     }
     /**
      * set user-patient assoication
@@ -195,6 +200,6 @@ class VolleyRequestManager(private val context: Context) {
                 it.printStackTrace()
             })
 
-        volleyRequestQueue?.addRequest(request)
+        volleyRequestQueue.addRequest(request)
     }
 }

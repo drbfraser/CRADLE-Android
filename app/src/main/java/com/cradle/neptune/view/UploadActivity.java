@@ -65,10 +65,11 @@ public class UploadActivity extends AppCompatActivity {
     UrlManager urlManager;
     @Inject
     PatientManager patientManager;
+    @Inject
+    VolleyRequestManager volleyRequestManager;
 
     MultiReadingUploader multiUploader;
 
-    VolleyRequestManager volleyRequestManager;
 
     public static Intent makeIntent(Context context) {
         return new Intent(context, UploadActivity.class);
@@ -78,7 +79,6 @@ public class UploadActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         // inject:
         ((MyApp) getApplication()).getAppComponent().inject(this);
-        volleyRequestManager = new VolleyRequestManager(this);
         // setup UI
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_upload);

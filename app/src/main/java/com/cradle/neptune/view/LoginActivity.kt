@@ -21,14 +21,13 @@ class LoginActivity : AppCompatActivity() {
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
-
+    @Inject
     lateinit var volleyRequestManager: VolleyRequestManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         (application as MyApp).appComponent.inject(this)
         // no need to load anything if already logged in.
         checkSharedPrefForLogin()
-        volleyRequestManager = VolleyRequestManager(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
         setupLogin()

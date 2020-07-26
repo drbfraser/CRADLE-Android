@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.android.volley.VolleyError
 import com.cradle.neptune.R
+import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.network.VolleyRequestManager
 import com.cradle.neptune.manager.network.VolleyRequests
 import com.cradle.neptune.model.GlobalPatient
@@ -26,20 +27,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 /**
  * This is a child class of [PatientProfileActivity] and uses some functions from the parent class.
  */
 class GlobalPatientProfileActivity : PatientProfileActivity() {
 
-    companion object {
-        val TAG = GlobalPatientProfileActivity::class.java.canonicalName
-    }
+    @Inject
     lateinit var volleyRequestsManager: VolleyRequestManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        volleyRequestsManager = VolleyRequestManager(this)
+        (this.application as MyApp).appComponent.inject(this)
         getGlobalPatient()
     }
 
