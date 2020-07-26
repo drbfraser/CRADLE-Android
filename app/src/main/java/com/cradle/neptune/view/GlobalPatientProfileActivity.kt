@@ -14,8 +14,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.android.volley.VolleyError
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
+import com.cradle.neptune.manager.network.PatientInfoCallBack
 import com.cradle.neptune.manager.network.VolleyRequestManager
-import com.cradle.neptune.manager.network.VolleyRequests
 import com.cradle.neptune.model.GlobalPatient
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
@@ -72,20 +72,17 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         progressDialog.setMessage("Adding to your patient's list")
         progressDialog.show()
 
-        volleyRequestsManager.setUserPatientAssociation(currPatient.id,
-            object : VolleyRequests.SuccessFullCallBack {
-                override fun isSuccessFull(isSuccessFull: Boolean) {
-                    if (isSuccessFull) {
-                        addThePatientInfoToLocalDb(progressDialog)
-                    } else {
-                        progressDialog.cancel()
-                        Toast.makeText(
-                            this@GlobalPatientProfileActivity,
-                            "Unable to make user-patient relationship", Toast.LENGTH_LONG
-                        ).show()
-                    }
-                }
-            })
+        volleyRequestsManager.setUserPatientAssociation("") {isSuccessFul ->
+            if (isSuccessFul) {
+                addThePatientInfoToLocalDb(progressDialog)
+            } else {
+                progressDialog.cancel()
+                Toast.makeText(
+                    this@GlobalPatientProfileActivity,
+                    "Unable to make user-patient relationship", Toast.LENGTH_LONG
+                ).show()
+            }
+        }
     }
 
     /**
@@ -122,7 +119,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         progressDialog.show()
 
         volleyRequestsManager.getSinglePatientById(globalPatient.id,
-        object : VolleyRequests.PatientInfoCallBack {
+        object : PatientInfoCallBack {
 
             override fun onSuccessFul(patient: Patient, reading: List<Reading>) {
                 currPatient = patient

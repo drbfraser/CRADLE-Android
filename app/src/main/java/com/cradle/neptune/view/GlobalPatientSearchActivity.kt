@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
@@ -21,8 +22,9 @@ import com.cradle.neptune.ext.hideKeyboard
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.manager.UrlManager
+import com.cradle.neptune.manager.network.ListCallBack
+import com.cradle.neptune.manager.network.PatientInfoCallBack
 import com.cradle.neptune.manager.network.VolleyRequestManager
-import com.cradle.neptune.manager.network.VolleyRequests
 import com.cradle.neptune.model.GlobalPatient
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
@@ -102,7 +104,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         progressDialog.show()
 
         volleyRequestManager.getAllPatientsFromServerByQuery(searchUrl,
-        object : VolleyRequests.ListCallBack {
+        object : ListCallBack {
 
             override fun <T> onSuccessFul(list: List<T>) {
                 val globalList = list as List<GlobalPatient>
@@ -211,22 +213,32 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         progressDialog.show()
 
         volleyRequestManager.getSinglePatientById(patient.id,
-        object : VolleyRequests.PatientInfoCallBack {
+        object : PatientInfoCallBack {
             override fun onSuccessFul(patient: Patient, readings: List<Reading>) {
-                patientManager.add(patient)
-                readingManager.addAllReadings(readings)
-                // add it to our local set for matching
-                localPatientSet.add(patient.id)
-                // todo make the O^n better, maybe globalPatientList can be a map?
-                // updating current adapter
-                for (it in globalPatientList) {
-                    if (it.id == patient.id) {
-                        it.isMyPatient = true
-                        break
+                volleyRequestManager.setUserPatientAssociation(patient.id) {isSuccessFul ->
+                    if (isSuccessFul){
+                        patientManager.add(patient)
+                        readingManager.addAllReadings(readings)
+                        // add it to our local set for matching
+                        localPatientSet.add(patient.id)
+                        // todo make the O^n better, maybe globalPatientList can be a map?
+                        // updating current adapter
+                        for (it in globalPatientList) {
+                            if (it.id == patient.id) {
+                                it.isMyPatient = true
+                                break
+                            }
+                        }
+                        globalPatientAdapter.notifyDataSetChanged()
+                        progressDialog.cancel()
+                    } else {
+                        Toast.makeText(
+                            this@GlobalPatientSearchActivity,
+                            "Unable to make user-patient relationship", Toast.LENGTH_LONG
+                        ).show()
                     }
+
                 }
-                globalPatientAdapter.notifyDataSetChanged()
-                progressDialog.cancel()
             }
 
             override fun onFail(error: VolleyError?) {

@@ -1,7 +1,6 @@
 package com.cradle.neptune.manager.network
 
 import android.app.Application
-import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import com.android.volley.Response
@@ -10,9 +9,6 @@ import com.cradle.neptune.manager.HealthCentreManager
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.manager.UrlManager
-import com.cradle.neptune.manager.network.VolleyRequests.ListCallBack
-import com.cradle.neptune.manager.network.VolleyRequests.PatientInfoCallBack
-import com.cradle.neptune.manager.network.VolleyRequests.SuccessFullCallBack
 import com.cradle.neptune.model.GlobalPatient
 import com.cradle.neptune.model.HealthFacility
 import com.cradle.neptune.model.JsonObject
@@ -97,7 +93,7 @@ class VolleyRequestManager(application: Application) {
      * @param password for the user
      * @param successFullCallBack a boolean callback to know whether request was successful or not
      */
-    fun authenticateTheUser(email: String, password: String, successFullCallBack: SuccessFullCallBack) {
+    fun authenticateTheUser(email: String, password: String, successCallBack: (isSuccessFul: Boolean) -> Unit) {
         val jsonObject = JSONObject()
         jsonObject.put("email", email)
         jsonObject.put("password", password)
@@ -111,10 +107,10 @@ class VolleyRequestManager(application: Application) {
             editor.putInt(LoginActivity.LOGIN_PASSWORD, password.hashCode())
             editor.apply()
             // let the calling object know result
-            successFullCallBack.isSuccessFull(true)
+            successCallBack.invoke(true)
         }, Response.ErrorListener {
                 it.printStackTrace()
-                successFullCallBack.isSuccessFull(false)
+                successCallBack.invoke(false)
             })
         volleyRequestQueue.addRequest(request)
     }
@@ -187,16 +183,16 @@ class VolleyRequestManager(application: Application) {
      * set user-patient assoication
      * @param id patient id.
      */
-    fun setUserPatientAssociation(id: String, successFullCallBack: SuccessFullCallBack) {
+    fun setUserPatientAssociation(id: String, successCallback: (isSuccessFul: Boolean) -> Unit) {
 
         val jsonObject = JSONObject()
         jsonObject.put("patientId", id)
 
         val request = volleyRequests.postJsonObjectRequest(urlManager.userPatientAssociation, jsonObject,
         Response.Listener {
-            successFullCallBack.isSuccessFull(true)
+            successCallback.invoke(true)
         }, Response.ErrorListener {
-                successFullCallBack.isSuccessFull(false)
+                successCallback.invoke(false)
                 it.printStackTrace()
             })
 

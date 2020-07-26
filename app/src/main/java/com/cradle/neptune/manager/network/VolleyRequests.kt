@@ -111,26 +111,4 @@ class VolleyRequests(private val sharedPreferences: SharedPreferences) {
             DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
     }
 
-    /**
-     * Boolean callback for whether request was successful or not
-     */
-    interface SuccessFullCallBack {
-        fun isSuccessFull(isSuccessFull: Boolean)
-    }
-
-    /**
-     * callback interface for a list
-     */
-    interface ListCallBack {
-        fun <T> onSuccessFul(list: List<T>)
-        fun onFail(error: VolleyError?)
-    }
-
-    /**
-     * callback interface for a patient Information
-     */
-    interface PatientInfoCallBack {
-        fun onSuccessFul(patient: Patient, reading: List<Reading>)
-        fun onFail(error: VolleyError?)
-    }
 }

@@ -14,7 +14,6 @@ import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.ext.hideKeyboard
 import com.cradle.neptune.manager.network.VolleyRequestManager
-import com.cradle.neptune.manager.network.VolleyRequests
 import javax.inject.Inject
 
 class LoginActivity : AppCompatActivity() {
@@ -61,22 +60,19 @@ class LoginActivity : AppCompatActivity() {
             val progressDialog = progressDialog
             passwordET.hideKeyboard()
 
-            volleyRequestManager.authenticateTheUser(emailET.text.toString(), passwordET.text.toString(),
-            object : VolleyRequests.SuccessFullCallBack {
-                override fun isSuccessFull(isSuccessFull: Boolean) {
-                    progressDialog.cancel()
-                    if (isSuccessFull) {
-                        Toast.makeText(this@LoginActivity, "Login Successful!", Toast.LENGTH_SHORT).show()
+            volleyRequestManager.authenticateTheUser(emailET.text.toString(), passwordET.text.toString()) {isSuccessFul->
+                progressDialog.cancel()
+                if (isSuccessFul) {
+                    Toast.makeText(this@LoginActivity, "Login Successful!", Toast.LENGTH_SHORT).show()
 
-                        volleyRequestManager.fetchAllMyPatientsFromServer()
-                        volleyRequestManager.getAllHealthFacilities()
+                    volleyRequestManager.fetchAllMyPatientsFromServer()
+                    volleyRequestManager.getAllHealthFacilities()
 
-                        startIntroActivity()
-                    } else {
-                        errorText.visibility = View.VISIBLE
-                    }
+                    startIntroActivity()
+                } else {
+                    errorText.visibility = View.VISIBLE
                 }
-            })
+            }
         }
     }
 
