@@ -15,7 +15,6 @@ import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.android.volley.VolleyError
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.ext.hideKeyboard
@@ -23,7 +22,6 @@ import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.manager.UrlManager
 import com.cradle.neptune.manager.network.Failure
-import com.cradle.neptune.manager.network.ListCallBack
 import com.cradle.neptune.manager.network.Success
 import com.cradle.neptune.manager.network.VolleyRequestManager
 import com.cradle.neptune.manager.network.unwrap
@@ -104,28 +102,28 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         val progressDialog = getProgessDialog("Fetching the patients")
         progressDialog.show()
 
-        volleyRequestManager.getAllPatientsFromServerByQuery(searchUrl,
-        object : ListCallBack {
-
-            override fun <T> onSuccessFul(list: List<T>) {
-                val globalList = list as List<GlobalPatient>
-                MainScope().launch {
-                    setupPatientsRecycler(globalList)
+        volleyRequestManager.getAllPatientsFromServerByQuery(searchUrl){ result ->
+            when(result) {
+                is Success -> {
+                    val globalList = result.unwrap()
+                    MainScope().launch {
+                        setupPatientsRecycler(globalList)
+                    }
+                    progressDialog.cancel()
+                    searchView.hideKeyboard()
                 }
-                progressDialog.cancel()
-                searchView.hideKeyboard()
-            }
-
-            override fun onFail(error: VolleyError?) {
-                Log.e(TAG, "error: " + error?.message)
-                progressDialog.cancel()
-                searchView.hideKeyboard()
-                MainScope().launch {
-                    setupPatientsRecycler(null)
+                is Failure -> {
+                    Log.e(TAG, "error: " + result.unwrapFailure().message)
+                    progressDialog.cancel()
+                    searchView.hideKeyboard()
+                    MainScope().launch {
+                        setupPatientsRecycler(null)
+                    }
+                    Snackbar.make(searchView, "Sorry unable to fetch the patients", Snackbar.LENGTH_LONG).show()
                 }
-                Snackbar.make(searchView, "Sorry unable to fetch the patients", Snackbar.LENGTH_LONG).show()
             }
-        })
+        }
+
     }
 
     private suspend fun setupPatientsRecycler(globalPatientList: List<GlobalPatient>?) {

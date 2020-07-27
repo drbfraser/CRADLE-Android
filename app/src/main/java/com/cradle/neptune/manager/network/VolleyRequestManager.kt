@@ -137,7 +137,7 @@ class VolleyRequestManager(application: Application) {
      * get all the patients from the server that matches the given criteria
      * @param criteria could be id or initials
      */
-    fun getAllPatientsFromServerByQuery(criteria: String, listCallBack: ListCallBack) {
+    fun getAllPatientsFromServerByQuery(criteria: String, listCallBack: (NetworkResult<List<GlobalPatient>>)->Unit) {
             val request = volleyRequests.getJsonArrayRequest(urlManager.getGlobalPatientSearch(criteria),
             null, Response.Listener { response ->
                     val globalPatientList = ArrayList<GlobalPatient>()
@@ -154,9 +154,9 @@ class VolleyRequestManager(application: Application) {
                             )
                         )
                     }
-                    listCallBack.onSuccessFul(globalPatientList)
+                    listCallBack(Success(globalPatientList))
                 }, Response.ErrorListener {
-                    listCallBack.onFail(it)
+                    listCallBack(Failure(it))
                 })
         volleyRequestQueue.addRequest(request)
     }

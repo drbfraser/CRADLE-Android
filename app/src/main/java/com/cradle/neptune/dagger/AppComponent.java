@@ -1,6 +1,7 @@
 package com.cradle.neptune.dagger;
 
 import com.cradle.neptune.manager.network.VolleyRequestManager;
+import com.cradle.neptune.view.GlobalPatientProfileActivity;
 import com.cradle.neptune.view.GlobalPatientSearchActivity;
 import com.cradle.neptune.view.HelpActivity;
 import com.cradle.neptune.view.IntroActivity;
@@ -49,6 +50,8 @@ public interface AppComponent {
     void inject(ConfirmDataFragment activity);
 
     void inject(PatientProfileActivity activity);
+
+    void inject(GlobalPatientProfileActivity globalPatientProfileActivity);
 
     void inject(StatsActivity statsActivity);
 

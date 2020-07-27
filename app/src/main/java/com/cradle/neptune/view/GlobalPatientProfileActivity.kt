@@ -39,7 +39,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        (this.application as MyApp).appComponent.inject(this)
+        (application as MyApp).appComponent.inject(this)
         getGlobalPatient()
     }
 
