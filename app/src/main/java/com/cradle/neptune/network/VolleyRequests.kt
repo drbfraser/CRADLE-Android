@@ -1,4 +1,4 @@
-package com.cradle.neptune.manager.network
+package com.cradle.neptune.network
 
 import android.content.SharedPreferences
 import com.android.volley.DefaultRetryPolicy

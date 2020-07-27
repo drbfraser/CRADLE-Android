@@ -1,6 +1,6 @@
 package com.cradle.neptune.dagger;
 
-import com.cradle.neptune.manager.network.VolleyRequestManager;
+import com.cradle.neptune.manager.VolleyRequestManager;
 import com.cradle.neptune.view.GlobalPatientProfileActivity;
 import com.cradle.neptune.view.GlobalPatientSearchActivity;
 import com.cradle.neptune.view.HelpActivity;

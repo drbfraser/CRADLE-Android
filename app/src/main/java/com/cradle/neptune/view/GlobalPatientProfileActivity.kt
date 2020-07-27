@@ -13,12 +13,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
-import com.cradle.neptune.manager.network.Failure
-import com.cradle.neptune.manager.network.Success
-import com.cradle.neptune.manager.network.VolleyRequestManager
-import com.cradle.neptune.manager.network.unwrap
-import com.cradle.neptune.manager.network.unwrapFailure
+import com.cradle.neptune.manager.VolleyRequestManager
 import com.cradle.neptune.model.GlobalPatient
+import com.cradle.neptune.network.Failure
+import com.cradle.neptune.network.Success
+import com.cradle.neptune.network.unwrap
+import com.cradle.neptune.network.unwrapFailure
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter.OnClickElement
 import com.google.android.material.snackbar.Snackbar

@@ -13,7 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.ext.hideKeyboard
-import com.cradle.neptune.manager.network.VolleyRequestManager
+import com.cradle.neptune.manager.VolleyRequestManager
 import javax.inject.Inject
 
 class LoginActivity : AppCompatActivity() {

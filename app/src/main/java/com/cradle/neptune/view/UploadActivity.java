@@ -27,7 +27,7 @@ import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.manager.PatientManager;
 import com.cradle.neptune.manager.UrlManager;
-import com.cradle.neptune.manager.network.VolleyRequestManager;
+import com.cradle.neptune.manager.VolleyRequestManager;
 import com.cradle.neptune.model.*;
 import com.cradle.neptune.manager.ReadingManager;
 import com.cradle.neptune.utilitiles.DateUtil;

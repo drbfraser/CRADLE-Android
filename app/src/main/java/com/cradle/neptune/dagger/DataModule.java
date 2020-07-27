@@ -14,8 +14,8 @@ import javax.inject.Singleton;
 import com.cradle.neptune.manager.HealthCentreManager;
 import com.cradle.neptune.manager.MarshalManager;
 import com.cradle.neptune.manager.ReadingManager;
-import com.cradle.neptune.manager.network.VolleyRequestManager;
-import com.cradle.neptune.manager.network.VolleyRequestQueue;
+import com.cradle.neptune.manager.VolleyRequestManager;
+import com.cradle.neptune.network.VolleyRequestQueue;
 
 import dagger.Module;
 import dagger.Provides;

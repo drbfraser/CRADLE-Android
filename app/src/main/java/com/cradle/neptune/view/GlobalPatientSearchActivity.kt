@@ -4,7 +4,6 @@ import android.app.AlertDialog
 import android.app.ProgressDialog
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -20,13 +19,12 @@ import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.ext.hideKeyboard
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
-import com.cradle.neptune.manager.UrlManager
-import com.cradle.neptune.manager.network.Failure
-import com.cradle.neptune.manager.network.Success
-import com.cradle.neptune.manager.network.VolleyRequestManager
-import com.cradle.neptune.manager.network.unwrap
-import com.cradle.neptune.manager.network.unwrapFailure
+import com.cradle.neptune.manager.VolleyRequestManager
 import com.cradle.neptune.model.GlobalPatient
+import com.cradle.neptune.network.Failure
+import com.cradle.neptune.network.Success
+import com.cradle.neptune.network.unwrap
+import com.cradle.neptune.network.unwrapFailure
 import com.cradle.neptune.viewmodel.GlobalPatientAdapter
 import com.google.android.material.snackbar.Snackbar
 import javax.inject.Inject
@@ -43,10 +41,6 @@ import kotlinx.coroutines.withContext
  */
 class GlobalPatientSearchActivity : AppCompatActivity() {
 
-    @Inject
-    lateinit var urlManager: UrlManager
-    @Inject
-    lateinit var sharedPreferences: SharedPreferences
     @Inject
     lateinit var patientManager: PatientManager
     @Inject

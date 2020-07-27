@@ -1,18 +1,21 @@
-package com.cradle.neptune.manager.network
+package com.cradle.neptune.manager
 
 import android.app.Application
 import android.content.SharedPreferences
 import android.util.Log
 import com.cradle.neptune.dagger.MyApp
-import com.cradle.neptune.manager.HealthCentreManager
-import com.cradle.neptune.manager.PatientManager
-import com.cradle.neptune.manager.ReadingManager
-import com.cradle.neptune.manager.UrlManager
 import com.cradle.neptune.model.GlobalPatient
 import com.cradle.neptune.model.HealthFacility
 import com.cradle.neptune.model.JsonObject
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
+import com.cradle.neptune.network.Failure
+import com.cradle.neptune.network.NetworkResult
+import com.cradle.neptune.network.Success
+import com.cradle.neptune.network.VolleyRequestQueue
+import com.cradle.neptune.network.VolleyRequests
+import com.cradle.neptune.network.unwrap
+import com.cradle.neptune.network.unwrapFailure
 import com.cradle.neptune.view.LoginActivity
 import java.util.ArrayList
 import javax.inject.Inject
@@ -45,7 +48,8 @@ class VolleyRequestManager(application: Application) {
     init {
         (application as MyApp).appComponent.inject(this)
 
-        volleyRequests = VolleyRequests(sharedPreferences)
+        volleyRequests =
+            VolleyRequests(sharedPreferences)
     }
 
     companion object {
@@ -166,7 +170,11 @@ class VolleyRequestManager(application: Application) {
                             )
                         )
                     }
-                    listCallBack(Success(globalPatientList))
+                    listCallBack(
+                        Success(
+                            globalPatientList
+                        )
+                    )
                 }
                 is Failure -> {
                     listCallBack(Failure(result.unwrapFailure()))
@@ -190,7 +198,14 @@ class VolleyRequestManager(application: Application) {
                     for (i in 0 until readingArray.length()) {
                         readingList.add(Reading.unmarshal(readingArray[i] as JsonObject))
                     }
-                    patientInfoCallBack(Success(Pair(Patient.unmarshal(patientJsonObj), readingList)))
+                    patientInfoCallBack(
+                        Success(
+                            Pair(
+                                Patient.unmarshal(patientJsonObj),
+                                readingList
+                            )
+                        )
+                    )
                 }
                 is Failure -> {
                     patientInfoCallBack(Failure(result.unwrapFailure()))
