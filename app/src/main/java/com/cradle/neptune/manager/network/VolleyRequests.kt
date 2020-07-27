@@ -42,12 +42,9 @@ class VolleyRequests(private val sharedPreferences: SharedPreferences) {
     /**
      * returns a [POST] [JsonObjectRequest] type request
      */
-    fun postJsonObjectRequest(
-        url: String,
-        jsonaBody: JSONObject?,
-        successListener: Response.Listener<JSONObject>,
-        errorListener: Response.ErrorListener
-    ): JsonObjectRequest {
+    fun postJsonObjectRequest(url: String, jsonaBody: JSONObject?, callback: (NetworkResult<JSONObject>) -> Unit): JsonObjectRequest {
+        val successListener = Response.Listener<JSONObject> { callback(Success(it)) }
+        val errorListener = Response.ErrorListener { callback(Failure(it)) }
         return object : JsonObjectRequest(POST, url, jsonaBody, successListener, errorListener) {
             /**
              * Passing some request headers
@@ -61,12 +58,10 @@ class VolleyRequests(private val sharedPreferences: SharedPreferences) {
     /**
      * returns a [GET] [JsonArrayRequest] type request
      */
-    fun getJsonArrayRequest(
-        url: String,
-        jsonBody: JSONArray?,
-        successListener: Response.Listener<JSONArray>,
-        errorListener: Response.ErrorListener
-    ): JsonArrayRequest {
+    fun getJsonArrayRequest(url: String, jsonBody: JSONArray?, callback: (NetworkResult<JSONArray>) -> Unit): JsonArrayRequest {
+        val successListener = Response.Listener<JSONArray> { callback(Success(it)) }
+        val errorListener = Response.ErrorListener { callback(Failure(it)) }
+
         return object : JsonArrayRequest(GET, url, jsonBody, successListener, errorListener) {
             /**
              * Passing some request headers
@@ -80,12 +75,11 @@ class VolleyRequests(private val sharedPreferences: SharedPreferences) {
     /**
      * returns a [POST] [JsonArrayRequest] type request
      */
-    fun postJsonArrayRequest(
-        url: String,
-        jsonaBody: JSONArray?,
-        successListener: Response.Listener<JSONArray>,
-        errorListener: Response.ErrorListener
-    ): JsonArrayRequest {
+    fun postJsonArrayRequest(url: String, jsonaBody: JSONArray?, callback: (NetworkResult<JSONArray>) -> Unit):
+        JsonArrayRequest {
+        val successListener = Response.Listener<JSONArray> { callback(Success(it)) }
+        val errorListener = Response.ErrorListener { callback(Failure(it)) }
+
         return object : JsonArrayRequest(POST, url, jsonaBody, successListener, errorListener) {
             /**
              * Passing some request headers

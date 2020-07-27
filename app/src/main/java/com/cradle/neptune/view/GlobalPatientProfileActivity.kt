@@ -72,7 +72,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         progressDialog.setMessage("Adding to your patient's list")
         progressDialog.show()
 
-        volleyRequestsManager.setUserPatientAssociation("") {isSuccessFul ->
+        volleyRequestsManager.setUserPatientAssociation(currPatient.id) {isSuccessFul ->
             if (isSuccessFul) {
                 addThePatientInfoToLocalDb(progressDialog)
             } else {

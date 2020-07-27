@@ -57,33 +57,36 @@ class VolleyRequestManager(application: Application) {
      *Fetches all the patients from the server for the user and saves them locally
      */
     fun fetchAllMyPatientsFromServer() {
-
-        val request = volleyRequests.getJsonArrayRequest(urlManager.allPatientInfo, null,
-        Response.Listener { response ->
-            GlobalScope.launch(Dispatchers.IO) {
-                val patientList = ArrayList<Patient>()
-                val readingList = ArrayList<Reading>()
-                for (i in 0 until response.length()) {
-                    // get all the readings
-                    patientList.add(Patient.unmarshal(response[i] as JsonObject))
-                    val readingArray = (response[i] as JsonObject).getJSONArray("readings")
-                    for (j in 0 until readingArray.length()) {
-                        readingList.add(
-                            Reading.unmarshal(readingArray[j] as JsonObject)
-                            .apply { isUploadedToServer = true })
+        val request = volleyRequests.getJsonArrayRequest(urlManager.allPatientInfo,null){result ->
+            when(result) {
+                is Success -> {
+                    GlobalScope.launch(Dispatchers.IO) {
+                        val response = result.unwrap()
+                        val patientList = ArrayList<Patient>()
+                        val readingList = ArrayList<Reading>()
+                        for (i in 0 until response.length()) {
+                            // get all the readings
+                            patientList.add(Patient.unmarshal(response[i] as JsonObject))
+                            val readingArray = (response[i] as JsonObject).getJSONArray("readings")
+                            for (j in 0 until readingArray.length()) {
+                                readingList.add(
+                                    Reading.unmarshal(readingArray[j] as JsonObject)
+                                        .apply { isUploadedToServer = true })
+                            }
+                        }
+                        patientManager.addAll(patientList)
+                        readingManager.addAllReadings(readingList)
                     }
                 }
-                patientManager.addAll(patientList)
-                readingManager.addAllReadings(readingList)
+                is Failure -> {
+                    //FIXME currently fails silently
+                    Log.i(TAG, "Failed to get all the patients from the server...")
+                    result.unwrapFailure().printStackTrace()
+                }
             }
-        }, Response.ErrorListener {
-            Log.i(TAG, "Failed to get all the patients from the server...")
-                it.printStackTrace()
-                // todo figure out how to let user know better? toast?
-            })
+        }
         // give extra time in case too many patients.
         request.retryPolicy = volleyRequests.getRetryPolicy()
-
         volleyRequestQueue.addRequest(request)
     }
 
@@ -97,21 +100,26 @@ class VolleyRequestManager(application: Application) {
         val jsonObject = JSONObject()
         jsonObject.put("email", email)
         jsonObject.put("password", password)
-        val request = volleyRequests.postJsonObjectRequest(urlManager.authentication, jsonObject,
-        Response.Listener {
-            // save the user credentials
-            val editor = sharedPreferences.edit()
-            editor.putString(LoginActivity.TOKEN, it.getString(LoginActivity.TOKEN))
-            editor.putString(LoginActivity.USER_ID, it.getString("userId"))
-            editor.putString(LoginActivity.LOGIN_EMAIL, email)
-            editor.putInt(LoginActivity.LOGIN_PASSWORD, password.hashCode())
-            editor.apply()
-            // let the calling object know result
-            successCallBack.invoke(true)
-        }, Response.ErrorListener {
-                it.printStackTrace()
-                successCallBack.invoke(false)
-            })
+        val request = volleyRequests.postJsonObjectRequest(urlManager.authentication,jsonObject){ result->
+            when(result) {
+                is Success -> {
+                    // save the user credentials
+                    val json = result.unwrap()
+                    val editor = sharedPreferences.edit()
+                    editor.putString(LoginActivity.TOKEN, json.getString(LoginActivity.TOKEN))
+                    editor.putString(LoginActivity.USER_ID, json.getString("userId"))
+                    editor.putString(LoginActivity.LOGIN_EMAIL, email)
+                    editor.putInt(LoginActivity.LOGIN_PASSWORD, password.hashCode())
+                    editor.apply()
+                    // let the calling object know result
+                    successCallBack.invoke(true)
+                }
+                is Failure -> {
+                    result.unwrapFailure().printStackTrace()
+                    successCallBack.invoke(false)
+                }
+            }
+        }
         volleyRequestQueue.addRequest(request)
     }
 
@@ -119,18 +127,22 @@ class VolleyRequestManager(application: Application) {
      * Get all the healthFacilities for the user and save them locally.
      */
     fun getAllHealthFacilities() {
-        val requests = volleyRequests.getJsonArrayRequest(urlManager.healthFacilities,
-        null, Response.Listener {
-                val facilities = ArrayList<HealthFacility>()
-                for (i in 0 until it.length()) {
-                    facilities.add(HealthFacility.unmarshal(it[i] as JsonObject))
+        val request = volleyRequests.getJsonArrayRequest(urlManager.healthFacilities,null){result ->
+            when(result) {
+                is Success -> {
+                    val facilities = ArrayList<HealthFacility>()
+                    val response = result.unwrap()
+                    for (i in 0 until response.length()) {
+                        facilities.add(HealthFacility.unmarshal(response[i] as JsonObject))
+                    }
+                    healthCentreManager.addAll(facilities)
                 }
-                healthCentreManager.addAll(facilities)
-            }, Response.ErrorListener {
-                it.printStackTrace()
-            })
-
-        volleyRequestQueue.addRequest(requests)
+                is Failure -> {
+                    result.unwrapFailure().printStackTrace()
+                }
+            }
+        }
+        volleyRequestQueue.addRequest(request)
     }
 
     /**
@@ -138,10 +150,11 @@ class VolleyRequestManager(application: Application) {
      * @param criteria could be id or initials
      */
     fun getAllPatientsFromServerByQuery(criteria: String, listCallBack: (NetworkResult<List<GlobalPatient>>)->Unit) {
-            val request = volleyRequests.getJsonArrayRequest(urlManager.getGlobalPatientSearch(criteria),
-            null, Response.Listener { response ->
+        val request = volleyRequests.getJsonArrayRequest(urlManager.getGlobalPatientSearch(criteria),null){result ->
+            when(result) {
+                is Success -> {
                     val globalPatientList = ArrayList<GlobalPatient>()
-
+                    val response = result.unwrap()
                     for (i in 0 until response.length()) {
                         val jsonObject: JSONObject = response[i] as JSONObject
                         val patientId = jsonObject.getString("patientId")
@@ -155,9 +168,13 @@ class VolleyRequestManager(application: Application) {
                         )
                     }
                     listCallBack(Success(globalPatientList))
-                }, Response.ErrorListener {
-                    listCallBack(Failure(it))
-                })
+
+                }
+                is Failure -> {
+                    listCallBack(Failure(result.unwrapFailure()))
+                }
+            }
+        }
         volleyRequestQueue.addRequest(request)
     }
 
@@ -192,14 +209,17 @@ class VolleyRequestManager(application: Application) {
 
         val jsonObject = JSONObject()
         jsonObject.put("patientId", id)
-
-        val request = volleyRequests.postJsonObjectRequest(urlManager.userPatientAssociation, jsonObject,
-        Response.Listener {
-            successCallback.invoke(true)
-        }, Response.ErrorListener {
-                successCallback.invoke(false)
-                it.printStackTrace()
-            })
+        val request = volleyRequests.postJsonObjectRequest(urlManager.userPatientAssociation,jsonObject){result->
+            when(result){
+                is Success -> {
+                    successCallback.invoke(true)
+                }
+                is Failure -> {
+                    successCallback.invoke(false)
+                    result.unwrapFailure().printStackTrace()
+                }
+            }
+        }
 
         volleyRequestQueue.addRequest(request)
     }
