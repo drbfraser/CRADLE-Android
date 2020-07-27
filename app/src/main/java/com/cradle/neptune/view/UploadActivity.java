@@ -27,6 +27,7 @@ import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.manager.PatientManager;
 import com.cradle.neptune.manager.UrlManager;
+import com.cradle.neptune.manager.VolleyRequestManager;
 import com.cradle.neptune.model.*;
 import com.cradle.neptune.manager.ReadingManager;
 import com.cradle.neptune.utilitiles.DateUtil;
@@ -64,6 +65,8 @@ public class UploadActivity extends AppCompatActivity {
     UrlManager urlManager;
     @Inject
     PatientManager patientManager;
+    @Inject
+    VolleyRequestManager volleyRequestManager;
 
     MultiReadingUploader multiUploader;
 
@@ -76,7 +79,6 @@ public class UploadActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         // inject:
         ((MyApp) getApplication()).getAppComponent().inject(this);
-
         // setup UI
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_upload);
@@ -114,7 +116,7 @@ public class UploadActivity extends AppCompatActivity {
                         .setTitle("Downloading patient data")
                         .setPositiveButton("OK", (dialogInterface, i)
                                 -> {
-                            LoginActivity.Companion.getAllMyPatients(sharedPreferences, readingManager, urlManager, patientManager,UploadActivity.this);
+                            volleyRequestManager.fetchAllMyPatientsFromServer();
                         })
                         .setNegativeButton("Cancel", (dialogInterface, i) -> {
 

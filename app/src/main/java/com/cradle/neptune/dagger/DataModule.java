@@ -14,6 +14,8 @@ import javax.inject.Singleton;
 import com.cradle.neptune.manager.HealthCentreManager;
 import com.cradle.neptune.manager.MarshalManager;
 import com.cradle.neptune.manager.ReadingManager;
+import com.cradle.neptune.manager.VolleyRequestManager;
+import com.cradle.neptune.network.VolleyRequestQueue;
 
 import dagger.Module;
 import dagger.Provides;
@@ -53,5 +55,17 @@ public class DataModule {
     @Singleton
     public SharedPreferences providesSharedPreferences(Application application) {
         return PreferenceManager.getDefaultSharedPreferences(application);
+    }
+
+    @Provides
+    @Singleton
+    public VolleyRequestQueue provideVolleyRequestQueue(Application application) {
+        return new VolleyRequestQueue(application);
+    }
+
+    @Provides
+    @Singleton
+    public VolleyRequestManager provideVolleyRequestManager(Application application){
+        return new VolleyRequestManager(application);
     }
 }

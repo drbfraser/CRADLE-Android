@@ -4,31 +4,27 @@ import android.app.AlertDialog
 import android.app.ProgressDialog
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.android.volley.DefaultRetryPolicy
-import com.android.volley.Request
-import com.android.volley.Response
-import com.android.volley.toolbox.Volley
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.ext.hideKeyboard
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
-import com.cradle.neptune.manager.UrlManager
+import com.cradle.neptune.manager.VolleyRequestManager
 import com.cradle.neptune.model.GlobalPatient
-import com.cradle.neptune.model.JsonObject
-import com.cradle.neptune.model.Patient
-import com.cradle.neptune.model.Reading
-import com.cradle.neptune.utilitiles.VolleyUtil
+import com.cradle.neptune.network.Failure
+import com.cradle.neptune.network.Success
+import com.cradle.neptune.network.unwrap
+import com.cradle.neptune.network.unwrapFailure
 import com.cradle.neptune.viewmodel.GlobalPatientAdapter
 import com.google.android.material.snackbar.Snackbar
 import javax.inject.Inject
@@ -36,8 +32,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.json.JSONArray
-import org.json.JSONObject
 
 /**
  * Todo this activity is pretty dirty with all the network calls. Once we have a NetworkManager
@@ -48,22 +42,25 @@ import org.json.JSONObject
 class GlobalPatientSearchActivity : AppCompatActivity() {
 
     @Inject
-    lateinit var urlManager: UrlManager
-    @Inject
-    lateinit var sharedPreferences: SharedPreferences
-    @Inject
     lateinit var patientManager: PatientManager
     @Inject
     lateinit var readingManager: ReadingManager
+    @Inject
+    lateinit var volleyRequestManager: VolleyRequestManager
 
     private lateinit var searchView: SearchView
+
+    // local patient set to compare agains
+    private lateinit var localPatientSet: HashSet<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_global_patient_search)
         // inject:
         (application as MyApp).appComponent.inject(this)
-
+        MainScope().launch {
+            localPatientSet = patientManager.getPatientIdsOnly().toHashSet()
+        }
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = getString(R.string.global_patient_search)
         setupGlobalPatientSearch()
@@ -86,8 +83,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
             override fun onQueryTextSubmit(query: String): Boolean {
                 if (query == "")
                     return false
-                val searchUrl = urlManager.getGlobalPatientSearch(query)
-                searchServerForThePatients(searchUrl)
+                searchServerForThePatients(query.trim())
                 return true
             }
         })
@@ -100,33 +96,33 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         val progressDialog = getProgessDialog("Fetching the patients")
         progressDialog.show()
 
-        val jsonArrayRequest = VolleyUtil.makeJsonArrayRequest(Request.Method.GET, searchUrl, null,
-        Response.Listener { response: JSONArray? ->
-            MainScope().launch {
-                setupPatientsRecycler(response as (JSONArray))
-                progressDialog.cancel()
-            }
-            searchView.hideKeyboard()
-        }, Response.ErrorListener { error ->
-                Log.e(TAG, "error: " + error?.message)
-                progressDialog.cancel()
-                searchView.hideKeyboard()
-                MainScope().launch {
-                    setupPatientsRecycler(null)
+        volleyRequestManager.getAllPatientsFromServerByQuery(searchUrl) { result ->
+            when (result) {
+                is Success -> {
+                    val globalList = result.unwrap()
+                    MainScope().launch {
+                        setupPatientsRecycler(globalList)
+                    }
+                    progressDialog.cancel()
+                    searchView.hideKeyboard()
                 }
-                Snackbar.make(searchView, "Sorry unable to fetch the patients", Snackbar.LENGTH_LONG).show()
-            }, sharedPreferences)
-        // incase there are alot of patients
-        jsonArrayRequest.retryPolicy = DefaultRetryPolicy(networkTimeOutInMS,
-            DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
-        val queue = Volley.newRequestQueue(MyApp.getInstance())
-        queue.add<JSONArray>(jsonArrayRequest)
+                is Failure -> {
+                    Log.e(TAG, "error: " + result.unwrapFailure().message)
+                    progressDialog.cancel()
+                    searchView.hideKeyboard()
+                    MainScope().launch {
+                        setupPatientsRecycler(null)
+                    }
+                    Snackbar.make(searchView, "Sorry unable to fetch the patients", Snackbar.LENGTH_LONG).show()
+                }
+            }
+        }
     }
 
-    private suspend fun setupPatientsRecycler(response: JSONArray?) {
+    private suspend fun setupPatientsRecycler(globalPatientList: List<GlobalPatient>?) {
         val emptyView = findViewById<ImageView>(R.id.emptyView)
         val recyclerView = findViewById<RecyclerView>(R.id.globalPatientrecyclerview)
-        if (response == null || response.length() == 0) {
+        if (globalPatientList == null || globalPatientList.isEmpty()) {
             recyclerView.visibility = View.GONE
             emptyView.visibility = View.VISIBLE
             return
@@ -135,21 +131,13 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         recyclerView.visibility = View.VISIBLE
 
         // get patient set so we can compare for our patients
-        val patientSet = patientManager.getPatientIdsOnly().toSet()
-        val globalPatientList = ArrayList<GlobalPatient>()
 
-        for (i in 0 until response.length()) {
-            val jsonObject: JSONObject = response[i] as JSONObject
-            val patientId = jsonObject.getString("patientId")
-            globalPatientList.add(
-                GlobalPatient(
-                    patientId,
-                    jsonObject.getString("patientName"),
-                    jsonObject.getString("villageNumber"),
-                    patientSet.contains(patientId)
-                )
-            )
+        globalPatientList.forEach {
+            if (localPatientSet.contains(it.id)) {
+                it.isMyPatient = true
+            }
         }
+
         val globalPatientAdapter = GlobalPatientAdapter(globalPatientList)
         val layout = LinearLayoutManager(this)
         recyclerView.layoutManager = layout
@@ -160,7 +148,8 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         globalPatientAdapter.addPatientClickObserver(object :
             GlobalPatientAdapter.OnGlobalPatientClickListener {
             override fun onCardClick(patient: GlobalPatient) {
-                startActivityForPatient(patient, patientSet.contains(patient.id))
+
+                startActivityForPatient(patient, localPatientSet.contains(patient.id))
             }
 
             override fun onAddToLocalClicked(patient: GlobalPatient) {
@@ -209,34 +198,46 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
      */
     private fun fetchInformationForThisPatient(
         patient: GlobalPatient,
-        globalPatientList: ArrayList<GlobalPatient>,
+        globalPatientList: List<GlobalPatient>,
         globalPatientAdapter: GlobalPatientAdapter
     ) {
         val progressDialog = getProgessDialog("Adding to your patient list.")
         progressDialog.show()
-        val jsonObjectRequest = VolleyUtil.makeJsonObjectRequest(Request.Method.GET,
-            urlManager.getPatientInfoById(patient.id), null, Response.Listener {
-                patientManager.add(Patient.unmarshal(it))
-                val readingArray = it.getJSONArray("readings")
-                for (i in 0 until readingArray.length()) {
-                    readingManager.addReading(Reading.unmarshal(readingArray[i] as JsonObject))
-                }
-                // todo make the O^n better, maybe globalPatientList can be a map?
-                // updating current adapter
-                for (it in globalPatientList) {
-                    if (it.id == patient.id) {
-                        it.isMyPatient = true
-                        break
+        volleyRequestManager.getSinglePatientById(patient.id) { result ->
+            when (result) {
+                is Success -> {
+                    // make another network call to set patient association and than save the results
+                    volleyRequestManager.setUserPatientAssociation(patient.id) { isSuccessFul ->
+                        if (isSuccessFul) {
+                            patientManager.add(result.unwrap().first)
+                            readingManager.addAllReadings(result.unwrap().second)
+                            // add it to our local set for matching
+                            localPatientSet.add(patient.id)
+                            // todo make the O^n better, maybe globalPatientList can be a map?
+                            // updating current adapter
+                            for (it in globalPatientList) {
+                                if (it.id == patient.id) {
+                                    it.isMyPatient = true
+                                    break
+                                }
+                            }
+                            globalPatientAdapter.notifyDataSetChanged()
+                            progressDialog.cancel()
+                        } else {
+                            Toast.makeText(
+                                this@GlobalPatientSearchActivity,
+                                "Unable to make user-patient relationship", Toast.LENGTH_LONG
+                            ).show()
+                        }
                     }
                 }
-                globalPatientAdapter.notifyDataSetChanged()
-                progressDialog.cancel()
-            }, Response.ErrorListener {
-                progressDialog.cancel()
-                it.printStackTrace()
-            }, sharedPreferences)
-        val requestQueue = Volley.newRequestQueue(this)
-        requestQueue.add(jsonObjectRequest)
+                is Failure -> {
+                    val error = result.unwrapFailure()
+                    progressDialog.cancel()
+                    error.printStackTrace()
+                }
+            }
+        }
     }
 
     private fun getProgessDialog(message: String): ProgressDialog {
@@ -247,6 +248,5 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
     }
     companion object {
         val TAG = GlobalPatientSearchActivity::javaClass.name
-        const val networkTimeOutInMS = 8000
     }
 }
