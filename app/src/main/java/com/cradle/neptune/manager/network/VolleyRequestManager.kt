@@ -162,21 +162,26 @@ class VolleyRequestManager(application: Application) {
     }
 
     /**
-     * fetch a single patient by id from the server
+     * fetch a single patient by id from the server including readings
      * @param id id of the patient
      */
-    fun getSinglePatientById(id: String, patientInfoCallBack: PatientInfoCallBack) {
-        val request = volleyRequests.getJsonObjectRequest(urlManager.getPatientInfoById(id),
-        null, Response.Listener {
-                val readingArray = it.getJSONArray("readings")
-                val readingList = ArrayList<Reading>()
-                for (i in 0 until readingArray.length()) {
-                    readingList.add(Reading.unmarshal(readingArray[i] as JsonObject))
+    fun getSinglePatientById(id: String, patientInfoCallBack: (NetworkResult<Pair<Patient,List<Reading>>>)-> Unit) {
+        val request = volleyRequests.getJsonObjectRequest(urlManager.getPatientInfoById(id),null){result->
+            when(result){
+                is Success -> {
+                    val patientJsonObj = result.unwrap()
+                    val readingArray = patientJsonObj.getJSONArray("readings")
+                    val readingList = ArrayList<Reading>()
+                    for (i in 0 until readingArray.length()) {
+                        readingList.add(Reading.unmarshal(readingArray[i] as JsonObject))
+                    }
+                    patientInfoCallBack(Success(Pair(Patient.unmarshal(patientJsonObj),readingList)))
                 }
-                patientInfoCallBack.onSuccessFul(Patient.unmarshal(it), readingList)
-            }, Response.ErrorListener {
-                patientInfoCallBack.onFail(it)
-            })
+                is Failure -> {
+                    patientInfoCallBack(Failure(result.unwrapFailure()))
+                }
+            }
+        }
         volleyRequestQueue.addRequest(request)
     }
     /**

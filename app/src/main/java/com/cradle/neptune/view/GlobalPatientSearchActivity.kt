@@ -22,12 +22,13 @@ import com.cradle.neptune.ext.hideKeyboard
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.manager.UrlManager
+import com.cradle.neptune.manager.network.Failure
 import com.cradle.neptune.manager.network.ListCallBack
-import com.cradle.neptune.manager.network.PatientInfoCallBack
+import com.cradle.neptune.manager.network.Success
 import com.cradle.neptune.manager.network.VolleyRequestManager
+import com.cradle.neptune.manager.network.unwrap
+import com.cradle.neptune.manager.network.unwrapFailure
 import com.cradle.neptune.model.GlobalPatient
-import com.cradle.neptune.model.Patient
-import com.cradle.neptune.model.Reading
 import com.cradle.neptune.viewmodel.GlobalPatientAdapter
 import com.google.android.material.snackbar.Snackbar
 import javax.inject.Inject
@@ -204,48 +205,46 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
     /**
      * Make an api call to get this patient's information and update the recyclerview
      */
-    private fun fetchInformationForThisPatient(
-        patient: GlobalPatient,
-        globalPatientList: List<GlobalPatient>,
-        globalPatientAdapter: GlobalPatientAdapter
-    ) {
+    private fun fetchInformationForThisPatient(patient: GlobalPatient, globalPatientList: List<GlobalPatient>,
+        globalPatientAdapter: GlobalPatientAdapter) {
         val progressDialog = getProgessDialog("Adding to your patient list.")
         progressDialog.show()
-
-        volleyRequestManager.getSinglePatientById(patient.id,
-        object : PatientInfoCallBack {
-            override fun onSuccessFul(patient: Patient, readings: List<Reading>) {
-                volleyRequestManager.setUserPatientAssociation(patient.id) {isSuccessFul ->
-                    if (isSuccessFul){
-                        patientManager.add(patient)
-                        readingManager.addAllReadings(readings)
-                        // add it to our local set for matching
-                        localPatientSet.add(patient.id)
-                        // todo make the O^n better, maybe globalPatientList can be a map?
-                        // updating current adapter
-                        for (it in globalPatientList) {
-                            if (it.id == patient.id) {
-                                it.isMyPatient = true
-                                break
+        volleyRequestManager.getSinglePatientById(patient.id){ result ->
+            when(result) {
+                is Success ->{
+                    // make another network call to set patient association and than save the results
+                    volleyRequestManager.setUserPatientAssociation(patient.id) {isSuccessFul ->
+                        if (isSuccessFul){
+                            patientManager.add(result.unwrap().first)
+                            readingManager.addAllReadings(result.unwrap().second)
+                            // add it to our local set for matching
+                            localPatientSet.add(patient.id)
+                            // todo make the O^n better, maybe globalPatientList can be a map?
+                            // updating current adapter
+                            for (it in globalPatientList) {
+                                if (it.id == patient.id) {
+                                    it.isMyPatient = true
+                                    break
+                                }
                             }
+                            globalPatientAdapter.notifyDataSetChanged()
+                            progressDialog.cancel()
+                        } else {
+                            Toast.makeText(
+                                this@GlobalPatientSearchActivity,
+                                "Unable to make user-patient relationship", Toast.LENGTH_LONG
+                            ).show()
                         }
-                        globalPatientAdapter.notifyDataSetChanged()
-                        progressDialog.cancel()
-                    } else {
-                        Toast.makeText(
-                            this@GlobalPatientSearchActivity,
-                            "Unable to make user-patient relationship", Toast.LENGTH_LONG
-                        ).show()
-                    }
 
+                    }
+                }
+                is Failure -> {
+                    val error = result.unwrapFailure()
+                    progressDialog.cancel()
+                    error.printStackTrace()
                 }
             }
-
-            override fun onFail(error: VolleyError?) {
-                progressDialog.cancel()
-                error?.printStackTrace()
-            }
-        })
+        }
     }
 
     private fun getProgessDialog(message: String): ProgressDialog {

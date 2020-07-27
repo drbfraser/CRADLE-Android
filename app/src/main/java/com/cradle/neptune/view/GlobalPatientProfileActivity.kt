@@ -11,14 +11,14 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.android.volley.VolleyError
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
-import com.cradle.neptune.manager.network.PatientInfoCallBack
+import com.cradle.neptune.manager.network.Failure
+import com.cradle.neptune.manager.network.Success
 import com.cradle.neptune.manager.network.VolleyRequestManager
+import com.cradle.neptune.manager.network.unwrap
+import com.cradle.neptune.manager.network.unwrapFailure
 import com.cradle.neptune.model.GlobalPatient
-import com.cradle.neptune.model.Patient
-import com.cradle.neptune.model.Reading
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter.OnClickElement
 import com.google.android.material.snackbar.Snackbar
@@ -117,27 +117,27 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         progressDialog.setCancelable(false)
         progressDialog.setMessage("Fetching the patient...")
         progressDialog.show()
-
-        volleyRequestsManager.getSinglePatientById(globalPatient.id,
-        object : PatientInfoCallBack {
-
-            override fun onSuccessFul(patient: Patient, reading: List<Reading>) {
-                currPatient = patient
-                patientReadings = reading
-                setupAddToMyPatientList()
-                setupToolBar()
-                populatePatientInfo(currPatient)
-                setupReadingsRecyclerView()
-                setupLineChart()
-                progressDialog.cancel()
+        volleyRequestsManager.getSinglePatientById(globalPatient.id){ result->
+            when(result){
+                is Success -> {
+                    val patientReadingPair = result.unwrap()
+                    currPatient = patientReadingPair.first
+                    patientReadings = patientReadingPair.second
+                    setupAddToMyPatientList()
+                    setupToolBar()
+                    populatePatientInfo(currPatient)
+                    setupReadingsRecyclerView()
+                    setupLineChart()
+                    progressDialog.cancel()
+                }
+                is Failure -> {
+                    val error = result.unwrapFailure()
+                    progressDialog.cancel()
+                    Snackbar.make(readingRecyclerview, "Unable to fetch the patient Information..." +
+                        "\n${error?.localizedMessage}", Snackbar.LENGTH_INDEFINITE).show()
+                }
             }
-
-            override fun onFail(error: VolleyError?) {
-                progressDialog.cancel()
-                Snackbar.make(readingRecyclerview, "Unable to fetch the patient Information..." +
-                    "\n${error?.localizedMessage}", Snackbar.LENGTH_INDEFINITE).show()
-            }
-        })
+        }
     }
 
     /**

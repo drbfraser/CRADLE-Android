@@ -25,13 +25,11 @@ class VolleyRequests(private val sharedPreferences: SharedPreferences) {
     /**
      * returns a [GET] [JsonObjectRequest] type request
      */
-    fun getJsonObjectRequest(
-        url: String,
-        jsonaBody: JSONObject?,
-        successListener: Response.Listener<JSONObject>,
-        errorListener: Response.ErrorListener
-    ): JsonObjectRequest {
-            return object : JsonObjectRequest(GET, url, jsonaBody, successListener, errorListener) {
+    fun getJsonObjectRequest(url: String, jsonaBody: JSONObject?,callback: (NetworkResult<JSONObject>) -> Unit): JsonObjectRequest {
+        val successListener = Response.Listener<JSONObject> { callback(Success(it)) }
+        val errorListener = Response.ErrorListener { callback(Failure(it)) }
+
+        return object : JsonObjectRequest(GET, url, jsonaBody, successListener, errorListener) {
                     /**
                      * Passing some request headers
                      */
