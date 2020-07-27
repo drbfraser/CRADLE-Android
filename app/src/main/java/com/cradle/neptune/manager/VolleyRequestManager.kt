@@ -9,13 +9,14 @@ import com.cradle.neptune.model.HealthFacility
 import com.cradle.neptune.model.JsonObject
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
+import com.cradle.neptune.network.BooleanCallback
 import com.cradle.neptune.network.Failure
-import com.cradle.neptune.network.NetworkResult
+import com.cradle.neptune.network.ListCallBack
+import com.cradle.neptune.network.PatientReadingPairCallBack
 import com.cradle.neptune.network.Success
 import com.cradle.neptune.network.VolleyRequestQueue
 import com.cradle.neptune.network.VolleyRequests
 import com.cradle.neptune.network.unwrap
-import com.cradle.neptune.network.unwrapFailure
 import com.cradle.neptune.view.LoginActivity
 import java.util.ArrayList
 import javax.inject.Inject
@@ -84,7 +85,7 @@ class VolleyRequestManager(application: Application) {
                 is Failure -> {
                     // FIXME currently fails silently
                     Log.i(TAG, "Failed to get all the patients from the server...")
-                    result.unwrapFailure().printStackTrace()
+                    result.value.printStackTrace()
                 }
             }
         }
@@ -97,9 +98,9 @@ class VolleyRequestManager(application: Application) {
      * authenticate the user and save the TOKEN/ username
      * @param email email address for the user
      * @param password for the user
-     * @param successFullCallBack a boolean callback to know whether request was successful or not
+     * @param callBack a boolean callback to know whether request was successful or not
      */
-    fun authenticateTheUser(email: String, password: String, successCallBack: (isSuccessFul: Boolean) -> Unit) {
+    fun authenticateTheUser(email: String, password: String, callBack: BooleanCallback) {
         val jsonObject = JSONObject()
         jsonObject.put("email", email)
         jsonObject.put("password", password)
@@ -115,11 +116,11 @@ class VolleyRequestManager(application: Application) {
                     editor.putInt(LoginActivity.LOGIN_PASSWORD, password.hashCode())
                     editor.apply()
                     // let the calling object know result
-                    successCallBack.invoke(true)
+                    callBack(true)
                 }
                 is Failure -> {
-                    result.unwrapFailure().printStackTrace()
-                    successCallBack.invoke(false)
+                    result.value.printStackTrace()
+                    callBack(false)
                 }
             }
         }
@@ -141,7 +142,7 @@ class VolleyRequestManager(application: Application) {
                     healthCentreManager.addAll(facilities)
                 }
                 is Failure -> {
-                    result.unwrapFailure().printStackTrace()
+                    result.value.printStackTrace()
                 }
             }
         }
@@ -152,12 +153,12 @@ class VolleyRequestManager(application: Application) {
      * get all the patients from the server that matches the given criteria
      * @param criteria could be id or initials
      */
-    fun getAllPatientsFromServerByQuery(criteria: String, listCallBack: (NetworkResult<List<GlobalPatient>>) -> Unit) {
+    fun getAllPatientsFromServerByQuery(criteria: String, listCallBack: ListCallBack<GlobalPatient>) {
         val request = volleyRequests.getJsonArrayRequest(urlManager.getGlobalPatientSearch(criteria), null) { result ->
             when (result) {
                 is Success -> {
                     val globalPatientList = ArrayList<GlobalPatient>()
-                    val response = result.unwrap()
+                    val response = result.value
                     for (i in 0 until response.length()) {
                         val jsonObject: JSONObject = response[i] as JSONObject
                         val patientId = jsonObject.getString("patientId")
@@ -177,7 +178,7 @@ class VolleyRequestManager(application: Application) {
                     )
                 }
                 is Failure -> {
-                    listCallBack(Failure(result.unwrapFailure()))
+                    listCallBack(Failure(result.value))
                 }
             }
         }
@@ -188,11 +189,11 @@ class VolleyRequestManager(application: Application) {
      * fetch a single patient by id from the server including readings
      * @param id id of the patient
      */
-    fun getSinglePatientById(id: String, patientInfoCallBack: (NetworkResult<Pair<Patient, List<Reading>>>) -> Unit) {
+    fun getSinglePatientById(id: String, patientInfoCallBack: PatientReadingPairCallBack) {
         val request = volleyRequests.getJsonObjectRequest(urlManager.getPatientInfoById(id), null) { result ->
             when (result) {
                 is Success -> {
-                    val patientJsonObj = result.unwrap()
+                    val patientJsonObj = result.value
                     val readingArray = patientJsonObj.getJSONArray("readings")
                     val readingList = ArrayList<Reading>()
                     for (i in 0 until readingArray.length()) {
@@ -208,7 +209,7 @@ class VolleyRequestManager(application: Application) {
                     )
                 }
                 is Failure -> {
-                    patientInfoCallBack(Failure(result.unwrapFailure()))
+                    patientInfoCallBack(Failure(result.value))
                 }
             }
         }
@@ -217,19 +218,20 @@ class VolleyRequestManager(application: Application) {
     /**
      * set user-patient assoication
      * @param id patient id.
+     * @param callback a callback to let user know success/failure of the request.
      */
-    fun setUserPatientAssociation(id: String, successCallback: (isSuccessFul: Boolean) -> Unit) {
+    fun setUserPatientAssociation(id: String, callback: BooleanCallback) {
 
         val jsonObject = JSONObject()
         jsonObject.put("patientId", id)
         val request = volleyRequests.postJsonObjectRequest(urlManager.userPatientAssociation, jsonObject) { result ->
             when (result) {
                 is Success -> {
-                    successCallback.invoke(true)
+                    callback(true)
                 }
                 is Failure -> {
-                    successCallback.invoke(false)
-                    result.unwrapFailure().printStackTrace()
+                    callback(false)
+                    result.value.printStackTrace()
                 }
             }
         }
