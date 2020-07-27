@@ -8,7 +8,7 @@ import com.android.volley.toolbox.Volley
 /**
  * class to hold one instance of the queue throughout the application. used with Dagger
  */
-class VolleyRequestQueue (application: Application) {
+class VolleyRequestQueue(application: Application) {
 
     private val requestQueue: RequestQueue = Volley.newRequestQueue(application)
 

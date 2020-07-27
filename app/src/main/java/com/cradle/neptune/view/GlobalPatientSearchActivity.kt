@@ -102,8 +102,8 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         val progressDialog = getProgessDialog("Fetching the patients")
         progressDialog.show()
 
-        volleyRequestManager.getAllPatientsFromServerByQuery(searchUrl){ result ->
-            when(result) {
+        volleyRequestManager.getAllPatientsFromServerByQuery(searchUrl) { result ->
+            when (result) {
                 is Success -> {
                     val globalList = result.unwrap()
                     MainScope().launch {
@@ -123,7 +123,6 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
                 }
             }
         }
-
     }
 
     private suspend fun setupPatientsRecycler(globalPatientList: List<GlobalPatient>?) {
@@ -203,16 +202,19 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
     /**
      * Make an api call to get this patient's information and update the recyclerview
      */
-    private fun fetchInformationForThisPatient(patient: GlobalPatient, globalPatientList: List<GlobalPatient>,
-        globalPatientAdapter: GlobalPatientAdapter) {
+    private fun fetchInformationForThisPatient(
+        patient: GlobalPatient,
+        globalPatientList: List<GlobalPatient>,
+        globalPatientAdapter: GlobalPatientAdapter
+    ) {
         val progressDialog = getProgessDialog("Adding to your patient list.")
         progressDialog.show()
-        volleyRequestManager.getSinglePatientById(patient.id){ result ->
-            when(result) {
-                is Success ->{
+        volleyRequestManager.getSinglePatientById(patient.id) { result ->
+            when (result) {
+                is Success -> {
                     // make another network call to set patient association and than save the results
-                    volleyRequestManager.setUserPatientAssociation(patient.id) {isSuccessFul ->
-                        if (isSuccessFul){
+                    volleyRequestManager.setUserPatientAssociation(patient.id) { isSuccessFul ->
+                        if (isSuccessFul) {
                             patientManager.add(result.unwrap().first)
                             readingManager.addAllReadings(result.unwrap().second)
                             // add it to our local set for matching
@@ -233,7 +235,6 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
                                 "Unable to make user-patient relationship", Toast.LENGTH_LONG
                             ).show()
                         }
-
                     }
                 }
                 is Failure -> {

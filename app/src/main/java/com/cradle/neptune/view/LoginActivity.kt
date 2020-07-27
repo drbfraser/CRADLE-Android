@@ -20,6 +20,7 @@ class LoginActivity : AppCompatActivity() {
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
+
     @Inject
     lateinit var volleyRequestManager: VolleyRequestManager
 
@@ -60,10 +61,14 @@ class LoginActivity : AppCompatActivity() {
             val progressDialog = progressDialog
             passwordET.hideKeyboard()
 
-            volleyRequestManager.authenticateTheUser(emailET.text.toString(), passwordET.text.toString()) {isSuccessFul->
+            volleyRequestManager.authenticateTheUser(
+                emailET.text.toString(),
+                passwordET.text.toString()
+            ) { isSuccessFul ->
                 progressDialog.cancel()
                 if (isSuccessFul) {
-                    Toast.makeText(this@LoginActivity, "Login Successful!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@LoginActivity, "Login Successful!", Toast.LENGTH_SHORT)
+                        .show()
 
                     volleyRequestManager.fetchAllMyPatientsFromServer()
                     volleyRequestManager.getAllHealthFacilities()

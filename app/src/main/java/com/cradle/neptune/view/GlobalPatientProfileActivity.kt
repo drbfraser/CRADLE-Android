@@ -22,12 +22,12 @@ import com.cradle.neptune.model.GlobalPatient
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter.OnClickElement
 import com.google.android.material.snackbar.Snackbar
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.reading_card_assesment.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 /**
  * This is a child class of [PatientProfileActivity] and uses some functions from the parent class.
@@ -72,7 +72,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         progressDialog.setMessage("Adding to your patient's list")
         progressDialog.show()
 
-        volleyRequestsManager.setUserPatientAssociation(currPatient.id) {isSuccessFul ->
+        volleyRequestsManager.setUserPatientAssociation(currPatient.id) { isSuccessFul ->
             if (isSuccessFul) {
                 addThePatientInfoToLocalDb(progressDialog)
             } else {
@@ -117,8 +117,8 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         progressDialog.setCancelable(false)
         progressDialog.setMessage("Fetching the patient...")
         progressDialog.show()
-        volleyRequestsManager.getSinglePatientById(globalPatient.id){ result->
-            when(result){
+        volleyRequestsManager.getSinglePatientById(globalPatient.id) { result ->
+            when (result) {
                 is Success -> {
                     val patientReadingPair = result.unwrap()
                     currPatient = patientReadingPair.first
