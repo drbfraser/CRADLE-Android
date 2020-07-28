@@ -1,6 +1,7 @@
 image: cangol/android-gradle
 stages:
   - build
+  - analysis
   - test
 
 # Set Gradle home to within the project directory so that we can cache it.
@@ -12,6 +13,12 @@ cache:
   paths:
      - .gradle/wrapper/
      - .gradle/caches/
+
+# run static code analysis
+code_analysis:
+  stage: build
+  script:
+    - ./gradlew detekt
 
 # Compile and assemble a debug version of the application.
 build:
