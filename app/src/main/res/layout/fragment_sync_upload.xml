@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="Patients information to upload"
+        android:text="Readings information to upload"
         android:textColor="@color/colorPrimaryLight"
         android:textSize="18sp"
         android:textStyle="bold"
@@ -26,6 +26,7 @@
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
+        app:layout_constraintHeight_percent=".40"
         app:layout_constraintBottom_toTopOf="@+id/textView48"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
@@ -36,8 +37,9 @@
         android:id="@+id/textView48"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="Reading information to upload"
+        android:text="Patients information to upload"
         android:textColor="@color/colorPrimaryLight"
         android:textSize="18sp"
         android:textStyle="bold"
@@ -56,6 +58,7 @@
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView48" />
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

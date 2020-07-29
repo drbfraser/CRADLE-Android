@@ -95,36 +95,14 @@ public class UploadActivity extends AppCompatActivity {
         setupUploadDataButton();
         setupErrorHandlingButtons();
         updateReadingUploadLabels();
-        setupSyncFollowupButton();
 
         setupLastFollowupDownloadDate();
 
         setupUploadImageButton();
 
-        setupGettingAllReadingsFromServer();
     }
 
-    private void setupGettingAllReadingsFromServer() {
-        Button uploadBtn = findViewById(R.id.updateAllPatientsBtn);
-        uploadBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                new AlertDialog.Builder(UploadActivity.this)
-                        .setMessage("Downloading the patient data might take a while, please " +
-                                "do not close the application. Check the status of download" +
-                                " status in the notification bar.")
-                        .setTitle("Downloading patient data")
-                        .setPositiveButton("OK", (dialogInterface, i)
-                                -> {
-                            volleyRequestManager.fetchAllMyPatientsFromServer();
-                        })
-                        .setNegativeButton("Cancel", (dialogInterface, i) -> {
 
-                        }).create().show();
-
-            }
-        });
-    }
 
     private void setupLastFollowupDownloadDate() {
         //get last updated time
@@ -137,72 +115,6 @@ public class UploadActivity extends AppCompatActivity {
         } catch (Exception e) {
             lastDownloadText.setText(settings.getLastTimeFollowUpDownloaded());
         }
-    }
-
-    private void setupSyncFollowupButton() {
-
-        Button syncButton = findViewById(R.id.downloadReadingButton);
-        syncButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // setup the network call here
-                requestFollowupFromNetwork();
-            }
-        });
-    }
-
-    private void requestFollowupFromNetwork() {
-        String token = sharedPreferences.getString(LoginActivity.TOKEN, "");
-
-        if (token.equals("")) {
-            Snackbar.make(findViewById(R.id.cordinatorLayout), R.string.userNotAuthenticated, Snackbar.LENGTH_LONG).show();
-            return;
-        }
-
-        Dialog dialog = new Dialog(this);
-        dialog.setTitle("Syncing");
-        dialog.setCancelable(false);
-        dialog.show();
-        JsonRequest<JSONArray> jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, urlManager.getFollowUp(),
-                null, response -> {
-            getReadingFollowFromTheResponse(response);
-            dialog.cancel();
-            upDateLastDownloadTime(ZonedDateTime.now());
-            setupLastFollowupDownloadDate();
-            Snackbar.make(findViewById(R.id.cordinatorLayout), R.string.followUpDownloaded, Snackbar.LENGTH_LONG)
-                    .show();
-        }, error -> {
-
-            dialog.cancel();
-            Snackbar.make(findViewById(R.id.cordinatorLayout), R.string.followUpCheckInternet,
-                    Snackbar.LENGTH_LONG).setActionTextColor(Color.RED).setAction("Try Again", null)
-                    .show();
-        }) {
-
-            /**
-             * Passing some request headers
-             */
-            @Override
-            public Map<String, String> getHeaders() {
-                HashMap<String, String> headers = new HashMap<>();
-                //headers.put("Content-Type", "application/json");
-                headers.put(LoginActivity.AUTH, "Bearer " + token);
-                return headers;
-            }
-        };
-
-        // add to volley queue
-        RequestQueue queue = Volley.newRequestQueue(MyApp.getInstance());
-        queue.add(jsonArrayRequest);
-
-    }
-
-    private void getReadingFollowFromTheResponse(JSONArray response) {
-            //TODO update based on the new model
-    }
-
-    private void upDateLastDownloadTime(ZonedDateTime now) {
-        settings.setLastTimeFollowUpDownloaded(now.toString());
     }
 
     @Override
@@ -397,7 +309,7 @@ public class UploadActivity extends AppCompatActivity {
         }
 
         // upload multiple readings
-        multiUploader = new MultiReadingUploader(this, settings, sharedPreferences.getString(LoginActivity.TOKEN, ""), getProgressCallbackListener());
+        multiUploader = new MultiReadingUploader(this, getProgressCallbackListener());
         multiUploader.startUpload(unUploadedReadings);
         setUploadUiElementVisibility(true);
     }

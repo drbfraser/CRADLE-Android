@@ -41,7 +41,6 @@ class SyncUploadFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         val view  = inflater.inflate(R.layout.fragment_sync_upload, container, false)
-
         lifecycleScope.launch(Dispatchers.IO) {
             setupReadingRecyclerview(view)
         }
@@ -49,10 +48,18 @@ class SyncUploadFragment : Fragment() {
 
     }
 
+    /**
+     * setups recyclerview for readings or hides the view if there is no readings to upload
+     */
     private suspend fun setupReadingRecyclerview(view: View) {
         val recyclerview: RecyclerView = view.findViewById(R.id.readingRecyclerview)
         val layoutManager = LinearLayoutManager(context)
-        val readingAdapter = SyncReadingRecyclerview(readingManager.getUnUploadedReadings())
+        val readingList = readingManager.getUnUploadedReadings()
+        if (readingList.isEmpty()){
+            recyclerview.visibility = View.GONE
+            return
+        }
+        val readingAdapter = SyncReadingRecyclerview(readingList)
         withContext(Dispatchers.Main) {
             recyclerview . layoutManager = layoutManager
             recyclerview.adapter = readingAdapter
