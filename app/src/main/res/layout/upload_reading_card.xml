@@ -33,7 +33,6 @@
             android:layout_marginTop="8dp"
             android:background="@drawable/status_green"
             app:layout_constraintBottom_toTopOf="@+id/readingDate"
-            app:layout_constraintEnd_toEndOf="@+id/readingDate"
             app:layout_constraintStart_toStartOf="@+id/readingDate"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -41,7 +40,6 @@
             android:id="@+id/textView45"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:text="@string/Systolic_blood_pressure"
             android:textColor="@color/black"
@@ -49,7 +47,7 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@+id/systolicBpTextView"
             app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/readingLightImgView"
+            app:layout_constraintStart_toEndOf="@+id/readingArrowImageview"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
@@ -57,7 +55,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="155"
+            android:text="NA"
             android:textSize="12sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
@@ -80,7 +78,7 @@
             android:id="@+id/diastolicBpTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="122"
+            android:text="NA"
             android:textSize="12sp"
             app:layout_constraintStart_toStartOf="@+id/systolicBpTextView"
             app:layout_constraintTop_toTopOf="@+id/textView50" />
@@ -101,9 +99,18 @@
             android:id="@+id/heartRateTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="122"
+            android:text="NA"
             android:textSize="12sp"
             app:layout_constraintStart_toStartOf="@+id/diastolicBpTextView"
             app:layout_constraintTop_toTopOf="@+id/textView52" />
+
+        <ImageView
+            android:id="@+id/readingArrowImageview"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            app:layout_constraintBottom_toBottomOf="@+id/readingLightImgView"
+            app:layout_constraintStart_toEndOf="@+id/readingLightImgView"
+            app:layout_constraintTop_toTopOf="@+id/readingLightImgView"
+            app:srcCompat="@drawable/arrow_up" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

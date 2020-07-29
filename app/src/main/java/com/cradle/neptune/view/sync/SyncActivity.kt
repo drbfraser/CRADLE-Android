@@ -1,13 +1,10 @@
 package com.cradle.neptune.view.sync
 
-import android.app.ActionBar
 import android.os.Bundle
 import android.util.Log
-import android.view.MenuItem
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import com.cradle.neptune.R
 
 class SyncActivity : AppCompatActivity() {
@@ -16,7 +13,7 @@ class SyncActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sync)
         setSupportActionBar(findViewById(R.id.toolbar2))
-        supportActionBar?.setTitle("Sync Everything")
+        supportActionBar?.title = "Sync Everything"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         supportFragmentManager.beginTransaction().replace(R.id.syncFrameLayout,SyncUploadFragment(),"syncUpload").commit()
