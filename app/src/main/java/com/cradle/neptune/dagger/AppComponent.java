@@ -11,6 +11,7 @@ import com.cradle.neptune.view.PatientsActivity;
 import com.cradle.neptune.view.ReadingActivity;
 import com.cradle.neptune.view.StatsActivity;
 import com.cradle.neptune.view.UploadActivity;
+import com.cradle.neptune.view.sync.SyncUploadFragment;
 import com.cradle.neptune.view.ui.network_volley.MultiReadingUploader;
 import com.cradle.neptune.view.ui.reading.ConfirmDataFragment;
 import com.cradle.neptune.view.ui.reading.ReferralDialogFragment;
@@ -66,4 +67,6 @@ public interface AppComponent {
     void inject(HealthFacilityViewModel healthFacilityViewModel);
 
     void inject(VolleyRequestManager volleyRequestManager);
+
+    void inject(SyncUploadFragment syncUploadFragment);
 }

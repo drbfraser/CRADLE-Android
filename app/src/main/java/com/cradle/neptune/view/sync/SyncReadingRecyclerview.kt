@@ -16,7 +16,7 @@ class SyncReadingRecyclerview(private val readingList:List<Reading>): RecyclerVi
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SyncReadingViewHolder {
         val v = LayoutInflater.from(parent.context)
-            .inflate(R.layout.health_facility_layout, parent, false)
+            .inflate(R.layout.upload_reading_card, parent, false)
         return SyncReadingViewHolder(v)
     }
 
@@ -40,7 +40,7 @@ class SyncReadingRecyclerview(private val readingList:List<Reading>): RecyclerVi
      class SyncReadingViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
          val sysText:TextView = itemView.findViewById(R.id.systolicBpTextView)
          val diasText:TextView = itemView.findViewById(R.id.diastolicBpTextView)
-         val hrText:TextView = itemView.findViewById(R.id.systolicBpTextView)
+         val hrText:TextView = itemView.findViewById(R.id.heartRateTextView)
          val readingLightImageView:ImageView = itemView.findViewById(R.id.readingLightImgView)
          val readingArrowImageView:ImageView = itemView.findViewById(R.id.readingArrowImageview)
          val date :TextView = itemView.findViewById(R.id.readingDate)
