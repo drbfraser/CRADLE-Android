@@ -1,164 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="match_parent">
 
-    >
-
-    <LinearLayout
+    <include
+        layout="@layout/upload_status_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/include"
+        tools:layout_editor_absoluteX="16dp" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/layoutUploadingReadings"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:id="@+id/lblUploadingReadingsTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:text="Upload Status"
-                android:textColor="@color/design_default_color_primary_dark"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <ImageView
-                android:id="@+id/imageView4"
-                android:layout_width="52dp"
-                android:layout_height="52dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
-                app:layout_constraintEnd_toStartOf="@+id/ivUploadAction"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/lblUploadingReadingsTitle"
-                app:srcCompat="@drawable/vitals" />
-
-            <ImageView
-                android:id="@+id/imageView5"
-                android:layout_width="52dp"
-                android:layout_height="52dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/ivUploadAction"
-                app:layout_constraintTop_toBottomOf="@+id/lblUploadingReadingsTitle"
-                app:srcCompat="@drawable/twotone_cloud_black_36" />
-
-            <ImageView
-                android:id="@+id/ivUploadAction"
-                android:layout_width="70dp"
-                android:layout_height="52dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/lblUploadingReadingsTitle"
-                app:srcCompat="@drawable/arrow_right" />
-
-            <TextView
-                android:id="@+id/patientUploadMessage"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
-                android:textAlignment="center"
-                android:textColor="@color/recommended"
-                android:textStyle="bold"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView10"
-                tools:text="Now uploading reading $1%d of $2%d to server..." />
-
-            <TextView
-                android:id="@+id/readingUploadMessage"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:textAlignment="center"
-                android:textColor="@color/recommended"
-                android:textStyle="bold"
-                app:layout_constraintEnd_toEndOf="@id/patientUploadMessage"
-                app:layout_constraintStart_toStartOf="@id/patientUploadMessage"
-                app:layout_constraintTop_toBottomOf="@+id/uploadReadingErrorMessage"
-                tools:text="Now uploading reading $1%d of $2%d to server..." />
-
-            <androidx.constraintlayout.widget.Guideline
-                android:id="@+id/guideline"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                app:layout_constraintGuide_begin="206dp" />
-
-            <TextView
-                android:id="@+id/uploadReadingErrorMessage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="8dp"
-                android:textColor="@color/error"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/patientUploadMessage" />
-
-            <TextView
-                android:id="@+id/uploadPatientErrorMessage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:textColor="@color/error"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="@id/uploadReadingErrorMessage"
-                app:layout_constraintTop_toBottomOf="@+id/readingUploadMessage" />
-
-            <TextView
-                android:id="@+id/textView10"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Data"
-                app:layout_constraintEnd_toEndOf="@+id/imageView4"
-                app:layout_constraintStart_toStartOf="@+id/imageView4"
-                app:layout_constraintTop_toBottomOf="@+id/imageView4" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Server"
-                app:layout_constraintEnd_toEndOf="@+id/imageView5"
-                app:layout_constraintStart_toStartOf="@+id/imageView5"
-                app:layout_constraintTop_toBottomOf="@+id/imageView5" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <ProgressBar
-            android:id="@+id/progressBar"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone" />
-
-        <Button
-            android:id="@+id/stopuploading"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:gravity="center_horizontal"
-            android:text="Stop uploading"
-            android:textAlignment="textStart"
-            android:visibility="gone" />
-
-
-    </LinearLayout>
-</ScrollView>
+    <include
+        android:id="@+id/include"
+        layout="@layout/download_status_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>
