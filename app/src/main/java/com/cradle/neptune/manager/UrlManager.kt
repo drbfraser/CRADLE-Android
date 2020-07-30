@@ -28,10 +28,10 @@ class UrlManager @Inject constructor(val settings: Settings) {
         get() = "$base/facilities"
 
     /**
-     * Endpoint for retrieving information about a reading.
+     * Endpoint for retrieving or uploading information about a reading.
      */
-    val reading: String
-        get() = "$base/patient/reading"
+    val readings: String
+        get() = "$base/patient/readings"
 
     /**
      * Endpoint for retrieving referral information.
@@ -69,7 +69,7 @@ class UrlManager @Inject constructor(val settings: Settings) {
                 ":" + settings.networkPort
             }
 
-            return "$protocol$hostname$port/api"
+            return "http://10.0.2.2:5000/api"
         }
 
     /**

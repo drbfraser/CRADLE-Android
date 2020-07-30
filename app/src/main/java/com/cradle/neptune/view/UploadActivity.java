@@ -1,11 +1,8 @@
 package com.cradle.neptune.view;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -18,11 +15,6 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonRequest;
-import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.manager.PatientManager;
@@ -32,20 +24,17 @@ import com.cradle.neptune.model.*;
 import com.cradle.neptune.manager.ReadingManager;
 import com.cradle.neptune.utilitiles.DateUtil;
 import com.cradle.neptune.view.ui.network_volley.MultiReadingUploader;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import kotlin.Pair;
-import org.json.JSONArray;
+
 import org.threeten.bp.ZonedDateTime;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -93,7 +82,6 @@ public class UploadActivity extends AppCompatActivity {
 
         // buttons
         setupUploadDataButton();
-        setupErrorHandlingButtons();
         updateReadingUploadLabels();
 
         setupLastFollowupDownloadDate();
@@ -127,7 +115,6 @@ public class UploadActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         if (multiUploader != null && multiUploader.isUploading()) {
-            multiUploader.abortUpload();
             setUploadUiElementVisibility(false);
             updateReadingUploadLabels();
         }
@@ -231,31 +218,7 @@ public class UploadActivity extends AppCompatActivity {
         });
     }
 
-    private void setupErrorHandlingButtons() {
-        setErrorUiElementsVisible(View.GONE);
-        Button btnSkip = findViewById(R.id.btnSkip);
-        btnSkip.setOnClickListener(view -> {
-            Toast.makeText(this, "Skipping uploading reading...", Toast.LENGTH_SHORT).show();
-            multiUploader.resumeUploadBySkip();
-            setErrorUiElementsVisible(View.GONE);
-        });
 
-        Button btnRetry = findViewById(R.id.btnRetry);
-        btnRetry.setOnClickListener(view -> {
-            Toast.makeText(this, "Retrying uploading reading...", Toast.LENGTH_SHORT).show();
-            multiUploader.resumeUploadByRetry();
-            setErrorUiElementsVisible(View.GONE);
-        });
-
-        Button btnAbort = findViewById(R.id.btnStopUpload);
-        btnAbort.setOnClickListener(view -> {
-            Toast.makeText(this, "Stopping upload...", Toast.LENGTH_SHORT).show();
-            multiUploader.abortUpload();
-
-            setUploadUiElementVisibility(false);
-            updateReadingUploadLabels();
-        });
-    }
 
     private void setUploadUiElementVisibility(boolean doingUpload) {
         Button btnStartUploading = findViewById(R.id.btnUploadReadings);
@@ -296,7 +259,7 @@ public class UploadActivity extends AppCompatActivity {
             return;
         }
         // ensure settings OK
-        if (urlManager.getReading() == null || urlManager.getReading().length() == 0) {
+        if (urlManager.getReadings() == null || urlManager.getReadings().length() == 0) {
             Toast.makeText(this, "Error: Must set server URL in settings", Toast.LENGTH_LONG).show();
             return;
         }

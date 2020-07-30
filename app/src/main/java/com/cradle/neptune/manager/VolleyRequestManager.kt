@@ -12,6 +12,7 @@ import com.cradle.neptune.model.Reading
 import com.cradle.neptune.network.BooleanCallback
 import com.cradle.neptune.network.Failure
 import com.cradle.neptune.network.ListCallBack
+import com.cradle.neptune.network.NetworkResult
 import com.cradle.neptune.network.PatientReadingPairCallBack
 import com.cradle.neptune.network.Success
 import com.cradle.neptune.network.VolleyRequestQueue
@@ -236,6 +237,26 @@ class VolleyRequestManager(application: Application) {
             }
         }
 
+        volleyRequestQueue.addRequest(request)
+    }
+
+    /**
+     * send a reading to the server and propogates its result down to the client
+     * @param reading readings to upload
+     * @param callback callback for the caller
+     */
+    fun uploadReadingToTheServer(reading: Reading, callback: (NetworkResult<JSONObject>)->Unit){
+
+        val request = volleyRequests.postJsonObjectRequest(urlManager.readings,reading.marshal()){ result ->
+            when(result){
+                is Success -> {
+                    callback(Success(result.value))
+            }
+                is Failure -> {
+                    callback(Failure(result.value))
+                }
+            }
+        }
         volleyRequestQueue.addRequest(request)
     }
 }
