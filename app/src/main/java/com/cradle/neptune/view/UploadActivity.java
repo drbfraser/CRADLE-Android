@@ -239,7 +239,7 @@ public class UploadActivity extends AppCompatActivity {
         btnSkip.setVisibility(visible);
         Button btnRetry = findViewById(R.id.btnRetry);
         btnRetry.setVisibility(visible);
-        TextView tv = findViewById(R.id.tvUploadErrorMessage);
+        TextView tv = findViewById(R.id.uploadReadingErrorMessage);
         tv.setVisibility(visible);
 
         // upload icon
@@ -282,7 +282,7 @@ public class UploadActivity extends AppCompatActivity {
             @Override
             public void uploadProgress(int numCompleted, int numTotal) {
                 if (numCompleted == numTotal) {
-                    TextView tv = UploadActivity.this.findViewById(R.id.tvUploadMessage);
+                    TextView tv = UploadActivity.this.findViewById(R.id.patientUploadMessage);
                     tv.setText("Done uploading " + numCompleted + " readings to server.");
                     updateReadingUploadLabels();
 
@@ -298,7 +298,7 @@ public class UploadActivity extends AppCompatActivity {
 
                     Toast.makeText(UploadActivity.this, "Done uploading readings!", Toast.LENGTH_LONG).show();
                 } else {
-                    TextView tv = UploadActivity.this.findViewById(R.id.tvUploadMessage);
+                    TextView tv = UploadActivity.this.findViewById(R.id.patientUploadMessage);
                     tv.setText("Uploading reading " + (numCompleted + 1) + " of " + numTotal + "...");
                 }
             }
@@ -316,7 +316,7 @@ public class UploadActivity extends AppCompatActivity {
 
             @Override
             public void uploadPausedOnError(String message) {
-                TextView tv = UploadActivity.this.findViewById(R.id.tvUploadErrorMessage);
+                TextView tv = UploadActivity.this.findViewById(R.id.uploadReadingErrorMessage);
                 tv.setText("Error when uploading reading: \r\n" + message);
 
                 setErrorUiElementsVisible(View.VISIBLE);

@@ -259,4 +259,24 @@ class VolleyRequestManager(application: Application) {
         }
         volleyRequestQueue.addRequest(request)
     }
+
+    /**
+     * send a reading to the server and propogates its result down to the client
+     * @param reading readings to upload
+     * @param callback callback for the caller
+     */
+    fun uploadPatientToTheServer(patient: Patient, callback: (NetworkResult<JSONObject>)->Unit){
+
+        val request = volleyRequests.postJsonObjectRequest(urlManager.patients,patient.marshal()){ result ->
+            when(result){
+                is Success -> {
+                    callback(Success(result.value))
+                }
+                is Failure -> {
+                    callback(Failure(result.value))
+                }
+            }
+        }
+        volleyRequestQueue.addRequest(request)
+    }
 }
