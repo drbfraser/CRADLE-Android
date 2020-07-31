@@ -88,5 +88,10 @@ class UrlManager @Inject constructor(val settings: Settings) {
      */
     fun getGlobalPatientSearch(query: String) = "$base/patient/global/$query"
 
+    /**
+     * provides all the updates related to the user since the [currTime] stamp
+     */
+    fun getUpdates(currTime: Long): String  = "$base/sync/updates?since=$currTime"
+
     val userPatientAssociation = "$base/associations"
 }

@@ -10,7 +10,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.cradle.neptune.R
 
-class SyncResultFragment: Fragment() {
+class SyncResultFragment: Fragment(), SyncStepperCallback{
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -22,7 +22,10 @@ class SyncResultFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupUploadingPatientReadings()
+
+        SyncStepperClass(requireContext(),this).fetchUpdatesFromServer()
+
+        //setupUploadingPatientReadings()
     }
 
     /**
@@ -32,12 +35,12 @@ class SyncResultFragment: Fragment() {
         var tv: TextView? = view?.findViewById(R.id.patientUploadMessage)
         var errorTV = view?.findViewById<TextView>(R.id.uploadPatientErrorMessage)
 
-        MultiUploader(requireContext(),tv,errorTV,MultiUploader.UploadType.PATIENT){patientResult->
+        ListUploader(requireContext(),tv,errorTV,ListUploader.UploadType.PATIENT){patientResult->
             //once finished call uploading the patients
              tv  = view?.findViewById(R.id.readingUploadMessage)
              errorTV = view?.findViewById(R.id.uploadReadingErrorMessage)
             Log.d("bugg","starting to upload the readings")
-            MultiUploader(requireContext(), tv,errorTV, MultiUploader.UploadType.READING){readingResult->
+            ListUploader(requireContext(), tv,errorTV, ListUploader.UploadType.READING){readingResult->
                 // finished uploading the readings and show the overall status.
                 val iv: ImageView? = view?.findViewById<ImageView>(R.id.ivUploadAction)
                 if (readingResult &&patientResult) {
@@ -48,5 +51,21 @@ class SyncResultFragment: Fragment() {
             }
         }
 
+    }
+
+    override fun onFetchDataCompleted(downloadedData: DownloadedData) {
+        // maybe display it?
+    }
+
+    override fun onStepTwo() {
+        TODO("Not yet implemented")
+    }
+
+    override fun onStepThree() {
+        TODO("Not yet implemented")
+    }
+
+    override fun onStepFour() {
+        TODO("Not yet implemented")
     }
 }

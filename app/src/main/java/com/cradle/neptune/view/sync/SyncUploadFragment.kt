@@ -19,9 +19,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 /**
- * A simple [Fragment] subclass.
- * Use the [SyncUploadFragment.newInstance] factory method to
- * create an instance of this fragment.
+ * A Fragment to show all the objects needing to be uploaded to the server
  */
 class SyncUploadFragment : Fragment() {
 

@@ -23,7 +23,7 @@ import javax.inject.Inject
  * Uploads a list of an object to the server and updates the UI. The list could be [Reading] or [Patient]
  * The idea is to get a list of patients/reading and upload them one by one until the list is empty.
  */
-class MultiUploader(val context: Context, private val progressTextView:TextView?,
+class ListUploader(val context: Context, private val progressTextView:TextView?,
     private val errorTextView: TextView?,val uploadType:UploadType,
     private val finishCallback: (isSuccessful:Boolean)->Unit) {
     @Inject

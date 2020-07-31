@@ -24,6 +24,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.json.JSONArray
 import org.json.JSONObject
 
 /**
@@ -268,6 +269,20 @@ class VolleyRequestManager(application: Application) {
     fun uploadPatientToTheServer(patient: Patient, callback: (NetworkResult<JSONObject>)->Unit){
 
         val request = volleyRequests.postJsonObjectRequest(urlManager.patients,patient.marshal()){ result ->
+            when(result){
+                is Success -> {
+                    callback(Success(result.value))
+                }
+                is Failure -> {
+                    callback(Failure(result.value))
+                }
+            }
+        }
+        volleyRequestQueue.addRequest(request)
+    }
+
+    fun getUpdates(currTime: Long, callback: (NetworkResult<JSONObject>) -> Unit) {
+        val request = volleyRequests.getJsonObjectRequest(urlManager.getUpdates(currTime),null){ result ->
             when(result){
                 is Success -> {
                     callback(Success(result.value))

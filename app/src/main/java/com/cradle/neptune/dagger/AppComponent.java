@@ -10,7 +10,8 @@ import com.cradle.neptune.view.LoginActivity;
 import com.cradle.neptune.view.PatientsActivity;
 import com.cradle.neptune.view.ReadingActivity;
 import com.cradle.neptune.view.StatsActivity;
-import com.cradle.neptune.view.sync.MultiUploader;
+import com.cradle.neptune.view.sync.ListUploader;
+import com.cradle.neptune.view.sync.SyncStepperClass;
 import com.cradle.neptune.view.sync.SyncUploadFragment;
 import com.cradle.neptune.view.ui.reading.ConfirmDataFragment;
 import com.cradle.neptune.view.ui.reading.ReferralDialogFragment;
@@ -34,7 +35,7 @@ public interface AppComponent {
     void inject(ReadingActivity activity);
 
     void inject(PatientsActivity activity);
-    
+
     void inject(HelpActivity activity);
 
     void inject(ReferralDialogFragment fragment);
@@ -66,5 +67,7 @@ public interface AppComponent {
 
     void inject(SyncUploadFragment syncUploadFragment);
 
-    void inject(MultiUploader multiUploader);
+    void inject(ListUploader listUploader);
+
+    void inject(SyncStepperClass syncStepperClass);
 }
