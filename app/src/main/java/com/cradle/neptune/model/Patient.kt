@@ -52,7 +52,7 @@ data class Patient(
      */
     override fun marshal(): JsonObject = with(JsonObject()) {
         if (gestationalAge != null) {
-            union(gestationalAge!!)
+            union(gestationalAge)
         }
 
         put(PatientField.ID, id)
@@ -94,9 +94,9 @@ data class Patient(
             villageNumber = data.optStringField(PatientField.VILLAGE_NUMBER)
 
             drugHistoryList = data.optArrayField(PatientField.DRUG_HISTORY)
-                ?.toList(JsonArray::getString) ?: emptyList()
+                ?.toList() ?: emptyList()
             medicalHistoryList = data.optArrayField(PatientField.MEDICAL_HISTORY)
-                ?.toList(JsonArray::getString) ?: emptyList()
+                ?.toList() ?: emptyList()
             lastEdited = data.optLongField(PatientField.LAST_EDITED)
             base = data.optLongField(PatientField.BASE)
         }

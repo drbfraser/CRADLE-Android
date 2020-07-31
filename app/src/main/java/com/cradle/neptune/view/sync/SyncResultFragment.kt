@@ -22,42 +22,15 @@ class SyncResultFragment: Fragment(), SyncStepperCallback{
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         SyncStepperClass(requireContext(),this).fetchUpdatesFromServer()
-
-        //setupUploadingPatientReadings()
     }
 
-    /**
-     * starts uploading readings and patients starting with patients.
-     */
-    private fun setupUploadingPatientReadings() {
-        var tv: TextView? = view?.findViewById(R.id.patientUploadMessage)
-        var errorTV = view?.findViewById<TextView>(R.id.uploadPatientErrorMessage)
-
-        ListUploader(requireContext(),tv,errorTV,ListUploader.UploadType.PATIENT){patientResult->
-            //once finished call uploading the patients
-             tv  = view?.findViewById(R.id.readingUploadMessage)
-             errorTV = view?.findViewById(R.id.uploadReadingErrorMessage)
-            Log.d("bugg","starting to upload the readings")
-            ListUploader(requireContext(), tv,errorTV, ListUploader.UploadType.READING){readingResult->
-                // finished uploading the readings and show the overall status.
-                val iv: ImageView? = view?.findViewById<ImageView>(R.id.ivUploadAction)
-                if (readingResult &&patientResult) {
-                    iv?.setImageResource(R.drawable.arrow_right_with_check)
-                } else {
-                    iv?.setImageResource(R.drawable.arrow_right_with_x)
-                }
-            }
-        }
-
-    }
 
     override fun onFetchDataCompleted(downloadedData: DownloadedData) {
         // maybe display it?
     }
 
-    override fun onStepTwo() {
+    override fun onNewPatientAndReadingUploaded() {
         TODO("Not yet implemented")
     }
 

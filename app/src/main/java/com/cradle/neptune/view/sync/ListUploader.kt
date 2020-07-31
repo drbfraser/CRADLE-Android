@@ -20,66 +20,39 @@ import java.net.UnknownHostException
 import javax.inject.Inject
 
 /**
- * Uploads a list of an object to the server and updates the UI. The list could be [Reading] or [Patient]
+ * Uploads a list of an object to the server. The list could be [Reading] or [Patient]
  * The idea is to get a list of patients/reading and upload them one by one until the list is empty.
  */
-class ListUploader(val context: Context, private val progressTextView:TextView?,
-    private val errorTextView: TextView?,val uploadType:UploadType,
+class ListUploader(val context: Context, private val uploadType:UploadType,private val listToUpload: ArrayList<*>,
     private val finishCallback: (isSuccessful:Boolean)->Unit) {
-    @Inject
-    lateinit var readingManager: ReadingManager
-    @Inject
-    lateinit var patientManager: PatientManager
+
     @Inject
     lateinit var volleyRequestManager: VolleyRequestManager
 
-    private lateinit var listToUpload: ArrayList<*>
     private var numUploaded = 0
     private var totalNum =0
 
     init {
         (context.applicationContext as MyApp).appComponent.inject(this)
         //todo need to find a better way to do this, maybe split it into 2 sub classes
+        totalNum =listToUpload.size
         if (uploadType==UploadType.READING){
-            uploadReadings()
+            uploadSingleReading()
         } else {
-            uploadPatients()
-        }
-    }
-
-    /**
-     * start uploading patients data one by one.
-     */
-    private fun uploadPatients(){
-        GlobalScope.launch {
-            listToUpload = ArrayList(patientManager.getAllPatients())
-            totalNum =listToUpload.size
             uploadSinglePatient()
         }
     }
 
     private fun uploadSinglePatient(){
         if (listToUpload.isEmpty()){
-            progressTextView?.text = "$uploadType uploaded: $numUploaded out of $totalNum"
             finishCallback.invoke(isUploadSuccess())
             return
         }
         volleyRequestManager.uploadPatientToTheServer(listToUpload[0] as Patient,networkCallback)
     }
-    /**
-     * Starts uploading the readings
-     */
-    private fun uploadReadings(){
-        GlobalScope.launch {
-            listToUpload = ArrayList(readingManager.getUnUploadedReadings())
-            totalNum =listToUpload.size
-            uploadSingleReading()
-        }
-    }
 
     private fun uploadSingleReading(){
         if (listToUpload.isEmpty()){
-            progressTextView?.text = "$uploadType uploaded: $numUploaded out of $totalNum"
             finishCallback.invoke(isUploadSuccess())
             return
         }
@@ -94,11 +67,8 @@ class ListUploader(val context: Context, private val progressTextView:TextView?,
             is Success -> {
                 // upload progress
                 numUploaded++
-
-                progressTextView?.text = "Uploading $uploadType $numUploaded of $totalNum..."
             }
             is Failure -> {
-                errorTextView?.text = "Error when uploading $uploadType: \r\n${getServerErrorMessage(result.value)}"
             }
         }
         listToUpload.removeAt(0)
@@ -140,6 +110,7 @@ class ListUploader(val context: Context, private val progressTextView:TextView?,
         }
         return message
     }
+
     private fun isUploadSuccess():Boolean{
         return (numUploaded>0 && (numUploaded==totalNum))
     }
