@@ -1,8 +1,10 @@
 package com.cradle.neptune.model
 
 import androidx.room.ColumnInfo
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.Relation
 import java.io.Serializable
 
 // TODO: Figure out which of these fields must be optional and which are never
@@ -60,8 +62,8 @@ data class Patient(
         put(PatientField.IS_PREGNANT, isPregnant)
         put(PatientField.ZONE, zone)
         put(PatientField.VILLAGE_NUMBER, villageNumber)
-        put(PatientField.DRUG_HISTORY, drugHistoryList)
-        put(PatientField.MEDICAL_HISTORY, medicalHistoryList)
+        putStringArray(PatientField.DRUG_HISTORY, drugHistoryList)
+        putStringArray(PatientField.MEDICAL_HISTORY, medicalHistoryList)
         put(PatientField.LAST_EDITED, lastEdited)
     }
 
@@ -86,7 +88,6 @@ data class Patient(
             gestationalAge = maybeUnmarshal(GestationalAge, data)
             sex = data.mapField(PatientField.SEX, Sex::valueOf)
             isPregnant = data.optBooleanField(PatientField.IS_PREGNANT)
-            // needsAssessment = data.booleanField(PatientField.NEEDS_ASSESSMENT)
             zone = data.optStringField(PatientField.ZONE)
             villageNumber = data.optStringField(PatientField.VILLAGE_NUMBER)
 
@@ -95,6 +96,53 @@ data class Patient(
             medicalHistoryList = data.optArrayField(PatientField.MEDICAL_HISTORY)
                 ?.toList(JsonArray::getString) ?: emptyList()
             lastEdited = data.optLongField(PatientField.LAST_EDITED)
+        }
+    }
+}
+
+/**
+ * A database view containing a patient and all readings associated with it.
+ *
+ * Note that the default constructor for this class is required for
+ * constructing from DAO objects but should never be used by user code.
+ */
+class PatientAndReadings() : Marshal<JsonObject> {
+    @Embedded
+    lateinit var patient: Patient
+    @Relation(parentColumn = "id", entityColumn = "patientId")
+    lateinit var readings: List<Reading>
+
+    constructor(patient: Patient, readings: List<Reading>) : this() {
+        // Note that this cannot be a primary constructor as the `patient` and
+        // `reading` members cannot be constructor parameters as this is
+        // forbidden by the `@Relation` annotation.
+        this.patient = patient
+        this.readings = readings
+    }
+
+    /**
+     * Marshals this patient and its readings into a single JSON object.
+     *
+     * All of the patient fields can be found at the top level of the object
+     * with the readings being nested under the "readings" field.
+     *
+     * @return A JSON object
+     */
+    override fun marshal() = with(JsonObject()) {
+        union(patient)
+        put(PatientField.READINGS, readings)
+    }
+
+    companion object : Unmarshal<PatientAndReadings, JsonObject> {
+        /**
+         * Converts a JSON object into a patient and list of readings.
+         */
+        override fun unmarshal(data: JsonObject): PatientAndReadings {
+            val patient = Patient.unmarshal(data)
+            val readings = data.optArrayField(PatientField.READINGS)
+                ?.map({ arr, i -> arr.getJSONObject(i) }, Reading.Companion::unmarshal)
+                ?: emptyList()
+            return PatientAndReadings(patient, readings)
         }
     }
 }
@@ -262,7 +310,8 @@ private enum class PatientField(override val text: String) : Field {
     VILLAGE_NUMBER("villageNumber"),
     DRUG_HISTORY("drugHistory"),
     MEDICAL_HISTORY("medicalHistory"),
-    LAST_EDITED("lastEdited")
+    LAST_EDITED("lastEdited"),
+    READINGS("readings")
 }
 
 /**
