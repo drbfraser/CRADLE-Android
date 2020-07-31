@@ -6,6 +6,7 @@ import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.manager.VolleyRequestManager
+import com.cradle.neptune.model.JsonArray
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.toList
@@ -111,23 +112,29 @@ class SyncStepperClass(val context: Context, val stepperCallback: SyncStepperCal
     private fun downloadAllInfo(){
         //download brand new patients that are not on local
          downloadedData.newPatientsIds.toList().forEach {
-             volleyRequestManager.getAllPatientsFromServerByQuery(it){
+             volleyRequestManager.getFullPatientById(it){
 
              }
          }
         // grab all the patients that we have but were edited by the server.... these include the patients we rejected to upload
         downloadedData.editedPatientId.toList().forEach {
-            volleyRequestManager.getAllPatientsFromServerByQuery(it){
+            volleyRequestManager.getPatientOnlyInfo(it){
 
             }
         }
 
         downloadedData.newReadingsIds.toList().forEach {
             // get all the readings that were created for existing patients from the server
+            volleyRequestManager.getReadingById(it){
+
+            }
         }
 
         downloadedData.followUpIds.toList().forEach {
             // make a volley request to get the requests
+            volleyRequestManager.updateFollowUpById(it){
+
+            }
         }
 
         // once all these are downloaded, let activity know the process has completed.
@@ -149,10 +156,10 @@ interface SyncStepperCallback {
 }
 
 data class DownloadedData(val jsonArray: JSONObject){
-    val newPatientsIds = HashSet<String>(jsonArray.getJSONArray("newPatients").toList())
-    val editedPatientId = HashSet<String>(jsonArray.getJSONArray("editedPatients").toList())
+    val newPatientsIds = HashSet<String>(jsonArray.getJSONArray("newPatients").toList(JsonArray::getString))
+    val editedPatientId = HashSet<String>(jsonArray.getJSONArray("editedPatients").toList(JsonArray::getString))
     // patients for these readings exists on the server so just download these readings...
-    val newReadingsIds = HashSet<String>(jsonArray.getJSONArray("readings").toList())
+    val newReadingsIds = HashSet<String>(jsonArray.getJSONArray("readings").toList(JsonArray::getString))
     // followup for referrals that were sent through the phone
-    val followUpIds = HashSet<String>(jsonArray.getJSONArray("followups").toList())
+    val followUpIds = HashSet<String>(jsonArray.getJSONArray("followups").toList(JsonArray::getString))
 }

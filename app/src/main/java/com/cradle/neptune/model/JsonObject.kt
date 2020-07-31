@@ -410,4 +410,4 @@ fun <T, U> JsonArray.map(producer: (JsonArray, Int) -> T, mapper: (T) -> U): Lis
  *
  * Useful for converting a [JsonArray] to a list without mapping anything.
  */
-fun <T> JsonArray.toList(): List<T> = map(producer) { x -> x }
+fun <T> JsonArray.toList(producer: (JsonArray, Int) -> T): List<T> = map(producer) { x -> x}

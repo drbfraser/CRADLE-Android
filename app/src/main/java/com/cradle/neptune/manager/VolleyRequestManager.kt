@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.SharedPreferences
 import android.util.Log
 import com.cradle.neptune.dagger.MyApp
+import com.cradle.neptune.model.FollowUp
 import com.cradle.neptune.model.GlobalPatient
 import com.cradle.neptune.model.HealthFacility
 import com.cradle.neptune.model.JsonObject
@@ -24,7 +25,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.json.JSONArray
 import org.json.JSONObject
 
 /**
@@ -191,8 +191,8 @@ class VolleyRequestManager(application: Application) {
      * fetch a single patient by id from the server including readings
      * @param id id of the patient
      */
-    fun getSinglePatientById(id: String, patientInfoCallBack: PatientReadingPairCallBack) {
-        val request = volleyRequests.getJsonObjectRequest(urlManager.getPatientInfoById(id), null) { result ->
+    fun getFullPatientById(id: String, patientInfoCallBack: PatientReadingPairCallBack) {
+        val request = volleyRequests.getJsonObjectRequest(urlManager.getPatientFullInfoById(id), null) { result ->
             when (result) {
                 is Success -> {
                     val patientJsonObj = result.value
@@ -215,6 +215,22 @@ class VolleyRequestManager(application: Application) {
                 }
             }
         }
+        volleyRequestQueue.addRequest(request)
+    }
+
+    fun getPatientOnlyInfo(id: String, callback: BooleanCallback){
+      val request = volleyRequests.getJsonObjectRequest(urlManager.getPatientInfoOnly(id),null){
+          when(it){
+
+              is Success -> {
+                  patientManager.add(Patient.unmarshal(it.value))
+                  callback(true)
+              }
+              is Failure -> {
+                  callback(false)
+              }
+          }
+      }
         volleyRequestQueue.addRequest(request)
     }
     /**
@@ -289,6 +305,46 @@ class VolleyRequestManager(application: Application) {
                 }
                 is Failure -> {
                     callback(Failure(result.value))
+                }
+            }
+        }
+        volleyRequestQueue.addRequest(request)
+    }
+
+    fun getReadingById(id: String, callback: BooleanCallback) {
+        val request = volleyRequests.getJsonObjectRequest(urlManager.getReadingById(id),null){ result ->
+            when(result){
+                is Success -> {
+                    readingManager.addReading(Reading.unmarshal(result.value))
+                    callback(true)
+                }
+                is Failure -> {
+                    callback(false)
+                }
+            }
+        }
+        volleyRequestQueue.addRequest(request)
+    }
+
+    /**
+     * gets a  [FollowUp] from the server and update the reading
+     */
+    fun updateFollowUpById(id: String, callback: BooleanCallback) {
+
+        val request = volleyRequests.getJsonObjectRequest(urlManager.getAssessmentById(id),null){ result ->
+            when(result){
+                is Success -> {
+                    GlobalScope.launch(Dispatchers.IO) {
+                        val assessment = FollowUp.unmarshal(result.value);
+                        val reading =
+                            readingManager.getReadingById(assessment.readingServerId.toString())
+                        reading?.followUp = assessment
+                        reading?.let { readingManager.addReading(it) }
+                        callback(true)
+                    }
+                }
+                is Failure -> {
+                    callback(false)
                 }
             }
         }

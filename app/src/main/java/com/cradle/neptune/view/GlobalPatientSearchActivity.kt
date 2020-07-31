@@ -203,7 +203,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
     ) {
         val progressDialog = getProgessDialog("Adding to your patient list.")
         progressDialog.show()
-        volleyRequestManager.getSinglePatientById(patient.id) { result ->
+        volleyRequestManager.getFullPatientById(patient.id) { result ->
             when (result) {
                 is Success -> {
                     // make another network call to set patient association and than save the results

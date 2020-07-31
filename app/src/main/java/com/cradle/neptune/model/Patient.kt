@@ -94,9 +94,9 @@ data class Patient(
             villageNumber = data.optStringField(PatientField.VILLAGE_NUMBER)
 
             drugHistoryList = data.optArrayField(PatientField.DRUG_HISTORY)
-                ?.toList() ?: emptyList()
+                ?.toList(JsonArray::getString) ?: emptyList()
             medicalHistoryList = data.optArrayField(PatientField.MEDICAL_HISTORY)
-                ?.toList() ?: emptyList()
+                ?.toList(JSONArray::getString) ?: emptyList()
             lastEdited = data.optLongField(PatientField.LAST_EDITED)
             base = data.optLongField(PatientField.BASE)
         }

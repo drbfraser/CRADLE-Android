@@ -45,12 +45,6 @@ class UrlManager @Inject constructor(val settings: Settings) {
         get() = "$base/referral"
 
     /**
-     * Endpoint for retrieving follow up information.
-     */
-    val followUp: String
-        get() = "$base/mobile/summarized/follow_up"
-
-    /**
      * The base server URL.
      */
     internal val base: String
@@ -80,7 +74,7 @@ class UrlManager @Inject constructor(val settings: Settings) {
     /**
      * Endpoint for retrieving all readings associated with a given patient id.
      */
-    fun getPatientInfoById(patientId: String) = "$base/patients/$patientId"
+    fun getPatientFullInfoById(patientId: String) = "$base/patients/$patientId"
 
     /**
      * Search the database for a list of patient by Id or Initials
@@ -92,6 +86,21 @@ class UrlManager @Inject constructor(val settings: Settings) {
      * provides all the updates related to the user since the [currTime] stamp
      */
     fun getUpdates(currTime: Long): String  = "$base/sync/updates?since=$currTime"
+
+    /**
+     * get a single reading by id
+     */
+    fun getReadingById(id: String): String  = "$base/readings/$id"
+
+    /**
+     * get a patient info only
+     */
+    fun getPatientInfoOnly(id: String): String = "$base/patients/$id/info"
+
+    /**
+     * get a assessment by id
+     */
+    fun getAssessmentById(id: String): String  = "$base/assessments/$id"
 
     val userPatientAssociation = "$base/associations"
 }
