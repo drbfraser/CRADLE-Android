@@ -43,7 +43,8 @@ data class Patient(
     @ColumnInfo var villageNumber: String? = null,
     @ColumnInfo var drugHistoryList: List<String> = emptyList(),
     @ColumnInfo var medicalHistoryList: List<String> = emptyList(),
-    @ColumnInfo var lastEdited: Long? = null
+    @ColumnInfo var lastEdited: Long? = null,
+    @ColumnInfo var base: Long? = null
 ) : Marshal<JsonObject>, Serializable {
 
     /**
@@ -65,6 +66,7 @@ data class Patient(
         putStringArray(PatientField.DRUG_HISTORY, drugHistoryList)
         putStringArray(PatientField.MEDICAL_HISTORY, medicalHistoryList)
         put(PatientField.LAST_EDITED, lastEdited)
+        put(PatientField.BASE, base)
     }
 
     companion object : Unmarshal<Patient, JsonObject> {
@@ -96,6 +98,7 @@ data class Patient(
             medicalHistoryList = data.optArrayField(PatientField.MEDICAL_HISTORY)
                 ?.toList(JsonArray::getString) ?: emptyList()
             lastEdited = data.optLongField(PatientField.LAST_EDITED)
+            base = data.optLongField(PatientField.BASE)
         }
     }
 }
@@ -311,6 +314,7 @@ private enum class PatientField(override val text: String) : Field {
     DRUG_HISTORY("drugHistory"),
     MEDICAL_HISTORY("medicalHistory"),
     LAST_EDITED("lastEdited"),
+    BASE("base"),
     READINGS("readings")
 }
 

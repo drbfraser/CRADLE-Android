@@ -91,10 +91,23 @@ interface ReadingDaoAccess {
     val allUnUploadedReading: List<Reading>
 
     /**
+     * Returns all un-uploaded readings for patients who have previously been
+     * synced with the server.
+     */
+    @get:Query("""
+        SELECT * 
+        FROM Reading r 
+        JOIN Patient p ON r.patientId = p.id
+        WHERE p.base = null AND r.isUploadedToServer = 0
+    """)
+    val allUnUploadedReadingsForTrackedPatients: List<Reading>
+
+    /**
      * get the newest reading of a particular patient
      */
     @Query("SELECT * FROM READING WHERE patientId LIKE :id ORDER BY dateTimeTaken LIMIT 1 ")
     fun getNewestReadingByPatientId(id: String): Reading?
+
     /**
      * Deletes all readings from the database.
      */
