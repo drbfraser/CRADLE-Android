@@ -9,10 +9,8 @@ import com.cradle.neptune.model.HealthFacility
 import com.cradle.neptune.model.JsonObject
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
-import com.cradle.neptune.network.BooleanCallback
 import com.cradle.neptune.network.Failure
-import com.cradle.neptune.network.ListCallBack
-import com.cradle.neptune.network.PatientReadingPairCallBack
+import com.cradle.neptune.network.NetworkResult
 import com.cradle.neptune.network.Success
 import com.cradle.neptune.network.VolleyRequestQueue
 import com.cradle.neptune.network.VolleyRequests
@@ -24,6 +22,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+
+/**
+ * typaliases for all the callbacks to make them more readable and shorter
+ */
+typealias BooleanCallback = (isSuccessful: Boolean) -> Unit
+
+typealias ListCallBack<T> = (NetworkResult<List<T>>) -> Unit
+
+typealias PatientReadingPairCallBack = (NetworkResult<Pair<Patient, List<Reading>>>) -> Unit
 
 /**
  * A request manager for all the web requests. This should be the only interface for all requests.

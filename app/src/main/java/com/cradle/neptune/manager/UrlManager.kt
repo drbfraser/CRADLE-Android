@@ -72,6 +72,12 @@ class UrlManager @Inject constructor(val settings: Settings) {
             return "$protocol$hostname$port/api"
         }
 
+    fun patient(id: String) = "$base/patients/$id"
+
+    fun patientInfo(id: String) = "$base/patients/$id/info"
+
+    fun patientReadings(id: String) = "$base/patients/$id/readings"
+
     /**
      * Endpoint for retrieving all readings associated with a given patient id.
      */
