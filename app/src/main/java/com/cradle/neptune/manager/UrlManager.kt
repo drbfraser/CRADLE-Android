@@ -46,6 +46,24 @@ class UrlManager @Inject constructor(val settings: Settings) {
         get() = "$base/mobile/summarized/follow_up"
 
     /**
+     * Endpoint for getting all patients managed by the current user.
+     */
+    val getAllPatients: String
+        get() = "$base/patients"
+
+    /**
+     * Endpoint for posting a new patient.
+     */
+    val postPatient: String
+        get() = "$base/patients"
+
+    /**
+     * Endpoint for posting a new reading for an existing patient.
+     */
+    val postReading: String
+        get() = "$base/readings"
+
+    /**
      * The base server URL.
      */
     internal val base: String
@@ -72,11 +90,35 @@ class UrlManager @Inject constructor(val settings: Settings) {
             return "$protocol$hostname$port/api"
         }
 
-    fun patient(id: String) = "$base/patients/$id"
+    /**
+     * Endpoint for getting all information about a single patient including all
+     * of its readings and other components.
+     *
+     * @param id a patient id
+     */
+    fun getPatient(id: String) = "$base/patients/$id"
 
-    fun patientInfo(id: String) = "$base/patients/$id/info"
+    /**
+     * Endpoint for getting just the demographic information about a single
+     * patient, no readings or other components.
+     *
+     * @param id a patient id
+     */
+    fun getPatientInfo(id: String) = "$base/patients/$id/info"
 
-    fun patientReadings(id: String) = "$base/patients/$id/readings"
+    /**
+     * Endpoint for getting just the readings for a single patient.
+     *
+     * @param id a patient id
+     */
+    fun getPatientReadings(id: String) = "$base/patients/$id/readings"
+
+    /**
+     * Endpoint for getting a single reading.
+     *
+     * @param id a reading id
+     */
+    fun getReading(id: String) = "$base/readings/$id"
 
     /**
      * Endpoint for retrieving all readings associated with a given patient id.

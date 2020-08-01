@@ -20,13 +20,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
-import com.cradle.neptune.manager.NetworkManager;
 import com.cradle.neptune.manager.PatientManager;
 import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.Settings;
 import com.cradle.neptune.manager.ReadingManager;
-import com.cradle.neptune.network.Api;
 import com.cradle.neptune.viewmodel.PatientsViewAdapter;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 
@@ -46,10 +44,6 @@ public class PatientsActivity extends AppCompatActivity {
     SharedPreferences sharedPreferences;
     @Inject
     Settings settings;
-    @Inject
-    NetworkManager networkManager;
-    @Inject
-    Api api;
 
     private RecyclerView patientRecyclerview;
     private PatientsViewAdapter patientsViewAdapter;
