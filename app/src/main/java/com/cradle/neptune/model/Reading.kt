@@ -111,12 +111,12 @@ data class Reading(
         union(bloodPressure)
         union(referral)
         put(ReadingField.URINE_TEST, urineTest)
-        put(ReadingField.SYMPTOMS, symptoms)
+        putStringArray(ReadingField.SYMPTOMS, symptoms)
 
         put(ReadingField.DATE_RECHECK_VITALS_NEEDED, dateRecheckVitalsNeeded)
         put(ReadingField.IS_FLAGGED_FOR_FOLLOWUP, isFlaggedForFollowUp)
 
-        put(ReadingField.PREVIOUS_READING_IDS, previousReadingIds)
+        putStringArray(ReadingField.PREVIOUS_READING_IDS, previousReadingIds)
         union(metadata)
     }
 

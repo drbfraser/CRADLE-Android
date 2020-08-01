@@ -149,9 +149,14 @@ fun <F : Field> JsonObject.put(field: F, value: JsonArray?): JsonObject = put(fi
  * If [value] is `null` then the mapping for [field] will be removed from this
  * object.
  *
+ * This method is named differently from it's counterparts due to a limitation
+ * of the JVM which is unable to determine the difference between `List<String>`
+ * and `List<M> where M : Marshal<JsonObject>`.
+ *
  * @return This object.
  */
-fun <F : Field> JsonObject.put(field: F, value: List<String>?): JsonObject = put(field, value?.let { JsonArray(it) })
+fun <F : Field> JsonObject.putStringArray(field: F, value: List<String>?): JsonObject =
+    put(field, value?.let { JsonArray(it) })
 
 /**
  * Marshals [value] to JSON then stores it as a sub-object under the field name.
@@ -163,6 +168,18 @@ fun <F : Field> JsonObject.put(field: F, value: List<String>?): JsonObject = put
  */
 fun <F : Field, M : Marshal<JsonObject>> JsonObject.put(field: F, value: M?): JsonObject =
     put(field.text, value?.marshal())
+
+/**
+ * Marshals a list of values into a JSON array storing it as a sub-array under
+ * a given field name.
+ *
+ * If [values] is `null` then the mapping for [field] will be removed from this
+ * object.
+ *
+ * @return This object.
+ */
+fun <F : Field, M : Marshal<JsonObject>> JsonObject.put(field: F, values: List<M>?): JsonObject =
+    put(field.text, values?.map(::marshal)?.let { JsonArray(it) })
 
 /**
  * Returns the string value for the specified field.

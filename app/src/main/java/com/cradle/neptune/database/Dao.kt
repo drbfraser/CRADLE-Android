@@ -6,9 +6,11 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import com.cradle.neptune.model.HealthFacility
 import com.cradle.neptune.model.Patient
+import com.cradle.neptune.model.PatientAndReadings
 import com.cradle.neptune.model.Reading
 
 /**
@@ -89,10 +91,23 @@ interface ReadingDaoAccess {
     val allUnUploadedReading: List<Reading>
 
     /**
+     * Returns all un-uploaded readings for patients who have previously been
+     * synced with the server.
+     */
+    @get:Query("""
+        SELECT * 
+        FROM Reading r 
+        JOIN Patient p ON r.patientId = p.id
+        WHERE p.base = null AND r.isUploadedToServer = 0
+    """)
+    val allUnUploadedReadingsForTrackedPatients: List<Reading>
+
+    /**
      * get the newest reading of a particular patient
      */
     @Query("SELECT * FROM READING WHERE patientId LIKE :id ORDER BY dateTimeTaken LIMIT 1 ")
     fun getNewestReadingByPatientId(id: String): Reading?
+
     /**
      * Deletes all readings from the database.
      */
@@ -128,6 +143,13 @@ interface PatientDaoAccess {
     val allPatients: List<Patient>
 
     /**
+     * Gets all patients along with their readings.
+     */
+    @get:Transaction
+    @get:Query("SELECT * FROM Patient")
+    val allPatientsAndReading: List<PatientAndReadings>
+
+    /**
      * get a list of patient Ids
      */
     @get:Query("SELECT id FROM Patient")
@@ -138,6 +160,13 @@ interface PatientDaoAccess {
      */
     @Query("SELECT * FROM Patient WHERE id LIKE :id LIMIT 1")
     fun getPatientById(id: String): Patient?
+
+    /**
+     * Gets the patient along with all of its readings if it exists.
+     */
+    @Transaction
+    @Query("SELECT * FROM Patient WHERE id LIKE :id LIMIT 1")
+    fun getPatientAndReadingsById(id: String): PatientAndReadings?
 
     /**
      * delete all patients
