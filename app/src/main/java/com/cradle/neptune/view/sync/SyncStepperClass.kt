@@ -33,6 +33,9 @@ class SyncStepperClass(val context: Context, val stepperCallback: SyncStepperCal
     lateinit var readingManager: ReadingManager
 
     lateinit var downloadedData: DownloadedData
+
+    lateinit var uploadRequestStatus:UploadRequestStatus
+
     init {
         (context.applicationContext as MyApp).appComponent.inject(this)
     }
@@ -77,37 +80,54 @@ class SyncStepperClass(val context: Context, val stepperCallback: SyncStepperCal
     }
 
     /**
-     * starts uploading readings and patients starting with patients.
+     * step 2 -> starts uploading readings and patients starting with patients.
      */
     private fun setupUploadingPatientReadings(patientsList: ArrayList<Patient>, readingList: ArrayList<Reading>) {
-
+        val totalNum = patientsList.size + readingList.size
+        uploadRequestStatus = UploadRequestStatus(totalNum,0,0)
         // this will be all the new patients with their readings.
-        ListUploader(context, PATIENT,patientsList){patientResult->
+        ListUploader(context, PATIENT,patientsList){result->
             //once finished call uploading a single patient, need to update the base time
             // going to put patient inside readings later on
             Log.d("bugg","starting to upload the readings")
+            checkIfAllDataUploaded(result)
         }
         //how do  i get the readings for existing patients??
         // these will be readings for existing patients that were not part
-        ListUploader(context,  READING,readingList){readingResult->
+        ListUploader(context,  READING,readingList){result->
             // finished uploading the readings and show the overall status.
-            if (readingResult) {
-                //let the caller know?
-                stepperCallback.onNewPatientAndReadingUploaded()
-                //startuploadingEdited
-            }
+            checkIfAllDataUploaded(result)
         }
 
         // this will be edited patients that were not edited in the server, we match againt the downloaded object
         ListUploader(context, PATIENT,patientsList){
-
+            checkIfAllDataUploaded(it)
         }
 
         //todo once all the callbacks are done let server know and start next step.
     }
 
     /**
-     * now we download all the information one by one
+     * This function will check if we have gotten back all the results for the network calls we made
+     */
+    private fun checkIfAllDataUploaded(
+        patientResult:Boolean) {
+        if (patientResult){
+            uploadRequestStatus.numUploaded++
+        } else {
+            uploadRequestStatus.numFailed++
+        }
+        stepperCallback.onNewPatientAndReadingUploaded(uploadRequestStatus)
+
+        if (uploadRequestStatus.allRequestCompleted()){
+            // finished
+            // call the next step
+            downloadAllInfo()
+        }
+    }
+
+    /**
+     * step 3 -> now we download all the information one by one
      */
     private fun downloadAllInfo(){
         //download brand new patients that are not on local
@@ -150,7 +170,7 @@ class SyncStepperClass(val context: Context, val stepperCallback: SyncStepperCal
 interface SyncStepperCallback {
 
     fun onFetchDataCompleted(downloadedData: DownloadedData)
-    fun onNewPatientAndReadingUploaded()
+    fun onNewPatientAndReadingUploaded(uploadRequestStatus: UploadRequestStatus)
     fun onStepThree()
     fun onStepFour()
 }
@@ -162,4 +182,13 @@ data class DownloadedData(val jsonArray: JSONObject){
     val newReadingsIds = HashSet<String>(jsonArray.getJSONArray("readings").toList(JsonArray::getString))
     // followup for referrals that were sent through the phone
     val followUpIds = HashSet<String>(jsonArray.getJSONArray("followups").toList(JsonArray::getString))
+}
+
+/**
+ * This class keeps track of total number of requests made, number of requests failed, and succeded
+ */
+data class UploadRequestStatus(var totalNum: Int,var numFailed: Int, var numUploaded: Int){
+    fun allRequestCompleted ():Boolean {
+        return (totalNum == numFailed+numUploaded)
+    }
 }

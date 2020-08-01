@@ -1,19 +1,14 @@
 package com.cradle.neptune.view.sync
 
 import android.content.Context
-import android.widget.TextView
 import com.android.volley.VolleyError
 import com.cradle.neptune.dagger.MyApp
-import com.cradle.neptune.manager.PatientManager
-import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.manager.VolleyRequestManager
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.network.Failure
 import com.cradle.neptune.network.NetworkResult
 import com.cradle.neptune.network.Success
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.net.ConnectException
 import java.net.UnknownHostException
@@ -24,7 +19,7 @@ import javax.inject.Inject
  * The idea is to get a list of patients/reading and upload them one by one until the list is empty.
  */
 class ListUploader(val context: Context, private val uploadType:UploadType,private val listToUpload: ArrayList<*>,
-    private val finishCallback: (isSuccessful:Boolean)->Unit) {
+    private val callerCallback: (isSuccessful:Boolean)->Unit) {
 
     @Inject
     lateinit var volleyRequestManager: VolleyRequestManager
@@ -45,7 +40,6 @@ class ListUploader(val context: Context, private val uploadType:UploadType,priva
 
     private fun uploadSinglePatient(){
         if (listToUpload.isEmpty()){
-            finishCallback.invoke(isUploadSuccess())
             return
         }
         volleyRequestManager.uploadPatientToTheServer(listToUpload[0] as Patient,networkCallback)
@@ -53,7 +47,6 @@ class ListUploader(val context: Context, private val uploadType:UploadType,priva
 
     private fun uploadSingleReading(){
         if (listToUpload.isEmpty()){
-            finishCallback.invoke(isUploadSuccess())
             return
         }
         volleyRequestManager.uploadReadingToTheServer(listToUpload[0] as Reading,networkCallback)
@@ -67,8 +60,10 @@ class ListUploader(val context: Context, private val uploadType:UploadType,priva
             is Success -> {
                 // upload progress
                 numUploaded++
+                callerCallback(true)
             }
             is Failure -> {
+                callerCallback(false)
             }
         }
         listToUpload.removeAt(0)
@@ -111,9 +106,6 @@ class ListUploader(val context: Context, private val uploadType:UploadType,priva
         return message
     }
 
-    private fun isUploadSuccess():Boolean{
-        return (numUploaded>0 && (numUploaded==totalNum))
-    }
     enum class UploadType(s: String) {
         PATIENT("Patients"),READING("Readings")
     }

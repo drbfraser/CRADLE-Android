@@ -279,7 +279,7 @@ class VolleyRequestManager(application: Application) {
 
     /**
      * send a reading to the server and propogates its result down to the client
-     * @param reading readings to upload
+     * @param patient patient to upload
      * @param callback callback for the caller
      */
     fun uploadPatientToTheServer(patient: Patient, callback: (NetworkResult<JSONObject>)->Unit){

@@ -30,8 +30,8 @@ class SyncResultFragment: Fragment(), SyncStepperCallback{
         // maybe display it?
     }
 
-    override fun onNewPatientAndReadingUploaded() {
-        TODO("Not yet implemented")
+    override fun onNewPatientAndReadingUploaded(uploadRequestStatus: UploadRequestStatus) {
+        // update the UI to show the progress
     }
 
     override fun onStepThree() {
