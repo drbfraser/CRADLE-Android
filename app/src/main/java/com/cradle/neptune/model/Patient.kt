@@ -6,6 +6,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 import java.io.Serializable
+import org.json.JSONArray
 
 // TODO: Figure out which of these fields must be optional and which are never
 //  used at all.

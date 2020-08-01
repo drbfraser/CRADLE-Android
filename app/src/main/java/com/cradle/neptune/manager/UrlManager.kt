@@ -36,7 +36,7 @@ class UrlManager @Inject constructor(val settings: Settings) {
     /**
      * Endpoint for retrieving or uploading a patient
      */
-    val patients:String
+    val patients: String
     get() = "$base/patients"
     /**
      * Endpoint for retrieving referral information.
@@ -85,12 +85,12 @@ class UrlManager @Inject constructor(val settings: Settings) {
     /**
      * provides all the updates related to the user since the [currTime] stamp
      */
-    fun getUpdates(currTime: Long): String  = "$base/sync/updates?since=$currTime"
+    fun getUpdates(currTime: Long): String = "$base/sync/updates?since=$currTime"
 
     /**
      * get a single reading by id
      */
-    fun getReadingById(id: String): String  = "$base/readings/$id"
+    fun getReadingById(id: String): String = "$base/readings/$id"
 
     /**
      * get a patient info only
@@ -100,7 +100,7 @@ class UrlManager @Inject constructor(val settings: Settings) {
     /**
      * get a assessment by id
      */
-    fun getAssessmentById(id: String): String  = "$base/assessments/$id"
+    fun getAssessmentById(id: String): String = "$base/assessments/$id"
 
     val userPatientAssociation = "$base/associations"
 }

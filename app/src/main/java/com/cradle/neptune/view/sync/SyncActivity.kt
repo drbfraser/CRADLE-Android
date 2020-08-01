@@ -16,11 +16,13 @@ class SyncActivity : AppCompatActivity() {
         supportActionBar?.title = "Sync Everything"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        supportFragmentManager.beginTransaction().replace(R.id.syncFrameLayout,SyncUploadFragment(),"syncUpload").commit()
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.syncFrameLayout, SyncUploadFragment(), "syncUpload").commit()
 
         findViewById<Button>(R.id.uploadEverythingButton).setOnClickListener {
-            supportFragmentManager.beginTransaction().replace(R.id.syncFrameLayout,SyncResultFragment()).commit()
-            //dont make it clickable for now
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.syncFrameLayout, SyncResultFragment()).commit()
+            // dont make it clickable for now
             it.isClickable = false
             it.isEnabled = false
             it.alpha = 0.2F
@@ -33,8 +35,8 @@ class SyncActivity : AppCompatActivity() {
     }
 
     override fun onAttachFragment(fragment: Fragment) {
-        //setup some sort of call backs
-        when(fragment){
+        // setup some sort of call backs
+        when (fragment) {
             is SyncUploadFragment -> {
                 Log.d("bugg", "SyncUploadFragment is attached")
             }
@@ -43,6 +45,4 @@ class SyncActivity : AppCompatActivity() {
             }
         }
     }
-
-
 }

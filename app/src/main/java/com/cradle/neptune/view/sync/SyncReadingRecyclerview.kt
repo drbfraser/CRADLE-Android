@@ -12,7 +12,8 @@ import com.cradle.neptune.utilitiles.DateUtil
 import com.cradle.neptune.view.sync.SyncReadingRecyclerview.SyncReadingViewHolder
 import com.cradle.neptune.viewmodel.ReadingAnalysisViewSupport
 
-class SyncReadingRecyclerview(private val readingList:List<Reading>): RecyclerView.Adapter<SyncReadingViewHolder>() {
+class SyncReadingRecyclerview(private val readingList: List<Reading>) :
+    RecyclerView.Adapter<SyncReadingViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SyncReadingViewHolder {
         val v = LayoutInflater.from(parent.context)
@@ -31,18 +32,26 @@ class SyncReadingRecyclerview(private val readingList:List<Reading>): RecyclerVi
         holder.hrText.text = currReading.bloodPressure.heartRate.toString()
 
         val readingAnalysis = currReading.bloodPressure.analysis
-        holder.readingLightImageView.setImageResource(ReadingAnalysisViewSupport.getColorCircleImageId(readingAnalysis))
-        holder.readingArrowImageView.setImageResource(ReadingAnalysisViewSupport.getArrowImageId(readingAnalysis))
+        holder.readingLightImageView.setImageResource(
+            ReadingAnalysisViewSupport.getColorCircleImageId(
+                readingAnalysis
+            )
+        )
+        holder.readingArrowImageView.setImageResource(
+            ReadingAnalysisViewSupport.getArrowImageId(
+                readingAnalysis
+            )
+        )
 
         holder.date.text = DateUtil.getConciseDateString(currReading.dateTimeTaken)
     }
 
-     class SyncReadingViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
-         val sysText:TextView = itemView.findViewById(R.id.systolicBpTextView)
-         val diasText:TextView = itemView.findViewById(R.id.diastolicBpTextView)
-         val hrText:TextView = itemView.findViewById(R.id.heartRateTextView)
-         val readingLightImageView:ImageView = itemView.findViewById(R.id.readingLightImgView)
-         val readingArrowImageView:ImageView = itemView.findViewById(R.id.readingArrowImageview)
-         val date :TextView = itemView.findViewById(R.id.readingDate)
-     }
+    class SyncReadingViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val sysText: TextView = itemView.findViewById(R.id.systolicBpTextView)
+        val diasText: TextView = itemView.findViewById(R.id.diastolicBpTextView)
+        val hrText: TextView = itemView.findViewById(R.id.heartRateTextView)
+        val readingLightImageView: ImageView = itemView.findViewById(R.id.readingLightImgView)
+        val readingArrowImageView: ImageView = itemView.findViewById(R.id.readingArrowImageview)
+        val date: TextView = itemView.findViewById(R.id.readingDate)
+    }
 }
