@@ -125,7 +125,7 @@ interface PatientDaoAccess {
     fun insert(patient: Patient)
 
     /**
-     * insert a list of patients into the patient tavle
+     * insert a list of patients into the patient table
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(patients: List<Patient>)
@@ -149,6 +149,15 @@ interface PatientDaoAccess {
     @get:Query("SELECT * FROM Patient")
     val allPatientsAndReading: List<PatientAndReadings>
 
+    @get:Transaction
+    @get:Query("SELECT * FROM Patient WHERE base IS null")
+    val unUploadedPatientAndReadings: List<PatientAndReadings>
+
+    /**
+     * get patients that were edited after a given timestamp and are not brand new patients
+     */
+    @Query("SELECT * FROM Patient WHERE lastEdited =:unixTime AND base IS NOT null")
+    fun getEditedPatients(unixTime: Long): List<Patient>
     /**
      * get a list of patient Ids
      */

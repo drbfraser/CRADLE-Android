@@ -46,12 +46,12 @@ class VolleyRequests(private val sharedPreferences: SharedPreferences) {
      */
     fun postJsonObjectRequest(
         url: String,
-        jsonaBody: JSONObject?,
+        jsonBody: JSONObject?,
         callback: (NetworkResult<JSONObject>) -> Unit
     ): JsonObjectRequest {
         val successListener = Response.Listener<JSONObject> { callback(Success(it)) }
         val errorListener = Response.ErrorListener { callback(Failure(it)) }
-        return object : JsonObjectRequest(POST, url, jsonaBody, successListener, errorListener) {
+        return object : JsonObjectRequest(POST, url, jsonBody, successListener, errorListener) {
             /**
              * Passing some request headers
              */

@@ -2,6 +2,7 @@ package com.cradle.neptune.manager
 
 import com.cradle.neptune.database.PatientDaoAccess
 import com.cradle.neptune.model.Patient
+import com.cradle.neptune.model.PatientAndReadings
 import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -73,4 +74,15 @@ class PatientManager(private val daoAccess: PatientDaoAccess) {
     fun getPatientByIdBlocking(id: String): Patient? = runBlocking {
         withContext(Dispatchers.IO) { getPatientById(id) }
     }
+
+    /**
+     * returns all the  patients which dont exists on server and their readings
+     */
+    suspend fun getUnUploadedPatients(): List<PatientAndReadings> =
+        withContext(Dispatchers.IO) { daoAccess.unUploadedPatientAndReadings }
+
+    /**
+     * get edited Patients that also exists on the server
+     */
+    suspend fun getEditedPatients(timeStamp: Long): List<Patient> = withContext(Dispatchers.IO) { daoAccess.getEditedPatients(timeStamp) }
 }

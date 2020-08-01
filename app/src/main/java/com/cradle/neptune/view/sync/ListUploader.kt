@@ -4,6 +4,7 @@ import android.content.Context
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.VolleyRequestManager
 import com.cradle.neptune.model.Patient
+import com.cradle.neptune.model.PatientAndReadings
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.network.Failure
 import com.cradle.neptune.network.NetworkResult
@@ -14,6 +15,7 @@ import org.json.JSONObject
 /**
  * Uploads a list of an object to the server. The list could be [Reading] or [Patient]
  * The idea is to get a list of patients/reading and upload them one by one until the list is empty.
+ * [callerCallback] lets the caller know boolean status of every call: success/fail
  */
 class ListUploader(
     val context: Context,
@@ -30,31 +32,28 @@ class ListUploader(
 
     init {
         (context.applicationContext as MyApp).appComponent.inject(this)
-        // todo need to find a better way to do this, maybe split it into 2 sub classes
         totalNum = listToUpload.size
-        if (uploadType == UploadType.READING) {
-            uploadSingleReading()
-        } else {
-            uploadSinglePatient()
-        }
-    }
-
-    private fun uploadSinglePatient() {
-        if (listToUpload.isEmpty()) {
-            return
-        }
-        volleyRequestManager.uploadPatientToTheServer(listToUpload[0] as Patient, networkCallback)
-    }
-
-    private fun uploadSingleReading() {
-        if (listToUpload.isEmpty()) {
-            return
-        }
-        volleyRequestManager.uploadReadingToTheServer(listToUpload[0] as Reading, networkCallback)
+        uploadSingleObject()
     }
 
     /**
-     * Callback to continue uploading the readings one by one.
+     * uploads a single object from the list.
+     */
+    private fun uploadSingleObject() {
+        if (listToUpload.isEmpty()) {
+            return
+        }
+        if (uploadType == UploadType.PATIENT) {
+            val patient = (listToUpload[0] as PatientAndReadings).patient
+            val readings = (listToUpload[0] as PatientAndReadings).readings
+            volleyRequestManager.uploadPatientToTheServer(patient, readings, networkCallback)
+        } else {
+            volleyRequestManager.uploadReadingToTheServer(listToUpload[0] as Reading, networkCallback)
+        }
+    }
+
+    /**
+     * Callback to continue uploading the objects one by one.
      */
     private val networkCallback: (NetworkResult<JSONObject>) -> Unit = { result ->
         when (result) {
@@ -67,12 +66,10 @@ class ListUploader(
                 callerCallback(false)
             }
         }
+        // remove the object we got result for
         listToUpload.removeAt(0)
-        if (uploadType == UploadType.PATIENT) {
-            uploadSinglePatient()
-        } else {
-            uploadSingleReading()
-        }
+        // upload next one
+        uploadSingleObject()
     }
 
     /**

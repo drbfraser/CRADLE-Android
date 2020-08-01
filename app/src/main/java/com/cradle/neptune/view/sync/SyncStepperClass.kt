@@ -1,14 +1,11 @@
 package com.cradle.neptune.view.sync
 
 import android.content.Context
-import android.util.Log
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.manager.VolleyRequestManager
 import com.cradle.neptune.model.JsonArray
-import com.cradle.neptune.model.Patient
-import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.toList
 import com.cradle.neptune.network.Failure
 import com.cradle.neptune.network.Success
@@ -36,9 +33,9 @@ class SyncStepperClass(val context: Context, val stepperCallback: SyncStepperCal
     @Inject
     lateinit var readingManager: ReadingManager
 
-    lateinit var downloadedData: DownloadedData
+    private lateinit var downloadedData: DownloadedData
 
-    lateinit var uploadRequestStatus: UploadRequestStatus
+    private lateinit var uploadRequestStatus: TotalRequestStatus
 
     init {
         (context.applicationContext as MyApp).appComponent.inject(this)
@@ -58,9 +55,8 @@ class SyncStepperClass(val context: Context, val stepperCallback: SyncStepperCal
                     // let caller know of the next step
                     stepperCallback.onFetchDataCompleted(downloadedData)
                     GlobalScope.launch(Dispatchers.IO) {
-                        val patientsToUpload = getPatientToUpload()
-                        val readingsToUpload = ArrayList(readingManager.getUnUploadedReadings())
-                        setupUploadingPatientReadings(patientsToUpload, readingsToUpload)
+                        // need to turn this into a patient json object that has readings inside of it
+                        setupUploadingPatientReadings()
                     }
                 }
                 is Failure -> {
@@ -70,67 +66,55 @@ class SyncStepperClass(val context: Context, val stepperCallback: SyncStepperCal
         }
     }
 
-    private suspend fun getPatientToUpload(): ArrayList<Patient> {
-
-        val unUploadedPatients = ArrayList(patientManager.getAllPatients())
-
-        unUploadedPatients.forEach {
-            if (downloadedData.editedPatientId.contains(it.id) || downloadedData.newPatientsIds.contains(
-                    it.id
-                )
-            ) {
-                unUploadedPatients.remove(it)
-            }
-        }
-        return unUploadedPatients
-    }
-
     /**
      * step 2 -> starts uploading readings and patients starting with patients.
      */
-    private fun setupUploadingPatientReadings(
-        patientsList: ArrayList<Patient>,
-        readingList: ArrayList<Reading>
-    ) {
-        val totalNum = patientsList.size + readingList.size
-        uploadRequestStatus = UploadRequestStatus(totalNum, 0, 0)
-        // this will be all the new patients with their readings.
-        ListUploader(context, PATIENT, patientsList) { result ->
+    private suspend fun setupUploadingPatientReadings() {
+        // get the brand new patients to upload
+        val newPatients = ArrayList(patientManager.getUnUploadedPatients())
+        val readingsToUpload = ArrayList(readingManager.getUnUploadedReadingsForServerPatients())
+        //mock the time for now, in the future, this will be ffrom sharedpref
+        val editedPatients = ArrayList(patientManager.getEditedPatients(1596091783L))
+
+        // total number of uploads need to be done.
+        val totalNum = newPatients.size + readingsToUpload.size+ editedPatients.size
+        // keep track of all the fail/pass status for uploaded requests
+        uploadRequestStatus = TotalRequestStatus(totalNum, 0, 0)
+        // this will be all the brand new patients with their readings.
+        ListUploader(context, PATIENT, newPatients) { result ->
             // once finished call uploading a single patient, need to update the base time
-            // going to put patient inside readings later on
-            Log.d("bugg", "starting to upload the readings")
             checkIfAllDataUploaded(result)
         }
         // how do  i get the readings for existing patients??
         // these will be readings for existing patients that were not part
-        ListUploader(context, READING, readingList) { result ->
+        ListUploader(context, READING, readingsToUpload) { result ->
             // finished uploading the readings and show the overall status.
             checkIfAllDataUploaded(result)
         }
 
         // this will be edited patients that were not edited in the server, we match againt the downloaded object
-        ListUploader(context, PATIENT, patientsList) {
+        ListUploader(context, PATIENT, editedPatients) {
             checkIfAllDataUploaded(it)
         }
 
-        // todo once all the callbacks are done let server know and start next step.
     }
 
     /**
      * This function will check if we have gotten back all the results for the network calls we made
+     * @param result the last result we got
      */
     private fun checkIfAllDataUploaded(
-        patientResult: Boolean
+        result: Boolean
     ) {
-        if (patientResult) {
+        if (result) {
             uploadRequestStatus.numUploaded++
         } else {
             uploadRequestStatus.numFailed++
         }
+        // let the caller know we got another result
         stepperCallback.onNewPatientAndReadingUploaded(uploadRequestStatus)
 
         if (uploadRequestStatus.allRequestCompleted()) {
-            // finished
             // call the next step
             downloadAllInfo()
         }
@@ -181,9 +165,9 @@ interface SyncStepperCallback {
 
     /**
      * called everytime we get a network result for all the upload network calls
-     * @param uploadRequestStatus contains number of total requests, failed requests, success requests
+     * @param totalRequestStatus contains number of total requests, failed requests, success requests
      */
-    fun onNewPatientAndReadingUploaded(uploadRequestStatus: UploadRequestStatus)
+    fun onNewPatientAndReadingUploaded(totalRequestStatus: TotalRequestStatus)
 
     fun onStepThree()
     fun onStepFour()
@@ -211,7 +195,7 @@ data class DownloadedData(val jsonArray: JSONObject) {
 /**
  * This class keeps track of total number of requests made, number of requests failed, and succeded
  */
-data class UploadRequestStatus(var totalNum: Int, var numFailed: Int, var numUploaded: Int) {
+data class TotalRequestStatus(var totalNum: Int, var numFailed: Int, var numUploaded: Int) {
     fun allRequestCompleted(): Boolean {
         return (totalNum == numFailed + numUploaded)
     }

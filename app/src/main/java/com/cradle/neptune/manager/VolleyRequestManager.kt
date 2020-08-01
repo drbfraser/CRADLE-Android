@@ -7,6 +7,7 @@ import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.model.FollowUp
 import com.cradle.neptune.model.GlobalPatient
 import com.cradle.neptune.model.HealthFacility
+import com.cradle.neptune.model.JsonArray
 import com.cradle.neptune.model.JsonObject
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
@@ -303,14 +304,33 @@ class VolleyRequestManager(application: Application) {
     /**
      * send a reading to the server and propogates its result down to the client
      * @param patient patient to upload
+     * @param readings optional list of readings to put inside the patient
      * @param callback callback for the caller
      */
-    fun uploadPatientToTheServer(patient: Patient, callback: (NetworkResult<JSONObject>) -> Unit) {
+    fun uploadPatientToTheServer(
+        patient: Patient,
+        readings: List<Reading>?,
+        callback: (NetworkResult<JSONObject>) -> Unit
+    ) {
+        val patientJsonObject = patient.marshal()
+
+        if (readings != null) {
+            val readingJsonArray = JsonArray()
+            readings.forEach {
+                readingJsonArray.put(it.marshal())
+            }
+            patientJsonObject.put("readings", readingJsonArray)
+        }
 
         val request =
-            volleyRequests.postJsonObjectRequest(urlManager.patients, patient.marshal()) { result ->
+            volleyRequests.postJsonObjectRequest(urlManager.patients, patientJsonObject) { result ->
                 when (result) {
                     is Success -> {
+                        // need to update the base to lastEdited since server compares patient's base
+                        // with server's last edited field. If they dont match, server does not accepts
+                        // the edited value.
+                        patient.base = patient.lastEdited
+                        patientManager.add(patient)
                         callback(Success(result.value))
                     }
                     is Failure -> {

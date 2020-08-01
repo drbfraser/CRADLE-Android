@@ -26,7 +26,7 @@ class SyncResultFragment : Fragment(), SyncStepperCallback {
         // maybe display it?
     }
 
-    override fun onNewPatientAndReadingUploaded(uploadRequestStatus: UploadRequestStatus) {
+    override fun onNewPatientAndReadingUploaded(totalRequestStatus: TotalRequestStatus) {
         // update the UI to show the progress
     }
 
