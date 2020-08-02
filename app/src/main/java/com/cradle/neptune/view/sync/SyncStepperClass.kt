@@ -1,6 +1,7 @@
 package com.cradle.neptune.view.sync
 
 import android.content.Context
+import android.util.Log
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
@@ -45,7 +46,7 @@ class SyncStepperClass(val context: Context, val stepperCallback: SyncStepperCal
      * step number 1, get all the newest data from the server. and go to step number 2.
      */
     fun fetchUpdatesFromServer() {
-        // give a timestamp to provide
+        // give a timestamp to provide, again this will be from shared pref eventually
         val currTime = 1596091983L
         volleyRequestManager.getUpdates(currTime) { result ->
             when (result) {
@@ -53,7 +54,7 @@ class SyncStepperClass(val context: Context, val stepperCallback: SyncStepperCal
                     // result was success
                     downloadedData = DownloadedData(result.value)
                     // let caller know of the next step
-                    stepperCallback.onFetchDataCompleted(downloadedData)
+                    stepperCallback.onFetchDataCompleted(true)
                     GlobalScope.launch(Dispatchers.IO) {
                         // need to turn this into a patient json object that has readings inside of it
                         setupUploadingPatientReadings()
@@ -61,6 +62,7 @@ class SyncStepperClass(val context: Context, val stepperCallback: SyncStepperCal
                 }
                 is Failure -> {
                     // let user know we failed.... probably cant continue?
+                    stepperCallback.onFetchDataCompleted(false)
                 }
             }
         }
@@ -73,26 +75,39 @@ class SyncStepperClass(val context: Context, val stepperCallback: SyncStepperCal
         // get the brand new patients to upload
         val newPatients = ArrayList(patientManager.getUnUploadedPatients())
         val readingsToUpload = ArrayList(readingManager.getUnUploadedReadingsForServerPatients())
-        //mock the time for now, in the future, this will be ffrom sharedpref
+        //mock the time for now, in the future, this will be from sharedpref
         val editedPatients = ArrayList(patientManager.getEditedPatients(1596091783L))
-
+        Log.d("bugg","new patients to upload: "+ editedPatients.size)
+        newPatients.forEach {
+            Log.d("bugg","  "+ it.patient.id)
+        }
+        Log.d("bugg","new readings to upload: "+ readingsToUpload.size)
+        readingsToUpload.forEach {
+            Log.d("bugg"," "+ it.id)
+        }
         // total number of uploads need to be done.
         val totalNum = newPatients.size + readingsToUpload.size+ editedPatients.size
         // keep track of all the fail/pass status for uploaded requests
         uploadRequestStatus = TotalRequestStatus(totalNum, 0, 0)
-        // this will be all the brand new patients with their readings.
+
         ListUploader(context, PATIENT, newPatients) { result ->
             // once finished call uploading a single patient, need to update the base time
             checkIfAllDataUploaded(result)
-        }
-        // how do  i get the readings for existing patients??
+        }.startUpload()
+
         // these will be readings for existing patients that were not part
         ListUploader(context, READING, readingsToUpload) { result ->
-            // finished uploading the readings and show the overall status.
             checkIfAllDataUploaded(result)
-        }
+        }.startUpload()
+
 
         // this will be edited patients that were not edited in the server, we match againt the downloaded object
+        editedPatients.forEach {
+            if (downloadedData.editedPatientId.contains(it.id)){
+                editedPatients.remove(it)
+            }
+        }
+        Log.d("bugg","edited patients (should be empty) to upload: "+ editedPatients.forEach { it.id})
         ListUploader(context, PATIENT, editedPatients) {
             checkIfAllDataUploaded(it)
         }
@@ -116,7 +131,7 @@ class SyncStepperClass(val context: Context, val stepperCallback: SyncStepperCal
 
         if (uploadRequestStatus.allRequestCompleted()) {
             // call the next step
-            downloadAllInfo()
+           // downloadAllInfo()
         }
     }
 
@@ -124,9 +139,15 @@ class SyncStepperClass(val context: Context, val stepperCallback: SyncStepperCal
      * step 3 -> now we download all the information one by one
      */
     private fun downloadAllInfo() {
+        val totalRequest = downloadedData.editedPatientId.size + downloadedData.newReadingsIds.size
+        +downloadedData.followUpIds.size+ downloadedData.newPatientsIds.size
+
+        val downloadStatus = TotalRequestStatus(totalRequest,0,0)
         // download brand new patients that are not on local
         downloadedData.newPatientsIds.toList().forEach {
             volleyRequestManager.getFullPatientById(it) {
+                //need to put them in the DB
+                Log.d("bugg","downloaded patient: "+ it.toString())
             }
         }
         // grab all the patients that we have but were edited by the server....
@@ -159,9 +180,9 @@ interface SyncStepperCallback {
 
     /**
      * Let the caller know we have completed fetching the data from the server
-     * @param downloadedData the data we received from the server
+     * @param success status of fetching the data from the server
      */
-    fun onFetchDataCompleted(downloadedData: DownloadedData)
+    fun onFetchDataCompleted(success:Boolean)
 
     /**
      * called everytime we get a network result for all the upload network calls

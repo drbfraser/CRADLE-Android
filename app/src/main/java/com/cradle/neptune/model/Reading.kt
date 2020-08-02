@@ -102,6 +102,7 @@ data class Reading(
 
     /**
      * Converts this [Reading] object into a [JsonObject].
+     * this function is intended for network calls
      */
     override fun marshal(): JsonObject = with(JsonObject()) {
         put(ReadingField.ID, id)
@@ -116,8 +117,8 @@ data class Reading(
         put(ReadingField.DATE_RECHECK_VITALS_NEEDED, dateRecheckVitalsNeeded)
         put(ReadingField.IS_FLAGGED_FOR_FOLLOWUP, isFlaggedForFollowUp)
 
-        putStringArray(ReadingField.PREVIOUS_READING_IDS, previousReadingIds)
-        union(metadata)
+        // server only takes strings
+        put(ReadingField.PREVIOUS_READING_IDS, previousReadingIds.joinToString())
     }
 
     companion object : Unmarshal<Reading, JsonObject> {

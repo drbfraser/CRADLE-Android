@@ -27,7 +27,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        app:layout_constraintEnd_toStartOf="@+id/ivUploadAction"
+        app:layout_constraintEnd_toStartOf="@+id/ivUploadStatus"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/lblUploadingReadingsTitle"
         app:srcCompat="@drawable/ic_phone" />
@@ -40,12 +40,12 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/ivUploadAction"
+            app:layout_constraintStart_toEndOf="@+id/ivUploadStatus"
             app:layout_constraintTop_toBottomOf="@+id/lblUploadingReadingsTitle"
             app:srcCompat="@drawable/twotone_cloud_black_36" />
 
         <ImageView
-            android:id="@+id/ivUploadAction"
+            android:id="@+id/ivUploadStatus"
             android:layout_width="70dp"
             android:layout_height="52dp"
             android:layout_marginStart="8dp"

@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.SharedPreferences
 import android.util.Log
 import com.cradle.neptune.dagger.MyApp
+import com.cradle.neptune.database.ReadingDaoAccess
 import com.cradle.neptune.model.FollowUp
 import com.cradle.neptune.model.GlobalPatient
 import com.cradle.neptune.model.HealthFacility
@@ -78,8 +79,11 @@ class VolleyRequestManager(application: Application) {
                             val patientList = ArrayList<Patient>()
                             val readingList = ArrayList<Reading>()
                             for (i in 0 until response.length()) {
+                                val patient = Patient.unmarshal(response[i] as JsonObject)
+                                // we need to set base so we know it is a patient from the server
+                                patient.base = patient.lastEdited
+                                patientList.add(patient)
                                 // get all the readings
-                                patientList.add(Patient.unmarshal(response[i] as JsonObject))
                                 val readingArray =
                                     (response[i] as JsonObject).getJSONArray("readings")
                                 for (j in 0 until readingArray.length()) {
@@ -291,13 +295,19 @@ class VolleyRequestManager(application: Application) {
             volleyRequests.postJsonObjectRequest(urlManager.readings, reading.marshal()) { result ->
                 when (result) {
                     is Success -> {
+                        Log.d("bugg","successfully updated the reading")
+                        reading.isUploadedToServer = true
+                        readingManager.addReading(reading)
                         callback(Success(result.value))
                     }
                     is Failure -> {
+                        Log.d("bugg","failed to upload the reading")
+
                         callback(Failure(result.value))
                     }
                 }
             }
+        Log.d("bugg","adding reading to the quueeue")
         volleyRequestQueue.addRequest(request)
     }
 

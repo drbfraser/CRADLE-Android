@@ -2,7 +2,6 @@
 
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/layoutUploadingReadings"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
@@ -26,12 +25,12 @@
         android:layout_height="52dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/ivUploadAction"
-        app:layout_constraintTop_toTopOf="@+id/ivUploadAction"
+        app:layout_constraintStart_toEndOf="@+id/ivFetchStatus"
+        app:layout_constraintTop_toTopOf="@+id/ivFetchStatus"
         app:srcCompat="@drawable/ic_phone" />
 
     <ImageView
-        android:id="@+id/ivUploadAction"
+        android:id="@+id/ivFetchStatus"
         android:layout_width="70dp"
         android:layout_height="52dp"
         app:layout_constraintEnd_toStartOf="@+id/imageView4"
@@ -45,7 +44,7 @@
         android:layout_width="52dp"
         android:layout_height="52dp"
         android:layout_marginTop="8dp"
-        app:layout_constraintEnd_toStartOf="@+id/ivUploadAction"
+        app:layout_constraintEnd_toStartOf="@+id/ivFetchStatus"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/lblUploadingReadingsTitle"

@@ -97,8 +97,8 @@ interface ReadingDaoAccess {
     @get:Query("""
         SELECT * 
         FROM Reading r 
-        JOIN Patient p ON r.patientId = p.id
-        WHERE p.base = null AND r.isUploadedToServer = 0
+        JOIN Patient p ON r.patientId like p.id
+        WHERE p.base is NOT null AND r.isUploadedToServer = 0
     """)
     val allUnUploadedReadingsForTrackedPatients: List<Reading>
 

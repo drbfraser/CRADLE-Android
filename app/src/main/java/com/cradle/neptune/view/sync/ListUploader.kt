@@ -1,6 +1,7 @@
 package com.cradle.neptune.view.sync
 
 import android.content.Context
+import android.util.Log
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.VolleyRequestManager
 import com.cradle.neptune.model.Patient
@@ -30,10 +31,21 @@ class ListUploader(
     private var numUploaded = 0
     private var totalNum = 0
 
+    private var isUploadStarted = false
+
     init {
         (context.applicationContext as MyApp).appComponent.inject(this)
         totalNum = listToUpload.size
-        uploadSingleObject()
+    }
+
+    /**
+     * function to the caller to control when to start uploading
+     */
+    fun startUpload(){
+        if (!isUploadStarted) {
+            uploadSingleObject()
+            isUploadStarted = true
+        }
     }
 
     /**
@@ -60,9 +72,11 @@ class ListUploader(
             is Success -> {
                 // upload progress
                 numUploaded++
+                Log.d("bugg", "network result: success")
                 callerCallback(true)
             }
             is Failure -> {
+                Log.d("bugg","network result failed: "+ result.value.message)
                 callerCallback(false)
             }
         }
