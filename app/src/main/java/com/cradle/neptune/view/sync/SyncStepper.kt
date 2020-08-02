@@ -55,10 +55,20 @@ interface SyncStepperCallback {
     fun onNewPatientAndReadingUploading(uploadStatus: TotalRequestStatus)
 
     /**
+     * called when we finished uploading the patient and readings.
+     */
+    fun onNewPatientAndReadingUploadFinish(uploadStatus: TotalRequestStatus)
+
+    /**
      * called every time we get a network result for all the download network calls
      * @param downloadStatus contains number of total requests, failed requests, success requests
     */
     fun onNewPatientAndReadingDownloading(downloadStatus: TotalRequestStatus)
+
+    /**
+     * called when we finish downloading the information from the server
+     */
+    fun onNewPatientAndReadingDownloadFinish(downloadStatus: TotalRequestStatus)
 
     /**
      * let the caller know we are done sync process
