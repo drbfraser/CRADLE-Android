@@ -32,7 +32,7 @@ class SyncResultFragment : Fragment(), SyncStepperCallback {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        SyncStepperClass(requireContext(), this).fetchUpdatesFromServer(sharedPreferences.getLong("lastSyncTime", 0))
+        SyncStepperClass(requireContext(), this).fetchUpdatesFromServer()
     }
 
     override fun onFetchDataCompleted(success: Boolean) {

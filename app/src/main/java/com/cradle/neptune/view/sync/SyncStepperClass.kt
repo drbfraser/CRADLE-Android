@@ -2,7 +2,6 @@ package com.cradle.neptune.view.sync
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
@@ -18,14 +17,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
-import java.time.ZonedDateTime
 
 /**
  * The idea of this class is to act as a stepper for the sync process and to let the calling object
  * know of the process know when its done the step through a call back than the caller will
  * call next step.
  */
-class SyncStepperClass(val context: Context, val stepperCallback: SyncStepperCallback) {
+class SyncStepperClass(val context: Context, private val stepperCallback: SyncStepperCallback): SyncStepper{
 
     @Inject
     lateinit var volleyRequestManager: VolleyRequestManager
@@ -58,7 +56,7 @@ class SyncStepperClass(val context: Context, val stepperCallback: SyncStepperCal
     /**
      * step number 1, get all the newest data from the server. and go to step number 2.
      */
-    fun fetchUpdatesFromServer() {
+    override fun fetchUpdatesFromServer() {
         val lastSyncTime = sharedPreferences.getLong(LAST_SYNC, LAST_SYNC_DEFAULT)
         // give a timestamp to provide, again this will be from shared pref eventually
         volleyRequestManager.getUpdates(lastSyncTime) { result ->
@@ -84,7 +82,7 @@ class SyncStepperClass(val context: Context, val stepperCallback: SyncStepperCal
     /**
      * step 2 -> starts uploading readings and patients starting with patients.
      */
-    private suspend fun setupUploadingPatientReadings(lastSyncTime: Long) {
+    override suspend fun setupUploadingPatientReadings(lastSyncTime: Long) {
         // get the brand new patients to upload
         val newPatients = ArrayList(patientManager.getUnUploadedPatients())
         val readingsToUpload = ArrayList(readingManager.getUnUploadedReadingsForServerPatients())
@@ -133,30 +131,9 @@ class SyncStepperClass(val context: Context, val stepperCallback: SyncStepperCal
     }
 
     /**
-     * This function will check if we have gotten back all the results for the network calls we made
-     * @param result the latest result we got
-     */
-    private fun checkIfAllDataUploaded(
-        result: Boolean
-    ) {
-        if (result) {
-            uploadRequestStatus.numUploaded++
-        } else {
-            uploadRequestStatus.numFailed++
-        }
-        // let the caller know we got another result
-        stepperCallback.onNewPatientAndReadingUploading(uploadRequestStatus)
-
-        if (uploadRequestStatus.allRequestCompleted()) {
-            // call the next step
-            downloadAllInfo()
-        }
-    }
-
-    /**
      * step 3 -> now we download all the information one by one
      */
-    private fun downloadAllInfo() {
+    override fun downloadAllInfo() {
         val totalRequest = downloadedData.editedPatientId.size + downloadedData.newReadingsIds.size
         + downloadedData.followUpIds.size + downloadedData.newPatientsIds.size
 
@@ -208,9 +185,31 @@ class SyncStepperClass(val context: Context, val stepperCallback: SyncStepperCal
         }
     }
 
-    private fun finish(){
+    /**
+     * saved last sync time in the shared pref. let the caller know
+     */
+    override fun finish(){
         sharedPreferences.edit().putLong(LAST_SYNC, System.currentTimeMillis()/1000L).apply()
         stepperCallback.onFinish()
+    }
+
+    /**
+     * This function will check if we have gotten back all the results for the network calls we made
+     * @param result the latest result we got
+     */
+    private fun checkIfAllDataUploaded(result: Boolean) {
+        if (result) {
+            uploadRequestStatus.numUploaded++
+        } else {
+            uploadRequestStatus.numFailed++
+        }
+        // let the caller know we got another result
+        stepperCallback.onNewPatientAndReadingUploading(uploadRequestStatus)
+
+        if (uploadRequestStatus.allRequestCompleted()) {
+            // call the next step
+            downloadAllInfo()
+        }
     }
 
     private fun checkIfAllDataIsDownloaded(result: Boolean) {
@@ -223,28 +222,6 @@ class SyncStepperClass(val context: Context, val stepperCallback: SyncStepperCal
             finish()
         }
     }
-}
-
-/**
- * A simple interface to let the activity know whats going on with the upload status
- */
-interface SyncStepperCallback {
-
-    /**
-     * Let the caller know we have completed fetching the data from the server
-     * @param success status of fetching the data from the server
-     */
-    fun onFetchDataCompleted(success: Boolean)
-
-    /**
-     * called everytime we get a network result for all the upload network calls
-     * @param totalRequestStatus contains number of total requests, failed requests, success requests
-     */
-    fun onNewPatientAndReadingUploading(totalRequestStatus: TotalRequestStatus)
-
-    fun onNewPatientAndReadingDownloading(downloadStatus: TotalRequestStatus)
-
-    fun onFinish()
 }
 
 /**
