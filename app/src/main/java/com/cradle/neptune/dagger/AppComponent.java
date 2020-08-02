@@ -11,6 +11,7 @@ import com.cradle.neptune.view.PatientsActivity;
 import com.cradle.neptune.view.ReadingActivity;
 import com.cradle.neptune.view.StatsActivity;
 import com.cradle.neptune.view.sync.ListUploader;
+import com.cradle.neptune.view.sync.SyncResultFragment;
 import com.cradle.neptune.view.sync.SyncStepperClass;
 import com.cradle.neptune.view.sync.SyncUploadFragment;
 import com.cradle.neptune.view.ui.reading.ConfirmDataFragment;
@@ -19,6 +20,8 @@ import com.cradle.neptune.view.ui.settings.AdvancedSettingsFragment;
 import com.cradle.neptune.view.ui.settings.SettingsFragment;
 import com.cradle.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity;
 import com.cradle.neptune.viewmodel.HealthFacilityViewModel;
+
+import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Singleton;
 
@@ -70,4 +73,6 @@ public interface AppComponent {
     void inject(ListUploader listUploader);
 
     void inject(SyncStepperClass syncStepperClass);
+
+    void inject(SyncResultFragment syncResultFragment);
 }

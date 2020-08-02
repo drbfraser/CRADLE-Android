@@ -4,7 +4,6 @@ import android.app.Application
 import android.content.SharedPreferences
 import android.util.Log
 import com.cradle.neptune.dagger.MyApp
-import com.cradle.neptune.database.ReadingDaoAccess
 import com.cradle.neptune.model.FollowUp
 import com.cradle.neptune.model.GlobalPatient
 import com.cradle.neptune.model.HealthFacility
@@ -22,6 +21,7 @@ import com.cradle.neptune.network.VolleyRequestQueue
 import com.cradle.neptune.network.VolleyRequests
 import com.cradle.neptune.network.unwrap
 import com.cradle.neptune.view.LoginActivity
+import com.cradle.neptune.view.sync.SyncStepperClass
 import java.util.ArrayList
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
@@ -94,6 +94,7 @@ class VolleyRequestManager(application: Application) {
                             }
                             patientManager.addAll(patientList)
                             readingManager.addAllReadings(readingList)
+                            sharedPreferences.edit().putLong(SyncStepperClass.LAST_SYNC, System.currentTimeMillis() / 1000L).apply()
                         }
                     }
                     is Failure -> {
@@ -295,19 +296,15 @@ class VolleyRequestManager(application: Application) {
             volleyRequests.postJsonObjectRequest(urlManager.readings, reading.marshal()) { result ->
                 when (result) {
                     is Success -> {
-                        Log.d("bugg","successfully updated the reading")
                         reading.isUploadedToServer = true
                         readingManager.addReading(reading)
                         callback(Success(result.value))
                     }
                     is Failure -> {
-                        Log.d("bugg","failed to upload the reading")
-
                         callback(Failure(result.value))
                     }
                 }
             }
-        Log.d("bugg","adding reading to the quueeue")
         volleyRequestQueue.addRequest(request)
     }
 
@@ -341,6 +338,12 @@ class VolleyRequestManager(application: Application) {
                         // the edited value.
                         patient.base = patient.lastEdited
                         patientManager.add(patient)
+                        if (readings != null) {
+                            readings.forEach {
+                                it.isUploadedToServer = true
+                            }
+                            readingManager.addAllReadings(readings)
+                        }
                         callback(Success(result.value))
                     }
                     is Failure -> {

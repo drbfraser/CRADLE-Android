@@ -182,7 +182,7 @@ data class Reading(
                 previousReadingIds = previousReadingIds,
 
                 metadata = metadata,
-                isUploadedToServer = false
+                isUploadedToServer = true
             )
         }
 

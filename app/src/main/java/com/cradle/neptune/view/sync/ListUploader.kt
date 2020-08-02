@@ -41,7 +41,7 @@ class ListUploader(
     /**
      * function to the caller to control when to start uploading
      */
-    fun startUpload(){
+    fun startUpload() {
         if (!isUploadStarted) {
             uploadSingleObject()
             isUploadStarted = true
@@ -72,7 +72,6 @@ class ListUploader(
             is Success -> {
                 // upload progress
                 numUploaded++
-                Log.d("bugg", "network result: success")
                 callerCallback(true)
             }
             is Failure -> {

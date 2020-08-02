@@ -64,8 +64,9 @@ data class Patient(
         put(PatientField.IS_PREGNANT, isPregnant)
         put(PatientField.ZONE, zone)
         put(PatientField.VILLAGE_NUMBER, villageNumber)
-        putStringArray(PatientField.DRUG_HISTORY, drugHistoryList)
-        putStringArray(PatientField.MEDICAL_HISTORY, medicalHistoryList)
+        // server only takes string
+        put(PatientField.DRUG_HISTORY, drugHistoryList.joinToString())
+        put(PatientField.MEDICAL_HISTORY, medicalHistoryList.joinToString())
         put(PatientField.LAST_EDITED, lastEdited)
         put(PatientField.BASE, base)
     }
