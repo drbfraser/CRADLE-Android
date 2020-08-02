@@ -11,6 +11,7 @@ import com.cradle.neptune.view.PatientsActivity;
 import com.cradle.neptune.view.ReadingActivity;
 import com.cradle.neptune.view.StatsActivity;
 import com.cradle.neptune.view.sync.ListUploader;
+import com.cradle.neptune.view.sync.SyncActivity;
 import com.cradle.neptune.view.sync.SyncResultFragment;
 import com.cradle.neptune.view.sync.SyncStepperClass;
 import com.cradle.neptune.view.sync.SyncUploadFragment;
@@ -75,4 +76,6 @@ public interface AppComponent {
     void inject(SyncStepperClass syncStepperClass);
 
     void inject(SyncResultFragment syncResultFragment);
+
+    void inject(@NotNull SyncActivity syncActivity);
 }

@@ -91,17 +91,21 @@ class SyncStepperClass(val context: Context, private val stepperCallback: SyncSt
 
         // this will be edited patients that were not edited in the server, we match against the
         // downloaded patient id from the server to avoid conflicts
-        editedPatients.forEach {
-            if (downloadedData.editedPatientId.contains(it.id)) {
-                editedPatients.remove(it)
+        with(editedPatients.iterator()) {
+            forEach {
+                if (downloadedData.editedPatientId.contains(it.id)) {
+                    remove()
+                }
             }
         }
         // in case local user made a new patient that is also in the server,
         // we want to avoid uploading the patient but upload the reading
-        newPatients.forEach {
-            if (downloadedData.newPatientsIds.contains(it.patient.id)) {
-                readingsToUpload.addAll(it.readings)
-                newPatients.remove(it)
+        with(newPatients.iterator()){
+            forEach {
+                if (downloadedData.newPatientsIds.contains(it.patient.id)) {
+                    readingsToUpload.addAll(it.readings)
+                    remove()
+                }
             }
         }
 

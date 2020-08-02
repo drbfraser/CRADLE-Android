@@ -3,11 +3,11 @@ package com.cradle.neptune.view.sync
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
 import com.cradle.neptune.R
 
-class SyncActivity : AppCompatActivity() {
+class SyncActivity : AppCompatActivity(), SyncStepperCallback {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -16,16 +16,8 @@ class SyncActivity : AppCompatActivity() {
         supportActionBar?.title = "Sync Everything"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.syncFrameLayout, SyncUploadFragment(), "syncUpload").commit()
-
         findViewById<Button>(R.id.uploadEverythingButton).setOnClickListener {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.syncFrameLayout, SyncResultFragment()).commit()
-            // dont make it clickable for now
-            it.isClickable = false
-            it.isEnabled = false
-            it.alpha = 0.2F
+            SyncStepperClass(this, this).fetchUpdatesFromServer()
         }
     }
 
@@ -34,15 +26,27 @@ class SyncActivity : AppCompatActivity() {
         return super.onSupportNavigateUp()
     }
 
-    override fun onAttachFragment(fragment: Fragment) {
-        // setup some sort of call backs
-        when (fragment) {
-            is SyncUploadFragment -> {
-                Log.d("bugg", "SyncUploadFragment is attached")
-            }
-            is SyncResultFragment -> {
-                Log.d("bugg", "SyncDownload frag is attached")
-            }
+    override fun onFetchDataCompleted(success: Boolean) {
+        // maybe display it?
+        val iv = findViewById<ImageView>(R.id.ivFetchStatus)
+        if (success) {
+            iv.setImageResource(R.drawable.arrow_right_with_check)
+        } else {
+            iv.setImageResource(R.drawable.arrow_right_with_x)
         }
+    }
+
+    override fun onNewPatientAndReadingUploading(uploadStatus: TotalRequestStatus) {
+        // update the UI to show the progress
+        Log.d("bugg", "in the activity: total: " + uploadStatus.totalNum + " num upload: " +
+            uploadStatus.numUploaded + " num failed: " + uploadStatus.numFailed)
+    }
+
+    override fun onNewPatientAndReadingDownloading(downloadStatus: TotalRequestStatus) {
+
+    }
+
+    override fun onFinish() {
+
     }
 }
