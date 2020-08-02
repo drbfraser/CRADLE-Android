@@ -7,6 +7,7 @@ import com.android.volley.Response
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.cradle.neptune.manager.UrlManager
+import com.cradle.neptune.model.GlobalPatient
 import com.cradle.neptune.model.JsonArray
 import com.cradle.neptune.model.JsonObject
 import com.cradle.neptune.model.Patient
@@ -18,6 +19,9 @@ import javax.inject.Inject
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 /**
  * Provides asynchronous methods for sending strongly typed requests to the
@@ -30,6 +34,25 @@ class Api @Inject constructor(
 ) {
 
     /**
+     * Posts a [username] and [password] to the server's authentication
+     * endpoint and returns the response object.
+     *
+     * @param username a username
+     * @param password a password
+     * @return the response body or an error if one occurred
+     */
+    suspend fun authenticate(username: String, password: String): NetworkResult<JsonObject> {
+        val obj = JsonObject(mapOf("username" to username, "password" to password))
+        return requestObject(HttpMethod.POST, urlManager.authentication, obj)
+    }
+
+    fun authenticateAsync(username: String, password: String, callback: (NetworkResult<JsonObject>) -> Unit) =
+        GlobalScope.launch(Dispatchers.IO) {
+            val result = authenticate(username, password)
+            callback(result)
+        }
+
+    /**
      * Gets all patients (and their associated readings) available to this
      * user from the server and returns them as a list.
      *
@@ -39,6 +62,33 @@ class Api @Inject constructor(
     suspend fun getAllPatients(): NetworkResult<List<PatientAndReadings>> =
         requestArray(HttpMethod.GET, urlManager.getAllPatients).map { json ->
             json.map(JsonArray::getJSONObject, PatientAndReadings.Companion::unmarshal)
+        }
+
+    fun getAllPatientsAsync(callback: (NetworkResult<List<PatientAndReadings>>) -> Unit) =
+        GlobalScope.launch(Dispatchers.IO) {
+            val result = getAllPatients()
+            callback(result)
+        }
+
+    /**
+     * Performs a global patient search with a given search query
+     */
+    suspend fun getGlobalPatientSearch(query: String): NetworkResult<List<GlobalPatient>> =
+        requestArray(HttpMethod.GET, urlManager.getGlobalPatientSearch(query)).map { arr ->
+            arr.map(JsonArray::getJSONObject) { json ->
+                GlobalPatient(
+                    id = json.getString("patientId"),
+                    initials = json.getString("patientName"),
+                    villageNum = json.getString("villageNumber"),
+                    isMyPatient = false
+                )
+            }
+        }
+
+    fun getGlobalPatientSearchAsync(query: String, callback: (NetworkResult<List<GlobalPatient>>) -> Unit) =
+        GlobalScope.launch(Dispatchers.IO) {
+            val result = getGlobalPatientSearch(query)
+            callback(result)
         }
 
     /**
@@ -53,6 +103,12 @@ class Api @Inject constructor(
             PatientAndReadings.unmarshal(json)
         }
 
+    fun getPatientAsync(id: String, callback: (NetworkResult<PatientAndReadings>) -> Unit) =
+        GlobalScope.launch(Dispatchers.IO) {
+            val result = getPatient(id)
+            callback(result)
+        }
+
     /**
      * Gets just the demographic information for a single patient from the
      * server.
@@ -65,6 +121,12 @@ class Api @Inject constructor(
             Patient.unmarshal(json)
         }
 
+    fun getPatientInfoAsync(id: String, callback: (NetworkResult<Patient>) -> Unit) =
+        GlobalScope.launch(Dispatchers.IO) {
+            val result = getPatientInfo(id)
+            callback(result)
+        }
+
     /**
      * Gets a single reading from the server.
      *
@@ -74,6 +136,12 @@ class Api @Inject constructor(
     suspend fun getReading(id: String): NetworkResult<Reading> =
         requestObject(HttpMethod.GET, urlManager.getReading(id)).map { json ->
             Reading.unmarshal(json)
+        }
+
+    fun getReadingAsync(id: String, callback: (NetworkResult<Reading>) -> Unit) =
+        GlobalScope.launch(Dispatchers.IO) {
+            val result = getReading(id)
+            callback(result)
         }
 
     /**
@@ -89,6 +157,12 @@ class Api @Inject constructor(
             PatientAndReadings.unmarshal(json)
         }
 
+    fun postPatientAsync(patient: PatientAndReadings, callback: (NetworkResult<PatientAndReadings>) -> Unit) =
+        GlobalScope.launch(Dispatchers.IO) {
+            val result = postPatient(patient)
+            callback(result)
+        }
+
     /**
      * Posts a reading to the server returning the response which may contain
      * additional server-generated identifiers or other data.
@@ -100,6 +174,15 @@ class Api @Inject constructor(
         requestObject(HttpMethod.POST, urlManager.postReading, reading.marshal()).map { json ->
             Reading.unmarshal(json)
         }
+
+    fun postReadingAsync(reading: Reading, callback: (NetworkResult<Reading>) -> Unit) =
+        GlobalScope.launch(Dispatchers.IO) {
+            val result = postReading(reading)
+            callback(result)
+        }
+
+    suspend fun associatePatientToUser(id: String): NetworkResult<JsonObject> =
+        requestObject(HttpMethod.POST, urlManager.userPatientAssociation, JsonObject(mapOf("patientId" to id)))
 
     /**
      * Sends a generic JSON object request yielding the response body or an

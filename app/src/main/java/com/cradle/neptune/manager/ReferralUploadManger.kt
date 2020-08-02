@@ -8,6 +8,8 @@ import com.cradle.neptune.network.Api
 import com.cradle.neptune.network.Failure
 import javax.inject.Inject
 
+private const val HTTP_NOT_FOUND = 404
+
 class ReferralUploadManger @Inject constructor(private val api: Api) {
 
     suspend fun sendReferralViaWeb(patient: Patient, reading: Reading) {
@@ -19,7 +21,7 @@ class ReferralUploadManger @Inject constructor(private val api: Api) {
         // API
         val patientCheckResult = api.getPatientInfo(patient.id)
         val patientExists = if (patientCheckResult is Failure) {
-            if (patientCheckResult.value.networkResponse.statusCode != 404) {
+            if (patientCheckResult.value.networkResponse.statusCode != HTTP_NOT_FOUND) {
                 Log.e(this::class.simpleName, "Patient check failed with non 404 error, aborting upload")
                 return
             }
