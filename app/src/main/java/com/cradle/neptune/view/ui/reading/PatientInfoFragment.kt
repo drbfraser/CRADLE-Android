@@ -18,6 +18,7 @@ import com.cradle.neptune.model.GestationalAgeWeeks
 import com.cradle.neptune.model.Sex
 import com.cradle.neptune.utilitiles.nullIfEmpty
 import com.cradle.neptune.utilitiles.unreachable
+import org.threeten.bp.ZonedDateTime
 
 private const val GA_UNIT_INDEX_WEEKS = 0
 private const val GA_UNIT_INDEX_MONTHS = 1
@@ -238,6 +239,7 @@ class PatientInfoFragment : BaseFragment() {
             }
         }
 
+        this?.patientLastEdited = ZonedDateTime.now().toEpochSecond()
         return true
     }
 
