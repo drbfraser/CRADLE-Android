@@ -376,8 +376,8 @@ public class SummaryFragment extends BaseFragment {
             ivReferralSent.setVisibility(View.GONE);
         } else {
             tv.setText(getString(R.string.reading_referral_sent,
-                    viewModel.getReferral().getHealthCentre(),
-                    DateUtil.getFullDateFromUnix(viewModel.getReferral().getMessageSendTimeUnix())));
+                    viewModel.getReferral().getHealthFacilityName(),
+                    DateUtil.getFullDateFromUnix(viewModel.getReferral().getDateReferred())));
 //            tv.setText(getString(R.string.reading_referral_sent,
 //                    currentReading.referralHealthCentre,
 //                    DateUtil.getFullDateString(currentReading.referralMessageSendTime)

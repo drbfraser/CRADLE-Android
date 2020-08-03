@@ -24,6 +24,8 @@ const val MIN_DIASTOLIC = 10
 const val MAX_HEART_RATE = 200
 const val MIN_HEART_RATE = 30
 
+private const val SECONDS_IN_MIN = 60
+
 /**
  * Holds information about a reading.
  *
@@ -56,7 +58,7 @@ data class Reading(
     @ColumnInfo var symptoms: List<String>,
 
     @ColumnInfo var referral: Referral?,
-    @ColumnInfo var followUp: FollowUp?,
+    @ColumnInfo var followUp: Assessment?,
 
     @ColumnInfo var dateRecheckVitalsNeeded: Long?,
     @ColumnInfo var isFlaggedForFollowUp: Boolean,
@@ -107,17 +109,14 @@ data class Reading(
         put(ReadingField.ID, id)
         put(ReadingField.PATIENT_ID, patientId)
         put(ReadingField.DATE_TIME_TAKEN, dateTimeTaken)
-
         union(bloodPressure)
-        union(referral)
-        put(ReadingField.URINE_TEST, urineTest)
-        putStringArray(ReadingField.SYMPTOMS, symptoms)
-
         put(ReadingField.DATE_RECHECK_VITALS_NEEDED, dateRecheckVitalsNeeded)
         put(ReadingField.IS_FLAGGED_FOR_FOLLOWUP, isFlaggedForFollowUp)
-
-        putStringArray(ReadingField.PREVIOUS_READING_IDS, previousReadingIds)
-        union(metadata)
+        putStringArray(ReadingField.SYMPTOMS, symptoms)
+        put(ReadingField.REFERRAL, referral)
+        put(ReadingField.FOLLOWUP, followUp)
+        put(ReadingField.URINE_TEST, urineTest)
+        put(ReadingField.PREVIOUS_READING_IDS, previousReadingIds.joinToString(","))
     }
 
     companion object : Unmarshal<Reading, JsonObject> {
@@ -126,66 +125,33 @@ data class Reading(
          *
          * @throws JsonException if any required fields are missing.
          */
-        override fun unmarshal(data: JsonObject): Reading {
-            val id = data.stringField(ReadingField.ID)
+        override fun unmarshal(data: JsonObject) = Reading(
+            id = data.stringField(ReadingField.ID),
+            patientId = data.stringField(ReadingField.PATIENT_ID),
+            dateTimeTaken = data.longField(ReadingField.DATE_TIME_TAKEN),
+            bloodPressure = BloodPressure.unmarshal(data),
+            dateRecheckVitalsNeeded = data.optLongField(ReadingField.DATE_RECHECK_VITALS_NEEDED),
+            isFlaggedForFollowUp = data.optBooleanField(ReadingField.IS_FLAGGED_FOR_FOLLOWUP),
 
-            val patientId =
-                data.optStringField(ReadingField.PATIENT_ID) ?: data.getJSONObject("patient").getString("patientId")
+            symptoms = data.optArrayField(ReadingField.SYMPTOMS)
+                ?.map(JsonArray::getString) { it }
+                ?: emptyList(),
 
-            val dateTimeTaken = data.longField(ReadingField.DATE_TIME_TAKEN)
+            referral = data.optObjectField(ReadingField.REFERRAL)
+                ?.let(Referral.Companion::unmarshal),
 
-            val bloodPressure = BloodPressure.unmarshal(data)
-            val referral = maybeUnmarshal(Referral, data)
-            val urineTest = data.optObjectField(ReadingField.URINE_TEST)?.let {
-                maybeUnmarshal(UrineTest, it)
-            }
+            followUp = data.optObjectField(ReadingField.FOLLOWUP)
+                ?.let(Assessment.Companion::unmarshal),
 
-            val symptomsJsonArray =
-                data.optArrayField(ReadingField.SYMPTOMS)
-            val symptoms = ArrayList<String>()
+            urineTest = data.optObjectField(ReadingField.URINE_TEST)
+                ?.let(UrineTest.FromJson::unmarshal),
 
-            symptomsJsonArray?.apply {
-                for (i in 0 until this.length()) {
-                    symptoms.add(this[i] as String)
-                }
-            }
+            previousReadingIds = data.optStringField(ReadingField.PREVIOUS_READING_IDS)
+                ?.split(',')
+                ?: emptyList(),
 
-            val dateRecheckVitalsNeeded = data.optLongField(ReadingField.DATE_RECHECK_VITALS_NEEDED)
-            val isFlaggedForFollowUp = data.optBooleanField(ReadingField.IS_FLAGGED_FOR_FOLLOWUP) ?: false
-
-            val previousReadingIds = data.optArrayField(ReadingField.PREVIOUS_READING_IDS)?.let {
-                val list = mutableListOf<String>()
-                for (i in 0 until it.length()) {
-                    list.add(it.getString(i))
-                }
-                list
-            } ?: emptyList<String>()
-
-            val metadata = unmarshal(ReadingMetadata, data)
-
-            return Reading(
-                id = id,
-                patientId = patientId,
-                dateTimeTaken = dateTimeTaken,
-
-                bloodPressure = bloodPressure,
-                urineTest = urineTest,
-                symptoms = symptoms,
-
-                referral = referral,
-                followUp = null,
-
-                dateRecheckVitalsNeeded = dateRecheckVitalsNeeded,
-                isFlaggedForFollowUp = isFlaggedForFollowUp,
-
-                previousReadingIds = previousReadingIds,
-
-                metadata = metadata,
-                isUploadedToServer = false
-            )
-        }
-
-        const val SECONDS_IN_MIN = 60
+            metadata = ReadingMetadata()
+        )
     }
 
     object AscendingDataComparator : Comparator<Reading> {
@@ -279,41 +245,6 @@ data class BloodPressure(
             val heartRate = data.intField(BloodPressureField.HEART_RATE)
             return BloodPressure(systolic, diastolic, heartRate)
         }
-    }
-}
-
-/**
- * Holds information about a referral.
- *
- * @property messageSendTimeUnix The time at which this referral message was sent.
- * @property healthCentre The health center this referral should be sent to.
- * @property comment A comment to be included along with the referral.
- */
-data class Referral(
-    val messageSendTimeUnix: Long,
-    val healthCentre: String,
-    val comment: String
-) : Serializable, Marshal<JsonObject> {
-
-    override fun marshal(): JsonObject = with(JsonObject()) {
-        put(ReferralField.MESSAGE_SEND_TIME, messageSendTimeUnix)
-        put(ReferralField.HEALTH_CENTRE, healthCentre)
-        put(ReferralField.COMMENT, comment)
-    }
-
-    companion object : Unmarshal<Referral, JsonObject> {
-        /**
-         * Constructs a [Referral] object from a [JsonObject].
-         *
-         * @throws JsonException if any of the required fields are missing
-         */
-        override fun unmarshal(data: JsonObject): Referral {
-            val messageSendTime = data.longField(ReferralField.MESSAGE_SEND_TIME)
-            val healthCentre = data.stringField(ReferralField.HEALTH_CENTRE)
-            val comment = data.stringField(ReferralField.COMMENT)
-            return Referral(messageSendTime, healthCentre, comment)
-        }
-        const val MS_IN_SECOND = 1000L
     }
 }
 
@@ -529,110 +460,6 @@ enum class RetestAdvice {
     IN_15_MIN
 }
 
-// TODO: Figure out which of these are nullable and which are not. Also, it
-//  seems that the data stored on mobile is different from web so we'll need
-//  to get that resolved as well.
-
-/**
- * Data about a follow up which may be attached to a reading.
- */
-data class FollowUp(
-    var readingServerId: String?,
-    var followUpAction: String?,
-    var treatment: String?,
-    var diagnosis: String?,
-    var healthcare: String?,
-    var date: String?,
-    var assessedBy: String?,
-    var referredBy: String?,
-    var patientMedInfoUpdate: String?,
-    var patientDrugInfoUpdate: String?,
-    var patientId: String?,
-    var followUpNeeded: Boolean,
-    var followUpNeededTill: String?,
-    var medicationPrescribed: String?,
-    var followUpFrequencyUnit: String?,
-    var followUpFrequencyValue: Int,
-    var specialInvestigation: String?
-) : Marshal<JsonObject> {
-    constructor(
-        readingServerId: String?,
-        followUpAction: String?,
-        treatment: String?,
-        diagnosis: String?,
-        healthcare: String?,
-        date: String?,
-        assessedBy: String?,
-        referredBy: String?
-    ) : this(
-        readingServerId = readingServerId,
-        followUpAction = followUpAction,
-        treatment = treatment,
-        diagnosis = diagnosis,
-        healthcare = healthcare,
-        date = date,
-        assessedBy = assessedBy,
-        referredBy = referredBy,
-        patientMedInfoUpdate = null,
-        patientDrugInfoUpdate = null,
-        patientId = null,
-        followUpNeeded = false,
-        followUpNeededTill = null,
-        medicationPrescribed = null,
-        followUpFrequencyUnit = null,
-        followUpFrequencyValue = 0,
-        specialInvestigation = null
-    )
-
-    /**
-     * Converts this object into a [JsonObject].
-     */
-    override fun marshal() = with(JsonObject()) {
-        put(FollowUpField.READING_SERVER_ID, readingServerId)
-        put(FollowUpField.FOLLOW_UP_ACTION, followUpAction)
-        put(FollowUpField.TREATMENT, treatment)
-        put(FollowUpField.DIAGNOSIS, diagnosis)
-        put(FollowUpField.HEALTHCARE, healthcare)
-        put(FollowUpField.DATE, date)
-        put(FollowUpField.ASSESSED_BY, assessedBy)
-        put(FollowUpField.REFERRED_BY, referredBy)
-        put(FollowUpField.PATIENT_MED_INFO_UPDATE, patientMedInfoUpdate)
-        put(FollowUpField.PATIENT_DRUG_INFO_UPDATE, patientDrugInfoUpdate)
-        put(FollowUpField.PATIENT_ID, patientId)
-        put(FollowUpField.FOLLOW_UP_NEEDED, followUpNeeded)
-        put(FollowUpField.FOLLOW_UP_NEEDED_TILL, followUpNeededTill)
-        put(FollowUpField.MEDICATION_PRESCRIBED, medicationPrescribed)
-        put(FollowUpField.FOLLOW_UP_FREQUENCY_UNIT, followUpFrequencyUnit)
-        put(FollowUpField.FOLLOW_UP_FREQUENCY_VALUE, followUpFrequencyValue)
-        put(FollowUpField.SPECIAL_INVESTIGATION, specialInvestigation)
-    }
-
-    companion object : Unmarshal<FollowUp, JsonObject> {
-        /**
-         * Constructs a new instance of this class from a [JsonObject].
-         */
-        override fun unmarshal(data: JsonObject) = FollowUp(
-            readingServerId = data.optStringField(FollowUpField.READING_SERVER_ID),
-            followUpAction = data.optStringField(FollowUpField.FOLLOW_UP_ACTION),
-            treatment = data.optStringField(FollowUpField.TREATMENT),
-            diagnosis = data.optStringField(FollowUpField.DIAGNOSIS),
-            healthcare = data.optStringField(FollowUpField.HEALTHCARE),
-            date = data.optStringField(FollowUpField.DATE),
-            assessedBy = data.optStringField(FollowUpField.ASSESSED_BY),
-            referredBy = data.optStringField(FollowUpField.REFERRED_BY),
-            patientMedInfoUpdate = data.optStringField(FollowUpField.PATIENT_MED_INFO_UPDATE),
-            patientDrugInfoUpdate = data.optStringField(FollowUpField.PATIENT_DRUG_INFO_UPDATE),
-            patientId = data.optStringField(FollowUpField.PATIENT_ID),
-            followUpNeeded = data.optBooleanField(FollowUpField.FOLLOW_UP_NEEDED) ?: false,
-            followUpNeededTill = data.optStringField(FollowUpField.FOLLOW_UP_NEEDED_TILL),
-            medicationPrescribed = data.optStringField(FollowUpField.MEDICATION_PRESCRIBED),
-            followUpFrequencyUnit = data.optStringField(FollowUpField.FOLLOW_UP_FREQUENCY_UNIT),
-            followUpFrequencyValue = data.optIntField(FollowUpField.FOLLOW_UP_FREQUENCY_VALUE) ?: 0,
-            specialInvestigation = data.optStringField(FollowUpField.SPECIAL_INVESTIGATION)
-        )
-    }
-}
-
 /**
  * JSON keys for [Reading] fields.
  */
@@ -645,6 +472,8 @@ private enum class ReadingField(override val text: String) : Field {
     DATE_RECHECK_VITALS_NEEDED("dateRecheckVitalsNeeded"),
     IS_FLAGGED_FOR_FOLLOWUP("isFlaggedForFollowup"),
     PREVIOUS_READING_IDS("retestOfPreviousReadingIds"),
+    REFERRAL("referral"),
+    FOLLOWUP("followup"),
 }
 
 /**
@@ -654,15 +483,6 @@ private enum class BloodPressureField(override val text: String) : Field {
     SYSTOLIC("bpSystolic"),
     DIASTOLIC("bpDiastolic"),
     HEART_RATE("heartRateBPM"),
-}
-
-/**
- * JSON keys for [Referral] fields.
- */
-private enum class ReferralField(override val text: String) : Field {
-    MESSAGE_SEND_TIME("referralMessageSendTime"),
-    HEALTH_CENTRE("referralHealthCentre"),
-    COMMENT("referral"),
 }
 
 /**
@@ -677,24 +497,4 @@ private enum class MetadataField(override val text: String) : Field {
     IS_IMAGE_UPLOADED("isImageUploaded"),
     TOTAL_OCR_SECONDS("totalOcrSeconds"),
     GPS_LOCATION("gpsLocation"),
-}
-
-private enum class FollowUpField(override val text: String) : Field {
-    READING_SERVER_ID("readingServerId"),
-    FOLLOW_UP_ACTION("followUpAction"),
-    TREATMENT("treatment"),
-    DIAGNOSIS("diagnosis"),
-    HEALTHCARE("healthcare"),
-    DATE("date"),
-    ASSESSED_BY("assessedBy"),
-    REFERRED_BY("referredBy"),
-    PATIENT_MED_INFO_UPDATE("patientMedInfoUpdate"),
-    PATIENT_DRUG_INFO_UPDATE("patientDrugInfoUpdate"),
-    PATIENT_ID("patientId"),
-    FOLLOW_UP_NEEDED("followUpNeeded"),
-    FOLLOW_UP_NEEDED_TILL("followupNeededTill"),
-    MEDICATION_PRESCRIBED("medicationPrescribed"),
-    FOLLOW_UP_FREQUENCY_UNIT("followupFrequencyUnit"),
-    FOLLOW_UP_FREQUENCY_VALUE("followupFrequencyValue"),
-    SPECIAL_INVESTIGATION("specialInvestigation"),
 }

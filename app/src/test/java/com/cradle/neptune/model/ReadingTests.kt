@@ -2,9 +2,6 @@ package com.cradle.neptune.model
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
-import org.threeten.bp.ZoneId
-import org.threeten.bp.ZonedDateTime
-import org.threeten.bp.format.DateTimeFormatter
 
 class ReadingTests {
     @Test
@@ -14,21 +11,13 @@ class ReadingTests {
             BloodPressure(110, 70, 65),
             UrineTest("+", "++", "-", "-", "-"),
             listOf("headache", "blurred vision", "pain"),
-            Referral(unixTime, "HC101", "a comment"),
+            Referral("a comment", "HC0000", 5, "123", "abc"),
             null,
             unixTime,
             true,
             listOf("1", "2", "3"),
-            ReadingMetadata(
-                "0.1.0-alpha",
-                "some-info",
-                unixTime,
-                unixTime,
-                null,
-                false,
-                null,
-                null
-            ),false
+            ReadingMetadata(),
+            false
         )
 
         val json = reading.marshal()

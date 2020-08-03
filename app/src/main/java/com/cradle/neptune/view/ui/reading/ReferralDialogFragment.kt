@@ -137,14 +137,18 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
      *  referral is nested within the resultant reading
      */
     private fun constructModels(): Pair<Patient, Reading> {
-        if (selectedHealthFacility == null) {
-            throw IllegalStateException("no health facility selected")
-        }
+        val healthFacilityName = selectedHealthFacility?.name
+            ?: throw IllegalStateException("no health facility selected")
 
-        val currentTime = UnixTimestamp.now
-        val referral = Referral(currentTime, selectedHealthFacility!!.name, commentBox?.text.toString())
         val (patient, reading) = viewModel.constructModels()
-        reading.referral = referral
+        reading.referral = Referral(
+            commentBox?.text?.toString(),
+            healthFacilityName,
+            UnixTimestamp.now,
+            patient.id,
+            reading.id
+        )
+
         return patient to reading
     }
 

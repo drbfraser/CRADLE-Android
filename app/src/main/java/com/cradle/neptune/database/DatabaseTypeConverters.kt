@@ -1,8 +1,8 @@
 package com.cradle.neptune.database
 
 import androidx.room.TypeConverter
+import com.cradle.neptune.model.Assessment
 import com.cradle.neptune.model.BloodPressure
-import com.cradle.neptune.model.FollowUp
 import com.cradle.neptune.model.GestationalAge
 import com.cradle.neptune.model.ReadingMetadata
 import com.cradle.neptune.model.Referral
@@ -66,11 +66,11 @@ class DatabaseTypeConverters {
         Gson().toJson(referral)
 
     @TypeConverter
-    fun toFollowUp(string: String): FollowUp? =
-        Gson().fromJson(string, FollowUp::class.java)
+    fun toFollowUp(string: String): Assessment? =
+        Gson().fromJson(string, Assessment::class.java)
 
     @TypeConverter
-    fun fromFollowUp(followUp: FollowUp?): String =
+    fun fromFollowUp(followUp: Assessment?): String =
         Gson().toJson(followUp)
 
     @TypeConverter

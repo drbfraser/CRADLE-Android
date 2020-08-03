@@ -1,17 +1,11 @@
 package com.cradle.neptune.utilitiles;
 
-import com.cradle.neptune.model.Referral;
-
 import org.threeten.bp.Instant;
 import org.threeten.bp.ZoneId;
 import org.threeten.bp.ZonedDateTime;
 import org.threeten.bp.format.DateTimeFormatter;
 
-import java.sql.Time;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.TimeZone;
 
 public class DateUtil {
     public static String getDateString(ZonedDateTime date) {
