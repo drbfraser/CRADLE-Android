@@ -75,7 +75,6 @@ class ListUploader(
                 callerCallback(true)
             }
             is Failure -> {
-                Log.d("bugg","network result failed: "+ result.value.message)
                 callerCallback(false)
             }
         }

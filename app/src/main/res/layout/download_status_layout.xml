@@ -168,6 +168,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
+        android:id="@+id/downloadLayout"
         app:layout_constraintTop_toBottomOf="@+id/layoutUploadingReadings">
 
         <TextView
@@ -248,5 +249,34 @@
             app:layout_constraintTop_toBottomOf="@+id/textView105" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ProgressBar
+        android:id="@+id/syncProgressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:indeterminate="false"
+        android:max="3"
+        android:progress="0"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/downloadLayout" />
+
+    <TextView
+        android:id="@+id/syncText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Press the Sync button to start"
+        android:textAlignment="center"
+        android:textColor="@color/colorPrimaryLight"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/syncProgressBar"
+        app:layout_constraintStart_toStartOf="@+id/syncProgressBar"
+        app:layout_constraintTop_toBottomOf="@id/syncProgressBar" />
 </androidx.constraintlayout.widget.ConstraintLayout>
 

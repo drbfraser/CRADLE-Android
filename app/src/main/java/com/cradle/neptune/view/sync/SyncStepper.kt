@@ -73,5 +73,5 @@ interface SyncStepperCallback {
     /**
      * let the caller know we are done sync process
      */
-    fun onFinish()
+    fun onFinish(success: Boolean)
 }

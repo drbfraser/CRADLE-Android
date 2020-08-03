@@ -2,6 +2,7 @@ package com.cradle.neptune.view.sync
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
@@ -74,6 +75,7 @@ class SyncStepperClass(val context: Context, private val stepperCallback: SyncSt
                 is Failure -> {
                     // let user know we failed.... probably cant continue?
                     stepperCallback.onFetchDataCompleted(false)
+                    stepperCallback.onFinish(false)
                 }
             }
         }
@@ -108,6 +110,9 @@ class SyncStepperClass(val context: Context, private val stepperCallback: SyncSt
                 }
             }
         }
+        readingsToUpload.forEach {
+            Log.d("bugg","patient id: "+ it.patientId+ " "+it.isUploadedToServer)
+        }
 
         // total number of uploads need to be done.
         val totalNum = newPatients.size + readingsToUpload.size + editedPatients.size
@@ -119,7 +124,7 @@ class SyncStepperClass(val context: Context, private val stepperCallback: SyncSt
             checkIfAllDataUploaded(result)
         }.startUpload()
 
-        // these will be readings for existing patients that were not part
+        // these will be new readings for existing patients in server
         ListUploader(context, READING, readingsToUpload) { result ->
             checkIfAllDataUploaded(result)
         }.startUpload()
@@ -139,10 +144,17 @@ class SyncStepperClass(val context: Context, private val stepperCallback: SyncSt
      * step 3 -> now we download all the information one by one
      */
     override fun downloadAllInfo() {
-        val totalRequestNum = updateApiData.editedPatientId.size + updateApiData.newReadingsIds.size
-        + updateApiData.followUpIds.size + updateApiData.newPatientsIds.size
+        Log.d("bugg",updateApiData.toString())
+        val totalRequestNum = (updateApiData.editedPatientId.size + updateApiData.newReadingsIds.size
+        + updateApiData.followUpIds.size + updateApiData.newPatientsIds.size)
 
-         downloadRequestStatus = TotalRequestStatus(totalRequestNum, 0, 0)
+        Log.d("bugg","total download requests: "+ totalRequestNum)
+        Log.d("bugg","size r: "+ updateApiData.newReadingsIds.size)
+        Log.d("bugg","size np: "+ updateApiData.newPatientsIds.size)
+        Log.d("bugg","size f: "+ updateApiData.followUpIds.size)
+        Log.d("bugg","size ep: "+ updateApiData.editedPatientId.size)
+
+        downloadRequestStatus = TotalRequestStatus(totalRequestNum, 0, 0)
 
         // download brand new patients that are not on the device
         updateApiData.newPatientsIds.toList().forEach {
@@ -198,7 +210,7 @@ class SyncStepperClass(val context: Context, private val stepperCallback: SyncSt
      */
     override fun finish(){
         sharedPreferences.edit().putLong(LAST_SYNC, System.currentTimeMillis()/1000L).apply()
-        stepperCallback.onFinish()
+        stepperCallback.onFinish(true)
     }
 
     /**
