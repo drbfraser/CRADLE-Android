@@ -18,17 +18,8 @@ class ReadingTests {
             null,
             unixTime,
             true,
-            listOf("1", "2", "3"),
-            ReadingMetadata(
-                "0.1.0-alpha",
-                "some-info",
-                unixTime,
-                unixTime,
-                null,
-                false,
-                null,
-                null
-            ),false
+            emptyList(),
+            ReadingMetadata(),true
         )
 
         val json = reading.marshal()

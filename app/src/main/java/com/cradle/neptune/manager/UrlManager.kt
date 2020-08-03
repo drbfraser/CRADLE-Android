@@ -68,7 +68,7 @@ class UrlManager @Inject constructor(val settings: Settings) {
                 ":" + settings.networkPort
             }
 
-            return "http://10.0.2.2:5000/api"
+            return "$protocol$hostname$port/api"
         }
 
     /**
