@@ -39,6 +39,7 @@ interface SyncStepper {
 
 /**
  * A simple interface to let the caller know whats going on with the sync process
+ * All the functions should have [Synchronized] since multiple threads might be calling them.
  */
 interface SyncStepperCallback {
 

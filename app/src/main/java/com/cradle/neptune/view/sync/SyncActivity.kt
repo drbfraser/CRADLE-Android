@@ -43,7 +43,7 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
     @Synchronized
     override fun onFetchDataCompleted(success: Boolean) {
         setStatusArrow(success, R.id.ivFetchStatus)
-        progressBar.progress = progressBar.progress + 1
+        progressBar.progress++
     }
 
     @Synchronized
@@ -70,7 +70,7 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
             uploadStatusTextView.text =
                 "Successfully made ${uploadStatus.numUploaded} out of ${uploadStatus.totalNum} requests"
             setStatusArrow(uploadStatus.allRequestsSuccess(), R.id.ivUploadStatus)
-            progressBar.progress = progressBar.progress + 1
+            progressBar.progress++
         }
     }
     @Synchronized
@@ -79,7 +79,7 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
             downloadStatusTextView.text =
                 "Successfully made  ${downloadStatus.numUploaded} out of ${downloadStatus.totalNum} requests"
             setStatusArrow(downloadStatus.allRequestsSuccess(), R.id.ivDownloadStatus)
-            progressBar.progress = progressBar.progress + 1
+            progressBar.progress++
         }
     }
 
@@ -88,10 +88,10 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
         MainScope().launch {
             val textView = findViewById<TextView>(R.id.syncText)
             if (success) {
-                textView.text = "Syncing complete"
+                textView.text = getString(R.string.sync_complete)
             } else {
                 textView.setTextColor(resources.getColor(R.color.error))
-                textView.text = "Syncing Failed"
+                textView.text = getString(R.string.sync_failed)
             }
         }
     }
