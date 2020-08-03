@@ -143,7 +143,6 @@ public class PatientProfileActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }, error -> {
-            Log.d("bugg", "failed: " + error);
             progressDialog.cancel();
             Toast.makeText(PatientProfileActivity.this, "Patient update fail!", Toast.LENGTH_SHORT).show();
         }) {

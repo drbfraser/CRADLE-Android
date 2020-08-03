@@ -84,5 +84,6 @@ class PatientManager(private val daoAccess: PatientDaoAccess) {
     /**
      * get edited Patients that also exists on the server
      */
-    suspend fun getEditedPatients(timeStamp: Long): List<Patient> = withContext(Dispatchers.IO) { daoAccess.getEditedPatients(timeStamp) }
+    suspend fun getEditedPatients(timeStamp: Long): List<Patient> =
+        withContext(Dispatchers.IO) { daoAccess.getEditedPatients(timeStamp) }
 }

@@ -22,7 +22,9 @@ import com.cradle.neptune.network.VolleyRequests
 import com.cradle.neptune.network.unwrap
 import com.cradle.neptune.view.LoginActivity
 import com.cradle.neptune.view.sync.SyncStepperClass
+import com.cradle.neptune.view.sync.SyncStepperClass.Companion.MILLI_TO_SECONDS
 import java.util.ArrayList
+import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -94,7 +96,10 @@ class VolleyRequestManager(application: Application) {
                             }
                             patientManager.addAll(patientList)
                             readingManager.addAllReadings(readingList)
-                            sharedPreferences.edit().putLong(SyncStepperClass.LAST_SYNC, System.currentTimeMillis() / 1000L).apply()
+                            sharedPreferences.edit()
+                                .putLong(SyncStepperClass.LAST_SYNC,
+                                    System.currentTimeMillis() / MILLI_TO_SECONDS).apply()
+                            Date().time
                         }
                     }
                     is Failure -> {

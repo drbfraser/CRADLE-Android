@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 
 class SyncActivity : AppCompatActivity(), SyncStepperCallback {
 
-    lateinit var uploadStatusTextView:TextView
+    lateinit var uploadStatusTextView: TextView
     lateinit var downloadStatusTextView: TextView
 
     lateinit var progressBar: ProgressBar
@@ -42,15 +42,16 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
 
     @Synchronized
     override fun onFetchDataCompleted(success: Boolean) {
-        setStatusArrow(success,R.id.ivFetchStatus)
-        progressBar.progress = progressBar.progress+1
+        setStatusArrow(success, R.id.ivFetchStatus)
+        progressBar.progress = progressBar.progress + 1
     }
 
     @Synchronized
     override fun onNewPatientAndReadingUploading(uploadStatus: TotalRequestStatus) {
         MainScope().launch {
             uploadStatusTextView.text =
-                "Request completed ${uploadStatus.numUploaded+ uploadStatus.numFailed} out of  ${uploadStatus.totalNum}"
+                "Request completed ${uploadStatus.numUploaded + uploadStatus.numFailed}" +
+                    " out of  ${uploadStatus.totalNum}"
         }
     }
 
@@ -58,7 +59,8 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
     override fun onNewPatientAndReadingDownloading(downloadStatus: TotalRequestStatus) {
         MainScope().launch {
             downloadStatusTextView.text =
-                "Request completed ${downloadStatus.numUploaded+ downloadStatus.numFailed} out of  ${downloadStatus.totalNum}"
+                "Request completed ${downloadStatus.numUploaded + downloadStatus.numFailed} " +
+                    "out of  ${downloadStatus.totalNum}"
         }
     }
 
@@ -68,10 +70,8 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
             uploadStatusTextView.text =
                 "Successfully made ${uploadStatus.numUploaded} out of ${uploadStatus.totalNum} requests"
             setStatusArrow(uploadStatus.allRequestsSuccess(), R.id.ivUploadStatus)
-            progressBar.progress = progressBar.progress+1
-
+            progressBar.progress = progressBar.progress + 1
         }
-
     }
     @Synchronized
     override fun onNewPatientAndReadingDownloadFinish(downloadStatus: TotalRequestStatus) {
@@ -79,7 +79,7 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
             downloadStatusTextView.text =
                 "Successfully made  ${downloadStatus.numUploaded} out of ${downloadStatus.totalNum} requests"
             setStatusArrow(downloadStatus.allRequestsSuccess(), R.id.ivDownloadStatus)
-            progressBar.progress = progressBar.progress+1
+            progressBar.progress = progressBar.progress + 1
         }
     }
 
@@ -96,7 +96,7 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
         }
     }
 
-    private fun setStatusArrow(success: Boolean, id: Int){
+    private fun setStatusArrow(success: Boolean, id: Int) {
         val iv = findViewById<ImageView>(id)
         if (success) {
             iv.setImageResource(R.drawable.arrow_right_with_check)

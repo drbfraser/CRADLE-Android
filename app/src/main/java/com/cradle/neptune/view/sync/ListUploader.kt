@@ -1,7 +1,6 @@
 package com.cradle.neptune.view.sync
 
 import android.content.Context
-import android.util.Log
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.VolleyRequestManager
 import com.cradle.neptune.model.Patient
