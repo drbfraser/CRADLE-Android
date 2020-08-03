@@ -37,6 +37,7 @@ captures/
 
 # IntelliJ
 *.iml
+.idea/codeStyles/Project.xml
 .idea/compiler.xml
 .idea/jarRepositories.xml
 .idea/workspace.xml

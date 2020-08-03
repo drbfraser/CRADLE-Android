@@ -24,6 +24,7 @@ import com.cradle.neptune.utilitiles.DateUtil;
 import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.viewmodel.ReadingAnalysisViewSupport;
 
+import kotlin.Unit;
 import org.threeten.bp.ZonedDateTime;
 
 import static com.cradle.neptune.utilitiles.Util.mapNullable;
@@ -468,10 +469,11 @@ public class SummaryFragment extends BaseFragment {
             return;
         }
 
-        DialogFragment newFragment = ReferralDialogFragment.makeInstance(viewModel,
+        DialogFragment newFragment = ReferralDialogFragment.Companion.makeInstance(viewModel,
                 message -> {
                     activityCallbackListener.saveCurrentReading();
                     updateUI();
+                    return Unit.INSTANCE;
                 });
         newFragment.show(getFragmentManager(), "Referral");
     }

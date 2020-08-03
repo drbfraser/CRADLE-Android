@@ -22,6 +22,7 @@ import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Provides asynchronous methods for sending strongly typed requests to the
@@ -194,10 +195,12 @@ class Api @Inject constructor(
      * @return the response or an error if one occurred
      */
     private suspend fun requestObject(method: HttpMethod, url: String, payload: JsonObject? = null) =
-        suspendCoroutine<NetworkResult<JsonObject>> { cont ->
-            Log.i("API", "Sending request: ${method.name} $url")
-            val request = makeVolleyObjectRequest(method, url, payload, cont)
-            volleyRequestQueue.addRequest(request)
+        withContext(Dispatchers.IO) {
+            suspendCoroutine<NetworkResult<JsonObject>> { cont ->
+                Log.i("API", "Sending request: ${method.name} $url")
+                val request = makeVolleyObjectRequest(method, url, payload, cont)
+                volleyRequestQueue.addRequest(request)
+            }
         }
 
     /**
@@ -210,10 +213,12 @@ class Api @Inject constructor(
      * @return the response or an error if one occurred
      */
     private suspend fun requestArray(method: HttpMethod, url: String, payload: JsonArray? = null) =
-        suspendCoroutine<NetworkResult<JsonArray>> { cont ->
-            Log.i("API", "Sending request: ${method.name} $url")
-            val request = makeVolleyArrayRequest(method, url, payload, cont)
-            volleyRequestQueue.addRequest(request)
+        withContext(Dispatchers.IO) {
+            suspendCoroutine<NetworkResult<JsonArray>> { cont ->
+                Log.i("API", "Sending request: ${method.name} $url")
+                val request = makeVolleyArrayRequest(method, url, payload, cont)
+                volleyRequestQueue.addRequest(request)
+            }
         }
 
     /**
