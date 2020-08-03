@@ -55,9 +55,7 @@ class ListUploader(
             return
         }
         if (uploadType == UploadType.PATIENT) {
-            val patient = (listToUpload[0] as PatientAndReadings).patient
-            val readings = (listToUpload[0] as PatientAndReadings).readings
-            volleyRequestManager.uploadPatientToTheServer(patient, readings, networkCallback)
+            volleyRequestManager.uploadPatientToTheServer(listToUpload[0] as PatientAndReadings, networkCallback)
         } else {
             volleyRequestManager.uploadReadingToTheServer(listToUpload[0] as Reading, networkCallback)
         }

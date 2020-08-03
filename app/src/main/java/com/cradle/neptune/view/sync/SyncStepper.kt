@@ -18,9 +18,8 @@ interface SyncStepper {
      * This is the step number two. Here we start uploading data to the server.
      * The data can include new patients, edited patients, new readings etc.
      * NOTE: we do not upload the patients edited by local user as well as the server
-     * suspend since we need to make DB calls
      */
-    suspend fun setupUploadingPatientReadings(lastSyncTime: Long)
+    fun setupUploadingPatientReadings(lastSyncTime: Long)
 
     /**
      * This is the third step. Here we download all the new data from the server
@@ -63,7 +62,7 @@ interface SyncStepperCallback {
     /**
      * called every time we get a network result for all the download network calls
      * @param downloadStatus contains number of total requests, failed requests, success requests
-    */
+     */
     fun onNewPatientAndReadingDownloading(downloadStatus: TotalRequestStatus)
 
     /**
@@ -74,5 +73,5 @@ interface SyncStepperCallback {
     /**
      * let the caller know we are done sync process
      */
-    fun onFinish(success: Boolean, errorCodes: HashMap<Int?, String>)
+    fun onFinish(errorCodes: HashMap<Int?, String>)
 }

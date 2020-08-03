@@ -2,12 +2,14 @@ package com.cradle.neptune.view.sync
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.manager.VolleyRequestManager
 import com.cradle.neptune.model.JsonArray
+import com.cradle.neptune.model.Patient
+import com.cradle.neptune.model.PatientAndReadings
+import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.toList
 import com.cradle.neptune.network.Failure
 import com.cradle.neptune.network.NetworkResult
@@ -17,9 +19,9 @@ import com.cradle.neptune.view.sync.ListUploader.UploadType.PATIENT
 import com.cradle.neptune.view.sync.ListUploader.UploadType.READING
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
+import org.threeten.bp.ZonedDateTime
 
 /**
  * The idea of this class is to act as a stepper for the sync process and to let the calling object
@@ -27,7 +29,10 @@ import org.json.JSONObject
  * call next step.
  */
 @Suppress("LargeClass")
-class SyncStepperImplementation(val context: Context, private val stepperCallback: SyncStepperCallback) :
+class SyncStepperImplementation(
+    private val context: Context,
+    private val stepperCallback: SyncStepperCallback
+) :
     SyncStepper {
 
     @Inject
@@ -51,6 +56,7 @@ class SyncStepperImplementation(val context: Context, private val stepperCallbac
     private lateinit var downloadRequestStatus: TotalRequestStatus
 
     private val errorHashMap = HashMap<Int?, String>()
+
     init {
         (context.applicationContext as MyApp).appComponent.inject(this)
     }
@@ -58,7 +64,6 @@ class SyncStepperImplementation(val context: Context, private val stepperCallbac
     companion object {
         const val LAST_SYNC = "lastSyncTime"
         const val LAST_SYNC_DEFAULT = 0L
-        const val MILLI_TO_SECONDS: Long = 1000L
     }
 
     /**
@@ -74,10 +79,7 @@ class SyncStepperImplementation(val context: Context, private val stepperCallbac
                     updateApiData = UpdateApiData(result.value)
                     // let caller know of the next step
                     stepperCallback.onFetchDataCompleted(true)
-                    GlobalScope.launch(Dispatchers.IO) {
-                        // need to turn this into a patient json object that has readings inside of it
-                        setupUploadingPatientReadings(lastSyncTime)
-                    }
+                    setupUploadingPatientReadings(lastSyncTime)
                 }
                 is Failure -> {
                     // let user know we failed.... probably cant continue?
@@ -94,16 +96,23 @@ class SyncStepperImplementation(val context: Context, private val stepperCallbac
     /**
      * step 2 -> starts uploading readings and patients starting with patients.
      */
-    override suspend fun setupUploadingPatientReadings(lastSyncTime: Long) {
-        // get the brand new patients to upload
-        val newPatients = ArrayList(patientManager.getUnUploadedPatients())
-        val readingsToUpload = ArrayList(readingManager.getUnUploadedReadingsForServerPatients())
-        // mock the time for now, in the future, this will be from shared pref
-        val editedPatients = ArrayList(patientManager.getEditedPatients(lastSyncTime))
+    override fun setupUploadingPatientReadings(lastSyncTime: Long) {
+        var newPatientsToUpload: ArrayList<PatientAndReadings>
+        var readingsToUpload: ArrayList<Reading>
+        var editedPatientsToUpload: ArrayList<Patient>
+
+        // run blocking since we need to wait for results from DB  to do anything.
+        runBlocking(Dispatchers.IO) {
+            // get the brand new patients to upload
+            newPatientsToUpload = ArrayList(patientManager.getUnUploadedPatients())
+            readingsToUpload = ArrayList(readingManager.getUnUploadedReadingsForServerPatients())
+            // mock the time for now, in the future, this will be from shared pref
+            editedPatientsToUpload = ArrayList(patientManager.getEditedPatients(lastSyncTime))
+        }
 
         // this will be edited patients that were not edited in the server, we match against the
         // downloaded patient id from the server to avoid conflicts
-        with(editedPatients.iterator()) {
+        with(editedPatientsToUpload.iterator()) {
             forEach {
                 if (updateApiData.editedPatientId.contains(it.id)) {
                     remove()
@@ -112,7 +121,7 @@ class SyncStepperImplementation(val context: Context, private val stepperCallbac
         }
         // in case local user made a new patient that is also in the server,
         // we want to avoid uploading the patient but upload the reading
-        with(newPatients.iterator()) {
+        with(newPatientsToUpload.iterator()) {
             forEach {
                 if (updateApiData.newPatientsIds.contains(it.patient.id)) {
                     readingsToUpload.addAll(it.readings)
@@ -120,15 +129,15 @@ class SyncStepperImplementation(val context: Context, private val stepperCallbac
                 }
             }
         }
-
         // total number of uploads need to be done.
-        val totalNum = newPatients.size + readingsToUpload.size + editedPatients.size
+        val totalNum =
+            newPatientsToUpload.size + readingsToUpload.size + editedPatientsToUpload.size
         // keep track of all the fail/pass status for uploaded requests
         uploadRequestStatus = TotalRequestStatus(totalNum, 0, 0)
 
-        ListUploader(context, PATIENT, newPatients) { result ->
+        ListUploader(context, PATIENT, newPatientsToUpload) { result ->
             // once finished call uploading a single patient, need to update the base time
-                checkIfAllDataUploaded(result)
+            checkIfAllDataUploaded(result)
         }.startUpload()
 
         // these will be new readings for existing patients in server
@@ -136,7 +145,7 @@ class SyncStepperImplementation(val context: Context, private val stepperCallbac
             checkIfAllDataUploaded(result)
         }.startUpload()
 
-        ListUploader(context, PATIENT, editedPatients) {
+        ListUploader(context, PATIENT, editedPatientsToUpload) {
             checkIfAllDataUploaded(it)
         }.startUpload()
 
@@ -209,14 +218,11 @@ class SyncStepperImplementation(val context: Context, private val stepperCallbac
      * saved last sync time in the shared pref. let the caller know
      */
     override fun finish(success: Boolean) {
-        Log.d("bugg", "errors" + errorHashMap.toString())
-        if (!success) {
-            stepperCallback.onFinish(false, errorHashMap)
-        } else {
+        if (success) {
             sharedPreferences.edit()
-                .putLong(LAST_SYNC, System.currentTimeMillis() / MILLI_TO_SECONDS).apply()
-            stepperCallback.onFinish(true, errorHashMap)
+                .putLong(LAST_SYNC, ZonedDateTime.now().toEpochSecond()).apply()
         }
+        stepperCallback.onFinish(errorHashMap)
     }
 
     /**

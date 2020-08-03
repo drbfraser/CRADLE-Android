@@ -7,9 +7,9 @@ import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.model.FollowUp
 import com.cradle.neptune.model.GlobalPatient
 import com.cradle.neptune.model.HealthFacility
-import com.cradle.neptune.model.JsonArray
 import com.cradle.neptune.model.JsonObject
 import com.cradle.neptune.model.Patient
+import com.cradle.neptune.model.PatientAndReadings
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.network.BooleanCallback
 import com.cradle.neptune.network.Failure
@@ -22,7 +22,6 @@ import com.cradle.neptune.network.VolleyRequests
 import com.cradle.neptune.network.unwrap
 import com.cradle.neptune.view.LoginActivity
 import com.cradle.neptune.view.sync.SyncStepperImplementation
-import com.cradle.neptune.view.sync.SyncStepperImplementation.Companion.MILLI_TO_SECONDS
 import java.util.ArrayList
 import java.util.Date
 import javax.inject.Inject
@@ -30,6 +29,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import org.threeten.bp.ZonedDateTime
 
 /**
  * A request manager for all the web requests. This should be the only interface for all requests.
@@ -98,7 +98,7 @@ class VolleyRequestManager(application: Application) {
                             readingManager.addAllReadings(readingList)
                             sharedPreferences.edit()
                                 .putLong(SyncStepperImplementation.LAST_SYNC,
-                                    System.currentTimeMillis() / MILLI_TO_SECONDS).apply()
+                                    ZonedDateTime.now().toEpochSecond()).apply()
                             Date().time
                         }
                     }
@@ -317,35 +317,23 @@ class VolleyRequestManager(application: Application) {
      * @param callback callback for the caller
      */
     fun uploadPatientToTheServer(
-        patient: Patient,
-        readings: List<Reading>?,
+        patientAndReadings: PatientAndReadings,
         callback: (NetworkResult<JSONObject>) -> Unit
     ) {
-        val patientJsonObject = patient.marshal()
-
-        if (readings != null) {
-            val readingJsonArray = JsonArray()
-            readings.forEach {
-                readingJsonArray.put(it.marshal())
-            }
-            patientJsonObject.put("readings", readingJsonArray)
-        }
 
         val request =
-            volleyRequests.postJsonObjectRequest(urlManager.patients, patientJsonObject) { result ->
+            volleyRequests.postJsonObjectRequest(urlManager.patients, patientAndReadings.marshal()) { result ->
                 when (result) {
                     is Success -> {
                         // need to update the base to lastEdited since server compares patient's base
                         // with server's last edited field. If they dont match, server does not accepts
                         // the edited value.
-                        patient.base = patient.lastEdited
-                        patientManager.add(patient)
-                        if (readings != null) {
-                            readings.forEach {
-                                it.isUploadedToServer = true
-                            }
-                            readingManager.addAllReadings(readings)
+                        patientAndReadings.patient.base = patientAndReadings.patient.lastEdited
+                        patientManager.add(patientAndReadings.patient)
+                        patientAndReadings.readings.forEach {
+                            it.isUploadedToServer = true
                         }
+                        readingManager.addAllReadings(patientAndReadings.readings)
                         callback(Success(result.value))
                     }
                     is Failure -> {

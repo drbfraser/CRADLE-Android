@@ -9,13 +9,11 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.cradle.neptune.R
 import java.lang.StringBuilder
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
 
 class SyncActivity : AppCompatActivity(), SyncStepperCallback {
 
-    lateinit var uploadStatusTextView: TextView
-    lateinit var downloadStatusTextView: TextView
+    private lateinit var uploadStatusTextView: TextView
+    private lateinit var downloadStatusTextView: TextView
 
     lateinit var progressBar: ProgressBar
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,56 +47,46 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
 
     @Synchronized
     override fun onNewPatientAndReadingUploading(uploadStatus: TotalRequestStatus) {
-        MainScope().launch {
             uploadStatusTextView.text =
                 "Request completed ${uploadStatus.numUploaded + uploadStatus.numFailed}" +
                     " out of  ${uploadStatus.totalNum}"
-        }
     }
 
     @Synchronized
     override fun onNewPatientAndReadingDownloading(downloadStatus: TotalRequestStatus) {
-        MainScope().launch {
             downloadStatusTextView.text =
                 "Request completed ${downloadStatus.numUploaded + downloadStatus.numFailed} " +
                     "out of  ${downloadStatus.totalNum}"
-        }
     }
 
     @Synchronized
     override fun onNewPatientAndReadingUploadFinish(uploadStatus: TotalRequestStatus) {
-        MainScope().launch {
             uploadStatusTextView.text =
                 "Successfully made ${uploadStatus.numUploaded} out of ${uploadStatus.totalNum} requests"
             setStatusArrow(uploadStatus.allRequestsSuccess(), R.id.ivUploadStatus)
             progressBar.progress++
-        }
     }
     @Synchronized
     override fun onNewPatientAndReadingDownloadFinish(downloadStatus: TotalRequestStatus) {
-        MainScope().launch {
             downloadStatusTextView.text =
                 "Successfully made  ${downloadStatus.numUploaded} out of ${downloadStatus.totalNum} requests"
             setStatusArrow(downloadStatus.allRequestsSuccess(), R.id.ivDownloadStatus)
             progressBar.progress++
-        }
     }
 
     @Synchronized
-    override fun onFinish(success: Boolean, errorCode: HashMap<Int?, String>) {
-        MainScope().launch {
+    override fun onFinish(errorCodes: HashMap<Int?, String>) {
             val textView = findViewById<TextView>(R.id.syncText)
-            if (success) {
-                textView.text = getString(R.string.sync_complete)
+            if (errorCodes.isEmpty()) {
+                textView.text = "Sync complete"
             } else {
                 textView.setTextColor(resources.getColor(R.color.error))
                 val stringBuilder = StringBuilder()
-                errorCode.entries.forEach {
+                errorCodes.entries.forEach {
                     stringBuilder.append("Error: ").append(it.value).append("\n")
                 }
                 textView.text = stringBuilder.toString()
             }
-        }
     }
 
     private fun setStatusArrow(success: Boolean, id: Int) {
