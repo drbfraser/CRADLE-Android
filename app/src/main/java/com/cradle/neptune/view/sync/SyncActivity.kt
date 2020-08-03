@@ -8,6 +8,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.cradle.neptune.R
+import java.lang.StringBuilder
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 
@@ -30,7 +31,7 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         findViewById<Button>(R.id.uploadEverythingButton).setOnClickListener {
-            SyncStepperClass(this, this).fetchUpdatesFromServer()
+            SyncStepperImplementation(this, this).fetchUpdatesFromServer()
             it.visibility = View.GONE
         }
     }
@@ -84,14 +85,18 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
     }
 
     @Synchronized
-    override fun onFinish(success: Boolean) {
+    override fun onFinish(success: Boolean, errorCode: HashMap<Int?, String>) {
         MainScope().launch {
             val textView = findViewById<TextView>(R.id.syncText)
             if (success) {
                 textView.text = getString(R.string.sync_complete)
             } else {
                 textView.setTextColor(resources.getColor(R.color.error))
-                textView.text = getString(R.string.sync_failed)
+                val stringBuilder = StringBuilder()
+                errorCode.entries.forEach {
+                    stringBuilder.append("Error: ").append(it.value).append("\n")
+                }
+                textView.text = stringBuilder.toString()
             }
         }
     }

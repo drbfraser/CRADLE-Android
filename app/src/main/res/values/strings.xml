@@ -173,4 +173,6 @@
     <string name="global_patient_search">Global Patients Search</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="sync_complete">Syncing complete</string>
+    <string name="sync_failed">Syncing failed</string>
 </resources>

@@ -2,6 +2,7 @@ package com.cradle.neptune.view.sync
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
@@ -9,7 +10,9 @@ import com.cradle.neptune.manager.VolleyRequestManager
 import com.cradle.neptune.model.JsonArray
 import com.cradle.neptune.model.toList
 import com.cradle.neptune.network.Failure
+import com.cradle.neptune.network.NetworkResult
 import com.cradle.neptune.network.Success
+import com.cradle.neptune.network.VolleyRequests
 import com.cradle.neptune.view.sync.ListUploader.UploadType.PATIENT
 import com.cradle.neptune.view.sync.ListUploader.UploadType.READING
 import javax.inject.Inject
@@ -24,7 +27,7 @@ import org.json.JSONObject
  * call next step.
  */
 @Suppress("LargeClass")
-class SyncStepperClass(val context: Context, private val stepperCallback: SyncStepperCallback) :
+class SyncStepperImplementation(val context: Context, private val stepperCallback: SyncStepperCallback) :
     SyncStepper {
 
     @Inject
@@ -47,6 +50,7 @@ class SyncStepperClass(val context: Context, private val stepperCallback: SyncSt
     private lateinit var uploadRequestStatus: TotalRequestStatus
     private lateinit var downloadRequestStatus: TotalRequestStatus
 
+    private val errorHashMap = HashMap<Int?, String>()
     init {
         (context.applicationContext as MyApp).appComponent.inject(this)
     }
@@ -77,8 +81,11 @@ class SyncStepperClass(val context: Context, private val stepperCallback: SyncSt
                 }
                 is Failure -> {
                     // let user know we failed.... probably cant continue?
+                    errorHashMap[result.value.networkResponse?.statusCode] =
+                        VolleyRequests.getServerErrorMessage(result.value)
+
                     stepperCallback.onFetchDataCompleted(false)
-                    stepperCallback.onFinish(false)
+                    finish(false)
                 }
             }
         }
@@ -121,7 +128,7 @@ class SyncStepperClass(val context: Context, private val stepperCallback: SyncSt
 
         ListUploader(context, PATIENT, newPatients) { result ->
             // once finished call uploading a single patient, need to update the base time
-            checkIfAllDataUploaded(result)
+                checkIfAllDataUploaded(result)
         }.startUpload()
 
         // these will be new readings for existing patients in server
@@ -161,10 +168,10 @@ class SyncStepperClass(val context: Context, private val stepperCallback: SyncSt
                         val readings = result.value.second
                         readingManager.addAllReadings(readings)
                         patientManager.add(patient)
-                        checkIfAllDataIsDownloaded(true)
+                        checkIfAllDataIsDownloaded(result)
                     }
                     is Failure -> {
-                        checkIfAllDataIsDownloaded(false)
+                        checkIfAllDataIsDownloaded(result)
                     }
                 }
             }
@@ -194,17 +201,22 @@ class SyncStepperClass(val context: Context, private val stepperCallback: SyncSt
         // if there is nothing to download, call next step
         if (totalRequestNum == 0) {
             stepperCallback.onNewPatientAndReadingDownloadFinish(downloadRequestStatus)
-            finish()
+            finish(true)
         }
     }
 
     /**
      * saved last sync time in the shared pref. let the caller know
      */
-    override fun finish() {
-        sharedPreferences.edit()
-            .putLong(LAST_SYNC, System.currentTimeMillis() / Companion.MILLI_TO_SECONDS).apply()
-        stepperCallback.onFinish(true)
+    override fun finish(success: Boolean) {
+        Log.d("bugg", "errors" + errorHashMap.toString())
+        if (!success) {
+            stepperCallback.onFinish(false, errorHashMap)
+        } else {
+            sharedPreferences.edit()
+                .putLong(LAST_SYNC, System.currentTimeMillis() / MILLI_TO_SECONDS).apply()
+            stepperCallback.onFinish(true, errorHashMap)
+        }
     }
 
     /**
@@ -213,12 +225,18 @@ class SyncStepperClass(val context: Context, private val stepperCallback: SyncSt
      * @param result the latest result we got
      */
     @Synchronized
-    private fun checkIfAllDataUploaded(result: Boolean) {
-        if (result) {
-            uploadRequestStatus.numUploaded++
-        } else {
-            uploadRequestStatus.numFailed++
+    private fun checkIfAllDataUploaded(result: NetworkResult<JSONObject>) {
+        when (result) {
+            is Success -> {
+                uploadRequestStatus.numUploaded++
+            }
+            is Failure -> {
+                uploadRequestStatus.numFailed++
+                errorHashMap[result.value.networkResponse?.statusCode] =
+                    VolleyRequests.getServerErrorMessage(result.value)
+            }
         }
+
         // let the caller know we got another result
         stepperCallback.onNewPatientAndReadingUploading(uploadRequestStatus)
 
@@ -232,25 +250,30 @@ class SyncStepperClass(val context: Context, private val stepperCallback: SyncSt
     /**
      * This function will check if we have gotten back all the results for all the download network calls we made
      * [Synchronized] since multiple threads might be calling this function
-     * @param result the latest result we got
+     * @param result the latest result we got.
      */
     @Synchronized
-    private fun checkIfAllDataIsDownloaded(result: Boolean) {
-        if (result) {
-            downloadRequestStatus.numUploaded++
-        } else {
-            downloadRequestStatus.numFailed++
+    private fun checkIfAllDataIsDownloaded(result: NetworkResult<*>) {
+
+        when (result) {
+            is Success -> {
+                downloadRequestStatus.numUploaded++
+            }
+            is Failure -> {
+                downloadRequestStatus.numFailed++
+                errorHashMap[result.value.networkResponse?.statusCode] =
+                    VolleyRequests.getServerErrorMessage(result.value)
+            }
         }
         stepperCallback.onNewPatientAndReadingDownloading(downloadRequestStatus)
         if (downloadRequestStatus.allRequestCompleted()) {
             stepperCallback.onNewPatientAndReadingDownloadFinish(downloadRequestStatus)
-            finish()
+            finish(true)
         }
     }
 }
 
 /**
- * TODO name it better
  * contains information for the data we got through the update api
  */
 data class UpdateApiData(val jsonArray: JSONObject) {

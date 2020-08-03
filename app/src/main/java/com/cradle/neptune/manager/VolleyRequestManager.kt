@@ -21,8 +21,8 @@ import com.cradle.neptune.network.VolleyRequestQueue
 import com.cradle.neptune.network.VolleyRequests
 import com.cradle.neptune.network.unwrap
 import com.cradle.neptune.view.LoginActivity
-import com.cradle.neptune.view.sync.SyncStepperClass
-import com.cradle.neptune.view.sync.SyncStepperClass.Companion.MILLI_TO_SECONDS
+import com.cradle.neptune.view.sync.SyncStepperImplementation
+import com.cradle.neptune.view.sync.SyncStepperImplementation.Companion.MILLI_TO_SECONDS
 import java.util.ArrayList
 import java.util.Date
 import javax.inject.Inject
@@ -97,7 +97,7 @@ class VolleyRequestManager(application: Application) {
                             patientManager.addAll(patientList)
                             readingManager.addAllReadings(readingList)
                             sharedPreferences.edit()
-                                .putLong(SyncStepperClass.LAST_SYNC,
+                                .putLong(SyncStepperImplementation.LAST_SYNC,
                                     System.currentTimeMillis() / MILLI_TO_SECONDS).apply()
                             Date().time
                         }
@@ -247,18 +247,15 @@ class VolleyRequestManager(application: Application) {
         volleyRequestQueue.addRequest(request)
     }
 
-    fun getPatientOnlyInfo(id: String, callback: BooleanCallback) {
+    fun getPatientOnlyInfo(id: String, callback: (NetworkResult<JSONObject>) -> Unit) {
         val request = volleyRequests.getJsonObjectRequest(urlManager.getPatientInfoOnly(id), null) {
             when (it) {
 
                 is Success -> {
                     patientManager.add(Patient.unmarshal(it.value))
-                    callback(true)
-                }
-                is Failure -> {
-                    callback(false)
                 }
             }
+            callback(it)
         }
         volleyRequestQueue.addRequest(request)
     }
@@ -374,18 +371,15 @@ class VolleyRequestManager(application: Application) {
         volleyRequestQueue.addRequest(request)
     }
 
-    fun getReadingById(id: String, callback: BooleanCallback) {
+    fun getReadingById(id: String, callback: (NetworkResult<JSONObject>) -> Unit) {
         val request =
             volleyRequests.getJsonObjectRequest(urlManager.getReadingById(id), null) { result ->
                 when (result) {
                     is Success -> {
                         readingManager.addReading(Reading.unmarshal(result.value))
-                        callback(true)
-                    }
-                    is Failure -> {
-                        callback(false)
                     }
                 }
+                callback(result)
             }
         volleyRequestQueue.addRequest(request)
     }
@@ -393,7 +387,7 @@ class VolleyRequestManager(application: Application) {
     /**
      * gets a  [FollowUp] from the server and update the reading
      */
-    fun updateFollowUpById(id: String, callback: BooleanCallback) {
+    fun updateFollowUpById(id: String, callback: (NetworkResult<JSONObject>) -> Unit) {
 
         val request =
             volleyRequests.getJsonObjectRequest(urlManager.getAssessmentById(id), null) { result ->
@@ -405,13 +399,10 @@ class VolleyRequestManager(application: Application) {
                                 readingManager.getReadingById(assessment.readingServerId.toString())
                             reading?.followUp = assessment
                             reading?.let { readingManager.addReading(it) }
-                            callback(true)
                         }
                     }
-                    is Failure -> {
-                        callback(false)
-                    }
                 }
+                callback(result)
             }
         volleyRequestQueue.addRequest(request)
     }

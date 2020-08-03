@@ -21,7 +21,7 @@ class ListUploader(
     val context: Context,
     private val uploadType: UploadType,
     private val listToUpload: ArrayList<*>,
-    private val callerCallback: (isSuccessful: Boolean) -> Unit
+    private val callerCallback: (NetworkResult<JSONObject>) -> Unit
 ) {
 
     @Inject
@@ -71,10 +71,10 @@ class ListUploader(
             is Success -> {
                 // upload progress
                 numUploaded++
-                callerCallback(true)
+                callerCallback(Success(result.value))
             }
             is Failure -> {
-                callerCallback(false)
+                callerCallback(Failure(result.value))
             }
         }
         // remove the object we got result for

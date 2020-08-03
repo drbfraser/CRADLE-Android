@@ -34,7 +34,7 @@ interface SyncStepper {
      * This is the last step of the sync process.
      * Here we update the last sync timestamp in the shared pref
      */
-    fun finish()
+    fun finish(success: Boolean)
 }
 
 /**
@@ -74,5 +74,5 @@ interface SyncStepperCallback {
     /**
      * let the caller know we are done sync process
      */
-    fun onFinish(success: Boolean)
+    fun onFinish(success: Boolean, errorCodes: HashMap<Int?, String>)
 }
