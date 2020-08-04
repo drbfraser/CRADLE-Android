@@ -12,7 +12,6 @@ import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
-import com.android.volley.TimeoutError
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.HealthCentreManager
@@ -25,6 +24,7 @@ import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.Referral
 import com.cradle.neptune.network.Failure
 import com.cradle.neptune.network.Success
+import com.cradle.neptune.network.VolleyRequests
 import com.cradle.neptune.utilitiles.UnixTimestamp
 import com.cradle.neptune.view.ui.settings.SettingsActivity
 import com.cradle.neptune.viewmodel.PatientReadingViewModel
@@ -124,7 +124,11 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
                 healthCentreManager.getAllSelectedByUser()
             }
             val spinnerOptions = availableHealthFacilities.map(HealthFacility::name)
-            val adapter = ArrayAdapter<String>(requireActivity(), android.R.layout.simple_dropdown_item_1line, spinnerOptions)
+            val adapter = ArrayAdapter<String>(
+                requireActivity(),
+                android.R.layout.simple_dropdown_item_1line,
+                spinnerOptions
+            )
             healthFacilitySpinner?.adapter = adapter
 
             healthFacilitySpinner?.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -184,14 +188,8 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
         progressDialog.cancel()
         when (result) {
             is Failure -> {
-                val err = result.value
-                val message = when {
-                    err.message != null -> err.message
-                    err.networkResponse != null -> "HTTP: ${err.networkResponse.statusCode}"
-                    err is TimeoutError -> "timeout"
-                    else -> err.toString()
-                }
-                Toast.makeText(context, "Failed to upload referral: $message", Toast.LENGTH_LONG).show()
+                val message = VolleyRequests.getServerErrorMessage(result.value)
+                Toast.makeText(context, message, Toast.LENGTH_LONG).show()
             }
             is Success -> {
                 Toast.makeText(context, "Successfully uploaded referral", Toast.LENGTH_SHORT).show()
