@@ -16,6 +16,8 @@ import com.android.volley.TimeoutError
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.HealthCentreManager
+import com.cradle.neptune.manager.PatientManager
+import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.manager.ReferralUploadManger
 import com.cradle.neptune.model.HealthFacility
 import com.cradle.neptune.model.Patient
@@ -44,6 +46,12 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
      * Called after a reading has been successfully uploaded via either web or SMS.
      */
     var onSuccessfulUpload: () -> Unit = { }
+
+    @Inject
+    lateinit var patientManager: PatientManager
+
+    @Inject
+    lateinit var readingManager: ReadingManager
 
     @Inject
     lateinit var healthCentreManager: HealthCentreManager
@@ -187,6 +195,15 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
             }
             is Success -> {
                 Toast.makeText(context, "Successfully uploaded referral", Toast.LENGTH_SHORT).show()
+
+                // Save the patient and reading after marking them as being
+                // uploaded. We save them here instead of delegating this task
+                // to the calling activity because we need to process the models
+                // before they are saved. If we were to leave it to the activity
+                // it would need to reconstruct the models from the view model
+                // instead of being able to used the result of the network call.
+                patientManager.add(result.value.patient)
+                readingManager.addReading(result.value.readings[0].apply { isUploadedToServer = true })
                 dismiss()
                 onSuccessfulUpload()
             }

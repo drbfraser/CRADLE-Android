@@ -471,9 +471,10 @@ public class SummaryFragment extends BaseFragment {
 
         ReferralDialogFragment newFragment = ReferralDialogFragment.Companion.makeInstance(viewModel);
         newFragment.setOnSuccessfulUpload(() -> {
-            if (activityCallbackListener.saveCurrentReading()) {
-                activityCallbackListener.finishActivity();
-            }
+            // Close the activity upon successful upload of the referral as
+            // this implies that the reading and patient have already been
+            // saved.
+            activityCallbackListener.finishActivity();
             return Unit.INSTANCE;
         });
         newFragment.show(getFragmentManager(), "Referral");

@@ -374,7 +374,7 @@ public class ReadingActivity
 
     // Return true if saved; false if rejected
     @Override
-    public boolean saveCurrentReading(boolean didUploadToServer) {
+    public boolean saveCurrentReading() {
         // called from:
         // - activity's SAVE button(s)
         // - fragment's saving data as needed (send SMS)
@@ -401,9 +401,6 @@ public class ReadingActivity
         }
 
         Pair<Patient, Reading> models = viewModel.constructModels();
-        if (didUploadToServer) {
-            models.getSecond().getMetadata().setDateUploadedToServer(UnixTimestamp.INSTANCE.getNow());
-        }
         switch (reasonForLaunch) {
             case LAUNCH_REASON_NEW: // fallthrough
             case LAUNCH_REASON_RECHECK: // fallthrough

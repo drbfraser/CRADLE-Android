@@ -370,7 +370,8 @@ class VolleyRequestManager(application: Application) {
             volleyRequests.getJsonObjectRequest(urlManager.getReadingById(id), null) { result ->
                 when (result) {
                     is Success -> {
-                        readingManager.addReading(Reading.unmarshal(result.value))
+                        val reading = Reading.unmarshal(result.value).apply { isUploadedToServer = true }
+                        readingManager.addReading(reading)
                     }
                 }
                 callback(result)

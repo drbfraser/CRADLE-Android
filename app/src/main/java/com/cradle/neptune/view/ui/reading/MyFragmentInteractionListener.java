@@ -16,11 +16,7 @@ public interface MyFragmentInteractionListener {
 
     void advanceToNextPage();
 
-    boolean saveCurrentReading(boolean didUploadToServer);
-
-    default boolean saveCurrentReading() {
-        return saveCurrentReading(false);
-    }
+    boolean saveCurrentReading();
 
     void finishActivity();
 }
