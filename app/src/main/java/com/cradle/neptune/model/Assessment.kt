@@ -71,7 +71,7 @@ data class Assessment(
 private enum class AssessmentField(override val text: String) : Field {
     ID("id"),
     DATE_ASSESSED("dateAssessed"),
-    HEALTH_CARE_WORKER_ID("healthCareWorkerId"),
+    HEALTH_CARE_WORKER_ID("healthcareWorkerId"),
     READING_ID("readingId"),
     DIAGNOSIS("diagnosis"),
     TREATMENT("treatment"),

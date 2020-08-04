@@ -163,9 +163,9 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             Assessment readingFollowUp = currReading.getFollowUp();
             myViewHolder.diagnosis.setText(readingFollowUp.getDiagnosis());
             myViewHolder.treatment.setText(readingFollowUp.getTreatment());
-            myViewHolder.hcName.setText(readingFollowUp.getHealthCareWorkerId());
+            myViewHolder.hcName.setText(Integer.toString(readingFollowUp.getHealthCareWorkerId()));
             myViewHolder.referredBy.setText("Unknown"); // FIXME: no longer have referred by field
-            myViewHolder.assessedBy.setText(readingFollowUp.getHealthCareWorkerId());
+            myViewHolder.assessedBy.setText(Integer.toString(readingFollowUp.getHealthCareWorkerId()));
             myViewHolder.assessmentDate.setText(DateUtil.getFullDateFromUnix(readingFollowUp.getDateAssessed()));
             TextView specialInvestigation = v.findViewById(R.id.specialInvestigationTxt);
             TextView medPrescribed = v.findViewById(R.id.medPrescibedTxt);
