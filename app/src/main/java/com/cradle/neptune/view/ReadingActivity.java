@@ -19,6 +19,7 @@ import com.cradle.neptune.manager.PatientManager;
 import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.manager.ReadingManager;
+import com.cradle.neptune.utilitiles.UnixTimestamp;
 import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.view.ui.reading.BaseFragment;
 import com.cradle.neptune.view.ui.reading.MyFragmentInteractionListener;
@@ -373,7 +374,7 @@ public class ReadingActivity
 
     // Return true if saved; false if rejected
     @Override
-    public boolean saveCurrentReading() {
+    public boolean saveCurrentReading(boolean didUploadToServer) {
         // called from:
         // - activity's SAVE button(s)
         // - fragment's saving data as needed (send SMS)
@@ -400,6 +401,9 @@ public class ReadingActivity
         }
 
         Pair<Patient, Reading> models = viewModel.constructModels();
+        if (didUploadToServer) {
+            models.getSecond().getMetadata().setDateUploadedToServer(UnixTimestamp.INSTANCE.getNow());
+        }
         switch (reasonForLaunch) {
             case LAUNCH_REASON_NEW: // fallthrough
             case LAUNCH_REASON_RECHECK: // fallthrough
@@ -431,6 +435,11 @@ public class ReadingActivity
     @Override
     public void advanceToNextPage() {
         onClickNext(null);
+    }
+
+    @Override
+    public void finishActivity() {
+        finish();
     }
 
     private enum LaunchReason {

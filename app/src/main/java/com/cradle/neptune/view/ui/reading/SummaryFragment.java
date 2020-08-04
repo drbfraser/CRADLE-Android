@@ -469,12 +469,13 @@ public class SummaryFragment extends BaseFragment {
             return;
         }
 
-        DialogFragment newFragment = ReferralDialogFragment.Companion.makeInstance(viewModel,
-                message -> {
-                    activityCallbackListener.saveCurrentReading();
-                    updateUI();
-                    return Unit.INSTANCE;
-                });
+        ReferralDialogFragment newFragment = ReferralDialogFragment.Companion.makeInstance(viewModel);
+        newFragment.setOnSuccessfulUpload(() -> {
+            if (activityCallbackListener.saveCurrentReading()) {
+                activityCallbackListener.finishActivity();
+            }
+            return Unit.INSTANCE;
+        });
         newFragment.show(getFragmentManager(), "Referral");
     }
 

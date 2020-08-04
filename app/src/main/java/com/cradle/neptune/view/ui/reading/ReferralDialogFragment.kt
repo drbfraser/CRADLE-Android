@@ -35,10 +35,15 @@ import kotlinx.coroutines.withContext
 class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : DialogFragment() {
 
     companion object {
-        fun makeInstance(viewModel: PatientReadingViewModel, callback: (String) -> Unit): ReferralDialogFragment {
+        fun makeInstance(viewModel: PatientReadingViewModel): ReferralDialogFragment {
             return ReferralDialogFragment(viewModel)
         }
     }
+
+    /**
+     * Called after a reading has been successfully uploaded via either web or SMS.
+     */
+    var onSuccessfulUpload: () -> Unit = { }
 
     @Inject
     lateinit var healthCentreManager: HealthCentreManager
@@ -183,6 +188,7 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
             is Success -> {
                 Toast.makeText(context, "Successfully uploaded referral", Toast.LENGTH_SHORT).show()
                 dismiss()
+                onSuccessfulUpload()
             }
         }
     }
