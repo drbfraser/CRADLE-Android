@@ -173,7 +173,6 @@ class SyncStepperImplementation(
                 when (result) {
                     is Success -> {
                         val patient = result.value.first
-                        patient.base = patient.lastEdited
                         val readings = result.value.second
                         readingManager.addAllReadings(readings)
                         patientManager.add(patient)
