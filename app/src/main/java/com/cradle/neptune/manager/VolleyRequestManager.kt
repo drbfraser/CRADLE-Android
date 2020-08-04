@@ -4,7 +4,7 @@ import android.app.Application
 import android.content.SharedPreferences
 import android.util.Log
 import com.cradle.neptune.dagger.MyApp
-import com.cradle.neptune.model.FollowUp
+import com.cradle.neptune.model.Assessment
 import com.cradle.neptune.model.GlobalPatient
 import com.cradle.neptune.model.HealthFacility
 import com.cradle.neptune.model.JsonObject
@@ -12,7 +12,6 @@ import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.PatientAndReadings
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.network.Failure
-import com.cradle.neptune.network.NetworkResult
 import com.cradle.neptune.network.NetworkResult
 import com.cradle.neptune.network.Success
 import com.cradle.neptune.network.VolleyRequestQueue
@@ -389,9 +388,9 @@ class VolleyRequestManager(application: Application) {
                 when (result) {
                     is Success -> {
                         GlobalScope.launch(Dispatchers.IO) {
-                            val assessment = FollowUp.unmarshal(result.value)
+                            val assessment = Assessment.unmarshal(result.value)
                             val reading =
-                                readingManager.getReadingById(assessment.readingServerId.toString())
+                                readingManager.getReadingById(assessment.readingId)
                             reading?.followUp = assessment
                             reading?.let { readingManager.addReading(it) }
                         }
