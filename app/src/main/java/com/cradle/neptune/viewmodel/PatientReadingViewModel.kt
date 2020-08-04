@@ -84,6 +84,10 @@ class PatientReadingViewModel() {
         get() = patientBuilder.get(Patient::villageNumber) as String?
         set(value) = patientBuilder.set(Patient::villageNumber, value).discard()
 
+    var patientLastEdited: Long?
+        get() = patientBuilder.get(Patient::lastEdited) as Long?
+        set(value) = patientBuilder.set(Patient::lastEdited, value).discard()
+
     /* Blood Pressure Info */
     var bloodPressure: BloodPressure?
         get() = readingBuilder.get(Reading::bloodPressure) as BloodPressure?

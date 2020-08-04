@@ -29,17 +29,19 @@ public class DateUtil {
         return date.format(formatter);
     }
 
-    public static String getConciseDateString(ZonedDateTime date) {
+    public static String getConciseDateString(Long unixDate) {
         ZonedDateTime now = ZonedDateTime.now();
-        if (date == null) {
+        ZonedDateTime dateFromUnix = getZoneTimeFromLong(unixDate);
+
+        if (dateFromUnix == null) {
             return "";
         }
 
         DateTimeFormatter formatter;
-        if (now.toLocalDate().equals(date.toLocalDate())) {
+        if (now.toLocalDate().equals(dateFromUnix.toLocalDate())) {
             // Today: omit the date
             formatter = DateTimeFormatter.ofPattern("h:mm a");
-        } else if (now.getYear() == date.getYear()) {
+        } else if (now.getYear() == dateFromUnix.getYear()) {
             // This year: omit the year
             formatter = DateTimeFormatter.ofPattern("MMM d '@' h a");
         } else {
@@ -47,7 +49,7 @@ public class DateUtil {
             formatter = DateTimeFormatter.ofPattern("MMM d, yyyy");
         }
 
-        return date.format(formatter);
+        return dateFromUnix.format(formatter);
     }
 
     public static String getFullDateFromUnix(Long date) {

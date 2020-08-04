@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
 import com.cradle.neptune.R;
+import com.cradle.neptune.view.sync.SyncActivity;
 import com.cradle.neptune.view.ui.settings.SettingsActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -107,7 +108,7 @@ public class DashBoardActivity extends AppCompatActivity implements View.OnClick
                 break;
             case R.id.syncCardView:
             case R.id.syncImg:
-                startActivity(UploadActivity.makeIntent(this));
+                startActivity(new Intent(this, SyncActivity.class));
                 break;
             case R.id.fabHelpDashboard:
                 startActivity(new Intent(this, EducationActivity.class));

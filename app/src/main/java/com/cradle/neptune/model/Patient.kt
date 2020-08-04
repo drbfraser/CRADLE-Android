@@ -6,6 +6,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 import java.io.Serializable
+import org.json.JSONArray
 
 // TODO: Figure out which of these fields must be optional and which are never
 //  used at all.
@@ -52,7 +53,7 @@ data class Patient(
      */
     override fun marshal(): JsonObject = with(JsonObject()) {
         if (gestationalAge != null) {
-            union(gestationalAge!!)
+            union(gestationalAge)
         }
 
         put(PatientField.ID, id)
@@ -63,8 +64,9 @@ data class Patient(
         put(PatientField.IS_PREGNANT, isPregnant)
         put(PatientField.ZONE, zone)
         put(PatientField.VILLAGE_NUMBER, villageNumber)
-        putStringArray(PatientField.DRUG_HISTORY, drugHistoryList)
-        putStringArray(PatientField.MEDICAL_HISTORY, medicalHistoryList)
+        // server only takes string
+        put(PatientField.DRUG_HISTORY, drugHistoryList.joinToString())
+        put(PatientField.MEDICAL_HISTORY, medicalHistoryList.joinToString())
         put(PatientField.LAST_EDITED, lastEdited)
         put(PatientField.BASE, base)
     }
@@ -96,7 +98,7 @@ data class Patient(
             drugHistoryList = data.optArrayField(PatientField.DRUG_HISTORY)
                 ?.toList(JsonArray::getString) ?: emptyList()
             medicalHistoryList = data.optArrayField(PatientField.MEDICAL_HISTORY)
-                ?.toList(JsonArray::getString) ?: emptyList()
+                ?.toList(JSONArray::getString) ?: emptyList()
             lastEdited = data.optLongField(PatientField.LAST_EDITED)
             base = data.optLongField(PatientField.BASE)
         }

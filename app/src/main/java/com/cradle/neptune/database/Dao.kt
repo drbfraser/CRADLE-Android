@@ -97,8 +97,8 @@ interface ReadingDaoAccess {
     @get:Query("""
         SELECT * 
         FROM Reading r 
-        JOIN Patient p ON r.patientId = p.id
-        WHERE p.base = null AND r.isUploadedToServer = 0
+        JOIN Patient p ON r.patientId like p.id
+        WHERE p.base is NOT null AND r.isUploadedToServer = 0
     """)
     val allUnUploadedReadingsForTrackedPatients: List<Reading>
 
@@ -125,7 +125,7 @@ interface PatientDaoAccess {
     fun insert(patient: Patient)
 
     /**
-     * insert a list of patients into the patient tavle
+     * insert a list of patients into the patient table
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(patients: List<Patient>)
@@ -149,6 +149,15 @@ interface PatientDaoAccess {
     @get:Query("SELECT * FROM Patient")
     val allPatientsAndReading: List<PatientAndReadings>
 
+    @get:Transaction
+    @get:Query("SELECT * FROM Patient WHERE base IS null")
+    val unUploadedPatientAndReadings: List<PatientAndReadings>
+
+    /**
+     * get patients that were edited after a given timestamp and are not brand new patients
+     */
+    @Query("SELECT * FROM Patient WHERE lastEdited =:unixTime AND base IS NOT null")
+    fun getEditedPatients(unixTime: Long): List<Patient>
     /**
      * get a list of patient Ids
      */
