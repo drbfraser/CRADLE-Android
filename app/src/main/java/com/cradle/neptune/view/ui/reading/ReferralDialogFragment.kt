@@ -82,7 +82,7 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val inflater = requireActivity().layoutInflater
         dialogView = inflater.inflate(R.layout.referral_dialog, null)
-        alertDialog = AlertDialog.Builder(activity!!)
+        alertDialog = AlertDialog.Builder(requireActivity())
             .setView(dialogView)
             .setTitle("Send Referral")
             .setPositiveButton("Send SMS", null)
@@ -107,7 +107,7 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
         // Setup UI components
         setupHealthFacilitySpinner()
         settingsButton?.setOnClickListener {
-            val intent = SettingsActivity.makeLaunchIntent(activity!!)
+            val intent = SettingsActivity.makeLaunchIntent(requireActivity())
             activity?.startActivity(intent)
         }
 
@@ -124,7 +124,7 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
                 healthCentreManager.getAllSelectedByUser()
             }
             val spinnerOptions = availableHealthFacilities.map(HealthFacility::name)
-            val adapter = ArrayAdapter<String>(activity!!, android.R.layout.simple_dropdown_item_1line, spinnerOptions)
+            val adapter = ArrayAdapter<String>(requireActivity(), android.R.layout.simple_dropdown_item_1line, spinnerOptions)
             healthFacilitySpinner?.adapter = adapter
 
             healthFacilitySpinner?.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
