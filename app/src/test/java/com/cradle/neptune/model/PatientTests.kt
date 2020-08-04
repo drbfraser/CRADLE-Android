@@ -16,8 +16,8 @@ class PatientTests {
             true,
             null,
             null,
-            listOf("drug-1", "drug-2", "drug-3"),
-            listOf("hist-1", "hist-2", "hist-3")
+            emptyList(),
+            emptyList()
         )
 
         val json = patient.marshal()

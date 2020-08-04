@@ -10,14 +10,17 @@ import com.cradle.neptune.view.LoginActivity;
 import com.cradle.neptune.view.PatientsActivity;
 import com.cradle.neptune.view.ReadingActivity;
 import com.cradle.neptune.view.StatsActivity;
-import com.cradle.neptune.view.UploadActivity;
-import com.cradle.neptune.view.ui.network_volley.MultiReadingUploader;
+import com.cradle.neptune.view.sync.ListUploader;
+import com.cradle.neptune.view.sync.SyncActivity;
+import com.cradle.neptune.view.sync.SyncStepperImplementation;
 import com.cradle.neptune.view.ui.reading.ConfirmDataFragment;
 import com.cradle.neptune.view.ui.reading.ReferralDialogFragment;
 import com.cradle.neptune.view.ui.settings.AdvancedSettingsFragment;
 import com.cradle.neptune.view.ui.settings.SettingsFragment;
 import com.cradle.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity;
 import com.cradle.neptune.viewmodel.HealthFacilityViewModel;
+
+import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Singleton;
 
@@ -34,8 +37,6 @@ public interface AppComponent {
     void inject(ReadingActivity activity);
 
     void inject(PatientsActivity activity);
-
-    void inject(UploadActivity activity);
 
     void inject(HelpActivity activity);
 
@@ -57,7 +58,6 @@ public interface AppComponent {
 
     void inject(LoginActivity loginActivity);
 
-    void inject(MultiReadingUploader multiReadingUploader);
 
     void inject(HealthFacilitiesActivity healthFacilitiesActivity);
 
@@ -66,4 +66,10 @@ public interface AppComponent {
     void inject(HealthFacilityViewModel healthFacilityViewModel);
 
     void inject(VolleyRequestManager volleyRequestManager);
+
+    void inject(ListUploader listUploader);
+
+    void inject(SyncStepperImplementation syncStepperImplementation);
+
+    void inject(@NotNull SyncActivity syncActivity);
 }

@@ -110,10 +110,16 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
 
     /**
      * Returns all readings which have not been uploaded to the server yet.
-     *suspending seems redundent but we want to force this to run on a coroutine
      */
     suspend fun getUnUploadedReadings(): List<Reading> {
         return daoAccess.allUnUploadedReading
+    }
+
+    /**
+     * get unUploaded readings for patients who already exists in the server
+     */
+    suspend fun getUnUploadedReadingsForServerPatients(): List<Reading> {
+        return daoAccess.allUnUploadedReadingsForTrackedPatients
     }
 
     /**

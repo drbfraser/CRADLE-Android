@@ -117,7 +117,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         progressDialog.setCancelable(false)
         progressDialog.setMessage("Fetching the patient...")
         progressDialog.show()
-        volleyRequestsManager.getSinglePatientById(globalPatient.id) { result ->
+        volleyRequestsManager.getFullPatientById(globalPatient.id) { result ->
             when (result) {
                 is Success -> {
                     val patientReadingPair = result.unwrap()

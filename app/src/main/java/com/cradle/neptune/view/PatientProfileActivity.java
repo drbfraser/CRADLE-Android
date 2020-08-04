@@ -135,7 +135,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Updating patient");
         progressDialog.setCancelable(false);
-        JsonRequest<JSONObject> jsonArrayRequest = new JsonObjectRequest(Request.Method.GET, urlManager.getPatientInfoById(currPatient.getId()),
+        JsonRequest<JSONObject> jsonArrayRequest = new JsonObjectRequest(Request.Method.GET, urlManager.getPatientFullInfoById(currPatient.getId()),
                 null, response -> {
             try {
                 Log.d("bugg","json: "+ response.toString(4));
@@ -143,7 +143,6 @@ public class PatientProfileActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }, error -> {
-            Log.d("bugg", "failed: " + error);
             progressDialog.cancel();
             Toast.makeText(PatientProfileActivity.this, "Patient update fail!", Toast.LENGTH_SHORT).show();
         }) {

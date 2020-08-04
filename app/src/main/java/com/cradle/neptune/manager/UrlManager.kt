@@ -28,22 +28,21 @@ class UrlManager @Inject constructor(val settings: Settings) {
         get() = "$base/facilities"
 
     /**
-     * Endpoint for retrieving information about a reading.
+     * Endpoint for retrieving or uploading information about a reading.
      */
-    val reading: String
-        get() = "$base/patient/reading"
+    val readings: String
+        get() = "$base/readings"
 
+    /**
+     * Endpoint for retrieving or uploading a patient
+     */
+    val patients: String
+    get() = "$base/patients"
     /**
      * Endpoint for retrieving referral information.
      */
     val referral: String
         get() = "$base/referral"
-
-    /**
-     * Endpoint for retrieving follow up information.
-     */
-    val followUp: String
-        get() = "$base/mobile/summarized/follow_up"
 
     /**
      * The base server URL.
@@ -75,13 +74,33 @@ class UrlManager @Inject constructor(val settings: Settings) {
     /**
      * Endpoint for retrieving all readings associated with a given patient id.
      */
-    fun getPatientInfoById(patientId: String) = "$base/patients/$patientId"
+    fun getPatientFullInfoById(patientId: String) = "$base/patients/$patientId"
 
     /**
      * Search the database for a list of patient by Id or Initials
      * /patient/global/<String>
      */
     fun getGlobalPatientSearch(query: String) = "$base/patient/global/$query"
+
+    /**
+     * provides all the updates related to the user since the [currTime] stamp
+     */
+    fun getUpdates(currTime: Long): String = "$base/sync/updates?since=$currTime"
+
+    /**
+     * get a single reading by id
+     */
+    fun getReadingById(id: String): String = "$base/readings/$id"
+
+    /**
+     * get a patient info only
+     */
+    fun getPatientInfoOnly(id: String): String = "$base/patients/$id/info"
+
+    /**
+     * get a assessment by id
+     */
+    fun getAssessmentById(id: String): String = "$base/assessments/$id"
 
     val userPatientAssociation = "$base/associations"
 }
