@@ -13,7 +13,7 @@ import javax.inject.Inject
 private const val HTTP_NOT_FOUND = 404
 
 /**
- * Manages uploading referrals either by HTTP or SMS.
+ * Manages uploading referrals via HTTP.
  */
 class ReferralUploadManger @Inject constructor(private val api: Api) {
 

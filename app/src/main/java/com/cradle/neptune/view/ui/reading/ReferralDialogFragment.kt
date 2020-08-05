@@ -2,7 +2,10 @@ package com.cradle.neptune.view.ui.reading
 
 import android.app.Dialog
 import android.app.ProgressDialog
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -19,7 +22,9 @@ import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.manager.ReferralUploadManger
 import com.cradle.neptune.model.HealthFacility
+import com.cradle.neptune.model.JsonObject
 import com.cradle.neptune.model.Patient
+import com.cradle.neptune.model.PatientAndReadings
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.Referral
 import com.cradle.neptune.network.Failure
@@ -28,6 +33,7 @@ import com.cradle.neptune.network.VolleyRequests
 import com.cradle.neptune.utilitiles.UnixTimestamp
 import com.cradle.neptune.view.ui.settings.SettingsActivity
 import com.cradle.neptune.viewmodel.PatientReadingViewModel
+import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -95,10 +101,24 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
         // the listener does, but we don't want that. Instead we only want to
         // close the dialog once the referral has been successfully sent.
         alertDialog.setOnShowListener {
-            alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener {
+            alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener listener@{
+                if (selectedHealthFacility == null) {
+                    displayNoHealthFacilityDialog()
+                    return@listener
+                }
+
                 MainScope().launch {
                     sendReferralViaWeb()
                 }
+            }
+
+            alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener listener@{
+                if (selectedHealthFacility == null) {
+                    displayNoHealthFacilityDialog()
+                    return@listener
+                }
+
+                sendReferralViaSMS()
             }
         }
 
@@ -146,6 +166,17 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
     }
 
     /**
+     * Displays a dialog telling the user to select a health facility.
+     */
+    private fun displayNoHealthFacilityDialog() {
+        AlertDialog.Builder(requireActivity())
+            .setTitle("No Health Facility Selected")
+            .setMessage("Please add a health facility in the settings menu")
+            .setPositiveButton("Ok", null)
+            .show()
+    }
+
+    /**
      * Constructs the patient and reading from the view models passed to this
      * fragment along with a new referral.
      *
@@ -170,7 +201,7 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
     }
 
     /**
-     * Constructs and send the referral via HTTP.
+     * Constructs and sends the referral via HTTP.
      *
      * Closes this dialog upon successful upload. If the upload failed, then the
      * dialog is not closed as the user may wish to instead send the referral
@@ -200,11 +231,51 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
                 // before they are saved. If we were to leave it to the activity
                 // it would need to reconstruct the models from the view model
                 // instead of being able to used the result of the network call.
-                patientManager.add(result.value.patient)
-                readingManager.addReading(result.value.readings[0].apply { isUploadedToServer = true })
+                save(result.value)
                 dismiss()
                 onSuccessfulUpload()
             }
         }
+    }
+
+    /**
+     * Constructs and sends the referral via SMS.
+     *
+     * Unconditionally closes this dialog after opening the device's SMS
+     * application. This doesn't imply that the referral made it to the server
+     * but it's almost impossible to ensure that so this is the best we can do.
+     */
+    private fun sendReferralViaSMS() {
+        if (selectedHealthFacility == null) {
+            throw IllegalStateException("no health facility selected")
+        }
+
+        val (patient, reading) = constructModels()
+
+        val data = PatientAndReadings(patient, listOf(reading))
+        val id = UUID.randomUUID().toString()
+        val json = with(JsonObject()) {
+            put("referralId", id)
+            put("patient", data.marshal())
+        }
+
+        Log.i(this::class.simpleName, "Sending referral via text message")
+        val phoneNumber = selectedHealthFacility!!.phoneNumber
+        val uri = Uri.parse("smsto:$phoneNumber")
+        val intent = Intent(Intent.ACTION_SENDTO, uri).apply {
+            putExtra("sms_body", json.toString())
+        }
+        startActivity(intent)
+
+        Log.i(this::class.simpleName, "Saving patient and reading")
+        data.readings[0].isUploadedToServer = true
+        save(data)
+        dismiss()
+        onSuccessfulUpload()
+    }
+
+    private fun save(data: PatientAndReadings) {
+        patientManager.add(data.patient)
+        readingManager.addReading(data.readings[0].apply { isUploadedToServer = true })
     }
 }
