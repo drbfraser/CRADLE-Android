@@ -17,4 +17,6 @@ public interface MyFragmentInteractionListener {
     void advanceToNextPage();
 
     boolean saveCurrentReading();
+
+    void finishActivity();
 }

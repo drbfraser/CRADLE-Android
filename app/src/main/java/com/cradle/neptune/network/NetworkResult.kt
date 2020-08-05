@@ -1,8 +1,6 @@
 package com.cradle.neptune.network
 
 import com.android.volley.VolleyError
-import com.cradle.neptune.model.Patient
-import com.cradle.neptune.model.Reading
 
 /**
  *Base class for all network responses.
@@ -42,12 +40,3 @@ fun <T> NetworkResult<T>.unwrapFailure(): VolleyError = when (this) {
     is Success -> throw RuntimeException("unwrap failure of success network result")
     is Failure -> this.value
 }
-
-/**
- * typaliases for all the callbacks to make them more readable and shorter
- */
-typealias BooleanCallback = (isSuccessful: Boolean) -> Unit
-
-typealias ListCallBack<T> = (NetworkResult<List<T>>) -> Unit
-
-typealias PatientReadingPairCallBack = (NetworkResult<Pair<Patient, List<Reading>>>) -> Unit

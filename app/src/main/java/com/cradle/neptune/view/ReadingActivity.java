@@ -19,6 +19,7 @@ import com.cradle.neptune.manager.PatientManager;
 import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.manager.ReadingManager;
+import com.cradle.neptune.utilitiles.UnixTimestamp;
 import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.view.ui.reading.BaseFragment;
 import com.cradle.neptune.view.ui.reading.MyFragmentInteractionListener;
@@ -431,6 +432,11 @@ public class ReadingActivity
     @Override
     public void advanceToNextPage() {
         onClickNext(null);
+    }
+
+    @Override
+    public void finishActivity() {
+        finish();
     }
 
     private enum LaunchReason {

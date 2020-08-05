@@ -4,18 +4,15 @@ import android.app.Application
 import android.content.SharedPreferences
 import android.util.Log
 import com.cradle.neptune.dagger.MyApp
-import com.cradle.neptune.model.FollowUp
+import com.cradle.neptune.model.Assessment
 import com.cradle.neptune.model.GlobalPatient
 import com.cradle.neptune.model.HealthFacility
 import com.cradle.neptune.model.JsonObject
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.PatientAndReadings
 import com.cradle.neptune.model.Reading
-import com.cradle.neptune.network.BooleanCallback
 import com.cradle.neptune.network.Failure
-import com.cradle.neptune.network.ListCallBack
 import com.cradle.neptune.network.NetworkResult
-import com.cradle.neptune.network.PatientReadingPairCallBack
 import com.cradle.neptune.network.Success
 import com.cradle.neptune.network.VolleyRequestQueue
 import com.cradle.neptune.network.VolleyRequests
@@ -30,6 +27,15 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.threeten.bp.ZonedDateTime
+
+/**
+ * typaliases for all the callbacks to make them more readable and shorter
+ */
+typealias BooleanCallback = (isSuccessful: Boolean) -> Unit
+
+typealias ListCallBack<T> = (NetworkResult<List<T>>) -> Unit
+
+typealias PatientReadingPairCallBack = (NetworkResult<Pair<Patient, List<Reading>>>) -> Unit
 
 /**
  * A request manager for all the web requests. This should be the only interface for all requests.
@@ -364,7 +370,8 @@ class VolleyRequestManager(application: Application) {
             volleyRequests.getJsonObjectRequest(urlManager.getReadingById(id), null) { result ->
                 when (result) {
                     is Success -> {
-                        readingManager.addReading(Reading.unmarshal(result.value))
+                        val reading = Reading.unmarshal(result.value).apply { isUploadedToServer = true }
+                        readingManager.addReading(reading)
                     }
                 }
                 callback(result)
@@ -382,9 +389,9 @@ class VolleyRequestManager(application: Application) {
                 when (result) {
                     is Success -> {
                         GlobalScope.launch(Dispatchers.IO) {
-                            val assessment = FollowUp.unmarshal(result.value)
+                            val assessment = Assessment.unmarshal(result.value)
                             val reading =
-                                readingManager.getReadingById(assessment.readingServerId.toString())
+                                readingManager.getReadingById(assessment.readingId)
                             reading?.followUp = assessment
                             reading?.let { readingManager.addReading(it) }
                         }

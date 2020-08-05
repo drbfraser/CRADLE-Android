@@ -24,6 +24,7 @@ import com.cradle.neptune.utilitiles.DateUtil;
 import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.viewmodel.ReadingAnalysisViewSupport;
 
+import kotlin.Unit;
 import org.threeten.bp.ZonedDateTime;
 
 import static com.cradle.neptune.utilitiles.Util.mapNullable;
@@ -375,8 +376,8 @@ public class SummaryFragment extends BaseFragment {
             ivReferralSent.setVisibility(View.GONE);
         } else {
             tv.setText(getString(R.string.reading_referral_sent,
-                    viewModel.getReferral().getHealthCentre(),
-                    DateUtil.getFullDateFromUnix(viewModel.getReferral().getMessageSendTimeUnix())));
+                    viewModel.getReferral().getHealthFacilityName(),
+                    DateUtil.getFullDateFromUnix(viewModel.getReferral().getDateReferred())));
 //            tv.setText(getString(R.string.reading_referral_sent,
 //                    currentReading.referralHealthCentre,
 //                    DateUtil.getFullDateString(currentReading.referralMessageSendTime)
@@ -468,11 +469,14 @@ public class SummaryFragment extends BaseFragment {
             return;
         }
 
-        DialogFragment newFragment = ReferralDialogFragment.makeInstance(viewModel,
-                message -> {
-                    activityCallbackListener.saveCurrentReading();
-                    updateUI();
-                });
+        ReferralDialogFragment newFragment = ReferralDialogFragment.Companion.makeInstance(viewModel);
+        newFragment.setOnSuccessfulUpload(() -> {
+            // Close the activity upon successful upload of the referral as
+            // this implies that the reading and patient have already been
+            // saved.
+            activityCallbackListener.finishActivity();
+            return Unit.INSTANCE;
+        });
         newFragment.show(getFragmentManager(), "Referral");
     }
 

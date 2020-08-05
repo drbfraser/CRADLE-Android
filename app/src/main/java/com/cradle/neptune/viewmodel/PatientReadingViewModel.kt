@@ -11,6 +11,7 @@ import com.cradle.neptune.model.RetestGroup
 import com.cradle.neptune.model.Sex
 import com.cradle.neptune.model.UrineTest
 import com.cradle.neptune.utilitiles.DynamicModelBuilder
+import com.cradle.neptune.utilitiles.UnixTimestamp
 import com.cradle.neptune.utilitiles.discard
 import java.lang.IllegalArgumentException
 import kotlinx.coroutines.Dispatchers
@@ -223,6 +224,12 @@ class PatientReadingViewModel() {
         val patientId = patientBuilder.get(Patient::id)
         readingBuilder.set(Reading::patientId, patientId)
 
+        // If the reading doesn't have a date time taken field, we'll populate
+        // that now.
+        if (dateTimeTaken == null) {
+            dateTimeTaken = UnixTimestamp.now
+        }
+
         val patient = patientBuilder.build<Patient>()
         val reading = readingBuilder.build<Reading>()
         return Pair(patient, reading)
@@ -258,7 +265,7 @@ class PatientReadingViewModel() {
         val reading = Reading(
             id = readingId ?: "in-progress",
             patientId = patientId ?: "",
-            dateTimeTaken = dateTimeTaken ?: ZonedDateTime.now().toEpochSecond(),
+            dateTimeTaken = dateTimeTaken ?: UnixTimestamp.now,
             bloodPressure = bloodPressure!!,
             urineTest = urineTest,
             symptoms = symptoms ?: emptyList(),

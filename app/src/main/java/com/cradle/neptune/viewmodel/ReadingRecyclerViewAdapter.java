@@ -52,7 +52,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
 
     @Override
     public int getItemViewType(int position) {
-        FollowUp followUpAction = readings.get(position).getFollowUp();
+        Assessment followUpAction = readings.get(position).getFollowUp();
         if (followUpAction == null) {
             return NO_ASSESSMENT_TYPE;
         }
@@ -126,8 +126,8 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             setVisibilityForImageAndText(v, R.id.imgReferred, R.id.txtReferred, currReading.isReferredToHealthCentre());
             if (currReading.isReferredToHealthCentre()) {
                 String message;
-                if (currReading.getReferral() != null && currReading.getReferral().getHealthCentre().length() > 0) {
-                    message = v.getContext().getString(R.string.reading_referred_to_health_centre, currReading.getReferral().getHealthCentre());
+                if (currReading.getReferral() != null && currReading.getReferral().getHealthFacilityName().length() > 0) {
+                    message = v.getContext().getString(R.string.reading_referred_to_health_centre, currReading.getReferral().getHealthFacilityName());
                 } else {
                     message = v.getContext().getString(R.string.reading_referred_to_health_centre_unknown);
                 }
@@ -160,31 +160,25 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             }
 
         } else if (myViewHolder.getItemViewType() == ASSESSMENT_TYPE) {
-            FollowUp readingFollowUp = currReading.getFollowUp();
+            Assessment readingFollowUp = currReading.getFollowUp();
             myViewHolder.diagnosis.setText(readingFollowUp.getDiagnosis());
             myViewHolder.treatment.setText(readingFollowUp.getTreatment());
-            myViewHolder.hcName.setText(readingFollowUp.getHealthcare());
-            myViewHolder.referredBy.setText(readingFollowUp.getReferredBy());
-            myViewHolder.assessedBy.setText(readingFollowUp.getAssessedBy());
-            SimpleDateFormat inFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-            try {
-                Date date = inFormat.parse(readingFollowUp.getDate());
-                myViewHolder.assessmentDate.setText(date.toString());
-
-            } catch (ParseException e) {
-                myViewHolder.assessmentDate.setText(readingFollowUp.getDate());
-            }
+            myViewHolder.hcName.setText(Integer.toString(readingFollowUp.getHealthCareWorkerId()));
+            myViewHolder.referredBy.setText("Unknown"); // FIXME: no longer have referred by field
+            myViewHolder.assessedBy.setText(Integer.toString(readingFollowUp.getHealthCareWorkerId()));
+            myViewHolder.assessmentDate.setText(DateUtil.getFullDateFromUnix(readingFollowUp.getDateAssessed()));
             TextView specialInvestigation = v.findViewById(R.id.specialInvestigationTxt);
             TextView medPrescribed = v.findViewById(R.id.medPrescibedTxt);
-            specialInvestigation.setText(readingFollowUp.getSpecialInvestigation());
+            specialInvestigation.setText(readingFollowUp.getSpecialInvestigations());
             medPrescribed.setText(readingFollowUp.getMedicationPrescribed());
-            if (readingFollowUp.getFollowUpNeeded()) {
-                myViewHolder.followUp.setText(readingFollowUp.getFollowUpAction());
+            if (readingFollowUp.getFollowupNeeded()) {
+                myViewHolder.followUp.setText(readingFollowUp.getFollowupInstructions());
                 TextView frequencyTxt = v.findViewById(R.id.followupFrequencyTxt);
                 frequencyTxt.setVisibility(View.VISIBLE);
-                String txt = "Every " + readingFollowUp.getFollowUpFrequencyValue() + " " + readingFollowUp.getFollowUpFrequencyUnit().toLowerCase()
-                        + " till: " + readingFollowUp.getFollowUpNeededTill();
-                frequencyTxt.setText(txt);
+//                String txt = "Every " + readingFollowUp.getFollowUpFrequencyValue() + " " + readingFollowUp.getFollowUpFrequencyUnit().toLowerCase()
+//                        + " till: " + readingFollowUp.getFollowUpNeededTill();
+//                frequencyTxt.setText(txt);
+                // FIXME: no longer have frequency fields
             } else {
                 TextView frequencyTxt = v.findViewById(R.id.followupFrequencyTxt);
                 frequencyTxt.setVisibility(View.GONE);

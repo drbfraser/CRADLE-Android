@@ -7,14 +7,11 @@ import androidx.preference.PreferenceManager;
 import androidx.room.Room;
 
 import com.cradle.neptune.database.CradleDatabase;
-import com.cradle.neptune.manager.PatientManager;
+import com.cradle.neptune.manager.*;
 
 import javax.inject.Singleton;
 
-import com.cradle.neptune.manager.HealthCentreManager;
-import com.cradle.neptune.manager.MarshalManager;
-import com.cradle.neptune.manager.ReadingManager;
-import com.cradle.neptune.manager.VolleyRequestManager;
+import com.cradle.neptune.network.Api;
 import com.cradle.neptune.network.VolleyRequestQueue;
 
 import dagger.Module;
@@ -67,5 +64,15 @@ public class DataModule {
     @Singleton
     public VolleyRequestManager provideVolleyRequestManager(Application application){
         return new VolleyRequestManager(application);
+    }
+
+    @Provides
+    @Singleton
+    public Api provideApi(
+        SharedPreferences sharedPreferences,
+        UrlManager urlManager,
+        VolleyRequestQueue volleyRequestQueue
+    ) {
+        return new Api(sharedPreferences, urlManager, volleyRequestQueue);
     }
 }
