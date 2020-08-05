@@ -231,7 +231,8 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
                 // before they are saved. If we were to leave it to the activity
                 // it would need to reconstruct the models from the view model
                 // instead of being able to used the result of the network call.
-                save(result.value)
+                patientManager.add(result.value.patient)
+                readingManager.addReading(result.value.readings[0].apply { isUploadedToServer = true })
                 dismiss()
                 onSuccessfulUpload()
             }
@@ -268,14 +269,14 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
         startActivity(intent)
 
         Log.i(this::class.simpleName, "Saving patient and reading")
-        data.readings[0].isUploadedToServer = true
-        save(data)
+        patientManager.add(patient)
+        // We don't mark the reading as uploaded to the server as we can't know
+        // for sure that the reading has been uploaded. When the VHT goes to
+        // sync this will be resolved, either by overwriting this reading with
+        // the one from the server (if it made it successfully) or by uploading
+        // it through the sync process (if it failed to make it to the server).
+        readingManager.addReading(reading)
         dismiss()
         onSuccessfulUpload()
-    }
-
-    private fun save(data: PatientAndReadings) {
-        patientManager.add(data.patient)
-        readingManager.addReading(data.readings[0].apply { isUploadedToServer = true })
     }
 }
