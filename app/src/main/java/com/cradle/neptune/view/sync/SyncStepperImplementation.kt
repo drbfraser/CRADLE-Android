@@ -129,6 +129,17 @@ class SyncStepperImplementation(
                 }
             }
         }
+
+        // catch the case where patient exists and a referral reading was sent. we now know reading
+        //exists on the server.
+        with(readingsToUpload.iterator()){
+            forEach {
+                if (updateApiData.newReadingsIds.contains(it.id)){
+                    remove()
+                }
+            }
+        }
+
         // total number of uploads need to be done.
         val totalNum =
             newPatientsToUpload.size + readingsToUpload.size + editedPatientsToUpload.size
@@ -174,6 +185,9 @@ class SyncStepperImplementation(
                     is Success -> {
                         val patient = result.value.first
                         val readings = result.value.second
+                        readings.forEach { reading ->
+                            reading.isUploadedToServer = true
+                        }
                         readingManager.addAllReadings(readings)
                         patientManager.add(patient)
                         checkIfAllDataIsDownloaded(result)
