@@ -5,6 +5,10 @@ import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.Relation
+import com.cradle.neptune.utilitiles.Months
+import com.cradle.neptune.utilitiles.Seconds
+import com.cradle.neptune.utilitiles.UnixTimestamp
+import com.cradle.neptune.utilitiles.Weeks
 import java.io.Serializable
 import org.json.JSONArray
 
@@ -175,7 +179,7 @@ enum class Sex {
  * @see GestationalAgeWeeks
  * @see GestationalAgeMonths
  */
-sealed class GestationalAge(val value: Int) : Marshal<JsonObject>, Serializable {
+sealed class GestationalAge(val value: Long) : Marshal<JsonObject>, Serializable {
     /**
      * The age in weeks and days.
      *
@@ -198,7 +202,7 @@ sealed class GestationalAge(val value: Int) : Marshal<JsonObject>, Serializable 
          */
         override fun unmarshal(data: JsonObject): GestationalAge {
             val units = data.stringField(PatientField.GESTATIONAL_AGE_UNIT)
-            val value = data.stringField(PatientField.GESTATIONAL_AGE_VALUE).toInt()
+            val value = data.stringField(PatientField.GESTATIONAL_AGE_VALUE).toLong()
             return when (units) {
                 UNIT_VALUE_WEEKS -> GestationalAgeWeeks(value)
                 UNIT_VALUE_MONTHS -> GestationalAgeMonths(value)
@@ -235,7 +239,7 @@ sealed class GestationalAge(val value: Int) : Marshal<JsonObject>, Serializable 
     }
 
     override fun hashCode(): Int {
-        var result = value
+        var result = value.hashCode()
         result = 31 * result + age.hashCode()
         return result
     }
@@ -244,8 +248,14 @@ sealed class GestationalAge(val value: Int) : Marshal<JsonObject>, Serializable 
 /**
  * Variant of [GestationalAge] which stores age in number of weeks.
  */
-class GestationalAgeWeeks(weeks: Int) : GestationalAge(weeks), Serializable {
-    override val age = WeeksAndDays.weeks(value)
+class GestationalAgeWeeks(timestamp: Long) : GestationalAge(timestamp), Serializable {
+    override val age: WeeksAndDays
+        get() {
+            val seconds = Seconds(UnixTimestamp.now - value)
+            return WeeksAndDays.weeks(Weeks(seconds).value)
+        }
+
+    constructor(duration: Weeks) : this(UnixTimestamp.ago(duration))
 
     override fun marshal(): JsonObject = with(JsonObject()) {
         // For legacy interop we store the value as a string instead of an int.
@@ -257,8 +267,14 @@ class GestationalAgeWeeks(weeks: Int) : GestationalAge(weeks), Serializable {
 /**
  * Variant of [GestationalAge] which stores age in number of months.
  */
-class GestationalAgeMonths(months: Int) : GestationalAge(months), Serializable {
-    override val age = WeeksAndDays.months(value)
+class GestationalAgeMonths(timestamp: Long) : GestationalAge(timestamp), Serializable {
+    override val age: WeeksAndDays
+        get() {
+            val seconds = Seconds(UnixTimestamp.now - value)
+            return WeeksAndDays.months(Months(seconds).value)
+        }
+
+    constructor(duration: Months) : this(UnixTimestamp.ago(duration))
 
     override fun marshal(): JsonObject = with(JsonObject()) {
         // For legacy interop we store the value as a string instead of an int.
@@ -270,7 +286,7 @@ class GestationalAgeMonths(months: Int) : GestationalAge(months), Serializable {
 /**
  * A temporal duration expressed in weeks and days.
  */
-data class WeeksAndDays(val weeks: Int, val days: Int) : Serializable {
+data class WeeksAndDays(val weeks: Long, val days: Long) : Serializable {
 
     /**
      * This value in number of weeks.
@@ -287,9 +303,9 @@ data class WeeksAndDays(val weeks: Int, val days: Int) : Serializable {
         private const val DAYS_PER_WEEK = 7
         private const val WEEKS_PER_MONTH = 4.34524
 
-        fun weeks(weeks: Int) = WeeksAndDays(weeks, 0)
+        fun weeks(weeks: Long) = WeeksAndDays(weeks, 0)
 
-        fun months(months: Int): WeeksAndDays {
+        fun months(months: Long): WeeksAndDays {
             val days = DAYS_PER_MONTH * months
             return WeeksAndDays(days / DAYS_PER_WEEK, days % DAYS_PER_WEEK)
         }
@@ -308,7 +324,7 @@ private enum class PatientField(override val text: String) : Field {
     DOB("dob"),
     AGE("patientAge"),
     GESTATIONAL_AGE_UNIT("gestationalAgeUnit"),
-    GESTATIONAL_AGE_VALUE("gestationalAgeValue"),
+    GESTATIONAL_AGE_VALUE("gestationalTimestamp"),
     SEX("patientSex"),
     IS_PREGNANT("isPregnant"),
     ZONE("zone"),

@@ -16,6 +16,8 @@ import com.cradle.neptune.R
 import com.cradle.neptune.model.GestationalAgeMonths
 import com.cradle.neptune.model.GestationalAgeWeeks
 import com.cradle.neptune.model.Sex
+import com.cradle.neptune.utilitiles.Months
+import com.cradle.neptune.utilitiles.Weeks
 import com.cradle.neptune.utilitiles.nullIfEmpty
 import com.cradle.neptune.utilitiles.unreachable
 import org.threeten.bp.ZonedDateTime
@@ -230,8 +232,8 @@ class PatientInfoFragment : BaseFragment() {
             val value = mView.editText(R.id.etGestationalAgeValue).toIntOrNull()
             if (value != null) {
                 when (gestationalAgeSpinner.selectedItemPosition) {
-                    GA_UNIT_INDEX_WEEKS -> GestationalAgeWeeks(value)
-                    GA_UNIT_INDEX_MONTHS -> GestationalAgeMonths(value)
+                    GA_UNIT_INDEX_WEEKS -> GestationalAgeWeeks(Weeks(value.toLong()))
+                    GA_UNIT_INDEX_MONTHS -> GestationalAgeMonths(Months(value.toLong()))
                     else -> unreachable("illegal gestational age spinner state")
                 }
             } else {
