@@ -4,7 +4,7 @@
 
 <resources>
     <!-- Network -->
-    <string name="settings_default_server_hostname">cmpt373-lockdown.cs.surrey.sfu.ca</string>
+    <string name="settings_default_server_hostname">cradle.eastus.cloudapp.azure.com</string>
     <string name="settings_default_server_port" />
     <string name="settings_default_server_use_https">true</string>
 
