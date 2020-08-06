@@ -131,10 +131,10 @@ class SyncStepperImplementation(
         }
 
         // catch the case where patient exists and a referral reading was sent. we now know reading
-        //exists on the server.
-        with(readingsToUpload.iterator()){
+        // exists on the server.
+        with(readingsToUpload.iterator()) {
             forEach {
-                if (updateApiData.newReadingsIds.contains(it.id)){
+                if (updateApiData.newReadingsIds.contains(it.id)) {
                     remove()
                 }
             }

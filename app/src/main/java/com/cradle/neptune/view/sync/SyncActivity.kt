@@ -8,13 +8,12 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.cradle.neptune.R
-import java.lang.StringBuilder
 
 class SyncActivity : AppCompatActivity(), SyncStepperCallback {
 
     private lateinit var uploadStatusTextView: TextView
     private lateinit var downloadStatusTextView: TextView
-    private lateinit var syncText:TextView
+    private lateinit var syncText: TextView
 
     lateinit var progressBar: ProgressBar
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,7 +24,6 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
         downloadStatusTextView = findViewById(R.id.downloadStatusTxt)
         progressBar = findViewById(R.id.syncProgressBar)
         syncText = findViewById(R.id.syncText)
-
 
         setSupportActionBar(findViewById(R.id.toolbar2))
         supportActionBar?.title = "Sync Everything"
@@ -44,50 +42,51 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
 
     @Synchronized
     override fun onFetchDataCompleted(success: Boolean) {
-       setProgressPercent()
+        setProgressPercent()
     }
 
     @Synchronized
     override fun onNewPatientAndReadingUploading(uploadStatus: TotalRequestStatus) {
-            uploadStatusTextView.text =
-                "Request completed ${uploadStatus.numUploaded + uploadStatus.numFailed}" +
-                    " out of  ${uploadStatus.totalNum}"
+        uploadStatusTextView.text =
+            "Request completed ${uploadStatus.numUploaded + uploadStatus.numFailed}" +
+                " out of  ${uploadStatus.totalNum}"
     }
 
     @Synchronized
     override fun onNewPatientAndReadingDownloading(downloadStatus: TotalRequestStatus) {
-            downloadStatusTextView.text =
-                "Request completed ${downloadStatus.numUploaded + downloadStatus.numFailed} " +
-                    "out of  ${downloadStatus.totalNum}"
+        downloadStatusTextView.text =
+            "Request completed ${downloadStatus.numUploaded + downloadStatus.numFailed} " +
+                "out of  ${downloadStatus.totalNum}"
     }
 
     @Synchronized
     override fun onNewPatientAndReadingUploadFinish(uploadStatus: TotalRequestStatus) {
-            uploadStatusTextView.text =
-                "Successfully made ${uploadStatus.numUploaded} out of ${uploadStatus.totalNum} requests"
-            setStatusArrow(uploadStatus.allRequestsSuccess(), R.id.ivUploadStatus)
-            setProgressPercent()
+        uploadStatusTextView.text =
+            "Successfully made ${uploadStatus.numUploaded} out of ${uploadStatus.totalNum} requests"
+        setStatusArrow(uploadStatus.allRequestsSuccess(), R.id.ivUploadStatus)
+        setProgressPercent()
     }
+
     @Synchronized
     override fun onNewPatientAndReadingDownloadFinish(downloadStatus: TotalRequestStatus) {
-            downloadStatusTextView.text =
-                "Successfully made  ${downloadStatus.numUploaded} out of ${downloadStatus.totalNum} requests"
-            setStatusArrow(downloadStatus.allRequestsSuccess(), R.id.ivDownloadStatus)
-            setProgressPercent()
+        downloadStatusTextView.text =
+            "Successfully made  ${downloadStatus.numUploaded} out of ${downloadStatus.totalNum} requests"
+        setStatusArrow(downloadStatus.allRequestsSuccess(), R.id.ivDownloadStatus)
+        setProgressPercent()
     }
 
     @Synchronized
     override fun onFinish(errorCodes: HashMap<Int?, String>) {
-            if (errorCodes.isEmpty()) {
-                syncText.text = "Sync complete"
-            } else {
-                syncText.setTextColor(resources.getColor(R.color.error))
-                val stringBuilder = StringBuilder()
-                errorCodes.entries.forEach {
-                    stringBuilder.append("Error: ").append(it.value).append("\n")
-                }
-                syncText.text = stringBuilder.toString()
+        if (errorCodes.isEmpty()) {
+            syncText.text = "Sync complete"
+        } else {
+            syncText.setTextColor(resources.getColor(R.color.error))
+            val stringBuilder = StringBuilder()
+            errorCodes.entries.forEach {
+                stringBuilder.append("Error: ").append(it.value).append("\n")
             }
+            syncText.text = stringBuilder.toString()
+        }
     }
 
     private fun setStatusArrow(success: Boolean, id: Int) {
@@ -98,9 +97,14 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
             iv.setImageResource(R.drawable.arrow_right_with_x)
         }
     }
+
     private fun setProgressPercent() {
         progressBar.progress++
-        val progressPercent = progressBar.progress/progressBar.max *100
+        val progressPercent = progressBar.progress / progressBar.max * DECIMAL_TO_PERCENT
         syncText.text = "Syncing: $progressPercent %"
+    }
+
+    companion object {
+        private const val DECIMAL_TO_PERCENT = 100
     }
 }

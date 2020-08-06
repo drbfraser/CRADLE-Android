@@ -165,6 +165,12 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        // in case user went and updated the selected HFs
+        setupHealthFacilitySpinner()
+    }
+
     /**
      * Displays a dialog telling the user to select a health facility.
      */
