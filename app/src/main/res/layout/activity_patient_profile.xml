@@ -416,17 +416,6 @@
             app:layout_constraintTop_toBottomOf="@id/personalInfoCard">
 
             <Button
-                android:id="@+id/updatePatientBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Update Patient"
-                android:visibility="gone"
-                app:backgroundTint="@color/colorPrimaryLight"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <Button
                 android:id="@+id/addToMyPatientButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -439,14 +428,15 @@
 
             <Button
                 android:id="@+id/newPatientReadingButton"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:background="@color/colorPrimaryLight"
                 android:text="@string/create_new_reading"
                 android:visibility="gone"
                 app:backgroundTint="@color/colorPrimaryLight"
-                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 

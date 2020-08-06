@@ -99,7 +99,6 @@ public class PatientProfileActivity extends AppCompatActivity {
         setupReadingsRecyclerView();
         setupCreatePatientReadingButton();
         setupLineChart();
-        setupUpdatePatient();
         setupToolBar();
     }
 
@@ -130,43 +129,6 @@ public class PatientProfileActivity extends AppCompatActivity {
         currPatient = (Patient) getIntent().getSerializableExtra("patient");
         return (currPatient != null);
     }
-
-    private void setupUpdatePatient() {
-        ProgressDialog progressDialog = new ProgressDialog(this);
-        progressDialog.setTitle("Updating patient");
-        progressDialog.setCancelable(false);
-        JsonRequest<JSONObject> jsonArrayRequest = new JsonObjectRequest(Request.Method.GET, urlManager.getPatientFullInfoById(currPatient.getId()),
-                null, response -> {
-            try {
-                Log.d("bugg","json: "+ response.toString(4));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }, error -> {
-            progressDialog.cancel();
-            Toast.makeText(PatientProfileActivity.this, "Patient update fail!", Toast.LENGTH_SHORT).show();
-        }) {
-            /**
-             * Passing some request headers
-             */
-            @Override
-            public Map<String, String> getHeaders() {
-                HashMap<String, String> headers = new HashMap<>();
-                String token = sharedPreferences.getString(LoginActivity.TOKEN, "");
-                headers.put(LoginActivity.AUTH, "Bearer " + token);
-                return headers;
-            }
-        };
-
-        Button updateBtn = findViewById(R.id.updatePatientBtn);
-        updateBtn.setVisibility(View.VISIBLE);
-        updateBtn.setOnClickListener(view -> {
-            progressDialog.show();
-            RequestQueue queue = Volley.newRequestQueue(MyApp.getInstance());
-            queue.add(jsonArrayRequest);
-        });
-    }
-
 
     @Override
     public boolean onSupportNavigateUp() {
