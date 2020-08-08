@@ -1,4 +1,4 @@
-package com.cradle.neptune.view.sync
+package com.cradle.neptune.sync
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -15,8 +15,8 @@ import com.cradle.neptune.network.Failure
 import com.cradle.neptune.network.NetworkResult
 import com.cradle.neptune.network.Success
 import com.cradle.neptune.network.VolleyRequests
-import com.cradle.neptune.view.sync.ListUploader.UploadType.PATIENT
-import com.cradle.neptune.view.sync.ListUploader.UploadType.READING
+import com.cradle.neptune.sync.ListUploader.UploadType.PATIENT
+import com.cradle.neptune.sync.ListUploader.UploadType.READING
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking

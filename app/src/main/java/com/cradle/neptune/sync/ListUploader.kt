@@ -1,4 +1,4 @@
-package com.cradle.neptune.view.sync
+package com.cradle.neptune.sync
 
 import android.content.Context
 import com.cradle.neptune.dagger.MyApp

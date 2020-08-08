@@ -1,4 +1,4 @@
-package com.cradle.neptune.view.sync
+package com.cradle.neptune.view
 
 import android.os.Bundle
 import android.view.View
@@ -8,9 +8,13 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.cradle.neptune.R
+import com.cradle.neptune.sync.SyncStepperCallback
+import com.cradle.neptune.sync.SyncStepperImplementation
+import com.cradle.neptune.sync.TotalRequestStatus
 import kotlin.math.roundToInt
 
-class SyncActivity : AppCompatActivity(), SyncStepperCallback {
+class SyncActivity : AppCompatActivity(),
+    SyncStepperCallback {
 
     companion object {
         private const val NUM_STEPS_FOR_SYNC = 3.0
@@ -18,7 +22,8 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
     private lateinit var uploadStatusTextView: TextView
     private lateinit var downloadStatusTextView: TextView
     private lateinit var syncText: TextView
-    private val progressPercent = ProgressPercent(NUM_STEPS_FOR_SYNC)
+    private val progressPercent =
+        ProgressPercent(NUM_STEPS_FOR_SYNC)
     private lateinit var progressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {

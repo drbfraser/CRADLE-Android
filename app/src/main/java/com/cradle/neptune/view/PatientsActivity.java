@@ -40,10 +40,6 @@ public class PatientsActivity extends AppCompatActivity {
     ReadingManager readingManager;
     @Inject
     PatientManager patientManager;
-    @Inject
-    SharedPreferences sharedPreferences;
-    @Inject
-    Settings settings;
 
     private RecyclerView patientRecyclerview;
     private PatientsViewAdapter patientsViewAdapter;

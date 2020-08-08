@@ -18,7 +18,7 @@ import com.cradle.neptune.network.VolleyRequestQueue
 import com.cradle.neptune.network.VolleyRequests
 import com.cradle.neptune.network.unwrap
 import com.cradle.neptune.view.LoginActivity
-import com.cradle.neptune.view.sync.SyncStepperImplementation
+import com.cradle.neptune.sync.SyncStepperImplementation
 import java.util.ArrayList
 import java.util.Date
 import javax.inject.Inject

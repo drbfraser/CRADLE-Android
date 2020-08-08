@@ -214,7 +214,7 @@ public class StatsActivity extends AppCompatActivity {
         lineChart.getAxisLeft().setDrawGridLines(false);
 
         LineData lineData = new LineData(diastolicDataSet, systolicDataSet, heartRateDataSet);
-        //lineData.setDrawValues(false);
+        lineData.setDrawValues(false);
 
         lineData.setHighlightEnabled(false);
 
