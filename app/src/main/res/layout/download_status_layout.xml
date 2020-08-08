@@ -197,10 +197,9 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
-        android:indeterminate="false"
-        android:max="3"
+        android:indeterminate="true"
         android:minHeight="48dp"
-        android:progress="0"
+        android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/downloadLayout" />

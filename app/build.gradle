@@ -31,8 +31,8 @@ android {
     compileSdkVersion 29
     defaultConfig {
         // Update this every build
-        versionCode 16
-        versionName "Beta 1.3"
+        versionCode 18
+        versionName "Beta 2.0"
         multiDexEnabled true
         applicationId "com.cradleVSA.neptune"
         minSdkVersion 17    // Android 4.2
