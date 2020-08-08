@@ -108,19 +108,21 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
     }
 
     private fun setProgressPercent() {
-        syncText.text = "Syncing: ${progressPercent.getPercent().roundToInt()}% Please wait for it to complete."
+        syncText.text =
+            "Syncing: ${progressPercent.getPercent().roundToInt()}% Please wait for it to complete."
     }
 }
 
 /**
  * Very simple class to get overall progress percent
  */
-data class ProgressPercent(var overall:Double){
-    var current:Double = 0.0
+data class ProgressPercent(var overall: Double) {
+    var current: Double = 0.0
 
-    fun getPercent():Double {
-        return current/overall* DECIMAL_TO_PERCENT
+    fun getPercent(): Double {
+        return current / overall * DECIMAL_TO_PERCENT
     }
+
     companion object {
         const val DECIMAL_TO_PERCENT = 100
     }

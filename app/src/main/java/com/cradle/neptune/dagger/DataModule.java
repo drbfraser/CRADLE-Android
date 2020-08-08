@@ -2,6 +2,7 @@ package com.cradle.neptune.dagger;
 
 import android.app.Application;
 import android.content.SharedPreferences;
+
 import androidx.preference.PreferenceManager;
 
 import androidx.room.Room;
@@ -44,7 +45,7 @@ public class DataModule {
 
     @Provides
     @Singleton
-    public PatientManager providePatientManager(CradleDatabase database){
+    public PatientManager providePatientManager(CradleDatabase database) {
         return new PatientManager(database.patientDaoAccess());
     }
 
@@ -62,16 +63,16 @@ public class DataModule {
 
     @Provides
     @Singleton
-    public VolleyRequestManager provideVolleyRequestManager(Application application){
+    public VolleyRequestManager provideVolleyRequestManager(Application application) {
         return new VolleyRequestManager(application);
     }
 
     @Provides
     @Singleton
     public Api provideApi(
-        SharedPreferences sharedPreferences,
-        UrlManager urlManager,
-        VolleyRequestQueue volleyRequestQueue
+            SharedPreferences sharedPreferences,
+            UrlManager urlManager,
+            VolleyRequestQueue volleyRequestQueue
     ) {
         return new Api(sharedPreferences, urlManager, volleyRequestQueue);
     }
