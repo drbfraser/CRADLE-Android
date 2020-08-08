@@ -118,6 +118,7 @@ data class Patient(
 class PatientAndReadings() : Marshal<JsonObject> {
     @Embedded
     lateinit var patient: Patient
+
     @Relation(parentColumn = "id", entityColumn = "patientId")
     lateinit var readings: List<Reading>
 
@@ -191,8 +192,10 @@ sealed class GestationalAge(val value: Long) : Marshal<JsonObject>, Serializable
     companion object : Unmarshal<GestationalAge, JsonObject> {
 
         // These need to be marked static so we can share them with implementors.
-        @JvmStatic protected val UNIT_VALUE_WEEKS = "GESTATIONAL_AGE_UNITS_WEEKS"
-        @JvmStatic protected val UNIT_VALUE_MONTHS = "GESTATIONAL_AGE_UNITS_MONTHS"
+        @JvmStatic
+        protected val UNIT_VALUE_WEEKS = "GESTATIONAL_AGE_UNITS_WEEKS"
+        @JvmStatic
+        protected val UNIT_VALUE_MONTHS = "GESTATIONAL_AGE_UNITS_MONTHS"
 
         /**
          * Constructs a [GestationalAge] variant from a [JsonObject].
@@ -296,7 +299,8 @@ data class WeeksAndDays(val weeks: Long, val days: Long) : Serializable {
     /**
      * This value in number of months.
      */
-    fun asMonths(): Double = (weeks.toDouble() / WEEKS_PER_MONTH) + (days.toDouble() / DAYS_PER_MONTH)
+    fun asMonths(): Double =
+        (weeks.toDouble() / WEEKS_PER_MONTH) + (days.toDouble() / DAYS_PER_MONTH)
 
     companion object {
         private const val DAYS_PER_MONTH = 30

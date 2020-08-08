@@ -168,7 +168,8 @@ data class Reading(
     }
 
     object DescendingDateComparator : Comparator<Reading> {
-        override fun compare(o1: Reading?, o2: Reading?): Int = -AscendingDataComparator.compare(o1, o2)
+        override fun compare(o1: Reading?, o2: Reading?): Int =
+            -AscendingDataComparator.compare(o1, o2)
     }
 }
 

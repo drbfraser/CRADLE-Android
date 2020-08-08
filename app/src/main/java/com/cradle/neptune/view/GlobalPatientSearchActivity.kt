@@ -43,8 +43,10 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
 
     @Inject
     lateinit var patientManager: PatientManager
+
     @Inject
     lateinit var readingManager: ReadingManager
+
     @Inject
     lateinit var volleyRequestManager: VolleyRequestManager
 
@@ -113,7 +115,11 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
                     MainScope().launch {
                         setupPatientsRecycler(null)
                     }
-                    Snackbar.make(searchView, "Sorry unable to fetch the patients", Snackbar.LENGTH_LONG).show()
+                    Snackbar.make(
+                        searchView,
+                        "Sorry unable to fetch the patients",
+                        Snackbar.LENGTH_LONG
+                    ).show()
                 }
             }
         }
@@ -154,8 +160,10 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
 
             override fun onAddToLocalClicked(patient: GlobalPatient) {
                 if (patient.isMyPatient) {
-                    Snackbar.make(searchView, "This patient already added as your patient",
-                        Snackbar.LENGTH_LONG).show()
+                    Snackbar.make(
+                        searchView, "This patient already added as your patient",
+                        Snackbar.LENGTH_LONG
+                    ).show()
                     return
                 }
                 val alertDialog =
@@ -163,7 +171,11 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
                         .setMessage("Are you sure you want to add this patient as your own? ")
                         .setPositiveButton("OK") { _: DialogInterface, _: Int ->
 
-                            fetchInformationForThisPatient(patient, globalPatientList, globalPatientAdapter)
+                            fetchInformationForThisPatient(
+                                patient,
+                                globalPatientList,
+                                globalPatientAdapter
+                            )
                         }
                         .setNegativeButton("NO") { _: DialogInterface, _: Int -> }
                         .setIcon(R.drawable.ic_sync)
@@ -177,12 +189,13 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
      */
     private fun startActivityForPatient(patient: GlobalPatient, isLocal: Boolean) {
         if (isLocal) {
-            MainScope().launch { withContext(Dispatchers.IO) {
-                val localPatient = patientManager.getPatientById(patient.id)
-                val intent =
-                    Intent(this@GlobalPatientSearchActivity, PatientProfileActivity::class.java)
-                intent.putExtra("patient", localPatient)
-                startActivity(intent)
+            MainScope().launch {
+                withContext(Dispatchers.IO) {
+                    val localPatient = patientManager.getPatientById(patient.id)
+                    val intent =
+                        Intent(this@GlobalPatientSearchActivity, PatientProfileActivity::class.java)
+                    intent.putExtra("patient", localPatient)
+                    startActivity(intent)
                 }
             }
         } else {
@@ -246,6 +259,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         progressDialog.setCancelable(false)
         return progressDialog
     }
+
     companion object {
         val TAG = GlobalPatientSearchActivity::javaClass.name
     }

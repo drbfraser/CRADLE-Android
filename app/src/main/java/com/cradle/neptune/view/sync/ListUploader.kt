@@ -55,9 +55,15 @@ class ListUploader(
             return
         }
         if (uploadType == UploadType.PATIENT) {
-            volleyRequestManager.uploadPatientToTheServer(listToUpload[0] as PatientAndReadings, networkCallback)
+            volleyRequestManager.uploadPatientToTheServer(
+                listToUpload[0] as PatientAndReadings,
+                networkCallback
+            )
         } else {
-            volleyRequestManager.uploadReadingToTheServer(listToUpload[0] as Reading, networkCallback)
+            volleyRequestManager.uploadReadingToTheServer(
+                listToUpload[0] as Reading,
+                networkCallback
+            )
         }
     }
 

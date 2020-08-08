@@ -12,11 +12,11 @@ import com.cradle.neptune.R;
 
 public class NotificationUtils {
 
-    private static final String NOTIFICATION_CHANNEL_ID= "channelIdForDownloadingPatients";
     public static final int PatientDownloadingNotificationID = 99;
     public static final int PatientDownloadFailNotificationID = 98;
+    private static final String NOTIFICATION_CHANNEL_ID = "channelIdForDownloadingPatients";
 
-    public static void buildNotification(String title, String message, int id, Context context){
+    public static void buildNotification(String title, String message, int id, Context context) {
         // api>=26
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = "NOTIF";
@@ -36,6 +36,6 @@ public class NotificationUtils {
                 .setContentText(message)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-        notificationManager.notify(id,builder.build());
+        notificationManager.notify(id, builder.build());
     }
 }

@@ -44,7 +44,8 @@ class HealthCentreManager(private val database: CradleDatabase) {
     /**
      * Add all the health facilities
      */
-    fun addAll(facilities: List<HealthFacility>) = GlobalScope.launch(Dispatchers.IO) { dao.insertAll(facilities) }
+    fun addAll(facilities: List<HealthFacility>) =
+        GlobalScope.launch(Dispatchers.IO) { dao.insertAll(facilities) }
 
     /**
      * update a single Health Facility

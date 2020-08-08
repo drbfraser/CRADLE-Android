@@ -26,8 +26,8 @@
 
     <PreferenceCategory>
         <Preference
-            android:title="Advanced"
-            android:key="@string/key_advanced_settings_settings_button" />
+            android:key="@string/key_advanced_settings_settings_button"
+            android:title="Advanced" />
 
         <Preference
             android:key="@string/key_sign_out"

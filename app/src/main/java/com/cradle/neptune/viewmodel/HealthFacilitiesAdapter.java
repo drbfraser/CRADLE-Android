@@ -101,6 +101,7 @@ public class HealthFacilitiesAdapter extends RecyclerView.Adapter<HealthFaciliti
             }
         };
     }
+
     public void setData(List<HealthFacility> newData) {
         this.filteredList = newData;
         this.healthFacilityList = newData;

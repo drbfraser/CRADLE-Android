@@ -86,7 +86,7 @@ public class DateUtil {
         ZonedDateTime zonedDateTime = null;
         try {
             // if the date is already in zone format
-            zonedDateTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(date),ZoneId.systemDefault());
+            zonedDateTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(date), ZoneId.systemDefault());
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -102,13 +102,12 @@ public class PatientProfileActivity extends AppCompatActivity {
         setupToolBar();
     }
 
-    void setupToolBar(){
+    void setupToolBar() {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle(R.string.patient_summary);
         }
     }
-
 
 
     private void initAllFields() {
@@ -335,6 +334,7 @@ public class PatientProfileActivity extends AppCompatActivity {
 
     /**
      * shows a dialog to confirm deleting a reading
+     *
      * @param readingId id of the reading to delete
      */
     private void askToDeleteReading(String readingId) {

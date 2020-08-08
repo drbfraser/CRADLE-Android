@@ -60,7 +60,11 @@ class PatientInfoFragment : BaseFragment() {
         super.TAG = this::class.java.name
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         // Inflate the layout for this fragment.
         return inflater.inflate(R.layout.fragment_patient_info, container, false)
     }
@@ -86,7 +90,11 @@ class PatientInfoFragment : BaseFragment() {
 
         // Setup the gestational age spinner menu.
         gestationalAgeSpinner =
-            setupSpinner(view, R.id.spinnerGestationalAgeUnits, R.array.reading_ga_units) { spinner ->
+            setupSpinner(
+                view,
+                R.id.spinnerGestationalAgeUnits,
+                R.array.reading_ga_units
+            ) { spinner ->
                 // Update the input type of the "Gestational Age" input box depending on
                 // whether we are entering a value in weeks or months.
                 gestationalAgeEditText.inputType = when (spinner.selectedItemPosition) {
@@ -171,7 +179,8 @@ class PatientInfoFragment : BaseFragment() {
         mView.findViewById<EditText>(R.id.etPatientId).setText(viewModel?.patientId)
         mView.findViewById<EditText>(R.id.etPatientName).setText(viewModel?.patientName)
         mView.findViewById<EditText>(R.id.dobTxt).setText(viewModel?.patientDob)
-        mView.findViewById<EditText>(R.id.patientAgeEditTxt).setText(viewModel?.patientAge?.toString())
+        mView.findViewById<EditText>(R.id.patientAgeEditTxt)
+            .setText(viewModel?.patientAge?.toString())
         // Check the dob switch if we have a dob value or we don't have either value.
         dobSwitch.isChecked = viewModel?.patientDob != null || viewModel?.patientAge == null
         mView.findViewById<EditText>(R.id.etVillageNumber).setText(viewModel?.patientVillageNumber)
@@ -271,7 +280,12 @@ class PatientInfoFragment : BaseFragment() {
                 // Do nothing
             }
 
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
                 onItemSelectedCallback(spinner)
             }
         }

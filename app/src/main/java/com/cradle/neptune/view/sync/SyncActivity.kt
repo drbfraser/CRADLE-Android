@@ -12,10 +12,13 @@ import kotlin.math.roundToInt
 
 class SyncActivity : AppCompatActivity(), SyncStepperCallback {
 
+    companion object {
+        private const val NUM_STEPS_FOR_SYNC = 3.0
+    }
     private lateinit var uploadStatusTextView: TextView
     private lateinit var downloadStatusTextView: TextView
     private lateinit var syncText: TextView
-    private val progressPercent = ProgressPercent(3.0)
+    private val progressPercent = ProgressPercent(NUM_STEPS_FOR_SYNC)
     private lateinit var progressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {

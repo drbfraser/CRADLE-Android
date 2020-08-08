@@ -28,9 +28,11 @@ import com.cradle.neptune.viewmodel.PatientReadingViewModel;
 import com.google.android.material.tabs.TabLayout;
 
 import kotlin.Pair;
+
 import org.threeten.bp.ZonedDateTime;
 
 import javax.inject.Inject;
+
 import java.util.ArrayList;
 
 public class ReadingActivity
@@ -49,9 +51,9 @@ public class ReadingActivity
     // Reading object shared by all fragments:
     private LaunchReason reasonForLaunch = LaunchReason.LAUNCH_REASON_NONE;
     private Patient patient;
-    private  Reading reading = null;
+    private Reading reading = null;
     private PatientReadingViewModel viewModel = null;
-//    private Reading originalReading;
+    //    private Reading originalReading;
 //    private Reading currentReading;
     private int lastKnownTab = -1;
 

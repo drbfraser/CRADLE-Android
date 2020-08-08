@@ -23,12 +23,15 @@ public class Util {
     public static boolean isNullOrEmpty(String s) {
         return s == null || s.length() == 0;
     }
+
     public static boolean stringNullOrEmpty(String s) {
-        if (s==null || s.length()==0 || s.toLowerCase().equals("null")){
+        if (s == null || s.length() == 0 || s.toLowerCase().equals("null")) {
             return true;
-        };
+        }
+        ;
         return false;
     }
+
     public static boolean isNullOrZero(Integer value) {
         return value == null || value == 0;
     }
@@ -65,15 +68,15 @@ public class Util {
         }
     }
 
-    public interface Transformer<T, U> {
-        U transform(T t);
-    }
-
     public static <T, U> U mapNullable(T t, Transformer<T, U> transformer) {
         if (t == null) {
             return null;
         } else {
             return transformer.transform(t);
         }
+    }
+
+    public interface Transformer<T, U> {
+        U transform(T t);
     }
 }

@@ -3,6 +3,7 @@ package com.cradle.neptune.dagger;
 import android.app.Application;
 
 import android.content.Context;
+
 import androidx.multidex.MultiDexApplication;
 
 import javax.inject.Singleton;

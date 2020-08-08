@@ -74,9 +74,9 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         if (currReading.getUrineTest() != null) {
             myViewHolder.urineTest.setText(getUrineTestFormattedTxt(currReading.getUrineTest()));
         }
-        if (!currReading.getSymptoms().isEmpty()){
+        if (!currReading.getSymptoms().isEmpty()) {
             StringBuilder symptoms = new StringBuilder();
-            for (String s:currReading.getSymptoms()){
+            for (String s : currReading.getSymptoms()) {
                 symptoms.append(s).append(", ");
             }
             myViewHolder.symptomTxt.setText(symptoms.toString());
@@ -88,19 +88,19 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
 
         myViewHolder.cardView.setOnClickListener(view -> {
             // if the reading is uploaded to the server, we dont want to change it locally.
-            if (currReading.isUploadedToServer()){
-                Snackbar.make(v,"This reading is already uploaded to the server, " +
-                        "unable to make changes to it.",Snackbar.LENGTH_LONG).show();
-            }else {
+            if (currReading.isUploadedToServer()) {
+                Snackbar.make(v, "This reading is already uploaded to the server, " +
+                        "unable to make changes to it.", Snackbar.LENGTH_LONG).show();
+            } else {
                 onClickElementListener.onClick(currReading.getId());
             }
         });
         myViewHolder.cardView.setOnLongClickListener(view -> {
             // if the reading is uploaded to the server, we dont want to delete it locally.
             if (currReading.isUploadedToServer()) {
-                Snackbar.make(v,"This reading is already uploaded to the server, " +
-                        "Cannot delete the reading.",Snackbar.LENGTH_LONG).show();
-            }else {
+                Snackbar.make(v, "This reading is already uploaded to the server, " +
+                        "Cannot delete the reading.", Snackbar.LENGTH_LONG).show();
+            } else {
                 onClickElementListener.onLongClick(currReading.getId());
             }
             return false;

@@ -26,6 +26,7 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
     private SearchView searchView;
     private HealthFacilitiesAdapter healthFacilitiesAdapter;
     private HealthFacilityViewModel healthFacilityViewModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -11,7 +11,10 @@ import javax.inject.Inject
 /**
  * Holds app-wide settings which are persisted in Android's shared preference.
  */
-open class Settings @Inject constructor(val sharedPreferences: SharedPreferences, val context: Context) {
+open class Settings @Inject constructor(
+    val sharedPreferences: SharedPreferences,
+    val context: Context
+) {
 
     /* Network */
 

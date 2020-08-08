@@ -28,6 +28,7 @@ import kotlinx.coroutines.withContext
  * Provides asynchronous methods for sending strongly typed requests to the
  * various APIs provided by the server.
  */
+@Suppress("LargeClass")
 class Api @Inject constructor(
     private val sharedPreferences: SharedPreferences,
     private val urlManager: UrlManager,
@@ -47,7 +48,11 @@ class Api @Inject constructor(
         return requestObject(HttpMethod.POST, urlManager.authentication, obj)
     }
 
-    fun authenticateAsync(username: String, password: String, callback: (NetworkResult<JsonObject>) -> Unit) =
+    fun authenticateAsync(
+        username: String,
+        password: String,
+        callback: (NetworkResult<JsonObject>) -> Unit
+    ) =
         GlobalScope.launch(Dispatchers.IO) {
             val result = authenticate(username, password)
             callback(result)
@@ -86,7 +91,10 @@ class Api @Inject constructor(
             }
         }
 
-    fun getGlobalPatientSearchAsync(query: String, callback: (NetworkResult<List<GlobalPatient>>) -> Unit) =
+    fun getGlobalPatientSearchAsync(
+        query: String,
+        callback: (NetworkResult<List<GlobalPatient>>) -> Unit
+    ) =
         GlobalScope.launch(Dispatchers.IO) {
             val result = getGlobalPatientSearch(query)
             callback(result)
@@ -158,7 +166,10 @@ class Api @Inject constructor(
             PatientAndReadings.unmarshal(json)
         }
 
-    fun postPatientAsync(patient: PatientAndReadings, callback: (NetworkResult<PatientAndReadings>) -> Unit) =
+    fun postPatientAsync(
+        patient: PatientAndReadings,
+        callback: (NetworkResult<PatientAndReadings>) -> Unit
+    ) =
         GlobalScope.launch(Dispatchers.IO) {
             val result = postPatient(patient)
             callback(result)
@@ -183,7 +194,11 @@ class Api @Inject constructor(
         }
 
     suspend fun associatePatientToUser(id: String): NetworkResult<JsonObject> =
-        requestObject(HttpMethod.POST, urlManager.userPatientAssociation, JsonObject(mapOf("patientId" to id)))
+        requestObject(
+            HttpMethod.POST,
+            urlManager.userPatientAssociation,
+            JsonObject(mapOf("patientId" to id))
+        )
 
     /**
      * Sends a generic JSON object request yielding the response body or an
@@ -194,7 +209,11 @@ class Api @Inject constructor(
      * @param payload an optional JSON object to include in the body of the request
      * @return the response or an error if one occurred
      */
-    private suspend fun requestObject(method: HttpMethod, url: String, payload: JsonObject? = null) =
+    private suspend fun requestObject(
+        method: HttpMethod,
+        url: String,
+        payload: JsonObject? = null
+    ) =
         withContext(Dispatchers.IO) {
             suspendCoroutine<NetworkResult<JsonObject>> { cont ->
                 Log.i("API", "Sending request: ${method.name} $url")
@@ -249,7 +268,13 @@ class Api @Inject constructor(
         }
 
         return object :
-            JsonObjectRequest(method.volleyMethodCode, url, payload, successListener, errorListener) {
+            JsonObjectRequest(
+                method.volleyMethodCode,
+                url,
+                payload,
+                successListener,
+                errorListener
+            ) {
             override fun getHeaders(): Map<String, String>? = this@Api.headers
         }
     }
@@ -282,7 +307,13 @@ class Api @Inject constructor(
         }
 
         return object :
-            JsonArrayRequest(method.volleyMethodCode, url, payload, successListener, errorListener) {
+            JsonArrayRequest(
+                method.volleyMethodCode,
+                url,
+                payload,
+                successListener,
+                errorListener
+            ) {
             override fun getHeaders(): Map<String, String>? = this@Api.headers
         }
     }
@@ -295,7 +326,8 @@ class Api @Inject constructor(
      */
     private val headers: Map<String, String>?
         get() {
-            val bearerToken = sharedPreferences.getString(LoginActivity.TOKEN, LoginActivity.DEFAULT_TOKEN)
+            val bearerToken =
+                sharedPreferences.getString(LoginActivity.TOKEN, LoginActivity.DEFAULT_TOKEN)
             return if (bearerToken != null) {
                 mapOf("Authorization" to "Bearer $bearerToken")
             } else {

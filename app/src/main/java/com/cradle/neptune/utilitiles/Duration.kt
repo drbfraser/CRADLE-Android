@@ -6,8 +6,10 @@ private const val HOURS_PER_DAY = 24
 private const val DAYS_PER_WEEK = 7
 private const val DAYS_PER_MONTH = 30 // on average
 
-private const val SECONDS_PER_WEEK = DAYS_PER_WEEK * HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE
-private const val SECONDS_PER_MONTH = DAYS_PER_MONTH * HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE
+private const val SECONDS_PER_WEEK =
+    DAYS_PER_WEEK * HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE
+private const val SECONDS_PER_MONTH =
+    DAYS_PER_MONTH * HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE
 
 /**
  * A duration of time in a specific unit.

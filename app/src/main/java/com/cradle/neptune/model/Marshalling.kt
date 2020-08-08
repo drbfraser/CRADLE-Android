@@ -172,4 +172,5 @@ fun <T, Data, U : Unmarshal<T, Data>> unmarshal(self: U, data: Data): T = self.u
  * @param data The data to convert.
  * @return A [T] object constructed from [data].
  */
-fun <T, Data, U : Unmarshal<T, Data>> maybeUnmarshal(self: U, data: Data): T? = self.maybeUnmarshal(data)
+fun <T, Data, U : Unmarshal<T, Data>> maybeUnmarshal(self: U, data: Data): T? =
+    self.maybeUnmarshal(data)
