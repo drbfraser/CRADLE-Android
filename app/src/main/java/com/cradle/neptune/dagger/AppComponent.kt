@@ -3,7 +3,7 @@ package com.cradle.neptune.dagger
 import com.cradle.neptune.manager.VolleyRequestManager
 import com.cradle.neptune.view.GlobalPatientProfileActivity
 import com.cradle.neptune.view.GlobalPatientSearchActivity
-import com.cradle.neptune.view.HelpActivity
+import com.cradle.neptune.view.VideoActivity
 import com.cradle.neptune.view.IntroActivity
 import com.cradle.neptune.view.LoginActivity
 import com.cradle.neptune.view.PatientProfileActivity
@@ -31,7 +31,7 @@ import javax.inject.Singleton
 interface AppComponent {
     fun inject(activity: ReadingActivity?)
     fun inject(activity: PatientsActivity?)
-    fun inject(activity: HelpActivity?)
+    fun inject(activity: VideoActivity?)
     fun inject(fragment: ReferralDialogFragment?)
     fun inject(fragment: SettingsFragment?)
     fun inject(fragment: AdvancedSettingsFragment?)

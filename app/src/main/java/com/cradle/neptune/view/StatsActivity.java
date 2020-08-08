@@ -72,7 +72,6 @@ public class StatsActivity extends AppCompatActivity {
 
         int totalReadings = readings.size();
         int totalRef = 0;
-        int totalassessments = 0;
 
         for (int i = 0; i < totalReadings; i++) {
             if (readings.get(i).isReferredToHealthCentre()) {

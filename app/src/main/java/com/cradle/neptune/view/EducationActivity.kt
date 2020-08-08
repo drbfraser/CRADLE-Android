@@ -2,7 +2,6 @@ package com.cradle.neptune.view
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import com.cradle.neptune.R
@@ -28,7 +27,7 @@ class EducationActivity : AppCompatActivity() {
         val videoCard = findViewById<CardView>(R.id.videoCardview)
         videoCard.setOnClickListener {
             startActivity(
-                HelpActivity.makeIntent(this@EducationActivity)
+                VideoActivity.makeIntent(this@EducationActivity)
             )
         }
         val clinicPoster = findViewById<CardView>(R.id.clinicPosterView)
