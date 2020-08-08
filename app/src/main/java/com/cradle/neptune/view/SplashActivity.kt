@@ -7,7 +7,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.cradle.neptune.R
 
 class SplashActivity : AppCompatActivity() {
-    private val DELAY = 100
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
@@ -16,5 +15,9 @@ class SplashActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
         }, DELAY.toLong())
+    }
+
+    companion object {
+        private const val DELAY = 100
     }
 }

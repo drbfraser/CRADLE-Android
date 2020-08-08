@@ -20,11 +20,14 @@ class PdfViewActivity : AppCompatActivity() {
 
     private fun setupPdfView(filename: String) {
         val pdfDocument = findViewById<PDFView>(R.id.pdfView)
-        pdfDocument.fromAsset(filename).enableAntialiasing(true).spacing(8).load()
+        pdfDocument.fromAsset(filename).enableAntialiasing(true).spacing(PDF_SPACE).load()
     }
 
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return super.onSupportNavigateUp()
+    }
+    companion object {
+        private const val PDF_SPACE = 8
     }
 }

@@ -2,7 +2,6 @@ package com.cradle.neptune.view
 
 import android.content.Context
 import android.content.Intent
-import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
 import android.widget.MediaController
@@ -10,7 +9,6 @@ import android.widget.VideoView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import com.cradle.neptune.R
-import com.cradle.neptune.view.VideoActivity
 
 class VideoActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,14 +38,13 @@ class VideoActivity : AppCompatActivity() {
         // set preview image
         // gives the image; however, then does not show the video!
 //        videoView.setBackgroundResource(R.drawable.cradle_video_frame);
-        val START_LOCATION_ms = 9000
         videoView.setMediaController(MediaController(this@VideoActivity))
         videoView.setVideoURI(uri)
         videoView.requestFocus()
-        videoView.seekTo(START_LOCATION_ms)
+        videoView.seekTo(START_LOCATION_MS)
         videoView.setOnCompletionListener {
             videoView.seekTo(
-                START_LOCATION_ms
+                START_LOCATION_MS
             )
         }
     }
@@ -56,5 +53,6 @@ class VideoActivity : AppCompatActivity() {
         fun makeIntent(context: Context?): Intent {
             return Intent(context, VideoActivity::class.java)
         }
+        const val START_LOCATION_MS = 9000
     }
 }

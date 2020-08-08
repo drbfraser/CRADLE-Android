@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 abstract class TabActivityBase(private val myTabButtonId: Int) : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //changing the color for all the activity status bar.
+        // changing the color for all the activity status bar.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             val window = window
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)

@@ -12,8 +12,9 @@ import com.wonderkiln.blurkit.BlurKit
  * Allow access to Dagger single instance of Component
  * Source: https://github.com/codepath/android_guides/wiki/Dependency-Injection-with-Dagger-2#instantiating-the-component
  */
+@Suppress("EmptyFunctionBlock")
 class MyApp : MultiDexApplication() {
-    val appComponent:AppComponent by lazy {
+    val appComponent: AppComponent by lazy {
         DaggerAppComponent.builder()
             .appModule(AppModule(this)).dataModule(DataModule()).build()
     }
@@ -66,5 +67,4 @@ class MyApp : MultiDexApplication() {
             isDisableBlurKit = true
         }
     }
-
 }

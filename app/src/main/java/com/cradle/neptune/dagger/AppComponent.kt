@@ -1,18 +1,18 @@
 package com.cradle.neptune.dagger
 
 import com.cradle.neptune.manager.VolleyRequestManager
+import com.cradle.neptune.sync.ListUploader
+import com.cradle.neptune.sync.SyncStepperImplementation
 import com.cradle.neptune.view.GlobalPatientProfileActivity
 import com.cradle.neptune.view.GlobalPatientSearchActivity
-import com.cradle.neptune.view.VideoActivity
 import com.cradle.neptune.view.IntroActivity
 import com.cradle.neptune.view.LoginActivity
 import com.cradle.neptune.view.PatientProfileActivity
 import com.cradle.neptune.view.PatientsActivity
 import com.cradle.neptune.view.ReadingActivity
 import com.cradle.neptune.view.StatsActivity
-import com.cradle.neptune.sync.ListUploader
 import com.cradle.neptune.view.SyncActivity
-import com.cradle.neptune.sync.SyncStepperImplementation
+import com.cradle.neptune.view.VideoActivity
 import com.cradle.neptune.view.ui.reading.ConfirmDataFragment
 import com.cradle.neptune.view.ui.reading.ReferralDialogFragment
 import com.cradle.neptune.view.ui.settings.AdvancedSettingsFragment
