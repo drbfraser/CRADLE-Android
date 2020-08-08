@@ -18,12 +18,10 @@ class MyApp : MultiDexApplication() {
             .appModule(AppModule(this)).dataModule(DataModule()).build()
     }
     var isDisableBlurKit = false
-        private set
 
     override fun onCreate() {
         super.onCreate()
-        instance = this
-
+        appComponent.inject(this)
         // Initialize the time library:
         // https://github.com/JakeWharton/ThreeTenABP
         AndroidThreeTen.init(this)
@@ -38,7 +36,7 @@ class MyApp : MultiDexApplication() {
         registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
             override fun onActivityCreated(
                 activity: Activity,
-                savedInstanceState: Bundle
+                savedInstanceState: Bundle?
             ) {
 
                 // new activity created; force its orientation to portrait
@@ -51,7 +49,7 @@ class MyApp : MultiDexApplication() {
             override fun onActivityStopped(activity: Activity) {}
             override fun onActivitySaveInstanceState(
                 activity: Activity,
-                bundle: Bundle
+                bundle: Bundle?
             ) {
             }
 
@@ -69,8 +67,4 @@ class MyApp : MultiDexApplication() {
         }
     }
 
-    companion object {
-        var instance: MyApp? = null
-            private set
-    }
 }

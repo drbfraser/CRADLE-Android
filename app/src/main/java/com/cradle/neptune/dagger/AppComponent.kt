@@ -48,4 +48,5 @@ interface AppComponent {
     fun inject(listUploader: ListUploader?)
     fun inject(syncStepperImplementation: SyncStepperImplementation?)
     fun inject(syncActivity: SyncActivity)
+    fun inject(myApp: MyApp)
 }
