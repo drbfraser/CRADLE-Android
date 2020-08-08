@@ -169,6 +169,10 @@ class VolleyRequestManager(application: Application) {
                         for (i in 0 until response.length()) {
                             facilities.add(HealthFacility.unmarshal(response[i] as JsonObject))
                         }
+                        // one default HF
+                        if (facilities.isNotEmpty()) {
+                            facilities[0].isUserSelected = true
+                        }
                         healthCentreManager.addAll(facilities)
                     }
                     is Failure -> {

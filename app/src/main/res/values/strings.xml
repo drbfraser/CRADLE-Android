@@ -158,7 +158,7 @@
     <string name="create_new_reading">Create New Reading</string>
     <string name="normalSignoutMessage">You will be required to sign in again before using the application.</string>
     <string name="unUploadedReadingSignoutMessage">reading(s) still needs to be uploaded to the server. These reading(s) will be lost after signing out!</string>
-    <string name="global_search">Global search</string>
-    <string name="global_patient_search">Global Patients Search</string>
+    <string name="global_search">Search all patients</string>
+    <string name="global_patient_search">All Patients Search</string>
     <!-- TODO: Remove or change this placeholder text -->
 </resources>

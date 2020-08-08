@@ -39,7 +39,7 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Health Facilities");
+            getSupportActionBar().setTitle("My Health Facilities");
         }
         setupRecyclerview();
     }
