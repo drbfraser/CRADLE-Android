@@ -22,6 +22,7 @@ import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+
 import kotlin.Pair;
 
 import java.util.ArrayList;
@@ -71,7 +72,6 @@ public class StatsActivity extends AppCompatActivity {
 
         int totalReadings = readings.size();
         int totalRef = 0;
-        int totalassessments = 0;
 
         for (int i = 0; i < totalReadings; i++) {
             if (readings.get(i).isReferredToHealthCentre()) {
@@ -214,7 +214,7 @@ public class StatsActivity extends AppCompatActivity {
         lineChart.getAxisLeft().setDrawGridLines(false);
 
         LineData lineData = new LineData(diastolicDataSet, systolicDataSet, heartRateDataSet);
-        //lineData.setDrawValues(false);
+        lineData.setDrawValues(false);
 
         lineData.setHighlightEnabled(false);
 

@@ -1,4 +1,4 @@
-package com.cradle.neptune.view.sync
+package com.cradle.neptune.sync
 
 import android.content.Context
 import com.cradle.neptune.dagger.MyApp
@@ -55,9 +55,15 @@ class ListUploader(
             return
         }
         if (uploadType == UploadType.PATIENT) {
-            volleyRequestManager.uploadPatientToTheServer(listToUpload[0] as PatientAndReadings, networkCallback)
+            volleyRequestManager.uploadPatientToTheServer(
+                listToUpload[0] as PatientAndReadings,
+                networkCallback
+            )
         } else {
-            volleyRequestManager.uploadReadingToTheServer(listToUpload[0] as Reading, networkCallback)
+            volleyRequestManager.uploadReadingToTheServer(
+                listToUpload[0] as Reading,
+                networkCallback
+            )
         }
     }
 

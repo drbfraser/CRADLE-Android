@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".view.HelpActivity"
+    tools:context=".view.VideoActivity"
     tools:showIn="@layout/activity_help">
 
     <TextView
@@ -37,7 +37,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         android:gravity="right"
-        android:text="App developed by Brian Fraser and Steven Reilander"
+        android:text="App developed by Team Neptune"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

@@ -102,13 +102,12 @@ public class PatientProfileActivity extends AppCompatActivity {
         setupToolBar();
     }
 
-    void setupToolBar(){
+    void setupToolBar() {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle(R.string.patient_summary);
         }
     }
-
 
 
     private void initAllFields() {
@@ -172,12 +171,14 @@ public class PatientProfileActivity extends AppCompatActivity {
             pregnancyInfoLayout.setVisibility(View.GONE);
         }
 
-        if (patient.getDrugHistoryList() != null && !patient.getDrugHistoryList().isEmpty()) {
+        patient.getDrugHistoryList();
+        if (!patient.getDrugHistoryList().isEmpty()) {
             TextView drugHistroy = findViewById(R.id.drugHistroyTxt);
             drugHistroy.setText(patient.getDrugHistoryList().get(0));
 
         }
-        if (patient.getMedicalHistoryList() != null && !patient.getMedicalHistoryList().isEmpty()) {
+        patient.getMedicalHistoryList();
+        if (!patient.getMedicalHistoryList().isEmpty()) {
 
             TextView medHistory = findViewById(R.id.medHistoryText);
             medHistory.setText(patient.getMedicalHistoryList().get(0));
@@ -335,6 +336,7 @@ public class PatientProfileActivity extends AppCompatActivity {
 
     /**
      * shows a dialog to confirm deleting a reading
+     *
      * @param readingId id of the reading to delete
      */
     private void askToDeleteReading(String readingId) {

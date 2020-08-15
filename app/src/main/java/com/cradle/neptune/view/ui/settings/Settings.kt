@@ -78,6 +78,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     @Inject
     lateinit var readingManager: ReadingManager
+
     @Inject
     lateinit var patientManager: PatientManager
 

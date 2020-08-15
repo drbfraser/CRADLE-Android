@@ -30,7 +30,10 @@ class ReferralUploadManger @Inject constructor(private val api: Api) {
      * @throws IllegalArgumentException if [reading] does not contain a referral
      * @return result of the network request
      */
-    suspend fun uploadReferralViaWeb(patient: Patient, reading: Reading): NetworkResult<PatientAndReadings> {
+    suspend fun uploadReferralViaWeb(
+        patient: Patient,
+        reading: Reading
+    ): NetworkResult<PatientAndReadings> {
         if (reading.referral == null) {
             throw IllegalArgumentException("reading must contain a nested referral")
         }
@@ -45,7 +48,10 @@ class ReferralUploadManger @Inject constructor(private val api: Api) {
                 Log.e(this::class.simpleName, "Patient check failed with no response")
                 return Failure(err)
             } else if (err.networkResponse.statusCode != HTTP_NOT_FOUND) {
-                Log.e(this::class.simpleName, "Patient check failed with non 404 error, aborting upload")
+                Log.e(
+                    this::class.simpleName,
+                    "Patient check failed with non 404 error, aborting upload"
+                )
                 return Failure(err)
             }
             false

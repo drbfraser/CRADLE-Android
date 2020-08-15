@@ -25,6 +25,7 @@ import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.viewmodel.ReadingAnalysisViewSupport;
 
 import kotlin.Unit;
+
 import org.threeten.bp.ZonedDateTime;
 
 import static com.cradle.neptune.utilitiles.Util.mapNullable;
@@ -36,6 +37,7 @@ public class SummaryFragment extends BaseFragment {
 
     public static final int STROKE_WIDTH_RECOMMENDED = 6;
     public static final int STROKE_WIDTH_NORMAL = 3;
+    static long NUM_SECONDS_IN_15_MIN = 900;
 
     public SummaryFragment() {
         // Required empty public constructor
@@ -53,7 +55,6 @@ public class SummaryFragment extends BaseFragment {
         return inflater.inflate(R.layout.fragment_summary, container, false);
     }
 
-
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -70,7 +71,6 @@ public class SummaryFragment extends BaseFragment {
         updateUI();
     }
 
-
     @Override
     public boolean onMyBeingHidden() {
         // may not have created view yet.
@@ -79,7 +79,6 @@ public class SummaryFragment extends BaseFragment {
         }
         return true;
     }
-
 
     private void updateUI() {
         // TODO: switch to Data Binding for more efficient code?
@@ -230,7 +229,7 @@ public class SummaryFragment extends BaseFragment {
             if (viewModel.getBloodPressure() == null) {
 //            if (reading.getBloodPressure().getHeartRate() != null) {
                 tv.setText(getString(R.string.reading_heart_rate,
-                            reading.getBloodPressure().getHeartRate()));
+                        reading.getBloodPressure().getHeartRate()));
                 tv.setVisibility(View.VISIBLE);
             } else {
 //                errorMessage += "- heart rate" + "\n";
@@ -322,7 +321,7 @@ public class SummaryFragment extends BaseFragment {
         }
         // ..setup initial state
         if (swIn15.isChecked() && viewModel.getDateRecheckVitalsNeeded() == null) {
-            viewModel.setDateRecheckVitalsNeeded(ZonedDateTime.now().toEpochSecond()+ NUM_SECONDS_IN_15_MIN);
+            viewModel.setDateRecheckVitalsNeeded(ZonedDateTime.now().toEpochSecond() + NUM_SECONDS_IN_15_MIN);
         }
 //        if (swIn15.isChecked() && currentReading.dateRecheckVitalsNeeded == null) {
 //            currentReading.dateRecheckVitalsNeeded =
@@ -333,7 +332,7 @@ public class SummaryFragment extends BaseFragment {
             if (swIn15.isChecked()) {
                 swNow.setChecked(false);
                 // add 15 minutes
-                viewModel.setDateRecheckVitalsNeeded(ZonedDateTime.now().toEpochSecond()+ NUM_SECONDS_IN_15_MIN);
+                viewModel.setDateRecheckVitalsNeeded(ZonedDateTime.now().toEpochSecond() + NUM_SECONDS_IN_15_MIN);
 //                currentReading.dateRecheckVitalsNeeded =
 //                        ZonedDateTime.now().plus(15, ChronoUnit.MINUTES);
             }
@@ -402,7 +401,6 @@ public class SummaryFragment extends BaseFragment {
 
     }
 
-
     private void updateUI_Followup(RetestGroup retestAnalysis) {
         Switch swFollowup = getView().findViewById(R.id.swFollowUpNeeded);
 
@@ -445,7 +443,6 @@ public class SummaryFragment extends BaseFragment {
         }
     }
 
-
     private void setRectangleStrokeColor(int viewId, boolean showAsRecommended) {
         View sectionView = getView().findViewById(viewId);
         GradientDrawable drawable = (GradientDrawable) sectionView.getBackground();
@@ -456,7 +453,6 @@ public class SummaryFragment extends BaseFragment {
 
         drawable.setStroke(width, color);
     }
-
 
     /**
      * Dialogs
@@ -489,6 +485,4 @@ public class SummaryFragment extends BaseFragment {
                 .setPositiveButton(android.R.string.yes, null);
         dialog.show();
     }
-
-    static long NUM_SECONDS_IN_15_MIN = 900;
 }

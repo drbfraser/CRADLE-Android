@@ -1,4 +1,4 @@
-package com.cradle.neptune.view.sync
+package com.cradle.neptune.sync
 
 /**
  * This is the main interface for the whole sync process

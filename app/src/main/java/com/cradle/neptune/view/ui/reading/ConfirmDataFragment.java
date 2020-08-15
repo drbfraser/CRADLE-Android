@@ -41,6 +41,9 @@ import static com.cradle.neptune.utilitiles.Util.mapNullable;
  */
 public class ConfirmDataFragment extends BaseFragment {
 
+    public static final int MANUAL_USER_ENTRY_SYSTOLIC = 1;
+    public static final int MANUAL_USER_ENTRY_DIASTOLIC = 2;
+    public static final int MANUAL_USER_ENTRY_HEARTRATE = 4;
     /**
      * OCR
      */
@@ -115,10 +118,6 @@ public class ConfirmDataFragment extends BaseFragment {
         setupOcr();
         doOcrOnCurrentImage();
     }
-
-    public static final int MANUAL_USER_ENTRY_SYSTOLIC = 1;
-    public static final int MANUAL_USER_ENTRY_DIASTOLIC = 2;
-    public static final int MANUAL_USER_ENTRY_HEARTRATE = 4;
 
     private void setupTextEdits() {
         watchForUserTextEntry(R.id.etSystolic, MANUAL_USER_ENTRY_SYSTOLIC);

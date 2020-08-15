@@ -94,12 +94,14 @@ interface ReadingDaoAccess {
      * Returns all un-uploaded readings for patients who have previously been
      * synced with the server.
      */
-    @get:Query("""
+    @get:Query(
+        """
         SELECT * 
         FROM Reading r 
         JOIN Patient p ON r.patientId like p.id
         WHERE p.base is NOT null AND r.isUploadedToServer = 0
-    """)
+    """
+    )
     val allUnUploadedReadingsForTrackedPatients: List<Reading>
 
     /**
@@ -158,6 +160,7 @@ interface PatientDaoAccess {
      */
     @Query("SELECT * FROM Patient WHERE lastEdited =:unixTime AND base IS NOT null")
     fun getEditedPatients(unixTime: Long): List<Patient>
+
     /**
      * get a list of patient Ids
      */

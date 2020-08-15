@@ -1,4 +1,4 @@
-package com.cradle.neptune.view.sync
+package com.cradle.neptune.view
 
 import android.os.Bundle
 import android.view.View
@@ -8,14 +8,24 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.cradle.neptune.R
+import com.cradle.neptune.sync.SyncStepperCallback
+import com.cradle.neptune.sync.SyncStepperImplementation
+import com.cradle.neptune.sync.TotalRequestStatus
+import kotlin.math.roundToInt
 
-class SyncActivity : AppCompatActivity(), SyncStepperCallback {
+class SyncActivity : AppCompatActivity(),
+    SyncStepperCallback {
 
+    companion object {
+        private const val NUM_STEPS_FOR_SYNC = 3.0
+    }
     private lateinit var uploadStatusTextView: TextView
     private lateinit var downloadStatusTextView: TextView
     private lateinit var syncText: TextView
+    private val progressPercent =
+        ProgressPercent(NUM_STEPS_FOR_SYNC)
+    private lateinit var progressBar: ProgressBar
 
-    lateinit var progressBar: ProgressBar
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sync)
@@ -30,6 +40,8 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         findViewById<Button>(R.id.uploadEverythingButton).setOnClickListener {
+            syncText.text = "Sync in progress! Please wait for it to complete."
+            progressBar.visibility = View.VISIBLE
             SyncStepperImplementation(this, this).fetchUpdatesFromServer()
             it.visibility = View.GONE
         }
@@ -42,6 +54,7 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
 
     @Synchronized
     override fun onFetchDataCompleted(success: Boolean) {
+        progressPercent.current++
         setProgressPercent()
     }
 
@@ -61,6 +74,7 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
 
     @Synchronized
     override fun onNewPatientAndReadingUploadFinish(uploadStatus: TotalRequestStatus) {
+        progressPercent.current++
         uploadStatusTextView.text =
             "Successfully made ${uploadStatus.numUploaded} out of ${uploadStatus.totalNum} requests"
         setStatusArrow(uploadStatus.allRequestsSuccess(), R.id.ivUploadStatus)
@@ -69,6 +83,7 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
 
     @Synchronized
     override fun onNewPatientAndReadingDownloadFinish(downloadStatus: TotalRequestStatus) {
+        progressPercent.current++
         downloadStatusTextView.text =
             "Successfully made  ${downloadStatus.numUploaded} out of ${downloadStatus.totalNum} requests"
         setStatusArrow(downloadStatus.allRequestsSuccess(), R.id.ivDownloadStatus)
@@ -77,6 +92,8 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
 
     @Synchronized
     override fun onFinish(errorCodes: HashMap<Int?, String>) {
+        progressBar.visibility = View.INVISIBLE
+
         if (errorCodes.isEmpty()) {
             syncText.text = "Sync complete"
         } else {
@@ -99,12 +116,22 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
     }
 
     private fun setProgressPercent() {
-        progressBar.progress++
-        val progressPercent = progressBar.progress / progressBar.max * DECIMAL_TO_PERCENT
-        syncText.text = "Syncing: $progressPercent %"
+        syncText.text =
+            "Syncing: ${progressPercent.getPercent().roundToInt()}% Please wait for it to complete."
+    }
+}
+
+/**
+ * Very simple class to get overall progress percent
+ */
+data class ProgressPercent(var overall: Double) {
+    var current: Double = 0.0
+
+    fun getPercent(): Double {
+        return current / overall * DECIMAL_TO_PERCENT
     }
 
     companion object {
-        private const val DECIMAL_TO_PERCENT = 100
+        const val DECIMAL_TO_PERCENT = 100
     }
 }

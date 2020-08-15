@@ -328,7 +328,8 @@ fun <F : Field> JsonObject.optArrayField(field: F): JsonArray? = try {
  *
  * @throws JsonException If no such field exists.
  */
-fun <T, F : Field> JsonObject.mapField(field: F, transform: (String) -> T): T = transform(stringField(field))
+fun <T, F : Field> JsonObject.mapField(field: F, transform: (String) -> T): T =
+    transform(stringField(field))
 
 /**
  * Interprets the value for the specified field as a string then passes it to

@@ -5,8 +5,8 @@
         android:id="@+id/searchPatients"
         android:icon="@drawable/ic_search_black_24dp"
         android:orderInCategory="100"
-        android:title="Search patients"
+        android:title="Search by initials or ID"
 
-        app:showAsAction="always"
-        app:actionViewClass="androidx.appcompat.widget.SearchView" />
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:showAsAction="always" />
 </menu>

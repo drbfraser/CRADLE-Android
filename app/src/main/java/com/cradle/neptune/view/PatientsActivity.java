@@ -40,10 +40,6 @@ public class PatientsActivity extends AppCompatActivity {
     ReadingManager readingManager;
     @Inject
     PatientManager patientManager;
-    @Inject
-    SharedPreferences sharedPreferences;
-    @Inject
-    Settings settings;
 
     private RecyclerView patientRecyclerview;
     private PatientsViewAdapter patientsViewAdapter;
@@ -133,8 +129,8 @@ public class PatientsActivity extends AppCompatActivity {
         List<Patient> patientList = patientManager.getAllPatientsBlocking();
         List<Pair<Patient, Reading>> patients = new ArrayList<>();
 
-        for (Patient patient: patientList){
-            patients.add(new Pair<>(patient,readingManager.getNewestReadingByPatientIdBlocking(patient.getId())));
+        for (Patient patient : patientList) {
+            patients.add(new Pair<>(patient, readingManager.getNewestReadingByPatientIdBlocking(patient.getId())));
         }
 
         TextView textView = findViewById(R.id.emptyView);

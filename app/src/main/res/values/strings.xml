@@ -22,7 +22,6 @@
 
     <string name="title_activity_patients">Patients</string>
     <string name="title_activity_help">Help</string>
-    <string name="title_activity_upload">Upload To Server</string>
 
     <!-- Navigation Menu Options-->
     <string name="menu_readings">Readings</string>
@@ -72,13 +71,11 @@
     <!-- Readings Details -->
     <string name="reading_name_age_ga">%1$s, %2$s @ %3$s</string>
     <string name="reading_gestational_age_in_weeks_and_days">%1$dw +%2$dd</string>
-    <string name="reading_gestational_age_not_pregnant">Not pregnant</string>
     <string name="reading_time_summary">%1$s: %2$s</string>
     <string name="reading_blood_pressure">BP: %1$d/%2$d</string>
     <string name="reading_heart_rate">HR: %1$d</string>
     <string name="reading_referral_sent">Referral sent to %1$s on %2$s</string>
     <string name="reading_referral_notsent">Not referred</string>
-    <string name="reading_not_applicable">N/A</string>
     <string name="reading_patient_id">#%1$s</string>
     <string name="reading_uploaded_to_server">Reading uploaded to a server on %1$s.</string>
     <string name="reading_not_uploaded_to_server">Reading NOT yet uploaded to a server.</string>
@@ -116,17 +113,12 @@
 
 
     <!-- SMS Text Message Referral -->
-    <string name="send_text_message">Send via SMS</string>
-    <string name="send_via_Web">Send via Web</string>
-
-    <string name="cancel">Cancel</string>
 
     <!-- SMS Text Message Referral - SMS content-->
     <!-- NOTE: May not want to translate, as sent to doctors -->
 
 
     <string name="village">Village</string>
-    <string name="house_number">House Number</string>
     <string name="block_no">Block</string>
     <string name="zone">Zone</string>
     <string name="id_number">ID number</string>
@@ -163,16 +155,10 @@
     <string name="emptyViewStatText">Please create some readings to see stats</string>
     <string name="stateTextforMonth">This Month, you have made</string>
     <string name="pregnant_question">Pregnant?</string>
-    <string name="followUpDownloaded">Follow up information downloaded successfully</string>
-    <string name="followUpCheckInternet">Follow up information not available.</string>
-    <string name="userNotAuthenticated">The credentials are not vaild, Please login again.</string>
     <string name="create_new_reading">Create New Reading</string>
     <string name="normalSignoutMessage">You will be required to sign in again before using the application.</string>
     <string name="unUploadedReadingSignoutMessage">reading(s) still needs to be uploaded to the server. These reading(s) will be lost after signing out!</string>
-    <string name="global_search">Global search</string>
-    <string name="global_patient_search">Global Patients Search</string>
+    <string name="global_search">Search all patients</string>
+    <string name="global_patient_search">All Patients Search</string>
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="sync_complete">Syncing complete</string>
-    <string name="sync_failed">Syncing failed</string>
 </resources>

@@ -63,7 +63,6 @@
             app:srcCompat="@drawable/arrow_right" />
 
         <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -104,10 +103,10 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/downloadLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:id="@+id/downloadLayout"
         app:layout_constraintTop_toBottomOf="@+id/layoutUploadingReadings">
 
         <TextView
@@ -197,10 +196,9 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
-        android:indeterminate="false"
-        android:max="3"
+        android:indeterminate="true"
         android:minHeight="48dp"
-        android:progress="0"
+        android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/downloadLayout" />

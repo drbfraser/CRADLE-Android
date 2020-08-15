@@ -17,8 +17,8 @@ import com.cradle.neptune.network.Success
 import com.cradle.neptune.network.VolleyRequestQueue
 import com.cradle.neptune.network.VolleyRequests
 import com.cradle.neptune.network.unwrap
+import com.cradle.neptune.sync.SyncStepperImplementation
 import com.cradle.neptune.view.LoginActivity
-import com.cradle.neptune.view.sync.SyncStepperImplementation
 import java.util.ArrayList
 import java.util.Date
 import javax.inject.Inject
@@ -103,8 +103,10 @@ class VolleyRequestManager(application: Application) {
                             patientManager.addAll(patientList)
                             readingManager.addAllReadings(readingList)
                             sharedPreferences.edit()
-                                .putLong(SyncStepperImplementation.LAST_SYNC,
-                                    ZonedDateTime.now().toEpochSecond()).apply()
+                                .putLong(
+                                    SyncStepperImplementation.LAST_SYNC,
+                                    ZonedDateTime.now().toEpochSecond()
+                                ).apply()
                             Date().time
                         }
                     }
@@ -166,6 +168,10 @@ class VolleyRequestManager(application: Application) {
                         val response = result.unwrap()
                         for (i in 0 until response.length()) {
                             facilities.add(HealthFacility.unmarshal(response[i] as JsonObject))
+                        }
+                        // one default HF
+                        if (facilities.isNotEmpty()) {
+                            facilities[0].isUserSelected = true
                         }
                         healthCentreManager.addAll(facilities)
                     }
@@ -328,7 +334,10 @@ class VolleyRequestManager(application: Application) {
     ) {
 
         val request =
-            volleyRequests.postJsonObjectRequest(urlManager.patients, patientAndReadings.marshal()) { result ->
+            volleyRequests.postJsonObjectRequest(
+                urlManager.patients,
+                patientAndReadings.marshal()
+            ) { result ->
                 when (result) {
                     is Success -> {
                         // need to update the base to lastEdited since server compares patient's base
@@ -370,7 +379,8 @@ class VolleyRequestManager(application: Application) {
             volleyRequests.getJsonObjectRequest(urlManager.getReadingById(id), null) { result ->
                 when (result) {
                     is Success -> {
-                        val reading = Reading.unmarshal(result.value).apply { isUploadedToServer = true }
+                        val reading =
+                            Reading.unmarshal(result.value).apply { isUploadedToServer = true }
                         readingManager.addReading(reading)
                     }
                 }

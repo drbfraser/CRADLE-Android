@@ -11,5 +11,6 @@ import org.threeten.bp.ZonedDateTime
 fun Long.convertToZoneTimeFromUnix(): ZonedDateTime {
     val i = Instant.ofEpochSecond(this)
     return ZonedDateTime.ofInstant(
-        i, ZoneId.systemDefault())
+        i, ZoneId.systemDefault()
+    )
 }

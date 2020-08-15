@@ -43,12 +43,14 @@ class PatientManager(private val daoAccess: PatientDaoAccess) {
     /**
      * get all the patients
      */
-    suspend fun getAllPatients(): List<Patient> = withContext(Dispatchers.IO) { daoAccess.allPatients }
+    suspend fun getAllPatients(): List<Patient> =
+        withContext(Dispatchers.IO) { daoAccess.allPatients }
 
     /**
      * get a list of patient ids for all patients.
      */
-    suspend fun getPatientIdsOnly(): List<String> = withContext(Dispatchers.IO) { daoAccess.patientIdsList }
+    suspend fun getPatientIdsOnly(): List<String> =
+        withContext(Dispatchers.IO) { daoAccess.patientIdsList }
 
     /**
      * TODO: once all the java classes calling this method are turned into Kotlin,

@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" android:title="Advanced">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="Advanced">
     <PreferenceCategory android:title="Network">
         <EditTextPreference
-            android:title="Hostname"
+            android:defaultValue="@string/settings_default_server_hostname"
             android:key="@string/key_server_hostname"
-            android:defaultValue="@string/settings_default_server_hostname" />
+            android:title="Hostname" />
 
         <EditTextPreference
-            android:title="Port"
+            android:defaultValue="@string/settings_default_server_port"
             android:key="@string/key_server_port"
-            android:defaultValue="@string/settings_default_server_port" />
+            android:title="Port" />
 
         <SwitchPreference
-            android:title="Use HTTPS"
+            android:defaultValue="@string/settings_default_server_use_https"
             android:key="@string/key_server_use_https"
-            android:defaultValue="@string/settings_default_server_use_https" />
+            android:title="Use HTTPS" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Optical Character Recognition">

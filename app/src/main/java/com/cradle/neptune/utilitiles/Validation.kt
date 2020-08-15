@@ -65,5 +65,6 @@ fun validateHostname(hostname: String): Either<String, Unit> {
         Left("'$hostname' is not a valid hostname")
     }
 }
+
 const val NUM_ASCII_CHAR = 128
 const val MAX_PORT_NUM = 655353

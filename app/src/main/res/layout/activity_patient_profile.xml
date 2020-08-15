@@ -435,8 +435,8 @@
                 android:text="@string/create_new_reading"
                 android:visibility="gone"
                 app:backgroundTint="@color/colorPrimaryLight"
-                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 

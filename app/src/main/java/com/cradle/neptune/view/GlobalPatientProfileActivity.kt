@@ -133,8 +133,10 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
                 is Failure -> {
                     val error = result.unwrapFailure()
                     progressDialog.cancel()
-                    Snackbar.make(readingRecyclerview, "Unable to fetch the patient Information..." +
-                        "\n${error?.localizedMessage}", Snackbar.LENGTH_INDEFINITE).show()
+                    Snackbar.make(
+                        readingRecyclerview, "Unable to fetch the patient Information..." +
+                            "\n${error?.localizedMessage}", Snackbar.LENGTH_INDEFINITE
+                    ).show()
                 }
             }
         }

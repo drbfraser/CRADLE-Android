@@ -26,6 +26,7 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
     private SearchView searchView;
     private HealthFacilitiesAdapter healthFacilitiesAdapter;
     private HealthFacilityViewModel healthFacilityViewModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,7 +39,7 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Health Facilities");
+            getSupportActionBar().setTitle("My Health Facilities");
         }
         setupRecyclerview();
     }

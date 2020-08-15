@@ -18,7 +18,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".view.sync.SyncActivity" android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
+            android:name=".view.SyncActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".view.GlobalPatientProfileActivity" />
         <activity
             android:name=".view.GlobalPatientSearchActivity"
@@ -58,7 +60,7 @@
         </activity>
         <!-- windowSoftInputMode=adjustResize so that wizard's bottom buttons stay visible -->
         <activity
-            android:name=".view.HelpActivity"
+            android:name=".view.VideoActivity"
             android:label="@string/title_activity_help"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />

@@ -40,6 +40,7 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@Suppress("LargeClass")
 class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : DialogFragment() {
 
     companion object {
@@ -151,17 +152,23 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
             )
             healthFacilitySpinner?.adapter = adapter
 
-            healthFacilitySpinner?.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onNothingSelected(parent: AdapterView<*>?) {
-                    selectedHealthFacility = null
-                }
+            healthFacilitySpinner?.onItemSelectedListener =
+                object : AdapterView.OnItemSelectedListener {
+                    override fun onNothingSelected(parent: AdapterView<*>?) {
+                        selectedHealthFacility = null
+                    }
 
-                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                    if (healthFacilitySpinner?.selectedItemPosition?.let { it >= 0 } == true) {
-                        selectedHealthFacility = availableHealthFacilities[position]
+                    override fun onItemSelected(
+                        parent: AdapterView<*>?,
+                        view: View?,
+                        position: Int,
+                        id: Long
+                    ) {
+                        if (healthFacilitySpinner?.selectedItemPosition?.let { it >= 0 } == true) {
+                            selectedHealthFacility = availableHealthFacilities[position]
+                        }
                     }
                 }
-            }
         }
     }
 
@@ -238,7 +245,9 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
                 // it would need to reconstruct the models from the view model
                 // instead of being able to used the result of the network call.
                 patientManager.add(result.value.patient)
-                readingManager.addReading(result.value.readings[0].apply { isUploadedToServer = true })
+                readingManager.addReading(result.value.readings[0].apply {
+                    isUploadedToServer = true
+                })
                 dismiss()
                 onSuccessfulUpload()
             }

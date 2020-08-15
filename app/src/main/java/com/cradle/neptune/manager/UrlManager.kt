@@ -39,7 +39,8 @@ class UrlManager @Inject constructor(val settings: Settings) {
      * Endpoint for retrieving or uploading a patient
      */
     val patients: String
-    get() = "$base/patients"
+        get() = "$base/patients"
+
     /**
      * Endpoint for retrieving referral information.
      */

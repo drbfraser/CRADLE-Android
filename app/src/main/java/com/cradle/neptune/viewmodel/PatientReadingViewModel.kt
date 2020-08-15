@@ -147,8 +147,9 @@ class PatientReadingViewModel() {
      * and the implication "patient is pregnant" -> "gestational age not null"
      * must be true.
      */
-    val isDataInvalid: Boolean get() = !(bloodPressure?.isValid ?: false) ||
-        (patientIsPregnant ?: false && patientGestationalAge == null)
+    val isDataInvalid: Boolean
+        get() = !(bloodPressure?.isValid ?: false) ||
+            (patientIsPregnant ?: false && patientGestationalAge == null)
 
     val symptomsString get() = symptoms?.joinToString(", ")
 
