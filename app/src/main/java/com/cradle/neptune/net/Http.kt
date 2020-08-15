@@ -42,12 +42,14 @@ object Http {
                     outputStream.write(body)
                 }
 
-                val responseBody = inputStream.readBytes()
-                inputStream.close()
                 @Suppress("MagicNumber")
                 if (responseCode in 200 until 300) {
+                    val responseBody = inputStream.readBytes()
+                    inputStream.close()
                     Success(responseBody, responseCode)
                 } else {
+                    val responseBody = errorStream.readBytes()
+                    errorStream.close()
                     Failure(responseBody, responseCode)
                 }
             } catch (ex: Exception) {
