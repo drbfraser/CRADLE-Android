@@ -44,7 +44,7 @@ class Api @Inject constructor(
      * @return the response body or an error if one occurred
      */
     suspend fun authenticate(username: String, password: String): NetworkResult<JsonObject> {
-        val obj = JsonObject(mapOf("username" to username, "password" to password))
+        val obj = JsonObject(mapOf("email" to username, "password" to password))
         return requestObject(HttpMethod.POST, urlManager.authentication, obj)
     }
 
