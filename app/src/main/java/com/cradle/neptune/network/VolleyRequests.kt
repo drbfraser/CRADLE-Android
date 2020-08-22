@@ -8,6 +8,7 @@ import com.android.volley.Response
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
+import com.cradle.neptune.manager.LoginManager
 import com.cradle.neptune.view.LoginActivity
 import java.net.ConnectException
 import java.net.UnknownHostException
@@ -142,8 +143,8 @@ class VolleyRequests(private val sharedPreferences: SharedPreferences) {
     }
 
     private fun getHttpHeaders(): Map<String, String>? {
-        val token = sharedPreferences.getString(LoginActivity.TOKEN, LoginActivity.DEFAULT_TOKEN)
-        return mapOf(Pair(LoginActivity.AUTH, "Bearer $token"))
+        val token = sharedPreferences.getString(LoginManager.TOKEN_KEY, null)
+        return mapOf(Pair("Authorization", "Bearer $token"))
     }
 
     /**

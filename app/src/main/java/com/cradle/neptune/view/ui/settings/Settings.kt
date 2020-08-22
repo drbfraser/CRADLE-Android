@@ -12,8 +12,10 @@ import androidx.preference.PreferenceFragmentCompat
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.HealthCentreManager
+import com.cradle.neptune.manager.LoginManager
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
+import com.cradle.neptune.sync.SyncStepperImplementation
 import com.cradle.neptune.utilitiles.validateHostname
 import com.cradle.neptune.utilitiles.validatePort
 import com.cradle.neptune.view.LoginActivity
@@ -147,13 +149,18 @@ class SettingsFragment : PreferenceFragmentCompat() {
             ?.useDynamicSummary()
     }
 
-    // TODO: This should be moved elsewhere
+    // TODO: The business logic portion of this method should be moved to
+    //  com.cradle.neptune.manager.LoginManager. By "business logic" I mean
+    //  the stuff that edits shared preferences and the database. The code
+    //  to start the activity is fine here as we don't want UI code in the
+    //  manager class.
     private fun onSignOut() {
         val editor = sharedPreferences.edit()
-        editor.putString(LoginActivity.LOGIN_EMAIL, "")
-        editor.putInt(LoginActivity.LOGIN_PASSWORD, LoginActivity.DEFAULT_PASSWORD)
-        editor.putString(LoginActivity.TOKEN, "")
-        editor.putString(LoginActivity.USER_ID, "")
+        editor.putString(LoginManager.EMAIL_KEY, "")
+        editor.putInt(LoginManager.PASSWORD_KEY, LoginManager.PASSWORD_SENTINEL)
+        editor.putString(LoginManager.TOKEN_KEY, null)
+        editor.putString(LoginManager.USER_ID_KEY, null)
+        editor.putLong(SyncStepperImplementation.LAST_SYNC, 0L)
         editor.apply()
         GlobalScope.launch(Dispatchers.IO) { readingManager.deleteAllData() }
         GlobalScope.launch(Dispatchers.IO) { healthCentreManager.deleteAll() }

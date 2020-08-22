@@ -13,7 +13,10 @@ import androidx.appcompat.app.AppCompatActivity
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.ext.hideKeyboard
-import com.cradle.neptune.manager.VolleyRequestManager
+import com.cradle.neptune.manager.LoginManager
+import com.cradle.neptune.net.Success
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class LoginActivity : AppCompatActivity() {
@@ -22,7 +25,7 @@ class LoginActivity : AppCompatActivity() {
     lateinit var sharedPreferences: SharedPreferences
 
     @Inject
-    lateinit var volleyRequestManager: VolleyRequestManager
+    lateinit var loginManager: LoginManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         (application as MyApp).appComponent.inject(this)
@@ -34,12 +37,9 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun checkSharedPrefForLogin() {
-        val email = sharedPreferences.getString(
-            LOGIN_EMAIL,
-            DEFAULT_EMAIL
-        )
-        val password = sharedPreferences.getInt(LOGIN_PASSWORD, DEFAULT_PASSWORD)
-        if (email != DEFAULT_EMAIL && password != DEFAULT_PASSWORD) {
+        val email = sharedPreferences.getString(LoginManager.EMAIL_KEY, null)
+        val password = sharedPreferences.getInt(LoginManager.PASSWORD_KEY, LoginManager.PASSWORD_SENTINEL)
+        if (email != null && password != LoginManager.PASSWORD_SENTINEL) {
             startIntroActivity()
         }
     }
@@ -61,18 +61,13 @@ class LoginActivity : AppCompatActivity() {
             val progressDialog = progressDialog
             passwordET.hideKeyboard()
 
-            volleyRequestManager.authenticateTheUser(
-                emailET.text.toString(),
-                passwordET.text.toString()
-            ) { isSuccessFul ->
+            MainScope().launch {
+                val email = emailET.text.toString()
+                val password = passwordET.text.toString()
+                val result = loginManager.login(email, password)
                 progressDialog.cancel()
-                if (isSuccessFul) {
-                    Toast.makeText(this@LoginActivity, "Login Successful!", Toast.LENGTH_SHORT)
-                        .show()
-
-                    volleyRequestManager.fetchAllMyPatientsFromServer()
-                    volleyRequestManager.getAllHealthFacilities()
-
+                if (result is Success) {
+                    Toast.makeText(this@LoginActivity, "Login Successful!", Toast.LENGTH_SHORT).show()
                     startIntroActivity()
                 } else {
                     errorText.visibility = View.VISIBLE
@@ -89,16 +84,4 @@ class LoginActivity : AppCompatActivity() {
             progressDialog.show()
             return progressDialog
         }
-
-    companion object {
-        const val LOGIN_EMAIL = "loginEmail"
-        const val LOGIN_PASSWORD = "loginPassword"
-        const val TOKEN = "token"
-        const val AUTH = "Authorization"
-        const val USER_ID = "userId"
-        const val DEFAULT_EMAIL = ""
-        const val DEFAULT_PASSWORD = -1
-        val DEFAULT_TOKEN: String? = null
-        private val TAG = LoginActivity::class.java.canonicalName
-    }
 }

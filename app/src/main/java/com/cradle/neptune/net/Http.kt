@@ -41,12 +41,11 @@ open class Http {
         body: ByteArray?
     ): NetworkResult<ByteArray> =
         with(URL(url).openConnection() as HttpURLConnection) {
-            val message = "${method.name} $url"
-            Log.i("HTTP", message)
             requestMethod = method.toString()
             headers.forEach { (k, v) -> addRequestProperty(k, v) }
             doInput = true
 
+            val message = "${method.name} $url"
             try {
                 if (body != null) {
                     doOutput = true

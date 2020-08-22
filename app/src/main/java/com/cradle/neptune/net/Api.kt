@@ -2,11 +2,12 @@ package com.cradle.neptune.net
 
 import android.content.SharedPreferences
 import com.cradle.neptune.ext.map
+import com.cradle.neptune.manager.LoginManager
 import com.cradle.neptune.manager.UrlManager
+import com.cradle.neptune.model.HealthFacility
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.PatientAndReadings
 import com.cradle.neptune.model.Reading
-import com.cradle.neptune.view.LoginActivity
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
@@ -52,10 +53,16 @@ open class Api @Inject constructor(
                 headers,
                 null
             ).map {
-                it.arr!!.map(
-                    JSONArray::getJSONObject,
-                    PatientAndReadings.Companion::unmarshal
-                )
+                it.arr!!.map(JSONArray::getJSONObject) { json ->
+                    val patientAndReadings = PatientAndReadings.unmarshal(json)
+
+                    // Since we are downloading all of these readings, we must
+                    // mark them as being uploaded to the server.
+                    for (reading in patientAndReadings.readings) {
+                        reading.isUploadedToServer = true
+                    }
+                    patientAndReadings
+                }
             }
         }
 
@@ -120,6 +127,21 @@ open class Api @Inject constructor(
             ).map { it.obj!! }
         }
 
+    open suspend fun getAllHealthFacilities(): NetworkResult<List<HealthFacility>> =
+        withContext(IO) {
+            http.jsonRequest(
+                Http.Method.GET,
+                urlManager.healthFacilities,
+                headers,
+                null
+            ).map {
+                it.arr!!.map(
+                    JSONArray::getJSONObject,
+                    HealthFacility.Companion::unmarshal
+                )
+            }
+        }
+
     /**
      * The common headers used for most API requests.
      *
@@ -128,7 +150,7 @@ open class Api @Inject constructor(
      */
     protected open val headers: Map<String, String>
         get() {
-            val token = sharedPreferences.getString(LoginActivity.TOKEN, LoginActivity.DEFAULT_TOKEN)
+            val token = sharedPreferences.getString(LoginManager.TOKEN_KEY, null)
             return if (token != null) {
                 mapOf("Authorization" to "Bearer $token")
             } else {

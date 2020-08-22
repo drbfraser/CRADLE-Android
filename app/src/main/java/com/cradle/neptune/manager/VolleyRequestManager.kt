@@ -17,7 +17,6 @@ import com.cradle.neptune.network.VolleyRequestQueue
 import com.cradle.neptune.network.VolleyRequests
 import com.cradle.neptune.network.unwrap
 import com.cradle.neptune.sync.SyncStepperImplementation
-import com.cradle.neptune.view.LoginActivity
 import java.util.ArrayList
 import java.util.Date
 import javax.inject.Inject
@@ -121,39 +120,39 @@ class VolleyRequestManager(application: Application) {
         volleyRequestQueue.addRequest(request)
     }
 
-    /**
-     * authenticate the user and save the TOKEN/ username
-     * @param email email address for the user
-     * @param password for the user
-     * @param callBack a boolean callback to know whether request was successful or not
-     */
-    fun authenticateTheUser(email: String, password: String, callBack: BooleanCallback) {
-        val jsonObject = JSONObject()
-        jsonObject.put("email", email)
-        jsonObject.put("password", password)
-        val request =
-            volleyRequests.postJsonObjectRequest(urlManager.authentication, jsonObject) { result ->
-                when (result) {
-                    is Success -> {
-                        // save the user credentials
-                        val json = result.unwrap()
-                        val editor = sharedPreferences.edit()
-                        editor.putString(LoginActivity.TOKEN, json.getString(LoginActivity.TOKEN))
-                        editor.putString(LoginActivity.USER_ID, json.getString("userId"))
-                        editor.putString(LoginActivity.LOGIN_EMAIL, email)
-                        editor.putInt(LoginActivity.LOGIN_PASSWORD, password.hashCode())
-                        editor.apply()
-                        // let the calling object know result
-                        callBack(true)
-                    }
-                    is Failure -> {
-                        result.value.printStackTrace()
-                        callBack(false)
-                    }
-                }
-            }
-        volleyRequestQueue.addRequest(request)
-    }
+    // /**
+    //  * authenticate the user and save the TOKEN/ username
+    //  * @param email email address for the user
+    //  * @param password for the user
+    //  * @param callBack a boolean callback to know whether request was successful or not
+    //  */
+    // fun authenticateTheUser(email: String, password: String, callBack: BooleanCallback) {
+    //     val jsonObject = JSONObject()
+    //     jsonObject.put("email", email)
+    //     jsonObject.put("password", password)
+    //     val request =
+    //         volleyRequests.postJsonObjectRequest(urlManager.authentication, jsonObject) { result ->
+    //             when (result) {
+    //                 is Success -> {
+    //                     // save the user credentials
+    //                     val json = result.unwrap()
+    //                     val editor = sharedPreferences.edit()
+    //                     editor.putString(LoginActivity.TOKEN, json.getString(LoginActivity.TOKEN))
+    //                     editor.putString(LoginActivity.USER_ID, json.getString("userId"))
+    //                     editor.putString(LoginActivity.LOGIN_EMAIL, email)
+    //                     editor.putInt(LoginActivity.LOGIN_PASSWORD, password.hashCode())
+    //                     editor.apply()
+    //                     // let the calling object know result
+    //                     callBack(true)
+    //                 }
+    //                 is Failure -> {
+    //                     result.value.printStackTrace()
+    //                     callBack(false)
+    //                 }
+    //             }
+    //         }
+    //     volleyRequestQueue.addRequest(request)
+    // }
 
     /**
      * Get all the healthFacilities for the user and save them locally.
