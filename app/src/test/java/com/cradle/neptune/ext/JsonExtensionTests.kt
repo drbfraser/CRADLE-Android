@@ -1,17 +1,14 @@
-package com.cradle.neptune.model
+package com.cradle.neptune.ext
 
+import org.json.JSONObject
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import org.threeten.bp.Instant
-import org.threeten.bp.ZoneId
-import org.threeten.bp.ZonedDateTime
-import org.threeten.bp.format.DateTimeFormatter
 
-class JsonObjectTests {
+class JsonExtensionTests {
     @Test
     fun jsonObject_unionInlinesJson() {
-        val a = JsonObject("""{"a":1,"hello":"world"}""")
-        val b = JsonObject("""{"b":2}""")
+        val a = JSONObject("""{"a":1,"hello":"world"}""")
+        val b = JSONObject("""{"b":2}""")
         a.union(b)
 
         assertEquals(1, a.get("a"))
@@ -21,8 +18,8 @@ class JsonObjectTests {
 
     @Test
     fun jsonObject_unionOverwritesExisting() {
-        val a = JsonObject("""{"a":1,"hello":"world"}""")
-        val b = JsonObject("""{"a":2}""")
+        val a = JSONObject("""{"a":1,"hello":"world"}""")
+        val b = JSONObject("""{"a":2}""")
         a.union(b)
 
         assertEquals(2, a.get("a"))

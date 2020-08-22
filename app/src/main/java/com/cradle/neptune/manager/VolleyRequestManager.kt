@@ -7,7 +7,6 @@ import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.model.Assessment
 import com.cradle.neptune.model.GlobalPatient
 import com.cradle.neptune.model.HealthFacility
-import com.cradle.neptune.model.JsonObject
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.PatientAndReadings
 import com.cradle.neptune.model.Reading
@@ -87,16 +86,16 @@ class VolleyRequestManager(application: Application) {
                             val patientList = ArrayList<Patient>()
                             val readingList = ArrayList<Reading>()
                             for (i in 0 until response.length()) {
-                                val patient = Patient.unmarshal(response[i] as JsonObject)
+                                val patient = Patient.unmarshal(response[i] as JSONObject)
                                 // we need to set base so we know it is a patient from the server
                                 patient.base = patient.lastEdited
                                 patientList.add(patient)
                                 // get all the readings
                                 val readingArray =
-                                    (response[i] as JsonObject).getJSONArray("readings")
+                                    (response[i] as JSONObject).getJSONArray("readings")
                                 for (j in 0 until readingArray.length()) {
                                     readingList.add(
-                                        Reading.unmarshal(readingArray[j] as JsonObject)
+                                        Reading.unmarshal(readingArray[j] as JSONObject)
                                             .apply { isUploadedToServer = true })
                                 }
                             }
@@ -167,7 +166,7 @@ class VolleyRequestManager(application: Application) {
                         val facilities = ArrayList<HealthFacility>()
                         val response = result.unwrap()
                         for (i in 0 until response.length()) {
-                            facilities.add(HealthFacility.unmarshal(response[i] as JsonObject))
+                            facilities.add(HealthFacility.unmarshal(response[i] as JSONObject))
                         }
                         // one default HF
                         if (facilities.isNotEmpty()) {
@@ -240,7 +239,7 @@ class VolleyRequestManager(application: Application) {
                     val readingArray = patientJsonObj.getJSONArray("readings")
                     val readingList = ArrayList<Reading>()
                     for (i in 0 until readingArray.length()) {
-                        readingList.add(Reading.unmarshal(readingArray[i] as JsonObject))
+                        readingList.add(Reading.unmarshal(readingArray[i] as JSONObject))
                     }
                     patientInfoCallBack(
                         Success(

@@ -5,12 +5,26 @@ import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.Relation
+import com.cradle.neptune.ext.Field
+import com.cradle.neptune.ext.map
+import com.cradle.neptune.ext.mapField
+import com.cradle.neptune.ext.optArrayField
+import com.cradle.neptune.ext.optBooleanField
+import com.cradle.neptune.ext.optIntField
+import com.cradle.neptune.ext.optLongField
+import com.cradle.neptune.ext.optStringField
+import com.cradle.neptune.ext.put
+import com.cradle.neptune.ext.stringField
+import com.cradle.neptune.ext.toList
+import com.cradle.neptune.ext.union
 import com.cradle.neptune.utilitiles.Months
 import com.cradle.neptune.utilitiles.Seconds
 import com.cradle.neptune.utilitiles.UnixTimestamp
 import com.cradle.neptune.utilitiles.Weeks
 import java.io.Serializable
 import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
 
 // TODO: Figure out which of these fields must be optional and which are never
 //  used at all.
@@ -50,12 +64,12 @@ data class Patient(
     @ColumnInfo var medicalHistoryList: List<String> = emptyList(),
     @ColumnInfo var lastEdited: Long? = null,
     @ColumnInfo var base: Long? = null
-) : Marshal<JsonObject>, Serializable {
+) : Marshal<JSONObject>, Serializable {
 
     /**
-     * Constructs a [JsonObject] from this object.
+     * Constructs a [JSONObject] from this object.
      */
-    override fun marshal(): JsonObject = with(JsonObject()) {
+    override fun marshal(): JSONObject = with(JSONObject()) {
         if (gestationalAge != null) {
             union(gestationalAge)
         }
@@ -75,20 +89,20 @@ data class Patient(
         put(PatientField.BASE, base)
     }
 
-    companion object : Unmarshal<Patient, JsonObject> {
+    companion object : Unmarshal<Patient, JSONObject> {
         /**
-         * Constructs a [Patient] object from a [JsonObject].
+         * Constructs a [Patient] object from a [JSONObject].
          *
          * @param data The JSON data to unmarshal.
          * @return A new patient.
          *
-         * @throws JsonException If any of the required patient fields are
+         * @throws JSONException If any of the required patient fields are
          * missing from [data].
          *
          * @throws IllegalArgumentException If the value for an enum field
          * cannot be converted into said enum.
          */
-        override fun unmarshal(data: JsonObject): Patient = Patient().apply {
+        override fun unmarshal(data: JSONObject): Patient = Patient().apply {
             id = data.optStringField(PatientField.ID) ?: ""
             name = data.optStringField(PatientField.NAME) ?: ""
             dob = data.optStringField(PatientField.DOB)
@@ -100,7 +114,7 @@ data class Patient(
             villageNumber = data.optStringField(PatientField.VILLAGE_NUMBER)
 
             drugHistoryList = data.optArrayField(PatientField.DRUG_HISTORY)
-                ?.toList(JsonArray::getString) ?: emptyList()
+                ?.toList(JSONArray::getString) ?: emptyList()
             medicalHistoryList = data.optArrayField(PatientField.MEDICAL_HISTORY)
                 ?.toList(JSONArray::getString) ?: emptyList()
             lastEdited = data.optLongField(PatientField.LAST_EDITED)
@@ -115,7 +129,7 @@ data class Patient(
  * Note that the default constructor for this class is required for
  * constructing from DAO objects but should never be used by user code.
  */
-class PatientAndReadings() : Marshal<JsonObject> {
+class PatientAndReadings() : Marshal<JSONObject> {
     @Embedded
     lateinit var patient: Patient
 
@@ -138,16 +152,16 @@ class PatientAndReadings() : Marshal<JsonObject> {
      *
      * @return A JSON object
      */
-    override fun marshal() = with(JsonObject()) {
+    override fun marshal() = with(JSONObject()) {
         union(patient)
         put(PatientField.READINGS, readings)
     }
 
-    companion object : Unmarshal<PatientAndReadings, JsonObject> {
+    companion object : Unmarshal<PatientAndReadings, JSONObject> {
         /**
          * Converts a JSON object into a patient and list of readings.
          */
-        override fun unmarshal(data: JsonObject): PatientAndReadings {
+        override fun unmarshal(data: JSONObject): PatientAndReadings {
             val patient = Patient.unmarshal(data)
             val readings = data.optArrayField(PatientField.READINGS)
                 ?.map({ arr, i -> arr.getJSONObject(i) }, Reading.Companion::unmarshal)
@@ -180,7 +194,7 @@ enum class Sex {
  * @see GestationalAgeWeeks
  * @see GestationalAgeMonths
  */
-sealed class GestationalAge(val value: Long) : Marshal<JsonObject>, Serializable {
+sealed class GestationalAge(val value: Long) : Marshal<JSONObject>, Serializable {
     /**
      * The age in weeks and days.
      *
@@ -189,7 +203,7 @@ sealed class GestationalAge(val value: Long) : Marshal<JsonObject>, Serializable
      */
     abstract val age: WeeksAndDays
 
-    companion object : Unmarshal<GestationalAge, JsonObject> {
+    companion object : Unmarshal<GestationalAge, JSONObject> {
 
         // These need to be marked static so we can share them with implementors.
         @JvmStatic
@@ -198,18 +212,18 @@ sealed class GestationalAge(val value: Long) : Marshal<JsonObject>, Serializable
         protected val UNIT_VALUE_MONTHS = "GESTATIONAL_AGE_UNITS_MONTHS"
 
         /**
-         * Constructs a [GestationalAge] variant from a [JsonObject].
+         * Constructs a [GestationalAge] variant from a [JSONObject].
          *
-         * @throws JsonException if any of the required fields are missing or
+         * @throws JSONException if any of the required fields are missing or
          * if the value for the gestational age unit field is invalid.
          */
-        override fun unmarshal(data: JsonObject): GestationalAge {
+        override fun unmarshal(data: JSONObject): GestationalAge {
             val units = data.stringField(PatientField.GESTATIONAL_AGE_UNIT)
             val value = data.stringField(PatientField.GESTATIONAL_AGE_VALUE).toLong()
             return when (units) {
                 UNIT_VALUE_WEEKS -> GestationalAgeWeeks(value)
                 UNIT_VALUE_MONTHS -> GestationalAgeMonths(value)
-                else -> throw JsonException("invalid value for ${PatientField.GESTATIONAL_AGE_UNIT.text}")
+                else -> throw JSONException("invalid value for ${PatientField.GESTATIONAL_AGE_UNIT.text}")
             }
         }
     }
@@ -260,7 +274,7 @@ class GestationalAgeWeeks(timestamp: Long) : GestationalAge(timestamp), Serializ
 
     constructor(duration: Weeks) : this(UnixTimestamp.ago(duration))
 
-    override fun marshal(): JsonObject = with(JsonObject()) {
+    override fun marshal(): JSONObject = with(JSONObject()) {
         // For legacy interop we store the value as a string instead of an int.
         put(PatientField.GESTATIONAL_AGE_VALUE, value.toString())
         put(PatientField.GESTATIONAL_AGE_UNIT, UNIT_VALUE_WEEKS)
@@ -279,7 +293,7 @@ class GestationalAgeMonths(timestamp: Long) : GestationalAge(timestamp), Seriali
 
     constructor(duration: Months) : this(UnixTimestamp.ago(duration))
 
-    override fun marshal(): JsonObject = with(JsonObject()) {
+    override fun marshal(): JSONObject = with(JSONObject()) {
         // For legacy interop we store the value as a string instead of an int.
         put(PatientField.GESTATIONAL_AGE_VALUE, value.toString())
         put(PatientField.GESTATIONAL_AGE_UNIT, UNIT_VALUE_MONTHS)

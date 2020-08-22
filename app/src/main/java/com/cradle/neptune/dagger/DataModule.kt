@@ -6,12 +6,10 @@ import androidx.preference.PreferenceManager
 import androidx.room.Room
 import com.cradle.neptune.database.CradleDatabase
 import com.cradle.neptune.manager.HealthCentreManager
-import com.cradle.neptune.manager.MarshalManager
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
-import com.cradle.neptune.manager.UrlManager
 import com.cradle.neptune.manager.VolleyRequestManager
-import com.cradle.neptune.network.Api
+import com.cradle.neptune.net.Http
 import com.cradle.neptune.network.VolleyRequestQueue
 import dagger.Module
 import dagger.Provides
@@ -35,10 +33,7 @@ class DataModule {
 
     @Provides
     @Singleton
-    fun provideReadingService(
-        database: CradleDatabase,
-        marshalManager: MarshalManager?
-    ): ReadingManager {
+    fun provideReadingService(database: CradleDatabase): ReadingManager {
         return ReadingManager(database.readingDaoAccess())
     }
 
@@ -62,6 +57,10 @@ class DataModule {
 
     @Provides
     @Singleton
+    fun providesHttp(application: Application?): Http = Http()
+
+    @Provides
+    @Singleton
     fun provideVolleyRequestQueue(application: Application?): VolleyRequestQueue {
         return VolleyRequestQueue(application!!)
     }
@@ -70,15 +69,5 @@ class DataModule {
     @Singleton
     fun provideVolleyRequestManager(application: Application?): VolleyRequestManager {
         return VolleyRequestManager(application!!)
-    }
-
-    @Provides
-    @Singleton
-    fun provideApi(
-        sharedPreferences: SharedPreferences?,
-        urlManager: UrlManager?,
-        volleyRequestQueue: VolleyRequestQueue?
-    ): Api {
-        return Api(sharedPreferences!!, urlManager!!, volleyRequestQueue!!)
     }
 }

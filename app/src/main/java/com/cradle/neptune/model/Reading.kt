@@ -5,8 +5,25 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.cradle.neptune.R
+import com.cradle.neptune.ext.Field
+import com.cradle.neptune.ext.intField
+import com.cradle.neptune.ext.longField
+import com.cradle.neptune.ext.map
+import com.cradle.neptune.ext.optArrayField
+import com.cradle.neptune.ext.optBooleanField
+import com.cradle.neptune.ext.optDoubleField
+import com.cradle.neptune.ext.optLongField
+import com.cradle.neptune.ext.optObjectField
+import com.cradle.neptune.ext.optStringField
+import com.cradle.neptune.ext.put
+import com.cradle.neptune.ext.putStringArray
+import com.cradle.neptune.ext.stringField
+import com.cradle.neptune.ext.union
 import java.io.Serializable
 import java.util.UUID
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
 import org.threeten.bp.Instant
 import org.threeten.bp.ZonedDateTime
 
@@ -67,7 +84,7 @@ data class Reading(
 
     @ColumnInfo var metadata: ReadingMetadata = ReadingMetadata(),
     @ColumnInfo var isUploadedToServer: Boolean = false
-) : Serializable, Marshal<JsonObject> {
+) : Serializable, Marshal<JSONObject> {
 
     /**
      * True if this reading has a referral attached to it.
@@ -103,9 +120,9 @@ data class Reading(
     val hasReferral get() = referral != null
 
     /**
-     * Converts this [Reading] object into a [JsonObject].
+     * Converts this [Reading] object into a [JSONObject].
      */
-    override fun marshal(): JsonObject = with(JsonObject()) {
+    override fun marshal(): JSONObject = with(JSONObject()) {
         put(ReadingField.ID, id)
         put(ReadingField.PATIENT_ID, patientId)
         put(ReadingField.DATE_TIME_TAKEN, dateTimeTaken)
@@ -119,13 +136,13 @@ data class Reading(
         put(ReadingField.PREVIOUS_READING_IDS, previousReadingIds.joinToString(","))
     }
 
-    companion object : Unmarshal<Reading, JsonObject> {
+    companion object : Unmarshal<Reading, JSONObject> {
         /**
-         * Constructs a [Reading] object form a [JsonObject].
+         * Constructs a [Reading] object form a [JSONObject].
          *
-         * @throws JsonException if any required fields are missing.
+         * @throws JSONException if any required fields are missing.
          */
-        override fun unmarshal(data: JsonObject) = Reading(
+        override fun unmarshal(data: JSONObject) = Reading(
             id = data.stringField(ReadingField.ID),
             patientId = data.stringField(ReadingField.PATIENT_ID),
             dateTimeTaken = data.longField(ReadingField.DATE_TIME_TAKEN),
@@ -134,7 +151,7 @@ data class Reading(
             isFlaggedForFollowUp = data.optBooleanField(ReadingField.IS_FLAGGED_FOR_FOLLOWUP),
 
             symptoms = data.optArrayField(ReadingField.SYMPTOMS)
-                ?.map(JsonArray::getString) { it }
+                ?.map(JSONArray::getString) { it }
                 ?: emptyList(),
 
             referral = data.optObjectField(ReadingField.REFERRAL)
@@ -184,7 +201,7 @@ data class BloodPressure(
     val systolic: Int,
     val diastolic: Int,
     val heartRate: Int
-) : Serializable, Marshal<JsonObject> {
+) : Serializable, Marshal<JSONObject> {
     /**
      * The shock index for this blood pressure result.
      */
@@ -228,19 +245,19 @@ data class BloodPressure(
     /**
      * Marshals this object to JSON.
      */
-    override fun marshal(): JsonObject = with(JsonObject()) {
+    override fun marshal(): JSONObject = with(JSONObject()) {
         put(BloodPressureField.SYSTOLIC, systolic)
         put(BloodPressureField.DIASTOLIC, diastolic)
         put(BloodPressureField.HEART_RATE, heartRate)
     }
 
-    companion object : Unmarshal<BloodPressure, JsonObject> {
+    companion object : Unmarshal<BloodPressure, JSONObject> {
         /**
-         * Constructs a [BloodPressure] object from a [JsonObject].
+         * Constructs a [BloodPressure] object from a [JSONObject].
          *
          * @throws JsonException if any of the required fields are missing
          */
-        override fun unmarshal(data: JsonObject): BloodPressure {
+        override fun unmarshal(data: JSONObject): BloodPressure {
             val systolic = data.intField(BloodPressureField.SYSTOLIC)
             val diastolic = data.intField(BloodPressureField.DIASTOLIC)
             val heartRate = data.intField(BloodPressureField.HEART_RATE)
@@ -328,13 +345,13 @@ data class ReadingMetadata(
 
     /* GPS Data */
     var gpsLocation: String? = null
-) : Serializable, Marshal<JsonObject> {
+) : Serializable, Marshal<JSONObject> {
     /**
      * True if this reading has been uploaded to the server.
      */
     val isUploaded get() = dateUploadedToServer != null
 
-    override fun marshal() = with(JsonObject()) {
+    override fun marshal() = with(JSONObject()) {
         put(MetadataField.APP_VERSION, appVersion)
         put(MetadataField.DEVICE_INFO, deviceInfo)
         put(MetadataField.DATE_LAST_SAVED, dateLastSaved)
@@ -345,8 +362,8 @@ data class ReadingMetadata(
         put(MetadataField.GPS_LOCATION, gpsLocation)
     }
 
-    companion object : Unmarshal<ReadingMetadata, JsonObject> {
-        override fun unmarshal(data: JsonObject): ReadingMetadata {
+    companion object : Unmarshal<ReadingMetadata, JSONObject> {
+        override fun unmarshal(data: JSONObject): ReadingMetadata {
             val appVersion = data.optStringField(MetadataField.APP_VERSION)
             val deviceInfo = data.optStringField(MetadataField.DEVICE_INFO)
             val dateLastSaved = data.optLongField(MetadataField.DATE_LAST_SAVED)

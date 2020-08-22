@@ -3,14 +3,13 @@ package com.cradle.neptune.sync
 import android.content.Context
 import android.content.SharedPreferences
 import com.cradle.neptune.dagger.MyApp
+import com.cradle.neptune.ext.toList
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.manager.VolleyRequestManager
-import com.cradle.neptune.model.JsonArray
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.PatientAndReadings
 import com.cradle.neptune.model.Reading
-import com.cradle.neptune.model.toList
 import com.cradle.neptune.network.Failure
 import com.cradle.neptune.network.NetworkResult
 import com.cradle.neptune.network.Success
@@ -20,6 +19,7 @@ import com.cradle.neptune.sync.ListUploader.UploadType.READING
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import org.json.JSONArray
 import org.json.JSONObject
 import org.threeten.bp.ZonedDateTime
 
@@ -297,17 +297,17 @@ class SyncStepperImplementation(
  */
 data class UpdateApiData(val jsonArray: JSONObject) {
     val newPatientsIds =
-        HashSet<String>(jsonArray.getJSONArray("newPatients").toList(JsonArray::getString))
+        HashSet<String>(jsonArray.getJSONArray("newPatients").toList(JSONArray::getString))
     val editedPatientId =
-        HashSet<String>(jsonArray.getJSONArray("editedPatients").toList(JsonArray::getString))
+        HashSet<String>(jsonArray.getJSONArray("editedPatients").toList(JSONArray::getString))
 
     // patients for these readings exists on the server so just download these readings...
     val newReadingsIds =
-        HashSet<String>(jsonArray.getJSONArray("readings").toList(JsonArray::getString))
+        HashSet<String>(jsonArray.getJSONArray("readings").toList(JSONArray::getString))
 
     // followup for referrals that were sent through the phone
     val followUpIds =
-        HashSet<String>(jsonArray.getJSONArray("followups").toList(JsonArray::getString))
+        HashSet<String>(jsonArray.getJSONArray("followups").toList(JSONArray::getString))
 }
 
 /**

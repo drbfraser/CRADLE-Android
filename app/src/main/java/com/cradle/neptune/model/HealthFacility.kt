@@ -3,7 +3,11 @@ package com.cradle.neptune.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.cradle.neptune.ext.Field
+import com.cradle.neptune.ext.put
+import com.cradle.neptune.ext.stringField
 import java.util.UUID
+import org.json.JSONObject
 
 /**
  * A health facility database entity.
@@ -26,12 +30,12 @@ data class HealthFacility(
     @ColumnInfo var about: String = "",
     @ColumnInfo var type: String = "",
     @ColumnInfo var isUserSelected: Boolean = false
-) : Marshal<JsonObject> {
+) : Marshal<JSONObject> {
 
     /**
-     * Constructs a [JsonObject] from this object.
+     * Constructs a [JSONObject] from this object.
      */
-    override fun marshal(): JsonObject = with(JsonObject()) {
+    override fun marshal(): JSONObject = with(JSONObject()) {
         put(HealthFacilityField.NAME, name)
         put(HealthFacilityField.ABOUT, about)
         put(HealthFacilityField.LOCATION, location)
@@ -39,11 +43,11 @@ data class HealthFacility(
         put(HealthFacilityField.TYPE, type)
     }
 
-    companion object : Unmarshal<HealthFacility, JsonObject> {
+    companion object : Unmarshal<HealthFacility, JSONObject> {
         /**
-         *
+         * Constructs a [HealthFacility] from a [JSONObject].
          */
-        override fun unmarshal(data: JsonObject): HealthFacility = HealthFacility().apply {
+        override fun unmarshal(data: JSONObject): HealthFacility = HealthFacility().apply {
             name = data.stringField(HealthFacilityField.NAME)
             about = data.stringField(HealthFacilityField.ABOUT)
             location = data.stringField(HealthFacilityField.LOCATION)

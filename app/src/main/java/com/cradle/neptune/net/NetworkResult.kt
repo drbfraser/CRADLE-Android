@@ -23,13 +23,26 @@ sealed class NetworkResult<T> {
      * Applies a closure [f] to transform the value field of a [Success] result.
      *
      * In the case of [Failure] and [NetworkException] variants, this method
-     * does nothing.
+     * simply changes the type of the result. If you know that a result is
+     * a [Failure] or [NetworkResult], consider using [cast] instead.
      *
      * @param f transformation to apply to the result value
      * @return a new [NetworkResult] with the transformed value
      */
     fun <U> map(f: (T) -> U): NetworkResult<U> = when (this) {
         is Success -> Success(f(value), statusCode)
+        is Failure -> Failure(body, statusCode)
+        is NetworkException -> NetworkException(cause)
+    }
+
+    /**
+     * Casts error variants of [NetworkResult] into a different inner type.
+     *
+     * @throws RuntimeException if `this` is a [Success] variant
+     * @return the same error result with an inner type of [U] instead of [T]
+     */
+    fun <U> cast(): NetworkResult<U> = when (this) {
+        is Success -> throw RuntimeException("cast called on Success variant")
         is Failure -> Failure(body, statusCode)
         is NetworkException -> NetworkException(cause)
     }
@@ -81,7 +94,7 @@ data class Failure<T>(val body: ByteArray, val statusCode: Int) : NetworkResult<
      * @throws org.json.JSONException if the response body cannot be converted
      *  into JSON.
      */
-    fun toJson() = marshal(Json.Companion)
+    fun toJson(): Json = marshal(Json.Companion)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

@@ -1,14 +1,23 @@
 package com.cradle.neptune.net
 
+import android.util.Log
 import com.cradle.neptune.model.Marshal
 import java.lang.Exception
 import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * Contains functions for making generic HTTP requests.
+ * HTTP network driver.
+ *
+ * Provides methods for making generic HTTP requests. The default implementation
+ * uses Java's [HttpURLConnection] class to perform the request. However, this
+ * class is marked as `open` meaning that it can the extended to use a different
+ * network framework or mocked out for testing.
+ *
+ * When communicating with the CRADLE server, the [com.cradle.neptune.net.Api]
+ * class should be used instead of this one.
  */
-object Http {
+open class Http {
 
     /**
      * Enumeration of common HTTP method request types.
@@ -25,13 +34,15 @@ object Http {
      * @return the result of the network request
      * @throws java.net.MalformedURLException if [url] is malformed
      */
-    fun request(
+    open fun request(
         method: Method,
         url: String,
         headers: Map<String, String>,
         body: ByteArray?
     ): NetworkResult<ByteArray> =
         with(URL(url).openConnection() as HttpURLConnection) {
+            val message = "${method.name} $url"
+            Log.i("HTTP", message)
             requestMethod = method.toString()
             headers.forEach { (k, v) -> addRequestProperty(k, v) }
             doInput = true
@@ -44,15 +55,18 @@ object Http {
 
                 @Suppress("MagicNumber")
                 if (responseCode in 200 until 300) {
+                    Log.i("HTTP", "$message - Success $responseCode")
                     val responseBody = inputStream.readBytes()
                     inputStream.close()
                     Success(responseBody, responseCode)
                 } else {
+                    Log.e("HTTP", "$message - Failure $responseCode")
                     val responseBody = errorStream.readBytes()
                     errorStream.close()
                     Failure(responseBody, responseCode)
                 }
             } catch (ex: Exception) {
+                Log.e("HTTP", "$message - Exception", ex)
                 NetworkException(ex)
             }
         }

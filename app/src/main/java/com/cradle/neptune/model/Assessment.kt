@@ -1,6 +1,15 @@
 package com.cradle.neptune.model
 
+import com.cradle.neptune.ext.Field
+import com.cradle.neptune.ext.intField
+import com.cradle.neptune.ext.longField
+import com.cradle.neptune.ext.optBooleanField
+import com.cradle.neptune.ext.optIntField
+import com.cradle.neptune.ext.optStringField
+import com.cradle.neptune.ext.put
+import com.cradle.neptune.ext.stringField
 import java.io.Serializable
+import org.json.JSONObject
 
 /**
  * Data about an assessment made by a health care worker for a reading.
@@ -29,12 +38,12 @@ data class Assessment(
     val specialInvestigations: String?,
     val followupNeeded: Boolean,
     val followupInstructions: String?
-) : Marshal<JsonObject>, Serializable {
+) : Marshal<JSONObject>, Serializable {
 
     /**
-     * Converts this object into a [JsonObject].
+     * Converts this object into a [JSONObject].
      */
-    override fun marshal() = with(JsonObject()) {
+    override fun marshal() = with(JSONObject()) {
         put(AssessmentField.ID, id)
         put(AssessmentField.DATE_ASSESSED, dateAssessed)
         put(AssessmentField.HEALTH_CARE_WORKER_ID, healthCareWorkerId)
@@ -48,11 +57,11 @@ data class Assessment(
     }
 
     companion object :
-        Unmarshal<Assessment, JsonObject> {
+        Unmarshal<Assessment, JSONObject> {
         /**
-         * Constructs a new instance of this class from a [JsonObject].
+         * Constructs a new instance of this class from a [JSONObject].
          */
-        override fun unmarshal(data: JsonObject) =
+        override fun unmarshal(data: JSONObject) =
             Assessment(
                 id = data.optIntField(AssessmentField.ID),
                 dateAssessed = data.longField(AssessmentField.DATE_ASSESSED),

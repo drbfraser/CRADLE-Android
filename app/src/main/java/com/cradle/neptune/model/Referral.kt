@@ -1,6 +1,15 @@
 package com.cradle.neptune.model
 
+import com.cradle.neptune.ext.Field
+import com.cradle.neptune.ext.booleanField
+import com.cradle.neptune.ext.longField
+import com.cradle.neptune.ext.optIntField
+import com.cradle.neptune.ext.optStringField
+import com.cradle.neptune.ext.put
+import com.cradle.neptune.ext.stringField
 import java.io.Serializable
+import org.json.JSONException
+import org.json.JSONObject
 
 /**
  * Holds information about a referral.
@@ -26,7 +35,7 @@ data class Referral(
     val readingId: String,
     val isAssessed: Boolean
 ) : Serializable,
-    Marshal<JsonObject> {
+    Marshal<JSONObject> {
 
     constructor(
         comment: String?,
@@ -45,7 +54,7 @@ data class Referral(
         isAssessed = false
     )
 
-    override fun marshal(): JsonObject = with(JsonObject()) {
+    override fun marshal(): JSONObject = with(JSONObject()) {
         put(ReferralField.ID, id)
         put(ReferralField.DATE_REFERRED, dateReferred)
         put(ReferralField.COMMENT, comment)
@@ -57,13 +66,13 @@ data class Referral(
     }
 
     companion object :
-        Unmarshal<Referral, JsonObject> {
+        Unmarshal<Referral, JSONObject> {
         /**
-         * Constructs a [Referral] object from a [JsonObject].
+         * Constructs a [Referral] object from a [JSONObject].
          *
-         * @throws JsonException if any of the required fields are missing
+         * @throws JSONException if any of the required fields are missing
          */
-        override fun unmarshal(data: JsonObject) =
+        override fun unmarshal(data: JSONObject) =
             Referral(
                 id = data.optIntField(ReferralField.ID),
                 dateReferred = data.longField(ReferralField.DATE_REFERRED),

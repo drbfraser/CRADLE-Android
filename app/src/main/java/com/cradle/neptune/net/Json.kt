@@ -79,11 +79,16 @@ sealed class Json : Marshal<ByteArray> {
  * Wraps a [JSONObject] in a [Json] variant allowing polymorphism between the
  * two JSON types.
  *
+ * This class is only meant as a wrapper. To build or manipulate a JSON object
+ * please use [JSONObject] instead.
+ *
  * @property value Underlying [JSONObject] value
  */
 class JsonObject(val value: JSONObject) : Json() {
 
     constructor() : this(JSONObject())
+
+    constructor(map: Map<String, Any>) : this(JSONObject(map))
 
     constructor(string: String) : this(JSONObject(string))
 
@@ -95,6 +100,9 @@ class JsonObject(val value: JSONObject) : Json() {
 /**
  * Wraps a [JSONArray] in a [Json] variant allowing polymorphism between the
  * two JSON types.
+ *
+ * This class is only meant as a wrapper. To build or manipulate a JSON array
+ * please use [JSONArray] instead.
  *
  * @property value Underlying [JSONArray] value
  */
