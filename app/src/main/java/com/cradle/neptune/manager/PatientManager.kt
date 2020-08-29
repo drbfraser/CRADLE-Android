@@ -3,12 +3,16 @@ package com.cradle.neptune.manager
 import com.cradle.neptune.database.PatientDaoAccess
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.PatientAndReadings
+import com.cradle.neptune.net.Api
+import com.cradle.neptune.net.NetworkResult
+import com.cradle.neptune.net.Success
 import java.util.ArrayList
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 /**
  * manager to interact with the [Patient] table
@@ -16,7 +20,11 @@ import kotlinx.coroutines.withContext
  * main thread rather than run time error
  */
 @Suppress("RedundantSuspendModifier")
-class PatientManager(private val daoAccess: PatientDaoAccess) {
+class PatientManager @Inject constructor(
+    private val daoAccess: PatientDaoAccess,
+    private val urlManager: UrlManager,
+    private val api: Api
+) {
 
     /**
      * add a single patient
@@ -44,13 +52,13 @@ class PatientManager(private val daoAccess: PatientDaoAccess) {
      * get all the patients
      */
     suspend fun getAllPatients(): List<Patient> =
-        withContext(Dispatchers.IO) { daoAccess.allPatients }
+        withContext(IO) { daoAccess.allPatients }
 
     /**
      * get a list of patient ids for all patients.
      */
     suspend fun getPatientIdsOnly(): List<String> =
-        withContext(Dispatchers.IO) { daoAccess.patientIdsList }
+        withContext(IO) { daoAccess.patientIdsList }
 
     /**
      * TODO: once all the java classes calling this method are turned into Kotlin,
@@ -59,7 +67,7 @@ class PatientManager(private val daoAccess: PatientDaoAccess) {
      */
     @Deprecated("Please avoid using this function in Kotlin files.")
     fun getAllPatientsBlocking() = runBlocking {
-        withContext(Dispatchers.IO) { getAllPatients() }
+        withContext(IO) { getAllPatients() }
     }
 
     /**
@@ -74,18 +82,54 @@ class PatientManager(private val daoAccess: PatientDaoAccess) {
      */
     @Deprecated("Please avoid using this function in Kotlin files.")
     fun getPatientByIdBlocking(id: String): Patient? = runBlocking {
-        withContext(Dispatchers.IO) { getPatientById(id) }
+        withContext(IO) { getPatientById(id) }
     }
 
     /**
      * returns all the  patients which dont exists on server and their readings
      */
     suspend fun getUnUploadedPatients(): List<PatientAndReadings> =
-        withContext(Dispatchers.IO) { daoAccess.unUploadedPatientAndReadings }
+        withContext(IO) { daoAccess.unUploadedPatientAndReadings }
 
     /**
      * get edited Patients that also exists on the server
      */
     suspend fun getEditedPatients(timeStamp: Long): List<Patient> =
-        withContext(Dispatchers.IO) { daoAccess.getEditedPatients(timeStamp) }
+        withContext(IO) { daoAccess.getEditedPatients(timeStamp) }
+
+    /**
+     * Downloads all the information for a patient from the server.
+     *
+     * @param id id of the patient to download
+     */
+    suspend fun downloadPatient(id: String): NetworkResult<PatientAndReadings> =
+        api.getPatient(id)
+
+    /**
+     * Associates a given patient to the active user.
+     *
+     * This tells the server that this user would like to track changes to this
+     * patient and allows it to be synced using the mobile's sync system.
+     *
+     * @param id id of the patient to associate
+     */
+    suspend fun associatePatientWithUser(id: String): NetworkResult<Unit> =
+        api.associatePatientToUser(id).map { Unit }
+
+    /**
+     * Associates a given patient to the active user and then downloads all
+     * said patient's information. The act of associating a patient to a user
+     * means that the patient will be tracked when syncing with the server.
+     *
+     * @param id id of the patient to associate and download
+     */
+    suspend fun associatePatientAndDownload(id: String): NetworkResult<PatientAndReadings> =
+        withContext<NetworkResult<PatientAndReadings>>(IO) {
+            val associateResult = associatePatientWithUser(id)
+            if (associateResult.failed) {
+                return@withContext associateResult.cast()
+            }
+
+            downloadPatient(id)
+        }
 }

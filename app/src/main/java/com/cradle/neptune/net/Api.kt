@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import com.cradle.neptune.ext.map
 import com.cradle.neptune.manager.LoginManager
 import com.cradle.neptune.manager.UrlManager
+import com.cradle.neptune.model.GlobalPatient
 import com.cradle.neptune.model.HealthFacility
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.PatientAndReadings
@@ -84,6 +85,21 @@ open class Api @Inject constructor(
                 headers,
                 null
             ).map { Patient.unmarshal(it.obj!!) }
+        }
+
+    open suspend fun searchForPatient(searchString: String): NetworkResult<List<GlobalPatient>> =
+        withContext(IO) {
+            http.jsonRequest(
+                Http.Method.GET,
+                urlManager.getGlobalPatientSearch(searchString),
+                headers,
+                null
+            ).map {
+                it.arr!!.map(
+                    JSONArray::getJSONObject,
+                    GlobalPatient.Companion::unmarshal
+                )
+            }
         }
 
     open suspend fun getReading(id: String): NetworkResult<Reading> =

@@ -5,6 +5,9 @@ import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
 import androidx.room.Room
 import com.cradle.neptune.database.CradleDatabase
+import com.cradle.neptune.database.HealthFacilityDaoAccess
+import com.cradle.neptune.database.PatientDaoAccess
+import com.cradle.neptune.database.ReadingDaoAccess
 import com.cradle.neptune.manager.HealthCentreManager
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
@@ -33,6 +36,21 @@ class DataModule {
 
     @Provides
     @Singleton
+    fun providePatientDao(database: CradleDatabase): PatientDaoAccess =
+        database.patientDaoAccess()
+
+    @Provides
+    @Singleton
+    fun provideReadingDao(database: CradleDatabase): ReadingDaoAccess =
+        database.readingDaoAccess()
+
+    @Provides
+    @Singleton
+    fun provideHealthFacilityDao(database: CradleDatabase): HealthFacilityDaoAccess =
+        database.healthFacilityDaoAccess()
+
+    @Provides
+    @Singleton
     fun provideReadingService(database: CradleDatabase): ReadingManager {
         return ReadingManager(database.readingDaoAccess())
     }
@@ -41,12 +59,6 @@ class DataModule {
     @Singleton
     fun provideHealthCentreService(database: CradleDatabase?): HealthCentreManager {
         return HealthCentreManager(database!!)
-    }
-
-    @Provides
-    @Singleton
-    fun providePatientManager(database: CradleDatabase): PatientManager {
-        return PatientManager(database.patientDaoAccess())
     }
 
     @Provides

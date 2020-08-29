@@ -15,8 +15,16 @@ sealed class NetworkResult<T> {
     val unwrapped: T?
         get() = when (this) {
             is Success -> value
-            is Failure -> null
-            is NetworkException -> null
+            else -> null
+        }
+
+    /**
+     * Returns `true` if this result is a [Failure] or [Exception] variant.
+     */
+    val failed
+        get() = when (this) {
+            is Success -> false
+            else -> true
         }
 
     /**

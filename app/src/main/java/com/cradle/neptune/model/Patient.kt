@@ -362,4 +362,13 @@ data class GlobalPatient(
     val initials: String,
     val villageNum: String,
     var isMyPatient: Boolean
-) : Serializable
+) : Serializable {
+    companion object : Unmarshal<GlobalPatient, JSONObject> {
+        override fun unmarshal(data: JSONObject) = GlobalPatient(
+            id = data.stringField(PatientField.ID),
+            initials = data.stringField(PatientField.NAME),
+            villageNum = data.stringField(PatientField.VILLAGE_NUMBER),
+            isMyPatient = false
+        )
+    }
+}
