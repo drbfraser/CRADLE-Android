@@ -135,7 +135,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
                     progressDialog.cancel()
                     Snackbar.make(
                         readingRecyclerview, "Unable to fetch the patient Information..." +
-                            "\n${error?.localizedMessage}", Snackbar.LENGTH_INDEFINITE
+                            "\n${error.localizedMessage}", Snackbar.LENGTH_INDEFINITE
                     ).show()
                 }
             }

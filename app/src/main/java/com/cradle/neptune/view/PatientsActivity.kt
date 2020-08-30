@@ -20,16 +20,14 @@ import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
-import com.cradle.neptune.view.GlobalPatientSearchActivity
-import com.cradle.neptune.view.PatientsActivity
 import com.cradle.neptune.viewmodel.PatientsViewAdapter
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+import java.util.ArrayList
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.ArrayList
-import javax.inject.Inject
 
 class PatientsActivity : AppCompatActivity() {
     @Inject
@@ -119,8 +117,8 @@ class PatientsActivity : AppCompatActivity() {
     }
 
     private suspend fun setupPatientRecyclerview() {
-       val patientList =  withContext(Dispatchers.IO) {
-             patientManager.getAllPatients()
+        val patientList = withContext(Dispatchers.IO) {
+            patientManager.getAllPatients()
         }
         val patients: ArrayList<Pair<Patient, Reading?>> =
             ArrayList()

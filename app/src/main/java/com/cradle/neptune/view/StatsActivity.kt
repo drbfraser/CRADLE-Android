@@ -20,14 +20,15 @@ import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
+import java.util.ArrayList
+import java.util.Collections
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.ArrayList
-import java.util.Collections
-import javax.inject.Inject
 
+@Suppress("LargeClass")
 class StatsActivity : AppCompatActivity() {
     @Inject
     lateinit var readingManager: ReadingManager
@@ -72,9 +73,10 @@ class StatsActivity : AppCompatActivity() {
         readingTV.text = totalReadings.toString()
         val refTV = findViewById<TextView>(R.id.refTvStats)
         refTV.text = totalRef.toString()
-        //todo do the same for the referrals
+        // todo do the same for the referrals
     }
 
+    @Suppress("MagicNumber")
     private fun setupBarChart() {
         val barChart = findViewById<BarChart>(R.id.bargraph)
         val barCard = findViewById<CardView>(R.id.bargraphCard)
@@ -155,7 +157,7 @@ class StatsActivity : AppCompatActivity() {
             ArrayList()
         val heartrateEntry: MutableList<Entry> =
             ArrayList()
-        //start at 0
+        // start at 0
         for (i in readings.indices) {
             val (_, _, _, bloodPressure) = readings[i]
             diastolicEntry.add(
@@ -187,7 +189,7 @@ class StatsActivity : AppCompatActivity() {
         systolicDataSet.setCircleColor(resources.getColor(R.color.purple))
         heartRateDataSet.setCircleColor(resources.getColor(R.color.orange))
 
-        //this is to make the curve smooth
+        // this is to make the curve smooth
         diastolicDataSet.setDrawCircleHole(false)
         diastolicDataSet.setDrawCircles(false)
         diastolicDataSet.mode = LineDataSet.Mode.CUBIC_BEZIER
@@ -198,7 +200,7 @@ class StatsActivity : AppCompatActivity() {
         heartRateDataSet.setDrawCircles(false)
         heartRateDataSet.mode = LineDataSet.Mode.CUBIC_BEZIER
 
-        //remove unneccessy background lines
+        // remove unneccessy background lines
         lineChart.setDrawBorders(false)
         lineChart.setDrawGridBackground(false)
         lineChart.axisRight.setDrawLabels(false)
