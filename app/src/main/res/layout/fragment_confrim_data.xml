@@ -112,7 +112,6 @@
             android:text="No photo has been taken for this reading."
             android:textSize="30sp"
             android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="@+id/imageViewPhoto"
             app:layout_constraintEnd_toStartOf="@+id/txtHeartRate"
             app:layout_constraintStart_toStartOf="@+id/imageViewPhoto"
             app:layout_constraintTop_toTopOf="parent" />
