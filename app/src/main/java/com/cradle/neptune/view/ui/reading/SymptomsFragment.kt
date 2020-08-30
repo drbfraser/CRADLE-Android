@@ -19,8 +19,9 @@ import java.util.ArrayList
 /**
  * Gather information about the patient.
  */
+@Suppress("LargeClass", "EmptyFunctionBlock")
 class SymptomsFragment : BaseFragment() {
-    //urine tests
+    // urine tests
     private lateinit var leucRadioGroup: RadioGroup
     private lateinit var nitRadioGroup: RadioGroup
     private lateinit var protienRadioGroup: RadioGroup
@@ -33,7 +34,8 @@ class SymptomsFragment : BaseFragment() {
     private var noSymptomsCheckBox: CheckBox? = null
     private var otherSymptoms: EditText? = null
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
@@ -75,7 +77,7 @@ class SymptomsFragment : BaseFragment() {
             return
         }
         hideKeyboard()
-        updateSymptoms_UiFromModel()
+        updateSymptomsUiFromModel()
         if (urineResultTakenButton.isChecked) {
             val urineTestResultView =
                 mView!!.findViewById<View>(R.id.urineTestResultLayout)
@@ -111,7 +113,7 @@ class SymptomsFragment : BaseFragment() {
         if (mView == null) {
             return true
         }
-        updateSymptoms_ModelFromUi()
+        updatesymptomsModelfromui()
         updateUrineTestModelFromUI()
         return true
     }
@@ -193,7 +195,7 @@ class SymptomsFragment : BaseFragment() {
 
             override fun afterTextChanged(editable: Editable) {}
         })
-        updateSymptoms_UiFromModel()
+        updateSymptomsUiFromModel()
     }
 
     private fun onSymptomCheckboxClicked(index: Int) {
@@ -225,7 +227,8 @@ class SymptomsFragment : BaseFragment() {
         }
     }
 
-    private fun updateSymptoms_UiFromModel() {
+    @Suppress("NestedBlockDepth")
+    private fun updateSymptomsUiFromModel() {
         // add checks for patient symptoms
         val res = resources
         val symptomsFromRes =
@@ -264,7 +267,7 @@ class SymptomsFragment : BaseFragment() {
         otherSymptoms!!.setText(otherSymptomsStr)
     }
 
-    private fun updateSymptoms_ModelFromUi() {
+    private fun updatesymptomsModelfromui() {
         if (viewModel!!.symptoms != null) {
             viewModel!!.symptoms?.clear()
         } else {

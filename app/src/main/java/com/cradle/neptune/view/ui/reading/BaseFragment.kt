@@ -19,8 +19,6 @@ import com.cradle.neptune.viewmodel.PatientReadingViewModel
  */
 abstract class BaseFragment : Fragment() {
     @JvmField
-    protected var TAG = BaseFragment::class.java.name
-    @JvmField
     protected var activityCallbackListener: MyFragmentInteractionListener? = null
     @JvmField
     protected var viewModel: PatientReadingViewModel? = null
@@ -54,8 +52,8 @@ abstract class BaseFragment : Fragment() {
         // ensure callback functions are implemented.
         if (context !is MyFragmentInteractionListener) {
             throw RuntimeException(
-                context.toString()
-                    + " must implement MyFragmentInteractionListener"
+                context.toString() +
+                    " must implement MyFragmentInteractionListener"
             )
         }
         activityCallbackListener = context
@@ -78,4 +76,8 @@ abstract class BaseFragment : Fragment() {
      * Called by ReadingActivity after fragment has been navigated away from (hidden)
      */
     abstract fun onMyBeingHidden(): Boolean
+
+    @JvmField
+    @Suppress("VariableNaming")
+    protected var TAG = BaseFragment::class.java.name
 }

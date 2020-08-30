@@ -59,6 +59,7 @@ class SectionsPagerAdapter(
         const val TAB_NUMBER_SUMMARY = 4
 
         @StringRes
+        @Suppress("ObjectPropertyNaming")
         private val TAB_TITLES = intArrayOf(
             R.string.reading_tab_patient_info,
             R.string.reading_tab_symptoms,

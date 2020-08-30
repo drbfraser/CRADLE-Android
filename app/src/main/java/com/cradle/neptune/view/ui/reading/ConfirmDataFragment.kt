@@ -41,13 +41,15 @@ import javax.inject.Inject
 /**
  * Allow user to confirm data from the CRADLE photo.
  */
+@Suppress("LargeClass")
 class ConfirmDataFragment : BaseFragment() {
     @JvmField
     @Inject
     var settings: Settings? = null
     private var makingProgramaticChangeToVitals = false
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // inject:
@@ -67,10 +69,10 @@ class ConfirmDataFragment : BaseFragment() {
         hideKeyboard()
         makingProgramaticChangeToVitals = true
         setTextBox(
-            R.id.etSystolic,viewModel?.bloodPressure?.systolic
+            R.id.etSystolic, viewModel?.bloodPressure?.systolic
         )
         setTextBox(
-            R.id.etDiastolic,viewModel?.bloodPressure?.diastolic
+            R.id.etDiastolic, viewModel?.bloodPressure?.diastolic
         )
         setTextBox(
             R.id.etHeartRate,
@@ -115,16 +117,11 @@ class ConfirmDataFragment : BaseFragment() {
             MANUAL_USER_ENTRY_HEARTRATE
         )
     }
-
+    @Suppress("EmptyFunctionBlock")
     private fun watchForUserTextEntry(id: Int, mask: Int) {
         val et = requireView().findViewById<EditText>(id)
         et.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(
-                charSequence: CharSequence,
-                i: Int,
-                i1: Int,
-                i2: Int
-            ) {
+            override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
             }
 
             override fun onTextChanged(
@@ -162,9 +159,6 @@ class ConfirmDataFragment : BaseFragment() {
         } else {
             viewModel?.bloodPressure = BloodPressure(bpSystolic, bpDiastolic, heartRateBPM)
         }
-        //        currentReading.bpSystolic = getEditTextValue(R.id.etSystolic);
-//        currentReading.bpDiastolic = getEditTextValue(R.id.etDiastolic);
-//        currentReading.heartRateBPM = getEditTextValue(R.id.etHeartRate);
         return true
     }
 
@@ -320,12 +314,13 @@ class ConfirmDataFragment : BaseFragment() {
         })
     }
 
+    @Suppress("MagicNumber")
     private fun drawBoundingBoxesOnBitmap(
         bmp: Bitmap,
         recognitions: List<Recognition>
     ) {
-        val MIN_CONFIDENCE_TO_SHOW = 0.1
-        val TEXT_SIZE_DIP = 10f
+        val minConfidenceToShow = 0.1
+        val textSizeDp = 10f
 
         // setup canvas to paint into
         val canvas = Canvas(bmp)
@@ -343,14 +338,14 @@ class ConfirmDataFragment : BaseFragment() {
 
         // setup text style
         val textSizePx = TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP, TEXT_SIZE_DIP, resources.displayMetrics
+            TypedValue.COMPLEX_UNIT_DIP, textSizeDp, resources.displayMetrics
         )
         val bt = BorderedText(textSizePx)
         bt.setTypeface(Typeface.MONOSPACE)
         var colorIdx = 0
         for (result in recognitions) {
             val location = result.location
-            if (location != null && result.confidence >= MIN_CONFIDENCE_TO_SHOW) {
+            if (location != null && result.confidence >= minConfidenceToShow) {
                 paint.color = colors[colorIdx]
                 colorIdx = (colorIdx + 1) % colors.size
 
@@ -385,6 +380,7 @@ class ConfirmDataFragment : BaseFragment() {
         private const val OCR_DEBUG_IDS_SCALED_IDX = 0
         private const val OCR_DEBUG_IDS_RAW_IDX = 1
         private const val OCR_DEBUG_IDS_TEXT_IDX = 2
+        @Suppress("ObjectPropertyNaming")
         private val OCR_DEBUG_IDS = arrayOf(
             intArrayOf(R.id.ivOcrScaled0, R.id.ivOcrRaw0, R.id.tvOcrText0),
             intArrayOf(R.id.ivOcrScaled1, R.id.ivOcrRaw1, R.id.tvOcrText1),

@@ -14,7 +14,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import com.cradle.neptune.R
-import com.cradle.neptune.model.GestationalAge
 import com.cradle.neptune.model.RetestGroup
 import com.cradle.neptune.utilitiles.DateUtil
 import com.cradle.neptune.utilitiles.Util
@@ -25,9 +24,11 @@ import org.threeten.bp.ZonedDateTime
 /**
  * Display summary and advice for currentReading.
  */
+@Suppress("LargeClass")
 class SummaryFragment : BaseFragment() {
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
@@ -63,17 +64,17 @@ class SummaryFragment : BaseFragment() {
         // https://www.androidauthority.com/data-binding-in-android-709747/
         val retestGroup = viewModel!!.buildRetestGroup(readingManager!!)
         if (retestGroup != null) {
-            updateUI_PatientInfo(retestGroup)
-            updateUI_Readings(retestGroup)
-            updateUI_Advice(retestGroup)
-            updateUI_RecheckVitals(retestGroup)
-            updateUI_Referral(retestGroup)
-            updateUI_Followup(retestGroup)
-            updateUI_Uploaded(retestGroup)
+            updateUiPatientInfo(retestGroup)
+            updateUiReadings(retestGroup)
+            updateUiAdvice(retestGroup)
+            updateUiRecheckVitals(retestGroup)
+            updateUiReferral(retestGroup)
+            updateUiFollowup(retestGroup)
+            updateUiUploaded(retestGroup)
         }
     }
 
-    private fun updateUI_PatientInfo(retestAnalysis: RetestGroup) {
+    private fun updateUiPatientInfo(retestAnalysis: RetestGroup) {
         var tv: TextView
         // name
         var name = viewModel!!.patientName
@@ -134,7 +135,7 @@ class SummaryFragment : BaseFragment() {
         }
     }
 
-    private fun updateUI_Readings(retestAnalysis: RetestGroup) {
+    private fun updateUiReadings(retestAnalysis: RetestGroup) {
 
         // remove any current readings
         val layoutReadings = requireView().findViewById<LinearLayout>(R.id.layoutReadings)
@@ -207,7 +208,7 @@ class SummaryFragment : BaseFragment() {
         }
     }
 
-    private fun updateUI_Advice(retestAnalysis: RetestGroup) {
+    private fun updateUiAdvice(retestAnalysis: RetestGroup) {
         var message = ""
         message = if (retestAnalysis.isRetestRecommendedNow) {
             getString(R.string.brief_advice_retest_now)
@@ -221,7 +222,7 @@ class SummaryFragment : BaseFragment() {
         tv.text = message
     }
 
-    private fun updateUI_RecheckVitals(retestAnalysis: RetestGroup) {
+    private fun updateUiRecheckVitals(retestAnalysis: RetestGroup) {
         // recheck now
         val swNow =
             requireView().findViewById<Switch>(R.id.swRecheckVitalsNow)
@@ -298,7 +299,7 @@ class SummaryFragment : BaseFragment() {
         setRectangleStrokeColor(R.id.sectionRecheckVitals, retestAnalysis.isRetestRecommended)
     }
 
-    private fun updateUI_Referral(retestAnalysis: RetestGroup) {
+    private fun updateUiReferral(retestAnalysis: RetestGroup) {
         val btn =
             requireView().findViewById<Button>(R.id.btnSendReferral)
         btn.setOnClickListener { view: View? -> showReferralDialog() }
@@ -337,7 +338,7 @@ class SummaryFragment : BaseFragment() {
         setRectangleStrokeColor(R.id.sectionReferral, isReferralRecommended)
     }
 
-    private fun updateUI_Followup(retestAnalysis: RetestGroup) {
+    private fun updateUiFollowup(retestAnalysis: RetestGroup) {
         val swFollowup =
             requireView().findViewById<Switch>(R.id.swFollowUpNeeded)
         val needDefaultForFollowup = viewModel!!.dateTimeTaken == null
@@ -358,7 +359,7 @@ class SummaryFragment : BaseFragment() {
         setRectangleStrokeColor(R.id.sectionFollowUp, followupRecommended)
     }
 
-    private fun updateUI_Uploaded(retestAnalysis: RetestGroup) {
+    private fun updateUiUploaded(retestAnalysis: RetestGroup) {
         // uploaded
         val tv = requireView().findViewById<TextView>(R.id.txtUploadedMessage)
         if (viewModel!!.metadata.dateUploadedToServer == null) {
@@ -410,7 +411,8 @@ class SummaryFragment : BaseFragment() {
         val dialog =
             AlertDialog.Builder(requireContext())
                 .setTitle("Missing Information")
-                .setMessage("Some required fields from PATIENT or CONFIRM VITALS tabs are missing. Please enter this data before referring patient.")
+                .setMessage("Some required fields from PATIENT or CONFIRM VITALS tabs are missing. " +
+                    "Please enter this data before referring patient.")
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setPositiveButton(android.R.string.yes, null)
         dialog.show()
