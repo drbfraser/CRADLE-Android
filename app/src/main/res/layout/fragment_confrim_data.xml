@@ -10,77 +10,68 @@
         android:layout_height="match_parent"
         tools:context=".view.ui.reading.ConfirmDataFragment">
 
-        <LinearLayout
-            android:id="@+id/layoutTextBoxes"
-            android:layout_width="135dp"
+
+            <!-- Systolic -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/txtSystolic"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="120dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:orientation="vertical"
+            android:layout_marginEnd="8dp"
+            android:hint="Systolic"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <!-- Systolic -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/txtSystolic"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="120dp"
+            <EditText
+                android:id="@+id/etSystolic"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:hint="Systolic"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <EditText
-                    android:id="@+id/etSystolic"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="number"
-                    android:selectAllOnFocus="true" />
-            </com.google.android.material.textfield.TextInputLayout>
+                android:inputType="number"
+                android:selectAllOnFocus="true" />
+        </com.google.android.material.textfield.TextInputLayout>
 
 
             <!-- Diastolic -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/txtDiastolic"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="120dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:hint="Diastolic"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/txtSystolic">
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/txtDiastolic"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:hint="Diastolic"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txtSystolic">
 
-                <EditText
-                    android:id="@+id/etDiastolic"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="number"
-                    android:selectAllOnFocus="true" />
-            </com.google.android.material.textfield.TextInputLayout>
+            <EditText
+                android:id="@+id/etDiastolic"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:selectAllOnFocus="true" />
+        </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Heart Rate -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/txtHeartRate"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="120dp"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/txtHeartRate"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:hint="Heart rate"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txtDiastolic">
+
+            <EditText
+                android:id="@+id/etHeartRate"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:hint="Heart rate"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/txtDiastolic">
+                android:inputType="number"
+                android:selectAllOnFocus="true" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-                <EditText
-                    android:id="@+id/etHeartRate"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="number"
-                    android:selectAllOnFocus="true" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-        </LinearLayout>
 
         <ImageView
             android:id="@+id/imageViewPhoto"
@@ -89,7 +80,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:scaleType="fitStart"
-            app:layout_constraintEnd_toStartOf="@+id/layoutTextBoxes"
+            app:layout_constraintEnd_toStartOf="@+id/txtHeartRate"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:layout_height="300dp"
@@ -99,15 +90,14 @@
             android:id="@+id/txtDirections"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
             android:clickable="false"
             android:focusable="false"
             android:selectAllOnFocus="false"
             android:text="Go to Summary screen (next) to review data and save."
             android:textSize="18sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/layoutTextBoxes"
-            app:layout_constraintTop_toBottomOf="@+id/layoutTextBoxes" />
+            app:layout_constraintEnd_toEndOf="@+id/txtHeartRate"
+            app:layout_constraintStart_toStartOf="@+id/txtHeartRate"
+            app:layout_constraintTop_toBottomOf="@+id/txtHeartRate" />
 
         <TextView
             android:id="@+id/txtNoPhotoWarning"
@@ -122,7 +112,8 @@
             android:text="No photo has been taken for this reading."
             android:textSize="30sp"
             android:textStyle="bold"
-            app:layout_constraintEnd_toStartOf="@+id/layoutTextBoxes"
+            app:layout_constraintBottom_toBottomOf="@+id/imageViewPhoto"
+            app:layout_constraintEnd_toStartOf="@+id/txtHeartRate"
             app:layout_constraintStart_toStartOf="@+id/imageViewPhoto"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -131,11 +122,12 @@
             android:id="@+id/tvOcrDisabled"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
             android:text="OCR disabled in settings; please enter vitals manually."
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/txtDirections" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imageViewPhoto" />
 
 
         <androidx.constraintlayout.widget.Barrier
