@@ -20,11 +20,11 @@ import java.util.ArrayList
 import java.util.Locale
 
 class PatientsViewAdapter(
-    private val patientList: List<Pair<Patient, Reading>>,
+    private val patientList: List<Pair<Patient, Reading?>>,
     private val context: Context
 ) : RecyclerView.Adapter<PatientViewHolder>(), Filterable {
 
-    private var filteredList: List<Pair<Patient, Reading>>
+    private var filteredList: List<Pair<Patient, Reading?>>
 
     init {
         filteredList = patientList
@@ -44,10 +44,10 @@ class PatientsViewAdapter(
         patientViewHolder.patientVillage.text = patient.villageNumber
         patientViewHolder.patientName.text = patient.name
         patientViewHolder.patientId.text = patient.id
-        if (reading.followUp != null) {
+        if (reading?.followUp != null) {
             patientViewHolder.referralImg.setImageResource(R.drawable.ic_check_circle_black_24dp)
             patientViewHolder.referralImg.visibility = View.VISIBLE
-        } else if (reading.isReferredToHealthCentre) {
+        } else if (reading?.isReferredToHealthCentre!!) {
             patientViewHolder.referralImg.setImageResource(R.drawable.ic_pending_referral_black_24dp)
             patientViewHolder.referralImg.visibility = View.VISIBLE
         }
@@ -69,7 +69,7 @@ class PatientsViewAdapter(
                 filteredList = if (charString.isEmpty()) {
                     patientList
                 } else {
-                    val filteredList: MutableList<Pair<Patient, Reading>> =
+                    val filteredList: MutableList<Pair<Patient, Reading?>> =
                         ArrayList()
                     for (pair in patientList) {
                         if (pair.first.id.contains(charString) ||
