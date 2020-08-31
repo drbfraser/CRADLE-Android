@@ -57,7 +57,7 @@ class PatientInfoFragment : BaseFragment() {
 
     init {
         // Overwrite base class's TAG field for logging purposes.
-        super.TAG = this::class.java.name
+        TAG = this::class.java.name
     }
 
     override fun onCreateView(

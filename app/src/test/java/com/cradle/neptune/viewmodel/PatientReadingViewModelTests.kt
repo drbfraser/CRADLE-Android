@@ -27,7 +27,7 @@ class PatientReadingViewModelTests {
         model.patientVillageNumber = "123"
         model.patientIsPregnant = true
         model.patientGestationalAge = GestationalAgeWeeks(12)
-        model.symptoms = listOf("Headache", "Unwell", "Some Other Symptom")
+        model.symptoms = arrayListOf("Headache", "Unwell", "Some Other Symptom")
         model.urineTest = UrineTest("++", "+", "-", "-", "+++")
         model.bloodPressure = BloodPressure(110, 70, 65)
         model.isFlaggedForFollowUp = true

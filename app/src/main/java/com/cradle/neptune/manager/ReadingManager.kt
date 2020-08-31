@@ -67,14 +67,6 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
     }
 
     /**
-     * TODO: once all the java classes calling this method are turned into Kotlin,
-     * remove this function and call the corressponding method.
-     * This is only for legacy java code still calling this function.
-     */
-    @Deprecated("Please avoid using this function in Kotlin files.")
-    fun getAllReadingBlocking() = runBlocking { withContext(Dispatchers.IO) { getAllReadings() } }
-
-    /**
      * Returns the reading (and its associated patient) with a given [id] from
      * the database. Returns `null` if unable to find such a reading.
      */

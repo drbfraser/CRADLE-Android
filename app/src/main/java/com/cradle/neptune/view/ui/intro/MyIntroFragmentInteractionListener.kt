@@ -1,4 +1,4 @@
-package com.cradle.neptune.view.ui.intro;
+package com.cradle.neptune.view.ui.intro
 
 /**
  * For INTRO wizard
@@ -7,10 +7,10 @@ package com.cradle.neptune.view.ui.intro;
  * to the activity and potentially other fragments contained in that
  * activity.
  */
-public interface MyIntroFragmentInteractionListener {
+interface MyIntroFragmentInteractionListener {
     // Move on to next page
-    void advanceToNextPage();
+    fun advanceToNextPage()
 
     // Set NEXT button being enabled/disabled
-    void setNextButtonEnabled(boolean b);
+    fun setNextButtonEnabled(b: Boolean)
 }

@@ -118,7 +118,7 @@ public class ReadingActivity
                 readingId = intent.getStringExtra(EXTRA_READING_ID);
                 Util.ensure((readingId != null && !readingId.equals("")));
                 reading = readingManager.getReadingByIdBlocking(readingId);
-                patient = (Patient) patientManager.getPatientByIdBlocking(reading.getPatientId());
+                patient = patientManager.getPatientByIdBlocking(reading.getPatientId());
                 viewModel = new PatientReadingViewModel(patient, reading);
 //                currentReading = GsonUtil.cloneViaGson(originalReading, Reading.class);
                 break;
