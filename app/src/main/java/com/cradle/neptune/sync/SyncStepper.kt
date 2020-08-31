@@ -3,6 +3,7 @@ package com.cradle.neptune.sync
 /**
  * This is the main interface for the whole sync process
  * describes all the different steps required to do our one button sync
+ * There is a google doc that explains all the steps and the order of the steps as well
  */
 interface SyncStepper {
 

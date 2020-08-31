@@ -7,18 +7,16 @@ import android.os.Bundle
 import android.widget.MediaController
 import android.widget.VideoView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import com.cradle.neptune.R
 
 class VideoActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_help)
-        val toolbar =
-            findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
+        setContentView(R.layout.activity_video)
+
         if (supportActionBar != null) {
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            supportActionBar?.title = "CRADLE VSA Instructions"
         }
         // setup UI components
         // setupBottomBarNavigation();

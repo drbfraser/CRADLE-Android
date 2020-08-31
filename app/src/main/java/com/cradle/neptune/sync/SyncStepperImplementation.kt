@@ -95,6 +95,7 @@ class SyncStepperImplementation(
 
     /**
      * step 2 -> starts uploading readings and patients starting with patients.
+     * Be careful changing code in this function.
      */
     override fun setupUploadingPatientReadings(lastSyncTime: Long) {
         var newPatientsToUpload: ArrayList<PatientAndReadings>
