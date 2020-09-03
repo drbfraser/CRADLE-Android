@@ -9,10 +9,12 @@ import com.cradle.neptune.net.NetworkResult
 import com.cradle.neptune.net.Success
 import com.cradle.neptune.sync.SyncStepperImplementation
 import com.cradle.neptune.utilitiles.UnixTimestamp
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
+
+private const val HTTP_OK = 200
 
 /**
  * Manages logging the user into the server and setting up the application once
@@ -114,6 +116,6 @@ class LoginManager @Inject constructor(
             }
         }
 
-        Success(Unit, 200)
+        Success(Unit, HTTP_OK)
     }
 }

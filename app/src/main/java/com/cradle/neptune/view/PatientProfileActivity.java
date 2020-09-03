@@ -72,16 +72,12 @@ public class PatientProfileActivity extends AppCompatActivity {
     Patient currPatient;
     List<Reading> patientReadings;
     // Data Model
-//    @Inject
-//    ReadingManager readingManager;
     @Inject
     ReadingManager readingManager;
     @Inject
     PatientManager patientManager;
     @Inject
     SharedPreferences sharedPreferences;
-    @Inject
-    UrlManager urlManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

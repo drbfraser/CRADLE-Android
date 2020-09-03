@@ -9,7 +9,6 @@ import com.cradle.neptune.database.HealthFacilityDaoAccess
 import com.cradle.neptune.database.PatientDaoAccess
 import com.cradle.neptune.database.ReadingDaoAccess
 import com.cradle.neptune.manager.HealthCentreManager
-import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.manager.VolleyRequestManager
 import com.cradle.neptune.net.Http

@@ -2,11 +2,9 @@ package com.cradle.neptune.manager
 
 import android.app.Application
 import android.content.SharedPreferences
-import android.util.Log
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.model.Assessment
 import com.cradle.neptune.model.GlobalPatient
-import com.cradle.neptune.model.HealthFacility
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.PatientAndReadings
 import com.cradle.neptune.model.Reading
@@ -15,16 +13,12 @@ import com.cradle.neptune.network.NetworkResult
 import com.cradle.neptune.network.Success
 import com.cradle.neptune.network.VolleyRequestQueue
 import com.cradle.neptune.network.VolleyRequests
-import com.cradle.neptune.network.unwrap
-import com.cradle.neptune.sync.SyncStepperImplementation
 import java.util.ArrayList
-import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
-import org.threeten.bp.ZonedDateTime
 
 /**
  * typaliases for all the callbacks to make them more readable and shorter

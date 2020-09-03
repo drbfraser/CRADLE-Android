@@ -15,9 +15,9 @@ import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.ext.hideKeyboard
 import com.cradle.neptune.manager.LoginManager
 import com.cradle.neptune.net.Success
+import javax.inject.Inject
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 class LoginActivity : AppCompatActivity() {
 

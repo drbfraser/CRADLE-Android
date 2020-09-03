@@ -13,19 +13,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
-import com.cradle.neptune.manager.VolleyRequestManager
 import com.cradle.neptune.model.GlobalPatient
-import com.cradle.neptune.network.Failure
-import com.cradle.neptune.network.Success
-import com.cradle.neptune.network.unwrap
-import com.cradle.neptune.network.unwrapFailure
+import com.cradle.neptune.net.Success
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter.OnClickElement
 import com.google.android.material.snackbar.Snackbar
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.reading_card_assesment.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -33,9 +28,6 @@ import kotlinx.coroutines.withContext
  * This is a child class of [PatientProfileActivity] and uses some functions from the parent class.
  */
 class GlobalPatientProfileActivity : PatientProfileActivity() {
-
-    @Inject
-    lateinit var volleyRequestsManager: VolleyRequestManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,15 +64,20 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         progressDialog.setMessage("Adding to your patient's list")
         progressDialog.show()
 
-        volleyRequestsManager.setUserPatientAssociation(currPatient.id) { isSuccessFul ->
-            if (isSuccessFul) {
-                addThePatientInfoToLocalDb(progressDialog)
-            } else {
+        MainScope().launch {
+            val result = patientManager.associatePatientWithUser(currPatient.id)
+            if (result.failed) {
                 progressDialog.cancel()
                 Toast.makeText(
                     this@GlobalPatientProfileActivity,
-                    "Unable to make user-patient relationship", Toast.LENGTH_LONG
+                    "Unable to make user-patient relationship",
+                    Toast.LENGTH_LONG
                 ).show()
+                return@launch
+            }
+
+            withContext(Dispatchers.IO) {
+                addThePatientInfoToLocalDb(progressDialog)
             }
         }
     }
@@ -88,22 +85,20 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
     /**
      * adds patient info to local db and starts [PatientProfileActivity]
      */
-    private fun addThePatientInfoToLocalDb(progressDialog: ProgressDialog) {
-        GlobalScope.launch(Dispatchers.IO) {
-            patientReadings.forEach {
-                readingManager.addReading(it.apply { isUploadedToServer = true })
-            }
-            patientManager.add(currPatient)
-            val intent =
-                Intent(this@GlobalPatientProfileActivity, PatientProfileActivity::class.java)
-            intent.putExtra("patient", currPatient)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
-            startActivity(intent)
-            withContext(Dispatchers.Main) {
-                progressDialog.cancel()
-            }
-            finish()
+    private suspend fun addThePatientInfoToLocalDb(progressDialog: ProgressDialog) {
+        patientReadings.forEach {
+            readingManager.addReading(it.apply { isUploadedToServer = true })
         }
+        patientManager.add(currPatient)
+        val intent =
+            Intent(this@GlobalPatientProfileActivity, PatientProfileActivity::class.java)
+        intent.putExtra("patient", currPatient)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+        startActivity(intent)
+        withContext(Dispatchers.Main) {
+            progressDialog.cancel()
+        }
+        finish()
     }
 
     /**
@@ -117,28 +112,26 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         progressDialog.setCancelable(false)
         progressDialog.setMessage("Fetching the patient...")
         progressDialog.show()
-        volleyRequestsManager.getFullPatientById(globalPatient.id) { result ->
-            when (result) {
-                is Success -> {
-                    val patientReadingPair = result.unwrap()
-                    currPatient = patientReadingPair.first
-                    patientReadings = patientReadingPair.second
-                    setupAddToMyPatientList()
-                    setupToolBar()
-                    populatePatientInfo(currPatient)
-                    setupReadingsRecyclerView()
-                    setupLineChart()
-                    progressDialog.cancel()
-                }
-                is Failure -> {
-                    val error = result.unwrapFailure()
-                    progressDialog.cancel()
-                    Snackbar.make(
-                        readingRecyclerview, "Unable to fetch the patient Information..." +
-                            "\n${error?.localizedMessage}", Snackbar.LENGTH_INDEFINITE
-                    ).show()
-                }
+        MainScope().launch {
+            val result = patientManager.downloadPatient(globalPatient.id)
+            if (result !is Success) {
+                progressDialog.cancel()
+                Snackbar.make(
+                    readingRecyclerview,
+                    "Unable to fetch patient information",
+                    Snackbar.LENGTH_INDEFINITE
+                ).show()
+                return@launch
             }
+
+            currPatient = result.value.patient
+            patientReadings = result.value.readings
+            setupAddToMyPatientList()
+            setupToolBar()
+            populatePatientInfo(currPatient)
+            setupReadingsRecyclerView()
+            setupLineChart()
+            progressDialog.cancel()
         }
     }
 

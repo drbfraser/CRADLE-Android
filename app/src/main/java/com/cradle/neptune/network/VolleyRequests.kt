@@ -9,7 +9,6 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.cradle.neptune.manager.LoginManager
-import com.cradle.neptune.view.LoginActivity
 import java.net.ConnectException
 import java.net.UnknownHostException
 import org.json.JSONArray

@@ -208,7 +208,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         val progressDialog = getProgessDialog("Adding to your patient list.")
         progressDialog.show()
         MainScope().launch {
-            when(val result = patientManager.associatePatientAndDownload(patient.id)) {
+            when (val result = patientManager.associatePatientAndDownload(patient.id)) {
                 is Success -> {
                     val patientAndReadings = result.value
                     patientManager.add(patientAndReadings.patient)

@@ -5,14 +5,13 @@ import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.PatientAndReadings
 import com.cradle.neptune.net.Api
 import com.cradle.neptune.net.NetworkResult
-import com.cradle.neptune.net.Success
 import java.util.ArrayList
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 /**
  * manager to interact with the [Patient] table
@@ -62,7 +61,7 @@ class PatientManager @Inject constructor(
 
     /**
      * TODO: once all the java classes calling this method are turned into Kotlin,
-     * remove this function and call the corressponding method.
+     * remove this function and call the corresponding method.
      * This is only for legacy java code still calling this function.
      */
     @Deprecated("Please avoid using this function in Kotlin files.")
@@ -123,6 +122,7 @@ class PatientManager @Inject constructor(
      *
      * @param id id of the patient to associate and download
      */
+    @Suppress("RemoveExplicitTypeArguments") // fails to compile without type argument
     suspend fun associatePatientAndDownload(id: String): NetworkResult<PatientAndReadings> =
         withContext<NetworkResult<PatientAndReadings>>(IO) {
             val associateResult = associatePatientWithUser(id)
