@@ -65,39 +65,38 @@ class LoginManager @Inject constructor(
             else -> return@withContext result.cast()
         }
 
-        // Once successfully logged in, download all this user's patients
-        // and health facilities
-        when (val result = restApi.getAllPatients()) {
-            is Success -> {
-                // Set the last sync time to now so that we don't try and
-                // re-download these patients when we go to sync
-                with(sharedPreferences.edit()) {
-                    putLong(SyncStepperImplementation.LAST_SYNC, UnixTimestamp.now)
-                    apply()
-                }
+        // Once successfully logged in, download the user's patients and health
+        // facilities in parallel.
 
-                // Insert database entries in a different coroutine
-                launch {
+        launch(IO) {
+            when (val result = restApi.getAllPatients()) {
+                is Success -> {
+                    // Set the last sync time to now so that we don't try and
+                    // re-download these patients when we go to sync
+                    with(sharedPreferences.edit()) {
+                        putLong(SyncStepperImplementation.LAST_SYNC, UnixTimestamp.now)
+                        apply()
+                    }
+
                     for (patientAndReading in result.value) {
                         patientManager.add(patientAndReading.patient)
                         readingManager.addAllReadings(patientAndReading.readings)
                     }
                 }
-            }
 
-            // FIXME: Currently the login activity doesn't know what to do
-            //  if we fail to download patients. We fail silently here as we
-            //  don't want to abort the login just because we couldn't download
-            //  patients.
-            else -> {
-                Log.e(this::class.simpleName, "Failed to download patients")
+                // FIXME: Currently the login activity doesn't know what to do
+                //  if we fail to download patients. We fail silently here as we
+                //  don't want to abort the login just because we couldn't download
+                //  patients.
+                else -> {
+                    Log.e(this::class.simpleName, "Failed to download patients")
+                }
             }
         }
 
-        when (val result = restApi.getAllHealthFacilities()) {
-            is Success -> {
-                // Insert database entries in a different coroutine
-                launch {
+        launch(IO) {
+            when (val result = restApi.getAllHealthFacilities()) {
+                is Success -> {
                     val facilities = result.value
                     if (facilities.isNotEmpty()) {
                         // Select the first health facility by default
@@ -108,11 +107,11 @@ class LoginManager @Inject constructor(
                         healthCentreManager.addAll(facilities)
                     }
                 }
-            }
 
-            // FIXME: (See above message)
-            else -> {
-                Log.e(this::class.simpleName, "Failed to download health facilities")
+                // FIXME: (See above message)
+                else -> {
+                    Log.e(this::class.simpleName, "Failed to download health facilities")
+                }
             }
         }
 
