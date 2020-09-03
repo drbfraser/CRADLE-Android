@@ -60,16 +60,6 @@ class PatientManager @Inject constructor(
         withContext(IO) { daoAccess.patientIdsList }
 
     /**
-     * TODO: once all the java classes calling this method are turned into Kotlin,
-     * remove this function and call the corresponding method.
-     * This is only for legacy java code still calling this function.
-     */
-    @Deprecated("Please avoid using this function in Kotlin files.")
-    fun getAllPatientsBlocking() = runBlocking {
-        withContext(IO) { getAllPatients() }
-    }
-
-    /**
      * get individual patient by id if exists
      */
     suspend fun getPatientById(id: String): Patient? = daoAccess.getPatientById(id)

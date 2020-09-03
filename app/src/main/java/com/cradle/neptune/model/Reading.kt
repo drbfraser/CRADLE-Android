@@ -369,7 +369,7 @@ data class ReadingMetadata(
             val dateLastSaved = data.optLongField(MetadataField.DATE_LAST_SAVED)
             val dateUploadedToServer = data.optLongField(MetadataField.DATE_UPLOADED_TO_SERVER)
             val photoPath = data.optStringField(MetadataField.PHOTO_PATH)
-            val isImageUploaded = data.optBooleanField(MetadataField.IS_IMAGE_UPLOADED) ?: false
+            val isImageUploaded = data.optBooleanField(MetadataField.IS_IMAGE_UPLOADED)
 
             var totalOcrSeconds = data.optDoubleField(MetadataField.TOTAL_OCR_SECONDS)?.toFloat()
             // The legacy implementation used -1 to represent `null` for this

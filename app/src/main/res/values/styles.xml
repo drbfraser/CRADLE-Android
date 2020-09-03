@@ -5,7 +5,7 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorSecondary">@color/colorAccent</item>
-
+        <item name="android:actionMenuTextColor">@color/white</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
     </style>
 

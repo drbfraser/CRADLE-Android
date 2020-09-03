@@ -28,7 +28,6 @@ public class Util {
         if (s == null || s.length() == 0 || s.toLowerCase().equals("null")) {
             return true;
         }
-        ;
         return false;
     }
 

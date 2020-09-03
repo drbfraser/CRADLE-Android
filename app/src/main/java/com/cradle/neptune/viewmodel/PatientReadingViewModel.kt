@@ -114,8 +114,8 @@ class PatientReadingViewModel() {
         set(value) = readingBuilder.set(Reading::dateTimeTaken, value).discard()
 
     @Suppress("UNCHECKED_CAST")
-    var symptoms: List<String>?
-        get() = readingBuilder.get(Reading::symptoms) as List<String>?
+    var symptoms: ArrayList<String>?
+        get() = readingBuilder.get(Reading::symptoms) as ArrayList<String>?
         set(value) = readingBuilder.set(Reading::symptoms, value).discard()
 
     var dateRecheckVitalsNeeded: Long?
