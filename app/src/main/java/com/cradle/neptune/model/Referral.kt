@@ -33,7 +33,7 @@ data class Referral(
     val userId: Int?,
     val patientId: String,
     val readingId: String,
-    val isAssessed: Boolean
+    var isAssessed: Boolean
 ) : Serializable,
     Marshal<JSONObject> {
 

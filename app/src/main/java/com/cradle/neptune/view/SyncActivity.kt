@@ -6,12 +6,18 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.cradle.neptune.R
+import com.cradle.neptune.dagger.MyApp
+import com.cradle.neptune.manager.SyncManager
+import com.cradle.neptune.net.Success
 import com.cradle.neptune.sync.SyncStepperCallback
-import com.cradle.neptune.sync.SyncStepperImplementation
 import com.cradle.neptune.sync.TotalRequestStatus
+import javax.inject.Inject
 import kotlin.math.roundToInt
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 
 class SyncActivity : AppCompatActivity(),
     SyncStepperCallback {
@@ -26,7 +32,11 @@ class SyncActivity : AppCompatActivity(),
         ProgressPercent(NUM_STEPS_FOR_SYNC)
     private lateinit var progressBar: ProgressBar
 
+    @Inject
+    lateinit var syncManager: SyncManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        (application as MyApp).appComponent.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sync)
 
@@ -42,8 +52,17 @@ class SyncActivity : AppCompatActivity(),
         findViewById<Button>(R.id.uploadEverythingButton).setOnClickListener {
             syncText.text = "Sync in progress! Please wait for it to complete."
             progressBar.visibility = View.VISIBLE
-            SyncStepperImplementation(this, this).fetchUpdatesFromServer()
-            it.visibility = View.GONE
+            MainScope().launch {
+                val result = syncManager.sync(this@SyncActivity)
+                it.visibility = View.GONE
+                if (result is Success) {
+                    Toast.makeText(this@SyncActivity, "Sync Successful", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this@SyncActivity, "Sync Failed", Toast.LENGTH_LONG).show()
+                }
+            }
+            // SyncStepperImplementation(this, this).fetchUpdatesFromServer()
+            // it.visibility = View.GONE
         }
     }
 

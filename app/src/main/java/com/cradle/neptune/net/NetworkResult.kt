@@ -1,11 +1,24 @@
 package com.cradle.neptune.net
 
 import com.cradle.neptune.model.Unmarshal
+import com.cradle.neptune.utilitiles.functional.fold1
 
 /**
  * Sum type representing the result of a network request.
  */
 sealed class NetworkResult<T> {
+
+    companion object {
+        /**
+         * Lifts [value] into the [NetworkResult] monad.
+         *
+         * @param value the value to lift
+         * @return A successful network result which contains [value]
+         */
+        @Suppress("MagicNumber")
+        fun <T> pure(value: T) = Success(value, 200)
+    }
+
     /**
      * Unwraps this network result into an optional value.
      *
@@ -53,6 +66,21 @@ sealed class NetworkResult<T> {
         is Success -> throw RuntimeException("cast called on Success variant")
         is Failure -> Failure(body, statusCode)
         is NetworkException -> NetworkException(cause)
+    }
+
+    /**
+     * Sequences two [NetworkResult] monads into a single result which will
+     * be a [Success] variant iff both results are [Success] variants. If
+     * either are erroneous variants, the first erroneous result is returned.
+     *
+     * @return A sequenced [NetworkResult]
+     */
+    infix fun <U> sequence(other: NetworkResult<U>) = when {
+        // Results in Success
+        this is Success && other is Success -> other
+        // Results if Failure or NetworkException
+        this is Success -> other
+        else -> this.cast()
     }
 }
 
@@ -129,3 +157,19 @@ data class Failure<T>(val body: ByteArray, val statusCode: Int) : NetworkResult<
  * @property cause the exception which caused the failure
  */
 data class NetworkException<T>(val cause: Exception) : NetworkResult<T>()
+
+/**
+ * Sequences a list of results into a single result.
+ *
+ * See [NetworkResult.sequence] for more information.
+ */
+fun <T> monadicSequence(results: List<NetworkResult<T>>) =
+    results.fold1(NetworkResult<T>::sequence)
+
+/**
+ * Sequences a list of results into a single result.
+ *
+ * See [NetworkResult.sequence] for more information.
+ */
+fun <T> monadicSequence(initial: T, results: List<NetworkResult<T>>) =
+    results.fold<NetworkResult<T>, NetworkResult<T>>(NetworkResult.pure(initial), NetworkResult<T>::sequence)

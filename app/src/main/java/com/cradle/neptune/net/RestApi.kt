@@ -4,11 +4,13 @@ import android.content.SharedPreferences
 import com.cradle.neptune.ext.map
 import com.cradle.neptune.manager.LoginManager
 import com.cradle.neptune.manager.UrlManager
+import com.cradle.neptune.model.Assessment
 import com.cradle.neptune.model.GlobalPatient
 import com.cradle.neptune.model.HealthFacility
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.PatientAndReadings
 import com.cradle.neptune.model.Reading
+import com.cradle.neptune.model.SyncUpdate
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
@@ -21,6 +23,7 @@ import org.json.JSONObject
  * Each method is written as a `suspend` function which is executed using the
  * [IO] dispatcher.
  */
+@Suppress("LargeClass")
 class RestApi @Inject constructor(
     private val sharedPreferences: SharedPreferences,
     private val urlManager: UrlManager,
@@ -111,6 +114,16 @@ class RestApi @Inject constructor(
             ).map { Reading.unmarshal(it.obj!!) }
         }
 
+    suspend fun getAssessment(id: String): NetworkResult<Assessment> =
+        withContext(IO) {
+            http.jsonRequest(
+                Http.Method.GET,
+                urlManager.getAssessmentById(id),
+                headers,
+                null
+            ).map { Assessment.unmarshal(it.obj!!) }
+        }
+
     suspend fun postPatient(patient: PatientAndReadings): NetworkResult<PatientAndReadings> =
         withContext(IO) {
             http.jsonRequest(
@@ -119,6 +132,16 @@ class RestApi @Inject constructor(
                 headers,
                 JsonObject(patient.marshal())
             ).map { PatientAndReadings.unmarshal(it.obj!!) }
+        }
+
+    suspend fun putPatient(patient: Patient): NetworkResult<Unit> =
+        withContext(IO) {
+            http.jsonRequest(
+                Http.Method.PUT,
+                urlManager.getPatientInfoOnly(patient.id),
+                headers,
+                JsonObject(patient.marshal())
+            ).map { Unit }
         }
 
     suspend fun postReading(reading: Reading): NetworkResult<Reading> =
@@ -155,6 +178,16 @@ class RestApi @Inject constructor(
                     HealthFacility.Companion::unmarshal
                 )
             }
+        }
+
+    suspend fun getUpdates(lastSyncTimestamp: Long): NetworkResult<SyncUpdate> =
+        withContext(IO) {
+            http.jsonRequest(
+                Http.Method.GET,
+                urlManager.getUpdates(lastSyncTimestamp),
+                headers,
+                null
+            ).map { SyncUpdate.unmarshal(it.obj!!) }
         }
 
     /**

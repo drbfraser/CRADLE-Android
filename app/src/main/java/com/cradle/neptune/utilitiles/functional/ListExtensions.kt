@@ -9,10 +9,23 @@ package com.cradle.neptune.utilitiles.functional
  */
 fun <T> List<T>.uncons(): Pair<T, List<T>> {
     if (isEmpty()) {
-        throw IllegalArgumentException("uncons called on empty list")
+        throw IllegalArgumentException("empty list")
     }
 
     val first = first()
     val rest = drop(1)
     return Pair(first, rest)
+}
+
+/**
+ * Accumulates values in a list starting from left and moving right with the
+ * first element of the list being the initial value.
+ *
+ * @param operation the operation used to accumulate values
+ * @throws IllegalArgumentException if the list is empty
+ * @return the accumulated result
+ */
+fun <T> List<T>.fold1(operation: (T, T) -> T): T {
+    val (first, rest) = uncons()
+    return rest.fold(first, operation)
 }

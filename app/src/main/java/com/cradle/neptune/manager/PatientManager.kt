@@ -5,6 +5,7 @@ import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.PatientAndReadings
 import com.cradle.neptune.net.NetworkResult
 import com.cradle.neptune.net.RestApi
+import com.cradle.neptune.net.Success
 import java.util.ArrayList
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers.IO
@@ -85,6 +86,51 @@ class PatientManager @Inject constructor(
      */
     suspend fun getEditedPatients(timeStamp: Long): List<Patient> =
         withContext(IO) { daoAccess.getEditedPatients(timeStamp) }
+
+    /**
+     * Uploads a patient and associated readings to the server.
+     *
+     * Upon successful upload, the patient's `base` field will be updated to
+     * reflect the fact that any changes made on mobile have been received by
+     * the server.
+     *
+     * @param patientAndReadings the patient to upload
+     * @return whether the upload succeeded or not
+     */
+    suspend fun uploadPatient(patientAndReadings: PatientAndReadings): NetworkResult<Unit> =
+        withContext(IO) {
+            val result = restApi.postPatient(patientAndReadings)
+            if (result is Success) {
+                // Update the patient's `base` field if successfully uploaded
+                val patient = patientAndReadings.patient
+                patient.base = patient.lastEdited
+                add(patient)
+            }
+
+            result.map { Unit }
+        }
+
+    /**
+     * Uploads an edited patient to the server.
+     *
+     * Upon successful upload, the patient's `base` field will be updated to
+     * reflect the fact that any changes made on mobile have been received by
+     * the server.
+     *
+     * @param patient the patient to upload
+     * @return whether the upload succeeded or not
+     */
+    suspend fun updatePatientOnServer(patient: Patient): NetworkResult<Unit> =
+        withContext(IO) {
+            val result = restApi.putPatient(patient)
+            if (result is Success) {
+                // Update the patient's `base` field if successfully uploaded
+                patient.base = patient.lastEdited
+                add(patient)
+            }
+
+            result.map { Unit }
+        }
 
     /**
      * Downloads all the information for a patient from the server.
