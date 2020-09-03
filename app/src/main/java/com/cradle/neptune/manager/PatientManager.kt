@@ -3,8 +3,8 @@ package com.cradle.neptune.manager
 import com.cradle.neptune.database.PatientDaoAccess
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.PatientAndReadings
-import com.cradle.neptune.net.Api
 import com.cradle.neptune.net.NetworkResult
+import com.cradle.neptune.net.RestApi
 import java.util.ArrayList
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers.IO
@@ -22,7 +22,7 @@ import kotlinx.coroutines.withContext
 class PatientManager @Inject constructor(
     private val daoAccess: PatientDaoAccess,
     private val urlManager: UrlManager,
-    private val api: Api
+    private val restApi: RestApi
 ) {
 
     /**
@@ -102,7 +102,7 @@ class PatientManager @Inject constructor(
      * @param id id of the patient to download
      */
     suspend fun downloadPatient(id: String): NetworkResult<PatientAndReadings> =
-        api.getPatient(id)
+        restApi.getPatient(id)
 
     /**
      * Associates a given patient to the active user.
@@ -113,7 +113,7 @@ class PatientManager @Inject constructor(
      * @param id id of the patient to associate
      */
     suspend fun associatePatientWithUser(id: String): NetworkResult<Unit> =
-        api.associatePatientToUser(id).map { Unit }
+        restApi.associatePatientToUser(id).map { Unit }
 
     /**
      * Associates a given patient to the active user and then downloads all

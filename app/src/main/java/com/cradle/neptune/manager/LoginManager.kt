@@ -2,10 +2,10 @@ package com.cradle.neptune.manager
 
 import android.content.SharedPreferences
 import android.util.Log
-import com.cradle.neptune.net.Api
 import com.cradle.neptune.net.Failure
 import com.cradle.neptune.net.NetworkException
 import com.cradle.neptune.net.NetworkResult
+import com.cradle.neptune.net.RestApi
 import com.cradle.neptune.net.Success
 import com.cradle.neptune.sync.SyncStepperImplementation
 import com.cradle.neptune.utilitiles.UnixTimestamp
@@ -21,7 +21,7 @@ private const val HTTP_OK = 200
  * successfully logged in.
  */
 class LoginManager @Inject constructor(
-    private val api: Api,
+    private val restApi: RestApi,
     private val sharedPreferences: SharedPreferences,
     private val patientManager: PatientManager,
     private val readingManager: ReadingManager,
@@ -49,7 +49,7 @@ class LoginManager @Inject constructor(
         // Send a request to the authentication endpoint to login
         //
         // If we failed to login, return immediately
-        when (val result = api.authenticate(email, password)) {
+        when (val result = restApi.authenticate(email, password)) {
             is Success -> {
                 val token = result.value.getString("token")
                 val userId = result.value.getString("userId")
@@ -67,7 +67,7 @@ class LoginManager @Inject constructor(
 
         // Once successfully logged in, download all this user's patients
         // and health facilities
-        when (val result = api.getAllPatients()) {
+        when (val result = restApi.getAllPatients()) {
             is Success -> {
                 // Set the last sync time to now so that we don't try and
                 // re-download these patients when we go to sync
@@ -94,7 +94,7 @@ class LoginManager @Inject constructor(
             }
         }
 
-        when (val result = api.getAllHealthFacilities()) {
+        when (val result = restApi.getAllHealthFacilities()) {
             is Success -> {
                 // Insert database entries in a different coroutine
                 launch {

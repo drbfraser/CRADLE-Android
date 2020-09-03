@@ -19,10 +19,9 @@ import org.json.JSONObject
  * Provides type-safe methods for interacting with the CRADLE server API.
  *
  * Each method is written as a `suspend` function which is executed using the
- * [IO] dispatcher. The class and all it's methods are marked as `open`
- * allowing them to be mocked out for testing if needed.
+ * [IO] dispatcher.
  */
-open class Api @Inject constructor(
+class RestApi @Inject constructor(
     private val sharedPreferences: SharedPreferences,
     private val urlManager: UrlManager,
     private val http: Http
@@ -35,7 +34,7 @@ open class Api @Inject constructor(
      * @return if successful, the [JsonObject] that was returned by the server
      *  which contains a bearer token to authenticate the user
      */
-    open suspend fun authenticate(email: String, password: String): NetworkResult<JSONObject> =
+    suspend fun authenticate(email: String, password: String): NetworkResult<JSONObject> =
         withContext(IO) {
             val body = JsonObject(mapOf("email" to email, "password" to password))
             http.jsonRequest(
@@ -46,7 +45,7 @@ open class Api @Inject constructor(
             ).map { it.obj!! }
         }
 
-    open suspend fun getAllPatients(): NetworkResult<List<PatientAndReadings>> =
+    suspend fun getAllPatients(): NetworkResult<List<PatientAndReadings>> =
         withContext(IO) {
             http.jsonRequest(
                 Http.Method.GET,
@@ -67,7 +66,7 @@ open class Api @Inject constructor(
             }
         }
 
-    open suspend fun getPatient(id: String): NetworkResult<PatientAndReadings> =
+    suspend fun getPatient(id: String): NetworkResult<PatientAndReadings> =
         withContext(IO) {
             http.jsonRequest(
                 Http.Method.GET,
@@ -77,7 +76,7 @@ open class Api @Inject constructor(
             ).map { PatientAndReadings.unmarshal(it.obj!!) }
         }
 
-    open suspend fun getPatientInfo(id: String): NetworkResult<Patient> =
+    suspend fun getPatientInfo(id: String): NetworkResult<Patient> =
         withContext(IO) {
             http.jsonRequest(
                 Http.Method.GET,
@@ -87,7 +86,7 @@ open class Api @Inject constructor(
             ).map { Patient.unmarshal(it.obj!!) }
         }
 
-    open suspend fun searchForPatient(searchString: String): NetworkResult<List<GlobalPatient>> =
+    suspend fun searchForPatient(searchString: String): NetworkResult<List<GlobalPatient>> =
         withContext(IO) {
             http.jsonRequest(
                 Http.Method.GET,
@@ -102,7 +101,7 @@ open class Api @Inject constructor(
             }
         }
 
-    open suspend fun getReading(id: String): NetworkResult<Reading> =
+    suspend fun getReading(id: String): NetworkResult<Reading> =
         withContext(IO) {
             http.jsonRequest(
                 Http.Method.GET,
@@ -112,7 +111,7 @@ open class Api @Inject constructor(
             ).map { Reading.unmarshal(it.obj!!) }
         }
 
-    open suspend fun postPatient(patient: PatientAndReadings): NetworkResult<PatientAndReadings> =
+    suspend fun postPatient(patient: PatientAndReadings): NetworkResult<PatientAndReadings> =
         withContext(IO) {
             http.jsonRequest(
                 Http.Method.POST,
@@ -122,7 +121,7 @@ open class Api @Inject constructor(
             ).map { PatientAndReadings.unmarshal(it.obj!!) }
         }
 
-    open suspend fun postReading(reading: Reading): NetworkResult<Reading> =
+    suspend fun postReading(reading: Reading): NetworkResult<Reading> =
         withContext(IO) {
             http.jsonRequest(
                 Http.Method.POST,
@@ -132,7 +131,7 @@ open class Api @Inject constructor(
             ).map { Reading.unmarshal(it.obj!!) }
         }
 
-    open suspend fun associatePatientToUser(id: String): NetworkResult<JSONObject> =
+    suspend fun associatePatientToUser(id: String): NetworkResult<JSONObject> =
         withContext(IO) {
             val body = JsonObject(mapOf("patientId" to id))
             http.jsonRequest(
@@ -143,7 +142,7 @@ open class Api @Inject constructor(
             ).map { it.obj!! }
         }
 
-    open suspend fun getAllHealthFacilities(): NetworkResult<List<HealthFacility>> =
+    suspend fun getAllHealthFacilities(): NetworkResult<List<HealthFacility>> =
         withContext(IO) {
             http.jsonRequest(
                 Http.Method.GET,
@@ -164,7 +163,7 @@ open class Api @Inject constructor(
      * By design, the [authenticate] method doesn't include these headers in
      * its request.
      */
-    protected open val headers: Map<String, String>
+    private val headers: Map<String, String>
         get() {
             val token = sharedPreferences.getString(LoginManager.TOKEN_KEY, null)
             return if (token != null) {

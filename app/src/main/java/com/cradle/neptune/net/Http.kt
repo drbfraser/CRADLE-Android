@@ -14,7 +14,7 @@ import java.net.URL
  * class is marked as `open` meaning that it can the extended to use a different
  * network framework or mocked out for testing.
  *
- * When communicating with the CRADLE server, the [com.cradle.neptune.net.Api]
+ * When communicating with the CRADLE server, the [com.cradle.neptune.net.RestApi]
  * class should be used instead of this one.
  */
 open class Http {

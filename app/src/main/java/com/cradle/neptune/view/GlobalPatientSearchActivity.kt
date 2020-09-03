@@ -20,7 +20,7 @@ import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.manager.VolleyRequestManager
 import com.cradle.neptune.model.GlobalPatient
-import com.cradle.neptune.net.Api
+import com.cradle.neptune.net.RestApi
 import com.cradle.neptune.net.Success
 import com.cradle.neptune.viewmodel.GlobalPatientAdapter
 import com.google.android.material.snackbar.Snackbar
@@ -45,7 +45,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
     lateinit var readingManager: ReadingManager
 
     @Inject
-    lateinit var api: Api
+    lateinit var restApi: RestApi
 
     @Inject
     lateinit var volleyRequestManager: VolleyRequestManager
@@ -99,7 +99,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         progressDialog.show()
 
         MainScope().launch {
-            val result = api.searchForPatient(searchUrl)
+            val result = restApi.searchForPatient(searchUrl)
             progressDialog.cancel()
             searchView.hideKeyboard()
             when (result) {

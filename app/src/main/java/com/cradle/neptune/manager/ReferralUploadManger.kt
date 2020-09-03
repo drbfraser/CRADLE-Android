@@ -3,10 +3,10 @@ package com.cradle.neptune.manager
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.PatientAndReadings
 import com.cradle.neptune.model.Reading
-import com.cradle.neptune.net.Api
 import com.cradle.neptune.net.Failure
 import com.cradle.neptune.net.NetworkException
 import com.cradle.neptune.net.NetworkResult
+import com.cradle.neptune.net.RestApi
 import com.cradle.neptune.net.Success
 import javax.inject.Inject
 
@@ -15,7 +15,7 @@ private const val HTTP_NOT_FOUND = 404
 /**
  * Manages uploading referrals via HTTP.
  */
-class ReferralUploadManger @Inject constructor(private val api: Api) {
+class ReferralUploadManger @Inject constructor(private val restApi: RestApi) {
 
     /**
      * Attempts to upload a referral to the server.
@@ -41,7 +41,7 @@ class ReferralUploadManger @Inject constructor(private val api: Api) {
         // First check to see if the patient exists. We don't have an explicit
         // API for this so we use the response code of the get patient info
         // API to determine whether the patient exists or not.
-        val patientExists = when (val result = api.getPatientInfo(patient.id)) {
+        val patientExists = when (val result = restApi.getPatientInfo(patient.id)) {
             is Failure -> if (result.statusCode == HTTP_NOT_FOUND) {
                 false
             } else {
@@ -54,9 +54,9 @@ class ReferralUploadManger @Inject constructor(private val api: Api) {
         // If the patient exists we only need to upload the reading, if not
         // then we need to upload the whole patient as well.
         return if (patientExists) {
-            api.postReading(reading).map { PatientAndReadings(patient, listOf(it)) }
+            restApi.postReading(reading).map { PatientAndReadings(patient, listOf(it)) }
         } else {
-            api.postPatient(PatientAndReadings(patient, listOf(reading)))
+            restApi.postPatient(PatientAndReadings(patient, listOf(reading)))
         }
     }
 }
