@@ -10,18 +10,18 @@ import org.json.JSONObject
  * API response model for the `/sync/updates` endpoint. Contains lists of
  * new/edited patients, readings, and assessments (aka. followups).
  *
- * @property newPatients List of ids of new patients that have been created
+ * @property newPatientsIds List of ids of new patients that have been created
  *  since the last sync
- * @property editedPatients List of ids of patients which have been edited
+ * @property editedPatientsIds List of ids of patients which have been edited
  *  since the last sync
- * @property readings List of ids of new readings since the last sync
- * @property followups List of ids of new followups since the last sync
+ * @property newReadingsIds List of ids of new readings since the last sync
+ * @property followupIds List of ids of new followups since the last sync
  */
 data class SyncUpdate(
-    val newPatients: Set<String>,
-    val editedPatients: Set<String>,
-    val readings: Set<String>,
-    val followups: Set<String>
+    val newPatientsIds: Set<String>,
+    val editedPatientsIds: Set<String>,
+    val newReadingsIds: Set<String>,
+    val followupIds: Set<String>
 ) {
     companion object : Unmarshal<SyncUpdate, JSONObject> {
         override fun unmarshal(data: JSONObject): SyncUpdate =

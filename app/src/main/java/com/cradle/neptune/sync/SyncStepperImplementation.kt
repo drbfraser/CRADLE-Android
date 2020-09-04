@@ -3,24 +3,22 @@ package com.cradle.neptune.sync
 import android.content.Context
 import android.content.SharedPreferences
 import com.cradle.neptune.dagger.MyApp
-import com.cradle.neptune.ext.toList
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.manager.VolleyRequestManager
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.PatientAndReadings
 import com.cradle.neptune.model.Reading
-import com.cradle.neptune.network.Failure
-import com.cradle.neptune.network.NetworkResult
-import com.cradle.neptune.network.Success
+import com.cradle.neptune.model.SyncUpdate
+import com.cradle.neptune.net.Failure
+import com.cradle.neptune.net.NetworkResult
+import com.cradle.neptune.net.RestApi
+import com.cradle.neptune.net.Success
 import com.cradle.neptune.network.VolleyRequests
-import com.cradle.neptune.sync.ListUploader.UploadType.PATIENT
-import com.cradle.neptune.sync.ListUploader.UploadType.READING
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
-import org.json.JSONArray
-import org.json.JSONObject
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.withContext
 import org.threeten.bp.ZonedDateTime
 
 /**
@@ -30,13 +28,16 @@ import org.threeten.bp.ZonedDateTime
  */
 @Suppress("LargeClass")
 class SyncStepperImplementation(
-    private val context: Context,
+    context: Context,
     private val stepperCallback: SyncStepperCallback
 ) :
     SyncStepper {
 
     @Inject
     lateinit var volleyRequestManager: VolleyRequestManager
+
+    @Inject
+    lateinit var restApi: RestApi
 
     @Inject
     lateinit var patientManager: PatientManager
@@ -47,7 +48,7 @@ class SyncStepperImplementation(
     @Inject
     lateinit var sharedPreferences: SharedPreferences
 
-    private lateinit var updateApiData: UpdateApiData
+    private lateinit var updateApiData: SyncUpdate
 
     /**
      * These variables keep track of all the upload and download requests made.
@@ -69,24 +70,28 @@ class SyncStepperImplementation(
     /**
      * step number 1, get all the newest data from the server. and go to step number 2.
      */
-    override fun fetchUpdatesFromServer() {
+    override suspend fun fetchUpdatesFromServer() {
         val lastSyncTime = sharedPreferences.getLong(LAST_SYNC, LAST_SYNC_DEFAULT)
         // give a timestamp to provide, again this will be from shared pref eventually
-        volleyRequestManager.getUpdates(lastSyncTime) { result ->
-            when (result) {
+        withContext(IO) {
+            when (val result = restApi.getUpdates(lastSyncTime)) {
                 is Success -> {
                     // result was success
-                    updateApiData = UpdateApiData(result.value)
+                    updateApiData = result.value
                     // let caller know of the next step
-                    stepperCallback.onFetchDataCompleted(true)
+                    withContext(Main) {
+                        stepperCallback.onFetchDataCompleted(true)
+                    }
                     setupUploadingPatientReadings(lastSyncTime)
                 }
                 is Failure -> {
                     // let user know we failed.... probably cant continue?
-                    errorHashMap[result.value.networkResponse?.statusCode] =
-                        VolleyRequests.getServerErrorMessage(result.value)
-
-                    stepperCallback.onFetchDataCompleted(false)
+                    errorHashMap[result.statusCode] =
+                        "we need to get the error message"
+                    //todo fix getting all the error.
+                    withContext(Main) {
+                        stepperCallback.onFetchDataCompleted(false)
+                    }
                     finish(false)
                 }
             }
@@ -97,25 +102,21 @@ class SyncStepperImplementation(
      * step 2 -> starts uploading readings and patients starting with patients.
      * Be careful changing code in this function.
      */
-    override fun setupUploadingPatientReadings(lastSyncTime: Long) {
-        var newPatientsToUpload: ArrayList<PatientAndReadings>
-        var readingsToUpload: ArrayList<Reading>
-        var editedPatientsToUpload: ArrayList<Patient>
+    override suspend fun setupUploadingPatientReadings(lastSyncTime: Long) {
 
-        // run blocking since we need to wait for results from DB  to do anything.
-        runBlocking(Dispatchers.IO) {
-            // get the brand new patients to upload
-            newPatientsToUpload = ArrayList(patientManager.getUnUploadedPatients())
-            readingsToUpload = ArrayList(readingManager.getUnUploadedReadingsForServerPatients())
+        // get the brand new patients to upload
+        val newPatientsToUpload: ArrayList<PatientAndReadings> = patientManager.getUnUploadedPatients() as ArrayList<PatientAndReadings>
+
+        val readingsToUpload: ArrayList<Reading> = readingManager.getUnUploadedReadingsForServerPatients() as ArrayList<Reading>
             // mock the time for now, in the future, this will be from shared pref
-            editedPatientsToUpload = ArrayList(patientManager.getEditedPatients(lastSyncTime))
-        }
+        val editedPatientsToUpload: ArrayList<Patient> = patientManager.getEditedPatients(lastSyncTime) as ArrayList<Patient>
+
 
         // this will be edited patients that were not edited in the server, we match against the
         // downloaded patient id from the server to avoid conflicts
         with(editedPatientsToUpload.iterator()) {
             forEach {
-                if (updateApiData.editedPatientId.contains(it.id)) {
+                if (updateApiData.editedPatientsIds.contains(it.id)) {
                     remove()
                 }
             }
@@ -144,26 +145,46 @@ class SyncStepperImplementation(
         // total number of uploads need to be done.
         val totalNum =
             newPatientsToUpload.size + readingsToUpload.size + editedPatientsToUpload.size
+
+
+
         // keep track of all the fail/pass status for uploaded requests
         uploadRequestStatus = TotalRequestStatus(totalNum, 0, 0)
 
-        ListUploader(context, PATIENT, newPatientsToUpload) { result ->
-            // once finished call uploading a single patient, need to update the base time
-            checkIfAllDataUploaded(result)
-        }.startUpload()
+        // ListUploader(context, PATIENT, newPatientsToUpload) { result ->
+        //     // once finished call uploading a single patient, need to update the base time
+        //     checkIfAllDataUploaded(result)
+        // }.startUpload()
+        //
+        // // these will be new readings for existing patients in server
+        // ListUploader(context, READING, readingsToUpload) { result ->
+        //     checkIfAllDataUploaded(result)
+        // }.startUpload()
+        //
+        // ListUploader(context, PATIENT, editedPatientsToUpload) {
+        //     checkIfAllDataUploaded(it)
+        // }.startUpload()
 
-        // these will be new readings for existing patients in server
-        ListUploader(context, READING, readingsToUpload) { result ->
+        newPatientsToUpload.forEach {
+            val result = restApi.postPatient(it)
             checkIfAllDataUploaded(result)
-        }.startUpload()
+        }
 
-        ListUploader(context, PATIENT, editedPatientsToUpload) {
-            checkIfAllDataUploaded(it)
-        }.startUpload()
+        readingsToUpload.forEach {
+            val result = restApi.postReading(it)
+            checkIfAllDataUploaded(result)
+        }
+
+        editedPatientsToUpload.forEach {
+            val result = restApi.putPatient(it)
+            checkIfAllDataUploaded(result)
+        }
 
         // if we have nothing to upload, we start downloading right away
         if (totalNum == 0) {
-            stepperCallback.onNewPatientAndReadingUploadFinish(uploadRequestStatus)
+            withContext(Main) {
+                stepperCallback.onNewPatientAndReadingUploadFinish(uploadRequestStatus)
+            }
             downloadAllInfo()
         }
     }
@@ -171,59 +192,98 @@ class SyncStepperImplementation(
     /**
      * step 3 -> now we download all the information one by one
      */
-    override fun downloadAllInfo() {
+    override suspend fun downloadAllInfo() {
         val totalRequestNum =
-            (updateApiData.editedPatientId.size + updateApiData.newReadingsIds.size +
-                updateApiData.followUpIds.size + updateApiData.newPatientsIds.size)
+            (updateApiData.editedPatientsIds.size + updateApiData.newReadingsIds.size +
+                updateApiData.followupIds.size + updateApiData.newPatientsIds.size)
 
         downloadRequestStatus = TotalRequestStatus(totalRequestNum, 0, 0)
 
         // download brand new patients that are not on the device
         updateApiData.newPatientsIds.toList().forEach {
-            volleyRequestManager.getFullPatientById(it) { result ->
-                // need to put them in the DB
-                when (result) {
-                    is Success -> {
-                        val patient = result.value.first
-                        val readings = result.value.second
-                        readings.forEach { reading ->
-                            reading.isUploadedToServer = true
-                        }
-                        readingManager.addAllReadings(readings)
-                        patientManager.add(patient)
-                        checkIfAllDataIsDownloaded(result)
+            // volleyRequestManager.getFullPatientById(it) { result ->
+            //     // need to put them in the DB
+            //     when (result) {
+            //         is Success -> {
+            //             val patient = result.value.first
+            //             val readings = result.value.second
+            //             readings.forEach { reading ->
+            //                 reading.isUploadedToServer = true
+            //             }
+            //             readingManager.addAllReadings(readings)
+            //             patientManager.add(patient)
+            //             checkIfAllDataIsDownloaded(result)
+            //         }
+            //         is Failure -> {
+            //             checkIfAllDataIsDownloaded(result)
+            //         }
+            //     }
+            // }
+            val result = restApi.getPatient(it)
+
+            when (result) {
+                is Success -> {
+                    patientManager.add(result.value.patient)
+                    val readings = result.value.readings
+                    readings.forEach { reading ->
+                        reading.isUploadedToServer = true
                     }
-                    is Failure -> {
-                        checkIfAllDataIsDownloaded(result)
-                    }
+                    readingManager.addAllReadings(readings)
                 }
             }
+            checkIfAllDataIsDownloaded(result)
         }
 
         // download all the patients that we have but were edited by the server....
         // these include the patients we rejected to upload in step 2
-        updateApiData.editedPatientId.toList().forEach {
-            volleyRequestManager.getPatientOnlyInfo(it) { result ->
-                checkIfAllDataIsDownloaded(result)
+        updateApiData.editedPatientsIds.toList().forEach {
+            // volleyRequestManager.getPatientOnlyInfo(it) { result ->
+            //     checkIfAllDataIsDownloaded(result)
+            // }
+            val result = restApi.getPatientInfo(it)
+            when(result) {
+                is Success -> {
+                    patientManager.add(result.value)
+                }
             }
+            checkIfAllDataIsDownloaded(result)
         }
 
         updateApiData.newReadingsIds.toList().forEach {
             // get all the readings that were created for existing patients from the server
-            volleyRequestManager.getReadingById(it) { result ->
-                checkIfAllDataIsDownloaded(result)
+            // volleyRequestManager.getReadingById(it) { result ->
+            //     checkIfAllDataIsDownloaded(result)
+            // }
+            val  result = restApi.getReading(it)
+            when(result) {
+                is Success -> {
+                    readingManager.addReading(result.value)
+                }
             }
+            checkIfAllDataIsDownloaded(result)
         }
 
-        updateApiData.followUpIds.toList().forEach {
+        updateApiData.followupIds.toList().forEach {
             // make a volley request to get the requests
-            volleyRequestManager.updateFollowUpById(it) { result ->
-                checkIfAllDataIsDownloaded(result)
+            // volleyRequestManager.updateFollowUpById(it) { result ->
+            //     checkIfAllDataIsDownloaded(result)
+            // }
+            val result = restApi.getAssessment(it)
+            when(result) {
+                is Success -> {
+                    val associatedReading = readingManager.getReadingById(result.value.readingId)
+                    associatedReading?.followUp = result.value
+                    // todo any normal case where this would crash??
+                    readingManager.updateReading(associatedReading!!)
+                }
             }
+            checkIfAllDataIsDownloaded(result)
         }
         // if there is nothing to download, call next step
         if (totalRequestNum == 0) {
-            stepperCallback.onNewPatientAndReadingDownloadFinish(downloadRequestStatus)
+            withContext(Main) {
+                stepperCallback.onNewPatientAndReadingDownloadFinish(downloadRequestStatus)
+            }
             finish(true)
         }
     }
@@ -231,12 +291,14 @@ class SyncStepperImplementation(
     /**
      * saved last sync time in the shared pref. let the caller know
      */
-    override fun finish(success: Boolean) {
+    override suspend fun finish(success: Boolean) {
         if (success) {
             sharedPreferences.edit()
                 .putLong(LAST_SYNC, ZonedDateTime.now().toEpochSecond()).apply()
         }
-        stepperCallback.onFinish(errorHashMap)
+        withContext(Main) {
+            stepperCallback.onFinish(errorHashMap)
+        }
     }
 
     /**
@@ -245,24 +307,28 @@ class SyncStepperImplementation(
      * @param result the latest result we got
      */
     @Synchronized
-    private fun checkIfAllDataUploaded(result: NetworkResult<JSONObject>) {
+    private suspend fun checkIfAllDataUploaded(result: NetworkResult<*>) {
         when (result) {
             is Success -> {
                 uploadRequestStatus.numUploaded++
             }
             is Failure -> {
                 uploadRequestStatus.numFailed++
-                errorHashMap[result.value.networkResponse?.statusCode] =
-                    VolleyRequests.getServerErrorMessage(result.value)
+                errorHashMap[result.statusCode] =
+                    VolleyRequests.getServerErrorMessage(result as Failure<Any>)
             }
         }
 
         // let the caller know we got another result
-        stepperCallback.onNewPatientAndReadingUploading(uploadRequestStatus)
+        withContext(Main) {
+            stepperCallback.onNewPatientAndReadingUploading(uploadRequestStatus)
+        }
 
         if (uploadRequestStatus.allRequestCompleted()) {
             // call the next step
-            stepperCallback.onNewPatientAndReadingUploadFinish(uploadRequestStatus)
+            withContext(Main) {
+                stepperCallback.onNewPatientAndReadingUploadFinish(uploadRequestStatus)
+            }
             downloadAllInfo()
         }
     }
@@ -273,7 +339,7 @@ class SyncStepperImplementation(
      * @param result the latest result we got.
      */
     @Synchronized
-    private fun checkIfAllDataIsDownloaded(result: NetworkResult<*>) {
+    private suspend fun checkIfAllDataIsDownloaded(result: NetworkResult<*>) {
 
         when (result) {
             is Success -> {
@@ -281,34 +347,20 @@ class SyncStepperImplementation(
             }
             is Failure -> {
                 downloadRequestStatus.numFailed++
-                errorHashMap[result.value.networkResponse?.statusCode] =
-                    VolleyRequests.getServerErrorMessage(result.value)
+                errorHashMap[result.statusCode] =
+                    VolleyRequests.getServerErrorMessage(result as Failure<Any>)
             }
         }
-        stepperCallback.onNewPatientAndReadingDownloading(downloadRequestStatus)
+        withContext(Main) {
+            stepperCallback.onNewPatientAndReadingDownloading(downloadRequestStatus)
+        }
         if (downloadRequestStatus.allRequestCompleted()) {
-            stepperCallback.onNewPatientAndReadingDownloadFinish(downloadRequestStatus)
+            withContext(Main) {
+                stepperCallback.onNewPatientAndReadingDownloadFinish(downloadRequestStatus)
+            }
             finish(true)
         }
     }
-}
-
-/**
- * contains information for the data we got through the update api
- */
-data class UpdateApiData(val jsonArray: JSONObject) {
-    val newPatientsIds =
-        HashSet<String>(jsonArray.getJSONArray("newPatients").toList(JSONArray::getString))
-    val editedPatientId =
-        HashSet<String>(jsonArray.getJSONArray("editedPatients").toList(JSONArray::getString))
-
-    // patients for these readings exists on the server so just download these readings...
-    val newReadingsIds =
-        HashSet<String>(jsonArray.getJSONArray("readings").toList(JSONArray::getString))
-
-    // followup for referrals that were sent through the phone
-    val followUpIds =
-        HashSet<String>(jsonArray.getJSONArray("followups").toList(JSONArray::getString))
 }
 
 /**

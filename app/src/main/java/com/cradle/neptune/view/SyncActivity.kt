@@ -13,6 +13,7 @@ import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.SyncManager
 import com.cradle.neptune.net.Success
 import com.cradle.neptune.sync.SyncStepperCallback
+import com.cradle.neptune.sync.SyncStepperImplementation
 import com.cradle.neptune.sync.TotalRequestStatus
 import javax.inject.Inject
 import kotlin.math.roundToInt
@@ -53,16 +54,10 @@ class SyncActivity : AppCompatActivity(),
             syncText.text = "Sync in progress! Please wait for it to complete."
             progressBar.visibility = View.VISIBLE
             MainScope().launch {
-                val result = syncManager.sync(this@SyncActivity)
+
+                SyncStepperImplementation(this@SyncActivity, this@SyncActivity).fetchUpdatesFromServer()
                 it.visibility = View.GONE
-                if (result is Success) {
-                    Toast.makeText(this@SyncActivity, "Sync Successful", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(this@SyncActivity, "Sync Failed", Toast.LENGTH_LONG).show()
-                }
             }
-            // SyncStepperImplementation(this, this).fetchUpdatesFromServer()
-            // it.visibility = View.GONE
         }
     }
 

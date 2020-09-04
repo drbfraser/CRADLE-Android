@@ -48,7 +48,7 @@ class SyncManager @Inject constructor(
             val npUpload = async(IO) {
                 val results = patientManager
                     .getUnUploadedPatients()
-                    .filterNot { updates.value.newPatients.contains(it.patient.id) }
+                    .filterNot { updates.value.newPatientsIds.contains(it.patient.id) }
                     .map { patient -> patientManager.uploadPatient(patient) }
                 monadicSequence(Unit, results)
             }
@@ -56,7 +56,7 @@ class SyncManager @Inject constructor(
             val epUpload = async(IO) {
                 val results = patientManager
                     .getEditedPatients(lastSyncTime)
-                    .filterNot { updates.value.editedPatients.contains(it.id) }
+                    .filterNot { updates.value.editedPatientsIds.contains(it.id) }
                     .map { patient -> patientManager.updatePatientOnServer(patient) }
                 monadicSequence(Unit, results)
             }
@@ -64,7 +64,7 @@ class SyncManager @Inject constructor(
             val rUpload = async(IO) {
                 val results = readingManager
                     .getUnUploadedReadingsForServerPatients()
-                    .filterNot { updates.value.readings.contains(it.id) }
+                    .filterNot { updates.value.newReadingsIds.contains(it.id) }
                     .map { reading -> restApi.postReading(reading).map { Unit } }
                 monadicSequence(Unit, results)
             }
@@ -87,7 +87,7 @@ class SyncManager @Inject constructor(
             val npDl = async(IO) {
                 val results = updates
                     .value
-                    .newPatients
+                    .newPatientsIds
                     .map { id -> // For each new patient in updates...
                         // download patient then store it in the database if successful
                         restApi.getPatient(id).map { patientAndReadings ->
@@ -105,7 +105,7 @@ class SyncManager @Inject constructor(
             val epDl = async(IO) {
                 val results = updates
                     .value
-                    .editedPatients
+                    .editedPatientsIds
                     .map { id -> // For each edited patient in updates...
                         // download patient then store it in the database if successful
                         restApi.getPatientInfo(id).map { patient ->
@@ -119,7 +119,7 @@ class SyncManager @Inject constructor(
             val rDl = async(IO) {
                 val results = updates
                     .value
-                    .readings
+                    .newReadingsIds
                     .map { id -> // For each reading id in updates...
                         // download reading then store it in the database if successful
                         restApi.getReading(id).map { reading ->
@@ -134,7 +134,7 @@ class SyncManager @Inject constructor(
             val fDl = async(IO) {
                 val results = updates
                     .value
-                    .followups
+                    .followupIds
                     .map { id -> // For each assessment id in updates...
                         // Download assessment
                         restApi.getAssessment(id).map { assessment ->
