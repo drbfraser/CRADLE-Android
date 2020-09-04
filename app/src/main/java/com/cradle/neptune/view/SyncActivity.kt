@@ -6,16 +6,12 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
-import com.cradle.neptune.manager.SyncManager
-import com.cradle.neptune.net.Success
 import com.cradle.neptune.sync.SyncStepperCallback
 import com.cradle.neptune.sync.SyncStepperImplementation
 import com.cradle.neptune.sync.TotalRequestStatus
-import javax.inject.Inject
 import kotlin.math.roundToInt
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
@@ -32,9 +28,6 @@ class SyncActivity : AppCompatActivity(),
     private val progressPercent =
         ProgressPercent(NUM_STEPS_FOR_SYNC)
     private lateinit var progressBar: ProgressBar
-
-    @Inject
-    lateinit var syncManager: SyncManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         (application as MyApp).appComponent.inject(this)
@@ -55,7 +48,8 @@ class SyncActivity : AppCompatActivity(),
             progressBar.visibility = View.VISIBLE
             MainScope().launch {
 
-                SyncStepperImplementation(this@SyncActivity, this@SyncActivity).fetchUpdatesFromServer()
+                SyncStepperImplementation(this@SyncActivity,
+                    this@SyncActivity).fetchUpdatesFromServer()
                 it.visibility = View.GONE
             }
         }
