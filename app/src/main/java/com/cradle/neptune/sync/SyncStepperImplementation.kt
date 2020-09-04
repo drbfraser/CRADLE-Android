@@ -2,6 +2,7 @@ package com.cradle.neptune.sync
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
@@ -105,11 +106,14 @@ class SyncStepperImplementation(
     override suspend fun setupUploadingPatientReadings(lastSyncTime: Long) {
 
         // get the brand new patients to upload
-        val newPatientsToUpload: ArrayList<PatientAndReadings> = patientManager.getUnUploadedPatients() as ArrayList<PatientAndReadings>
+        val newPatientsToUpload: ArrayList<PatientAndReadings> =
+            patientManager.getUnUploadedPatients() as ArrayList<PatientAndReadings>
 
-        val readingsToUpload: ArrayList<Reading> = readingManager.getUnUploadedReadingsForServerPatients() as ArrayList<Reading>
-            // mock the time for now, in the future, this will be from shared pref
-        val editedPatientsToUpload: ArrayList<Patient> = patientManager.getEditedPatients(lastSyncTime) as ArrayList<Patient>
+        val readingsToUpload: ArrayList<Reading> =
+            readingManager.getUnUploadedReadingsForServerPatients() as ArrayList<Reading>
+
+        val editedPatientsToUpload: ArrayList<Patient> =
+            patientManager.getEditedPatients(lastSyncTime) as ArrayList<Patient>
 
 
         // this will be edited patients that were not edited in the server, we match against the
@@ -151,32 +155,29 @@ class SyncStepperImplementation(
         // keep track of all the fail/pass status for uploaded requests
         uploadRequestStatus = TotalRequestStatus(totalNum, 0, 0)
 
-        // ListUploader(context, PATIENT, newPatientsToUpload) { result ->
-        //     // once finished call uploading a single patient, need to update the base time
-        //     checkIfAllDataUploaded(result)
-        // }.startUpload()
-        //
-        // // these will be new readings for existing patients in server
-        // ListUploader(context, READING, readingsToUpload) { result ->
-        //     checkIfAllDataUploaded(result)
-        // }.startUpload()
-        //
-        // ListUploader(context, PATIENT, editedPatientsToUpload) {
-        //     checkIfAllDataUploaded(it)
-        // }.startUpload()
-
         newPatientsToUpload.forEach {
             val result = restApi.postPatient(it)
+            when(result) {
+                is Success -> {
+
+                    it.patient.base = it.patient.lastEdited
+                    patientManager.add(it.patient)
+                    result.value.readings.forEach { reading ->
+                        reading.isUploadedToServer = true
+                    }
+                    readingManager.addAllReadings(result.value.readings)
+                }
+            }
             checkIfAllDataUploaded(result)
         }
 
         readingsToUpload.forEach {
-            val result = restApi.postReading(it)
+            val result = readingManager.uploadNewReadingToServer(it)
             checkIfAllDataUploaded(result)
         }
 
         editedPatientsToUpload.forEach {
-            val result = restApi.putPatient(it)
+            val result = patientManager.updatePatientOnServer(it)
             checkIfAllDataUploaded(result)
         }
 
@@ -201,26 +202,7 @@ class SyncStepperImplementation(
 
         // download brand new patients that are not on the device
         updateApiData.newPatientsIds.toList().forEach {
-            // volleyRequestManager.getFullPatientById(it) { result ->
-            //     // need to put them in the DB
-            //     when (result) {
-            //         is Success -> {
-            //             val patient = result.value.first
-            //             val readings = result.value.second
-            //             readings.forEach { reading ->
-            //                 reading.isUploadedToServer = true
-            //             }
-            //             readingManager.addAllReadings(readings)
-            //             patientManager.add(patient)
-            //             checkIfAllDataIsDownloaded(result)
-            //         }
-            //         is Failure -> {
-            //             checkIfAllDataIsDownloaded(result)
-            //         }
-            //     }
-            // }
-            val result = restApi.getPatient(it)
-
+            val result = patientManager.downloadPatientAndReading(it)
             when (result) {
                 is Success -> {
                     patientManager.add(result.value.patient)
@@ -237,46 +219,17 @@ class SyncStepperImplementation(
         // download all the patients that we have but were edited by the server....
         // these include the patients we rejected to upload in step 2
         updateApiData.editedPatientsIds.toList().forEach {
-            // volleyRequestManager.getPatientOnlyInfo(it) { result ->
-            //     checkIfAllDataIsDownloaded(result)
-            // }
-            val result = restApi.getPatientInfo(it)
-            when(result) {
-                is Success -> {
-                    patientManager.add(result.value)
-                }
-            }
+            val result = patientManager.downloadEditedPatientInfoFromServer(it)
             checkIfAllDataIsDownloaded(result)
         }
 
         updateApiData.newReadingsIds.toList().forEach {
-            // get all the readings that were created for existing patients from the server
-            // volleyRequestManager.getReadingById(it) { result ->
-            //     checkIfAllDataIsDownloaded(result)
-            // }
-            val  result = restApi.getReading(it)
-            when(result) {
-                is Success -> {
-                    readingManager.addReading(result.value)
-                }
-            }
+            val  result = readingManager.downloadNewReadingFromServer(it)
             checkIfAllDataIsDownloaded(result)
         }
 
         updateApiData.followupIds.toList().forEach {
-            // make a volley request to get the requests
-            // volleyRequestManager.updateFollowUpById(it) { result ->
-            //     checkIfAllDataIsDownloaded(result)
-            // }
-            val result = restApi.getAssessment(it)
-            when(result) {
-                is Success -> {
-                    val associatedReading = readingManager.getReadingById(result.value.readingId)
-                    associatedReading?.followUp = result.value
-                    // todo any normal case where this would crash??
-                    readingManager.updateReading(associatedReading!!)
-                }
-            }
+            val result = readingManager.downloadAssessmentsForReadings(it)
             checkIfAllDataIsDownloaded(result)
         }
         // if there is nothing to download, call next step

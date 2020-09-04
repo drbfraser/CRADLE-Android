@@ -50,12 +50,6 @@ class DataModule {
 
     @Provides
     @Singleton
-    fun provideReadingService(database: CradleDatabase): ReadingManager {
-        return ReadingManager(database.readingDaoAccess())
-    }
-
-    @Provides
-    @Singleton
     fun provideHealthCentreService(database: CradleDatabase?): HealthCentreManager {
         return HealthCentreManager(database!!)
     }

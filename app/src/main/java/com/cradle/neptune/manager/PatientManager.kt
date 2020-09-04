@@ -22,7 +22,6 @@ import kotlinx.coroutines.withContext
 @Suppress("RedundantSuspendModifier")
 class PatientManager @Inject constructor(
     private val daoAccess: PatientDaoAccess,
-    private val urlManager: UrlManager,
     private val restApi: RestApi
 ) {
 
@@ -97,7 +96,7 @@ class PatientManager @Inject constructor(
      * @param patientAndReadings the patient to upload
      * @return whether the upload succeeded or not
      */
-    suspend fun uploadPatient(patientAndReadings: PatientAndReadings): NetworkResult<Unit> =
+    suspend fun uploadNewPatient(patientAndReadings: PatientAndReadings): NetworkResult<Unit> =
         withContext(IO) {
             val result = restApi.postPatient(patientAndReadings)
             if (result is Success) {
@@ -132,12 +131,22 @@ class PatientManager @Inject constructor(
             result.map { Unit }
         }
 
+    suspend fun downloadEditedPatientInfoFromServer(patientId: String): NetworkResult<Unit> =
+        withContext(IO) {
+            val result = restApi.getPatientInfo(patientId)
+            if (result is Success) {
+                add(result.value)
+            }
+
+            result.map { Unit }
+        }
+
     /**
      * Downloads all the information for a patient from the server.
      *
      * @param id id of the patient to download
      */
-    suspend fun downloadPatient(id: String): NetworkResult<PatientAndReadings> =
+    suspend fun downloadPatientAndReading(id: String): NetworkResult<PatientAndReadings> =
         restApi.getPatient(id)
 
     /**
@@ -166,6 +175,6 @@ class PatientManager @Inject constructor(
                 return@withContext associateResult.cast()
             }
 
-            downloadPatient(id)
+            downloadPatientAndReading(id)
         }
 }

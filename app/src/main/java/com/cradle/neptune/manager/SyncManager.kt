@@ -49,7 +49,7 @@ class SyncManager @Inject constructor(
                 val results = patientManager
                     .getUnUploadedPatients()
                     .filterNot { updates.value.newPatientsIds.contains(it.patient.id) }
-                    .map { patient -> patientManager.uploadPatient(patient) }
+                    .map { patient -> patientManager.uploadNewPatient(patient) }
                 monadicSequence(Unit, results)
             }
 
