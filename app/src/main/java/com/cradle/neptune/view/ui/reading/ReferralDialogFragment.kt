@@ -29,7 +29,6 @@ import com.cradle.neptune.model.Referral
 import com.cradle.neptune.net.Failure
 import com.cradle.neptune.net.NetworkException
 import com.cradle.neptune.net.Success
-import com.cradle.neptune.network.VolleyRequests
 import com.cradle.neptune.utilitiles.UnixTimestamp
 import com.cradle.neptune.view.ui.settings.SettingsActivity
 import com.cradle.neptune.viewmodel.PatientReadingViewModel
@@ -233,7 +232,7 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
         progressDialog.cancel()
         when (result) {
             is Failure -> {
-                val message = VolleyRequests.getServerErrorMessage(TODO("move status errors"))
+                val message = result.getErrorMessage()
                 Toast.makeText(context, message, Toast.LENGTH_LONG).show()
             }
             is NetworkException -> {

@@ -6,15 +6,12 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
-import com.cradle.neptune.manager.SyncManager
-import com.cradle.neptune.net.Success
 import com.cradle.neptune.sync.SyncStepperCallback
+import com.cradle.neptune.sync.SyncStepperImplementation
 import com.cradle.neptune.sync.TotalRequestStatus
-import javax.inject.Inject
 import kotlin.math.roundToInt
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
@@ -25,15 +22,15 @@ class SyncActivity : AppCompatActivity(),
     companion object {
         private const val NUM_STEPS_FOR_SYNC = 3.0
     }
+
     private lateinit var uploadStatusTextView: TextView
     private lateinit var downloadStatusTextView: TextView
+
     private lateinit var syncText: TextView
+
     private val progressPercent =
         ProgressPercent(NUM_STEPS_FOR_SYNC)
     private lateinit var progressBar: ProgressBar
-
-    @Inject
-    lateinit var syncManager: SyncManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         (application as MyApp).appComponent.inject(this)
@@ -42,6 +39,7 @@ class SyncActivity : AppCompatActivity(),
 
         uploadStatusTextView = findViewById(R.id.uploadStatusTxt)
         downloadStatusTextView = findViewById(R.id.downloadStatusTxt)
+
         progressBar = findViewById(R.id.syncProgressBar)
         syncText = findViewById(R.id.syncText)
 
@@ -53,16 +51,11 @@ class SyncActivity : AppCompatActivity(),
             syncText.text = "Sync in progress! Please wait for it to complete."
             progressBar.visibility = View.VISIBLE
             MainScope().launch {
-                val result = syncManager.sync(this@SyncActivity)
+
+                SyncStepperImplementation(this@SyncActivity,
+                    this@SyncActivity).stepOneFetchUpdatesFromServer()
                 it.visibility = View.GONE
-                if (result is Success) {
-                    Toast.makeText(this@SyncActivity, "Sync Successful", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(this@SyncActivity, "Sync Failed", Toast.LENGTH_LONG).show()
-                }
             }
-            // SyncStepperImplementation(this, this).fetchUpdatesFromServer()
-            // it.visibility = View.GONE
         }
     }
 
@@ -80,8 +73,8 @@ class SyncActivity : AppCompatActivity(),
     @Synchronized
     override fun onNewPatientAndReadingUploading(uploadStatus: TotalRequestStatus) {
         uploadStatusTextView.text =
-            "Request completed ${uploadStatus.numUploaded + uploadStatus.numFailed}" +
-                " out of  ${uploadStatus.totalNum}"
+            "Request completed ${uploadStatus.numUploaded + uploadStatus.numFailed} " +
+                "out of  ${uploadStatus.totalNum}"
     }
 
     @Synchronized
@@ -110,7 +103,7 @@ class SyncActivity : AppCompatActivity(),
     }
 
     @Synchronized
-    override fun onFinish(errorCodes: HashMap<Int?, String>) {
+    override fun onFinish(errorCodes: HashMap<Int?, String?>) {
         progressBar.visibility = View.INVISIBLE
 
         if (errorCodes.isEmpty()) {

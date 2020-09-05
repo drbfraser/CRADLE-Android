@@ -9,7 +9,6 @@ import com.cradle.neptune.database.HealthFacilityDaoAccess
 import com.cradle.neptune.database.PatientDaoAccess
 import com.cradle.neptune.database.ReadingDaoAccess
 import com.cradle.neptune.manager.HealthCentreManager
-import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.manager.VolleyRequestManager
 import com.cradle.neptune.net.Http
 import com.cradle.neptune.network.VolleyRequestQueue
@@ -50,12 +49,6 @@ class DataModule {
 
     @Provides
     @Singleton
-    fun provideReadingService(database: CradleDatabase): ReadingManager {
-        return ReadingManager(database.readingDaoAccess())
-    }
-
-    @Provides
-    @Singleton
     fun provideHealthCentreService(database: CradleDatabase?): HealthCentreManager {
         return HealthCentreManager(database!!)
     }
@@ -68,7 +61,7 @@ class DataModule {
 
     @Provides
     @Singleton
-    fun providesHttp(application: Application?): Http = Http()
+    fun providesHttp(): Http = Http()
 
     @Provides
     @Singleton

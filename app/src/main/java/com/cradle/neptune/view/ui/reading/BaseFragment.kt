@@ -33,7 +33,7 @@ abstract class BaseFragment : Fragment() {
         if (this.activity == null) {
             return
         }
-        val context = context
+        context
         val view = this.requireActivity().currentFocus
         if (view != null) {
             val imm =

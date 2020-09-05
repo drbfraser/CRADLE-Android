@@ -113,7 +113,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         progressDialog.setMessage("Fetching the patient...")
         progressDialog.show()
         MainScope().launch {
-            val result = patientManager.downloadPatient(globalPatient.id)
+            val result = patientManager.downloadPatientAndReading(globalPatient.id)
             if (result !is Success) {
                 progressDialog.cancel()
                 Snackbar.make(
