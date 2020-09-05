@@ -6,13 +6,13 @@ import com.cradle.neptune.model.RetestGroup
 import com.cradle.neptune.net.NetworkResult
 import com.cradle.neptune.net.RestApi
 import com.cradle.neptune.net.Success
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 /**
  * Service for interfacing with readings stored in the database.
@@ -200,10 +200,10 @@ class ReadingManager @Inject constructor(
      * downloads the reading from the server and save it to the local database
      * @return upload result.
      */
-    suspend fun downloadNewReadingFromServer(id: String):NetworkResult<Unit> =
+    suspend fun downloadNewReadingFromServer(id: String): NetworkResult<Unit> =
         withContext(IO) {
             val result = restApi.getReading(id)
-            when(result) {
+            when (result) {
                 is Success -> {
                     addReading(result.value)
                 }
@@ -211,10 +211,10 @@ class ReadingManager @Inject constructor(
             result.map { Unit }
     }
 
-    suspend fun downloadAssessmentsForReadings(assessmentId:String): NetworkResult<Unit> =
+    suspend fun downloadAssessmentsForReadings(assessmentId: String): NetworkResult<Unit> =
         withContext(IO) {
             val result = restApi.getAssessment(assessmentId)
-            when(result) {
+            when (result) {
                 is Success -> {
                     val reading = getReadingById(result.value.readingId)
                     reading?.followUp = result.value
@@ -225,5 +225,4 @@ class ReadingManager @Inject constructor(
             }
             result.map { Unit }
         }
-
 }

@@ -2,7 +2,6 @@ package com.cradle.neptune.sync
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
@@ -88,8 +87,8 @@ class SyncStepperImplementation(
                 is Failure -> {
                     // let user know we failed.... probably cant continue?
                     errorHashMap[result.statusCode] =
-                        "we need to get the error message"
-                    //todo fix getting all the error.
+                        VolleyRequests.getServerErrorMessage(result.statusCode)
+                    // todo fix getting all the error.
                     withContext(Main) {
                         stepperCallback.onFetchDataCompleted(false)
                     }
@@ -114,7 +113,6 @@ class SyncStepperImplementation(
 
         val editedPatientsToUpload: ArrayList<Patient> =
             patientManager.getEditedPatients(lastSyncTime) as ArrayList<Patient>
-
 
         // this will be edited patients that were not edited in the server, we match against the
         // downloaded patient id from the server to avoid conflicts
@@ -150,14 +148,12 @@ class SyncStepperImplementation(
         val totalNum =
             newPatientsToUpload.size + readingsToUpload.size + editedPatientsToUpload.size
 
-
-
         // keep track of all the fail/pass status for uploaded requests
         uploadRequestStatus = TotalRequestStatus(totalNum, 0, 0)
 
         newPatientsToUpload.forEach {
             val result = restApi.postPatient(it)
-            when(result) {
+            when (result) {
                 is Success -> {
 
                     it.patient.base = it.patient.lastEdited
@@ -224,7 +220,7 @@ class SyncStepperImplementation(
         }
 
         updateApiData.newReadingsIds.toList().forEach {
-            val  result = readingManager.downloadNewReadingFromServer(it)
+            val result = readingManager.downloadNewReadingFromServer(it)
             checkIfAllDataIsDownloaded(result)
         }
 
@@ -268,7 +264,7 @@ class SyncStepperImplementation(
             is Failure -> {
                 uploadRequestStatus.numFailed++
                 errorHashMap[result.statusCode] =
-                    VolleyRequests.getServerErrorMessage(result as Failure<Any>)
+                    VolleyRequests.getServerErrorMessage(result.statusCode)
             }
         }
 
@@ -301,7 +297,7 @@ class SyncStepperImplementation(
             is Failure -> {
                 downloadRequestStatus.numFailed++
                 errorHashMap[result.statusCode] =
-                    VolleyRequests.getServerErrorMessage(result as Failure<Any>)
+                    VolleyRequests.getServerErrorMessage(result.statusCode)
             }
         }
         withContext(Main) {

@@ -23,17 +23,15 @@ class VolleyRequests(private val sharedPreferences: SharedPreferences) {
         private const val NOT_FOUND = 404
         private const val CONFLICT = 409
 
-        fun getServerErrorMessage(error: com.cradle.neptune.net.Failure<Any>): String {
-            var message = "Unable to upload to server (network error)"
-            message = when (error.statusCode) {
+        fun getServerErrorMessage(statusCode: Int): String {
+            return when (statusCode) {
                 UNAUTHORIZED -> "Server rejected credentials; check they are correct in settings."
                 BAD_REQUEST -> "Server rejected upload request; check server URL in settings."
                 NOT_FOUND -> "Server rejected URL; check server URL in settings."
                 CONFLICT -> "The reading or patient might already exists, check global patients"
                 else -> "Server rejected upload; check server URL in settings." +
-                    " Code " + error.statusCode
+                    " Code " + statusCode
             }
-            return message
         }
     }
 
