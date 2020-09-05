@@ -1,7 +1,6 @@
 package com.cradle.neptune.network
 
 import android.content.SharedPreferences
-import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request.Method.GET
 import com.android.volley.Request.Method.POST
 import com.android.volley.Response
@@ -15,25 +14,6 @@ import org.json.JSONObject
  * A list of requests type for Volley, Add requests type as needed
  */
 class VolleyRequests(private val sharedPreferences: SharedPreferences) {
-
-    companion object {
-        private const val FETCH_PATIENTS_TIMEOUT_MS = 150000
-        private const val UNAUTHORIZED = 401
-        private const val BAD_REQUEST = 400
-        private const val NOT_FOUND = 404
-        private const val CONFLICT = 409
-
-        fun getServerErrorMessage(statusCode: Int): String {
-            return when (statusCode) {
-                UNAUTHORIZED -> "Server rejected credentials; check they are correct in settings."
-                BAD_REQUEST -> "Server rejected upload request; check server URL in settings."
-                NOT_FOUND -> "Server rejected URL; check server URL in settings."
-                CONFLICT -> "The reading or patient might already exists, check global patients"
-                else -> "Server rejected upload; check server URL in settings." +
-                    " Code " + statusCode
-            }
-        }
-    }
 
     /**
      * returns a [GET] [JsonObjectRequest] type request
@@ -122,15 +102,5 @@ class VolleyRequests(private val sharedPreferences: SharedPreferences) {
     private fun getHttpHeaders(): Map<String, String>? {
         val token = sharedPreferences.getString(LoginManager.TOKEN_KEY, null)
         return mapOf(Pair("Authorization", "Bearer $token"))
-    }
-
-    /**
-     * policy to wait longer for requests, incase of poor connection
-     */
-    fun getRetryPolicy(): DefaultRetryPolicy {
-        return DefaultRetryPolicy(
-            FETCH_PATIENTS_TIMEOUT_MS, DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
-        )
     }
 }

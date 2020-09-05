@@ -15,7 +15,6 @@ import com.cradle.neptune.net.Failure
 import com.cradle.neptune.net.NetworkResult
 import com.cradle.neptune.net.RestApi
 import com.cradle.neptune.net.Success
-import com.cradle.neptune.network.VolleyRequests
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
@@ -57,7 +56,7 @@ class SyncStepperImplementation(
     private lateinit var uploadRequestStatus: TotalRequestStatus
     private lateinit var downloadRequestStatus: TotalRequestStatus
 
-    private val errorHashMap = HashMap<Int?, String>()
+    private val errorHashMap = HashMap<Int?, String?>()
 
     init {
         (context.applicationContext as MyApp).appComponent.inject(this)
@@ -88,7 +87,7 @@ class SyncStepperImplementation(
             is Failure -> {
                 // let user know we failed.... probably cant continue?
                 errorHashMap[result.statusCode] =
-                    VolleyRequests.getServerErrorMessage(result.statusCode)
+                    result.getErrorMessage()
                 withContext(Main) {
                     stepperCallback.onFetchDataCompleted(false)
                 }
@@ -224,7 +223,7 @@ class SyncStepperImplementation(
         }
 
         updateApiData.followupIds.toList().forEach {
-            val result = readingManager.downloadAssessmentsForReadings(it)
+            val result = readingManager.downloadAssessment(it)
             checkIfAllDataIsDownloaded(result)
         }
         // if there is nothing to download, call next step
@@ -263,7 +262,7 @@ class SyncStepperImplementation(
             is Failure -> {
                 uploadRequestStatus.numFailed++
                 errorHashMap[result.statusCode] =
-                    VolleyRequests.getServerErrorMessage(result.statusCode)
+                    result.getErrorMessage()
             }
         }
 
@@ -296,7 +295,7 @@ class SyncStepperImplementation(
             is Failure -> {
                 downloadRequestStatus.numFailed++
                 errorHashMap[result.statusCode] =
-                    VolleyRequests.getServerErrorMessage(result.statusCode)
+                    result.getErrorMessage()
             }
         }
         withContext(Main) {

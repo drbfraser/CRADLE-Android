@@ -74,5 +74,5 @@ interface SyncStepperCallback {
     /**
      * let the caller know we are done sync process
      */
-    fun onFinish(errorCodes: HashMap<Int?, String>)
+    fun onFinish(errorCodes: HashMap<Int?, String?>)
 }

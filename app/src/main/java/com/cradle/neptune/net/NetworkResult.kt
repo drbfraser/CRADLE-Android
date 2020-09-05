@@ -17,6 +17,11 @@ sealed class NetworkResult<T> {
          */
         @Suppress("MagicNumber")
         fun <T> pure(value: T) = Success(value, 200)
+
+        private const val UNAUTHORIZED = 401
+        private const val BAD_REQUEST = 400
+        private const val NOT_FOUND = 404
+        private const val CONFLICT = 409
     }
 
     /**
@@ -39,6 +44,27 @@ sealed class NetworkResult<T> {
             is Success -> false
             else -> true
         }
+
+    fun getErrorMessage(): String? {
+        return when (this) {
+            is Success -> {
+                null
+            }
+            is NetworkException -> {
+                this.cause.message
+            }
+            else -> {
+                when ((this as Failure).statusCode) {
+                    UNAUTHORIZED -> "Server rejected credentials; check they are correct in settings."
+                    BAD_REQUEST -> "Server rejected upload request; check server URL in settings."
+                    NOT_FOUND -> "Server rejected URL; check server URL in settings."
+                    CONFLICT -> "The reading or patient might already exists, check global patients"
+                    else -> "Server rejected upload; check server URL in settings." +
+                        " Code " + statusCode
+                }
+            }
+        }
+    }
 
     /**
      * Applies a closure [f] to transform the value field of a [Success] result.

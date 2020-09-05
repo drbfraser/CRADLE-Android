@@ -211,7 +211,7 @@ class ReadingManager @Inject constructor(
             result.map { Unit }
     }
 
-    suspend fun downloadAssessmentsForReadings(assessmentId: String): NetworkResult<Unit> =
+    suspend fun downloadAssessment(assessmentId: String): NetworkResult<Unit> =
         withContext(IO) {
             val result = restApi.getAssessment(assessmentId)
             when (result) {
