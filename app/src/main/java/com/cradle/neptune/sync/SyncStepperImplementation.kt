@@ -2,6 +2,7 @@ package com.cradle.neptune.sync
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
@@ -70,30 +71,28 @@ class SyncStepperImplementation(
     /**
      * step number 1, get all the newest data from the server. and go to step number 2.
      */
-    override suspend fun fetchUpdatesFromServer() {
+    override suspend fun stepOneFetchUpdatesFromServer() = withContext(IO) {
         val lastSyncTime = sharedPreferences.getLong(LAST_SYNC, LAST_SYNC_DEFAULT)
         // give a timestamp to provide, again this will be from shared pref eventually
-        withContext(IO) {
-            when (val result = restApi.getUpdates(lastSyncTime)) {
-                is Success -> {
-                    // result was success
-                    updateApiData = result.value
-                    // let caller know of the next step
-                    withContext(Main) {
-                        stepperCallback.onFetchDataCompleted(true)
-                    }
-                    setupUploadingPatientReadings(lastSyncTime)
+        when (val result = restApi.getUpdates(lastSyncTime)) {
+            is Success -> {
+                // result was success
+                updateApiData = result.value
+                // let caller know of the next step
+                withContext(Main) {
+                    stepperCallback.onFetchDataCompleted(true)
                 }
-                is Failure -> {
-                    // let user know we failed.... probably cant continue?
-                    errorHashMap[result.statusCode] =
-                        VolleyRequests.getServerErrorMessage(result.statusCode)
-                    // todo fix getting all the error.
-                    withContext(Main) {
-                        stepperCallback.onFetchDataCompleted(false)
-                    }
-                    finish(false)
+                Log.d("bugg", "current: ${Thread.currentThread().name}")
+                stepTwoSetupUploadingPatientReadings(lastSyncTime)
+            }
+            is Failure -> {
+                // let user know we failed.... probably cant continue?
+                errorHashMap[result.statusCode] =
+                    VolleyRequests.getServerErrorMessage(result.statusCode)
+                withContext(Main) {
+                    stepperCallback.onFetchDataCompleted(false)
                 }
+                finish(false)
             }
         }
     }
@@ -102,7 +101,7 @@ class SyncStepperImplementation(
      * step 2 -> starts uploading readings and patients starting with patients.
      * Be careful changing code in this function.
      */
-    override suspend fun setupUploadingPatientReadings(lastSyncTime: Long) {
+    override suspend fun stepTwoSetupUploadingPatientReadings(lastSyncTime: Long) = withContext(IO) {
 
         // get the brand new patients to upload
         val newPatientsToUpload: ArrayList<PatientAndReadings> =
@@ -182,14 +181,14 @@ class SyncStepperImplementation(
             withContext(Main) {
                 stepperCallback.onNewPatientAndReadingUploadFinish(uploadRequestStatus)
             }
-            downloadAllInfo()
+            stepThreeDownloadAllInfo()
         }
     }
 
     /**
      * step 3 -> now we download all the information one by one
      */
-    override suspend fun downloadAllInfo() {
+    override suspend fun stepThreeDownloadAllInfo() = withContext(IO) {
         val totalRequestNum =
             (updateApiData.editedPatientsIds.size + updateApiData.newReadingsIds.size +
                 updateApiData.followupIds.size + updateApiData.newPatientsIds.size)
@@ -240,7 +239,7 @@ class SyncStepperImplementation(
     /**
      * saved last sync time in the shared pref. let the caller know
      */
-    override suspend fun finish(success: Boolean) {
+    override suspend fun finish(success: Boolean) = withContext(IO) {
         if (success) {
             sharedPreferences.edit()
                 .putLong(LAST_SYNC, ZonedDateTime.now().toEpochSecond()).apply()
@@ -278,7 +277,7 @@ class SyncStepperImplementation(
             withContext(Main) {
                 stepperCallback.onNewPatientAndReadingUploadFinish(uploadRequestStatus)
             }
-            downloadAllInfo()
+            stepThreeDownloadAllInfo()
         }
     }
 

@@ -49,7 +49,7 @@ class SyncActivity : AppCompatActivity(),
             MainScope().launch {
 
                 SyncStepperImplementation(this@SyncActivity,
-                    this@SyncActivity).fetchUpdatesFromServer()
+                    this@SyncActivity).stepOneFetchUpdatesFromServer()
                 it.visibility = View.GONE
             }
         }
