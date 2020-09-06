@@ -1,17 +1,14 @@
 package com.cradle.neptune.view;
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,16 +16,10 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.JsonRequest;
-import com.android.volley.toolbox.Volley;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.manager.PatientManager;
 import com.cradle.neptune.manager.ReadingManager;
-import com.cradle.neptune.manager.UrlManager;
 import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.utilitiles.Util;
@@ -38,15 +29,10 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -72,16 +58,12 @@ public class PatientProfileActivity extends AppCompatActivity {
     Patient currPatient;
     List<Reading> patientReadings;
     // Data Model
-//    @Inject
-//    ReadingManager readingManager;
     @Inject
     ReadingManager readingManager;
     @Inject
     PatientManager patientManager;
     @Inject
     SharedPreferences sharedPreferences;
-    @Inject
-    UrlManager urlManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

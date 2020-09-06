@@ -22,14 +22,11 @@ import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.manager.ReferralUploadManger
 import com.cradle.neptune.model.HealthFacility
-import com.cradle.neptune.model.JsonObject
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.PatientAndReadings
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.Referral
-import com.cradle.neptune.network.Failure
-import com.cradle.neptune.network.Success
-import com.cradle.neptune.network.VolleyRequests
+import com.cradle.neptune.net.Success
 import com.cradle.neptune.utilitiles.UnixTimestamp
 import com.cradle.neptune.view.ui.settings.SettingsActivity
 import com.cradle.neptune.viewmodel.PatientReadingViewModel
@@ -39,6 +36,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 
 @Suppress("LargeClass")
 class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : DialogFragment() {
@@ -231,10 +229,6 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
         val result = referralUploadManger.uploadReferralViaWeb(patient, reading)
         progressDialog.cancel()
         when (result) {
-            is Failure -> {
-                val message = VolleyRequests.getServerErrorMessage(result.value)
-                Toast.makeText(context, message, Toast.LENGTH_LONG).show()
-            }
             is Success -> {
                 Toast.makeText(context, "Successfully uploaded referral", Toast.LENGTH_SHORT).show()
 
@@ -250,6 +244,9 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
                 })
                 dismiss()
                 onSuccessfulUpload()
+            }
+            else -> {
+                Toast.makeText(context, result.errorMessage, Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -270,7 +267,7 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
 
         val data = PatientAndReadings(patient, listOf(reading))
         val id = UUID.randomUUID().toString()
-        val json = with(JsonObject()) {
+        val json = with(JSONObject()) {
             put("referralId", id)
             put("patient", data.marshal())
         }

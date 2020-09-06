@@ -1,13 +1,13 @@
 package com.cradle.neptune.manager
 
-import android.util.Log
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.PatientAndReadings
 import com.cradle.neptune.model.Reading
-import com.cradle.neptune.network.Api
-import com.cradle.neptune.network.Failure
-import com.cradle.neptune.network.NetworkResult
-import com.cradle.neptune.network.map
+import com.cradle.neptune.net.Failure
+import com.cradle.neptune.net.NetworkException
+import com.cradle.neptune.net.NetworkResult
+import com.cradle.neptune.net.RestApi
+import com.cradle.neptune.net.Success
 import javax.inject.Inject
 
 private const val HTTP_NOT_FOUND = 404
@@ -15,12 +15,12 @@ private const val HTTP_NOT_FOUND = 404
 /**
  * Manages uploading referrals via HTTP.
  */
-class ReferralUploadManger @Inject constructor(private val api: Api) {
+class ReferralUploadManger @Inject constructor(private val restApi: RestApi) {
 
     /**
      * Attempts to upload a referral to the server.
      *
-     * The referral it self is actually nested within [reading], but we can't
+     * The referral itself is actually nested within [reading], but we can't
      * just upload that to the server because the reading (and maybe the
      * patient) don't yet exist up there. This method takes care of figuring
      * out what additional data needs to be uploaded along with the referral.
@@ -41,30 +41,22 @@ class ReferralUploadManger @Inject constructor(private val api: Api) {
         // First check to see if the patient exists. We don't have an explicit
         // API for this so we use the response code of the get patient info
         // API to determine whether the patient exists or not.
-        val patientCheckResult = api.getPatientInfo(patient.id)
-        val patientExists = if (patientCheckResult is Failure) {
-            val err = patientCheckResult.value
-            if (err.networkResponse == null) {
-                Log.e(this::class.simpleName, "Patient check failed with no response")
-                return Failure(err)
-            } else if (err.networkResponse.statusCode != HTTP_NOT_FOUND) {
-                Log.e(
-                    this::class.simpleName,
-                    "Patient check failed with non 404 error, aborting upload"
-                )
-                return Failure(err)
+        val patientExists = when (val result = restApi.getPatientInfo(patient.id)) {
+            is Failure -> if (result.statusCode == HTTP_NOT_FOUND) {
+                false
+            } else {
+                return result.cast()
             }
-            false
-        } else {
-            true
+            is Success -> true
+            is NetworkException -> return result.cast()
         }
 
         // If the patient exists we only need to upload the reading, if not
         // then we need to upload the whole patient as well.
         return if (patientExists) {
-            api.postReading(reading).map { PatientAndReadings(patient, listOf(it)) }
+            restApi.postReading(reading).map { PatientAndReadings(patient, listOf(it)) }
         } else {
-            api.postPatient(PatientAndReadings(patient, listOf(reading)))
+            restApi.postPatient(PatientAndReadings(patient, listOf(reading)))
         }
     }
 }

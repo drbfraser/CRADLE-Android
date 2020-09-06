@@ -1,28 +1,17 @@
-package com.cradle.neptune.model
+@file:Suppress("MatchingDeclarationName")
 
+package com.cradle.neptune.ext
+
+import com.cradle.neptune.model.Marshal
+import com.cradle.neptune.model.marshal
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import org.threeten.bp.ZonedDateTime
 
 /**
- * An alias of [JSONObject] with a name consistent with other class names.
- */
-typealias JsonObject = JSONObject
-
-/**
- * An alias of [JSONArray] with a name consistent with other class names.
- */
-typealias JsonArray = JSONArray
-
-/**
- * An alias of [JSONException] with a name consistent with other class names.
- */
-typealias JsonException = JSONException
-
-/**
  * Describes types which may be used as fields for retrieving and storing
- * values in a [JsonObject].
+ * values in a [JSONObject].
  *
  * The common use case for this interface is using an enumeration to represent
  * JSON fields instead of having to use strings all the time which are prone
@@ -43,7 +32,7 @@ interface Field {
          * [string].
          *
          * This method is intended for testing purposes or one-off uses of
-         * [JsonObject]'s `field` methods. It is strongly encouraged to define
+         * [JSONObject]'s `field` methods. It is strongly encouraged to define
          * an enumeration which implements this interface instead of using this
          * method.
          */
@@ -61,7 +50,7 @@ interface Field {
  *
  * @return This object.
  */
-fun <F : Field> JsonObject.put(field: F, value: Int?): JsonObject = put(field.text, value)
+fun <F : Field> JSONObject.put(field: F, value: Int?): JSONObject = put(field.text, value)
 
 /**
  * Maps [field] to [value].
@@ -71,7 +60,7 @@ fun <F : Field> JsonObject.put(field: F, value: Int?): JsonObject = put(field.te
  *
  * @return This object.
  */
-fun <F : Field> JsonObject.put(field: F, value: Long?): JsonObject = put(field.text, value)
+fun <F : Field> JSONObject.put(field: F, value: Long?): JSONObject = put(field.text, value)
 
 /**
  * Maps [field] to [value].
@@ -81,7 +70,7 @@ fun <F : Field> JsonObject.put(field: F, value: Long?): JsonObject = put(field.t
  *
  * @return This object.
  */
-fun <F : Field> JsonObject.put(field: F, value: Boolean?): JsonObject = put(field.text, value)
+fun <F : Field> JSONObject.put(field: F, value: Boolean?): JSONObject = put(field.text, value)
 
 /**
  * Maps [field] to [value].
@@ -91,7 +80,7 @@ fun <F : Field> JsonObject.put(field: F, value: Boolean?): JsonObject = put(fiel
  *
  * @return This object.
  */
-fun <F : Field> JsonObject.put(field: F, value: String?): JsonObject = put(field.text, value)
+fun <F : Field> JSONObject.put(field: F, value: String?): JSONObject = put(field.text, value)
 
 /**
  * Maps [field] to [value].
@@ -101,7 +90,7 @@ fun <F : Field> JsonObject.put(field: F, value: String?): JsonObject = put(field
  *
  * @return This object.
  */
-fun <F : Field> JsonObject.put(field: F, value: Double?): JsonObject = put(field.text, value)
+fun <F : Field> JSONObject.put(field: F, value: Double?): JSONObject = put(field.text, value)
 
 /**
  * Maps [field] to [value].
@@ -115,7 +104,7 @@ fun <F : Field> JsonObject.put(field: F, value: Double?): JsonObject = put(field
  *
  * @return This object.
  */
-fun <F : Field> JsonObject.put(field: F, value: ZonedDateTime?): JsonObject {
+fun <F : Field> JSONObject.put(field: F, value: ZonedDateTime?): JSONObject {
     val epochSeconds = value?.toEpochSecond()
     return put(field, epochSeconds)
 }
@@ -131,7 +120,7 @@ fun <F : Field> JsonObject.put(field: F, value: ZonedDateTime?): JsonObject {
  *
  * @return This object.
  */
-fun <F : Field> JsonObject.put(field: F, value: JsonObject?): JsonObject = put(field.text, value)
+fun <F : Field> JSONObject.put(field: F, value: JSONObject?): JSONObject = put(field.text, value)
 
 /**
  * Maps [field] to [value].
@@ -141,22 +130,22 @@ fun <F : Field> JsonObject.put(field: F, value: JsonObject?): JsonObject = put(f
  *
  * @return This object.
  */
-fun <F : Field> JsonObject.put(field: F, value: JsonArray?): JsonObject = put(field.text, value)
+fun <F : Field> JSONObject.put(field: F, value: JSONArray?): JSONObject = put(field.text, value)
 
 /**
- * Maps [field] to [value] by first converting [value] into a [JsonArray].
+ * Maps [field] to [value] by first converting [value] into a [JSONArray].
  *
  * If [value] is `null` then the mapping for [field] will be removed from this
  * object.
  *
  * This method is named differently from it's counterparts due to a limitation
  * of the JVM which is unable to determine the difference between `List<String>`
- * and `List<M> where M : Marshal<JsonObject>`.
+ * and `List<M> where M : Marshal<JSONObject>`.
  *
  * @return This object.
  */
-fun <F : Field> JsonObject.putStringArray(field: F, value: List<String>?): JsonObject =
-    put(field, value?.let { JsonArray(it) })
+fun <F : Field> JSONObject.putStringArray(field: F, value: List<String>?): JSONObject =
+    put(field, value?.let { JSONArray(it) })
 
 /**
  * Marshals [value] to JSON then stores it as a sub-object under the field name.
@@ -166,7 +155,7 @@ fun <F : Field> JsonObject.putStringArray(field: F, value: List<String>?): JsonO
  *
  * @return This object.
  */
-fun <F : Field, M : Marshal<JsonObject>> JsonObject.put(field: F, value: M?): JsonObject =
+fun <F : Field, M : Marshal<JSONObject>> JSONObject.put(field: F, value: M?): JSONObject =
     put(field.text, value?.marshal())
 
 /**
@@ -178,15 +167,15 @@ fun <F : Field, M : Marshal<JsonObject>> JsonObject.put(field: F, value: M?): Js
  *
  * @return This object.
  */
-fun <F : Field, M : Marshal<JsonObject>> JsonObject.put(field: F, values: List<M>?): JsonObject =
-    put(field.text, values?.map(::marshal)?.let { JsonArray(it) })
+fun <F : Field, M : Marshal<JSONObject>> JSONObject.put(field: F, values: List<M>?): JSONObject =
+    put(field.text, values?.map(::marshal)?.let { JSONArray(it) })
 
 /**
  * Returns the string value for the specified field.
  *
- * @throws JsonException If no such field exists.
+ * @throws JSONException If no such field exists.
  */
-fun <F : Field> JsonObject.stringField(field: F): String = getString(field.text)
+fun <F : Field> JSONObject.stringField(field: F): String = getString(field.text)
 
 /**
  * Returns the string value for the specified field or `null` if it does not
@@ -194,10 +183,10 @@ fun <F : Field> JsonObject.stringField(field: F): String = getString(field.text)
  *
  * @return The string value contained in the field.
  */
-fun <F : Field> JsonObject.optStringField(field: F): String? = try {
+fun <F : Field> JSONObject.optStringField(field: F): String? = try {
     val value = getString(field.text)
 
-    // Sometimes, we'll use the string "null" to mean a real `null` and no the
+    // Sometimes, we'll use the string "null" to mean a real `null` and not the
     // text "null" (yes very confusing, I know). To compensate for this, when
     // parsing an optional string, the text "null" will be treated as a literal
     // `null` and not the string "null". Note that this is not the case for the
@@ -207,16 +196,16 @@ fun <F : Field> JsonObject.optStringField(field: F): String? = try {
     } else {
         value
     }
-} catch (e: JsonException) {
+} catch (e: JSONException) {
     null
 }
 
 /**
  * Returns the integer value for the specified field.
  *
- * @throws JsonException If no such field exists.
+ * @throws JSONException If no such field exists.
  */
-fun <F : Field> JsonObject.intField(field: F): Int = getInt(field.text)
+fun <F : Field> JSONObject.intField(field: F): Int = getInt(field.text)
 
 /**
  * Returns the integer value for the specified field or `null` if it does not
@@ -224,18 +213,18 @@ fun <F : Field> JsonObject.intField(field: F): Int = getInt(field.text)
  *
  * @return The boolean value contained in the field.
  */
-fun <F : Field> JsonObject.optIntField(field: F): Int? = try {
+fun <F : Field> JSONObject.optIntField(field: F): Int? = try {
     getInt(field.text)
-} catch (e: JsonException) {
+} catch (e: JSONException) {
     null
 }
 
 /**
  * Returns the long value for the specified field.
  *
- * @throws JsonException If no such field exists.
+ * @throws JSONException If no such field exists.
  */
-fun <F : Field> JsonObject.longField(field: F): Long = getLong(field.text)
+fun <F : Field> JSONObject.longField(field: F): Long = getLong(field.text)
 
 /**
  * Returns the long value for the specified field or `null` if it does not
@@ -243,18 +232,18 @@ fun <F : Field> JsonObject.longField(field: F): Long = getLong(field.text)
  *
  * @return The long value contained in the field.
  */
-fun <F : Field> JsonObject.optLongField(field: F): Long? = try {
+fun <F : Field> JSONObject.optLongField(field: F): Long? = try {
     getLong(field.text)
-} catch (e: JsonException) {
+} catch (e: JSONException) {
     null
 }
 
 /**
  * Returns the double value for the specified field.
  *
- * @throws JsonException If no such field exists.
+ * @throws JSONException If no such field exists.
  */
-fun <F : Field> JsonObject.doubleField(field: F): Double = getDouble(field.text)
+fun <F : Field> JSONObject.doubleField(field: F): Double = getDouble(field.text)
 
 /**
  * Returns the double value for the specified field or `null` if it does not
@@ -262,58 +251,58 @@ fun <F : Field> JsonObject.doubleField(field: F): Double = getDouble(field.text)
  *
  * @return The double value contained in the field.
  */
-fun <F : Field> JsonObject.optDoubleField(field: F): Double? = try {
+fun <F : Field> JSONObject.optDoubleField(field: F): Double? = try {
     getDouble(field.text)
-} catch (e: JsonException) {
+} catch (e: JSONException) {
     null
 }
 
 /**
  * Returns the boolean value for the specified field.
  *
- * @throws JsonException If no such field exists.
+ * @throws JSONException If no such field exists.
  */
-fun <F : Field> JsonObject.booleanField(field: F): Boolean = getBoolean(field.text)
+fun <F : Field> JSONObject.booleanField(field: F): Boolean = getBoolean(field.text)
 
 /**
  * Returns the boolean value for the specified field or `null` if it does not
  * exist.
  *
- * @throws JsonException If no such field exists.
+ * @throws JSONException If no such field exists.
  */
-fun <F : Field> JsonObject.optBooleanField(field: F): Boolean = optBoolean(field.text, false)
+fun <F : Field> JSONObject.optBooleanField(field: F): Boolean = optBoolean(field.text, false)
 
 /**
  * Returns the object value for the specified field.
  *
- * @throws JsonException If no such field exists.
+ * @throws JSONException If no such field exists.
  */
-fun <F : Field> JsonObject.objectField(field: F): JsonObject = getJSONObject(field.text)
+fun <F : Field> JSONObject.objectField(field: F): JSONObject = getJSONObject(field.text)
 
 /**
  * Returns the object value for the specified field or `null` if not such field
  * exists.
  */
-fun <F : Field> JsonObject.optObjectField(field: F): JsonObject? = try {
+fun <F : Field> JSONObject.optObjectField(field: F): JSONObject? = try {
     objectField(field)
-} catch (e: JsonException) {
+} catch (e: JSONException) {
     null
 }
 
 /**
  * Returns the array value for the specified field.
  *
- * @throws JsonException If no such field exists.
+ * @throws JSONException If no such field exists.
  */
-fun <F : Field> JsonObject.arrayField(field: F): JsonArray = getJSONArray(field.text)
+fun <F : Field> JSONObject.arrayField(field: F): JSONArray = getJSONArray(field.text)
 
 /**
  * Returns the array value for the specified field or `null` if no such field
  * exists.
  */
-fun <F : Field> JsonObject.optArrayField(field: F): JsonArray? = try {
+fun <F : Field> JSONObject.optArrayField(field: F): JSONArray? = try {
     getJSONArray(field.text)
-} catch (e: JsonException) {
+} catch (e: JSONException) {
     null
 }
 
@@ -326,9 +315,9 @@ fun <F : Field> JsonObject.optArrayField(field: F): JsonArray? = try {
  * from the field.
  * @return The result of [transform]
  *
- * @throws JsonException If no such field exists.
+ * @throws JSONException If no such field exists.
  */
-fun <T, F : Field> JsonObject.mapField(field: F, transform: (String) -> T): T =
+fun <T, F : Field> JSONObject.mapField(field: F, transform: (String) -> T): T =
     transform(stringField(field))
 
 /**
@@ -341,7 +330,7 @@ fun <T, F : Field> JsonObject.mapField(field: F, transform: (String) -> T): T =
  * from the field.
  * @return The result of [transform] or `null` if the field doesn't exist.
  */
-fun <T, F : Field> JsonObject.mapOptField(field: F, transform: (String) -> T): T? {
+fun <T, F : Field> JSONObject.mapOptField(field: F, transform: (String) -> T): T? {
     val str = optStringField(field) ?: return null
     return transform(str)
 }
@@ -349,7 +338,7 @@ fun <T, F : Field> JsonObject.mapOptField(field: F, transform: (String) -> T): T
 /**
  * True if [field] exists and is not the string `"null"`.
  */
-fun <F : Field> JsonObject.hasNonNullField(field: F) = optStringField(field) != "null"
+fun <F : Field> JSONObject.hasNonNullField(field: F) = optStringField(field) != "null"
 
 /**
  * Performs a set union on the mappings in `this` and [other] storing the
@@ -360,10 +349,10 @@ fun <F : Field> JsonObject.hasNonNullField(field: F) = optStringField(field) != 
  *
  * If [other] is `null`, then this method does nothing.
  *
- * @param other A [JsonObject] to union with `this`.
+ * @param other A [JSONObject] to union with `this`.
  * @return This object.
  */
-fun JsonObject.union(other: JsonObject?): JsonObject {
+fun JSONObject.union(other: JSONObject?): JSONObject {
     if (other == null) {
         return this
     }
@@ -386,29 +375,47 @@ fun JsonObject.union(other: JsonObject?): JsonObject {
  * @param other The object to convert to JSON and union.
  * @return This object.
  */
-fun <M : Marshal<JsonObject>> JsonObject.union(other: M?): JsonObject = union(other?.marshal())
+fun <M : Marshal<JSONObject>> JSONObject.union(other: M?): JSONObject = union(other?.marshal())
 
 /**
- * Maps each element in a [JsonArray].
+ * Converts this JSON array into a list.
  *
- * Since we don't know how to interpret each element in the array a [producer]
- * function must be provided to extract each element from the array before
- * [mapper] can be called to transform the element.
+ * Since the element type of [JSONArray] is unknown at compile time, a
+ * producer is required to extract elements from the array. Usually this
+ * takes the form of a method reference.
  *
- * The value for [producer] will usually be a method reference to once of
- * [JsonArray]'s methods (e.g., `JsonArray::getString`).
+ * ## Example
+ *
+ * To convert a [JSONArray] into a list of [Long]s, one can simply do:
+ *
+ * ```
+ * val l = array.toList(JSONArray::getLong)
+ * ```
+ *
+ * @param producer takes a reference to the wrapped [JSONArray] and an index
+ *  and produces a value which will be appended to the list
+ * @return the JSON array as a list of elements of type [T]
  */
-fun <T, U> JsonArray.map(producer: (JsonArray, Int) -> T, mapper: (T) -> U): List<U> {
-    val list = mutableListOf<U>()
-    for (i in 0 until this.length()) {
-        list.add(mapper(producer(this, i)))
-    }
-    return list
-}
+fun <T> JSONArray.toList(producer: (JSONArray, Int) -> T): List<T> =
+    (0 until length()).map { producer(this, it) }
 
 /**
- * Equivalent to [map] where `mapper` is the identity function.
+ * Maps each element of this JSON array into a new value and returns the result
+ * as a list.
  *
- * Useful for converting a [JsonArray] to a list without mapping anything.
+ * Equivalent to calling `List::map` on the result of `JSONArray::toList`.
+ *
+ * ## Example
+ *
+ * ```
+ * val lengths = array.map(JSONArray::getString) { it.length() }
+ * ```
+ *
+ * @param producer takes a reference to the wrapped [JSONArray] and an index
+ *  and produces a value which will be appended to the list
+ * @param mapper takes a result of [producer] and converts into into a new
+ *  value of type [U]
+ * @return the result of mapping [mapper] over each element in this JSON array
  */
-fun <T> JsonArray.toList(producer: (JsonArray, Int) -> T): List<T> = map(producer) { x -> x }
+fun <T, U> JSONArray.map(producer: (JSONArray, Int) -> T, mapper: (T) -> U): List<U> =
+    toList(producer).map(mapper)

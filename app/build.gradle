@@ -106,9 +106,6 @@ dependencies {
     // Blur
     implementation 'com.wonderkiln:blurkit:1.0.0'
 
-    // Volley (networking)
-    implementation 'com.android.volley:volley:1.1.1'
-
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
 
     // junit 5 unit testing

@@ -13,14 +13,14 @@ interface SyncStepper {
      * the api returns arrays of ids for new patients,edited patients, new readings, new assessments
      * Once we have all the data we move to step number 2
      */
-    fun fetchUpdatesFromServer()
+    suspend fun stepOneFetchUpdatesFromServer()
 
     /**
      * This is the step number two. Here we start uploading data to the server.
      * The data can include new patients, edited patients, new readings etc.
      * NOTE: we do not upload the patients edited by local user as well as the server
      */
-    fun setupUploadingPatientReadings(lastSyncTime: Long)
+    suspend fun stepTwoSetupUploadingPatientReadings(lastSyncTime: Long)
 
     /**
      * This is the third step. Here we download all the new data from the server
@@ -28,13 +28,13 @@ interface SyncStepper {
      * NOTE: in step number 2, we avoided uploading patient info that was also edited by the server
      * in this step, we override our changes with the server since server changes are always prioritized.
      */
-    fun downloadAllInfo()
+    suspend fun stepThreeDownloadAllInfo()
 
     /**
      * This is the last step of the sync process.
      * Here we update the last sync timestamp in the shared pref
      */
-    fun finish(success: Boolean)
+    suspend fun finish(success: Boolean)
 }
 
 /**
@@ -74,5 +74,5 @@ interface SyncStepperCallback {
     /**
      * let the caller know we are done sync process
      */
-    fun onFinish(errorCodes: HashMap<Int?, String>)
+    fun onFinish(errorCodes: HashMap<Int?, String?>)
 }

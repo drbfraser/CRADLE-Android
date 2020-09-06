@@ -3,7 +3,12 @@ package com.cradle.neptune.manager
 import com.cradle.neptune.database.ReadingDaoAccess
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.RetestGroup
+import com.cradle.neptune.net.NetworkResult
+import com.cradle.neptune.net.RestApi
+import com.cradle.neptune.net.Success
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -25,7 +30,10 @@ import kotlinx.coroutines.withContext
  * main thread rather than run time error
  */
 @Suppress("RedundantSuspendModifier")
-class ReadingManager(private val daoAccess: ReadingDaoAccess) {
+class ReadingManager @Inject constructor(
+    private val daoAccess: ReadingDaoAccess,
+    private val restApi: RestApi
+) {
 
     /**
      * Adds a new reading to the database.
@@ -171,4 +179,50 @@ class ReadingManager(private val daoAccess: ReadingDaoAccess) {
     suspend fun deleteAllData() {
         daoAccess.deleteAllReading()
     }
+
+    /**
+     * upload new reading to the server and mark it uploaded based on the result.
+     * @return upload result
+     */
+    suspend fun uploadNewReadingToServer(reading: Reading): NetworkResult<Unit> =
+        withContext(IO) {
+            val result = restApi.postReading(reading)
+            when (result) {
+                is Success -> {
+                    reading.isUploadedToServer = true
+                    daoAccess.update(reading)
+                }
+            }
+            result.map { Unit }
+        }
+
+    /**
+     * downloads the reading from the server and save it to the local database
+     * @return upload result.
+     */
+    suspend fun downloadNewReadingFromServer(id: String): NetworkResult<Unit> =
+        withContext(IO) {
+            val result = restApi.getReading(id)
+            when (result) {
+                is Success -> {
+                    addReading(result.value)
+                }
+            }
+            result.map { Unit }
+    }
+
+    suspend fun downloadAssessment(assessmentId: String): NetworkResult<Unit> =
+        withContext(IO) {
+            val result = restApi.getAssessment(assessmentId)
+            when (result) {
+                is Success -> {
+                    val reading = getReadingById(result.value.readingId)
+                    reading?.followUp = result.value
+                    if (reading != null) {
+                        updateReading(reading)
+                    }
+                }
+            }
+            result.map { Unit }
+        }
 }

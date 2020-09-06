@@ -5,7 +5,6 @@ import android.app.ProgressDialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
@@ -19,12 +18,9 @@ import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.ext.hideKeyboard
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
-import com.cradle.neptune.manager.VolleyRequestManager
 import com.cradle.neptune.model.GlobalPatient
-import com.cradle.neptune.network.Failure
-import com.cradle.neptune.network.Success
-import com.cradle.neptune.network.unwrap
-import com.cradle.neptune.network.unwrapFailure
+import com.cradle.neptune.net.RestApi
+import com.cradle.neptune.net.Success
 import com.cradle.neptune.viewmodel.GlobalPatientAdapter
 import com.google.android.material.snackbar.Snackbar
 import javax.inject.Inject
@@ -48,7 +44,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
     lateinit var readingManager: ReadingManager
 
     @Inject
-    lateinit var volleyRequestManager: VolleyRequestManager
+    lateinit var restApi: RestApi
 
     private lateinit var searchView: SearchView
 
@@ -98,26 +94,17 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         val progressDialog = getProgessDialog("Fetching the patients")
         progressDialog.show()
 
-        volleyRequestManager.getAllPatientsFromServerByQuery(searchUrl) { result ->
+        MainScope().launch {
+            val result = restApi.searchForPatient(searchUrl)
+            progressDialog.cancel()
+            searchView.hideKeyboard()
             when (result) {
-                is Success -> {
-                    val globalList = result.unwrap()
-                    MainScope().launch {
-                        setupPatientsRecycler(globalList)
-                    }
-                    progressDialog.cancel()
-                    searchView.hideKeyboard()
-                }
-                is Failure -> {
-                    Log.e(TAG, "error: " + result.unwrapFailure().message)
-                    progressDialog.cancel()
-                    searchView.hideKeyboard()
-                    MainScope().launch {
-                        setupPatientsRecycler(null)
-                    }
+                is Success -> setupPatientsRecycler(result.value)
+                else -> {
+                    setupPatientsRecycler(null)
                     Snackbar.make(
                         searchView,
-                        "Sorry unable to fetch the patients",
+                        "Sorry unable to fetch patients",
                         Snackbar.LENGTH_LONG
                     ).show()
                 }
@@ -216,40 +203,31 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
     ) {
         val progressDialog = getProgessDialog("Adding to your patient list.")
         progressDialog.show()
-        volleyRequestManager.getFullPatientById(patient.id) { result ->
-            when (result) {
+        MainScope().launch {
+            when (val result = patientManager.associatePatientAndDownload(patient.id)) {
                 is Success -> {
-                    // make another network call to set patient association and than save the results
-                    volleyRequestManager.setUserPatientAssociation(patient.id) { isSuccessFul ->
-                        if (isSuccessFul) {
-                            patientManager.add(result.unwrap().first)
-                            readingManager.addAllReadings(result.unwrap().second)
-                            // add it to our local set for matching
-                            localPatientSet.add(patient.id)
-                            // todo make the O^n better, maybe globalPatientList can be a map?
-                            // updating current adapter
-                            for (it in globalPatientList) {
-                                if (it.id == patient.id) {
-                                    it.isMyPatient = true
-                                    break
-                                }
-                            }
-                            globalPatientAdapter.notifyDataSetChanged()
-                            progressDialog.cancel()
-                        } else {
-                            Toast.makeText(
-                                this@GlobalPatientSearchActivity,
-                                "Unable to make user-patient relationship", Toast.LENGTH_LONG
-                            ).show()
+                    val patientAndReadings = result.value
+                    patientManager.add(patientAndReadings.patient)
+                    readingManager.addAllReadings(patientAndReadings.readings)
+                    localPatientSet.add(patient.id)
+                    // todo make the O^n better, maybe globalPatientList can be a map?
+                    for (it in globalPatientList) {
+                        if (it.id == patient.id) {
+                            it.isMyPatient = true
+                            break
                         }
                     }
+                    globalPatientAdapter.notifyDataSetChanged()
                 }
-                is Failure -> {
-                    val error = result.unwrapFailure()
-                    progressDialog.cancel()
-                    error.printStackTrace()
+                else -> {
+                    Toast.makeText(
+                        this@GlobalPatientSearchActivity,
+                        "Unable to make user-patient relationship",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
+            progressDialog.cancel()
         }
     }
 

@@ -4,13 +4,13 @@ import androidx.room.TypeConverter
 import com.cradle.neptune.model.Assessment
 import com.cradle.neptune.model.BloodPressure
 import com.cradle.neptune.model.GestationalAge
-import com.cradle.neptune.model.JsonObject
 import com.cradle.neptune.model.ReadingMetadata
 import com.cradle.neptune.model.Referral
 import com.cradle.neptune.model.Sex
 import com.cradle.neptune.model.UrineTest
 import com.google.gson.Gson
 import com.google.gson.JsonArray
+import org.json.JSONObject
 
 /**
  * A list of [TypeConverter] to save objects into room database
@@ -23,7 +23,7 @@ class DatabaseTypeConverters {
 
     @TypeConverter
     fun stringToGestationalAge(string: String?): GestationalAge? =
-        string?.let { GestationalAge.unmarshal(JsonObject(it)) }
+        string?.let { GestationalAge.unmarshal(JSONObject(it)) }
 
     @TypeConverter
     fun stringToSex(string: String): Sex = enumValueOf(string)
