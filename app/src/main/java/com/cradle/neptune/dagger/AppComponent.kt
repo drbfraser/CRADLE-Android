@@ -1,6 +1,5 @@
 package com.cradle.neptune.dagger
 
-import com.cradle.neptune.manager.VolleyRequestManager
 import com.cradle.neptune.sync.SyncStepperImplementation
 import com.cradle.neptune.view.GlobalPatientProfileActivity
 import com.cradle.neptune.view.GlobalPatientSearchActivity
@@ -43,7 +42,6 @@ interface AppComponent {
     fun inject(healthFacilitiesActivity: HealthFacilitiesActivity?)
     fun inject(globalPatientSearchActivity: GlobalPatientSearchActivity?)
     fun inject(healthFacilityViewModel: HealthFacilityViewModel?)
-    fun inject(volleyRequestManager: VolleyRequestManager?)
     fun inject(syncStepperImplementation: SyncStepperImplementation?)
     fun inject(syncActivity: SyncActivity)
     fun inject(myApp: MyApp)

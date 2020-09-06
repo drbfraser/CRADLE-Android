@@ -26,8 +26,6 @@ import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.PatientAndReadings
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.Referral
-import com.cradle.neptune.net.Failure
-import com.cradle.neptune.net.NetworkException
 import com.cradle.neptune.net.Success
 import com.cradle.neptune.utilitiles.UnixTimestamp
 import com.cradle.neptune.view.ui.settings.SettingsActivity
@@ -231,13 +229,6 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
         val result = referralUploadManger.uploadReferralViaWeb(patient, reading)
         progressDialog.cancel()
         when (result) {
-            is Failure -> {
-                val message = result.getErrorMessage()
-                Toast.makeText(context, message, Toast.LENGTH_LONG).show()
-            }
-            is NetworkException -> {
-                Toast.makeText(context, result.cause.message, Toast.LENGTH_LONG).show()
-            }
             is Success -> {
                 Toast.makeText(context, "Successfully uploaded referral", Toast.LENGTH_SHORT).show()
 
@@ -253,6 +244,9 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
                 })
                 dismiss()
                 onSuccessfulUpload()
+            }
+            else -> {
+                Toast.makeText(context, result.errorMessage, Toast.LENGTH_LONG).show()
             }
         }
     }

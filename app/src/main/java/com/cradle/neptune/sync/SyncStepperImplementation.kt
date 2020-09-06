@@ -6,7 +6,6 @@ import android.util.Log
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
-import com.cradle.neptune.manager.VolleyRequestManager
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.PatientAndReadings
 import com.cradle.neptune.model.Reading
@@ -32,9 +31,6 @@ class SyncStepperImplementation(
     private val stepperCallback: SyncStepperCallback
 ) :
     SyncStepper {
-
-    @Inject
-    lateinit var volleyRequestManager: VolleyRequestManager
 
     @Inject
     lateinit var restApi: RestApi
@@ -86,8 +82,7 @@ class SyncStepperImplementation(
             }
             is Failure -> {
                 // let user know we failed.... probably cant continue?
-                errorHashMap[result.statusCode] =
-                    result.getErrorMessage()
+                errorHashMap[result.statusCode] = result.errorMessage
                 withContext(Main) {
                     stepperCallback.onFetchDataCompleted(false)
                 }
@@ -262,7 +257,7 @@ class SyncStepperImplementation(
             is Failure -> {
                 uploadRequestStatus.numFailed++
                 errorHashMap[result.statusCode] =
-                    result.getErrorMessage()
+                    result.errorMessage
             }
         }
 
@@ -295,7 +290,7 @@ class SyncStepperImplementation(
             is Failure -> {
                 downloadRequestStatus.numFailed++
                 errorHashMap[result.statusCode] =
-                    result.getErrorMessage()
+                    result.errorMessage
             }
         }
         withContext(Main) {

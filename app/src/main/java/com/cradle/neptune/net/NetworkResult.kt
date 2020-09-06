@@ -1,23 +1,23 @@
 package com.cradle.neptune.net
 
 import com.cradle.neptune.model.Unmarshal
-import com.cradle.neptune.utilitiles.functional.fold1
 
 /**
- * Sum type representing the result of a network request.
+ * The result of a network request.
+ *
+ * Objects of this type can only be instances of one of the three implementing
+ * types defined in this file: [Success], [Failure], or [NetworkException].
+ *
+ * Types like this are known as *discriminated (or tagged) unions* and are
+ * useful when dealing with data which has a fixed number of various forms it
+ * may take. For more information on how these types work in Kotlin, see
+ * [sealed class](https://kotlinlang.org/docs/reference/sealed-classes.html).
+ *
+ * @param T wrapped type of the [Success] variant
  */
 sealed class NetworkResult<T> {
 
     companion object {
-        /**
-         * Lifts [value] into the [NetworkResult] monad.
-         *
-         * @param value the value to lift
-         * @return A successful network result which contains [value]
-         */
-        @Suppress("MagicNumber")
-        fun <T> pure(value: T) = Success(value, 200)
-
         private const val UNAUTHORIZED = 401
         private const val BAD_REQUEST = 400
         private const val NOT_FOUND = 404
@@ -39,32 +39,30 @@ sealed class NetworkResult<T> {
     /**
      * Returns `true` if this result is a [Failure] or [Exception] variant.
      */
-    val failed
+    val failed: Boolean
         get() = when (this) {
             is Success -> false
             else -> true
         }
 
-    fun getErrorMessage(): String? {
-        return when (this) {
-            is Success -> {
-                null
-            }
-            is NetworkException -> {
-                this.cause.message
-            }
-            else -> {
-                when ((this as Failure).statusCode) {
-                    UNAUTHORIZED -> "Server rejected credentials; check they are correct in settings."
-                    BAD_REQUEST -> "Server rejected upload request; check server URL in settings."
-                    NOT_FOUND -> "Server rejected URL; check server URL in settings."
-                    CONFLICT -> "The reading or patient might already exists, check global patients"
-                    else -> "Server rejected upload; check server URL in settings." +
-                        " Code " + statusCode
-                }
+    /**
+     * A friendly error message for this [NetworkResult].
+     *
+     * @return A message describing the error contained in this result or null
+     *  if this result is a [Success] variant.
+     */
+    val errorMessage: String?
+        get() = when (this) {
+            is Success -> null
+            is NetworkException -> this.cause.message
+            is Failure -> when (this.statusCode) {
+                UNAUTHORIZED -> "Server rejected credentials; check they are correct in settings."
+                BAD_REQUEST -> "Server rejected upload request; check server URL in settings."
+                NOT_FOUND -> "Server rejected URL; check server URL in settings."
+                CONFLICT -> "The reading or patient might already exists, check global patients"
+                else -> "Server rejected upload; check server URL in settings. Code $statusCode"
             }
         }
-    }
 
     /**
      * Applies a closure [f] to transform the value field of a [Success] result.
@@ -183,19 +181,3 @@ data class Failure<T>(val body: ByteArray, val statusCode: Int) : NetworkResult<
  * @property cause the exception which caused the failure
  */
 data class NetworkException<T>(val cause: Exception) : NetworkResult<T>()
-
-/**
- * Sequences a list of results into a single result.
- *
- * See [NetworkResult.sequence] for more information.
- */
-fun <T> monadicSequence(results: List<NetworkResult<T>>) =
-    results.fold1(NetworkResult<T>::sequence)
-
-/**
- * Sequences a list of results into a single result.
- *
- * See [NetworkResult.sequence] for more information.
- */
-fun <T> monadicSequence(initial: T, results: List<NetworkResult<T>>) =
-    results.fold<NetworkResult<T>, NetworkResult<T>>(NetworkResult.pure(initial), NetworkResult<T>::sequence)

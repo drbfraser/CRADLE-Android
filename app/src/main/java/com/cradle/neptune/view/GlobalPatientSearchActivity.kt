@@ -18,7 +18,6 @@ import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.ext.hideKeyboard
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
-import com.cradle.neptune.manager.VolleyRequestManager
 import com.cradle.neptune.model.GlobalPatient
 import com.cradle.neptune.net.RestApi
 import com.cradle.neptune.net.Success
@@ -46,9 +45,6 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
 
     @Inject
     lateinit var restApi: RestApi
-
-    @Inject
-    lateinit var volleyRequestManager: VolleyRequestManager
 
     private lateinit var searchView: SearchView
 

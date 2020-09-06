@@ -9,9 +9,7 @@ import com.cradle.neptune.database.HealthFacilityDaoAccess
 import com.cradle.neptune.database.PatientDaoAccess
 import com.cradle.neptune.database.ReadingDaoAccess
 import com.cradle.neptune.manager.HealthCentreManager
-import com.cradle.neptune.manager.VolleyRequestManager
 import com.cradle.neptune.net.Http
-import com.cradle.neptune.network.VolleyRequestQueue
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -62,16 +60,4 @@ class DataModule {
     @Provides
     @Singleton
     fun providesHttp(): Http = Http()
-
-    @Provides
-    @Singleton
-    fun provideVolleyRequestQueue(application: Application?): VolleyRequestQueue {
-        return VolleyRequestQueue(application!!)
-    }
-
-    @Provides
-    @Singleton
-    fun provideVolleyRequestManager(application: Application?): VolleyRequestManager {
-        return VolleyRequestManager(application!!)
-    }
 }
