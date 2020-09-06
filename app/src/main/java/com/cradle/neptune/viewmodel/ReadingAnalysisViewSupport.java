@@ -10,23 +10,6 @@ import com.cradle.neptune.utilitiles.Util;
  * Get UI related info about an analysis
  */
 public class ReadingAnalysisViewSupport {
-    public static int getColorTextId(ReadingAnalysis analysis) {
-        switch (analysis) {
-            case NONE:
-                return 0;
-            case GREEN:
-                return Color.GREEN;
-            case YELLOW_DOWN:
-            case YELLOW_UP:
-                return Color.YELLOW;
-            case RED_DOWN:
-            case RED_UP:
-                return Color.RED;
-            default:
-                Util.ensure(false);
-                return Color.BLUE;
-        }
-    }
 
     public static int getColorCircleImageId(ReadingAnalysis analysis) {
         switch (analysis) {

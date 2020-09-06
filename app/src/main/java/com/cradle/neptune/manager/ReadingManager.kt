@@ -164,16 +164,6 @@ class ReadingManager @Inject constructor(
         daoAccess.getNewestReadingByPatientId(id)
 
     /**
-     * TODO: once all the java classes calling this method are turned into Kotlin,
-     * remove this function and call the corressponding method.
-     * This is only for legacy java code still calling this function.
-     */
-    @Deprecated("Please avoid using this function in Kotlin files.")
-    fun getNewestReadingByPatientIdBlocking(id: String) = runBlocking {
-        withContext(Dispatchers.IO) { getNewestReadingByPatientId(id) }
-    }
-
-    /**
      * Deletes all readings from the database.
      */
     suspend fun deleteAllData() {

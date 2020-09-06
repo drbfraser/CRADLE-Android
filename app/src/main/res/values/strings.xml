@@ -21,7 +21,6 @@
 
 
     <string name="title_activity_patients">Patients</string>
-    <string name="title_activity_help">Help</string>
 
     <!-- Navigation Menu Options-->
     <string name="menu_readings">Readings</string>

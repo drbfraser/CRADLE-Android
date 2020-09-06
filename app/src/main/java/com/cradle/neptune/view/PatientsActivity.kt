@@ -24,7 +24,8 @@ import com.cradle.neptune.viewmodel.PatientsViewAdapter
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import java.util.ArrayList
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -45,17 +46,20 @@ class PatientsActivity : AppCompatActivity() {
         // setup UI
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_patients)
-        val toolbar =
-            findViewById<Toolbar>(R.id.toolbar)
+
         patientRecyclerview = findViewById(R.id.patientListRecyclerview)
         MainScope().launch {
             setupPatientRecyclerview()
         }
+
+        val toolbar =
+            findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         if (supportActionBar != null) {
             supportActionBar!!.setDisplayHomeAsUpEnabled(true)
             supportActionBar!!.title = "My Patients"
         }
+
         setupGlobalPatientSearchButton()
     }
 
@@ -116,37 +120,36 @@ class PatientsActivity : AppCompatActivity() {
         return true
     }
 
-    private suspend fun setupPatientRecyclerview() {
-        val patientList = withContext(Dispatchers.IO) {
-            patientManager.getAllPatients()
-        }
-        val patients: ArrayList<Pair<Patient, Reading?>> =
-            ArrayList()
+    private suspend fun setupPatientRecyclerview() = withContext(IO) {
+        val patients: ArrayList<Pair<Patient, Reading?>> = ArrayList()
+        val patientList = patientManager.getAllPatients()
         for (patient in patientList) {
             patients.add(
                 Pair(
                     patient,
-                    readingManager.getNewestReadingByPatientIdBlocking(patient.id)
+                    readingManager.getNewestReadingByPatientId(patient.id)
                 )
             )
         }
-        val textView = findViewById<TextView>(R.id.emptyView)
-        if (patients.size == 0) {
-            textView.visibility = View.VISIBLE
-        } else {
-            textView.visibility = View.GONE
-        }
-        patientsViewAdapter = PatientsViewAdapter(patients.toList(), this)
-        val layoutManager: RecyclerView.LayoutManager = LinearLayoutManager(this)
-        patientRecyclerview.adapter = patientsViewAdapter
-        patientRecyclerview.layoutManager = layoutManager
-        patientRecyclerview.addItemDecoration(
-            DividerItemDecoration(
-                this,
-                DividerItemDecoration.VERTICAL
+        withContext(Main) {
+            val textView = findViewById<TextView>(R.id.emptyView)
+            if (patients.size == 0) {
+                textView.visibility = View.VISIBLE
+            } else {
+                textView.visibility = View.GONE
+            }
+            patientsViewAdapter = PatientsViewAdapter(patients.toList(), this@PatientsActivity)
+            val layoutManager: RecyclerView.LayoutManager = LinearLayoutManager(this@PatientsActivity)
+            patientRecyclerview.adapter = patientsViewAdapter
+            patientRecyclerview.layoutManager = layoutManager
+            patientRecyclerview.addItemDecoration(
+                DividerItemDecoration(
+                    this@PatientsActivity,
+                    DividerItemDecoration.VERTICAL
+                )
             )
-        )
-        patientsViewAdapter.notifyDataSetChanged()
+            patientsViewAdapter.notifyDataSetChanged()
+        }
     }
 
     override fun onResume() {
