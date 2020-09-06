@@ -158,7 +158,7 @@ class PatientManager @Inject constructor(
      * @param id id of the patient to associate
      */
     suspend fun associatePatientWithUser(id: String): NetworkResult<Unit> =
-        restApi.associatePatientToUser(id).map { Unit }
+        restApi.associatePatientToUser(id)
 
     /**
      * Associates a given patient to the active user and then downloads all
