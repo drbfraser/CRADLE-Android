@@ -15,7 +15,6 @@ import com.cradle.neptune.model.UrineTest
 import com.cradle.neptune.utilitiles.DynamicModelBuilder
 import com.cradle.neptune.utilitiles.UnixTimestamp
 import com.cradle.neptune.utilitiles.discard
-import java.lang.IllegalArgumentException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -138,7 +137,7 @@ class PatientReadingViewModel() {
     /**
      * True if any of the required fields are missing.
      */
-    fun isMissingAnything(context: Context) : Boolean =
+    fun isMissingAnything(context: Context): Boolean =
         missingPatientInfoDescription(context) == null &&
             missingVitalInformationDescription(context) == null
 

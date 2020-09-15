@@ -285,7 +285,7 @@ class SummaryFragment : BaseFragment() {
             if (retestAnalysis.isRetestRecommendedNow) {
                 tvRecommend.text = getString(R.string.summary_recheck_vitals_now)
             } else if (retestAnalysis.isRetestRecommendedIn15Min) {
-                tvRecommend.text = getString(R.string.summary_recheck_vitals_n_min, 15)
+                tvRecommend.text = getString(R.string.summary_recheck_vitals_15_min)
             } else {
                 Util.ensure(false)
             }

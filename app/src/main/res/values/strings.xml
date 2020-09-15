@@ -162,7 +162,7 @@
     <string name="settings_advanced">Advanced</string>
     <string name="default_settings">(default)</string>
     <string name="summary_recheck_vitals_now">Recheck vitals now is recommended</string>
-    <string name="summary_recheck_vitals_n_min">Recheck vitals in %1$d minutes is recommended</string>
+    <string name="summary_recheck_vitals_15_min">Recheck vitals in 15 minutes is recommended</string>
     <string name="patient_info_no_name">No name</string>
     <string name="reading_no_gestational_age">No gestational age</string>
     <string name="date_of_birth_or_age">Date-of-birth or age</string>
