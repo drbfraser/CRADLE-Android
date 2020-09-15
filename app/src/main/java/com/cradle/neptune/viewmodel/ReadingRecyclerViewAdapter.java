@@ -1,5 +1,6 @@
 package com.cradle.neptune.viewmodel;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +13,10 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cradle.neptune.R;
-import com.cradle.neptune.model.*;
+import com.cradle.neptune.model.Assessment;
+import com.cradle.neptune.model.Reading;
+import com.cradle.neptune.model.ReadingAnalysis;
+import com.cradle.neptune.model.UrineTest;
 import com.cradle.neptune.utilitiles.DateUtil;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -69,14 +73,21 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         myViewHolder.heartRate.setText(new StringBuilder().append(currReading.getBloodPressure().getHeartRate()).append("").toString());
 
         if (currReading.getUrineTest() != null) {
-            myViewHolder.urineTest.setText(getUrineTestFormattedTxt(currReading.getUrineTest()));
+            final Context context = recyclerView.getContext();
+            myViewHolder.urineTest.setText(
+                    getUrineTestFormattedTxt(context, currReading.getUrineTest())
+            );
         }
         if (!currReading.getSymptoms().isEmpty()) {
-            StringBuilder symptoms = new StringBuilder();
-            for (String s : currReading.getSymptoms()) {
-                symptoms.append(s).append(", ");
+            StringBuilder symptomsStringBuilder = new StringBuilder();
+            final List<String> symptoms = currReading.getSymptoms();
+            for (int j = 0; j < symptoms.size(); j++) {
+                symptomsStringBuilder.append(symptoms.get(j));
+                if (j < symptoms.size() - 1) {
+                    symptomsStringBuilder.append(", ");
+                }
             }
-            myViewHolder.symptomTxt.setText(symptoms.toString());
+            myViewHolder.symptomTxt.setText(symptomsStringBuilder.toString());
         }
         myViewHolder.trafficLight.setImageResource(ReadingAnalysisViewSupport.getColorCircleImageId(analysis));
         myViewHolder.arrow.setImageResource(ReadingAnalysisViewSupport.getArrowImageId(analysis));
@@ -190,13 +201,18 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
 
     }
 
-    private String getUrineTestFormattedTxt(UrineTest urineTestResult) {
+    private String getUrineTestFormattedTxt(Context context, UrineTest urineTestResult) {
+        return context.getString(R.string.urine_test_layout_leukocytes) + ":"
+                        + urineTestResult.getLeukocytes() + ", "
+                + context.getString(R.string.urine_test_layout_nitrites) + ":"
+                        + urineTestResult.getNitrites() + ",\n"
+                + context.getString(R.string.urine_test_layout_protein) + ":"
+                        + urineTestResult.getProtein() + ", "
+                + context.getString(R.string.urine_test_layout_blood) + ":"
+                        + urineTestResult.getBlood() + ",\n"
+                + context.getString(R.string.urine_test_layout_glucose) + ":"
+                        + urineTestResult.getGlucose();
 
-        return "Leukocytes: " + urineTestResult.getLeukocytes() + " , " +
-                "Nitrites: " + urineTestResult.getNitrites() + " , " +
-                "Protein: " + urineTestResult.getProtein() + " \n " +
-                "Blood: " + urineTestResult.getBlood() + " , " +
-                "Glucose: " + urineTestResult.getGlucose();
     }
 
     private void setVisibilityForImageAndText(View v, int imageViewId, int textViewId, boolean show) {
