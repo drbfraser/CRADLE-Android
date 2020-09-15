@@ -80,6 +80,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         }
         if (!currReading.getSymptoms().isEmpty()) {
             StringBuilder symptomsStringBuilder = new StringBuilder();
+            // TODO: make it so that the symptoms that are sent via api are forced to be in English
             final List<String> symptoms = currReading.getSymptoms();
             for (int j = 0; j < symptoms.size(); j++) {
                 symptomsStringBuilder.append(symptoms.get(j));

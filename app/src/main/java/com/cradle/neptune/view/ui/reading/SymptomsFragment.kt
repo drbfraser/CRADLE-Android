@@ -277,6 +277,8 @@ class SymptomsFragment : BaseFragment() {
         // checkboxes
         for (cb in checkBoxes) {
             if (cb.isChecked) {
+                // TODO: possibly map back to English strings so that the data sent remains in
+                //       English
                 viewModel!!.symptoms?.add(cb.text.toString())
             }
         }
