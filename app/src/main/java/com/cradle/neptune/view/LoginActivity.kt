@@ -67,7 +67,11 @@ class LoginActivity : AppCompatActivity() {
                 val result = loginManager.login(email, password)
                 progressDialog.cancel()
                 if (result is Success) {
-                    Toast.makeText(this@LoginActivity, "Login Successful!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@LoginActivity,
+                        getString(R.string.login_successful),
+                        Toast.LENGTH_SHORT
+                    ).show()
                     startIntroActivity()
                 } else {
                     errorText.visibility = View.VISIBLE
@@ -79,7 +83,7 @@ class LoginActivity : AppCompatActivity() {
     private val progressDialog: ProgressDialog
         get() {
             val progressDialog = ProgressDialog(this@LoginActivity)
-            progressDialog.setTitle("Logging In")
+            progressDialog.setTitle(getString(R.string.logging_in))
             progressDialog.setCancelable(false)
             progressDialog.show()
             return progressDialog

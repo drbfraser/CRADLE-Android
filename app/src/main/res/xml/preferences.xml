@@ -31,7 +31,7 @@
 
         <Preference
             android:key="@string/key_sign_out"
-            android:summary="@string/normalSignoutMessage"
+            android:summary="@string/normal_signout_message"
             android:title="Sign Out" />
     </PreferenceCategory>
 </PreferenceScreen>

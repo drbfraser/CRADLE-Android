@@ -383,7 +383,7 @@ public class ReadingActivity
 
         callOnMyBeingHiddenForCurrentTab();
 
-        if (viewModel.isMissingAnything()) {
+        if (viewModel.isMissingAnything(getApplicationContext())) {
             displayMissingDataDialog();
             return false;
         }

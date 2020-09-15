@@ -44,16 +44,16 @@ class SyncActivity : AppCompatActivity(),
         syncText = findViewById(R.id.syncText)
 
         setSupportActionBar(findViewById(R.id.toolbar2))
-        supportActionBar?.title = "Sync Everything"
+        supportActionBar?.title = getString(R.string.sync_activity_title)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         findViewById<Button>(R.id.uploadEverythingButton).setOnClickListener {
-            syncText.text = "Sync in progress! Please wait for it to complete."
+            syncText.text = getString(R.string.sync_activity_sync_progress_text)
             progressBar.visibility = View.VISIBLE
             MainScope().launch {
 
                 SyncStepperImplementation(this@SyncActivity,
-                    this@SyncActivity).stepOneFetchUpdatesFromServer()
+                    this@SyncActivity).stepOneFetchUpdatesFromServer(this@SyncActivity)
                 it.visibility = View.GONE
             }
         }
@@ -72,9 +72,11 @@ class SyncActivity : AppCompatActivity(),
 
     @Synchronized
     override fun onNewPatientAndReadingUploading(uploadStatus: TotalRequestStatus) {
-        uploadStatusTextView.text =
-            "Request completed ${uploadStatus.numUploaded + uploadStatus.numFailed} " +
-                "out of  ${uploadStatus.totalNum}"
+        uploadStatusTextView.text = getString(
+            R.string.sync_activity_upload_status,
+            uploadStatus.numUploaded + uploadStatus.numFailed,
+            uploadStatus.totalNum
+        )
     }
 
     @Synchronized
@@ -107,12 +109,13 @@ class SyncActivity : AppCompatActivity(),
         progressBar.visibility = View.INVISIBLE
 
         if (errorCodes.isEmpty()) {
-            syncText.text = "Sync complete"
+            syncText.text = getString(R.string.sync_activity_sync_complete)
         } else {
             syncText.setTextColor(resources.getColor(R.color.error))
             val stringBuilder = StringBuilder()
             errorCodes.entries.forEach {
-                stringBuilder.append("Error: ").append(it.value).append("\n")
+                stringBuilder.append(getString(R.string.sync_activity_error_line, it.value))
+                    .append("\n")
             }
             syncText.text = stringBuilder.toString()
         }
@@ -128,8 +131,8 @@ class SyncActivity : AppCompatActivity(),
     }
 
     private fun setProgressPercent() {
-        syncText.text =
-            "Syncing: ${progressPercent.getPercent().roundToInt()}% Please wait for it to complete."
+        syncText.text = getString(R.string.sync_activity_sync_progress_percent,
+            progressPercent.getPercent().roundToInt())
     }
 }
 

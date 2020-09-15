@@ -45,11 +45,11 @@ class SettingsActivity : AppCompatActivity() {
         // based on what fragment is on top.
         supportFragmentManager.addOnBackStackChangedListener {
             val count = supportFragmentManager.backStackEntryCount
-            var title = "Settings"
+            var title = getString(R.string.settings_title)
             if (count != 0) {
                 val name = supportFragmentManager.getBackStackEntryAt(count - 1).name
                 if (name == AdvancedSettingsFragment::class.qualifiedName) {
-                    title = "Advanced"
+                    title = getString(R.string.settings_advanced)
                 }
             }
             supportActionBar?.title = title
@@ -93,7 +93,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
             GlobalScope.launch(Dispatchers.IO) {
                 val hcCount = healthCentreManager.getAllSelectedByUser().size
                 // need to update UI by main thread
-                withContext(Dispatchers.Main) { summary = "$hcCount configured health centres" }
+                withContext(Dispatchers.Main) {
+                    summary = resources.getQuantityString(
+                        R.plurals.settings_n_configured_health_centres,
+                        hcCount,
+                        hcCount
+                    )
+                }
             }
         }
     }
@@ -123,17 +129,21 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 GlobalScope.launch(Dispatchers.IO) {
                     val unUploadedReadings = readingManager.getUnUploadedReadings()
                     val description = if (unUploadedReadings.isEmpty()) {
-                        getString(R.string.normalSignoutMessage)
+                        getString(R.string.normal_signout_message)
                     } else {
-                        "${unUploadedReadings.size} ${getString(R.string.unUploadedReadingSignoutMessage)}"
+                        resources.getQuantityString(
+                            R.plurals.unuploaded_reading_signout_message,
+                            unUploadedReadings.size,
+                            unUploadedReadings.size
+                        )
                     }
                     // need to switch the context to main thread since ui is always created on main thread
                     withContext(Dispatchers.Main) {
                         AlertDialog.Builder(requireActivity())
-                            .setTitle("Sign out?")
+                            .setTitle(getString(R.string.sign_out_question))
                             .setMessage(description)
-                            .setPositiveButton("Yes") { _, _ -> onSignOut() }
-                            .setNegativeButton("No", null)
+                            .setPositiveButton(getString(android.R.string.yes)) { _, _ -> onSignOut() }
+                            .setNegativeButton(getString(android.R.string.no), null)
                             .setIcon(R.drawable.ic_sync)
                             .create()
                             .show()
@@ -185,7 +195,12 @@ class AdvancedSettingsFragment : PreferenceFragmentCompat() {
             ?.withValidator(::validateHostname)
 
         findPreference(R.string.key_server_port)
-            ?.useDynamicSummary { v -> if (v.isNullOrEmpty()) "(default)" else v }
+            ?.useDynamicSummary { v ->
+                if (v.isNullOrEmpty())
+                    getString(R.string.default_settings)
+                else
+                    v
+            }
             ?.withValidator(::validatePort)
     }
 }

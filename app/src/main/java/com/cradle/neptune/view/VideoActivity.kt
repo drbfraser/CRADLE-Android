@@ -16,7 +16,7 @@ class VideoActivity : AppCompatActivity() {
 
         if (supportActionBar != null) {
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
-            supportActionBar?.title = "CRADLE VSA Instructions"
+            supportActionBar?.title = getString(R.string.video_activity_title)
         }
         // setup UI components
         // setupBottomBarNavigation();

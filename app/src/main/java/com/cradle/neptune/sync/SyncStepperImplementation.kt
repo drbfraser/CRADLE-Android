@@ -29,8 +29,7 @@ import org.threeten.bp.ZonedDateTime
 class SyncStepperImplementation(
     context: Context,
     private val stepperCallback: SyncStepperCallback
-) :
-    SyncStepper {
+) : SyncStepper {
 
     @Inject
     lateinit var restApi: RestApi
@@ -66,7 +65,7 @@ class SyncStepperImplementation(
     /**
      * step number 1, get all the newest data from the server. and go to step number 2.
      */
-    override suspend fun stepOneFetchUpdatesFromServer() = withContext(IO) {
+    override suspend fun stepOneFetchUpdatesFromServer(context: Context) = withContext(IO) {
         val lastSyncTime = sharedPreferences.getLong(LAST_SYNC, LAST_SYNC_DEFAULT)
         // give a timestamp to provide, again this will be from shared pref eventually
         when (val result = restApi.getUpdates(lastSyncTime)) {
@@ -78,11 +77,11 @@ class SyncStepperImplementation(
                     stepperCallback.onFetchDataCompleted(true)
                 }
                 Log.d("bugg", "current: ${Thread.currentThread().name}")
-                stepTwoSetupUploadingPatientReadings(lastSyncTime)
+                stepTwoSetupUploadingPatientReadings(lastSyncTime, context)
             }
             is Failure -> {
                 // let user know we failed.... probably cant continue?
-                errorHashMap[result.statusCode] = result.errorMessage
+                errorHashMap[result.statusCode] = result.getErrorMessage(context)
                 withContext(Main) {
                     stepperCallback.onFetchDataCompleted(false)
                 }
@@ -95,7 +94,10 @@ class SyncStepperImplementation(
      * step 2 -> starts uploading readings and patients starting with patients.
      * Be careful changing code in this function.
      */
-    override suspend fun stepTwoSetupUploadingPatientReadings(lastSyncTime: Long) = withContext(IO) {
+    override suspend fun stepTwoSetupUploadingPatientReadings(
+        lastSyncTime: Long,
+        context: Context
+    ) = withContext(IO) {
 
         // get the brand new patients to upload
         val newPatientsToUpload: ArrayList<PatientAndReadings> =
@@ -157,17 +159,17 @@ class SyncStepperImplementation(
                     readingManager.addAllReadings(result.value.readings)
                 }
             }
-            checkIfAllDataUploaded(result)
+            checkIfAllDataUploaded(result, context)
         }
 
         readingsToUpload.forEach {
             val result = readingManager.uploadNewReadingToServer(it)
-            checkIfAllDataUploaded(result)
+            checkIfAllDataUploaded(result, context)
         }
 
         editedPatientsToUpload.forEach {
             val result = patientManager.updatePatientOnServer(it)
-            checkIfAllDataUploaded(result)
+            checkIfAllDataUploaded(result, context)
         }
 
         // if we have nothing to upload, we start downloading right away
@@ -175,14 +177,14 @@ class SyncStepperImplementation(
             withContext(Main) {
                 stepperCallback.onNewPatientAndReadingUploadFinish(uploadRequestStatus)
             }
-            stepThreeDownloadAllInfo()
+            stepThreeDownloadAllInfo(context)
         }
     }
 
     /**
      * step 3 -> now we download all the information one by one
      */
-    override suspend fun stepThreeDownloadAllInfo() = withContext(IO) {
+    override suspend fun stepThreeDownloadAllInfo(context: Context) = withContext(IO) {
         val totalRequestNum =
             (updateApiData.editedPatientsIds.size + updateApiData.newReadingsIds.size +
                 updateApiData.followupIds.size + updateApiData.newPatientsIds.size)
@@ -202,24 +204,24 @@ class SyncStepperImplementation(
                     readingManager.addAllReadings(readings)
                 }
             }
-            checkIfAllDataIsDownloaded(result)
+            checkIfAllDataIsDownloaded(result, context)
         }
 
         // download all the patients that we have but were edited by the server....
         // these include the patients we rejected to upload in step 2
         updateApiData.editedPatientsIds.toList().forEach {
             val result = patientManager.downloadEditedPatientInfoFromServer(it)
-            checkIfAllDataIsDownloaded(result)
+            checkIfAllDataIsDownloaded(result, context)
         }
 
         updateApiData.newReadingsIds.toList().forEach {
             val result = readingManager.downloadNewReadingFromServer(it)
-            checkIfAllDataIsDownloaded(result)
+            checkIfAllDataIsDownloaded(result, context)
         }
 
         updateApiData.followupIds.toList().forEach {
             val result = readingManager.downloadAssessment(it)
-            checkIfAllDataIsDownloaded(result)
+            checkIfAllDataIsDownloaded(result, context)
         }
         // if there is nothing to download, call next step
         if (totalRequestNum == 0) {
@@ -249,15 +251,14 @@ class SyncStepperImplementation(
      * @param result the latest result we got
      */
     @Synchronized
-    private suspend fun checkIfAllDataUploaded(result: NetworkResult<*>) {
+    private suspend fun checkIfAllDataUploaded(result: NetworkResult<*>, context: Context) {
         when (result) {
             is Success -> {
                 uploadRequestStatus.numUploaded++
             }
             is Failure -> {
                 uploadRequestStatus.numFailed++
-                errorHashMap[result.statusCode] =
-                    result.errorMessage
+                errorHashMap[result.statusCode] = result.getErrorMessage(context)
             }
         }
 
@@ -271,7 +272,7 @@ class SyncStepperImplementation(
             withContext(Main) {
                 stepperCallback.onNewPatientAndReadingUploadFinish(uploadRequestStatus)
             }
-            stepThreeDownloadAllInfo()
+            stepThreeDownloadAllInfo(context)
         }
     }
 
@@ -281,7 +282,7 @@ class SyncStepperImplementation(
      * @param result the latest result we got.
      */
     @Synchronized
-    private suspend fun checkIfAllDataIsDownloaded(result: NetworkResult<*>) {
+    private suspend fun checkIfAllDataIsDownloaded(result: NetworkResult<*>, context: Context) {
 
         when (result) {
             is Success -> {
@@ -289,8 +290,7 @@ class SyncStepperImplementation(
             }
             is Failure -> {
                 downloadRequestStatus.numFailed++
-                errorHashMap[result.statusCode] =
-                    result.errorMessage
+                errorHashMap[result.statusCode] = result.getErrorMessage(context)
             }
         }
         withContext(Main) {
@@ -306,7 +306,7 @@ class SyncStepperImplementation(
 }
 
 /**
- * This class keeps track of total number of requests made, number of requests failed, and succeded
+ * This class keeps track of total number of requests made, number of requests failed, and succeeded
  */
 data class TotalRequestStatus(var totalNum: Int, var numFailed: Int, var numUploaded: Int) {
 

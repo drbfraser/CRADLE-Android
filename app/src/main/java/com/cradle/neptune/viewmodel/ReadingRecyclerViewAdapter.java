@@ -16,9 +16,6 @@ import com.cradle.neptune.model.*;
 import com.cradle.neptune.utilitiles.DateUtil;
 import com.google.android.material.snackbar.Snackbar;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 
@@ -89,17 +86,23 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         myViewHolder.cardView.setOnClickListener(view -> {
             // if the reading is uploaded to the server, we dont want to change it locally.
             if (currReading.isUploadedToServer()) {
-                Snackbar.make(v, "This reading is already uploaded to the server, " +
-                        "unable to make changes to it.", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(
+                        v,
+                        R.string.patient_profile_reading_already_uploaded_snackbar,
+                        Snackbar.LENGTH_LONG
+                ).show();
             } else {
                 onClickElementListener.onClick(currReading.getId());
             }
         });
         myViewHolder.cardView.setOnLongClickListener(view -> {
-            // if the reading is uploaded to the server, we dont want to delete it locally.
+            // if the reading is uploaded to the server, we don't want to delete it locally.
             if (currReading.isUploadedToServer()) {
-                Snackbar.make(v, "This reading is already uploaded to the server, " +
-                        "Cannot delete the reading.", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(
+                        v,
+                        R.string.patient_profile_reading_already_uploaded_cannot_delete_snackbar,
+                        Snackbar.LENGTH_LONG
+                ).show();
             } else {
                 onClickElementListener.onLongClick(currReading.getId());
             }
@@ -107,14 +110,13 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         });
 
         if (myViewHolder.getItemViewType() == NO_ASSESSMENT_TYPE) {
-
             if (currReading.isVitalRecheckRequired()) {
                 myViewHolder.retakeVitalButton.setVisibility(View.VISIBLE);
                 myViewHolder.retakeVitalButton.setOnClickListener(view -> onClickElementListener.onClickRecheckReading(currReading.getId()));
             }
 
             if (currReading.isReferredToHealthCentre()) {
-                myViewHolder.isreferedTxt.setText("Referral Pending");
+                myViewHolder.isreferedTxt.setText(R.string.patient_profile_reading_referral_pending);
             }
             myViewHolder.trafficLight.setImageResource(ReadingAnalysisViewSupport.getColorCircleImageId(analysis));
             myViewHolder.arrow.setImageResource(ReadingAnalysisViewSupport.getArrowImageId(analysis));
@@ -125,8 +127,9 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             //referral
             setVisibilityForImageAndText(v, R.id.imgReferred, R.id.txtReferred, currReading.isReferredToHealthCentre());
             if (currReading.isReferredToHealthCentre()) {
-                String message;
-                if (currReading.getReferral() != null && currReading.getReferral().getHealthFacilityName().length() > 0) {
+                final String message;
+                if (currReading.getReferral() != null
+                        && currReading.getReferral().getHealthFacilityName().length() > 0) {
                     message = v.getContext().getString(R.string.reading_referred_to_health_centre, currReading.getReferral().getHealthFacilityName());
                 } else {
                     message = v.getContext().getString(R.string.reading_referred_to_health_centre_unknown);
@@ -143,7 +146,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             // populate: recheck vitals
             setVisibilityForImageAndText(v, R.id.imgRecheckVitals, R.id.txtRecheckVitals, currReading.isVitalRecheckRequired());
             if (currReading.isVitalRecheckRequired()) {
-                String message;
+                final String message;
                 if (currReading.isVitalRecheckRequiredNow()) {
                     message = v.getContext().getString(R.string.reading_recheck_vitals_now);
                 } else {
@@ -164,7 +167,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             myViewHolder.diagnosis.setText(readingFollowUp.getDiagnosis());
             myViewHolder.treatment.setText(readingFollowUp.getTreatment());
             myViewHolder.hcName.setText(Integer.toString(readingFollowUp.getHealthCareWorkerId()));
-            myViewHolder.referredBy.setText("Unknown"); // FIXME: no longer have referred by field
+            myViewHolder.referredBy.setText(R.string.patient_profile_reading_unknown_referrer); // FIXME: no longer have referred by field
             myViewHolder.assessedBy.setText(Integer.toString(readingFollowUp.getHealthCareWorkerId()));
             myViewHolder.assessmentDate.setText(DateUtil.getFullDateFromUnix(readingFollowUp.getDateAssessed()));
             TextView specialInvestigation = v.findViewById(R.id.specialInvestigationTxt);
@@ -188,6 +191,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
     }
 
     private String getUrineTestFormattedTxt(UrineTest urineTestResult) {
+        // TODO: strings.xml
         return "Leukocytes: " + urineTestResult.getLeukocytes() + " , " +
                 "Nitrites: " + urineTestResult.getNitrites() + " , " +
                 "Protein: " + urineTestResult.getProtein() + " \n " +

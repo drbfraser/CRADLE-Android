@@ -13,7 +13,7 @@ class EducationActivity : AppCompatActivity() {
         setupOnCLickMethods()
         if (supportActionBar != null) {
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
-            supportActionBar?.title = "Help"
+            supportActionBar?.title = getString(R.string.education_activity_title)
         }
     }
 
