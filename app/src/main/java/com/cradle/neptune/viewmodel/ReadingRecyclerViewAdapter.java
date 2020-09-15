@@ -191,7 +191,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
     }
 
     private String getUrineTestFormattedTxt(UrineTest urineTestResult) {
-        // TODO: strings.xml
+
         return "Leukocytes: " + urineTestResult.getLeukocytes() + " , " +
                 "Nitrites: " + urineTestResult.getNitrites() + " , " +
                 "Protein: " + urineTestResult.getProtein() + " \n " +

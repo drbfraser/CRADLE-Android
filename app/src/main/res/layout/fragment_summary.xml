@@ -66,7 +66,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="16dp"
-        android:text="Advice"
+        android:text="@string/summary_fragment_advice_header"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/layoutReadings" />
 
@@ -123,7 +123,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
-            android:text="Recheck vitals now (after save)"
+            android:text="@string/summary_fragment_recheck_vitals_now_after_save"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/ivRecheckVitals"
             app:layout_constraintTop_toTopOf="parent" />
@@ -136,7 +136,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
-            android:text="Recheck vitals in 15 minutes (after save)"
+            android:text="@string/summary_fragment_recheck_vitals_in_15_minutes_after_save"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/ivRecheckVitals"
             app:layout_constraintTop_toBottomOf="@+id/swRecheckVitalsNow" />
@@ -147,7 +147,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
-            android:text="Recheck vitals now is recommended"
+            android:text="@string/summary_fragment_recheck_vitals_now_is_recommended"
             android:textColor="@color/recommended"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -185,11 +185,11 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="4dp"
-            android:text="Referral sent May 12, 2019 @ 11:53am"
             android:textColor="@android:color/primary_text_light"
             app:layout_constraintEnd_toStartOf="@+id/ivReferralSent"
             app:layout_constraintStart_toEndOf="@id/ivReferral"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Referral sent May 12, 2019 @ 11:53am" />
 
 
         <ImageView
@@ -197,10 +197,10 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_marginEnd="16dp"
-            android:tint="@color/recommended"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/txtReferralSent"
-            app:srcCompat="@drawable/baseline_check_circle_black_24" />
+            app:srcCompat="@drawable/baseline_check_circle_black_24"
+            app:tint="@color/recommended" />
 
         <TextView
             android:id="@+id/txtReferralRecommended"
@@ -208,7 +208,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:text="Referral recommended"
+            android:text="@string/summary_fragment_referral_recommended"
             android:textColor="@color/recommended"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@+id/btnSendReferral"
@@ -225,7 +225,7 @@
             android:insetBottom="10dp"
             android:paddingStart="5dp"
             android:paddingEnd="5dp"
-            android:text="Send Referral"
+            android:text="@string/summary_fragment_send_referral_button"
             app:backgroundTint="@color/light_grey"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -262,7 +262,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
-            android:text="Follow-up needed (another day)"
+            android:text="@string/summary_fragment_follow_up_needed_another_day_switch"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/ivFollowup"
             app:layout_constraintTop_toTopOf="parent" />
@@ -273,7 +273,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginBottom="8dp"
-            android:text="Follow-up recommended"
+            android:text="@string/summary_fragment_follow_up_recommended"
             android:textColor="@color/recommended"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"

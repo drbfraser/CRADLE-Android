@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
     app:cardCornerRadius="8dp"
     app:cardElevation="8dp"
     app:cardPreventCornerOverlap="true"
@@ -20,33 +21,32 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
-            android:text="HF name"
             android:textColor="@color/black"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@+id/hfNumberTxt"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="HF name" />
 
         <TextView
             android:id="@+id/hfNumberTxt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
-            android:text="778-522-3450"
             android:textColor="@color/black"
+            app:layout_constraintBaseline_toBaselineOf="@+id/hfNameTxt"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/hfNameTxt" />
+            tools:text="778-522-3450" />
 
         <TextView
             android:id="@+id/hfLocationTxt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="location"
             android:textColor="@color/black"
             android:textSize="12sp"
-            app:layout_constraintStart_toEndOf="@+id/textView44"
-            app:layout_constraintTop_toTopOf="@+id/textView44" />
+            app:layout_constraintBaseline_toBaselineOf="@+id/textView44"
+            app:layout_constraintStart_toStartOf="@+id/hfTypeTxt"
+            tools:text="location" />
 
         <ImageView
             android:id="@+id/hfImageview"
@@ -65,7 +65,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:layout_marginEnd="8dp"
-            android:text="About"
+            android:text="@string/health_facility_row_about"
             android:textSize="12sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@+id/hfNameTxt"
@@ -76,18 +76,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
-            android:text="Type"
             android:textColor="@color/black"
             android:textSize="12sp"
+            app:layout_constraintBaseline_toBaselineOf="@+id/textView41"
             app:layout_constraintStart_toEndOf="@+id/textView41"
-            app:layout_constraintTop_toTopOf="@+id/textView41" />
+            tools:text="Type" />
 
         <TextView
             android:id="@+id/textView41"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Type: "
+            android:text="@string/health_facility_row_type_colon"
             android:textColor="@color/black"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="@+id/hfAbouttxt"
@@ -98,9 +98,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="Location:"
+            android:layout_marginBottom="4dp"
+            android:text="@string/health_facility_row_location_colon"
             android:textColor="@color/black"
             android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="@+id/textView41"
             app:layout_constraintTop_toBottomOf="@+id/textView41" />
     </androidx.constraintlayout.widget.ConstraintLayout>

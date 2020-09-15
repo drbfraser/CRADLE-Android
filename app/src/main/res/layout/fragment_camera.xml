@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="Hold the phone steady and take Photo of CRADLE VSA Reading"
+        android:text="@string/camera_fragment_instructions_header"
         android:textAlignment="textStart"
         android:textColor="@color/colorPrimaryDark"
         android:textSize="12sp"
@@ -49,7 +49,7 @@
         android:id="@+id/btnCapturePhoto"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Take Photo"
+        android:text="@string/camera_fragment_take_photo_button"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/imageView" />
 
@@ -58,7 +58,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:text="Load Photo"
+        android:text="@string/camera_fragment_load_photo_button"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -82,7 +82,7 @@
         android:layout_height="wrap_content"
         android:background="@drawable/rounded_corner"
         android:padding="4dp"
-        android:text="Slide to zoom"
+        android:text="@string/camera_fragment_slide_to_zoom"
         android:textAlignment="center"
         android:textColor="@color/white"
         android:textSize="14sp"

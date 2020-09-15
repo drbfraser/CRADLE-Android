@@ -82,7 +82,7 @@ class PatientInfoFragment : BaseFragment() {
                 gestationalAgeSpinner.isEnabled = true
             } else {
                 // Disable them otherwise.
-                gestationalAgeEditText.setText(getString(R.string.not_available))
+                gestationalAgeEditText.setText(getString(R.string.not_available_n_slash_a))
                 gestationalAgeEditText.isEnabled = false
                 gestationalAgeSpinner.isEnabled = false
             }
@@ -115,7 +115,7 @@ class PatientInfoFragment : BaseFragment() {
                 pregnantSwitch.isEnabled = false
                 gestationalAgeSpinner.isEnabled = false
                 gestationalAgeEditText.isEnabled = false
-                gestationalAgeEditText.setText(getString(R.string.not_available))
+                gestationalAgeEditText.setText(getString(R.string.not_available_n_slash_a))
             } else {
                 // Enable pregnancy elements if the patient's sex is not male.
                 pregnantSwitch.isEnabled = true
