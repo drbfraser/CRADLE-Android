@@ -33,5 +33,8 @@ test:
   stage: test
   script:
     - ./gradlew test
+  artifacts:
+    reports:
+      junit: app/build/test-results/**/TEST-*.xml
   tags:
     - build
