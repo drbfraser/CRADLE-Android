@@ -16,10 +16,9 @@ import androidx.viewpager.widget.ViewPager;
 import com.cradle.neptune.R;
 import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.manager.PatientManager;
+import com.cradle.neptune.manager.ReadingManager;
 import com.cradle.neptune.model.Patient;
 import com.cradle.neptune.model.Reading;
-import com.cradle.neptune.manager.ReadingManager;
-import com.cradle.neptune.utilitiles.UnixTimestamp;
 import com.cradle.neptune.utilitiles.Util;
 import com.cradle.neptune.view.ui.reading.BaseFragment;
 import com.cradle.neptune.view.ui.reading.MyFragmentInteractionListener;
@@ -27,13 +26,13 @@ import com.cradle.neptune.view.ui.reading.SectionsPagerAdapter;
 import com.cradle.neptune.viewmodel.PatientReadingViewModel;
 import com.google.android.material.tabs.TabLayout;
 
-import kotlin.Pair;
-
 import org.threeten.bp.ZonedDateTime;
+
+import java.util.ArrayList;
 
 import javax.inject.Inject;
 
-import java.util.ArrayList;
+import kotlin.Pair;
 
 public class ReadingActivity
         extends AppCompatActivity
@@ -383,7 +382,7 @@ public class ReadingActivity
 
         callOnMyBeingHiddenForCurrentTab();
 
-        if (viewModel.isMissingAnything(getApplicationContext())) {
+        if (viewModel.isMissingAnything(this)) {
             displayMissingDataDialog();
             return false;
         }

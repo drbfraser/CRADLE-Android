@@ -73,9 +73,8 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         myViewHolder.heartRate.setText(new StringBuilder().append(currReading.getBloodPressure().getHeartRate()).append("").toString());
 
         if (currReading.getUrineTest() != null) {
-            final Context context = recyclerView.getContext();
             myViewHolder.urineTest.setText(
-                    getUrineTestFormattedTxt(context, currReading.getUrineTest())
+                    getUrineTestFormattedTxt(currReading.getUrineTest())
             );
         }
         if (!currReading.getSymptoms().isEmpty()) {
@@ -202,7 +201,8 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
 
     }
 
-    private String getUrineTestFormattedTxt(Context context, UrineTest urineTestResult) {
+    private String getUrineTestFormattedTxt(UrineTest urineTestResult) {
+        final Context context = recyclerView.getContext();
         return context.getString(R.string.urine_test_layout_leukocytes) + ":"
                         + urineTestResult.getLeukocytes() + ", "
                 + context.getString(R.string.urine_test_layout_nitrites) + ":"
