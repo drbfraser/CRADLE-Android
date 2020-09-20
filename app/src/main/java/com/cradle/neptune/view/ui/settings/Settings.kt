@@ -20,11 +20,11 @@ import com.cradle.neptune.utilitiles.validateHostname
 import com.cradle.neptune.utilitiles.validatePort
 import com.cradle.neptune.view.LoginActivity
 import com.cradle.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 class SettingsActivity : AppCompatActivity() {
     companion object {
@@ -167,7 +167,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private fun onSignOut() {
         val editor = sharedPreferences.edit()
         editor.putString(LoginManager.EMAIL_KEY, "")
-        editor.putInt(LoginManager.PASSWORD_KEY, LoginManager.PASSWORD_SENTINEL)
         editor.putString(LoginManager.TOKEN_KEY, null)
         editor.putString(LoginManager.USER_ID_KEY, null)
         editor.putLong(SyncStepperImplementation.LAST_SYNC, 0L)
