@@ -1,5 +1,7 @@
 package com.cradle.neptune.viewmodel
 
+import android.content.Context
+import com.cradle.neptune.R
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.model.BloodPressure
 import com.cradle.neptune.model.GestationalAge
@@ -13,7 +15,6 @@ import com.cradle.neptune.model.UrineTest
 import com.cradle.neptune.utilitiles.DynamicModelBuilder
 import com.cradle.neptune.utilitiles.UnixTimestamp
 import com.cradle.neptune.utilitiles.discard
-import java.lang.IllegalArgumentException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -136,9 +137,9 @@ class PatientReadingViewModel() {
     /**
      * True if any of the required fields are missing.
      */
-    val isMissingAnything: Boolean
-        get() = missingPatientInfoDescription() == null &&
-            missingVitalInformationDescription() == null
+    fun isMissingAnything(context: Context): Boolean =
+        missingPatientInfoDescription(context) == null &&
+            missingVitalInformationDescription(context) == null
 
     /**
      * True if the data in this view model is invalid.
@@ -180,17 +181,17 @@ class PatientReadingViewModel() {
      * Returns a description of the missing patient information or `null` if
      * everything is supplied.
      */
-    fun missingPatientInfoDescription(): String? {
+    fun missingPatientInfoDescription(context: Context): String? {
         var description = ""
-        patientId?.let { description += "- ID\n" }
-        patientSex?.let { description += "- sex\n" }
-        patientName?.let { description += "- initials\n" }
+        patientId?.let { description += "- ${context.getString(R.string.id)}\n" }
+        patientSex?.let { description += "- ${context.getString(R.string.sex)}\n" }
+        patientName?.let { description += "- ${context.getString(R.string.initials)}\n" }
         if (patientDob == null && patientAge == null) {
-            description += "- date-of-birth or age\n"
+            description += "- ${context.getString(R.string.date_of_birth_or_age)}\n"
         }
 
         return if (description.isNotEmpty()) {
-            "Missing required patient information: $description\n"
+            "${context.getString(R.string.missing_required_patient_info)}: $description\n"
         } else {
             null
         }
@@ -200,13 +201,13 @@ class PatientReadingViewModel() {
      * Returns a description of the missing vital information or `null` if
      * everything is supplied.
      */
-    fun missingVitalInformationDescription(): String? {
+    fun missingVitalInformationDescription(context: Context): String? {
         var description = ""
-        bloodPressure?.let { description += "- blood pressure (systolic, diastolic, heart rate)\n" }
-        symptoms?.let { description += "- symptoms" }
+        bloodPressure?.let { description += "- ${context.getString(R.string.missing_vitals_blood_pressure)}\n" }
+        symptoms?.let { description += "- ${context.getString(R.string.missing_vitals_symptoms)}" }
 
         return if (description.isNotEmpty()) {
-            "Missing required patient vitalsS: $description\n"
+            "${context.getString(R.string.missing_required_patient_vitals)}: $description\n"
         } else {
             null
         }

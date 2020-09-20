@@ -79,7 +79,7 @@ class SummaryFragment : BaseFragment() {
         // name
         var name = viewModel!!.patientName
         if (Util.isNullOrEmpty(name)) {
-            name = "No name"
+            name = getString(R.string.patient_info_no_name)
         }
 
         // age
@@ -89,10 +89,10 @@ class SummaryFragment : BaseFragment() {
         }
 
         // gestational age
-        var ga = "No gestational age"
+        var ga = getString(R.string.reading_no_gestational_age)
         val gaStruct = viewModel?.patientGestationalAge?.age
         if (!viewModel!!.patientIsPregnant!!) {
-            ga = "Not pregnant"
+            ga = getString(R.string.reading_not_pregnant)
         } else if (gaStruct != null) {
             ga = getString(
                 R.string.reading_gestational_age_in_weeks_and_days,
@@ -125,10 +125,9 @@ class SummaryFragment : BaseFragment() {
 
         // error messages
         tv = requireView().findViewById(R.id.txtPatientInfoErrors)
-        if (viewModel!!.isMissingAnything) {
+        if (viewModel!!.isMissingAnything(requireContext())) {
             tv.visibility = View.VISIBLE
-            // TODO: put in strings.xml
-            val errorMessage = viewModel!!.missingPatientInfoDescription()
+            val errorMessage = viewModel!!.missingPatientInfoDescription(requireContext())
             tv.text = errorMessage
         } else {
             tv.visibility = View.GONE
@@ -197,10 +196,10 @@ class SummaryFragment : BaseFragment() {
 
             // error messages
             tv = v.findViewById(R.id.txtReadingErrors)
-            if (viewModel!!.isMissingAnything) {
+            if (viewModel!!.isMissingAnything(requireContext())) {
                 tv.visibility = View.VISIBLE
                 // TODO: put in strings.xml
-                val errorMessage = viewModel!!.missingVitalInformationDescription()
+                val errorMessage = viewModel!!.missingVitalInformationDescription(requireContext())
                 tv.text = errorMessage
             } else {
                 tv.visibility = View.GONE
@@ -284,9 +283,9 @@ class SummaryFragment : BaseFragment() {
             requireView().findViewById<TextView>(R.id.txtRecheckVitalsRecommended)
         if (retestAnalysis.isRetestRecommended) {
             if (retestAnalysis.isRetestRecommendedNow) {
-                tvRecommend.text = "Recheck vitals now is recommended"
+                tvRecommend.text = getString(R.string.summary_recheck_vitals_now)
             } else if (retestAnalysis.isRetestRecommendedIn15Min) {
-                tvRecommend.text = "Recheck vitals in 15 minutes is recommended"
+                tvRecommend.text = getString(R.string.summary_recheck_vitals_15_min)
             } else {
                 Util.ensure(false)
             }
@@ -390,12 +389,11 @@ class SummaryFragment : BaseFragment() {
      */
     private fun showReferralDialog() {
         // don't refer (and hence save!) if missing data
-        if (viewModel!!.isMissingAnything) {
+        if (viewModel!!.isMissingAnything(requireContext())) {
             displayMissingDataDialog()
             return
         }
-        val newFragment =
-            makeInstance(viewModel!!)
+        val newFragment = makeInstance(viewModel!!)
         newFragment.onSuccessfulUpload = {
 
             // Close the activity upon successful upload of the referral as
@@ -410,9 +408,8 @@ class SummaryFragment : BaseFragment() {
         // TODO: Put strings in xml
         val dialog =
             AlertDialog.Builder(requireContext())
-                .setTitle("Missing Information")
-                .setMessage("Some required fields from PATIENT or CONFIRM VITALS tabs are missing. " +
-                    "Please enter this data before referring patient.")
+                .setTitle(getString(R.string.dialog_missing_information_title))
+                .setMessage(getString(R.string.dialog_missing_information_message))
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setPositiveButton(android.R.string.yes, null)
         dialog.show()

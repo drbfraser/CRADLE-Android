@@ -1,5 +1,7 @@
 package com.cradle.neptune.sync
 
+import android.content.Context
+
 /**
  * This is the main interface for the whole sync process
  * describes all the different steps required to do our one button sync
@@ -11,24 +13,30 @@ interface SyncStepper {
      * This is the first step: we fetch updates with /api/updates
      * we pass this api a time stamp of our last successful sync
      * the api returns arrays of ids for new patients,edited patients, new readings, new assessments
-     * Once we have all the data we move to step number 2
+     * Once we have all the data we move to step number 2.
+     *
+     * Context is required to get any error messages.
      */
-    suspend fun stepOneFetchUpdatesFromServer()
+    suspend fun stepOneFetchUpdatesFromServer(context: Context)
 
     /**
      * This is the step number two. Here we start uploading data to the server.
      * The data can include new patients, edited patients, new readings etc.
      * NOTE: we do not upload the patients edited by local user as well as the server
+     *
+     * Context is required to get any error messages.
      */
-    suspend fun stepTwoSetupUploadingPatientReadings(lastSyncTime: Long)
+    suspend fun stepTwoSetupUploadingPatientReadings(lastSyncTime: Long, context: Context)
 
     /**
      * This is the third step. Here we download all the new data from the server
      * The data includes, new readings, patients, edited patients, follow ups etc.
      * NOTE: in step number 2, we avoided uploading patient info that was also edited by the server
      * in this step, we override our changes with the server since server changes are always prioritized.
+     *
+     * Context is required to get any error messages.
      */
-    suspend fun stepThreeDownloadAllInfo()
+    suspend fun stepThreeDownloadAllInfo(context: Context)
 
     /**
      * This is the last step of the sync process.

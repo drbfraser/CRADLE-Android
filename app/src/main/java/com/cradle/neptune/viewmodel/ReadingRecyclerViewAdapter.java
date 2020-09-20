@@ -1,5 +1,6 @@
 package com.cradle.neptune.viewmodel;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,13 +13,13 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cradle.neptune.R;
-import com.cradle.neptune.model.*;
+import com.cradle.neptune.model.Assessment;
+import com.cradle.neptune.model.Reading;
+import com.cradle.neptune.model.ReadingAnalysis;
+import com.cradle.neptune.model.UrineTest;
 import com.cradle.neptune.utilitiles.DateUtil;
 import com.google.android.material.snackbar.Snackbar;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 
@@ -72,14 +73,21 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         myViewHolder.heartRate.setText(new StringBuilder().append(currReading.getBloodPressure().getHeartRate()).append("").toString());
 
         if (currReading.getUrineTest() != null) {
-            myViewHolder.urineTest.setText(getUrineTestFormattedTxt(currReading.getUrineTest()));
+            myViewHolder.urineTest.setText(
+                    getUrineTestFormattedTxt(currReading.getUrineTest())
+            );
         }
         if (!currReading.getSymptoms().isEmpty()) {
-            StringBuilder symptoms = new StringBuilder();
-            for (String s : currReading.getSymptoms()) {
-                symptoms.append(s).append(", ");
+            StringBuilder symptomsStringBuilder = new StringBuilder();
+            // TODO: make it so that the symptoms that are sent via api are forced to be in English
+            final List<String> symptoms = currReading.getSymptoms();
+            for (int j = 0; j < symptoms.size(); j++) {
+                symptomsStringBuilder.append(symptoms.get(j));
+                if (j < symptoms.size() - 1) {
+                    symptomsStringBuilder.append(", ");
+                }
             }
-            myViewHolder.symptomTxt.setText(symptoms.toString());
+            myViewHolder.symptomTxt.setText(symptomsStringBuilder.toString());
         }
         myViewHolder.trafficLight.setImageResource(ReadingAnalysisViewSupport.getColorCircleImageId(analysis));
         myViewHolder.arrow.setImageResource(ReadingAnalysisViewSupport.getArrowImageId(analysis));
@@ -89,17 +97,23 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         myViewHolder.cardView.setOnClickListener(view -> {
             // if the reading is uploaded to the server, we dont want to change it locally.
             if (currReading.isUploadedToServer()) {
-                Snackbar.make(v, "This reading is already uploaded to the server, " +
-                        "unable to make changes to it.", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(
+                        v,
+                        R.string.patient_profile_reading_already_uploaded_snackbar,
+                        Snackbar.LENGTH_LONG
+                ).show();
             } else {
                 onClickElementListener.onClick(currReading.getId());
             }
         });
         myViewHolder.cardView.setOnLongClickListener(view -> {
-            // if the reading is uploaded to the server, we dont want to delete it locally.
+            // if the reading is uploaded to the server, we don't want to delete it locally.
             if (currReading.isUploadedToServer()) {
-                Snackbar.make(v, "This reading is already uploaded to the server, " +
-                        "Cannot delete the reading.", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(
+                        v,
+                        R.string.patient_profile_reading_already_uploaded_cannot_delete_snackbar,
+                        Snackbar.LENGTH_LONG
+                ).show();
             } else {
                 onClickElementListener.onLongClick(currReading.getId());
             }
@@ -107,14 +121,13 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         });
 
         if (myViewHolder.getItemViewType() == NO_ASSESSMENT_TYPE) {
-
             if (currReading.isVitalRecheckRequired()) {
                 myViewHolder.retakeVitalButton.setVisibility(View.VISIBLE);
                 myViewHolder.retakeVitalButton.setOnClickListener(view -> onClickElementListener.onClickRecheckReading(currReading.getId()));
             }
 
             if (currReading.isReferredToHealthCentre()) {
-                myViewHolder.isreferedTxt.setText("Referral Pending");
+                myViewHolder.isreferedTxt.setText(R.string.patient_profile_reading_referral_pending);
             }
             myViewHolder.trafficLight.setImageResource(ReadingAnalysisViewSupport.getColorCircleImageId(analysis));
             myViewHolder.arrow.setImageResource(ReadingAnalysisViewSupport.getArrowImageId(analysis));
@@ -125,8 +138,9 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             //referral
             setVisibilityForImageAndText(v, R.id.imgReferred, R.id.txtReferred, currReading.isReferredToHealthCentre());
             if (currReading.isReferredToHealthCentre()) {
-                String message;
-                if (currReading.getReferral() != null && currReading.getReferral().getHealthFacilityName().length() > 0) {
+                final String message;
+                if (currReading.getReferral() != null
+                        && currReading.getReferral().getHealthFacilityName().length() > 0) {
                     message = v.getContext().getString(R.string.reading_referred_to_health_centre, currReading.getReferral().getHealthFacilityName());
                 } else {
                     message = v.getContext().getString(R.string.reading_referred_to_health_centre_unknown);
@@ -143,7 +157,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             // populate: recheck vitals
             setVisibilityForImageAndText(v, R.id.imgRecheckVitals, R.id.txtRecheckVitals, currReading.isVitalRecheckRequired());
             if (currReading.isVitalRecheckRequired()) {
-                String message;
+                final String message;
                 if (currReading.isVitalRecheckRequiredNow()) {
                     message = v.getContext().getString(R.string.reading_recheck_vitals_now);
                 } else {
@@ -164,7 +178,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             myViewHolder.diagnosis.setText(readingFollowUp.getDiagnosis());
             myViewHolder.treatment.setText(readingFollowUp.getTreatment());
             myViewHolder.hcName.setText(Integer.toString(readingFollowUp.getHealthCareWorkerId()));
-            myViewHolder.referredBy.setText("Unknown"); // FIXME: no longer have referred by field
+            myViewHolder.referredBy.setText(R.string.patient_profile_reading_unknown_referrer); // FIXME: no longer have referred by field
             myViewHolder.assessedBy.setText(Integer.toString(readingFollowUp.getHealthCareWorkerId()));
             myViewHolder.assessmentDate.setText(DateUtil.getFullDateFromUnix(readingFollowUp.getDateAssessed()));
             TextView specialInvestigation = v.findViewById(R.id.specialInvestigationTxt);
@@ -188,11 +202,18 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
     }
 
     private String getUrineTestFormattedTxt(UrineTest urineTestResult) {
-        return "Leukocytes: " + urineTestResult.getLeukocytes() + " , " +
-                "Nitrites: " + urineTestResult.getNitrites() + " , " +
-                "Protein: " + urineTestResult.getProtein() + " \n " +
-                "Blood: " + urineTestResult.getBlood() + " , " +
-                "Glucose: " + urineTestResult.getGlucose();
+        final Context context = recyclerView.getContext();
+        return context.getString(R.string.urine_test_layout_leukocytes) + ":"
+                        + urineTestResult.getLeukocytes() + ", "
+                + context.getString(R.string.urine_test_layout_nitrites) + ":"
+                        + urineTestResult.getNitrites() + ",\n"
+                + context.getString(R.string.urine_test_layout_protein) + ":"
+                        + urineTestResult.getProtein() + ", "
+                + context.getString(R.string.urine_test_layout_blood) + ":"
+                        + urineTestResult.getBlood() + ",\n"
+                + context.getString(R.string.urine_test_layout_glucose) + ":"
+                        + urineTestResult.getGlucose();
+
     }
 
     private void setVisibilityForImageAndText(View v, int imageViewId, int textViewId, boolean show) {

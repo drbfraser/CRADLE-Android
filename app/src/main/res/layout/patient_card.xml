@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
 
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/patientCardview"
@@ -36,14 +37,14 @@
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="4dp"
-                android:text="BR"
                 android:textAlignment="center"
                 android:textColor="@color/black"
                 android:textSize="30sp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="BR" />
 
             <TextView
                 android:id="@+id/textView8"
@@ -62,13 +63,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                android:text="12345673456"
                 android:textColor="@color/black"
                 android:textSize="18sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/textView13"
                 app:layout_constraintStart_toEndOf="@+id/patientName"
-                app:layout_constraintTop_toBottomOf="@+id/textView8" />
+                app:layout_constraintTop_toBottomOf="@+id/textView8"
+                tools:text="12345673456" />
 
             <TextView
                 android:id="@+id/textView13"
@@ -87,12 +88,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                android:text="434HG34"
                 android:textColor="@color/black"
                 android:textSize="18sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="@+id/textView13"
-                app:layout_constraintTop_toBottomOf="@+id/textView13" />
+                app:layout_constraintTop_toBottomOf="@+id/textView13"
+                tools:text="434HG34" />
 
             <androidx.appcompat.widget.AppCompatImageButton
                 android:id="@+id/referralStatus"

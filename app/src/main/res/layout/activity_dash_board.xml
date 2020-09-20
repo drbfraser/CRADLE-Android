@@ -48,7 +48,8 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintTop_toTopOf="parent"
+                android:focusable="true">
 
                 <ImageView
                     android:layout_width="match_parent"
@@ -76,7 +77,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
                 android:layout_marginBottom="8dp"
-                android:text="New Reading"
+                android:text="@string/dashboard_new_reading"
                 android:textAlignment="center"
                 app:layout_constraintBottom_toBottomOf="@+id/readingCardView"
                 app:layout_constraintEnd_toEndOf="@+id/readingCardView"
@@ -108,7 +109,8 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintTop_toTopOf="parent"
+                android:focusable="true">
 
                 <ImageView
                     android:layout_width="match_parent"
@@ -169,7 +171,8 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintTop_toTopOf="parent"
+                android:focusable="true">
 
                 <ImageView
                     android:layout_width="match_parent"
@@ -194,7 +197,7 @@
             <TextView
                 style="@style/DashboardCardText"
                 android:layout_marginBottom="8dp"
-                android:text="Statistics"
+                android:text="@string/dashboard_statistics"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -228,7 +231,8 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintTop_toTopOf="parent"
+                android:focusable="true">
 
                 <ImageView
                     android:layout_width="wrap_content"
@@ -253,7 +257,7 @@
             <TextView
                 style="@style/DashboardCardText"
                 android:layout_marginBottom="8dp"
-                android:text="Sync"
+                android:text="@string/dashboard_sync"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="@+id/syncCardView"
                 app:layout_constraintStart_toStartOf="@+id/syncCardView"
@@ -282,7 +286,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
-            android:text="Education"
+            android:text="@string/dashboard_education"
             android:textColor="@color/colorOffWhite"
             android:textSize="14sp"
             android:textStyle="bold"

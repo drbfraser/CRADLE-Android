@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
-            android:hint="Systolic"
+            android:hint="@string/confirm_data_fragment_systolic_hint"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
@@ -40,7 +40,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
-            android:hint="Diastolic"
+            android:hint="@string/confirm_data_fragment_diastolic_hint"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/txtSystolic">
 
@@ -60,7 +60,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
-            android:hint="Heart rate"
+            android:hint="@string/confirm_data_fragment_heart_rate_hint"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/txtDiastolic">
 
@@ -93,7 +93,7 @@
             android:clickable="false"
             android:focusable="false"
             android:selectAllOnFocus="false"
-            android:text="Go to Summary screen (next) to review data and save."
+            android:text="@string/confirm_data_fragment_go_to_summary_screen_next_to_review_data_and_save"
             android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="@+id/txtHeartRate"
             app:layout_constraintStart_toStartOf="@+id/txtHeartRate"
@@ -109,7 +109,7 @@
             android:clickable="false"
             android:focusable="false"
             android:selectAllOnFocus="false"
-            android:text="No photo has been taken for this reading."
+            android:text="@string/confirm_data_fragment_no_photo_taken_for_reading"
             android:textSize="30sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@+id/txtHeartRate"
@@ -122,7 +122,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="OCR disabled in settings; please enter vitals manually."
+            android:text="@string/confirm_data_fragment_ocr_disabled_enter_manually"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -240,14 +240,16 @@
             android:inputType="textPersonName"
             android:text="1"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ivOcrScaled2" />
+            app:layout_constraintTop_toBottomOf="@+id/ivOcrScaled2"
+            tools:ignore="HardcodedText" />
 
+        <!--TODO: Is this user friendly?-->
         <Button
             android:id="@+id/btnSetBlurSize"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="Set Blur Radius"
+            android:text="@string/confirm_data_fragment_set_blur_radius"
             app:layout_constraintStart_toEndOf="@+id/etBlurRadius"
             app:layout_constraintTop_toTopOf="@+id/etBlurRadius" />
 

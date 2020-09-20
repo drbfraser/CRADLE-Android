@@ -89,10 +89,10 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
         dialogView = inflater.inflate(R.layout.referral_dialog, null)
         alertDialog = AlertDialog.Builder(requireActivity())
             .setView(dialogView)
-            .setTitle("Send Referral")
-            .setPositiveButton("Send SMS", null)
-            .setNegativeButton("Send Web", null)
-            .setNeutralButton("Cancel") { _, _ -> dialog?.cancel() }
+            .setTitle(getString(R.string.referral_dialog_title))
+            .setPositiveButton(getString(R.string.referral_dialog_button_send_sms), null)
+            .setNegativeButton(getString(R.string.referral_dialog_button_send_web), null)
+            .setNeutralButton(getString(android.R.string.cancel)) { _, _ -> dialog?.cancel() }
             .create()
 
         // Override the default behaviour of the "Send SMS" and "Send Web"
@@ -181,9 +181,9 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
      */
     private fun displayNoHealthFacilityDialog() {
         AlertDialog.Builder(requireActivity())
-            .setTitle("No Health Facility Selected")
-            .setMessage("Please add a health facility in the settings menu")
-            .setPositiveButton("Ok", null)
+            .setTitle(getString(R.string.no_health_facility_dialog_title))
+            .setMessage(getString(R.string.no_health_facility_dialog_message))
+            .setPositiveButton(getString(android.R.string.ok), null)
             .show()
     }
 
@@ -246,7 +246,8 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
                 onSuccessfulUpload()
             }
             else -> {
-                Toast.makeText(context, result.errorMessage, Toast.LENGTH_LONG).show()
+                Toast.makeText(context, result.getErrorMessage(requireContext()), Toast.LENGTH_LONG)
+                    .show()
             }
         }
     }

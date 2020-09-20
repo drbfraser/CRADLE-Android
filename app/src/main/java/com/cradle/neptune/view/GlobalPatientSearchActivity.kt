@@ -60,7 +60,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
             localPatientSet = patientManager.getPatientIdsOnly().toHashSet()
         }
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = getString(R.string.global_patient_search)
+        supportActionBar?.title = getString(R.string.global_patient_search_title)
         setupGlobalPatientSearch()
     }
 
@@ -91,7 +91,9 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
      * Makes an api call to fetch for a list of patients based on the query
      */
     private fun searchServerForThePatients(searchUrl: String) {
-        val progressDialog = getProgessDialog("Fetching the patients")
+        val progressDialog = getProgressDialog(
+            getString(R.string.global_patient_search_fetching_the_patients)
+        )
         progressDialog.show()
 
         MainScope().launch {
@@ -104,7 +106,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
                     setupPatientsRecycler(null)
                     Snackbar.make(
                         searchView,
-                        "Sorry unable to fetch patients",
+                        R.string.global_patient_search_unable_to_fetch,
                         Snackbar.LENGTH_LONG
                     ).show()
                 }
@@ -148,23 +150,24 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
             override fun onAddToLocalClicked(patient: GlobalPatient) {
                 if (patient.isMyPatient) {
                     Snackbar.make(
-                        searchView, "This patient already added as your patient",
+                        searchView,
+                        R.string.global_patient_search_patient_already_added,
                         Snackbar.LENGTH_LONG
                     ).show()
                     return
                 }
                 val alertDialog =
-                    AlertDialog.Builder(this@GlobalPatientSearchActivity).setTitle("Are you sure?")
-                        .setMessage("Are you sure you want to add this patient as your own? ")
-                        .setPositiveButton("OK") { _: DialogInterface, _: Int ->
-
+                    AlertDialog.Builder(this@GlobalPatientSearchActivity)
+                        .setTitle(R.string.global_patient_search_add_patient_dialog_title)
+                        .setMessage(R.string.global_patient_search_add_patient_dialog_message)
+                        .setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int ->
                             fetchInformationForThisPatient(
                                 patient,
                                 globalPatientList,
                                 globalPatientAdapter
                             )
                         }
-                        .setNegativeButton("NO") { _: DialogInterface, _: Int -> }
+                        .setNegativeButton(android.R.string.no) { _: DialogInterface, _: Int -> }
                         .setIcon(R.drawable.ic_sync)
                 alertDialog.show()
             }
@@ -201,7 +204,9 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         globalPatientList: List<GlobalPatient>,
         globalPatientAdapter: GlobalPatientAdapter
     ) {
-        val progressDialog = getProgessDialog("Adding to your patient list.")
+        val progressDialog = getProgressDialog(
+            getString(R.string.global_patient_search_adding_to_your_patient_list)
+        )
         progressDialog.show()
         MainScope().launch {
             when (val result = patientManager.associatePatientAndDownload(patient.id)) {
@@ -222,7 +227,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
                 else -> {
                     Toast.makeText(
                         this@GlobalPatientSearchActivity,
-                        "Unable to make user-patient relationship",
+                        R.string.global_patient_search_unable_to_make_user_patient_relationship,
                         Toast.LENGTH_LONG
                     ).show()
                 }
@@ -231,7 +236,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         }
     }
 
-    private fun getProgessDialog(message: String): ProgressDialog {
+    private fun getProgressDialog(message: String): ProgressDialog {
         val progressDialog = ProgressDialog(this)
         progressDialog.setMessage(message)
         progressDialog.setCancelable(false)

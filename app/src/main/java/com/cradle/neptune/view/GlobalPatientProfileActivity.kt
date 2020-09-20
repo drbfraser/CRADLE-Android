@@ -5,7 +5,6 @@ import android.app.ProgressDialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
 import android.view.View.VISIBLE
 import android.widget.Button
 import android.widget.Toast
@@ -46,13 +45,15 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
     private fun setupAddToMyPatientList() {
         val addToMyListButton = findViewById<Button>(R.id.addToMyPatientButton)
         addToMyListButton.visibility = VISIBLE
-        addToMyListButton.setOnClickListener(View.OnClickListener {
-            AlertDialog.Builder(this).setTitle("Are you sure?").setMessage("This is not reversible")
-                .setPositiveButton("YES") { _: DialogInterface, _: Int ->
+        addToMyListButton.setOnClickListener {
+            AlertDialog.Builder(this)
+                .setTitle(R.string.global_patient_profile_dialog_title)
+                .setMessage(getString(R.string.global_patient_profile_dialog_message))
+                .setPositiveButton(android.R.string.yes) { _: DialogInterface, _: Int ->
                     setupAddingPatientLocally()
-                }.setNegativeButton("NO") { _: DialogInterface, _: Int ->
+                }.setNegativeButton(android.R.string.no) { _: DialogInterface, _: Int ->
                 }.show()
-        })
+        }
     }
 
     /**
@@ -61,7 +62,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
     private fun setupAddingPatientLocally() {
         val progressDialog = ProgressDialog(this)
         progressDialog.setCancelable(false)
-        progressDialog.setMessage("Adding to your patient's list")
+        progressDialog.setMessage(getString(R.string.global_patient_profile_add_dialog_message))
         progressDialog.show()
 
         MainScope().launch {
@@ -70,7 +71,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
                 progressDialog.cancel()
                 Toast.makeText(
                     this@GlobalPatientProfileActivity,
-                    "Unable to make user-patient relationship",
+                    R.string.global_patient_profile_add_failed,
                     Toast.LENGTH_LONG
                 ).show()
                 return@launch
@@ -110,7 +111,9 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
 
         val progressDialog = ProgressDialog(this)
         progressDialog.setCancelable(false)
-        progressDialog.setMessage("Fetching the patient...")
+        progressDialog.setMessage(
+            getString(R.string.global_patient_profile_fetch_patient_dialog_message)
+        )
         progressDialog.show()
         MainScope().launch {
             val result = patientManager.downloadPatientAndReading(globalPatient.id)
@@ -118,7 +121,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
                 progressDialog.cancel()
                 Snackbar.make(
                     readingRecyclerview,
-                    "Unable to fetch patient information",
+                    R.string.global_patient_profile_fetch_patient_fail,
                     Snackbar.LENGTH_INDEFINITE
                 ).show()
                 return@launch
@@ -150,8 +153,9 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         listAdapter.setOnClickElementListener(object : OnClickElement {
             override fun onClick(readingId: String) {
                 Snackbar.make(
-                    view, "You must add this patient to your patient lists " +
-                        "before editing anything", Snackbar.LENGTH_LONG
+                    view,
+                    R.string.global_patient_profile_you_must_add_to_list_before_editing,
+                    Snackbar.LENGTH_LONG
                 ).show()
             }
 
@@ -161,8 +165,9 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
 
             override fun onClickRecheckReading(readingId: String) {
                 Snackbar.make(
-                    view, "You must add this patient to your patient lists " +
-                        "before creating a new reading", Snackbar.LENGTH_LONG
+                    view,
+                    R.string.global_patient_profile_you_must_add_to_list_before_reading,
+                    Snackbar.LENGTH_LONG
                 ).show()
             }
         })

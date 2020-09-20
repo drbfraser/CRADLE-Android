@@ -19,7 +19,6 @@
         ]]>
     </string>
 
-
     <string name="title_activity_patients">Patients</string>
 
     <!-- Navigation Menu Options-->
@@ -108,13 +107,15 @@
     <string name="missing_info_title">Missing Information</string>
     <string name="missing_info_body">Some required fields from PATIENT or CONFIRM VITALS tabs are missing. Please enter this data before saving.</string>
     <string name="invalid_data">Invalid Data</string>
-    <string name="invalid_data_message">Valid ranges\n\nAge limit: 0-150 years\nHearth rate: 30-300 bpm\nsystolic and diastolic: 10-300 bpm\npregnancy max: 15 months</string>
+    <string name="invalid_data_message">Valid ranges\n\nAge limit: 0–150 years\nHeart rate: 30–300 bpm\nsystolic and diastolic: 10-300 bpm\npregnancy max: 15 months</string>
 
 
     <!-- SMS Text Message Referral -->
 
     <!-- SMS Text Message Referral - SMS content-->
     <!-- NOTE: May not want to translate, as sent to doctors -->
+    <!-- TODO: Use translatable="false" if you need to enforce this, or create separate
+            SMS-only strings that are not translatable -->
 
 
     <string name="village">Village</string>
@@ -136,7 +137,7 @@
     <string name="patient_summary">Patient Summary</string>
     <string name="patient">Patient:</string>
     <string name="reading">Reading </string>
-    <string name="Systolic_blood_pressure">Systolic Blood Pressure:</string>
+    <string name="systolic_blood_pressure">Systolic Blood Pressure:</string>
     <string name="diastolic_blood_pressure">Diastolic Blood Pressure:</string>
     <string name="heart_rate">Heart Rate (BPM):</string>
     <string name="assessment">Assessment</string>
@@ -144,20 +145,160 @@
     <string name="treatment">Treatment:</string>
     <string name="medical_history">Medical History</string>
     <string name="drug_history">Drug History</string>
-    <string name="take_new_reading">Take New Reading</string>
+    <string name="take_new_reading_button">Take New Reading</string>
     <string name="log_in">Log In</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
     <string name="go">Go</string>
-    <string name="login_error">Invalid Email or Password.</string>
-    <string name="empty_text_for_patient">You dont have any patients right now.\n Go to the dashboard to create a new reading.</string>
-    <string name="emptyViewStatText">Please create some readings to see stats</string>
-    <string name="stateTextforMonth">This Month, you have made</string>
+    <string name="logging_in">Logging in</string>
+    <string name="login_successful">Login successful!</string>
+    <string name="login_error">Invalid email or password.</string>
+    <string name="empty_text_for_patient">You don\'t have any patients right now.\n Go to the dashboard to create a new reading.</string>
     <string name="pregnant_question">Pregnant?</string>
     <string name="create_new_reading">Create New Reading</string>
-    <string name="normalSignoutMessage">You will be required to sign in again before using the application.</string>
-    <string name="unUploadedReadingSignoutMessage">reading(s) still needs to be uploaded to the server. These reading(s) will be lost after signing out!</string>
     <string name="global_search">Search all patients</string>
-    <string name="global_patient_search">All Patients Search</string>
-    <!-- TODO: Remove or change this placeholder text -->
+    <string name="sign_out_question">Sign out?</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_advanced">Advanced</string>
+    <string name="default_settings">(default)</string>
+    <string name="summary_recheck_vitals_now">Recheck vitals now is recommended</string>
+    <string name="summary_recheck_vitals_15_min">Recheck vitals in 15 minutes is recommended</string>
+    <string name="patient_info_no_name">No name</string>
+    <string name="reading_no_gestational_age">No gestational age</string>
+    <string name="date_of_birth_or_age">Date-of-birth or age</string>
+    <string name="missing_required_patient_info">Missing required patient information</string>
+    <string name="dialog_missing_information_title">Missing information</string>
+    <string name="dialog_missing_information_message">Some required fields from PATIENT or CONFIRM VITALS tabs are missing. Please enter this data before referring patient.</string>
+    <string name="referral_dialog_title">Send referral</string>
+    <string name="referral_dialog_button_send_sms">Send SMS</string>
+    <string name="referral_dialog_button_send_web">Send web</string>
+    <string name="no_health_facility_dialog_title">No health facility selected</string>
+    <string name="no_health_facility_dialog_message">Please add a health facility in the settings menu</string>
+    <string name="not_available_n_slash_a">N/A</string>
+    <string name="education_activity_title">Help</string>
+    <string name="video_activity_title">CRADLE VSA Instructions</string>
+    <string name="sync_activity_title">Sync everything</string>
+    <string name="sync_activity_sync_progress_text">Sync in progress! Please wait for it to complete.</string>
+    <string name="sync_activity_upload_status">Request completed %1$d out of %2$d</string>
+    <string name="sync_activity_sync_complete">Sync complete</string>
+    <string name="sync_activity_sync_progress_percent">Syncing: %1$d%% Please wait for it to complete.</string>
+    <string name="sync_activity_error_line">Error: %1$s</string>
+    <string name="symptoms">Symptoms</string>
+    <string name="missing_required_patient_vitals">Missing required patient vitals</string>
+    <string name="missing_vitals_blood_pressure">Blood pressure (systolic, diastolic, heart rate)</string>
+    <string name="missing_vitals_symptoms">Symptoms</string>
+    <string name="network_result_error_server_rejected_credentials">Server rejected credentials; check they are correct in settings.</string>
+    <string name="network_result_error_server_rejected_upload_request">Server rejected upload request; check server URL in settings.</string>
+    <string name="network_result_error_server_rejected_url">Server rejected URL; check server URL in settings.</string>
+    <string name="network_result_error_reading_or_patient_might_already_exist">The reading or patient might already exist; check global patients</string>
+    <string name="network_result_error_generic_status_code">Server rejected upload; check server URL in settings. Code %1$d</string>
+    <string name="reading_not_pregnant">Not pregnant</string>
+    <string name="patient_profile_reading_already_uploaded_snackbar">This reading is already uploaded to the server, unable to make changes to it.</string>
+    <string name="patient_profile_reading_already_uploaded_cannot_delete_snackbar">This reading is already uploaded to the server; cannot delete the reading.</string>
+    <string name="patient_profile_reading_referral_pending">Referral pending</string>
+    <string name="patient_profile_reading_unknown_referrer">Unknown</string>
+    <string name="global_patient_search_title">All Patients Search</string>
+    <string name="global_patient_search_fetching_the_patients">Fetching the patients</string>
+    <string name="global_patient_search_unable_to_fetch">Sorry, unable to fetch patients</string>
+    <string name="global_patient_search_patient_already_added">This patient already added as your patient</string>
+    <string name="global_patient_search_add_patient_dialog_title">Are you sure?</string>
+    <string name="global_patient_search_add_patient_dialog_message">Are you sure you want to add this patient as your own?</string>
+    <string name="global_patient_search_adding_to_your_patient_list">Adding to your patient list.</string>
+    <string name="global_patient_search_unable_to_make_user_patient_relationship">Unable to make user-patient relationship</string>
+    <string name="global_patient_profile_dialog_title">Are you sure?</string>
+    <string name="global_patient_profile_dialog_message">This is not reversible</string>
+    <string name="global_patient_profile_add_dialog_message">Adding to your patients list</string>
+    <string name="global_patient_profile_add_failed">Unable to make user-patient relationship</string>
+    <string name="global_patient_profile_fetch_patient_dialog_message">Fetching the patient...</string>
+    <string name="global_patient_profile_fetch_patient_fail">Unable to fetch patient information</string>
+    <string name="global_patient_profile_you_must_add_to_list_before_editing">You must add this patient to your patient lists before editing anything</string>
+    <string name="global_patient_profile_you_must_add_to_list_before_reading">You must add this patient to your patients list before creating a new reading</string>
+    <plurals name="settings_n_configured_health_centres">
+        <item quantity="one">%1$d configured health centre</item>
+        <item quantity="other">%1$d configured health centres</item>
+    </plurals>
+
+    <string name="normal_signout_message">You will be required to sign in again before using the application.</string>
+    <string name="dashboard_new_reading">New Reading</string>
+    <string name="dashboard_sync">Sync</string>
+    <string name="dashboard_education">Education</string>
+    <string name="dashboard_statistics">Statistics</string>
+    <string name="education_activity_community_poster">Community poster</string>
+    <string name="education_activity_watch_training_video">Watch training video</string>
+    <string name="education_activity_clinic_poster">Clinic poster</string>
+    <string name="login_email_hint">someone@example.com</string>
+    <string name="login_password_hint" translatable="false">*********</string>
+    <string name="patient_profile_date_of_birth">Date of Birth</string>
+    <string name="no">No</string>
+    <string name="patient_profile_month">Month</string>
+    <string name="patient_profile_week">Week</string>
+    <string name="patient_profile_none_caps">NONE</string>
+    <string name="patient_profile_add_to_my_patients_list_button">Add to my patients list</string>
+    <string name="stats_activity_referrals">Referrals</string>
+    <string name="stats_activity_referrals_assessed">Referrals Assessed</string>
+    <string name="stats_activity_total_number_of_traffic_lights">Total number of traffic lights</string>
+    <string name="stats_activity_no_readings_text">Please create some readings to see stats</string>
+    <string name="stats_activity_this_month_you_have_made_header">This month, you have made</string>
+    <string name="sync_activity_sync_button">Sync</string>
+    <string name="video_activity_header">CRADLE VSA Training Video</string>
+    <string name="video_activity_app_credits">App developed by Team Neptune</string>
+    <string name="camera_fragment_instructions_header">Hold the phone steady and take photo of CRADLE VSA reading</string>
+    <string name="camera_fragment_take_photo_button">Take photo</string>
+    <string name="camera_fragment_load_photo_button">Load photo</string>
+    <string name="camera_fragment_slide_to_zoom">Slide to zoom</string>
+    <string name="confirm_data_fragment_systolic_hint">Systolic</string>
+    <string name="confirm_data_fragment_diastolic_hint">Diastolic</string>
+    <string name="confirm_data_fragment_heart_rate_hint">Heart rate</string>
+    <string name="confirm_data_fragment_go_to_summary_screen_next_to_review_data_and_save">Go to Summary screen (next) to review data and save.</string>
+    <string name="confirm_data_fragment_no_photo_taken_for_reading">No photo has been taken for this reading.</string>
+    <string name="confirm_data_fragment_ocr_disabled_enter_manually">OCR disabled in settings; please enter vitals manually.</string>
+    <string name="confirm_data_fragment_set_blur_radius">Set Blur Radius</string>
+    <string name="intro_fragment_grant_permissions_button">Grant permissions</string>
+    <string name="intro_fragment_additional_permissions_required">Additional permissions required to proceed; please tap Grant Permissions or exit app.</string>
+    <string name="intro_fragment_all_permissions_granted_tap_next_below">All permissions granted; tap Next (below).</string>
+    <string name="no_caps">NO</string>
+    <string name="patient_info_fragment_date_of_birth_question">Date Of birth?</string>
+    <string name="patient_info_fragment_date_of_birth_hint">Date of birth</string>
+    <string name="patient_info_fragment_age_hint">Patient\'s age</string>
+    <string name="summary_fragment_advice_header">Advice</string>
+    <string name="summary_fragment_recheck_vitals_now_after_save">Recheck vitals now (after save)</string>
+    <string name="summary_fragment_recheck_vitals_in_15_minutes_after_save">Recheck vitals in 15 minutes (after save)</string>
+    <string name="summary_fragment_recheck_vitals_now_is_recommended">Recheck vitals now is recommended</string>
+    <string name="summary_fragment_referral_recommended">Referral recommended</string>
+    <string name="summary_fragment_send_referral_button">Send Referral</string>
+    <string name="summary_fragment_follow_up_needed_another_day_switch">Follow-up needed (another day)</string>
+    <string name="summary_fragment_follow_up_recommended">Follow-up recommended</string>
+    <string name="symptoms_fragment_header">Symptoms</string>
+    <string name="symptoms_fragment_other_symptoms">Other symptoms</string>
+    <string name="yes_caps">YES</string>
+    <string name="symptoms_fragment_urine_test_taken">Urine test taken?</string>
+    <string name="health_facility_row_about">About</string>
+    <string name="health_facility_row_type_colon">Type:</string>
+    <string name="health_facility_row_location_colon">Location:</string>
+    <string name="reading_card_assessment_symptoms_colon">Symptoms:</string>
+    <string name="reading_card_assessment_urine_test_result">Urine Test Result:</string>
+    <string name="reading_card_assessment_made_by">Made by:</string>
+    <string name="reading_card_assessment_health_centre_colon">Health Centre:</string>
+    <string name="reading_card_assessment_follow_up_colon">Follow up:</string>
+    <string name="reading_card_assessment_referred_by_colon">Referred By:</string>
+    <string name="reading_card_assessment_special_investigation_colon">Special investigation:</string>
+    <string name="reading_card_assessment_medication_prescribed_colon">Medication Prescribed:</string>
+    <string name="reading_card_pending_no_assessment_not_yet_uploaded_to_server">Not yet uploaded to server</string>
+    <string name="reading_card_pending_no_assessment_follow_up_needed">Follow-up needed</string>
+    <string name="reading_card_pending_no_assessment_no_referral">No Referral</string>
+    <string name="reading_card_pending_no_assessment_urine_test_result_colon">Urine Test Result:</string>
+    <string name="reading_card_pending_no_assessment_symptoms_colon">Symptoms:</string>
+    <string name="referral_dialog_title_which_health_centre">Which health centre?</string>
+    <string name="referral_dialog_comments_optional">Comments (optional)</string>
+    <string name="referral_dialog_sending_a_referral_saves_the_reading">Sending a referral saves the reading</string>
+    <string name="urine_test_layout_leukocytes">Leukocytes</string>
+    <string name="urine_test_layout_nitrites">Nitrites</string>
+    <string name="urine_test_layout_protein">Protein</string>
+    <string name="urine_test_layout_blood">Blood</string>
+    <string name="urine_test_layout_glucose">Glucose</string>
+    <string name="urine_test_layout_table_header_result">Result</string>
+    <plurals name="unuploaded_reading_signout_message">
+        <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>
+        <item quantity="other">%1$d readings still need to be uploaded to the server. These readings will be lost after signing out!</item>
+    </plurals>
 </resources>
