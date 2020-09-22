@@ -46,7 +46,12 @@ class PatientReadingViewModel() {
      */
     constructor(patient: Patient, reading: Reading) : this() {
         patientBuilder.decompose(patient)
-        readingBuilder.decompose(reading)
+        // TODO: Completely revisit this ViewModel setup. We have to do this so that the Activity
+        //  and ViewModel don't share the same reference for symptoms.
+        val symptomsCopy = ArrayList<String>().apply {
+            addAll(reading.symptoms as ArrayList<String>)
+        }
+        readingBuilder.decompose(reading.copy(symptoms = symptomsCopy))
     }
 
     /* Patient Info */
