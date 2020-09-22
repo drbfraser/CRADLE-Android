@@ -18,12 +18,10 @@ import com.cradle.neptune.viewmodel.PatientReadingViewModel
  * Use the newInstance() factory method to create an instance of derived fragment.
  */
 abstract class BaseFragment : Fragment() {
-    @JvmField
-    protected var activityCallbackListener: MyFragmentInteractionListener? = null
+    protected lateinit var activityCallbackListener: MyFragmentInteractionListener
     @JvmField
     protected var viewModel: PatientReadingViewModel? = null
-    @JvmField
-    protected var readingManager: ReadingManager? = null
+    protected lateinit var readingManager: ReadingManager
 
     /*
         Keyboard support
@@ -58,13 +56,12 @@ abstract class BaseFragment : Fragment() {
         }
         activityCallbackListener = context
         viewModel = activityCallbackListener!!.viewModel
-        readingManager = activityCallbackListener!!.readingManager
+        readingManager = activityCallbackListener!!.readingManager_
     }
 
     override fun onDetach() {
         Log.d(TAG, "TRACE -- onDetatch(): hash" + toString())
         super.onDetach()
-        activityCallbackListener = null
     }
 
     /**

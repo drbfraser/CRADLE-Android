@@ -24,17 +24,22 @@ import com.cradle.neptune.view.ui.reading.MyFragmentInteractionListener
 import com.cradle.neptune.view.ui.reading.SectionsPagerAdapter
 import com.cradle.neptune.viewmodel.PatientReadingViewModel
 import com.google.android.material.tabs.TabLayout
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.threeten.bp.ZonedDateTime
 import java.util.ArrayList
 import javax.inject.Inject
 
 class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
+    private val scope = MainScope()
     // Data Model
     @Inject
-    var readingManager: ReadingManager? = null
-
+    lateinit var readingManager: ReadingManager
     @Inject
-    var patientManager: PatientManager? = null
+    lateinit var patientManager: PatientManager
     private var mPager: ViewPager? = null
     private var mPagerAdapter: SectionsPagerAdapter? = null
 
@@ -42,10 +47,8 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
     private var reasonForLaunch = LaunchReason.LAUNCH_REASON_NONE
     private var patient: Patient? = null
     private var reading: Reading? = null
-    private var viewModel: PatientReadingViewModel? = null
+    private lateinit var viewModel: PatientReadingViewModel
 
-    //    private Reading originalReading;
-    //    private Reading currentReading;
     private var lastKnownTab = -1
     override fun onCreate(savedInstanceState: Bundle?) {
         // inject:
@@ -58,44 +61,48 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
         setupBottomBar()
     }
 
-    private fun setupModelData() {
+    private fun setupModelData() = runBlocking {
+        Log.d("ReadingActivity", "setupModelData")
         val intent = intent
 
         // why did we launch this activity?
         Util.ensure(intent.hasExtra(EXTRA_LAUNCH_REASON))
         reasonForLaunch = intent.getSerializableExtra(EXTRA_LAUNCH_REASON) as LaunchReason
-        var readingId: String? = ""
-        when (reasonForLaunch) {
-            LaunchReason.LAUNCH_REASON_NEW -> viewModel = PatientReadingViewModel()
-            LaunchReason.LAUNCH_REASON_EDIT -> {
-                readingId = intent.getStringExtra(EXTRA_READING_ID)
-                Util.ensure(readingId != null && readingId != "")
-                reading = readingManager!!.getReadingByIdBlocking(readingId)
-                patient = patientManager!!.getPatientByIdBlocking(reading!!.patientId)
-                viewModel = PatientReadingViewModel(patient!!, reading!!)
-            }
-            LaunchReason.LAUNCH_REASON_RECHECK -> {
-                readingId = getIntent().getStringExtra(EXTRA_READING_ID)
-                Util.ensure(readingId != null && readingId != "")
-                reading = readingManager!!.getReadingByIdBlocking(readingId)
-                patient = patientManager!!.getPatientByIdBlocking(reading!!.patientId)
-                viewModel = PatientReadingViewModel(patient!!)
 
-                // Add the old reading to the previous list of the new reading.
-                if (viewModel!!.previousReadingIds == null) {
-                    viewModel!!.previousReadingIds = ArrayList()
-                }
-                viewModel!!.previousReadingIds.add(reading!!.id)
-            }
-            LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {
-                readingId = getIntent().getStringExtra(EXTRA_READING_ID)
-                Util.ensure(readingId != null && readingId != "")
-                reading = readingManager!!.getReadingByIdBlocking(readingId)
-                patient = patientManager!!.getPatientByIdBlocking(reading!!.patientId)
-                viewModel = PatientReadingViewModel(patient!!)
-            }
-            else -> Util.ensure(false)
+        if (reasonForLaunch == LaunchReason.LAUNCH_REASON_NEW) {
+            viewModel = PatientReadingViewModel()
+            return@runBlocking
         }
+
+        // Get the intended patient and reading
+        val readingId: String = intent.getStringExtra(EXTRA_READING_ID) ?: ""
+        Util.ensure(readingId != "")
+        launch {
+            withContext(Dispatchers.IO) {
+                reading = readingManager.getReadingById(readingId)
+                patient = patientManager.getPatientById(reading!!.patientId)
+            }
+
+            when (reasonForLaunch) {
+                LaunchReason.LAUNCH_REASON_EDIT -> {
+                    viewModel = PatientReadingViewModel(patient!!, reading!!)
+                }
+                LaunchReason.LAUNCH_REASON_RECHECK -> {
+                    viewModel = PatientReadingViewModel(patient!!)
+
+                    // Add the old reading to the previous list of the new reading.
+                    if (viewModel.previousReadingIds == null) {
+                        viewModel.previousReadingIds = ArrayList()
+                    }
+                    viewModel.previousReadingIds?.add(reading!!.id)
+                }
+                LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {
+                    viewModel = PatientReadingViewModel(patient!!)
+                }
+                else -> Util.ensure(false)
+            }
+        }
+        Log.d("ReadingActivity", "setupModelData DONE")
     }
 
     /*
@@ -104,12 +111,12 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
     private fun setupTabs() {
         // configure tabs
         mPagerAdapter = SectionsPagerAdapter(this, supportFragmentManager)
-        mPager = findViewById(R.id.view_pager)
-        mPager.setAdapter(mPagerAdapter)
+        mPager = findViewById<ViewPager?>(R.id.view_pager)
+        mPager?.adapter = mPagerAdapter
         val tabs = findViewById<TabLayout>(R.id.tabs)
         tabs.setupWithViewPager(mPager)
         tabs.tabMode = TabLayout.MODE_SCROLLABLE
-        mPager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+        mPager?.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
             override fun onPageSelected(i: Int) {
                 callOnMyBeingHiddenForCurrentTab()
                 val nextFragment = mPagerAdapter!!.getItem(i) as BaseFragment
@@ -124,9 +131,9 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
         // set tab to start on
         // jump through other tabs to ensure change listener is called on first display.
         val startTab = intent.getIntExtra(EXTRA_START_TAB, 0)
-        mPager.setCurrentItem(0)
-        mPager.setCurrentItem(mPagerAdapter!!.count)
-        mPager.setCurrentItem(startTab)
+        mPager?.currentItem = 0
+        mPager?.currentItem = mPagerAdapter!!.count
+        mPager?.currentItem = startTab
     }
 
     private fun callOnMyBeingHiddenForCurrentTab() {
@@ -177,10 +184,12 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
         callOnMyBeingHiddenForCurrentTab()
         when (reasonForLaunch) {
             LaunchReason.LAUNCH_REASON_NEW -> confirmDiscardAndFinish(R.string.discard_dialog_new_reading)
-            LaunchReason.LAUNCH_REASON_EDIT -> if (reading == viewModel!!.maybeConstructModels()) {
-                finish()
-            } else {
-                confirmDiscardAndFinish(R.string.discard_dialog_changes)
+            LaunchReason.LAUNCH_REASON_EDIT -> {
+                if (reading == viewModel.maybeConstructModels()?.second) {
+                    finish()
+                } else {
+                    confirmDiscardAndFinish(R.string.discard_dialog_changes)
+                }
             }
             LaunchReason.LAUNCH_REASON_RECHECK -> confirmDiscardAndFinish(R.string.discard_dialog_rechecking)
             LaunchReason.LAUNCH_REASON_EXISTINGNEW -> confirmDiscardAndFinish(R.string.discard_dialog_new_reading)
@@ -240,10 +249,10 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
         })
 
         // Clicks
-        findViewById<View>(R.id.ivPrevious).setOnClickListener { v: View -> onClickPrevious(v) }
-        findViewById<View>(R.id.ivNext).setOnClickListener { v: View? -> onClickNext(v) }
-        findViewById<View>(R.id.txtNext).setOnClickListener { v: View? -> onClickNext(v) }
-        findViewById<View>(R.id.txtDone).setOnClickListener { view: View? ->
+        findViewById<View>(R.id.ivPrevious).setOnClickListener { onClickPrevious() }
+        findViewById<View>(R.id.ivNext).setOnClickListener { onClickNext() }
+        findViewById<View>(R.id.txtNext).setOnClickListener { onClickNext() }
+        findViewById<View>(R.id.txtDone).setOnClickListener {
             if (saveCurrentReading()) {
                 finish()
             }
@@ -251,7 +260,7 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
         updateBottomBar()
     }
 
-    private fun onClickPrevious(v: View) {
+    private fun onClickPrevious() {
         // If user taps PREVIOUS faster than UI can update, we can have multiple
         // clicks queued up and incorrectly want to go past first page.
         if (mPager!!.currentItem > 0) {
@@ -259,7 +268,7 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
         }
     }
 
-    private fun onClickNext(v: View?) {
+    private fun onClickNext() {
         // If user taps NEXT faster than UI can update, we can have multiple
         // clicks queued up and incorrectly want to go past last page.
         if (mPager!!.currentItem < mPagerAdapter!!.count - 1) {
@@ -290,12 +299,13 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
         Callback from Fragments
     */
     override fun getViewModel(): PatientReadingViewModel {
-        return viewModel!!
+        // TODO: Use ViewModels properly using ViewModelProviders so that they're scoped to the
+        //       same activity.
+        return viewModel
     }
 
-    override fun getReadingManager(): ReadingManager {
-        return readingManager!!
-    }
+    // TODO: The reading manager should be stored in the ViewModel.
+    override fun getReadingManager_(): ReadingManager = readingManager
 
     // Return true if saved; false if rejected
     override fun saveCurrentReading(): Boolean {
@@ -303,13 +313,13 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
         // - activity's SAVE button(s)
         // - fragment's saving data as needed (send SMS)
         callOnMyBeingHiddenForCurrentTab()
-        if (viewModel!!.isMissingAnything(this)) {
+        if (viewModel.isMissingAnything(this)) {
             displayMissingDataDialog()
             return false
         }
 
 //        // check for valid data
-        if (viewModel!!.isDataInvalid) {
+        if (viewModel.isDataInvalid) {
             displayValidDataDialog()
             Log.i("validation", "Data out of range")
             return false
@@ -318,19 +328,19 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
         // If dateTimeTaken has not been filled in for the reading, for example
         // in the case of creating a new reading instead of updating an
         // existing one, we set it to the current time.
-        if (viewModel!!.dateTimeTaken == null) {
-            viewModel!!.dateTimeTaken = ZonedDateTime.now().toEpochSecond()
+        if (viewModel.dateTimeTaken == null) {
+            viewModel.dateTimeTaken = ZonedDateTime.now().toEpochSecond()
         }
-        val models = viewModel!!.constructModels()
+        val models = viewModel.constructModels()
         when (reasonForLaunch) {
             LaunchReason.LAUNCH_REASON_NEW, LaunchReason.LAUNCH_REASON_RECHECK, LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {
-                readingManager!!.addReading(models.second)
-                patientManager!!.add(models.first)
+                readingManager.addReading(models.second)
+                patientManager.add(models.first)
             }
             LaunchReason.LAUNCH_REASON_EDIT ->                 // overwrite if any changes
-                if (models != reading) {
-                    readingManager!!.updateReading(models.second)
-                    patientManager!!.add(models.first)
+                if (models.second != reading) {
+                    readingManager.updateReading(models.second)
+                    patientManager.add(models.first)
                 }
             else -> Util.ensure(false)
         }
@@ -345,7 +355,7 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
     }
 
     override fun advanceToNextPage() {
-        onClickNext(null)
+        onClickNext()
     }
 
     override fun finishActivity() {
@@ -353,19 +363,23 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
     }
 
     private enum class LaunchReason {
-        LAUNCH_REASON_NEW, LAUNCH_REASON_EDIT, LAUNCH_REASON_RECHECK, LAUNCH_REASON_NONE, LAUNCH_REASON_EXISTINGNEW
+        LAUNCH_REASON_NEW, LAUNCH_REASON_EDIT, LAUNCH_REASON_RECHECK, LAUNCH_REASON_NONE,
+        LAUNCH_REASON_EXISTINGNEW
     }
 
     companion object {
         private const val EXTRA_LAUNCH_REASON = "enum of why we launched"
         private const val EXTRA_READING_ID = "ID of reading to load"
         private const val EXTRA_START_TAB = "idx of tab to start on"
+
+        @JvmStatic
         fun makeIntentForNewReading(context: Context?): Intent {
             val intent = Intent(context, ReadingActivity::class.java)
             intent.putExtra(EXTRA_LAUNCH_REASON, LaunchReason.LAUNCH_REASON_NEW)
             return intent
         }
 
+        @JvmStatic
         fun makeIntentForEdit(context: Context?, readingId: String?): Intent {
             val intent = Intent(context, ReadingActivity::class.java)
             intent.putExtra(EXTRA_LAUNCH_REASON, LaunchReason.LAUNCH_REASON_EDIT)
@@ -374,6 +388,7 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
             return intent
         }
 
+        @JvmStatic
         fun makeIntentForRecheck(context: Context?, readingId: String?): Intent {
             val intent = Intent(context, ReadingActivity::class.java)
             intent.putExtra(EXTRA_LAUNCH_REASON, LaunchReason.LAUNCH_REASON_RECHECK)
@@ -382,6 +397,7 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
             return intent
         }
 
+        @JvmStatic
         fun makeIntentForNewReadingExistingPatient(context: Context?, readingID: String?): Intent {
             val intent = Intent(context, ReadingActivity::class.java)
             intent.putExtra(EXTRA_LAUNCH_REASON, LaunchReason.LAUNCH_REASON_EXISTINGNEW)

@@ -12,7 +12,7 @@ import com.cradle.neptune.viewmodel.PatientReadingViewModel;
 public interface MyFragmentInteractionListener {
     PatientReadingViewModel getViewModel();
 
-    ReadingManager getReadingManager();
+    ReadingManager getReadingManager_();
 
     void advanceToNextPage();
 

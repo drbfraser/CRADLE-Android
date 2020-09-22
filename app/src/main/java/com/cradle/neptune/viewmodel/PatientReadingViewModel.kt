@@ -128,8 +128,8 @@ class PatientReadingViewModel() {
         set(value) = readingBuilder.set(Reading::isFlaggedForFollowUp, value).discard()
 
     @Suppress("UNCHECKED_CAST")
-    var previousReadingIds: List<String>?
-        get() = readingBuilder.get(Reading::previousReadingIds) as List<String>?
+    var previousReadingIds: MutableList<String>?
+        get() = readingBuilder.get(Reading::previousReadingIds) as MutableList<String>?
         set(value) = readingBuilder.set(Reading::previousReadingIds, value).discard()
 
     var metadata: ReadingMetadata = ReadingMetadata()
