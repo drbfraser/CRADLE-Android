@@ -1,5 +1,6 @@
 package com.cradle.neptune.model
 
+import android.util.Log
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
