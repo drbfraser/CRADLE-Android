@@ -209,7 +209,7 @@ class PatientInfoFragment : BaseFragment() {
                 }
                 is GestationalAgeMonths -> {
                     gestationalAgeSpinner.setSelection(GA_UNIT_INDEX_MONTHS)
-                    gestationalAgeEditText.setText (
+                    gestationalAgeEditText.setText(
                         if (gestationalAge.actualMonths != "") {
                             gestationalAge.actualMonths
                         } else {
