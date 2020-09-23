@@ -161,7 +161,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
                 if (currReading.isVitalRecheckRequiredNow()) {
                     message = v.getContext().getString(R.string.reading_recheck_vitals_now);
                 } else {
-                    long minutes = currReading.getMinutesUtilVitalRecheck();
+                    long minutes = currReading.getMinutesUntilVitalRecheck();
                     if (minutes == 1) {
                         message = v.getContext().getString(R.string.reading_recheck_vitals_in_one_minute);
                     } else {

@@ -99,14 +99,14 @@ data class Reading(
      * True if a vital recheck is required right now.
      */
     val isVitalRecheckRequiredNow
-        get() = minutesUtilVitalRecheck != null && minutesUtilVitalRecheck!! <= 0
+        get() = minutesUntilVitalRecheck != null && minutesUntilVitalRecheck!! <= 0
 
     /**
      * The number of minutes until a vital recheck is required.
      *
      * `null` if no recheck is required.
      */
-    val minutesUtilVitalRecheck: Long?
+    val minutesUntilVitalRecheck: Long?
         get() {
             val recheckTime = dateRecheckVitalsNeeded ?: return null
             val timeLeft = recheckTime - ZonedDateTime.now().toEpochSecond()
