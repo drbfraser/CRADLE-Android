@@ -20,6 +20,7 @@ import com.cradle.neptune.utilitiles.Months
 import com.cradle.neptune.utilitiles.Weeks
 import com.cradle.neptune.utilitiles.nullIfEmpty
 import com.cradle.neptune.utilitiles.unreachable
+import kotlin.math.roundToInt
 import org.threeten.bp.ZonedDateTime
 
 private const val GA_UNIT_INDEX_WEEKS = 0
@@ -198,15 +199,27 @@ class PatientInfoFragment : BaseFragment() {
         if (viewModel?.patientIsPregnant == true) {
             pregnantSwitch.isChecked = true
             gestationalAgeEditText.isEnabled = true
-            gestationalAgeEditText.setText(viewModel?.patientGestationalAge?.value?.toString())
             gestationalAgeSpinner.isEnabled = true
-            gestationalAgeSpinner.setSelection(
-                when (viewModel?.patientGestationalAge) {
-                    null -> GA_UNIT_INDEX_WEEKS // weeks is the default unit
-                    is GestationalAgeWeeks -> GA_UNIT_INDEX_WEEKS
-                    is GestationalAgeMonths -> GA_UNIT_INDEX_MONTHS
+
+            when (val gestationalAge = viewModel?.patientGestationalAge) {
+                null -> {
+                    // weeks is the default unit
+                    gestationalAgeSpinner.setSelection(GA_UNIT_INDEX_WEEKS)
+                    gestationalAgeEditText.setText("")
                 }
-            )
+                is GestationalAgeWeeks -> {
+                    gestationalAgeSpinner.setSelection(GA_UNIT_INDEX_WEEKS)
+                    gestationalAgeEditText.setText(
+                        gestationalAge.age.asWeeks().roundToInt().toString()
+                    )
+                }
+                is GestationalAgeMonths -> {
+                    gestationalAgeSpinner.setSelection(GA_UNIT_INDEX_MONTHS)
+                    gestationalAgeEditText.setText(
+                        gestationalAge.age.asMonths().roundToInt().toString()
+                    )
+                }
+            }
         }
     }
 
