@@ -165,13 +165,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
     //  to start the activity is fine here as we don't want UI code in the
     //  manager class.
     private fun onSignOut() {
-        val editor = sharedPreferences.edit()
-        editor.putString(LoginManager.EMAIL_KEY, "")
-        editor.putInt(LoginManager.PASSWORD_KEY, LoginManager.PASSWORD_SENTINEL)
-        editor.putString(LoginManager.TOKEN_KEY, null)
-        editor.putString(LoginManager.USER_ID_KEY, null)
-        editor.putLong(SyncStepperImplementation.LAST_SYNC, 0L)
-        editor.apply()
+        with(sharedPreferences.edit()) {
+            remove(LoginManager.EMAIL_KEY)
+            remove(LoginManager.TOKEN_KEY)
+            remove(LoginManager.USER_ID_KEY)
+            remove(SyncStepperImplementation.LAST_SYNC)
+            apply()
+        }
         GlobalScope.launch(Dispatchers.IO) { readingManager.deleteAllData() }
         GlobalScope.launch(Dispatchers.IO) { healthCentreManager.deleteAll() }
         GlobalScope.launch(Dispatchers.IO) { patientManager.deleteAll() }

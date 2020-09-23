@@ -31,9 +31,7 @@ class LoginManager @Inject constructor(
     companion object {
         const val TOKEN_KEY = "token"
         const val EMAIL_KEY = "loginEmail"
-        const val PASSWORD_KEY = "loginPassword"
         const val USER_ID_KEY = "userId"
-        const val PASSWORD_SENTINEL = -1
     }
 
     /**
@@ -57,7 +55,6 @@ class LoginManager @Inject constructor(
                     putString(TOKEN_KEY, token)
                     putString(USER_ID_KEY, userId)
                     putString(EMAIL_KEY, email)
-                    putInt(PASSWORD_KEY, password.hashCode())
                     apply()
                 }
             }

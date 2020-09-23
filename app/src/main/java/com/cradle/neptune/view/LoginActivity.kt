@@ -38,8 +38,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun checkSharedPrefForLogin() {
         val email = sharedPreferences.getString(LoginManager.EMAIL_KEY, null)
-        val password = sharedPreferences.getInt(LoginManager.PASSWORD_KEY, LoginManager.PASSWORD_SENTINEL)
-        if (email != null && password != LoginManager.PASSWORD_SENTINEL) {
+        if (email != null) {
             startIntroActivity()
         }
     }
