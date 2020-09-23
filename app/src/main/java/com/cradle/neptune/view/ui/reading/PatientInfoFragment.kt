@@ -200,13 +200,7 @@ class PatientInfoFragment : BaseFragment() {
             pregnantSwitch.isChecked = true
             gestationalAgeEditText.isEnabled = true
             gestationalAgeSpinner.isEnabled = true
-
             when (val gestationalAge = viewModel?.patientGestationalAge) {
-                null -> {
-                    // weeks is the default unit
-                    gestationalAgeSpinner.setSelection(GA_UNIT_INDEX_WEEKS)
-                    gestationalAgeEditText.setText("")
-                }
                 is GestationalAgeWeeks -> {
                     gestationalAgeSpinner.setSelection(GA_UNIT_INDEX_WEEKS)
                     gestationalAgeEditText.setText(
@@ -218,6 +212,10 @@ class PatientInfoFragment : BaseFragment() {
                     gestationalAgeEditText.setText(
                         gestationalAge.age.asMonths().roundToInt().toString()
                     )
+                }
+                else -> {
+                    gestationalAgeSpinner.setSelection(GA_UNIT_INDEX_WEEKS)
+                    gestationalAgeEditText.setText("")
                 }
             }
         }
