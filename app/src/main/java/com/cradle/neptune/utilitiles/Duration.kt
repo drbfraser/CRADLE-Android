@@ -20,6 +20,9 @@ sealed class Duration {
 
 data class Seconds(val value: Long) : Duration() {
     override val seconds = this
+
+    // Flooring is acceptable for seconds.
+    constructor(double: Double) : this(double.toLong())
 }
 
 data class Weeks(val value: Long) : Duration() {
@@ -28,8 +31,10 @@ data class Weeks(val value: Long) : Duration() {
     constructor(seconds: Seconds) : this(seconds.value / SECONDS_PER_WEEK)
 }
 
-data class Months(val value: Long) : Duration() {
+data class Months(val value: Double) : Duration() {
     override val seconds = Seconds(value * SECONDS_PER_MONTH)
+
+    constructor(value: Long) : this(value.toDouble())
 
     constructor(seconds: Seconds) : this(seconds.value / SECONDS_PER_MONTH)
 }

@@ -288,7 +288,7 @@ class GestationalAgeMonths(timestamp: Long) : GestationalAge(timestamp), Seriali
     override val age: WeeksAndDays
         get() {
             val seconds = Seconds(UnixTimestamp.now - value)
-            return WeeksAndDays.months(Months(seconds).value)
+            return WeeksAndDays.months(Months(seconds).value.toLong())
         }
 
     constructor(duration: Months) : this(UnixTimestamp.ago(duration))
