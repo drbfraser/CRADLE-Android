@@ -249,15 +249,20 @@ class PatientInfoFragment : BaseFragment() {
         this?.patientIsPregnant = pregnantSwitch.isChecked
 
         this?.patientGestationalAge = run {
-            val value = mView.editText(R.id.etGestationalAgeValue).toIntOrNull()
-            if (value != null) {
-                when (gestationalAgeSpinner.selectedItemPosition) {
-                    GA_UNIT_INDEX_WEEKS -> GestationalAgeWeeks(Weeks(value.toLong()))
-                    GA_UNIT_INDEX_MONTHS -> GestationalAgeMonths(Months(value.toLong()))
-                    else -> unreachable("illegal gestational age spinner state")
+            if (!this?.patientIsPregnant!!) {
+                return@run null
+            }
+
+            when (gestationalAgeSpinner.selectedItemPosition) {
+                GA_UNIT_INDEX_WEEKS -> {
+                    val value = mView.editText(R.id.etGestationalAgeValue).toLongOrNull()
+                    return@run if (value == null) null else GestationalAgeWeeks(Weeks(value))
                 }
-            } else {
-                null
+                GA_UNIT_INDEX_MONTHS -> {
+                    val value = mView.editText(R.id.etGestationalAgeValue).toDoubleOrNull()
+                    return@run if (value == null) null else GestationalAgeMonths(Months(value))
+                }
+                else -> unreachable("illegal gestational age spinner state")
             }
         }
 
