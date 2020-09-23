@@ -1,6 +1,6 @@
 # <img src="readme-img/logo.png" width=40> CRADLE VSA System: Android Application
 
-[![License](https://img.shields.io/github/license/Cradle-VSA/cradle-mobile)](https://github.com/Cradle-VSA/cradle-mobile/blob/master/LICENCE)
+[![License](https://img.shields.io/github/license/Cradle-VSA/cradlemobile)](https://github.com/Cradle-VSA/cradlemobile/blob/master/LICENCE)
 
 Android application for the CRADLE VSA System, a technological health care system
 to improve maternal care and reduce preventable maternal deaths in Ugandan villages.
