@@ -320,7 +320,9 @@ data class WeeksAndDays(val weeks: Long, val days: Long) : Serializable {
     companion object {
         private const val DAYS_PER_MONTH = 30
         private const val DAYS_PER_WEEK = 7
-        private const val WEEKS_PER_MONTH = 4.34524
+        // Get as close as possible to the result of 30/7, a repeating decimal. However, due to the
+        // finiteness of Doubles, anything past 4.2857142857142857 is ignored.
+        private const val WEEKS_PER_MONTH = 4.2857142857142857142857142857142857142857142857143
 
         fun weeks(weeks: Long) = WeeksAndDays(weeks, 0)
 
