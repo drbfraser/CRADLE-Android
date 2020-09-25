@@ -24,14 +24,14 @@ import com.cradle.neptune.view.ui.reading.MyFragmentInteractionListener
 import com.cradle.neptune.view.ui.reading.SectionsPagerAdapter
 import com.cradle.neptune.viewmodel.PatientReadingViewModel
 import com.google.android.material.tabs.TabLayout
+import java.util.ArrayList
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.threeten.bp.ZonedDateTime
-import java.util.ArrayList
-import javax.inject.Inject
 
 class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
     private val scope = MainScope()
