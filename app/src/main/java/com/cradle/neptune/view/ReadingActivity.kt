@@ -11,6 +11,7 @@ import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.lifecycle.lifecycleScope
 import androidx.viewpager.widget.ViewPager
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
@@ -27,14 +28,12 @@ import com.google.android.material.tabs.TabLayout
 import java.util.ArrayList
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.threeten.bp.ZonedDateTime
 
 class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
-    private val scope = MainScope()
     // Data Model
     @Inject
     lateinit var readingManager: ReadingManager
@@ -77,7 +76,7 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
         // Get the intended patient and reading
         val readingId: String = intent.getStringExtra(EXTRA_READING_ID) ?: ""
         Util.ensure(readingId != "")
-        launch {
+        lifecycleScope.launch {
             withContext(Dispatchers.IO) {
                 reading = readingManager.getReadingById(readingId)
                 patient = patientManager.getPatientById(reading!!.patientId)
