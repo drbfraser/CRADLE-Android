@@ -296,10 +296,10 @@ class GestationalAgeMonths(timestamp: Long) : GestationalAge(timestamp), Seriali
      *
      * TODO: Fix this when the fragments are rearchitected/redesigned
      */
-    var actualMonths: Months? = null
+    var inputMonths: Months? = null
 
     constructor(duration: Months) : this(UnixTimestamp.ago(duration)) {
-        actualMonths = duration
+        inputMonths = duration
     }
 
     override val age: WeeksAndDays
