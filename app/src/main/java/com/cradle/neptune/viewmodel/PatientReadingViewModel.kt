@@ -30,6 +30,7 @@ import org.threeten.bp.ZonedDateTime
  * TODO: This class is only temporary and should be replaced with a proper
  *   design pattern.
  */
+@SuppressWarnings("LargeClass")
 class PatientReadingViewModel() {
     private val patientBuilder = DynamicModelBuilder()
     private val readingBuilder = DynamicModelBuilder()

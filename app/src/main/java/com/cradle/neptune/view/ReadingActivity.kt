@@ -33,6 +33,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.threeten.bp.ZonedDateTime
 
+@SuppressWarnings("LargeClass")
 class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
     // Data Model
     @Inject
@@ -123,7 +124,10 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
                 lastKnownTab = i
             }
 
+            @SuppressWarnings("EmptyFunctionBlock")
             override fun onPageScrollStateChanged(i: Int) {}
+
+            @SuppressWarnings("EmptyFunctionBlock")
             override fun onPageScrolled(i: Int, v: Float, i1: Int) {}
         })
 
@@ -235,15 +239,16 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
             }
 
             // This method will be invoked when the current page is scrolled
+            @SuppressWarnings("EmptyFunctionBlock")
             override fun onPageScrolled(
                 position: Int,
                 positionOffset: Float,
                 positionOffsetPixels: Int
-            ) {
-            }
+            ) {}
 
             // Called when the scroll state changes:
             // SCROLL_STATE_IDLE, SCROLL_STATE_DRAGGING, SCROLL_STATE_SETTLING
+            @SuppressWarnings("EmptyFunctionBlock")
             override fun onPageScrollStateChanged(state: Int) {}
         })
 
