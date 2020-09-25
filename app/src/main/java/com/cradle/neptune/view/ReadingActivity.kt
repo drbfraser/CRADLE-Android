@@ -318,7 +318,7 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
             return false
         }
 
-//        // check for valid data
+        // check for valid data
         if (viewModel.isDataInvalid) {
             displayValidDataDialog()
             Log.i("validation", "Data out of range")
@@ -333,11 +333,13 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
         }
         val models = viewModel.constructModels()
         when (reasonForLaunch) {
-            LaunchReason.LAUNCH_REASON_NEW, LaunchReason.LAUNCH_REASON_RECHECK, LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {
+            LaunchReason.LAUNCH_REASON_NEW, LaunchReason.LAUNCH_REASON_RECHECK,
+            LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {
                 readingManager.addReading(models.second)
                 patientManager.add(models.first)
             }
-            LaunchReason.LAUNCH_REASON_EDIT ->                 // overwrite if any changes
+            LaunchReason.LAUNCH_REASON_EDIT ->
+                // overwrite if any changes
                 if (models.second != reading) {
                     readingManager.updateReading(models.second)
                     patientManager.add(models.first)
