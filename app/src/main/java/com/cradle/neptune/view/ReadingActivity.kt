@@ -39,8 +39,8 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
     lateinit var readingManager: ReadingManager
     @Inject
     lateinit var patientManager: PatientManager
-    private var mPager: ViewPager? = null
-    private var mPagerAdapter: SectionsPagerAdapter? = null
+    private lateinit var mPager: ViewPager
+    private lateinit var mPagerAdapter: SectionsPagerAdapter
 
     // Reading object shared by all fragments:
     private var reasonForLaunch = LaunchReason.LAUNCH_REASON_NONE
@@ -113,15 +113,15 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
     private fun setupTabs() {
         // configure tabs
         mPagerAdapter = SectionsPagerAdapter(this, supportFragmentManager)
-        mPager = findViewById<ViewPager?>(R.id.view_pager)
-        mPager?.adapter = mPagerAdapter
+        mPager = findViewById(R.id.view_pager)
+        mPager.adapter = mPagerAdapter
         val tabs = findViewById<TabLayout>(R.id.tabs)
         tabs.setupWithViewPager(mPager)
         tabs.tabMode = TabLayout.MODE_SCROLLABLE
-        mPager?.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+        mPager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
             override fun onPageSelected(i: Int) {
                 callOnMyBeingHiddenForCurrentTab()
-                val nextFragment = mPagerAdapter!!.getItem(i) as BaseFragment
+                val nextFragment = mPagerAdapter.getItem(i) as BaseFragment
                 nextFragment.onMyBeingDisplayed()
                 lastKnownTab = i
             }
@@ -136,9 +136,11 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
         // set tab to start on
         // jump through other tabs to ensure change listener is called on first display.
         val startTab = intent.getIntExtra(EXTRA_START_TAB, 0)
-        mPager?.currentItem = 0
-        mPager?.currentItem = mPagerAdapter!!.count
-        mPager?.currentItem = startTab
+        mPager.apply {
+            currentItem = 0
+            currentItem = mPagerAdapter.count
+            currentItem = startTab
+        }
     }
 
     private fun callOnMyBeingHiddenForCurrentTab() {
