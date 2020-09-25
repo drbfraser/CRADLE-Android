@@ -61,6 +61,9 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
     }
 
     private fun setupModelData() = runBlocking {
+        // Need to block until coroutine is done, or else ViewModel can be uninitialized when
+        // not creating a new patient
+        // TODO: Remove this workaround when the Fragments are rearchitected
         Log.d("ReadingActivity", "setupModelData")
         val intent = intent
 
@@ -100,8 +103,8 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
                 }
                 else -> Util.ensure(false)
             }
+            Log.d("ReadingActivity", "setupModelData DONE")
         }
-        Log.d("ReadingActivity", "setupModelData DONE")
     }
 
     /*
