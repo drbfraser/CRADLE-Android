@@ -11,7 +11,6 @@ import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.lifecycle.lifecycleScope
 import androidx.viewpager.widget.ViewPager
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
@@ -77,7 +76,7 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
         // Get the intended patient and reading
         val readingId: String = intent.getStringExtra(EXTRA_READING_ID) ?: ""
         Util.ensure(readingId != "")
-        lifecycleScope.launch {
+        launch {
             withContext(Dispatchers.IO) {
                 reading = readingManager.getReadingById(readingId)
                 patient = patientManager.getPatientById(reading!!.patientId)
