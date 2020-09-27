@@ -44,8 +44,8 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
 
     // Reading object shared by all fragments:
     private var reasonForLaunch = LaunchReason.LAUNCH_REASON_NONE
-    private var patient: Patient? = null
-    private var reading: Reading? = null
+    private lateinit var patient: Patient
+    private lateinit var reading: Reading
     private lateinit var viewModel: PatientReadingViewModel
 
     private var lastKnownTab = -1
@@ -81,25 +81,29 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
         Util.ensure(readingId != "")
         launch {
             withContext(Dispatchers.IO) {
+                // We expect that the reading and the patient is there, since ReadingActivity has
+                // to be launched for not creating a new patient + reading at this point.
                 reading = readingManager.getReadingById(readingId)
-                patient = patientManager.getPatientById(reading!!.patientId)
+                    ?: throw AssertionError("no reading associated with given id")
+                patient = patientManager.getPatientById(reading.patientId)
+                    ?: throw AssertionError("no patient associated with given reading")
             }
 
             when (reasonForLaunch) {
                 LaunchReason.LAUNCH_REASON_EDIT -> {
-                    viewModel = PatientReadingViewModel(patient!!, reading!!)
+                    viewModel = PatientReadingViewModel(patient, reading)
                 }
                 LaunchReason.LAUNCH_REASON_RECHECK -> {
-                    viewModel = PatientReadingViewModel(patient!!)
+                    viewModel = PatientReadingViewModel(patient)
 
                     // Add the old reading to the previous list of the new reading.
                     if (viewModel.previousReadingIds == null) {
                         viewModel.previousReadingIds = ArrayList()
                     }
-                    viewModel.previousReadingIds?.add(reading!!.id)
+                    viewModel.previousReadingIds?.add(reading.id)
                 }
                 LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {
-                    viewModel = PatientReadingViewModel(patient!!)
+                    viewModel = PatientReadingViewModel(patient)
                 }
                 else -> Util.ensure(false)
             }
@@ -144,7 +148,7 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
 
     private fun callOnMyBeingHiddenForCurrentTab() {
         if (lastKnownTab != -1) {
-            val lastFragment = mPagerAdapter!!.getItem(lastKnownTab) as BaseFragment
+            val lastFragment = mPagerAdapter.getItem(lastKnownTab) as BaseFragment
             lastFragment.onMyBeingHidden()
         }
     }
@@ -166,8 +170,7 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val id = item.itemId
-        when (id) {
+        when (item.itemId) {
             android.R.id.home -> {
                 confirmCancel()
                 return true
@@ -216,7 +219,7 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
         val dialog = AlertDialog.Builder(this)
             .setMessage(messageId)
             .setIcon(android.R.drawable.ic_dialog_alert)
-            .setPositiveButton(R.string.discard_dialog_discard) { dlg: DialogInterface?, btn: Int -> finish() }
+            .setPositiveButton(R.string.discard_dialog_discard) { _: DialogInterface?, _: Int -> finish() }
             .setNegativeButton(R.string.discard_dialog_cancel, null)
         dialog.show()
     }
@@ -235,7 +238,7 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
      */
     private fun setupBottomBar() {
         // Attach the page change listener to update when tab switches page
-        mPager!!.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+        mPager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
             // This method will be invoked when a new page becomes selected.
             override fun onPageSelected(position: Int) {
                 updateBottomBar()
@@ -270,22 +273,22 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
     private fun onClickPrevious() {
         // If user taps PREVIOUS faster than UI can update, we can have multiple
         // clicks queued up and incorrectly want to go past first page.
-        if (mPager!!.currentItem > 0) {
-            mPager!!.currentItem = mPager!!.currentItem - 1
+        if (mPager.currentItem > 0) {
+            mPager.currentItem = mPager.currentItem - 1
         }
     }
 
     private fun onClickNext() {
         // If user taps NEXT faster than UI can update, we can have multiple
         // clicks queued up and incorrectly want to go past last page.
-        if (mPager!!.currentItem < mPagerAdapter!!.count - 1) {
-            mPager!!.currentItem = mPager!!.currentItem + 1
+        if (mPager.currentItem < mPagerAdapter.count - 1) {
+            mPager.currentItem = mPager.currentItem + 1
         }
     }
 
     private fun updateBottomBar() {
-        val position = mPager!!.currentItem
-        val lastPosition = mPagerAdapter!!.count - 1
+        val position = mPager.currentItem
+        val lastPosition = mPagerAdapter.count - 1
 
         // No previous on first:
         findViewById<View>(R.id.ivPrevious).visibility =
@@ -359,7 +362,6 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
         reasonForLaunch = LaunchReason.LAUNCH_REASON_EDIT
         reading = models.second
         patient = models.first
-        //        originalReading = GsonUtil.cloneViaGson(currentReading, Reading.class);
         return true
     }
 
