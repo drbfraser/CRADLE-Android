@@ -103,7 +103,6 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
                 }
                 else -> Util.ensure(false)
             }
-            Log.d("ReadingActivity", "setupModelData DONE")
         }
     }
 
