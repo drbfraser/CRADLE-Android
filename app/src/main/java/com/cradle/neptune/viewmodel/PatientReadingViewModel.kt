@@ -1,6 +1,7 @@
 package com.cradle.neptune.viewmodel
 
 import android.content.Context
+import androidx.lifecycle.ViewModel
 import com.cradle.neptune.R
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.model.BloodPressure
@@ -15,6 +16,7 @@ import com.cradle.neptune.model.UrineTest
 import com.cradle.neptune.utilitiles.DynamicModelBuilder
 import com.cradle.neptune.utilitiles.UnixTimestamp
 import com.cradle.neptune.utilitiles.discard
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -31,21 +33,18 @@ import org.threeten.bp.ZonedDateTime
  *   design pattern.
  */
 @SuppressWarnings("LargeClass")
-class PatientReadingViewModel() {
+class PatientReadingViewModel : ViewModel() {
     private val patientBuilder = DynamicModelBuilder()
     private val readingBuilder = DynamicModelBuilder()
 
-    /**
-     * Constructs a view model for an existing patient.
-     */
-    constructor(patient: Patient) : this() {
+    @Inject
+    lateinit var readingManager: ReadingManager
+
+    fun decompose(patient: Patient) {
         patientBuilder.decompose(patient)
     }
 
-    /**
-     * Constructs a view model from an existing patient and reading.
-     */
-    constructor(patient: Patient, reading: Reading) : this() {
+    fun decompose(patient: Patient, reading: Reading) {
         patientBuilder.decompose(patient)
         // TODO: Completely revisit this ViewModel setup. We have to do this so that the Activity
         //  and ViewModel don't share the same reference for symptoms.

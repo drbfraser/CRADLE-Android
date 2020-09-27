@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.viewmodel.PatientReadingViewModel
 
@@ -19,8 +20,7 @@ import com.cradle.neptune.viewmodel.PatientReadingViewModel
  */
 abstract class BaseFragment : Fragment() {
     protected lateinit var activityCallbackListener: MyFragmentInteractionListener
-    @JvmField
-    protected var viewModel: PatientReadingViewModel? = null
+    protected val viewModel: PatientReadingViewModel by activityViewModels()
     protected lateinit var readingManager: ReadingManager
 
     /*
@@ -55,8 +55,7 @@ abstract class BaseFragment : Fragment() {
             )
         }
         activityCallbackListener = context
-        viewModel = activityCallbackListener!!.viewModel
-        readingManager = activityCallbackListener!!.readingManager_
+        readingManager = viewModel.readingManager
     }
 
     override fun onDetach() {

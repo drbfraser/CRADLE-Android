@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -46,12 +47,13 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
     private var reasonForLaunch = LaunchReason.LAUNCH_REASON_NONE
     private lateinit var patient: Patient
     private lateinit var reading: Reading
-    private lateinit var viewModel: PatientReadingViewModel
+    private val viewModel: PatientReadingViewModel by viewModels()
 
     private var lastKnownTab = -1
     override fun onCreate(savedInstanceState: Bundle?) {
         // inject:
         (application as MyApp).appComponent.inject(this)
+        (application as MyApp).appComponent.inject(viewModel)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_reading)
         setupModelData()
@@ -72,7 +74,6 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
         reasonForLaunch = intent.getSerializableExtra(EXTRA_LAUNCH_REASON) as LaunchReason
 
         if (reasonForLaunch == LaunchReason.LAUNCH_REASON_NEW) {
-            viewModel = PatientReadingViewModel()
             return@runBlocking
         }
 
@@ -91,10 +92,10 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
 
             when (reasonForLaunch) {
                 LaunchReason.LAUNCH_REASON_EDIT -> {
-                    viewModel = PatientReadingViewModel(patient, reading)
+                    viewModel.decompose(patient, reading)
                 }
                 LaunchReason.LAUNCH_REASON_RECHECK -> {
-                    viewModel = PatientReadingViewModel(patient)
+                    viewModel.decompose(patient)
 
                     // Add the old reading to the previous list of the new reading.
                     if (viewModel.previousReadingIds == null) {
@@ -103,7 +104,7 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
                     viewModel.previousReadingIds?.add(reading.id)
                 }
                 LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {
-                    viewModel = PatientReadingViewModel(patient)
+                    viewModel.decompose(patient)
                 }
                 else -> Util.ensure(false)
             }
@@ -304,18 +305,6 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
         findViewById<View>(R.id.txtDone).visibility =
             if (position == lastPosition) View.VISIBLE else View.INVISIBLE
     }
-
-    /*
-        Callback from Fragments
-    */
-    override fun getViewModel(): PatientReadingViewModel {
-        // TODO: Use ViewModels properly using ViewModelProviders so that they're scoped to the
-        //       same activity.
-        return viewModel
-    }
-
-    // TODO: The reading manager should be stored in the ViewModel.
-    override fun getReadingManager_(): ReadingManager = readingManager
 
     // Return true if saved; false if rejected
     override fun saveCurrentReading(): Boolean {

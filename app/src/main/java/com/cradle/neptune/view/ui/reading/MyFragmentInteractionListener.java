@@ -10,12 +10,6 @@ import com.cradle.neptune.viewmodel.PatientReadingViewModel;
  * activity.
  */
 public interface MyFragmentInteractionListener {
-    PatientReadingViewModel getViewModel();
-
-    // TODO: Fix the need for _ by removing this interface altogether. This should really be
-    //  stored in the ViewModel, not in the Activity.
-    ReadingManager getReadingManager_();
-
     void advanceToNextPage();
 
     boolean saveCurrentReading();
