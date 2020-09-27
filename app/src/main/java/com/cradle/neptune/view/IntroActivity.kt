@@ -183,6 +183,6 @@ class IntroActivity : AppCompatActivity(), MyIntroFragmentInteractionListener {
 
     companion object {
         // Shared Pref for this activity
-        private const val LAST_VERSION_TO_COMPLETE_WIZARD = "last ver complete intro"
+        const val LAST_VERSION_TO_COMPLETE_WIZARD = "last ver complete intro"
     }
 }
