@@ -86,11 +86,16 @@ class LiveDataDynamicModelBuilderTests {
         assertEquals("B", nameLiveData.value)
         assertEquals("B", personBuilder.get(Person::name, "A").value)
 
-        personBuilder.get(Person::age, 35)
+        val ageLiveData = personBuilder.get(Person::age, 35)
+        assertEquals(35, ageLiveData.value)
+        ageLiveData.value = 56
+        assertEquals(56, ageLiveData.value!!)
+        assertEquals(56, personBuilder.get(Person::age, 1).value)
+
 
         val person = personBuilder.build<Person>()
         assertEquals("B", person.name)
-        assertEquals(35, person.age)
+        assertEquals(56, person.age)
         assertNull(person.email)
     }
 
