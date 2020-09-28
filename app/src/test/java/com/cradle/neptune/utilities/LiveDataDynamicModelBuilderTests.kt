@@ -121,8 +121,7 @@ class LiveDataDynamicModelBuilderTests {
         assertEquals(25, personBuilder.get(Person::age).value)
 
         // We expect that this should behave like LiveData.
-        @Suppress("UNCHECKED_CAST")
-        val emailLiveData = personBuilder.get(Person::email) as MutableLiveData<String?>
+        val emailLiveData = personBuilder.get<String?>(Person::email)
         assertNull(emailLiveData.value)
         emailLiveData.value = "some@email.com"
         // Should be automatically updated, because the LiveData in emailLiveData and the one
@@ -156,8 +155,7 @@ class LiveDataDynamicModelBuilderTests {
         assertEquals(50, personBuilder.get(Person::age).value)
         assertNull(personBuilder.get(Person::email).value)
 
-        @Suppress("UNCHECKED_CAST")
-        val emailLiveData = personBuilder.get(Person::email) as MutableLiveData<String?>
+        val emailLiveData = personBuilder.get<String?>(Person::email)
         personBuilder.set(Person::email, "this_is_same@email.com")
         assertEquals("this_is_same@email.com", personBuilder.get(Person::email).value)
         assertEquals("this_is_same@email.com", emailLiveData.value)
