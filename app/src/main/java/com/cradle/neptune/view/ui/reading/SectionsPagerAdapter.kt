@@ -15,7 +15,7 @@ import com.cradle.neptune.utilitiles.Util
 class SectionsPagerAdapter(
     private val mContext: Context,
     fm: FragmentManager?
-) : FragmentPagerAdapter(fm!!) {
+) : FragmentPagerAdapter(fm!!, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
     private val fragments =
         arrayOfNulls<Fragment>(TAB_TITLES.size)
 
