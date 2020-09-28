@@ -66,6 +66,9 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
         // Need to block until coroutine is done, or else ViewModel can be uninitialized when
         // not creating a new patient
         // TODO: Remove this workaround when the Fragments are rearchitected
+        // TODO: Move this setup code into the ViewModel. This involves a migration of all the other
+        //       code, including the code for saving readings. What should result in the end is that
+        //       ReadingActivity has a minimum amount of code that deals with the model/data.
         Log.d("ReadingActivity", "setupModelData")
         val intent = intent
 
@@ -74,6 +77,7 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
         reasonForLaunch = intent.getSerializableExtra(EXTRA_LAUNCH_REASON) as LaunchReason
 
         if (reasonForLaunch == LaunchReason.LAUNCH_REASON_NEW) {
+            viewModel.isInitialized = true
             return@runBlocking
         }
 
@@ -108,6 +112,7 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
                 }
                 else -> Util.ensure(false)
             }
+            viewModel.isInitialized = true
         }
     }
 
@@ -307,6 +312,7 @@ class ReadingActivity : AppCompatActivity(), MyFragmentInteractionListener {
     }
 
     // Return true if saved; false if rejected
+    // TODO: Move this into the ViewModel
     override fun saveCurrentReading(): Boolean {
         // called from:
         // - activity's SAVE button(s)

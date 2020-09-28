@@ -41,10 +41,16 @@ class PatientReadingViewModel : ViewModel() {
     lateinit var readingManager: ReadingManager
 
     fun decompose(patient: Patient) {
+        if (isInitialized) {
+            return
+        }
         patientBuilder.decompose(patient)
     }
 
     fun decompose(patient: Patient, reading: Reading) {
+        if (isInitialized) {
+            return
+        }
         patientBuilder.decompose(patient)
         // TODO: Completely revisit this ViewModel setup. We have to do this so that the Activity
         //  and ViewModel don't share the same reference for symptoms.
@@ -53,6 +59,8 @@ class PatientReadingViewModel : ViewModel() {
         }
         readingBuilder.decompose(reading.copy(symptoms = symptomsCopy))
     }
+
+    var isInitialized: Boolean = false
 
     /* Patient Info */
     var patientId: String?
