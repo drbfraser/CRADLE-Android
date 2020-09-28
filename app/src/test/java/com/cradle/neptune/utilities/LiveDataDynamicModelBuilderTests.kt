@@ -141,6 +141,39 @@ class LiveDataDynamicModelBuilderTests {
     }
 
     @Test
+    fun liveDataDynamicModelBuilder_setWithRefectionFieldWorkerThread_getBackLiveData() {
+        // The Looper has been overridden to immediately run any tasks posted to the main thread,
+        // effectively making postValue the same as setValue. We should test this anyway for
+        // completeness.
+        val personBuilder = with(LiveDataDynamicModelBuilder()) {
+            setWorkerThread(Person::name, "Jack")
+            setWorkerThread(Person::age, 25)
+        }
+
+        assertEquals("Jack", personBuilder.get(Person::name).value)
+        assertEquals(25, personBuilder.get(Person::age).value)
+
+        // We expect that this should behave like LiveData.
+        val emailLiveData = personBuilder.get<String?>(Person::email)
+        assertNull(emailLiveData.value)
+        emailLiveData.postValue("some@email.com")
+        // Should be automatically updated, because the LiveData in emailLiveData and the one
+        // in personBuilder should be the same.
+        assertEquals("some@email.com", emailLiveData.value)
+        assertEquals("some@email.com", personBuilder.get(Person::email).value)
+
+        personBuilder.get(Person::email).value = "some_other@email.com"
+        assertEquals("some_other@email.com", personBuilder.get(Person::email).value)
+        assertEquals("some_other@email.com", emailLiveData.value)
+
+        // We never replace any LiveData stored in personBuilder we only update the values in them.
+        // This way, anything observing it can update itself accordingly
+        personBuilder.setWorkerThread(Person::email, "this_is_same@email.com")
+        assertEquals("this_is_same@email.com", personBuilder.get(Person::email).value)
+        assertEquals("this_is_same@email.com", emailLiveData.value)
+    }
+
+    @Test
     fun liveDataDynamicModelBuilder_decompose() {
         val person = Person(name = "Someone", age = 50, email = null)
         val personBuilder = with(LiveDataDynamicModelBuilder()) {
