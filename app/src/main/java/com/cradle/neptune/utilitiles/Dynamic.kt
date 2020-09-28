@@ -7,7 +7,6 @@ import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KProperty
-import kotlin.reflect.full.createType
 import kotlin.reflect.full.memberProperties
 
 /**
@@ -123,7 +122,7 @@ class LiveDataDynamicModelBuilder : DynamicModelBuilder() {
      * @return The typed [MutableLiveData] for the value of a given parameter name.
      * @param key The [KProperty] we use as a key
      */
-    @JvmName("get1")
+    @JvmName("getWithType")
     @Suppress("UNCHECKED_CAST")
     fun <T : Any?> get(key: KProperty<T>) = map[key.name] as? MutableLiveData<T>
         ?: MutableLiveData<T>(null).apply { map[key.name] = this }
@@ -135,16 +134,8 @@ class LiveDataDynamicModelBuilder : DynamicModelBuilder() {
      * been initialized.
      */
     @Suppress("UNCHECKED_CAST")
-    inline fun <reified T : Any?> get(key: KProperty<T>, defaultValue: T) =
-        map[key.name] as? MutableLiveData<T>
-            ?: MutableLiveData<T>(defaultValue).apply {
-                map[key.name] = this
-            }.also {
-                // Guard against setting the wrong type.
-                if (key.returnType != T::class.createType()) {
-                    throw IllegalArgumentException("mismatched argument types")
-                }
-            }
+    fun <T : Any?> get(key: KProperty<T>, defaultValue: T) = map[key.name] as? MutableLiveData<T>
+            ?: MutableLiveData<T>(defaultValue).apply { map[key.name] = this }
 
     /**
      * Sets the new [value] for a given parameter name into the MutableLiveData backed by this model

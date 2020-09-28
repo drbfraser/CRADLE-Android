@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.lang.IllegalArgumentException
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.defaultType
 
@@ -111,7 +112,7 @@ class LiveDataDynamicModelBuilderTests {
             set(Person::age, 25)
         }
 
-        assertEquals("Jack", personBuilder.get<String>(Person::name).value)
+        assertEquals("Jack", personBuilder.get(Person::name).value)
         assertEquals(25, personBuilder.get(Person::age).value)
 
         // We expect that this should behave like LiveData.
