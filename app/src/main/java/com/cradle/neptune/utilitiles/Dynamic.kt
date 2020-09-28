@@ -7,6 +7,7 @@ import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KProperty
+import kotlin.reflect.full.createType
 import kotlin.reflect.full.memberProperties
 
 /**
@@ -99,19 +100,51 @@ class DynamicConstructor<T : Any>(k: KClass<T>, private val map: Map<String, Any
 
 class LiveDataDynamicModelBuilder : DynamicModelBuilder() {
     @Suppress("UNCHECKED_CAST")
-    override val stringMap get() = map.mapValues {
-        (it.value as MutableLiveData<Any?>?)?.value
-    }.toMap()
+    override val stringMap
+        get() = map.mapValues {
+            (it.value as MutableLiveData<Any?>?)?.value
+        }.toMap()
 
     /**
      * Return the current [MutableLiveData] for a given parameter name. If it doesn't exist, a
-     * [MutableLiveData] object with null in it is set.
+     * [MutableLiveData] object with null in it is set. Prefer [getWithType] using
+     * KProperty (Class::propertyName) notation to get typed [MutableLiveData] from the start.
      */
     override fun get(key: String) = map[key] as? MutableLiveData<*>
         ?: MutableLiveData(null).apply { map[key] = this }
 
+    /**
+     * Prefer using get<T> to get typed [MutableLiveData] from the start.
+     */
     override fun get(key: KProperty<*>) = map[key.name] as? MutableLiveData<*>
         ?: MutableLiveData(null).apply { map[key.name] = this }
+
+    /**
+     * @return The typed [MutableLiveData] for the value of a given parameter name.
+     * @param key The [KProperty] we use as a key
+     */
+    @JvmName("get1")
+    @Suppress("UNCHECKED_CAST")
+    fun <T : Any?> get(key: KProperty<T>) = map[key.name] as? MutableLiveData<T>
+        ?: MutableLiveData<T>(null).apply { map[key.name] = this }
+
+    /**
+     * @return The typed [MutableLiveData] for the value of a given parameter name.
+     * @param key The [KProperty] we use as a key
+     * @param defaultValue The default value if the [MutableLiveData] for the given property hasn't
+     * been initialized.
+     */
+    @Suppress("UNCHECKED_CAST")
+    inline fun <reified T : Any?> get(key: KProperty<T>, defaultValue: T) =
+        map[key.name] as? MutableLiveData<T>
+            ?: MutableLiveData<T>(defaultValue).apply {
+                map[key.name] = this
+            }.also {
+                // Guard against setting the wrong type.
+                if (key.returnType != T::class.createType()) {
+                    throw IllegalArgumentException("mismatched argument types")
+                }
+            }
 
     /**
      * Sets the new [value] for a given parameter name into the MutableLiveData backed by this model

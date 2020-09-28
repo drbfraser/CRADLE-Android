@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.reflect.full.createType
+import kotlin.reflect.full.defaultType
 
 class LiveDataDynamicModelBuilderTests {
 
@@ -73,6 +75,25 @@ class LiveDataDynamicModelBuilderTests {
     }
 
     @Test
+    fun liveDataDynamicModelBuilder_setWithLiveData_populatesInternalMap() {
+        // Test default values
+        val personBuilder = LiveDataDynamicModelBuilder()
+        val nameLiveData = personBuilder.get(Person::name, "A")
+        assertEquals("A", nameLiveData.value)
+
+        nameLiveData.value = "B"
+        assertEquals("B", nameLiveData.value)
+        assertEquals("B", personBuilder.get(Person::name, "A").value)
+
+        personBuilder.get(Person::age, 35)
+
+        val person = personBuilder.build<Person>()
+        assertEquals("B", person.name)
+        assertEquals(35, person.age)
+        assertNull(person.email)
+    }
+
+    @Test
     fun liveDataDynamicModelBuilder_ifMissingField_returnNull() {
         // Should do the exact same things as dynamicModelBuilder
         assertThrows(java.lang.IllegalArgumentException::class.java) {
@@ -90,7 +111,7 @@ class LiveDataDynamicModelBuilderTests {
             set(Person::age, 25)
         }
 
-        assertEquals("Jack", personBuilder.get(Person::name).value)
+        assertEquals("Jack", personBuilder.get<String>(Person::name).value)
         assertEquals(25, personBuilder.get(Person::age).value)
 
         // We expect that this should behave like LiveData.
