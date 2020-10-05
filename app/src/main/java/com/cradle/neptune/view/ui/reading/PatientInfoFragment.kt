@@ -20,6 +20,7 @@ import com.cradle.neptune.utilitiles.Months
 import com.cradle.neptune.utilitiles.Weeks
 import com.cradle.neptune.utilitiles.nullIfEmpty
 import com.cradle.neptune.utilitiles.unreachable
+import kotlin.math.roundToInt
 import org.threeten.bp.ZonedDateTime
 
 private const val GA_UNIT_INDEX_WEEKS = 0
@@ -198,15 +199,29 @@ class PatientInfoFragment : BaseFragment() {
         if (viewModel?.patientIsPregnant == true) {
             pregnantSwitch.isChecked = true
             gestationalAgeEditText.isEnabled = true
-            gestationalAgeEditText.setText(viewModel?.patientGestationalAge?.value?.toString())
             gestationalAgeSpinner.isEnabled = true
-            gestationalAgeSpinner.setSelection(
-                when (viewModel?.patientGestationalAge) {
-                    null -> GA_UNIT_INDEX_WEEKS // weeks is the default unit
-                    is GestationalAgeWeeks -> GA_UNIT_INDEX_WEEKS
-                    is GestationalAgeMonths -> GA_UNIT_INDEX_MONTHS
+            when (val gestationalAge = viewModel?.patientGestationalAge) {
+                is GestationalAgeWeeks -> {
+                    gestationalAgeSpinner.setSelection(GA_UNIT_INDEX_WEEKS)
+                    gestationalAgeEditText.setText(
+                        gestationalAge.age.asWeeks().roundToInt().toString()
+                    )
                 }
-            )
+                is GestationalAgeMonths -> {
+                    gestationalAgeSpinner.setSelection(GA_UNIT_INDEX_MONTHS)
+                    gestationalAgeEditText.setText(
+                        if (gestationalAge.inputMonths != null) {
+                            gestationalAge.inputMonths!!.value.toString()
+                        } else {
+                            gestationalAge.age.asMonths().toString()
+                        }
+                    )
+                }
+                else -> {
+                    gestationalAgeSpinner.setSelection(GA_UNIT_INDEX_WEEKS)
+                    gestationalAgeEditText.setText("")
+                }
+            }
         }
     }
 
@@ -238,15 +253,20 @@ class PatientInfoFragment : BaseFragment() {
         this?.patientIsPregnant = pregnantSwitch.isChecked
 
         this?.patientGestationalAge = run {
-            val value = mView.editText(R.id.etGestationalAgeValue).toIntOrNull()
-            if (value != null) {
-                when (gestationalAgeSpinner.selectedItemPosition) {
-                    GA_UNIT_INDEX_WEEKS -> GestationalAgeWeeks(Weeks(value.toLong()))
-                    GA_UNIT_INDEX_MONTHS -> GestationalAgeMonths(Months(value.toLong()))
-                    else -> unreachable("illegal gestational age spinner state")
+            if (!this?.patientIsPregnant!!) {
+                return@run null
+            }
+
+            when (gestationalAgeSpinner.selectedItemPosition) {
+                GA_UNIT_INDEX_WEEKS -> {
+                    val value = mView.editText(R.id.etGestationalAgeValue).toLongOrNull()
+                    return@run if (value == null) null else GestationalAgeWeeks(Weeks(value))
                 }
-            } else {
-                null
+                GA_UNIT_INDEX_MONTHS -> {
+                    val value = mView.editText(R.id.etGestationalAgeValue).toDoubleOrNull()
+                    return@run if (value == null) null else GestationalAgeMonths(Months(value))
+                }
+                else -> unreachable("illegal gestational age spinner state")
             }
         }
 

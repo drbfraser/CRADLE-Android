@@ -285,13 +285,28 @@ class GestationalAgeWeeks(timestamp: Long) : GestationalAge(timestamp), Serializ
  * Variant of [GestationalAge] which stores age in number of months.
  */
 class GestationalAgeMonths(timestamp: Long) : GestationalAge(timestamp), Serializable {
+    /**
+     * Back up the months value as a String. This is not marshalled.
+     *
+     * The user can enter an arbitrary decimal into the gestational age input. However, Due to the
+     * various round-off errors that can occur when using WeeksAndDays#asMonths, an input may change
+     * suddenly and confuse the user (e.g., after putting in 6 months, going to Summary tab, and
+     * then going back to the Patient info tab, the value that gets shown to the user is along the
+     * lines of "6.0000000000000000001").
+     *
+     * TODO: Fix this when the fragments are rearchitected/redesigned
+     */
+    var inputMonths: Months? = null
+
+    constructor(duration: Months) : this(UnixTimestamp.ago(duration)) {
+        inputMonths = duration
+    }
+
     override val age: WeeksAndDays
         get() {
             val seconds = Seconds(UnixTimestamp.now - value)
-            return WeeksAndDays.months(Months(seconds).value)
+            return WeeksAndDays.months(Months(seconds).value.toLong())
         }
-
-    constructor(duration: Months) : this(UnixTimestamp.ago(duration))
 
     override fun marshal(): JSONObject = with(JSONObject()) {
         // For legacy interop we store the value as a string instead of an int.
@@ -319,7 +334,9 @@ data class WeeksAndDays(val weeks: Long, val days: Long) : Serializable {
     companion object {
         private const val DAYS_PER_MONTH = 30
         private const val DAYS_PER_WEEK = 7
-        private const val WEEKS_PER_MONTH = 4.34524
+        // Get as close as possible to the result of 30/7, a repeating decimal. However, due to the
+        // finiteness of Doubles, anything past 4.2857142857142857 is ignored.
+        private const val WEEKS_PER_MONTH = 4.2857142857142857
 
         fun weeks(weeks: Long) = WeeksAndDays(weeks, 0)
 
