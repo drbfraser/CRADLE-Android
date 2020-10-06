@@ -63,7 +63,7 @@ class DynamicModelBuilderTests {
         val person = with(DynamicModelBuilder()) {
             set("name", "Maya")
             set("age", 20)
-            build<Person>()!!
+            build<Person>()
         }
         assertEquals("Maya", person.name)
         assertEquals(20, person.age)
@@ -75,7 +75,7 @@ class DynamicModelBuilderTests {
         val person = with(DynamicModelBuilder()) {
             set(Person::name, "Maya")
             set(Person::age, 20)
-            build<Person>()!!
+            build<Person>()
         }
         assertEquals("Maya", person.name)
         assertEquals(20, person.age)

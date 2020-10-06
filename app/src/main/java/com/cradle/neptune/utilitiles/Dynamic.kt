@@ -1,5 +1,8 @@
 package com.cradle.neptune.utilitiles
 
+import androidx.annotation.UiThread
+import androidx.annotation.WorkerThread
+import androidx.lifecycle.MutableLiveData
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
@@ -94,34 +97,159 @@ class DynamicConstructor<T : Any>(k: KClass<T>, private val map: Map<String, Any
     }
 }
 
+class LiveDataDynamicModelBuilder : DynamicModelBuilder() {
+    @Suppress("UNCHECKED_CAST")
+    override val stringMap
+        get() = map.mapValues {
+            (it.value as MutableLiveData<Any?>?)?.value
+        }.toMap()
+
+    /**
+     * Return the current [MutableLiveData] for a given parameter name. If it doesn't exist, a
+     * [MutableLiveData] object with null in it is set. Prefer [getWithType] using
+     * KProperty (Class::propertyName) notation to get typed [MutableLiveData] from the start.
+     */
+    override fun get(key: String) = map[key] as? MutableLiveData<*>
+        ?: MutableLiveData(null).apply { map[key] = this }
+
+    /**
+     * Prefer using get<T> to get typed [MutableLiveData] from the start.
+     */
+    override fun get(key: KProperty<*>) = map[key.name] as? MutableLiveData<*>
+        ?: MutableLiveData(null).apply { map[key.name] = this }
+
+    /**
+     * @return The typed [MutableLiveData] for the value of a given parameter name.
+     * @param key The [KProperty] we use as a key
+     */
+    @JvmName("getWithType")
+    @Suppress("UNCHECKED_CAST")
+    fun <T : Any?> get(key: KProperty<T>) = map[key.name] as? MutableLiveData<T>
+        ?: MutableLiveData<T>(null).apply { map[key.name] = this }
+
+    /**
+     * @return The typed [MutableLiveData] for the value of a given parameter name.
+     * @param key The [KProperty] we use as a key
+     * @param defaultValue The default value if the [MutableLiveData] for the given property hasn't
+     * been initialized.
+     */
+    @Suppress("UNCHECKED_CAST")
+    fun <T : Any?> get(key: KProperty<T>, defaultValue: T) = map[key.name] as? MutableLiveData<T>
+            ?: MutableLiveData<T>(defaultValue).apply { map[key.name] = this }
+
+    /**
+     * Sets the new [value] for a given parameter name into the MutableLiveData backed by this model
+     * builder using [MutableLiveData.setValue].
+     */
+    @UiThread
+    override fun set(key: String, value: Any?): LiveDataDynamicModelBuilder {
+        @Suppress("UNCHECKED_CAST")
+        with(map[key] as MutableLiveData<Any?>?) {
+            if (this == null) {
+                map[key] = MutableLiveData(value)
+            } else {
+                setValue(value)
+            }
+        }
+        return this
+    }
+
+    /**
+     * Posts the new [value] for a given parameter name into the MutableLiveData backed by this
+     * model builder using [MutableLiveData.postValue]. This is meant for worker threads, since
+     * [MutableLiveData.setValue] is only usable on the main thread.
+     */
+    @WorkerThread
+    fun setWorkerThread(key: String, value: Any?): LiveDataDynamicModelBuilder {
+        @Suppress("UNCHECKED_CAST")
+        with(map[key] as MutableLiveData<Any?>?) {
+            if (this == null) {
+                map[key] = MutableLiveData(value)
+            } else {
+                postValue(value)
+            }
+        }
+        return this
+    }
+
+    /**
+     * Posts the new [value] for a given parameter name into the MutableLiveData backed by this
+     * model builder using [MutableLiveData.postValue]. This is meant for worker threads, since
+     * [MutableLiveData.setValue] is only usable on the main thread.
+     */
+    @UiThread
+    override fun set(key: KProperty<*>, value: Any?): LiveDataDynamicModelBuilder {
+        @Suppress("UNCHECKED_CAST")
+        with(map[key.name] as MutableLiveData<Any?>?) {
+            if (this == null) {
+                map[key.name] = MutableLiveData(value)
+            } else {
+                setValue(value)
+            }
+        }
+        return this
+    }
+
+    /**
+     * Posts the new [value] into the MutableLiveData backed by this model builder using
+     * [MutableLiveData.postValue]. This is meant for worker threads, since
+     * [MutableLiveData.setValue] is only usable on the main thread.
+     */
+    @WorkerThread
+    fun setWorkerThread(key: KProperty<*>, value: Any?): LiveDataDynamicModelBuilder {
+        @Suppress("UNCHECKED_CAST")
+        with(map[key.name] as MutableLiveData<Any?>?) {
+            if (this == null) {
+                map[key.name] = MutableLiveData(value)
+            } else {
+                postValue(value)
+            }
+        }
+        return this
+    }
+
+    override fun <T : Any> decompose(k: KClass<T>, obj: T) =
+        super.decompose(k, obj) as LiveDataDynamicModelBuilder
+
+    /**
+     * Decomposes the member properties of [obj] adding them to this builder's internal map as
+     * [MutableLiveData] entities. Note that the original [decompose] doesn't return a
+     * [LiveDataDynamicModelBuilder] by default, so this is a workaround if needing to use
+     * [decompose] in a builder fashion.
+     *
+     * @return this object, as a [LiveDataDynamicModelBuilder]
+     */
+    inline fun <reified T : Any> decomposeToLiveData(obj: T) = decompose(T::class, obj)
+}
+
 /**
  * An abstraction of [DynamicConstructor] which uses an internal map to keep
  * track of supplied parameters which will eventually be used to construct
  * an object.
  */
 open class DynamicModelBuilder {
-    private val map: MutableMap<String, Any?> = mutableMapOf()
+    protected val map: MutableMap<String, Any?> = mutableMapOf()
 
-    private val stringMap get() = map.toMap()
+    protected open val stringMap get() = map.toMap()
 
     /**
      * Return the current value for a given parameter name.
      */
-    fun get(key: String) = map[key]
+    open fun get(key: String) = map[key]
 
     /**
      * Return the current value for a given parameter name.
      *
      * The [KProperty.name] property is used as the map key.
      */
-    fun get(key: KProperty<*>) = map[key.name]
+    open fun get(key: KProperty<*>) = map[key.name]
 
     /**
      * Sets the value for a given parameter name.
      *
      * @return this object
      */
-    fun set(key: String, value: Any?): DynamicModelBuilder {
+    open fun set(key: String, value: Any?): DynamicModelBuilder {
         map[key] = value
         return this
     }
@@ -133,7 +261,7 @@ open class DynamicModelBuilder {
      *
      * @return this object
      */
-    fun set(key: KProperty<*>, value: Any?): DynamicModelBuilder {
+    open fun set(key: KProperty<*>, value: Any?): DynamicModelBuilder {
         map[key.name] = value
         return this
     }
@@ -144,7 +272,7 @@ open class DynamicModelBuilder {
      *
      * @return this object
      */
-    fun <T : Any> decompose(k: KClass<T>, obj: T): DynamicModelBuilder {
+    open fun <T : Any> decompose(k: KClass<T>, obj: T): DynamicModelBuilder {
         for (property in k.memberProperties) {
             set(property, property.get(obj))
         }
