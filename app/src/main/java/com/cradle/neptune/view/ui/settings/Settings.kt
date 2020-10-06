@@ -18,6 +18,7 @@ import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.sync.SyncStepperImplementation
 import com.cradle.neptune.utilitiles.validateHostname
 import com.cradle.neptune.utilitiles.validatePort
+import com.cradle.neptune.view.IntroActivity
 import com.cradle.neptune.view.LoginActivity
 import com.cradle.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity
 import javax.inject.Inject
@@ -170,6 +171,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             remove(LoginManager.TOKEN_KEY)
             remove(LoginManager.USER_ID_KEY)
             remove(SyncStepperImplementation.LAST_SYNC)
+            remove(IntroActivity.LAST_VERSION_TO_COMPLETE_WIZARD)
             apply()
         }
         GlobalScope.launch(Dispatchers.IO) { readingManager.deleteAllData() }
