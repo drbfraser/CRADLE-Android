@@ -24,7 +24,6 @@ import java.util.UUID
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import org.threeten.bp.Instant
 import org.threeten.bp.ZonedDateTime
 
 const val RED_SYSTOLIC = 160
@@ -100,18 +99,22 @@ data class Reading(
      * True if a vital recheck is required right now.
      */
     val isVitalRecheckRequiredNow
-        get() = isVitalRecheckRequired &&
-            (dateRecheckVitalsNeeded?.equals(Instant.now()) ?: false)
+        get() = minutesUntilVitalRecheck != null && minutesUntilVitalRecheck!! <= 0
 
     /**
      * The number of minutes until a vital recheck is required.
      *
      * `null` if no recheck is required.
      */
-    val minutesUtilVitalRecheck: Long?
+    val minutesUntilVitalRecheck: Long?
         get() {
             val recheckTime = dateRecheckVitalsNeeded ?: return null
-            return (ZonedDateTime.now().toEpochSecond() - recheckTime) / SECONDS_IN_MIN
+            val timeLeft = recheckTime - ZonedDateTime.now().toEpochSecond()
+            return if (timeLeft <= 0) {
+                0
+            } else {
+                timeLeft / SECONDS_IN_MIN
+            }
         }
 
     /**
