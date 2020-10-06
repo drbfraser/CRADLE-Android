@@ -17,6 +17,7 @@ import com.cradle.neptune.view.ui.settings.AdvancedSettingsFragment
 import com.cradle.neptune.view.ui.settings.SettingsFragment
 import com.cradle.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity
 import com.cradle.neptune.viewmodel.HealthFacilityViewModel
+import com.cradle.neptune.viewmodel.PatientReadingViewModel
 import dagger.Component
 import javax.inject.Singleton
 
@@ -42,6 +43,7 @@ interface AppComponent {
     fun inject(healthFacilitiesActivity: HealthFacilitiesActivity?)
     fun inject(globalPatientSearchActivity: GlobalPatientSearchActivity?)
     fun inject(healthFacilityViewModel: HealthFacilityViewModel?)
+    fun inject(patientReadingViewModel: PatientReadingViewModel?)
     fun inject(syncStepperImplementation: SyncStepperImplementation?)
     fun inject(syncActivity: SyncActivity)
     fun inject(myApp: MyApp)

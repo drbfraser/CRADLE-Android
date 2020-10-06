@@ -1,6 +1,7 @@
 package com.cradle.neptune.viewmodel
 
 import android.content.Context
+import androidx.lifecycle.ViewModel
 import com.cradle.neptune.R
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.model.BloodPressure
@@ -15,6 +16,7 @@ import com.cradle.neptune.model.UrineTest
 import com.cradle.neptune.utilitiles.DynamicModelBuilder
 import com.cradle.neptune.utilitiles.UnixTimestamp
 import com.cradle.neptune.utilitiles.discard
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -30,24 +32,35 @@ import org.threeten.bp.ZonedDateTime
  * TODO: This class is only temporary and should be replaced with a proper
  *   design pattern.
  */
-class PatientReadingViewModel() {
+@SuppressWarnings("LargeClass")
+class PatientReadingViewModel : ViewModel() {
     private val patientBuilder = DynamicModelBuilder()
     private val readingBuilder = DynamicModelBuilder()
 
-    /**
-     * Constructs a view model for an existing patient.
-     */
-    constructor(patient: Patient) : this() {
+    @Inject
+    lateinit var readingManager: ReadingManager
+
+    fun decompose(patient: Patient) {
+        if (isInitialized) {
+            return
+        }
         patientBuilder.decompose(patient)
     }
 
-    /**
-     * Constructs a view model from an existing patient and reading.
-     */
-    constructor(patient: Patient, reading: Reading) : this() {
+    fun decompose(patient: Patient, reading: Reading) {
+        if (isInitialized) {
+            return
+        }
         patientBuilder.decompose(patient)
-        readingBuilder.decompose(reading)
+        // TODO: Completely revisit this ViewModel setup. We have to do this so that the Activity
+        //  and ViewModel don't share the same reference for symptoms.
+        val symptomsCopy = ArrayList<String>().apply {
+            addAll(reading.symptoms as ArrayList<String>)
+        }
+        readingBuilder.decompose(reading.copy(symptoms = symptomsCopy))
     }
+
+    var isInitialized: Boolean = false
 
     /* Patient Info */
     var patientId: String?
@@ -128,8 +141,8 @@ class PatientReadingViewModel() {
         set(value) = readingBuilder.set(Reading::isFlaggedForFollowUp, value).discard()
 
     @Suppress("UNCHECKED_CAST")
-    var previousReadingIds: List<String>?
-        get() = readingBuilder.get(Reading::previousReadingIds) as List<String>?
+    var previousReadingIds: MutableList<String>?
+        get() = readingBuilder.get(Reading::previousReadingIds) as MutableList<String>?
         set(value) = readingBuilder.set(Reading::previousReadingIds, value).discard()
 
     var metadata: ReadingMetadata = ReadingMetadata()

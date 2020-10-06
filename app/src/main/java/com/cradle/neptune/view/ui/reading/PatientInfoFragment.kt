@@ -133,7 +133,7 @@ class PatientInfoFragment : BaseFragment() {
                 ageEditText.isClickable = false
                 ageEditText.setText("")
 
-                viewModel?.patientAge = null
+                viewModel.patientAge = null
             } else {
                 dobEditText.isEnabled = false
                 dobEditText.isClickable = false
@@ -142,7 +142,7 @@ class PatientInfoFragment : BaseFragment() {
                 ageEditText.isEnabled = true
                 ageEditText.isClickable = true
 
-                viewModel?.patientDob = null
+                viewModel.patientDob = null
             }
         }
 
@@ -153,7 +153,7 @@ class PatientInfoFragment : BaseFragment() {
                 // Month ordinals are zero indexed.
                 val date = "$year-${month + 1}-$dayOfMonth"
                 dobEditText.setText(date)
-                viewModel?.patientDob = date
+                viewModel.patientDob = date
             }
 
             val dialog = DatePickerDialog(requireActivity(), listener, DatePickerDefaultYear, 0, 1)
