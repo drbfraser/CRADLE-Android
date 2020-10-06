@@ -291,14 +291,14 @@
     <string name="referral_dialog_title_which_health_centre">Which health centre?</string>
     <string name="referral_dialog_comments_optional">Comments (optional)</string>
     <string name="referral_dialog_sending_a_referral_saves_the_reading">Sending a referral saves the reading</string>
+    <string name="referral_dialog_uploading_referral_message">Uploading referral</string>
+    <string name="referral_dialog_success_toast">Successfully uploaded referral</string>
     <string name="urine_test_layout_leukocytes">Leukocytes</string>
     <string name="urine_test_layout_nitrites">Nitrites</string>
     <string name="urine_test_layout_protein">Protein</string>
     <string name="urine_test_layout_blood">Blood</string>
     <string name="urine_test_layout_glucose">Glucose</string>
     <string name="urine_test_layout_table_header_result">Result</string>
-    <string name="referral_dialog_fragment_uploading_referral_message">Uploading referral</string>
-    <string name="referral_dialog_fragment_success_toast">Successfully uploaded referral</string>
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>
         <item quantity="other">%1$d readings still need to be uploaded to the server. These readings will be lost after signing out!</item>

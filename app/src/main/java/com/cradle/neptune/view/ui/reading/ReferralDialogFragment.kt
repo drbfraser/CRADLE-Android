@@ -221,7 +221,7 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
     private suspend fun sendReferralViaWeb() {
         @Suppress("DEPRECATION")
         val progressDialog = ProgressDialog(alertDialog.context).apply {
-            setMessage(getString(R.string.referral_dialog_fragment_uploading_referral_message))
+            setMessage(getString(R.string.referral_dialog_uploading_referral_message))
             setCancelable(false)
         }
         progressDialog.show()
@@ -232,7 +232,7 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
             is Success -> {
                 Toast.makeText(
                     context,
-                    R.string.referral_dialog_fragment_success_toast,
+                    R.string.referral_dialog_success_toast,
                     Toast.LENGTH_SHORT
                 ).show()
 
