@@ -155,6 +155,7 @@ dependencies {
 
     detekt "io.gitlab.arturbosch.detekt:detekt-formatting:$detekt_version"
     detekt("io.gitlab.arturbosch.detekt:detekt-cli:$detekt_version")
+
 }
 
 // TensorFlow Lite: select only the ABI's we (likely) need
