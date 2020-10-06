@@ -221,7 +221,7 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
     private suspend fun sendReferralViaWeb() {
         @Suppress("DEPRECATION")
         val progressDialog = ProgressDialog(alertDialog.context).apply {
-            setMessage("Uploading Referral")
+            setMessage(getString(R.string.referral_dialog_fragment_uploading_referral_message))
             setCancelable(false)
         }
         progressDialog.show()
@@ -230,7 +230,11 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
         progressDialog.cancel()
         when (result) {
             is Success -> {
-                Toast.makeText(context, "Successfully uploaded referral", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    R.string.referral_dialog_fragment_success_toast,
+                    Toast.LENGTH_SHORT
+                ).show()
 
                 // Save the patient and reading after marking them as being
                 // uploaded. We save them here instead of delegating this task
