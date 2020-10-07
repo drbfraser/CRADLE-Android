@@ -92,19 +92,19 @@ class PatientsActivity : AppCompatActivity() {
 
         // listening to search query text change
         searchView.setOnQueryTextListener(object :
-            SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String): Boolean {
-                // filter recycler view when query submitted
-                patientsViewAdapter.filter.filter(query)
-                return false
-            }
+                SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String): Boolean {
+                    // filter recycler view when query submitted
+                    patientsViewAdapter.filter.filter(query)
+                    return false
+                }
 
-            override fun onQueryTextChange(query: String): Boolean {
-                // filter recycler view when text is changed
-                patientsViewAdapter.filter.filter(query)
-                return false
-            }
-        })
+                override fun onQueryTextChange(query: String): Boolean {
+                    // filter recycler view when text is changed
+                    patientsViewAdapter.filter.filter(query)
+                    return false
+                }
+            })
         return true
     }
 

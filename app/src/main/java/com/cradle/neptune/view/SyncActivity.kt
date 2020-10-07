@@ -16,7 +16,8 @@ import kotlin.math.roundToInt
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 
-class SyncActivity : AppCompatActivity(),
+class SyncActivity :
+    AppCompatActivity(),
     SyncStepperCallback {
 
     companion object {
@@ -52,8 +53,10 @@ class SyncActivity : AppCompatActivity(),
             progressBar.visibility = View.VISIBLE
             MainScope().launch {
 
-                SyncStepperImplementation(this@SyncActivity,
-                    this@SyncActivity).stepOneFetchUpdatesFromServer(this@SyncActivity)
+                SyncStepperImplementation(
+                    this@SyncActivity,
+                    this@SyncActivity
+                ).stepOneFetchUpdatesFromServer(this@SyncActivity)
                 it.visibility = View.GONE
             }
         }
@@ -83,7 +86,7 @@ class SyncActivity : AppCompatActivity(),
     override fun onNewPatientAndReadingDownloading(downloadStatus: TotalRequestStatus) {
         downloadStatusTextView.text =
             "Request completed ${downloadStatus.numUploaded + downloadStatus.numFailed} " +
-                "out of  ${downloadStatus.totalNum}"
+            "out of  ${downloadStatus.totalNum}"
     }
 
     @Synchronized
@@ -131,8 +134,10 @@ class SyncActivity : AppCompatActivity(),
     }
 
     private fun setProgressPercent() {
-        syncText.text = getString(R.string.sync_activity_sync_progress_percent,
-            progressPercent.getPercent().roundToInt())
+        syncText.text = getString(
+            R.string.sync_activity_sync_progress_percent,
+            progressPercent.getPercent().roundToInt()
+        )
     }
 }
 

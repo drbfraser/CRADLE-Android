@@ -135,7 +135,7 @@ class LiveDataDynamicModelBuilder : DynamicModelBuilder() {
      */
     @Suppress("UNCHECKED_CAST")
     fun <T : Any?> get(key: KProperty<T>, defaultValue: T) = map[key.name] as? MutableLiveData<T>
-            ?: MutableLiveData<T>(defaultValue).apply { map[key.name] = this }
+        ?: MutableLiveData<T>(defaultValue).apply { map[key.name] = this }
 
     /**
      * Sets the new [value] for a given parameter name into the MutableLiveData backed by this model

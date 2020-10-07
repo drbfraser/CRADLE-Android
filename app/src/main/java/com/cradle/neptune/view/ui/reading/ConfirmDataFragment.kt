@@ -228,90 +228,93 @@ class ConfirmDataFragment : BaseFragment() {
         )
         val tv = requireActivity().findViewById<TextView>(R.id.etBlurRadius)
         OcrDigitDetector.g_blurRadiusREVISIT = tv.text.toString().toInt()
-        detector.processImage(savedImage, object : OnProcessImageDone {
-            override fun notifyOfBoundingBoxes(recognitions: List<Recognition>) {
-                // ensure OCR debug enabled
-                if (!settings!!.isOcrDebugEnabled) {
-                    return
-                }
-                val iv = view!!.findViewById<ImageView>(
-                    OCR_DEBUG_IDS[rowNumber][OCR_DEBUG_IDS_SCALED_IDX]
-                )
-                val copyBmp = Bitmap.createBitmap(savedImage)
-                val disableBlur =
-                    (activity!!.application as MyApp).isDisableBlurKit
-                if (OcrDigitDetector.g_blurRadiusREVISIT > 0 && !disableBlur) {
-                    BlurKit.getInstance().blur(copyBmp, OcrDigitDetector.g_blurRadiusREVISIT)
-                }
-                drawBoundingBoxesOnBitmap(copyBmp, recognitions)
-                iv.setImageBitmap(copyBmp)
-            }
-
-            override fun notifyOfRawBoundingBoxes(
-                inputToNeuralNetBmp: Bitmap,
-                recognitions: List<Recognition>
-            ) {
-                // ensure OCR debug enabled
-                if (!settings!!.isOcrDebugEnabled) {
-                    return
-                }
-                val iv = view!!.findViewById<ImageView>(
-                    OCR_DEBUG_IDS[rowNumber][OCR_DEBUG_IDS_RAW_IDX]
-                )
-                val copyBmp = Bitmap.createBitmap(inputToNeuralNetBmp)
-                val disableBlur =
-                    (activity!!.application as MyApp).isDisableBlurKit
-                if (OcrDigitDetector.g_blurRadiusREVISIT > 0 && !disableBlur) {
-                    BlurKit.getInstance().blur(copyBmp, OcrDigitDetector.g_blurRadiusREVISIT)
+        detector.processImage(
+            savedImage,
+            object : OnProcessImageDone {
+                override fun notifyOfBoundingBoxes(recognitions: List<Recognition>) {
+                    // ensure OCR debug enabled
+                    if (!settings!!.isOcrDebugEnabled) {
+                        return
+                    }
+                    val iv = view!!.findViewById<ImageView>(
+                        OCR_DEBUG_IDS[rowNumber][OCR_DEBUG_IDS_SCALED_IDX]
+                    )
+                    val copyBmp = Bitmap.createBitmap(savedImage)
+                    val disableBlur =
+                        (activity!!.application as MyApp).isDisableBlurKit
+                    if (OcrDigitDetector.g_blurRadiusREVISIT > 0 && !disableBlur) {
+                        BlurKit.getInstance().blur(copyBmp, OcrDigitDetector.g_blurRadiusREVISIT)
+                    }
+                    drawBoundingBoxesOnBitmap(copyBmp, recognitions)
+                    iv.setImageBitmap(copyBmp)
                 }
 
-                // drawBoundingBoxesOnBitmap(copyBmp, recognitions);
-                iv.setImageBitmap(copyBmp)
-            }
+                override fun notifyOfRawBoundingBoxes(
+                    inputToNeuralNetBmp: Bitmap,
+                    recognitions: List<Recognition>
+                ) {
+                    // ensure OCR debug enabled
+                    if (!settings!!.isOcrDebugEnabled) {
+                        return
+                    }
+                    val iv = view!!.findViewById<ImageView>(
+                        OCR_DEBUG_IDS[rowNumber][OCR_DEBUG_IDS_RAW_IDX]
+                    )
+                    val copyBmp = Bitmap.createBitmap(inputToNeuralNetBmp)
+                    val disableBlur =
+                        (activity!!.application as MyApp).isDisableBlurKit
+                    if (OcrDigitDetector.g_blurRadiusREVISIT > 0 && !disableBlur) {
+                        BlurKit.getInstance().blur(copyBmp, OcrDigitDetector.g_blurRadiusREVISIT)
+                    }
 
-            override fun notifyOfExtractedText(extractedText: String) {
-                // guard against not no view.
-                if (view == null) {
-                    return
+                    // drawBoundingBoxesOnBitmap(copyBmp, recognitions);
+                    iv.setImageBitmap(copyBmp)
                 }
 
-                // display text for debug
-                // do this even if debug disabled because the widget is hidden.
-                val tv = view!!.findViewById<TextView>(
-                    OCR_DEBUG_IDS[rowNumber][OCR_DEBUG_IDS_TEXT_IDX]
-                )
-                tv.text = extractedText
+                override fun notifyOfExtractedText(extractedText: String) {
+                    // guard against not no view.
+                    if (view == null) {
+                        return
+                    }
 
-                // if ensure it's a number and within range (min to max)
-                var displayText = extractedText
-                val minValues = intArrayOf(MIN_SYSTOLIC, MIN_DIASTOLIC, MIN_HEART_RATE)
-                val maxValues = intArrayOf(MAX_SYSTOLIC, MAX_DIASTOLIC, MAX_HEART_RATE)
-                try {
-                    val extractedInt = extractedText.toInt()
-                    if (extractedInt < minValues[rowNumber] || extractedInt > maxValues[rowNumber]
-                    ) {
+                    // display text for debug
+                    // do this even if debug disabled because the widget is hidden.
+                    val tv = view!!.findViewById<TextView>(
+                        OCR_DEBUG_IDS[rowNumber][OCR_DEBUG_IDS_TEXT_IDX]
+                    )
+                    tv.text = extractedText
+
+                    // if ensure it's a number and within range (min to max)
+                    var displayText = extractedText
+                    val minValues = intArrayOf(MIN_SYSTOLIC, MIN_DIASTOLIC, MIN_HEART_RATE)
+                    val maxValues = intArrayOf(MAX_SYSTOLIC, MAX_DIASTOLIC, MAX_HEART_RATE)
+                    try {
+                        val extractedInt = extractedText.toInt()
+                        if (extractedInt < minValues[rowNumber] || extractedInt > maxValues[rowNumber]
+                        ) {
+                            displayText = ""
+                        }
+                    } catch (e: NumberFormatException) {
+                        // it's not a # (its likely "")
                         displayText = ""
                     }
-                } catch (e: NumberFormatException) {
-                    // it's not a # (its likely "")
-                    displayText = ""
-                }
 
-                // put text into UI edit text
-                makingProgramaticChangeToVitals = true
-                Util.ensure(settings!!.isOcrEnabled)
-                val textIds =
-                    intArrayOf(R.id.etSystolic, R.id.etDiastolic, R.id.etHeartRate)
-                val etId = textIds[rowNumber]
-                val et = view!!.findViewById<EditText>(etId)
-                if (et.text.toString().length == 0) {
-                    // only set text if nothing there:
-                    // done to prevent poor OCR from overwriting the user's manual change.
-                    et.setText(displayText)
+                    // put text into UI edit text
+                    makingProgramaticChangeToVitals = true
+                    Util.ensure(settings!!.isOcrEnabled)
+                    val textIds =
+                        intArrayOf(R.id.etSystolic, R.id.etDiastolic, R.id.etHeartRate)
+                    val etId = textIds[rowNumber]
+                    val et = view!!.findViewById<EditText>(etId)
+                    if (et.text.toString().length == 0) {
+                        // only set text if nothing there:
+                        // done to prevent poor OCR from overwriting the user's manual change.
+                        et.setText(displayText)
+                    }
+                    makingProgramaticChangeToVitals = false
                 }
-                makingProgramaticChangeToVitals = false
             }
-        })
+        )
     }
 
     @Suppress("MagicNumber")
