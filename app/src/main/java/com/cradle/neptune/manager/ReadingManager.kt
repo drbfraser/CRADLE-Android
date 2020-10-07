@@ -7,7 +7,6 @@ import com.cradle.neptune.net.NetworkResult
 import com.cradle.neptune.net.RestApi
 import com.cradle.neptune.net.Success
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -70,16 +69,16 @@ class ReadingManager @Inject constructor(
      * Returns a list of all readings (and their associated patients) in the
      * database.
      */
-    suspend fun getAllReadings(): List<Reading> {
-        return daoAccess.allReadingEntities
+    suspend fun getAllReadings(): List<Reading> = withContext(IO) {
+        daoAccess.allReadingEntities
     }
 
     /**
      * Returns the reading (and its associated patient) with a given [id] from
      * the database. Returns `null` if unable to find such a reading.
      */
-    suspend fun getReadingById(id: String): Reading? {
-        return daoAccess.getReadingById(id)
+    suspend fun getReadingById(id: String): Reading? = withContext(IO) {
+        daoAccess.getReadingById(id)
     }
 
     /**
@@ -88,7 +87,7 @@ class ReadingManager @Inject constructor(
      * This is only for legacy java code still calling this function.
      */
     fun getReadingByIdBlocking(id: String): Reading? {
-        return runBlocking { withContext(Dispatchers.IO) { getReadingById(id) } }
+        return runBlocking { withContext(IO) { getReadingById(id) } }
     }
 
     /**
@@ -105,7 +104,7 @@ class ReadingManager @Inject constructor(
      */
     @Deprecated("Please avoid using this function in Kotlin files.")
     fun getReadingByPatientIdBlocking(id: String) = runBlocking {
-        withContext(Dispatchers.IO) { getReadingsByPatientId(id) }
+        withContext(IO) { getReadingsByPatientId(id) }
     }
 
     /**
@@ -129,7 +128,7 @@ class ReadingManager @Inject constructor(
      */
     @Deprecated("Please avoid using this function in Kotlin files.")
     fun getUnUploadedReadingsBlocking() =
-        runBlocking { withContext(Dispatchers.IO) { getUnUploadedReadings() } }
+        runBlocking { withContext(IO) { getUnUploadedReadings() } }
 
     /**
      * Constructs a [RetestGroup] for a given [reading].
@@ -155,7 +154,7 @@ class ReadingManager @Inject constructor(
      */
     @Deprecated("Please avoid using this function in Kotlin files.")
     fun deleteReadingByIdBlocking(id: String) =
-        runBlocking { withContext(Dispatchers.IO) { deleteReadingById(id) } }
+        runBlocking { withContext(IO) { deleteReadingById(id) } }
 
     /**
      * Get the newest reading of a patient

@@ -39,7 +39,9 @@ class PatientManager @Inject constructor(
      * delete a patient by id
      */
     suspend fun delete(id: String) {
-        getPatientById(id)?.let { daoAccess.delete(it) }
+        withContext(IO) {
+            getPatientById(id)?.let { daoAccess.delete(it) }
+        }
     }
 
     /**
@@ -50,19 +52,23 @@ class PatientManager @Inject constructor(
     /**
      * get all the patients
      */
-    suspend fun getAllPatients(): List<Patient> =
-        withContext(IO) { daoAccess.allPatients }
+    suspend fun getAllPatients(): List<Patient> = withContext(IO) {
+        daoAccess.allPatients
+    }
 
     /**
      * get a list of patient ids for all patients.
      */
-    suspend fun getPatientIdsOnly(): List<String> =
-        withContext(IO) { daoAccess.patientIdsList }
+    suspend fun getPatientIdsOnly(): List<String> = withContext(IO) {
+        daoAccess.patientIdsList
+    }
 
     /**
      * get individual patient by id if exists
      */
-    suspend fun getPatientById(id: String): Patient? = daoAccess.getPatientById(id)
+    suspend fun getPatientById(id: String): Patient? = withContext(IO) {
+        daoAccess.getPatientById(id)
+    }
 
     /**
      * TODO: once all the java classes calling this method are turned into Kotlin,
