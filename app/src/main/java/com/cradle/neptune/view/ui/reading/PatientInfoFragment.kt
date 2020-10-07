@@ -37,10 +37,19 @@ class PatientInfoFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // TODO: Use Data Binding.
+        viewModel.patientName.observe(viewLifecycleOwner) {
+            view.findViewById<TextInputEditText>(R.id.initials_text).setText(it)
+        }
         viewModel.patientId.observe(viewLifecycleOwner) {
             view.findViewById<TextInputEditText>(R.id.patient_id_text).setText(it)
         }
-
+        viewModel.patientZone.observe(viewLifecycleOwner) {
+            view.findViewById<TextInputEditText>(R.id.zone_text).setText(it)
+        }
+        viewModel.patientVillageNumber.observe(viewLifecycleOwner) {
+            view.findViewById<TextInputEditText>(R.id.village_text).setText(it)
+        }
     }
 
     companion object {

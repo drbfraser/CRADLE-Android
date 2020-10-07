@@ -1,7 +1,10 @@
 package com.cradle.neptune.viewmodel
 
+import androidx.annotation.MainThread
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.model.BloodPressure
@@ -14,6 +17,11 @@ import com.cradle.neptune.model.UrineTest
 import com.cradle.neptune.utilitiles.DynamicModelBuilder
 import com.cradle.neptune.utilitiles.LiveDataDynamicModelBuilder
 import com.cradle.neptune.utilitiles.discard
+import com.cradle.neptune.view.ReadingActivity
+import java.lang.IllegalStateException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * A bridge between the legacy model API used by the new model structures.
@@ -33,15 +41,68 @@ class PatientReadingViewModel constructor(
     private val patientBuilder = LiveDataDynamicModelBuilder()
     private val readingBuilder = LiveDataDynamicModelBuilder()
 
-    fun decompose(patient: Patient) {
-        if (isInitialized) {
+    private lateinit var reasonForLaunch: ReadingActivity.LaunchReason
+
+    /**
+     * If not creating a new patient, the patient and reading requested will be asynchronously
+     * initialized, and then [isInitialized] will emit true if no errors occur.
+     */
+    @MainThread
+    fun initialize(
+        launchReason: ReadingActivity.LaunchReason,
+        readingId: String?
+    ) {
+        reasonForLaunch = launchReason
+        if (reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
+            _isInitialized.value = true
+            return
+        }
+
+        check(readingId != null) { "was given no readingId despite not creating new reading" }
+
+        viewModelScope.launch(Dispatchers.Default) {
+            val reading = readingManager.getReadingById(readingId)
+                ?: throw IllegalStateException("no reading associated with given id")
+            val patient = patientManager.getPatientById(reading.patientId)
+                ?: throw IllegalStateException("no patient associated with given reading")
+
+            when (reasonForLaunch) {
+                ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT -> {
+                    decompose(patient, reading)
+                }
+                ReadingActivity.LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {
+                    decompose(patient)
+                }
+                ReadingActivity.LaunchReason.LAUNCH_REASON_RECHECK -> {
+                    decompose(patient)
+
+                    // Add the old reading to the previous list of the new reading.
+                    val previousIds = previousReadingIds.value ?: ArrayList()
+                    with(previousIds) {
+                        add(reading.id)
+                        previousReadingIds.postValue(this)
+                    }
+                }
+                else -> {
+                    check(false) { "invalid launch reason" }
+                }
+            }
+
+            withContext(Dispatchers.Main) {
+                _isInitialized.value = true
+            }
+        }
+    }
+
+    private fun decompose(patient: Patient) {
+        if (_isInitialized.value == true) {
             return
         }
         patientBuilder.decompose(patient)
     }
 
-    fun decompose(patient: Patient, reading: Reading) {
-        if (isInitialized) {
+    private fun decompose(patient: Patient, reading: Reading) {
+        if (_isInitialized.value == true) {
             return
         }
         patientBuilder.decompose(patient)
@@ -53,7 +114,9 @@ class PatientReadingViewModel constructor(
         readingBuilder.decompose(reading.copy(symptoms = symptomsCopy))
     }
 
-    var isInitialized: Boolean = false
+    private val _isInitialized = MutableLiveData<Boolean>(false)
+    val isInitialized: LiveData<Boolean>
+        get() = _isInitialized
 
     /* Patient Info */
     var patientId: MutableLiveData<String>

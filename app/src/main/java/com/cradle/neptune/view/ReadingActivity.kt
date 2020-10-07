@@ -30,23 +30,30 @@ class ReadingActivity : AppCompatActivity() {
         //     7686abc4bba087c8ee02f0ac569093bf304245e6/GithubBrowserSample/app/src/main/java/com/
         //     android/example/github/di/AppInjector.kt
         (application as MyApp).appComponent.inject(this)
-        supportFragmentManager.registerFragmentLifecycleCallbacks(object :
-            FragmentManager.FragmentLifecycleCallbacks() {
-            override fun onFragmentCreated(
-                fm: FragmentManager,
-                f: Fragment,
-                savedInstanceState: Bundle?
-            ) {
-                if (f is BaseFragment) {
-                    (application as MyApp).appComponent.inject(f)
+        supportFragmentManager.registerFragmentLifecycleCallbacks(
+            object : FragmentManager.FragmentLifecycleCallbacks() {
+                override fun onFragmentCreated(
+                    fm: FragmentManager,
+                    f: Fragment,
+                    savedInstanceState: Bundle?
+                ) {
+                    if (f is BaseFragment) {
+                        (application as MyApp).appComponent.inject(f)
+                    }
                 }
-            }
-
-        }, true)
+            },
+            true
+        )
 
         super.onCreate(savedInstanceState)
         // TODO: Use activity_reading when done design
         setContentView(R.layout.activity_placeholder)
+
+        check(intent.hasExtra(EXTRA_LAUNCH_REASON))
+        viewModel.initialize(
+            launchReason = intent.getSerializableExtra(EXTRA_LAUNCH_REASON) as LaunchReason,
+            readingId = intent.getStringExtra(EXTRA_READING_ID)
+        )
 
         // TODO: Remove this when navigation is added back
         if (savedInstanceState == null) {
@@ -58,7 +65,7 @@ class ReadingActivity : AppCompatActivity() {
         }
     }
 
-    private enum class LaunchReason {
+    enum class LaunchReason {
         LAUNCH_REASON_NEW, LAUNCH_REASON_EDIT, LAUNCH_REASON_RECHECK, LAUNCH_REASON_NONE,
         LAUNCH_REASON_EXISTINGNEW
     }
