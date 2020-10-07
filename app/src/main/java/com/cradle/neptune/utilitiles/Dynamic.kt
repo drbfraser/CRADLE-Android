@@ -1,5 +1,6 @@
 package com.cradle.neptune.utilitiles
 
+import androidx.annotation.MainThread
 import androidx.annotation.UiThread
 import androidx.annotation.WorkerThread
 import androidx.lifecycle.MutableLiveData
@@ -177,7 +178,7 @@ class LiveDataDynamicModelBuilder : DynamicModelBuilder() {
      * model builder using [MutableLiveData.postValue]. This is meant for worker threads, since
      * [MutableLiveData.setValue] is only usable on the main thread.
      */
-    @UiThread
+    @MainThread
     override fun set(key: KProperty<*>, value: Any?): LiveDataDynamicModelBuilder {
         @Suppress("UNCHECKED_CAST")
         with(map[key.name] as MutableLiveData<Any?>?) {
@@ -208,8 +209,13 @@ class LiveDataDynamicModelBuilder : DynamicModelBuilder() {
         return this
     }
 
-    override fun <T : Any> decompose(k: KClass<T>, obj: T) =
-        super.decompose(k, obj) as LiveDataDynamicModelBuilder
+    @WorkerThread
+    override fun <T : Any> decompose(k: KClass<T>, obj: T): LiveDataDynamicModelBuilder {
+        for (property in k.memberProperties) {
+            setWorkerThread(property, property.get(obj))
+        }
+        return this
+    }
 
     /**
      * Decomposes the member properties of [obj] adding them to this builder's internal map as
