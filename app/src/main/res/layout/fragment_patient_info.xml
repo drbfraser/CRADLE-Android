@@ -1,225 +1,177 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".view.ui.reading.PatientInfoFragment">
+    android:layout_height="match_parent">
+    <!-- We use ConstraintLayout chaining here:
+         https://constraintlayout.com/basics/create_chains.html -->
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        tools:context=".view.PatientInfoOLDActivity">
+        android:layout_height="match_parent">
 
-        <!-- ID -->
-        <Switch
-            android:id="@+id/dobSwitch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:checked="true"
-            android:text="@string/patient_info_fragment_date_of_birth_question"
-            android:textOff="@string/no_caps"
-            android:textOn="@android:string/yes"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@+id/txtPatientId"
-            app:layout_constraintTop_toBottomOf="@+id/txtPatientId" />
-
-        <Spinner
-            android:id="@+id/spinnerPatientSex"
-            android:layout_width="150dp"
-            android:layout_height="31dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/txtSex" />
-
-        <Spinner
-            android:id="@+id/spinnerGestationalAgeUnits"
-            android:layout_width="163dp"
-            android:layout_height="31dp"
-            android:layout_marginStart="8dp"
-            app:layout_constraintBottom_toBottomOf="@+id/txtGestationalAge"
-            app:layout_constraintStart_toEndOf="@+id/txtGestationalAge"
-            app:layout_constraintTop_toTopOf="@+id/txtGestationalAge" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/txtPatientId"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="wrap_content"
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:hint="@string/id_number"
-            android:minWidth="200dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="16dp">
 
-            <EditText
-                android:id="@+id/etPatientId"
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textPersonName" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:layout_height="500dp">
 
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/guideline"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.5" />
 
-        <!-- Name -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/txtPatientName"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:hint="@string/initials"
-            android:minWidth="200dp"
-            app:layout_constraintStart_toEndOf="@+id/txtPatientId"
-            app:layout_constraintTop_toTopOf="@+id/txtPatientId">
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/initials_layout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:hint="@string/initials"
+                    app:layout_constraintEnd_toStartOf="@+id/patient_id_text_layout"
+                    app:layout_constraintHorizontal_chainStyle="spread_inside"
+                    app:layout_constraintHorizontal_weight="0.5"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
 
-            <EditText
-                android:id="@+id/etPatientName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textNoSuggestions|text|textCapCharacters"
-                android:maxLength="3" />
-        </com.google.android.material.textfield.TextInputLayout>
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/initials_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textNoSuggestions"
+                        tools:text="ABC" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Age -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textInputLayout3"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:hint="@string/patient_info_fragment_date_of_birth_hint"
-            android:minWidth="150dp"
-            app:layout_constraintBottom_toTopOf="@+id/txtZone"
-            app:layout_constraintStart_toStartOf="@+id/txtPatientId"
-            app:layout_constraintTop_toBottomOf="@+id/dobSwitch">
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/patient_id_text_layout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:hint="@string/id"
+                    app:layout_constraintEnd_toStartOf="@+id/guideline"
+                    app:layout_constraintHorizontal_weight="0.5"
+                    app:layout_constraintStart_toEndOf="@+id/initials_layout"
+                    app:layout_constraintTop_toTopOf="parent">
 
-            <EditText
-                android:id="@+id/dobTxt"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:focusable="false"
-                android:gravity="center_vertical"
-                android:textAlignment="center"
-                android:textSize="18sp" />
-        </com.google.android.material.textfield.TextInputLayout>
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/patient_id_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textNoSuggestions|number"
+                        tools:text="235235" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/patientDOB"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:hint="@string/patient_info_fragment_age_hint"
-            android:minWidth="150dp"
-            app:layout_constraintEnd_toEndOf="@+id/txtPatientName"
-            app:layout_constraintStart_toEndOf="@+id/textInputLayout3"
-            app:layout_constraintTop_toBottomOf="@+id/dobSwitch">
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/household_number_layout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:hint="@string/household_number"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_weight="0.5"
+                    app:layout_constraintStart_toStartOf="@+id/guideline"
+                    app:layout_constraintTop_toTopOf="parent">
 
-            <androidx.appcompat.widget.AppCompatEditText
-                android:id="@+id/patientAgeEditTxt"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clickable="false"
-                android:enabled="false"
-                android:inputType="number" />
-        </com.google.android.material.textfield.TextInputLayout>
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/household_number_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textNoSuggestions|number"
+                        tools:text="12345" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Gestational age -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/txtGestationalAge"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="160dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:hint="@string/gestational_age"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/spinnerPatientSex">
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/zone_layout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:hint="@string/zone"
+                    app:layout_constraintEnd_toStartOf="@+id/guideline"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/initials_layout">
 
-            <EditText
-                android:id="@+id/etGestationalAgeValue"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="numberDecimal" />
-        </com.google.android.material.textfield.TextInputLayout>
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/zone_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textNoSuggestions|number"
+                        tools:text="my zone" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Village number -->
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:hint="@string/village"
-            android:minWidth="250dp"
-            app:layout_constraintStart_toEndOf="@+id/txtZone"
-            app:layout_constraintTop_toTopOf="@+id/txtZone">
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/village_layout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:hint="@string/village"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintStart_toStartOf="@+id/guideline"
+                    app:layout_constraintTop_toBottomOf="@+id/household_number_layout">
 
-            <EditText
-                android:id="@+id/etVillageNumber"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="text" />
-        </com.google.android.material.textfield.TextInputLayout>
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/village_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textNoSuggestions|number"
+                        tools:text="my village" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Zone -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/txtZone"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:hint="@string/zone"
-            android:minWidth="100dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/patientDOB">
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/dob_age_toggle_group"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/zone_layout"
+                    app:selectionRequired="true"
+                    app:singleSelection="true">
 
-            <EditText
-                android:id="@+id/etZone"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textNoSuggestions|text|textCapCharacters" />
-        </com.google.android.material.textfield.TextInputLayout>
+                    <Button
+                        android:id="@+id/dob_button"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Date of birth" />
 
-        <!-- Block number -->
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="@string/block_no"
-            android:minWidth="100dp"
-            app:layout_constraintTop_toBottomOf="@+id/txtPatientName"
-            tools:layout_editor_absoluteX="178dp" />
+                    <Button
+                        android:id="@+id/age_button"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Estimated age" />
+                </com.google.android.material.button.MaterialButtonToggleGroup>
 
-        <!-- Tank number -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/age_input_layout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:hint="@string/village"
+                    app:layout_constraintEnd_toEndOf="@+id/dob_age_toggle_group"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/dob_age_toggle_group">
 
-        <!-- House number -->
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/age_input_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textNoSuggestions|number"
+                        tools:text="45" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-        <Switch
-            android:id="@+id/pregnantSwitch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:checked="false"
-            android:text="@string/pregnant_question"
-            app:layout_constraintStart_toEndOf="@+id/spinnerPatientSex"
-            app:layout_constraintTop_toTopOf="@+id/spinnerPatientSex" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <TextView
-            android:id="@+id/txtSex"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
-            android:text="@string/sex"
-            android:textColor="#000000"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/txtZone" />
-
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</ScrollView>
+        </com.google.android.material.card.MaterialCardView>
+    </ScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -12,7 +12,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,6 +40,7 @@ import java.util.Date;
  * REQUIRES: Add permissions for camera and disk access inside app.
  */
 public class CameraFragment extends BaseFragment {
+    private static final String TAG = CameraFragment.class.getSimpleName();
 
     private static final int FOCUS_PERIOD_ms = 1000;
     private Camera mCamera;
@@ -97,7 +97,7 @@ public class CameraFragment extends BaseFragment {
 //                detector.processImage(bmp, null);
 
                 // clear any current vitals we may have gotten from our previous image
-                getViewModel().setBloodPressure(null);
+                // getViewModel().setBloodPressure(null);
 
 //                currentReading.clearManualChangeOcrResultsFlags();
 //                currentReading.bpSystolic = null;
@@ -105,10 +105,10 @@ public class CameraFragment extends BaseFragment {
 //                currentReading.heartRateBPM = null;
 
                 // done: advance to next tab
-                getViewModel().getMetadata().setPhotoPath(pictureFile.getPath());
+                // getViewModel().getMetadata().setPhotoPath(pictureFile.getPath());
 //                currentReading.pathToPhoto = pictureFile.getPath();
                 Toast.makeText(getContext(), "Photo taken successfully!", Toast.LENGTH_SHORT).show();
-                activityCallbackListener.advanceToNextPage();
+                // activityCallbackListener.advanceToNextPage();
 
             } catch (FileNotFoundException e) {
                 Log.d(TAG, "File not found: " + e.getMessage());
@@ -448,13 +448,12 @@ public class CameraFragment extends BaseFragment {
         setupFocusTimer();
     }
 
-    @Override
     public void onMyBeingDisplayed() {
         // may not have created view yet.
         if (getView() == null) {
             return;
         }
-        hideKeyboard();
+        // hideKeyboard();
 
         // Call startPreview() to restart the preview.
         if (mCamera != null) {
@@ -462,7 +461,6 @@ public class CameraFragment extends BaseFragment {
         }
     }
 
-    @Override
     public boolean onMyBeingHidden() {
         // may not have created view yet.
         if (getView() == null) {
@@ -542,14 +540,14 @@ public class CameraFragment extends BaseFragment {
      *                      Zoom
      * ***********************************************************/
     private void setupZoom() {
+        if (getView() == null) return;
         // Register touch events:
-        getView().setOnTouchListener(new View.OnTouchListener() {
-            public boolean onTouch(View v, MotionEvent event) {
-                if (mScaleGestureDectector != null) {
-                    mScaleGestureDectector.onTouchEvent(event);
-                }
-                return true;
+        getView().setOnTouchListener((v, event) -> {
+            v.performClick();
+            if (mScaleGestureDectector != null) {
+                mScaleGestureDectector.onTouchEvent(event);
             }
+            return true;
         });
 
         mScaleImageView = getView().findViewById(R.id.camera_preview);
