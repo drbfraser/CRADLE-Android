@@ -65,7 +65,7 @@
             android:name=".view.ReadingActivity"
             android:label="@string/title_activity_reading"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar"
+            android:theme="@style/ReadingFlowTheme"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".view.ui.settings.SettingsActivity"

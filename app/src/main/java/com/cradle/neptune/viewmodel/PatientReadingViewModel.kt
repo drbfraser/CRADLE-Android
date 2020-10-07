@@ -14,9 +14,7 @@ import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.Referral
 import com.cradle.neptune.model.Sex
 import com.cradle.neptune.model.UrineTest
-import com.cradle.neptune.utilitiles.DynamicModelBuilder
 import com.cradle.neptune.utilitiles.LiveDataDynamicModelBuilder
-import com.cradle.neptune.utilitiles.discard
 import com.cradle.neptune.view.ReadingActivity
 import java.lang.IllegalStateException
 import kotlinx.coroutines.Dispatchers
@@ -24,14 +22,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * A bridge between the legacy model API used by the new model structures.
- *
- * Once we migrate the UI to Kotlin, the UI will most likely interface
- * directly with [DynamicModelBuilder] instances instead of going through
- * this object.
- *
- * TODO: This class is only temporary and should be replaced with a proper
- *   design pattern.
+ * The ViewModel that is used in [ReadingActivity] and its [BaseFragment]s
  */
 @SuppressWarnings("LargeClass")
 class PatientReadingViewModel constructor(
@@ -58,7 +49,9 @@ class PatientReadingViewModel constructor(
             return
         }
 
-        check(readingId != null) { "was given no readingId despite not creating new reading" }
+        check(!readingId.isNullOrEmpty()) {
+            "was given no readingId despite not creating new reading"
+        }
 
         viewModelScope.launch(Dispatchers.Default) {
             val reading = readingManager.getReadingById(readingId)
@@ -106,8 +99,8 @@ class PatientReadingViewModel constructor(
             return
         }
         patientBuilder.decompose(patient)
-        // TODO: Completely revisit this ViewModel setup. We have to do this so that the Activity
-        //  and ViewModel don't share the same reference for symptoms.
+        // We have to do this so that the Activity and ViewModel don't share the same reference for
+        // symptoms.
         val symptomsCopy = ArrayList<String>().apply {
             addAll(reading.symptoms as ArrayList<String>)
         }
@@ -119,85 +112,66 @@ class PatientReadingViewModel constructor(
         get() = _isInitialized
 
     /* Patient Info */
-    var patientId: MutableLiveData<String>
+    val patientId: MutableLiveData<String>
         get() = patientBuilder.get(Patient::id, "")
-        set(value) = patientBuilder.set(Patient::id, value).discard()
 
-    var patientName: MutableLiveData<String>
+    val patientName: MutableLiveData<String>
         get() = patientBuilder.get(Patient::name, "")
-        set(value) = patientBuilder.set(Patient::name, value).discard()
 
-    var patientDob: MutableLiveData<String?>
+    val patientDob: MutableLiveData<String?>
         get() = patientBuilder.get<String?>(Patient::dob)
-        set(value) = patientBuilder.set(Patient::dob, value).discard()
 
-    var patientAge: MutableLiveData<Int?>
+    val patientAge: MutableLiveData<Int?>
         get() = patientBuilder.get<Int?>(Patient::age)
-        set(value) = patientBuilder.set(Patient::age, value).discard()
 
-    var patientGestationalAge: MutableLiveData<GestationalAge?>
+    val patientGestationalAge: MutableLiveData<GestationalAge?>
         get() = patientBuilder.get<GestationalAge?>(Patient::gestationalAge)
-        set(value) = patientBuilder.set(Patient::gestationalAge, value).discard()
 
-    var patientSex: MutableLiveData<Sex?>
+    val patientSex: MutableLiveData<Sex?>
         get() = patientBuilder.get<Sex?>(Patient::sex)
-        set(value) = patientBuilder.set(Patient::sex, value).discard()
 
-    var patientIsPregnant: MutableLiveData<Boolean?>
+    val patientIsPregnant: MutableLiveData<Boolean?>
         get() = patientBuilder.get<Boolean?>(Patient::isPregnant)
-        set(value) = patientBuilder.set(Patient::isPregnant, value).discard()
 
-    var patientZone: MutableLiveData<String?>
+    val patientZone: MutableLiveData<String?>
         get() = patientBuilder.get<String?>(Patient::zone)
-        set(value) = patientBuilder.set(Patient::zone, value).discard()
 
-    var patientVillageNumber: MutableLiveData<String?>
+    val patientVillageNumber: MutableLiveData<String?>
         get() = patientBuilder.get<String?>(Patient::villageNumber)
-        set(value) = patientBuilder.set(Patient::villageNumber, value).discard()
 
-    var patientLastEdited: MutableLiveData<Long?>
+    val patientLastEdited: MutableLiveData<Long?>
         get() = patientBuilder.get<Long?>(Patient::lastEdited)
-        set(value) = patientBuilder.set(Patient::lastEdited, value).discard()
 
     /* Blood Pressure Info */
-    var bloodPressure: MutableLiveData<BloodPressure?>
+    val bloodPressure: MutableLiveData<BloodPressure?>
         get() = readingBuilder.get<BloodPressure?>(Reading::bloodPressure)
-        set(value) = readingBuilder.set(Reading::bloodPressure, value).discard()
 
     /* Urine Test Info */
-    var urineTest: MutableLiveData<UrineTest?>
+    val urineTest: MutableLiveData<UrineTest?>
         get() = readingBuilder.get<UrineTest?>(Reading::urineTest)
-        set(value) = readingBuilder.set(Reading::urineTest, value).discard()
 
     /* Referral Info */
-    var referral: MutableLiveData<Referral?>
+    val referral: MutableLiveData<Referral?>
         get() = readingBuilder.get<Referral?>(Reading::referral)
-        set(value) = readingBuilder.set(Reading::referral, value).discard()
 
     /* Reading Info */
-    var readingId: MutableLiveData<String>
+    val readingId: MutableLiveData<String>
         get() = readingBuilder.get(Reading::id, "")
-        set(value) = readingBuilder.set(Reading::id, value).discard()
 
-    var dateTimeTaken: MutableLiveData<Long?>
+    val dateTimeTaken: MutableLiveData<Long?>
         get() = readingBuilder.get<Long?>(Reading::dateTimeTaken)
-        set(value) = readingBuilder.set(Reading::dateTimeTaken, value).discard()
 
-    var symptoms: MutableLiveData<List<String>?>
+    val symptoms: MutableLiveData<List<String>?>
         get() = readingBuilder.get<List<String>?>(Reading::symptoms)
-        set(value) = readingBuilder.set(Reading::symptoms, value).discard()
 
-    var dateRecheckVitalsNeeded: MutableLiveData<Long?>
+    val dateRecheckVitalsNeeded: MutableLiveData<Long?>
         get() = readingBuilder.get<Long?>(Reading::dateRecheckVitalsNeeded)
-        set(value) = readingBuilder.set(Reading::dateRecheckVitalsNeeded, value).discard()
 
-    var isFlaggedForFollowUp: MutableLiveData<Boolean?>
+    val isFlaggedForFollowUp: MutableLiveData<Boolean?>
         get() = readingBuilder.get<Boolean?>(Reading::isFlaggedForFollowUp)
-        set(value) = readingBuilder.set(Reading::isFlaggedForFollowUp, value).discard()
 
     @Suppress("UNCHECKED_CAST")
-    var previousReadingIds: MutableLiveData<MutableList<String>?>
+    val previousReadingIds: MutableLiveData<MutableList<String>?>
         get() = readingBuilder.get<List<String>?>(Reading::previousReadingIds)
             as MutableLiveData<MutableList<String>?>
-        set(value) = readingBuilder.set(Reading::previousReadingIds, value).discard()
 }

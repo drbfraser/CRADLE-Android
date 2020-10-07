@@ -34,6 +34,11 @@
         <item name="windowNoTitle">true</item>
     </style>
 
+    <!-- Theme for reading flow. -->
+    <style name="ReadingFlowTheme" parent="AppTheme.NoActionBar">
+        <item name="textInputStyle">@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox</item>
+    </style>
+
     <style name="LargeTitle" parent="AppTheme">
         <item name="android:fontFamily">@font/open_sans_bold</item>
         <item name="android:textColor">@color/colorOffWhite</item>

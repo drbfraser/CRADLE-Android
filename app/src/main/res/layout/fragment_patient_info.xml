@@ -48,7 +48,8 @@
                         android:id="@+id/initials_text"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="textNoSuggestions"
+                        android:inputType="textNoSuggestions|textCapCharacters"
+                        android:maxLength="4"
                         tools:text="ABC" />
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -67,8 +68,9 @@
                         android:id="@+id/patient_id_text"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="textNoSuggestions|number"
-                        tools:text="235235" />
+                        android:inputType="number"
+                        android:maxLength="14"
+                        tools:text="12345678901234" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -86,7 +88,7 @@
                         android:id="@+id/household_number_text"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="textNoSuggestions|number"
+                        android:inputType="number"
                         tools:text="12345" />
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -104,7 +106,7 @@
                         android:id="@+id/zone_text"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="textNoSuggestions|number"
+                        android:inputType="textNoSuggestions"
                         tools:text="my zone" />
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -123,7 +125,7 @@
                         android:id="@+id/village_text"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="textNoSuggestions|number"
+                        android:inputType="textNoSuggestions"
                         tools:text="my village" />
                 </com.google.android.material.textfield.TextInputLayout>
 
