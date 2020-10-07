@@ -5,8 +5,11 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
+import com.cradle.neptune.view.ui.reading.BaseFragment
 import com.cradle.neptune.view.ui.reading.PatientInfoFragment
 import com.cradle.neptune.viewmodel.PatientReadingViewModel
 import com.cradle.neptune.viewmodel.PatientReadingViewModelFactory
@@ -23,7 +26,24 @@ class ReadingActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Adapted from https://github.com/android/architecture-components-samples/blob/
+        //     7686abc4bba087c8ee02f0ac569093bf304245e6/GithubBrowserSample/app/src/main/java/com/
+        //     android/example/github/di/AppInjector.kt
         (application as MyApp).appComponent.inject(this)
+        supportFragmentManager.registerFragmentLifecycleCallbacks(object :
+            FragmentManager.FragmentLifecycleCallbacks() {
+            override fun onFragmentCreated(
+                fm: FragmentManager,
+                f: Fragment,
+                savedInstanceState: Bundle?
+            ) {
+                if (f is BaseFragment) {
+                    (application as MyApp).appComponent.inject(f)
+                }
+            }
+
+        }, true)
+
         super.onCreate(savedInstanceState)
         // TODO: Use activity_reading when done design
         setContentView(R.layout.activity_placeholder)

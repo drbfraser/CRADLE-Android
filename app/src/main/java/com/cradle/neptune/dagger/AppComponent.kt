@@ -11,6 +11,7 @@ import com.cradle.neptune.view.ReadingActivity
 import com.cradle.neptune.view.StatsActivity
 import com.cradle.neptune.view.SyncActivity
 import com.cradle.neptune.view.VideoActivity
+import com.cradle.neptune.view.ui.reading.BaseFragment
 import com.cradle.neptune.view.ui.reading.ConfirmDataFragment
 import com.cradle.neptune.view.ui.reading.ReferralDialogFragment
 import com.cradle.neptune.view.ui.settings.AdvancedSettingsFragment
@@ -29,6 +30,7 @@ import javax.inject.Singleton
 @Component(modules = [AppModule::class, DataModule::class])
 interface AppComponent {
     fun inject(activity: ReadingActivity?)
+    fun inject(fragment: BaseFragment?)
     fun inject(activity: PatientsActivity?)
     fun inject(activity: VideoActivity?)
     fun inject(fragment: ReferralDialogFragment?)

@@ -5,9 +5,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import androidx.lifecycle.observe
 import com.cradle.neptune.R
 import com.cradle.neptune.model.Sex
 import com.cradle.neptune.utilitiles.unreachable
+import com.google.android.material.textfield.TextInputEditText
 
 private const val GA_UNIT_INDEX_WEEKS = 0
 private const val GA_UNIT_INDEX_MONTHS = 1
@@ -30,6 +32,15 @@ class PatientInfoFragment : BaseFragment() {
     ): View? {
         // Inflate the layout for this fragment.
         return inflater.inflate(R.layout.fragment_patient_info, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        viewModel.patientId.observe(viewLifecycleOwner) {
+            view.findViewById<TextInputEditText>(R.id.patient_id_text).setText(it)
+        }
+
     }
 
     companion object {
