@@ -155,9 +155,8 @@ data class Patient(
                 }
                 this.toCharArray().forEach {
                     if (it.isDigit()) {
-                        return@with Pair(
-                            false,
-                            context.getString(R.string.patient_error_name_must_be_characters)
+                        return Pair(
+                            false, context.getString(R.string.patient_error_name_must_be_characters)
                         )
                     }
                 }
@@ -208,7 +207,7 @@ data class Patient(
             Patient::age -> with(value as Int?) {
                 if (this == null) {
                     // If both age and dob are missing, it's invalid.
-                    return if (patientInstance?.age == null ?: true) {
+                    return if (patientInstance?.dob == null) {
                         Pair(false, context.getString(R.string.patient_error_age_or_dob_missing))
                     } else {
                         Pair(true, "")
