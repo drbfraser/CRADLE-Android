@@ -16,7 +16,7 @@ class VerifiableTests {
 
     @Test
     fun isValid_usingValidValues() {
-        val testClass = TestClass("my name", 50, "lateinit")
+        val testClass = TestClass("my name", 50, 5, "lateinit")
         assert(testClass.areAllMemberValuesValid())
 
         validNames.forEach {
@@ -35,7 +35,7 @@ class VerifiableTests {
     fun areAllMemberValuesValid_usingValidValues() {
         for (name in validNames) {
             for (age in validAges) {
-                val validClass = TestClass(name, age, "some lateinit thing")
+                val validClass = TestClass(name, age, 5, "some lateinit thing")
                 assert(validClass.areAllMemberValuesValid()) {
                     "expected TestClass with name $name and age $age to be valid"
                 }
@@ -48,13 +48,15 @@ class VerifiableTests {
         val testClass = TestClass(
             "my name is going to be over 15 chars",
             50,
+            5,
             "lateinit"
         )
         assert(!testClass.areAllMemberValuesValid())
 
         val testClassWithoutLateinit = TestClass(
-            "name and age are valid",
-            50
+            "name,age,numOfPets are valid",
+            50,
+            5
         )
         assertThrows(UninitializedPropertyAccessException::class.java) {
             testClassWithoutLateinit.isPropertyValid(TestClass::someLateinitThing)
@@ -77,7 +79,7 @@ class VerifiableTests {
     fun areAllMemberValuesValid_usingInvalidValues() {
         for (name in invalidNames) {
             for (age in invalidAges) {
-                val invalidClass = TestClass(name, age)
+                val invalidClass = TestClass(name, age, 5)
                 assert(!invalidClass.areAllMemberValuesValid()) {
                     "expected TestClass with name $name and age $age to be invalid"
                 }
@@ -89,7 +91,7 @@ class VerifiableTests {
     fun areAllMemberValuesValid_usingMixOfValidAndInvalidValues() {
         for (name in invalidNames union validNames) {
             for (age in invalidAges union invalidAges) {
-                val testClass = TestClass(name, age)
+                val testClass = TestClass(name, age, 5)
                 val expectedToBeValid = name in validNames && age in validAges
 
                 assert(testClass.areAllMemberValuesValid() == expectedToBeValid) {
@@ -103,10 +105,18 @@ class VerifiableTests {
 
 internal class TestClass(
     val nameMax15Chars: String,
-    val age: Int
+    val age: Int,
+    val privateNumberOfPets: Int
 ): Verifiable<TestClass> {
 
-    constructor(name: String, age: Int, lateinitString: String) : this(name, age) {
+    private val privateValue: Int = 50
+
+    constructor(
+        name: String,
+        age: Int,
+        numberOfPets: Int,
+        lateinitString: String
+    ) : this(name, age, numberOfPets) {
         someLateinitThing = lateinitString
     }
 
@@ -128,6 +138,9 @@ internal class TestClass(
             TestClass::someLateinitThing -> {
                 val typed = value as String
                 typed.isNotEmpty()
+            }
+            TestClass::privateValue -> {
+                false
             }
             else -> true
         }
