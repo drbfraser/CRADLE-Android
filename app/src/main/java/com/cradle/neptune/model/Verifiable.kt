@@ -25,9 +25,10 @@ interface Verifiable<T : Any> {
      *
      * It's suggested that `true` is returned for properties that don't need to be validated; it's
      * easy to do this by having an else block in a when statement that returns true, and then only
-     * having
+     * having the members that need validation get their own when block.
      *
      * @return whether [value] for the [property] of a given class is valid
+     * @sample com.cradle.neptune.model.TestClass.isValueValid
      */
     fun isValueValid(property: KProperty<*>, value: Any?): Boolean
 
@@ -67,7 +68,7 @@ interface Verifiable<T : Any> {
      * the accessibility modifiers (e.g. private variables will be checked if calling from outside
      * of the class). Otherwise, such members are ignored when checking for validity. Defaults to
      * true.
-     * @return whether all the member properties have valid values, as determined by [isValueValid]
+     * @return whether all the member properties have valid values, as determined by [isValueValid].
      * @throws UninitializedPropertyAccessException if there are uninitialized lateinit properties
      */
     fun areAllMemberValuesValid(shouldIgnoreAccessibility: Boolean = true): Boolean {

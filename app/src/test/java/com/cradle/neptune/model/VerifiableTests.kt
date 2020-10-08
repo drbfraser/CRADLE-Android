@@ -135,10 +135,7 @@ internal data class TestClass(
     }
 
     lateinit var someLateinitThing: String
-    /**
-     * To implement this, you need to check the validity on a case-by-case basis, because each
-     * property has its own type, own conditions for validity, etc.
-     */
+
     override fun isValueValid(property: KProperty<*>, value: Any?): Boolean {
         return when (property) {
             TestClass::nameMax15Chars -> {
