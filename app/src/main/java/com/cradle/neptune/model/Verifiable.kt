@@ -13,7 +13,7 @@ import kotlin.reflect.jvm.isAccessible
  * we would want to restrict the age to be a valid Int (0 - 100?) and restrict the name to be an
  * alphanumeric String.
  */
-interface Verifiable<T : Any> {
+interface Verifiable<in T : Any> {
     /**
      * Determines if a value for a property is valid. What is valid is defined by the class
      * implementing this.
