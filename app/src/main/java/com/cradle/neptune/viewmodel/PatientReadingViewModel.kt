@@ -1,5 +1,7 @@
 package com.cradle.neptune.viewmodel
 
+import android.util.Log
+import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -84,6 +86,7 @@ class PatientReadingViewModel constructor(
             withContext(Dispatchers.Main) {
                 _isInitialized.value = true
             }
+            Log.d("PatientReadingViewModel", "initialized, with id ${patientId.value}")
         }
     }
 

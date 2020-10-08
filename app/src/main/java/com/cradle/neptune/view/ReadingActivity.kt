@@ -7,6 +7,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.observe
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.view.ui.reading.BaseFragment
@@ -55,13 +56,20 @@ class ReadingActivity : AppCompatActivity() {
             readingId = intent.getStringExtra(EXTRA_READING_ID)
         )
 
-        // TODO: Remove this when navigation is added back
-        if (savedInstanceState == null) {
-            val fragment = PatientInfoFragment()
-            supportFragmentManager
-                .beginTransaction()
-                .add(R.id.container_placeholder, fragment)
-                .commit()
+        viewModel.isInitialized.observe(this ) {
+            if (!it) {
+                return@observe
+            }
+
+            // TODO: Remove this when navigation is added back
+            if (savedInstanceState == null) {
+                val fragment = PatientInfoFragment()
+                supportFragmentManager
+                    .beginTransaction()
+                    .add(R.id.container_placeholder, fragment)
+                    .commit()
+            }
+            viewModel.isInitialized.removeObservers(this)
         }
     }
 

@@ -63,6 +63,9 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    buildFeatures {
+        dataBinding = true
+    }
 
     buildToolsVersion = '29.0.3'
 }

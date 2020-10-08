@@ -5,8 +5,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.Toast
+import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.observe
 import com.cradle.neptune.R
+import com.cradle.neptune.databinding.FragmentPatientInfoBinding
 import com.cradle.neptune.model.Sex
 import com.cradle.neptune.utilitiles.unreachable
 import com.google.android.material.textfield.TextInputEditText
@@ -25,19 +28,39 @@ private const val PATIENT_SEX_OTHER = 2
 @Suppress("LargeClass")
 class PatientInfoFragment : BaseFragment() {
 
+    var binding: FragmentPatientInfoBinding? = null
+
+    override fun onDestroy() {
+        super.onDestroy()
+        binding = null
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment.
-        return inflater.inflate(R.layout.fragment_patient_info, container, false)
+        val dataBinding = DataBindingUtil.inflate<FragmentPatientInfoBinding>(
+            inflater,
+            R.layout.fragment_patient_info,
+            container,
+            false
+        ).apply {
+            executePendingBindings()
+        }
+        binding = dataBinding
+        return dataBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // TODO: Use Data Binding.
+        binding?.viewModel = viewModel
+
+        viewModel.patientId.observe(viewLifecycleOwner) {
+            Toast.makeText(context, "The patient id should be $it", Toast.LENGTH_SHORT).show()
+        }
+        /*
         viewModel.patientName.observe(viewLifecycleOwner) {
             view.findViewById<TextInputEditText>(R.id.initials_text).setText(it)
         }
@@ -50,6 +73,7 @@ class PatientInfoFragment : BaseFragment() {
         viewModel.patientVillageNumber.observe(viewLifecycleOwner) {
             view.findViewById<TextInputEditText>(R.id.village_text).setText(it)
         }
+         */
     }
 
     companion object {
