@@ -30,7 +30,8 @@ interface Verifiable<in T : Any> {
      *
      * It's recommended that the validator function for an class be put in a Companion object for
      * that class so that other classes can access it without needing to create an instance first.
-     * See the sample (CTRL + Q in Android Studio) for details.
+     * Then, the member function can just invoke the function inside of the Companion object.
+     * See the sample (CTRL + Q in Android Studio) for an example.
      *
      * @sample com.cradle.neptune.model.TestClass.isValueForPropertyValid
      * @sample com.cradle.neptune.model.TestClass.Companion.isValueValid
