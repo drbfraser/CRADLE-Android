@@ -5,7 +5,7 @@ import com.cradle.neptune.utilitiles.validatePort
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 
-class ValidationTests {
+class HostnameValidationTests {
 
     @Test
     fun validatePort_validPort_isValid() {
