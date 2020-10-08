@@ -299,6 +299,14 @@
     <string name="urine_test_layout_blood">Blood</string>
     <string name="urine_test_layout_glucose">Glucose</string>
     <string name="urine_test_layout_table_header_result">Result</string>
+    <string name="patient_error_id_missing">Missing patient ID</string>
+    <string name="patient_error_id_too_long_max_n_digits">ID is too long; max is %1$d digits.</string>
+    <string name="patient_error_name_missing">Missing initials / name</string>
+    <string name="patient_error_dob_missing">Missing date of birth</string>
+    <string name="patient_error_dob_format">Wrong date of birth format (need YYYY-MM-DD)</string>
+    <string name="patient_error_age_between_n_and_m">Age must be between $1%d and $2%d</string>
+    <string name="patient_error_age_or_dob_missing">Missing age or date of birth</string>
+    <string name="patient_error_name_must_be_characters">Initials / name must be characters</string>
 
     <string name="login_activity_device_is_outdated_dialog_title">Device is out of date</string>
     <string name="login_activity_device_is_outdated_dialog_message">Your device is unable to connect to the servers securely. Since Google Play services are unavailable on your device, we\'re unable to try to upgrade your device\'s security provider. Please ensure that your device supports TLS 1.2 or higher.</string>

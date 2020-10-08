@@ -1,10 +1,13 @@
 package com.cradle.neptune.model
 
+import android.content.Context
+import androidx.core.text.isDigitsOnly
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.Relation
+import com.cradle.neptune.R
 import com.cradle.neptune.ext.Field
 import com.cradle.neptune.ext.map
 import com.cradle.neptune.ext.mapField
@@ -21,6 +24,12 @@ import com.cradle.neptune.utilitiles.Seconds
 import com.cradle.neptune.utilitiles.UnixTimestamp
 import com.cradle.neptune.utilitiles.Weeks
 import java.io.Serializable
+import java.text.ParseException
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.TimeZone
+import kotlin.reflect.KProperty
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -65,7 +74,7 @@ data class Patient(
     @ColumnInfo var medicalHistoryList: List<String> = emptyList(),
     @ColumnInfo var lastEdited: Long? = null,
     @ColumnInfo var base: Long? = null
-) : Marshal<JSONObject>, Serializable {
+) : Marshal<JSONObject>, Serializable, Verifiable<Patient> {
 
     /**
      * Constructs a [JSONObject] from this object.
@@ -90,7 +99,126 @@ data class Patient(
         put(PatientField.BASE, base)
     }
 
+    override fun isValueForPropertyValid(
+        property: KProperty<*>,
+        value: Any?,
+        context: Context
+    ): Pair<Boolean, String> = isValueValid(this, property, value, context)
+
     companion object : Unmarshal<Patient, JSONObject> {
+        private const val ID_MAX_LENGTH = 14
+        private const val AGE_LOWER_BOUND = 15
+        private const val AGE_UPPER_BOUND = 65
+
+        /**
+         * Validates the patient's info
+         * ref:
+         * - cradle-platform/client/src/pages/newReading/demographic/validation/index.tsx
+         * - cradle-platform/server/validation/patients.py
+         *
+         */
+        @Suppress("ReturnCount", "SimpleDateFormat", "NestedBlockDepth")
+        fun isValueValid(
+            patientInstance: Patient?,
+            property: KProperty<*>,
+            value: Any?,
+            context: Context
+        ): Pair<Boolean, String> = when (property) {
+            Patient::id -> with(value as String) {
+                if (isBlank()) {
+                    return Pair(false, context.getString(R.string.patient_error_id_missing))
+                }
+                if (length > ID_MAX_LENGTH) {
+                    return Pair(
+                        false,
+                        context.getString(
+                            R.string.patient_error_id_too_long_max_n_digits,
+                            ID_MAX_LENGTH
+                        )
+                    )
+                }
+                if (!isDigitsOnly()) {
+                    return Pair(false, "ID must be a number")
+                }
+
+                return Pair(true, "")
+            }
+            Patient::name -> with(value as String) {
+                if (isBlank()) {
+                    return Pair(false, context.getString(R.string.patient_error_name_missing))
+                }
+                this.toCharArray().forEach {
+                    if (it.isDigit()) {
+                        return@with Pair(
+                            false,
+                            context.getString(R.string.patient_error_name_must_be_characters)
+                        )
+                    }
+                }
+                return Pair(true, "")
+            }
+            Patient::dob -> with(value as String?) {
+                if (this == null || isBlank()) {
+                    // If both age and dob are missing, it's invalid.
+                    return if (patientInstance?.age == null ?: true) {
+                        Pair(false, context.getString(R.string.patient_error_age_or_dob_missing))
+                    } else {
+                        Pair(true, "")
+                    }
+                }
+
+                try {
+                    SimpleDateFormat("yyyy-MM-dd").let {
+                        it.timeZone = TimeZone.getTimeZone("UTC")
+                        it.parse(this)
+                    }
+                } catch (e: ParseException) {
+                    return@with Pair(false, context.getString(R.string.patient_error_dob_format))
+                }
+                val year = substring(0, indexOf('-')).toIntOrNull()
+                    ?: return Pair(false, context.getString(R.string.patient_error_dob_format))
+                val yearNow = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+                    .get(Calendar.YEAR)
+                val age = yearNow - year
+                if (age > AGE_UPPER_BOUND || age < AGE_LOWER_BOUND) {
+                    return Pair(
+                        false,
+                        context.getString(
+                            R.string.patient_error_age_between_n_and_m,
+                            AGE_LOWER_BOUND,
+                            AGE_UPPER_BOUND
+                        )
+                    )
+                }
+                return Pair(true, "")
+            }
+            Patient::age -> with(value as Int?) {
+                if (this == null) {
+                    // If both age and dob are missing, it's invalid.
+                    return if (patientInstance?.age == null ?: true) {
+                        Pair(false, context.getString(R.string.patient_error_age_or_dob_missing))
+                    } else {
+                        Pair(true, "")
+                    }
+                }
+
+                if (this > AGE_UPPER_BOUND || this < AGE_LOWER_BOUND) {
+                    return Pair(
+                        false,
+                        context.getString(
+                            R.string.patient_error_age_between_n_and_m,
+                            AGE_LOWER_BOUND,
+                            AGE_UPPER_BOUND
+                        )
+                    )
+                }
+                return Pair(true, "")
+            }
+            else -> {
+                Pair(true, "")
+            }
+        }
+
         /**
          * Constructs a [Patient] object from a [JSONObject].
          *
