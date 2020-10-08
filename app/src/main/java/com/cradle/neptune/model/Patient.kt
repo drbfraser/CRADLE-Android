@@ -144,6 +144,11 @@ data class Patient(
                 return Pair(true, "")
             }
             Patient::name -> with(value as String) {
+                // This is currently how input validation is handled on frontend.
+                // The frontend uses:
+                //     if (hasNumber(value) || value.length === 0) {
+                //       patientError.patientInitialError = true;
+                //     }
                 if (isBlank()) {
                     return Pair(false, context.getString(R.string.patient_error_name_missing))
                 }

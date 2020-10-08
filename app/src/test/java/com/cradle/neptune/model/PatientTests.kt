@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
+import kotlin.reflect.KProperty
 
 @ExtendWith(MockKExtension::class)
 class PatientTests {
@@ -90,22 +91,46 @@ class PatientTests {
 
     @Test
     fun verify_patientId() {
-
-        val wrongIds =
-            setOf("", "123456789012345", "1234567890123457890123", "abc", "i am not") union
+        val wrong =
+            setOf("", "  ", "123456789012345", "1234567890123457890123", "abc", "i am not") union
                 NON_ALPHANUMERIC_STRINGS
-        val goodIds = setOf("0", "23", "53345", "23523", "12345678901234", "345983798")
+        val good = setOf("0", "23", "53345", "23523", "12345678901234", "345983798")
+        assertValidityOverSet(wrong, Patient::id, isValidValueSet = false)
+        assertValidityOverSet(good, Patient::id, isValidValueSet = true)
+    }
 
-        wrongIds.forEach {
-            val pair = Patient.Companion.isValueValid(null, Patient::id, it, mockContext)
-            assert(!pair.first) {
-                "expected $it to be an invalid patient ID; but it was counted."
-            }
-        }
-        goodIds.forEach {
-            val pair = Patient.Companion.isValueValid(null, Patient::id, it, mockContext)
-            assert(pair.first) {
-                "expected $it to be an valid patient ID; but got error message \"${pair.second}\""
+    @Test
+    fun verify_patientName() {
+        val wrong = setOf("", " ", "sad_345", "11", "Johh5", "3453453453543 5 345435 345345",
+            "123456789012345", "ABCDFGHJKLQWE5RT")
+        val good = setOf("testName", "John Smith", "Someone", "Alice", "Bob", "ABC", "JKL",
+            "Zulo", "***ThisIsValid...", "\"SomeRealLongNameWillHaveFourCharWordAlwa\"")
+        assertValidityOverSet(wrong, Patient::name, isValidValueSet = false)
+        assertValidityOverSet(good, Patient::name, isValidValueSet = true)
+    }
+
+    /**
+     * @param isValidValueSet Whether all elements in [set] are values that would be invalid for
+     * [property]
+     */
+    private fun assertValidityOverSet(
+        set: Set<*>, property: KProperty<*>,
+        isValidValueSet: Boolean, patientInstance: Patient? = null
+    ) {
+        set.forEach{
+            val pair = Patient.Companion.isValueValid(
+                patientInstance, property, it, mockContext
+            )
+            if (isValidValueSet) {
+                assert(pair.first) {
+                    "expected $it to be an valid ${property.name};" +
+                        " but got error message \"${pair.second}\""
+                }
+            } else {
+                assert(!pair.first) {
+                    "expected $it to be an invalid ${property.name};" +
+                        " but it was accepted as valid"
+                }
             }
         }
     }
@@ -113,6 +138,6 @@ class PatientTests {
     private fun getMockStringFromResId(resId: Int): String = when (resId) {
         R.string.patient_error_id_missing -> "patient error missing"
         R.string.patient_error_id_too_long_max_n_digits -> "id too long"
-        else -> "unmocked error message"
+        else -> "Unmocked string"
     }
 }
