@@ -240,8 +240,8 @@ internal data class TestClass(
         value: Any?,
         context: Context
     ): Pair<Boolean, String> {
-        // Note: This is implemented in the Companion so that other objects can use it without
-        // creating an instance of TestClass.
+        // Note: This is implemented in the Companion so that other objects
+        // can use it without creating an instance of TestClass.
         return isValueValid(property, value, context)
     }
 
