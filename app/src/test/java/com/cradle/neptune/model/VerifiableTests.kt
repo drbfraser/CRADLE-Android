@@ -12,13 +12,15 @@ import kotlin.reflect.KProperty
 
 @ExtendWith(MockKExtension::class)
 class VerifiableTests {
+    // Names are valid if they're not empty/blank and are <= 15 chars
     private val validNames = listOf(
         "abc", "a", "null", "1234567890", "123456789012345", "123456789012346"
     )
-    private val validAges = 0..120
     private val invalidNames = listOf(
         "", " ", "1234567890123467", "aaaaa aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
     )
+
+    private val validAges = 0..120
     private val invalidAges = -1000..-1 union 121..1000
 
     private val mockContext: Context = mockk(relaxed = true)
@@ -240,7 +242,7 @@ internal data class TestClass(
             TestClass::age -> {
                 val typed = value as Int
                 if (typed < 0) {
-                    return Pair(false, "Age must be positive")
+                    return Pair(false, "Age must be non-negative")
                 } else if (typed > 120) {
                     return Pair(false, "Age must be less than 120")
                 }
