@@ -164,8 +164,14 @@ data class Patient(
             }
             Patient::dob -> with(value as String?) {
                 if (this == null || isBlank()) {
+                    if (patientInstance == null) {
+                        return Pair(
+                            false,
+                            context.getString(R.string.patient_error_age_or_dob_missing)
+                        )
+                    }
                     // If both age and dob are missing, it's invalid.
-                    return if (patientInstance?.age == null) {
+                    return if (patientInstance.age == null) {
                         Pair(false, context.getString(R.string.patient_error_age_or_dob_missing))
                     } else {
                         Pair(true, "")
@@ -206,8 +212,15 @@ data class Patient(
             }
             Patient::age -> with(value as Int?) {
                 if (this == null) {
+                    if (patientInstance == null) {
+                        return Pair(
+                            false,
+                            context.getString(R.string.patient_error_age_or_dob_missing)
+                        )
+                    }
+
                     // If both age and dob are missing, it's invalid.
-                    return if (patientInstance?.dob == null) {
+                    return if (patientInstance.dob == null) {
                         Pair(false, context.getString(R.string.patient_error_age_or_dob_missing))
                     } else {
                         Pair(true, "")
