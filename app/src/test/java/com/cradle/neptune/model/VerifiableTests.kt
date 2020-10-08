@@ -33,10 +33,16 @@ class VerifiableTests {
 
     @Test
     fun areAllMemberValuesValid_usingValidValues() {
+        val simpleNumber = SimpleNumber(number = 10)
+        assert(simpleNumber.areAllMemberValuesValid())
+
         for (name in validNames) {
             for (age in validAges) {
                 val validClass = TestClass(name, age, 5, "some lateinit thing")
-                assert(validClass.areAllMemberValuesValid()) {
+                assert(validClass.areAllMemberValuesValid(true)) {
+                    "expected TestClass with name $name and age $age to be valid"
+                }
+                assert(validClass.areAllMemberValuesValid(false)) {
                     "expected TestClass with name $name and age $age to be valid"
                 }
             }
@@ -103,7 +109,15 @@ class VerifiableTests {
     }
 }
 
-internal class TestClass(
+internal data class SimpleNumber(
+    val number: Int
+): Verifiable<SimpleNumber> {
+    override fun isValueValid(property: KProperty<*>, value: Any?): Boolean {
+        return true
+    }
+}
+
+internal data class TestClass(
     val nameMax15Chars: String,
     val age: Int,
     val privateNumberOfPets: Int
@@ -140,7 +154,7 @@ internal class TestClass(
                 typed.isNotEmpty()
             }
             TestClass::privateValue -> {
-                false
+                true
             }
             else -> true
         }
