@@ -19,6 +19,7 @@ class PatientTests {
         "this is my email__", "hi@gmail.com", "thisIS@#*(U", "0x10*!@#$%^&*", "-/*-/*+",
         "0*(1+0)*"
     )
+    private val BLANK_AND_NULL_STRINGS = setOf("", " ", "   ", null)
 
     private val mockContext: Context = mockk()
 
@@ -111,7 +112,7 @@ class PatientTests {
 
     @Test
     fun verify_patientDateOfBirth() {
-        val wrong = setOf("", " ", "sad_345", "11", "Johh5", "3453453453543 5 345435 345345",
+        val wrong = setOf("sad_345", "11", "Johh5", "3453453453543 5 345435 345345",
             "123456789012345", "ABCDFGHJKLQWE5RT", "23-2-2004", "1-20-2004", "1-20-2004",
             "1995-05-0", "1995-0-0", "1995-0-05", "1995-0-5", "1995-5-5")
         val good = setOf("2004-05-22", "1995-04-08", "1995-05-01")
@@ -124,14 +125,84 @@ class PatientTests {
             sex = Sex.FEMALE,
             isPregnant = false
         )
-        assertValidityOverSet(wrong, Patient::dob, isValidValueSet = false, patientInstance = patientWithoutAge)
+        // Since this patient doesn't have an age, we expect null / empty to be invalid.
+        assertValidityOverSet(
+            wrong union BLANK_AND_NULL_STRINGS, Patient::dob,
+            isValidValueSet = false, patientInstance = patientWithoutAge
+        )
         assertValidityOverSet(good, Patient::dob, isValidValueSet = true, patientInstance = patientWithoutAge)
+
+        val patientWithAge = Patient(
+            id = "3453455",
+            name = "AB",
+            dob = null,
+            age = 30,
+            sex = Sex.FEMALE,
+            isPregnant = false
+        )
+        // Since this patient has an age, we expect null / blank / empty to be valid.
+        assertValidityOverSet(
+            wrong , Patient::dob,
+            isValidValueSet = false, patientInstance = patientWithAge
+        )
+        assertValidityOverSet(
+            good union BLANK_AND_NULL_STRINGS, Patient::dob,
+            isValidValueSet = true, patientInstance = patientWithAge
+        )
+
+        // If we don't have any instance to compare it to, we assume it's bad.
+        assertValidityOverSet(
+            wrong union BLANK_AND_NULL_STRINGS, Patient::dob,
+            isValidValueSet = false, patientInstance = null
+        )
+        assertValidityOverSet(good, Patient::dob, isValidValueSet = true, patientInstance = null)
     }
 
+    @Test
+    fun verify_patientAge() {
+        val wrong = -100..14 union 66..100
+        val good = (15..65).toSet()
+
+        val patientWithoutDob = Patient(
+            id = "3453455",
+            name = "AB",
+            dob = null,
+            age = null,
+            sex = Sex.FEMALE,
+            isPregnant = false
+        )
+        // Since this patient doesn't have a dob, we expect null age to be invalid.
+        assertValidityOverSet(
+            wrong union setOf<Int?>(null), Patient::age,
+            isValidValueSet = false, patientInstance = patientWithoutDob
+        )
+        assertValidityOverSet(
+            good, Patient::age,
+            isValidValueSet = true, patientInstance = patientWithoutDob
+        )
+
+        val patientWithDob = Patient(
+            id = "3453455",
+            name = "AB",
+            dob = "1990-05-05",
+            age = null,
+            sex = Sex.FEMALE,
+            isPregnant = false
+        )
+        assertValidityOverSet(
+            wrong, Patient::age,
+            isValidValueSet = false, patientInstance = patientWithDob
+        )
+        // Since this patient has dob, we expect null age to be valid.
+        assertValidityOverSet(
+            good union setOf<Int?>(null), Patient::age,
+            isValidValueSet = true, patientInstance = patientWithDob
+        )
+    }
 
     /**
-     * @param isValidValueSet Whether all elements in [set] are values that would be invalid for
-     * [property]
+     * @param isValidValueSet If true, all elements in [set] are values that would be invalid for
+     * [property]. If false, all elements in [set] are values that would be valid for [property]
      */
     private fun assertValidityOverSet(
         set: Set<*>, property: KProperty<*>,
@@ -144,7 +215,7 @@ class PatientTests {
             if (isValidValueSet) {
                 assert(pair.first) {
                     "expected $it to be an valid ${property.name};" +
-                        " but got error message \"${pair.second}\""
+                        " but got mocked error message \"${pair.second}\""
                 }
             } else {
                 assert(!pair.first) {
