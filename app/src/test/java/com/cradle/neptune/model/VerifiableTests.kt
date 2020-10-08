@@ -251,29 +251,25 @@ internal data class TestClass(
             property: KProperty<*>,
             value: Any?,
             context: Context
-        ): Pair<Boolean, String> {
-            when (property) {
-                TestClass::nameMax15Chars -> {
-                    // Don't need to have a specific error message, but good to have.
-                    val typed = value as String
-                    if (typed.isBlank() || typed.isEmpty()) {
-                        return Pair(false, "Name cannot be empty")
-                    } else if (typed.length > 15) {
-                        return Pair(false, "Name cannot be more than 15 characters")
-                    }
-                    return Pair(true, "")
+        ): Pair<Boolean, String> = when (property) {
+            TestClass::nameMax15Chars -> with(value as String) {
+                // Don't need to have a specific error message, but good to have.
+                if (isBlank() || isEmpty()) {
+                    return Pair(false, "Name cannot be empty")
+                } else if (length > 15) {
+                    return Pair(false, "Name cannot be more than 15 characters")
                 }
-                TestClass::age -> {
-                    val typed = value as Int
-                    if (typed < 0) {
-                        return Pair(false, "Age must be non-negative")
-                    } else if (typed > 120) {
-                        return Pair(false, "Age must be less than 120")
-                    }
-                    return Pair(true, "")
-                }
-                else -> return Pair(true, "")
+                return Pair(true, "")
             }
+            TestClass::age -> with(value as Int) {
+                if (this < 0) {
+                    return Pair(false, "Age must be non-negative")
+                } else if (this > 120) {
+                    return Pair(false, "Age must be less than 120")
+                }
+                return Pair(true, "")
+            }
+            else -> Pair(true, "")
         }
     }
 }
