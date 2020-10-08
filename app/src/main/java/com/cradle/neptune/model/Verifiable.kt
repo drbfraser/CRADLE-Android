@@ -27,8 +27,7 @@ interface Verifiable<T : Any> {
 }
 
 /**
- * Determines validity of value for [property]. Classes should override this and handle the case
- * if they have any public lateinit properties.
+ * Determines validity of value for [property].
  * Note: See https://discuss.kotlinlang.org/t/reified-generics-in-interface/1628/2 for the idea of
  * using extension functions to incorporate reified types
  *
