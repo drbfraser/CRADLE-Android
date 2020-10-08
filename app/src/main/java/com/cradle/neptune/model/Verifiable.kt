@@ -42,8 +42,10 @@ interface Verifiable<T : Any> {
     fun isPropertyValid(property: KProperty<*>): Boolean {
         @Suppress("UNCHECKED_CAST")
         val thisTypedAsT = this as T
+
+        // Find the property as a member property.
         val memberProperty = thisTypedAsT::class.memberProperties.find {
-            // properties must have unique names
+            // Properties must have unique names.
             property.name == it.name
         } ?: throw IllegalArgumentException(
             "property ${property.name} doesn't exist for ${thisTypedAsT::class.java.simpleName}"
@@ -53,7 +55,8 @@ interface Verifiable<T : Any> {
             return isValueValid(memberProperty, memberProperty.getter.call(this))
         } catch (e: InvocationTargetException) {
             if (e.cause is UninitializedPropertyAccessException) {
-                // Propagate any attempts to access uninitialized lateinit vars as this exception type.
+                // Propagate any attempts to access uninitialized lateinit vars as an
+                // UninitializedPropertyAccessException
                 throw UninitializedPropertyAccessException(
                     (e.cause as UninitializedPropertyAccessException).message
                 )
@@ -87,7 +90,7 @@ interface Verifiable<T : Any> {
                     return false
                 }
             } catch (ignored: IllegalCallableAccessException) {
-                // We ignore any exceptions caused by non-accessibility op the member (e.g., this
+                // We ignore any exceptions caused by non-accessibility of the member (e.g., this
                 // would happen if shouldIgnoreAccessibility is false and the class has private
                 // members and the caller of this function is not in the class). In this case, such
                 // members are not checked for validity.
