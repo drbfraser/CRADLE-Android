@@ -19,7 +19,7 @@ class PatientTests {
         "0*(1+0)*"
     )
 
-    private val mockContext: Context = mockk(relaxed = true)
+    private val mockContext: Context = mockk()
 
 
     @BeforeEach
@@ -29,6 +29,9 @@ class PatientTests {
             // Search for any non-digit strings. Null is returned if no non-digit strings are found
             (arg<CharSequence>(0)).find { !it.isDigit() } == null
         }
+
+        every { mockContext.getString(any(), *anyVararg()) } answers { getMockStringFromResId(arg(0)) }
+        every { mockContext.getString(any()) } answers { getMockStringFromResId(arg(0)) }
     }
 
     @Test
@@ -87,9 +90,6 @@ class PatientTests {
 
     @Test
     fun verify_patientId() {
-        val mContext = mockk<Context>()
-        every { mContext.getString(any(), *anyVararg()) } answers { getMockStringFromResId(arg(0)) }
-        every { mContext.getString(any()) } answers { getMockStringFromResId(arg(0)) }
 
         val wrongIds =
             setOf("", "123456789012345", "1234567890123457890123", "abc", "i am not") union
@@ -97,13 +97,13 @@ class PatientTests {
         val goodIds = setOf("0", "23", "53345", "23523", "12345678901234", "345983798")
 
         wrongIds.forEach {
-            val pair = Patient.Companion.isValueValid(null, Patient::id, it, mContext)
+            val pair = Patient.Companion.isValueValid(null, Patient::id, it, mockContext)
             assert(!pair.first) {
                 "expected $it to be an invalid patient ID; but it was counted."
             }
         }
         goodIds.forEach {
-            val pair = Patient.Companion.isValueValid(null, Patient::id, it, mContext)
+            val pair = Patient.Companion.isValueValid(null, Patient::id, it, mockContext)
             assert(pair.first) {
                 "expected $it to be an valid patient ID; but got error message \"${pair.second}\""
             }
