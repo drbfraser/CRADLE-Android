@@ -183,25 +183,37 @@ internal data class PositiveRationalNumber(
         value: Any?,
         context: Context
     ): Pair<Boolean, String> {
-        // The validity depends on the members that are already set. It doesn't always have to be
-        // just independent checks.
-        if (property == PositiveRationalNumber::denominator) {
-            val typedValue = value as Int
-            if (typedValue == 0) {
-                return Pair(false, "Denominator cannot be 0")
-            } else if (typedValue.sign != numerator.sign) {
-                return Pair(false, "Denominator makes the rational number negative")
+        return isValueValid(this, property, value, context)
+    }
+
+    companion object {
+        @JvmStatic
+        fun isValueValid(
+            rationalNumberToCheckAgainst: PositiveRationalNumber,
+            property: KProperty<*>,
+            value: Any?,
+            context: Context
+        ): Pair<Boolean, String> {
+            // The validity depends on the members that are already set. It doesn't always have to
+            // be just independent checks.
+            if (property == PositiveRationalNumber::denominator) {
+                val typedValue = value as Int
+                if (typedValue == 0) {
+                    return Pair(false, "Denominator cannot be 0")
+                } else if (typedValue.sign != rationalNumberToCheckAgainst.numerator.sign) {
+                    return Pair(false, "Denominator makes the rational number negative")
+                }
             }
-        }
-        else if (property == PositiveRationalNumber::numerator) {
-            val typedValue = value as Int
-            if (typedValue == 0) {
-                return Pair(false, "Numerator cannot be 0, because it's not positive")
-            } else if (typedValue.sign != denominator.sign) {
-                return Pair(false, "Numerator makes the rational number negative")
+            else if (property == PositiveRationalNumber::numerator) {
+                val typedValue = value as Int
+                if (typedValue == 0) {
+                    return Pair(false, "Numerator cannot be 0, because it's not positive")
+                } else if (typedValue.sign != rationalNumberToCheckAgainst.denominator.sign) {
+                    return Pair(false, "Numerator makes the rational number negative")
+                }
             }
+            return Pair(true, "")
         }
-        return Pair(true, "")
     }
 }
 
@@ -228,27 +240,40 @@ internal data class TestClass(
         value: Any?,
         context: Context
     ): Pair<Boolean, String> {
-        when (property) {
-            TestClass::nameMax15Chars -> {
-                // Don't need to have a specific error message, but good to have.
-                val typed = value as String
-                if (typed.isBlank() || typed.isEmpty()) {
-                    return Pair(false, "Name cannot be empty")
-                } else if (typed.length > 15) {
-                    return Pair(false, "Name cannot be more than 15 characters")
+        // Note: This is implemented in the Companion so that other objects can use it without
+        // creating an instance of TestClass.
+        return isValueValid(property, value, context)
+    }
+
+    companion object {
+        @JvmStatic
+        fun isValueValid(
+            property: KProperty<*>,
+            value: Any?,
+            context: Context
+        ): Pair<Boolean, String> {
+            when (property) {
+                TestClass::nameMax15Chars -> {
+                    // Don't need to have a specific error message, but good to have.
+                    val typed = value as String
+                    if (typed.isBlank() || typed.isEmpty()) {
+                        return Pair(false, "Name cannot be empty")
+                    } else if (typed.length > 15) {
+                        return Pair(false, "Name cannot be more than 15 characters")
+                    }
+                    return Pair(true, "")
                 }
-                return Pair(true, "")
-            }
-            TestClass::age -> {
-                val typed = value as Int
-                if (typed < 0) {
-                    return Pair(false, "Age must be non-negative")
-                } else if (typed > 120) {
-                    return Pair(false, "Age must be less than 120")
+                TestClass::age -> {
+                    val typed = value as Int
+                    if (typed < 0) {
+                        return Pair(false, "Age must be non-negative")
+                    } else if (typed > 120) {
+                        return Pair(false, "Age must be less than 120")
+                    }
+                    return Pair(true, "")
                 }
-                return Pair(true, "")
+                else -> return Pair(true, "")
             }
-            else -> return Pair(true, "")
         }
     }
 }

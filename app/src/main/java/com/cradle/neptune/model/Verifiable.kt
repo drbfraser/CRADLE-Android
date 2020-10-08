@@ -28,10 +28,14 @@ interface Verifiable<in T : Any> {
      * easy to do this by having an else block in a when statement that returns true, and then only
      * having the members that need validation get their own when block.
      *
+     * It's recommended that the validator be put in a companion object so that other objects can
+     * access it without needing to create an instance first.
+     *
+     * @sample com.cradle.neptune.model.TestClass.isValueForPropertyValid
+     * @sample com.cradle.neptune.model.TestClass.Companion.isValueForPropertyValid
+     *
      * @return A [Pair], where the left value is whether the value is valid for the given property,
      * and the right value is an error message. The error message is empty if the value is valid
-     * @sample com.cradle.neptune.model.TestClass.isValueForPropertyValid
-     * @sample com.cradle.neptune.model.PositiveRationalNumber.isValueForPropertyValid
      */
     fun isValueForPropertyValid(
         property: KProperty<*>,
