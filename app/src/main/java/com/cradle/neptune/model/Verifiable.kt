@@ -45,7 +45,9 @@ inline fun <reified T : Any> Verifiable<T>.isPropertyValid(property: KProperty<*
         return isValueValid(memberProperty, memberProperty.get(this as T))
     } catch (e: InvocationTargetException) {
         if (e.cause is UninitializedPropertyAccessException) {
-            throw UninitializedPropertyAccessException()
+            throw UninitializedPropertyAccessException(
+                (e.cause as UninitializedPropertyAccessException).message
+            )
         }
         throw e
     }
