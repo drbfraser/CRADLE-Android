@@ -16,7 +16,7 @@ import kotlin.reflect.jvm.isAccessible
  */
 interface Verifiable<in T : Any> {
     /**
-     * Determines if a value for a property is valid. What is valid is defined by the class
+     * Determines if a [value] for a [property] is valid. What is valid is defined by the class
      * implementing this. [context] is needed to get a localized error message.
      *
      * To implement this, the class needs to check the validity of all of its properties on a
@@ -28,14 +28,19 @@ interface Verifiable<in T : Any> {
      * easy to do this by having an else block in a when statement that returns true, and then only
      * having the members that need validation get their own when block.
      *
-     * It's recommended that the validator be put in a companion object so that other objects can
-     * access it without needing to create an instance first.
+     * It's recommended that the validator function for an class be put in a Companion object for
+     * that class so that other classes can access it without needing to create an instance first.
+     * See the sample (CTRL + Q in Android Studio) for details.
      *
      * @sample com.cradle.neptune.model.TestClass.isValueForPropertyValid
-     * @sample com.cradle.neptune.model.TestClass.Companion.isValueForPropertyValid
+     * @sample com.cradle.neptune.model.TestClass.Companion.isValueValid
      *
+     * @param property The property to check [value] for.
+     * @param value The value to test. This should be the same type the type in [property].
+     * @param context A Context required to get localized error messages.
      * @return A [Pair], where the left value is whether the value is valid for the given property,
-     * and the right value is an error message. The error message is empty if the value is valid
+     * and the right value is an error message. The error message should be ignored if the value is
+     * valid.
      */
     fun isValueForPropertyValid(
         property: KProperty<*>,
@@ -44,8 +49,8 @@ interface Verifiable<in T : Any> {
     ): Pair<Boolean, String>
 
     /**
-     * Determines validity of value for [property]. [context] is needed to get a localized error
-     * message.
+     * Determines validity of value for [property] for this object. [context] is needed to get a
+     * localized error message.
      *
      * @throws UninitializedPropertyAccessException if checking a lateinit property
      * @return whether the value in the class's [property] is valid.
@@ -83,8 +88,9 @@ interface Verifiable<in T : Any> {
      * the accessibility modifiers (e.g. private variables will be checked if calling from outside
      * of the class). Otherwise, such members are ignored when checking for validity. Defaults to
      * true.
-     * @return A List of [Pair]s of the form <property name with invalid value, error message for
-     * property name>. The List is empty if all values are valid.
+     * @return A List of [Pair] where each pair is of the form:
+     *     <Property name with invalid value, Error message for property name>.
+     * The List is empty if all values are valid.
      * @throws UninitializedPropertyAccessException if there are uninitialized lateinit properties
      */
     fun getAllMembersWithInvalidValues(

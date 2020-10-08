@@ -153,7 +153,7 @@ class VerifiableTests {
     }
 
     @Test
-    fun isPropertyValid() {
+    fun isPropertyValid_wrongParameter() {
         // Never do this.
         val simpleNumber = SimpleNumber(4)
         assertThrows(IllegalArgumentException::class.java) {
