@@ -1,9 +1,16 @@
 package com.cradle.neptune.model
 
+import android.content.Context
+import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import java.lang.IllegalArgumentException
+import kotlin.math.sign
 import kotlin.reflect.KProperty
 
+@ExtendWith(MockKExtension::class)
 class VerifiableTests {
     private val validNames = listOf(
         "abc", "a", "null", "1234567890", "123456789012345", "123456789012346"
@@ -14,18 +21,20 @@ class VerifiableTests {
     )
     private val invalidAges = -1000..-1 union 121..1000
 
+    private val mockContext: Context = mockk(relaxed = true)
+
     @Test
     fun isValid_usingValidValues() {
         val testClass = TestClass("my name", 50, 5, "lateinit")
-        assert(testClass.areAllMemberValuesValid())
+        assert(testClass.getAllMembersWithInvalidValues(context = mockContext).isEmpty())
 
         validNames.forEach {
-            assert(testClass.isValueValid(TestClass::nameMax15Chars, it)) {
+            assert(testClass.isValueForPropertyValid(TestClass::nameMax15Chars, it, mockContext).first) {
                 "expected $it to be a valid name"
             }
         }
         validAges.forEach {
-            assert(testClass.isValueValid(TestClass::age, it)) {
+            assert(testClass.isValueForPropertyValid(TestClass::age, it, mockContext).first) {
                 "expected $it to be a valid age"
             }
         }
@@ -34,15 +43,19 @@ class VerifiableTests {
     @Test
     fun areAllMemberValuesValid_usingValidValues() {
         val simpleNumber = SimpleNumber(number = 10)
-        assert(simpleNumber.areAllMemberValuesValid())
+        assert(simpleNumber.getAllMembersWithInvalidValues(mockContext).isEmpty())
 
         for (name in validNames) {
             for (age in validAges) {
                 val validClass = TestClass(name, age, 5, "some lateinit thing")
-                assert(validClass.areAllMemberValuesValid(true)) {
+                assert(validClass.getAllMembersWithInvalidValues(
+                    context = mockContext, shouldIgnoreAccessibility = true
+                ).isEmpty()) {
                     "expected TestClass with name $name and age $age to be valid"
                 }
-                assert(validClass.areAllMemberValuesValid(false)) {
+                assert(validClass.getAllMembersWithInvalidValues(
+                    context = mockContext, shouldIgnoreAccessibility = false
+                ).isEmpty()) {
                     "expected TestClass with name $name and age $age to be valid"
                 }
             }
@@ -51,13 +64,12 @@ class VerifiableTests {
 
     @Test
     fun isValid_usingInvalidValues() {
-        val testClass = TestClass(
+        val nameInvalid = TestClass(
             "my name is going to be over 15 chars",
             50,
             5,
             "lateinit"
         )
-        assert(!testClass.areAllMemberValuesValid())
 
         val testClassWithoutLateinit = TestClass(
             "name,age,numOfPets are valid",
@@ -65,17 +77,17 @@ class VerifiableTests {
             5
         )
         assertThrows(UninitializedPropertyAccessException::class.java) {
-            testClassWithoutLateinit.isPropertyValid(TestClass::someLateinitThing)
+            testClassWithoutLateinit.isPropertyValid(TestClass::someLateinitThing, mockContext)
         }
 
         invalidNames.forEach {
-            assert(!testClass.isValueValid(TestClass::nameMax15Chars, it)) {
+            assert(!nameInvalid.isValueForPropertyValid(TestClass::nameMax15Chars, it, mockContext).first) {
                 "expected $it to be an invalid name"
             }
         }
 
         invalidAges.forEach {
-            assert(!testClass.isValueValid(TestClass::age, it)) {
+            assert(!nameInvalid.isValueForPropertyValid(TestClass::age, it, mockContext).first) {
                 "expected $it to be an invalid age"
             }
         }
@@ -85,9 +97,10 @@ class VerifiableTests {
     fun areAllMemberValuesValid_usingInvalidValues() {
         for (name in invalidNames) {
             for (age in invalidAges) {
-                val invalidClass = TestClass(name, age, 5)
-                assert(!invalidClass.areAllMemberValuesValid()) {
-                    "expected TestClass with name $name and age $age to be invalid"
+                val invalidClass = TestClass(name, age, 5, "lateinit")
+                assert(invalidClass.getAllMembersWithInvalidValues(mockContext).isNotEmpty()) {
+                    "expected TestClass with name {$name} and age $age to be invalid; the error " +
+                        "messages are ${invalidClass.getAllMembersWithInvalidValues(mockContext)}"
                 }
             }
         }
@@ -97,14 +110,52 @@ class VerifiableTests {
     fun areAllMemberValuesValid_usingMixOfValidAndInvalidValues() {
         for (name in invalidNames union validNames) {
             for (age in invalidAges union invalidAges) {
-                val testClass = TestClass(name, age, 5)
+                val testClass = TestClass(name, age, 5, "lateinit")
                 val expectedToBeValid = name in validNames && age in validAges
 
-                assert(testClass.areAllMemberValuesValid() == expectedToBeValid) {
-                    "expected TestClass with name $name and age $age to be " +
-                        if (expectedToBeValid) "valid" else "invalid"
+                assert(
+                    testClass.getAllMembersWithInvalidValues(mockContext).isEmpty() == expectedToBeValid
+                ) {
+                    if (expectedToBeValid) {
+                        "expected TestClass with name \"$name\" and age $age to be valid, the error " +
+                            "messages are ${testClass.getAllMembersWithInvalidValues(mockContext)}"
+                    } else {
+                        "expected TestClass with name \"$name\" and age $age to be invalid, the error " +
+                            "messages are ${testClass.getAllMembersWithInvalidValues(mockContext)}"
+                    }
                 }
             }
+        }
+    }
+
+    @Test
+    fun isValid_PositiveRationalNumber() {
+        val ratNum = PositiveRationalNumber(4, 5)
+        assert(ratNum.isPropertyValid(PositiveRationalNumber::numerator, mockContext).first)
+        assert(ratNum.isValueForPropertyValid(PositiveRationalNumber::numerator, 50, mockContext).first)
+        assert(!ratNum.isValueForPropertyValid(PositiveRationalNumber::numerator, -50, mockContext).first)
+
+        assert(ratNum.isPropertyValid(PositiveRationalNumber::denominator, mockContext).first)
+        assert(ratNum.isValueForPropertyValid(PositiveRationalNumber::denominator, 50, mockContext).first)
+        assert(!ratNum.isValueForPropertyValid(PositiveRationalNumber::denominator, -50, mockContext).first)
+        assert(!ratNum.isValueForPropertyValid(PositiveRationalNumber::denominator, 0, mockContext).first)
+
+        assert(ratNum.getAllMembersWithInvalidValues(mockContext).isEmpty())
+
+        val divideByZero = PositiveRationalNumber(454, 0)
+        assert(divideByZero.getAllMembersWithInvalidValues(mockContext).isNotEmpty())
+
+        val alwaysNegative = PositiveRationalNumber(-5, 4)
+        // Both the numerator and denominator consider themselves as invalid.
+        assert(alwaysNegative.getAllMembersWithInvalidValues(mockContext).size == 2)
+    }
+
+    @Test
+    fun isPropertyValid() {
+        // Never do this.
+        val simpleNumber = SimpleNumber(4)
+        assertThrows(IllegalArgumentException::class.java) {
+            simpleNumber.isPropertyValid(PositiveRationalNumber::numerator, mockContext)
         }
     }
 }
@@ -112,8 +163,43 @@ class VerifiableTests {
 internal data class SimpleNumber(
     val number: Int
 ): Verifiable<SimpleNumber> {
-    override fun isValueValid(property: KProperty<*>, value: Any?): Boolean {
-        return true
+    override fun isValueForPropertyValid(
+        property: KProperty<*>,
+        value: Any?,
+        context: Context
+    ): Pair<Boolean, String> {
+        return Pair(true, "")
+    }
+}
+
+internal data class PositiveRationalNumber(
+    val numerator: Int,
+    val denominator: Int
+): Verifiable<SimpleNumber> {
+    override fun isValueForPropertyValid(
+        property: KProperty<*>,
+        value: Any?,
+        context: Context
+    ): Pair<Boolean, String> {
+        // The validity depends on the members that are already set. It doesn't always have to be
+        // just independent checks.
+        if (property == PositiveRationalNumber::denominator) {
+            val typedValue = value as Int
+            if (typedValue == 0) {
+                return Pair(false, "Denominator cannot be 0")
+            } else if (typedValue.sign != numerator.sign) {
+                return Pair(false, "Denominator makes the rational number negative")
+            }
+        }
+        else if (property == PositiveRationalNumber::numerator) {
+            val typedValue = value as Int
+            if (typedValue == 0) {
+                return Pair(false, "Numerator cannot be 0, because it's not positive")
+            } else if (typedValue.sign != denominator.sign) {
+                return Pair(false, "Numerator makes the rational number negative")
+            }
+        }
+        return Pair(true, "")
     }
 }
 
@@ -122,7 +208,6 @@ internal data class TestClass(
     val age: Int,
     val privateNumberOfPets: Int
 ): Verifiable<TestClass> {
-
     private val privateValue: Int = 50
 
     constructor(
@@ -136,24 +221,32 @@ internal data class TestClass(
 
     lateinit var someLateinitThing: String
 
-    override fun isValueValid(property: KProperty<*>, value: Any?): Boolean {
-        return when (property) {
+    override fun isValueForPropertyValid(
+        property: KProperty<*>,
+        value: Any?,
+        context: Context
+    ): Pair<Boolean, String> {
+        when (property) {
             TestClass::nameMax15Chars -> {
+                // Don't need to have a specific error message, but good to have.
                 val typed = value as String
-                typed.isNotBlank() && typed.length <= 15
+                if (typed.isBlank() || typed.isEmpty()) {
+                    return Pair(false, "Name cannot be empty")
+                } else if (typed.length > 15) {
+                    return Pair(false, "Name cannot be more than 15 characters")
+                }
+                return Pair(true, "")
             }
             TestClass::age -> {
                 val typed = value as Int
-                typed in 0..120
+                if (typed < 0) {
+                    return Pair(false, "Age must be positive")
+                } else if (typed > 120) {
+                    return Pair(false, "Age must be less than 120")
+                }
+                return Pair(true, "")
             }
-            TestClass::someLateinitThing -> {
-                val typed = value as String
-                typed.isNotEmpty()
-            }
-            TestClass::privateValue -> {
-                true
-            }
-            else -> true
+            else -> return Pair(true, "")
         }
     }
 }

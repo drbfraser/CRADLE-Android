@@ -1,5 +1,6 @@
 package com.cradle.neptune.model
 
+import android.content.Context
 import java.lang.IllegalArgumentException
 import java.lang.reflect.InvocationTargetException
 import kotlin.reflect.KProperty
@@ -16,7 +17,7 @@ import kotlin.reflect.jvm.isAccessible
 interface Verifiable<in T : Any> {
     /**
      * Determines if a value for a property is valid. What is valid is defined by the class
-     * implementing this.
+     * implementing this. [context] is needed to get a localized error message.
      *
      * To implement this, the class needs to check the validity of all of its properties on a
      * case-by-case basis, because each property has its own type, own conditions for validity, etc.
@@ -27,19 +28,26 @@ interface Verifiable<in T : Any> {
      * easy to do this by having an else block in a when statement that returns true, and then only
      * having the members that need validation get their own when block.
      *
-     * @return whether [value] for the [property] of a given class is valid
-     * @sample com.cradle.neptune.model.TestClass.isValueValid
+     * @return A [Pair], where the left value is whether the value is valid for the given property,
+     * and the right value is an error message. The error message is empty if the value is valid
+     * @sample com.cradle.neptune.model.TestClass.isValueForPropertyValid
+     * @sample com.cradle.neptune.model.PositiveRationalNumber.isValueForPropertyValid
      */
-    fun isValueValid(property: KProperty<*>, value: Any?): Boolean
+    fun isValueForPropertyValid(
+        property: KProperty<*>,
+        value: Any?,
+        context: Context
+    ): Pair<Boolean, String>
 
     /**
-     * Determines validity of value for [property].
+     * Determines validity of value for [property]. [context] is needed to get a localized error
+     * message.
      *
      * @throws UninitializedPropertyAccessException if checking a lateinit property
      * @return whether the value in the class's [property] is valid.
      */
     @Suppress("ThrowsCount")
-    fun isPropertyValid(property: KProperty<*>): Boolean {
+    fun isPropertyValid(property: KProperty<*>, context: Context): Pair<Boolean, String> {
         @Suppress("UNCHECKED_CAST")
         val thisTypedAsT = this as T
 
@@ -52,7 +60,7 @@ interface Verifiable<in T : Any> {
         )
 
         try {
-            return isValueValid(memberProperty, memberProperty.getter.call(this))
+            return isValueForPropertyValid(memberProperty, memberProperty.getter.call(this), context)
         } catch (e: InvocationTargetException) {
             if (e.cause is UninitializedPropertyAccessException) {
                 // Propagate any attempts to access uninitialized lateinit vars as an
@@ -71,12 +79,17 @@ interface Verifiable<in T : Any> {
      * the accessibility modifiers (e.g. private variables will be checked if calling from outside
      * of the class). Otherwise, such members are ignored when checking for validity. Defaults to
      * true.
-     * @return whether all the member properties have valid values, as determined by [isValueValid].
+     * @return A List of [Pair]s of the form <property name with invalid value, error message for
+     * property name>. The List is empty if all values are valid.
      * @throws UninitializedPropertyAccessException if there are uninitialized lateinit properties
      */
-    fun areAllMemberValuesValid(shouldIgnoreAccessibility: Boolean = true): Boolean {
+    fun getAllMembersWithInvalidValues(
+        context: Context,
+        shouldIgnoreAccessibility: Boolean = true
+    ): List<Pair<String, String>> {
         @Suppress("UNCHECKED_CAST")
         val thisTypedAsT = this as T
+        val listOfInvalidProperties: MutableList<Pair<String, String>> = mutableListOf()
 
         for (property in thisTypedAsT::class.memberProperties) {
             val oldIsAccessible = property.isAccessible
@@ -86,8 +99,10 @@ interface Verifiable<in T : Any> {
                     property.isAccessible = true
                 }
 
-                if (!isValueValid(property, property.getter.call(thisTypedAsT))) {
-                    return false
+                // First value in the pair is false; second value is the error message.
+                val result = isValueForPropertyValid(property, property.getter.call(thisTypedAsT), context)
+                if (!result.first) {
+                    listOfInvalidProperties.add(Pair(property.name, result.second))
                 }
             } catch (ignored: IllegalCallableAccessException) {
                 // We ignore any exceptions caused by non-accessibility of the member (e.g., this
@@ -104,6 +119,11 @@ interface Verifiable<in T : Any> {
                 }
             }
         }
-        return true
+        return if (listOfInvalidProperties.isEmpty()) {
+            // Statically-allocated empty list as an optimization
+            emptyList()
+        } else {
+            listOfInvalidProperties
+        }
     }
 }

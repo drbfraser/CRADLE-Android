@@ -130,6 +130,8 @@ dependencies {
     // required if you want to use Mockito for Android tests
     androidTestImplementation 'org.mockito:mockito-android:3.5.13'
 
+    testImplementation "io.mockk:mockk:1.10.2"
+
     // Kotlin version of mockito
     testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
 
