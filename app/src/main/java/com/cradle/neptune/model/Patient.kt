@@ -24,6 +24,7 @@ import com.cradle.neptune.utilitiles.Seconds
 import com.cradle.neptune.utilitiles.UnixTimestamp
 import com.cradle.neptune.utilitiles.Weeks
 import java.io.Serializable
+import java.lang.IllegalArgumentException
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -103,7 +104,7 @@ data class Patient(
         property: KProperty<*>,
         value: Any?,
         context: Context
-    ): Pair<Boolean, String> = isValueValid(this, property, value, context)
+    ): Pair<Boolean, String> = isValueValid(property, value, context, patientInstance = this)
 
     companion object : Unmarshal<Patient, JSONObject> {
         private const val ID_MAX_LENGTH = 14
@@ -117,14 +118,21 @@ data class Patient(
          * - cradle-platform/client/src/pages/newReading/demographic/validation/index.tsx
          * - cradle-platform/server/validation/patients.py
          *
+         * @param patientInstance For dependent properties, check against this Patient's values.
+         * Can be null if checking to see if a value would be valid when a patient isn't created
+         * yet.
+         * @param dependentPropertiesMap: For checking properties that depend on other properties
+         * for validity, supply a map of values of the dependent properties.
          */
         @Suppress("ReturnCount", "SimpleDateFormat", "NestedBlockDepth")
         fun isValueValid(
-            patientInstance: Patient?,
             property: KProperty<*>,
             value: Any?,
-            context: Context
+            context: Context,
+            patientInstance: Patient? = null,
+            dependentPropertiesMap: Map<KProperty<*>, Any?>? = null
         ): Pair<Boolean, String> = when (property) {
+            // doesn't depend on other properties
             Patient::id -> with(value as String) {
                 if (isBlank()) {
                     return Pair(false, context.getString(R.string.patient_error_id_missing))
@@ -144,6 +152,7 @@ data class Patient(
 
                 return Pair(true, "")
             }
+            // doesn't depend on other properties
             Patient::name -> with(value as String) {
                 // This is currently how input validation is handled on frontend.
                 // The frontend uses:
@@ -162,16 +171,17 @@ data class Patient(
                 }
                 return Pair(true, "")
             }
+            // validity of dob depends on age
             Patient::dob -> with(value as String?) {
                 if (this == null || isBlank()) {
-                    if (patientInstance == null) {
-                        return Pair(
-                            false,
-                            context.getString(R.string.patient_error_age_or_dob_missing)
-                        )
-                    }
+                    val dependentProperties = setupDependentPropertiesMapForInstance(
+                            patientInstance,
+                            dependentPropertiesMap,
+                            Patient::age
+                    )
+
                     // If both age and dob are missing, it's invalid.
-                    return if (patientInstance.age == null) {
+                    return if (dependentProperties[Patient::age] as Int? == null) {
                         Pair(false, context.getString(R.string.patient_error_age_or_dob_missing))
                     } else {
                         Pair(true, "")
@@ -210,17 +220,17 @@ data class Patient(
                 }
                 return Pair(true, "")
             }
+            // validity of age depends on dob
             Patient::age -> with(value as Int?) {
                 if (this == null) {
-                    if (patientInstance == null) {
-                        return Pair(
-                            false,
-                            context.getString(R.string.patient_error_age_or_dob_missing)
-                        )
-                    }
+                    val dependentProperties = setupDependentPropertiesMapForInstance(
+                        patientInstance,
+                        dependentPropertiesMap,
+                        Patient::dob
+                    )
 
                     // If both age and dob are missing, it's invalid.
-                    return if (patientInstance.dob == null) {
+                    return if (dependentProperties[Patient::dob] == null) {
                         Pair(false, context.getString(R.string.patient_error_age_or_dob_missing))
                     } else {
                         Pair(true, "")

@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
+import java.lang.IllegalArgumentException
 import kotlin.reflect.KProperty
 
 @ExtendWith(MockKExtension::class)
@@ -111,7 +112,7 @@ class PatientTests {
     }
 
     @Test
-    fun verify_patientDateOfBirth() {
+    fun verify_patientDateOfBirth_withPatientInstance() {
         val wrong = setOf("sad_345", "11", "Johh5", "3453453453543 5 345435 345345",
             "123456789012345", "ABCDFGHJKLQWE5RT", "23-2-2004", "1-20-2004", "1-20-2004",
             "1995-05-0", "1995-0-0", "1995-0-05", "1995-0-5", "1995-5-5")
@@ -151,15 +152,43 @@ class PatientTests {
         )
 
         // If we don't have any instance to compare it to, we assume it's bad.
-        assertValidityOverSet(
-            wrong union BLANK_AND_NULL_STRINGS, Patient::dob,
-            isValidValueSet = false, patientInstance = null
-        )
-        assertValidityOverSet(good, Patient::dob, isValidValueSet = true, patientInstance = null)
+        assertThrows(IllegalArgumentException::class.java) {
+            assertValidityOverSet(
+                BLANK_AND_NULL_STRINGS, Patient::dob,
+                isValidValueSet = false, patientInstance = null
+            )
+        }
     }
 
     @Test
-    fun verify_patientAge() {
+    fun verify_patientDateOfBirth_withoutPatientInstance() {
+        val wrong = setOf(
+            "sad_345", "11", "Johh5", "3453453453543 5 345435 345345",
+            "123456789012345", "ABCDFGHJKLQWE5RT", "23-2-2004", "1-20-2004", "1-20-2004",
+            "1995-05-0", "1995-0-0", "1995-0-05", "1995-0-5", "1995-5-5"
+        )
+        val good = setOf("2004-05-22", "1995-04-08", "1995-05-01")
+
+        // If the patient already has some age, then all blank / null values are valid.
+        assertValidityOverSet(
+            BLANK_AND_NULL_STRINGS, Patient::dob,
+            isValidValueSet = true, patientInstance = null,
+            dependentPropertiesMap = mapOf(Patient::age to 50)
+        )
+        assertValidityOverSet(
+            good, Patient::dob,
+            isValidValueSet = true, patientInstance = null,
+            dependentPropertiesMap = mapOf(Patient::age to 50)
+        )
+        assertValidityOverSet(
+            wrong, Patient::dob,
+            isValidValueSet = false, patientInstance = null,
+            dependentPropertiesMap = mapOf(Patient::age to 50)
+        )
+    }
+
+    @Test
+    fun verify_patientAge_withPatientInstance() {
         val wrong = -100..14 union 66..100
         val good = (15..65).toSet()
 
@@ -206,11 +235,12 @@ class PatientTests {
      */
     private fun assertValidityOverSet(
         set: Set<*>, property: KProperty<*>,
-        isValidValueSet: Boolean, patientInstance: Patient? = null
+        isValidValueSet: Boolean, patientInstance: Patient? = null,
+        dependentPropertiesMap: Map<KProperty<*>, Any?>? = null
     ) {
         set.forEach{
             val pair = Patient.Companion.isValueValid(
-                patientInstance, property, it, mockContext
+                property, it, mockContext, patientInstance, dependentPropertiesMap
             )
             if (isValidValueSet) {
                 assert(pair.first) {

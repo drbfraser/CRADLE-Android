@@ -137,3 +137,39 @@ interface Verifiable<in T : Any> {
         }
     }
 }
+
+/**
+ * Sets up a dependent properties map when an instance is given. This map is used when implementing
+ * [Verifiable.isValueForPropertyValid] to access properties that are
+ * dependent.
+ *
+ * ### Background
+ * For a property P of a type T where the validity of values for P depends
+ * on the values of other properties in an instance of T, we can't reliably
+ * test the validity of a value for P without creating an instance for T.
+ *
+ * For example, for a Patient, a null age is valid iff the patient has a
+ * date of birth. So, if we want to determine if a null age is valid, we
+ * need an instance of a Patient. However, if we're filling out a form and
+ * we want to do real-time validation as the user enters, this would mean
+ * creating new Patient instances every time the user enters something.
+ * This is inefficient.
+ *
+ * Solution: Supply a map
+ *
+ * @throws IllegalArgumentException if [instance] is null. We make [instance] nullable to make sure
+ * that this function can also serve as a check.
+ */
+fun setupDependentPropertiesMapForInstance(
+    instance: Any?,
+    givenDependentPropertiesMap: Map<KProperty<*>, Any?>?,
+    vararg existingProperties: KProperty<*>
+): Map<KProperty<*>, Any?> =
+    givenDependentPropertiesMap
+        ?: if (instance == null) {
+            throw IllegalArgumentException("null instance requires non-null dependentPropertiesMap")
+        } else {
+            // since there is an instance, create a new map just containing the values. This is so
+            // that we don't have to repeat code.
+            existingProperties.map { it to it.getter.call(instance) }.toMap()
+        }
