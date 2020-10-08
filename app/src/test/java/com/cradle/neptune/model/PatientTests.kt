@@ -109,6 +109,26 @@ class PatientTests {
         assertValidityOverSet(good, Patient::name, isValidValueSet = true)
     }
 
+    @Test
+    fun verify_patientDateOfBirth() {
+        val wrong = setOf("", " ", "sad_345", "11", "Johh5", "3453453453543 5 345435 345345",
+            "123456789012345", "ABCDFGHJKLQWE5RT", "23-2-2004", "1-20-2004", "1-20-2004",
+            "1995-05-0", "1995-0-0", "1995-0-05", "1995-0-5", "1995-5-5")
+        val good = setOf("2004-05-22", "1995-04-08", "1995-05-01")
+
+        val patientWithoutAge = Patient(
+            id = "3453455",
+            name = "AB",
+            dob = null,
+            age = null,
+            sex = Sex.FEMALE,
+            isPregnant = false
+        )
+        assertValidityOverSet(wrong, Patient::dob, isValidValueSet = false, patientInstance = patientWithoutAge)
+        assertValidityOverSet(good, Patient::dob, isValidValueSet = true, patientInstance = patientWithoutAge)
+    }
+
+
     /**
      * @param isValidValueSet Whether all elements in [set] are values that would be invalid for
      * [property]
@@ -138,6 +158,9 @@ class PatientTests {
     private fun getMockStringFromResId(resId: Int): String = when (resId) {
         R.string.patient_error_id_missing -> "patient error missing"
         R.string.patient_error_id_too_long_max_n_digits -> "id too long"
-        else -> "Unmocked string"
+        R.string.patient_error_age_or_dob_missing -> "patient age or dob missing"
+        R.string.patient_error_dob_format -> "dob format"
+        R.string.patient_error_age_between_n_and_m -> "patient age is out of range"
+        else -> "Unmocked string for resource id $resId"
     }
 }

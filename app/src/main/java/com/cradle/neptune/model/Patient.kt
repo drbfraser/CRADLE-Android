@@ -109,6 +109,7 @@ data class Patient(
         private const val ID_MAX_LENGTH = 14
         private const val AGE_LOWER_BOUND = 15
         private const val AGE_UPPER_BOUND = 65
+        private const val DOB_FORMAT_SIMPLEDATETIME = "yyyy-MM-dd"
 
         /**
          * Validates the patient's info
@@ -165,15 +166,20 @@ data class Patient(
             Patient::dob -> with(value as String?) {
                 if (this == null || isBlank()) {
                     // If both age and dob are missing, it's invalid.
-                    return if (patientInstance?.age == null ?: true) {
+                    return if (patientInstance?.age ?: null == null) {
                         Pair(false, context.getString(R.string.patient_error_age_or_dob_missing))
                     } else {
                         Pair(true, "")
                     }
                 }
 
+                if (this.length != DOB_FORMAT_SIMPLEDATETIME.length) {
+                    return Pair(false, context.getString(R.string.patient_error_dob_format))
+                }
+
                 try {
-                    SimpleDateFormat("yyyy-MM-dd").let {
+                    SimpleDateFormat(DOB_FORMAT_SIMPLEDATETIME).let {
+                        it.isLenient = false
                         it.timeZone = TimeZone.getTimeZone("UTC")
                         it.parse(this)
                     }
@@ -181,9 +187,11 @@ data class Patient(
                     return@with Pair(false, context.getString(R.string.patient_error_dob_format))
                 }
                 val year = substring(0, indexOf('-')).toIntOrNull()
-                    ?: return Pair(false, context.getString(R.string.patient_error_dob_format))
                 val yearNow = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
                     .get(Calendar.YEAR)
+                if (year == null) {
+                    return Pair(false, context.getString(R.string.patient_error_dob_format))
+                }
                 val age = yearNow - year
                 if (age > AGE_UPPER_BOUND || age < AGE_LOWER_BOUND) {
                     return Pair(
