@@ -155,6 +155,7 @@ data class Patient(
 
                 return Pair(true, "")
             }
+
             // doesn't depend on other properties
             Patient::name -> with(value as String) {
                 // This is currently how input validation is handled on frontend.
@@ -174,6 +175,7 @@ data class Patient(
                 }
                 return Pair(true, "")
             }
+
             // validity of dob depends on age
             Patient::dob -> with(value as String?) {
                 if (this == null || isBlank()) {
@@ -223,6 +225,7 @@ data class Patient(
                 }
                 return Pair(true, "")
             }
+
             // validity of age depends on dob
             Patient::age -> with(value as Int?) {
                 if (this == null) {
@@ -252,6 +255,7 @@ data class Patient(
                 }
                 return Pair(true, "")
             }
+
             // Validity of gestational age depends on gender and pregnancy; we are requiring both to
             // be more robust about it. Note: If gender is not male or is not pregnant, this is
             // still validated.
@@ -307,8 +311,9 @@ data class Patient(
                 }
                 return Pair(true, "")
             }
+
+            // Default to true for all other fields / stuff that isn't implemented.
             else -> {
-                // Default to true if not implemented yet.
                 Pair(true, "")
             }
         }
