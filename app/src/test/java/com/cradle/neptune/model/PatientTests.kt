@@ -3,6 +3,7 @@ package com.cradle.neptune.model
 import android.content.Context
 import android.text.TextUtils
 import com.cradle.neptune.R
+import com.cradle.neptune.utilitiles.Weeks
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
@@ -12,6 +13,11 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import java.lang.IllegalArgumentException
+import java.lang.IllegalStateException
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.TimeZone
 import kotlin.reflect.KProperty
 
 @ExtendWith(MockKExtension::class)
@@ -21,6 +27,22 @@ class PatientTests {
         "0*(1+0)*"
     )
     private val BLANK_AND_NULL_STRINGS = setOf("", " ", "   ", null)
+
+    private val DATE_TODAY = System.currentTimeMillis()
+
+    private val TWO_WEEKS_AGO_TIMESTAMP_MILLIS: Long =
+        Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+            .run {
+                add(Calendar.WEEK_OF_YEAR, -2)
+                time.time
+            }
+
+    private val FIFTY_WEEKS_AGO_TIMESTAMP_MILLIS: Long =
+        Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+            .run {
+                add(Calendar.WEEK_OF_YEAR, -50)
+                time.time
+            }
 
     private val mockContext: Context = mockk()
 
@@ -229,6 +251,32 @@ class PatientTests {
         )
     }
 
+    @Test
+    fun verify_gestationalAgeWeeks_withPatientInstance() {
+        val validGestationalAges = (1..43).map { GestationalAgeWeeks(Weeks(it.toLong())) }.toSet()
+        val invalidGestationalAges = (44..120).map { GestationalAgeWeeks(Weeks(it.toLong())) }.toSet()
+        val patientFemalePregnant = Patient(
+            id = "3453455",
+            name = "TEST",
+            dob = null,
+            age = null,
+            sex = Sex.FEMALE,
+            isPregnant = true
+        )
+        assertValidityOverSet(
+            setOf(null), Patient::gestationalAge,
+            isValidValueSet = false, patientInstance = patientFemalePregnant
+        )
+        assertValidityOverSet(
+            validGestationalAges, Patient::gestationalAge,
+            isValidValueSet = true, patientInstance = patientFemalePregnant
+        )
+        assertValidityOverSet(
+            invalidGestationalAges, Patient::gestationalAge,
+            isValidValueSet = false, patientInstance = patientFemalePregnant
+        )
+    }
+
     /**
      * @param isValidValueSet If true, all elements in [set] are values that would be invalid for
      * [property]. If false, all elements in [set] are values that would be valid for [property]
@@ -262,6 +310,8 @@ class PatientTests {
         R.string.patient_error_age_or_dob_missing -> "patient age or dob missing"
         R.string.patient_error_dob_format -> "dob format"
         R.string.patient_error_age_between_n_and_m -> "patient age is out of range"
+        R.string.patient_error_gestation_greater_than_n_months,
+        R.string.patient_error_gestation_greater_than_n_weeks -> "gestation greater than bound"
         else -> "Unmocked string for resource id $resId"
     }
 }

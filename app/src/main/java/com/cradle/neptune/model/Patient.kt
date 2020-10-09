@@ -29,10 +29,12 @@ import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.TimeZone
+import kotlin.math.round
 import kotlin.reflect.KProperty
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import java.lang.IllegalStateException
 
 // TODO: Figure out which of these fields must be optional and which are never
 //  used at all.
@@ -106,11 +108,13 @@ data class Patient(
         context: Context
     ): Pair<Boolean, String> = isValueValid(property, value, context, patientInstance = this)
 
+    @Suppress("LargeClass")
     companion object : Unmarshal<Patient, JSONObject> {
         private const val ID_MAX_LENGTH = 14
         private const val AGE_LOWER_BOUND = 15
         private const val AGE_UPPER_BOUND = 65
         private const val DOB_FORMAT_SIMPLEDATETIME = "yyyy-MM-dd"
+        private const val GESTATIONAL_AGE_WEEKS_MAX = 43
 
         /**
          * Validates the patient's info
@@ -249,7 +253,52 @@ data class Patient(
                 }
                 return Pair(true, "")
             }
+            // validity of gestational age depends on gender and pregnancy; we are requiring both to
+            // be more robust about it
+            Patient::gestationalAge -> with(value as GestationalAge?) {
+                if (this == null) {
+                    val dependentProperties = setupDependentPropertiesMapForInstance(
+                        patientInstance,
+                        dependentPropertiesMap,
+                        Patient::sex, Patient::isPregnant
+                    )
+
+                    // If female and pregnant, gestational age is required.
+                    return if (dependentProperties[Patient::sex] == Sex.FEMALE &&
+                        dependentProperties[Patient::isPregnant] == true
+                    ) {
+                        Pair(false, context.getString(R.string.patient_error_gestational_age_missing))
+                    } else {
+                        Pair(true, "")
+                    }
+                }
+                if (this.age.weeks > GESTATIONAL_AGE_WEEKS_MAX) {
+                    return if (this is GestationalAgeWeeks) {
+                        Pair(
+                            false,
+                            context.getString(
+                                R.string.patient_error_gestation_greater_than_n_weeks,
+                                this.age.weeks
+                            )
+                        )
+                    } else {
+                        val months = round(
+                            this.age.weeks * WeeksAndDays.DAYS_PER_WEEK /
+                            (WeeksAndDays.DAYS_PER_MONTH).toDouble()
+                        )
+                        Pair(
+                            false,
+                            context.getString(
+                                R.string.patient_error_gestation_greater_than_n_months,
+                                months
+                            )
+                        )
+                    }
+                }
+                return Pair(true, "")
+            }
             else -> {
+                // Default to true if not implemented yet.
                 Pair(true, "")
             }
         }
@@ -427,6 +476,10 @@ sealed class GestationalAge(val value: Long) : Marshal<JSONObject>, Serializable
         result = 31 * result + age.hashCode()
         return result
     }
+
+    override fun toString(): String {
+        return "GestationalAge($age, value=$value)"
+    }
 }
 
 /**
@@ -445,6 +498,10 @@ class GestationalAgeWeeks(timestamp: Long) : GestationalAge(timestamp), Serializ
         // For legacy interop we store the value as a string instead of an int.
         put(PatientField.GESTATIONAL_AGE_VALUE, value.toString())
         put(PatientField.GESTATIONAL_AGE_UNIT, UNIT_VALUE_WEEKS)
+    }
+
+    override fun toString(): String {
+        return "GestationalAgeWeeks($age, value=$value)"
     }
 }
 
@@ -480,6 +537,10 @@ class GestationalAgeMonths(timestamp: Long) : GestationalAge(timestamp), Seriali
         put(PatientField.GESTATIONAL_AGE_VALUE, value.toString())
         put(PatientField.GESTATIONAL_AGE_UNIT, UNIT_VALUE_MONTHS)
     }
+
+    override fun toString(): String {
+        return "GestationalAgeMonths($age, value=$value)"
+    }
 }
 
 /**
@@ -499,8 +560,8 @@ data class WeeksAndDays(val weeks: Long, val days: Long) : Serializable {
         (weeks.toDouble() / WEEKS_PER_MONTH) + (days.toDouble() / DAYS_PER_MONTH)
 
     companion object {
-        private const val DAYS_PER_MONTH = 30
-        private const val DAYS_PER_WEEK = 7
+        const val DAYS_PER_MONTH = 30
+        const val DAYS_PER_WEEK = 7
         // Get as close as possible to the result of 30/7, a repeating decimal. However, due to the
         // finiteness of Doubles, anything past 4.2857142857142857 is ignored.
         private const val WEEKS_PER_MONTH = 4.2857142857142857

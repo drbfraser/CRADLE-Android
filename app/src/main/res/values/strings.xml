@@ -307,6 +307,9 @@
     <string name="patient_error_age_between_n_and_m">Age must be between $1%d and $2%d</string>
     <string name="patient_error_age_or_dob_missing">Missing age or date of birth</string>
     <string name="patient_error_name_must_be_characters">Initials / name must be characters</string>
+    <string name="patient_error_gestational_age_missing">Gestational age is missing despite pregnancy</string>
+    <string name="patient_error_gestation_greater_than_n_weeks">Gestation is greater than $1%d weeks</string>
+    <string name="patient_error_gestation_greater_than_n_months">Gestation is greater than $1%d months</string>
 
     <string name="login_activity_device_is_outdated_dialog_title">Device is out of date</string>
     <string name="login_activity_device_is_outdated_dialog_message">Your device is unable to connect to the servers securely. Since Google Play services are unavailable on your device, we\'re unable to try to upgrade your device\'s security provider. Please ensure that your device supports TLS 1.2 or higher.</string>
