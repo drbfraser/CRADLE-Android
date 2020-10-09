@@ -50,6 +50,7 @@ class PatientInfoFragment : BaseFragment() {
             false
         ).apply {
             executePendingBindings()
+            viewModel = this@PatientInfoFragment.viewModel
         }
         binding = dataBinding
         return dataBinding.root
@@ -57,8 +58,6 @@ class PatientInfoFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        binding?.viewModel = viewModel
 
         viewModel.patientId.observe(viewLifecycleOwner) {
             val textView = view.findViewById<TextInputEditText>(R.id.patient_id_text)
