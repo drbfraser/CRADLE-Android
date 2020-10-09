@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+        <import type="com.cradle.neptune.binding.BindingConverter"/>
         <variable
             name="viewModel"
             type="com.cradle.neptune.viewmodel.PatientReadingViewModel" />
@@ -171,7 +172,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_margin="4dp"
-                        android:hint="@string/village"
+                        android:hint="@string/age"
                         app:layout_constraintEnd_toEndOf="@+id/dob_age_toggle_group"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/dob_age_toggle_group">
@@ -181,6 +182,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="textNoSuggestions|number"
+                            android:text="@={BindingConverter.intToString(viewModel.patientAge)}"
                             tools:text="45" />
                     </com.google.android.material.textfield.TextInputLayout>
 

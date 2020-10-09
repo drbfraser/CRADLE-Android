@@ -80,6 +80,13 @@ class PatientInfoFragment : BaseFragment() {
                 isForPatient = true, property = Patient::villageNumber
             )
         }
+        viewModel.patientAge.observe(viewLifecycleOwner) {
+            viewModel.handleEditTextErrors(
+                view, resId = R.id.age_input_text, value = it,
+                isForPatient = true, property = Patient::age,
+                dependentPropertiesMap = mapOf(Patient::dob to viewModel.patientDob.value)
+            )
+        }
     }
 
     companion object {
