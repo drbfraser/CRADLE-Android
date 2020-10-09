@@ -237,15 +237,27 @@ class PatientTests {
     @Test
     fun verify_gestationalAgeWeeks_withPatientInstance() {
         val patientFemalePregnant = Patient(
-            id = "3453455",
-            name = "TEST",
-            dob = null,
-            age = null,
-            sex = Sex.FEMALE,
-            isPregnant = true
+            id = "3453455", name = "TEST", dob = null,
+            age = null, sex = Sex.FEMALE, isPregnant = true
+        )
+        val patientOtherPregnant = Patient(
+            id = "3453455", name = "TEST", dob = null,
+            age = null, sex = Sex.OTHER, isPregnant = true
+        )
+        val patientFemaleNotPregnant = Patient(
+            id = "3453455", name = "TEST", dob = null,
+            age = null, sex = Sex.FEMALE, isPregnant = false
+        )
+        val patientOtherNotPregnant = Patient(
+            id = "3453455", name = "TEST", dob = null,
+            age = null, sex = Sex.OTHER, isPregnant = false
+        )
+        val patientMale = Patient(
+            id = "3453455", name = "TEST", dob = null,
+            age = null, sex = Sex.MALE, isPregnant = false
         )
 
-        // An age of 0
+        // Testing missing gestational age and age of 0
         assertValidityOverSet(
             setOf(null, GestationalAgeWeeks(Weeks(0L))), Patient::gestationalAge,
             areAllValuesValid = false, patientInstance = patientFemalePregnant
@@ -257,7 +269,11 @@ class PatientTests {
         }
         verify(exactly = 0) { mockContext.getString(any(), *anyVararg()) }
 
+        /*
+         * Testing valid gestational ages
+         */
         val validGestationalAges = (1..43).map { GestationalAgeWeeks(Weeks(it.toLong())) }.toSet()
+
         assertValidityOverSet(
             validGestationalAges, Patient::gestationalAge,
             areAllValuesValid = true, patientInstance = patientFemalePregnant
@@ -266,9 +282,14 @@ class PatientTests {
         verify(exactly = 2) { mockContext.getString(any()) }
         verify(exactly = 0) { mockContext.getString(any(), *anyVararg()) }
 
+        /*
+         * Testing invalid gestational ages
+         */
         val invalidGestationalAges = (44..120).map {
             GestationalAgeWeeks(Weeks(it.toLong()))
         }.toSet()
+
+        // invalid if gender is female and pregnant and gestational age is out of range
         assertValidityOverSet(
             invalidGestationalAges, Patient::gestationalAge,
             areAllValuesValid = false, patientInstance = patientFemalePregnant
@@ -278,6 +299,84 @@ class PatientTests {
             mockContext.getString(
                 R.string.patient_error_gestation_greater_than_n_weeks,
                 *varargAny { nArgs == 1 }
+            )
+        }
+
+
+        /*
+         * Testing gestational ages for other genders
+         */
+        // invalid if gender is other and pregnant but missing gestational age
+        assertValidityOverSet(
+            setOf(null, GestationalAgeWeeks(Weeks(0L))), Patient::gestationalAge,
+            areAllValuesValid = false, patientInstance = patientOtherPregnant
+        )
+
+        // it's fine to be missing gestational age (null) if not pregnant
+        assertValidityOverSet(
+            setOf(null), Patient::gestationalAge,
+            areAllValuesValid = true, patientInstance = patientFemaleNotPregnant
+        )
+
+        // it's fine to be missing gestational age (null) if not pregnant
+        assertValidityOverSet(
+            setOf(null), Patient::gestationalAge,
+            areAllValuesValid = true, patientInstance = patientOtherNotPregnant
+        )
+
+        // it's fine to be missing gestational age (null) if male
+        assertValidityOverSet(
+            setOf(null), Patient::gestationalAge,
+            areAllValuesValid = true, patientInstance = patientMale
+        )
+    }
+
+    @Test
+    fun verify_gestationalAgeWeeks_withoutPatientInstance() {
+        val validGestationalAges = (1..43).map { GestationalAgeWeeks(Weeks(it.toLong())) }.toSet()
+        val gestationalAgeNeeded = setOf(
+            Pair(Sex.FEMALE, true),
+            Pair(Sex.OTHER, true)
+        )
+        for ((sex, isPregnant) in gestationalAgeNeeded) {
+            assertValidityOverSet(
+                validGestationalAges, Patient::gestationalAge,
+                areAllValuesValid = true, dependentPropertiesMap = mapOf(
+                    Patient::sex to sex, Patient::isPregnant to isPregnant
+                )
+            )
+
+            // invalid if gestational age needed but it's missing
+            assertValidityOverSet(
+                setOf(null), Patient::gestationalAge,
+                areAllValuesValid = false, dependentPropertiesMap = mapOf(
+                    Patient::sex to sex, Patient::isPregnant to isPregnant
+                )
+            )
+
+            // invalid when out of range
+            val invalidGestationalAges = (0..0 union 44..120).map {
+                GestationalAgeWeeks(Weeks(it.toLong()))
+            }.toSet()
+            assertValidityOverSet(
+                invalidGestationalAges, Patient::gestationalAge,
+                areAllValuesValid = false, dependentPropertiesMap = mapOf(
+                    Patient::sex to sex, Patient::isPregnant to isPregnant
+                )
+            )
+        }
+
+        val gestationalAgeIgnored = setOf(
+            Pair(Sex.FEMALE, false),
+            Pair(Sex.OTHER, false),
+            Pair(Sex.MALE, false)
+        )
+        for ((sex, isPregnant) in gestationalAgeIgnored) {
+            assertValidityOverSet(
+                setOf(null), Patient::gestationalAge,
+                areAllValuesValid = true, dependentPropertiesMap = mapOf(
+                    Patient::sex to sex, Patient::isPregnant to isPregnant
+                )
             )
         }
     }
