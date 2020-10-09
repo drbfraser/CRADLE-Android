@@ -369,7 +369,8 @@ class PatientTests {
         val gestationalAgeIgnored = setOf(
             Pair(Sex.FEMALE, false),
             Pair(Sex.OTHER, false),
-            Pair(Sex.MALE, false)
+            Pair(Sex.MALE, false),
+            Pair(Sex.MALE, true)
         )
         for ((sex, isPregnant) in gestationalAgeIgnored) {
             assertValidityOverSet(

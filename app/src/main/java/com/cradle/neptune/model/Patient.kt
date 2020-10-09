@@ -260,21 +260,19 @@ data class Patient(
             // be more robust about it. Note: If gender is not male or is not pregnant, this is
             // still validated.
             Patient::gestationalAge -> with(value as GestationalAge?) {
+                val dependentProperties = setupDependentPropertiesMapForInstance(
+                    patientInstance,
+                    dependentPropertiesMap,
+                    Patient::sex, Patient::isPregnant
+                )
+                if (dependentProperties[Patient::sex] == Sex.MALE ||
+                    dependentProperties[Patient::isPregnant] == false) {
+                    return Pair(true, "")
+                }
                 if (this == null) {
-                    val dependentProperties = setupDependentPropertiesMapForInstance(
-                        patientInstance,
-                        dependentPropertiesMap,
-                        Patient::sex, Patient::isPregnant
+                    return Pair(
+                        false, context.getString(R.string.patient_error_gestational_age_missing)
                     )
-
-                    // If not male and pregnant, gestational age is required.
-                    return if (dependentProperties[Patient::sex] != Sex.MALE &&
-                        dependentProperties[Patient::isPregnant] == true
-                    ) {
-                        Pair(false, context.getString(R.string.patient_error_gestational_age_missing))
-                    } else {
-                        Pair(true, "")
-                    }
                 }
                 // to see where the logic is derived from, run
                 // $ cat cradle-platform/server/validation/patients.py
