@@ -12,8 +12,6 @@ import com.cradle.neptune.databinding.FragmentPatientInfoBinding
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Sex
 import com.cradle.neptune.utilitiles.unreachable
-import com.google.android.material.textfield.TextInputEditText
-import kotlin.reflect.KProperty
 
 private const val TAG = "PatientInfoFragment"
 
@@ -58,53 +56,29 @@ class PatientInfoFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         viewModel.patientId.observe(viewLifecycleOwner) {
-            val textView = view.findViewById<TextInputEditText>(R.id.patient_id_text)
-                ?: return@observe
-            handleTextViewErrors(
-                textView, value = it,
+            viewModel.handleEditTextErrors(
+                rootView = view, resId = R.id.patient_id_text, value = it,
                 isForPatient = true, property = Patient::id
             )
         }
         viewModel.patientName.observe(viewLifecycleOwner) {
-            val textView = view.findViewById<TextInputEditText>(R.id.initials_text)
-                ?: return@observe
-            handleTextViewErrors(
-                textView, value = it,
+            viewModel.handleEditTextErrors(
+                view, resId = R.id.initials_text, value = it,
                 isForPatient = true, property = Patient::name
             )
         }
         viewModel.patientZone.observe(viewLifecycleOwner) {
-            val textView = view.findViewById<TextInputEditText>(R.id.zone_text)
-                ?: return@observe
-            handleTextViewErrors(
-                textView, value = it,
+            viewModel.handleEditTextErrors(
+                view, resId = R.id.zone_text, value = it,
                 isForPatient = true, property = Patient::zone
             )
         }
         viewModel.patientVillageNumber.observe(viewLifecycleOwner) {
-            val textView = view.findViewById<TextInputEditText>(R.id.village_text)
-                ?: return@observe
-            handleTextViewErrors(
-                textView, value = it,
+            viewModel.handleEditTextErrors(
+                view, resId = R.id.village_text, value = it,
                 isForPatient = true, property = Patient::villageNumber
             )
-        }
-    }
-
-    private fun handleTextViewErrors(
-        textView: TextInputEditText,
-        value: Any?,
-        isForPatient: Boolean,
-        property: KProperty<*>
-    ) {
-        if (context == null) {
-            return
-        }
-        if (isForPatient) {
-            val (isValid, errorMsg) = Patient.isValueValid(property, value, requireContext())
-            textView.error = if (isValid) null else errorMsg
         }
     }
 

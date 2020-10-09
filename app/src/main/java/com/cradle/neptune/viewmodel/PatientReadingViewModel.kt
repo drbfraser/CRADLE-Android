@@ -2,7 +2,9 @@ package com.cradle.neptune.viewmodel
 
 import android.app.Application
 import android.util.Log
+import android.view.View
 import android.widget.Toast
+import androidx.annotation.IdRes
 import androidx.annotation.MainThread
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -19,6 +21,7 @@ import com.cradle.neptune.model.Sex
 import com.cradle.neptune.model.UrineTest
 import com.cradle.neptune.utilitiles.LiveDataDynamicModelBuilder
 import com.cradle.neptune.view.ReadingActivity
+import com.google.android.material.textfield.TextInputEditText
 import java.lang.IllegalStateException
 import kotlin.reflect.KProperty
 import kotlinx.coroutines.Dispatchers
@@ -201,5 +204,25 @@ class PatientReadingViewModel constructor(
             with(Patient.isValueValid(property, text, getApplication())) {
             }
         }
+    }
+
+    /**
+     * @param isForPatient True if viewing patient property; false if viewing reading property
+     */
+    fun handleEditTextErrors(
+        rootView: View,
+        @IdRes resId: Int,
+        value: Any?,
+        isForPatient: Boolean,
+        property: KProperty<*>
+    ) {
+        val textView = rootView.findViewById<TextInputEditText>(resId) ?: return
+        val (isValid, errorMsg) = if (isForPatient) {
+            // TODO: Handle dependent properties using dependentPropertiesMap.
+            Patient.isValueValid(property, value, getApplication())
+        } else {
+            TODO("Implement validation for Reading")
+        }
+        textView.error = if (isValid) null else errorMsg
     }
 }
