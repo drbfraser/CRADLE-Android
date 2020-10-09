@@ -304,12 +304,12 @@
     <string name="patient_error_name_missing">Missing initials / name</string>
     <string name="patient_error_dob_missing">Missing date of birth</string>
     <string name="patient_error_dob_format">Wrong date of birth format (need YYYY-MM-DD)</string>
-    <string name="patient_error_age_between_n_and_m">Age must be between $1%d and $2%d</string>
+    <string name="patient_error_age_between_n_and_m">Age must be between %1$d and %2$d</string>
     <string name="patient_error_age_or_dob_missing">Missing age or date of birth</string>
     <string name="patient_error_name_must_be_characters">Initials / name must be characters</string>
     <string name="patient_error_gestational_age_missing">Gestational age is missing despite pregnancy</string>
-    <string name="patient_error_gestation_greater_than_n_weeks">Gestation is greater than $1%d weeks</string>
-    <string name="patient_error_gestation_greater_than_n_months">Gestation is greater than $1%d months</string>
+    <string name="patient_error_gestation_greater_than_n_weeks">Gestation is greater than %1$d weeks</string>
+    <string name="patient_error_gestation_greater_than_n_months">Gestation is greater than %1$d months</string>
     <string name="patient_error_gestation_must_be_not_zero">Can\'t be 0</string>
 
     <string name="login_activity_device_is_outdated_dialog_title">Device is out of date</string>
