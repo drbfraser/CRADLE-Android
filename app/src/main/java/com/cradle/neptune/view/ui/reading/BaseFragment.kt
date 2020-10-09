@@ -23,7 +23,7 @@ abstract class BaseFragment : Fragment() {
 
     // ViewModel is scoped to the Activity that this Fragment is attached to; therefore, this is
     // shared by all Fragments.
-    protected val viewModel: PatientReadingViewModel by activityViewModels() {
+    protected val viewModel: PatientReadingViewModel by activityViewModels {
         viewModelFactory
     }
 }

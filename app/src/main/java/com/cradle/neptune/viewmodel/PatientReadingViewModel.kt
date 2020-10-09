@@ -45,6 +45,10 @@ class PatientReadingViewModel constructor(
         launchReason: ReadingActivity.LaunchReason,
         readingId: String?
     ) {
+        if (_isInitialized.value == true) {
+            return
+        }
+
         reasonForLaunch = launchReason
         if (reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
             _isInitialized.value = true
