@@ -9,17 +9,13 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.verify
-import io.mockk.verifyAll
 import io.mockk.verifyOrder
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import java.lang.IllegalArgumentException
-import java.lang.IllegalStateException
-import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
 import java.util.TimeZone
 import kotlin.reflect.KProperty
 
@@ -30,22 +26,6 @@ class PatientTests {
         "0*(1+0)*"
     )
     private val BLANK_AND_NULL_STRINGS = setOf("", " ", "   ", null)
-
-    private val DATE_TODAY = System.currentTimeMillis()
-
-    private val TWO_WEEKS_AGO_TIMESTAMP_MILLIS: Long =
-        Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-            .run {
-                add(Calendar.WEEK_OF_YEAR, -2)
-                time.time
-            }
-
-    private val FIFTY_WEEKS_AGO_TIMESTAMP_MILLIS: Long =
-        Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-            .run {
-                add(Calendar.WEEK_OF_YEAR, -50)
-                time.time
-            }
 
     private val mockContext: Context = mockk()
 
@@ -122,8 +102,8 @@ class PatientTests {
             setOf("", "  ", "123456789012345", "1234567890123457890123", "abc", "i am not") union
                 NON_ALPHANUMERIC_STRINGS
         val good = setOf("0", "23", "53345", "23523", "12345678901234", "345983798")
-        assertValidityOverSet(wrong, Patient::id, isValidValueSet = false)
-        assertValidityOverSet(good, Patient::id, isValidValueSet = true)
+        assertValidityOverSet(wrong, Patient::id, areAllValuesValid = false)
+        assertValidityOverSet(good, Patient::id, areAllValuesValid = true)
     }
 
     @Test
@@ -132,8 +112,8 @@ class PatientTests {
             "123456789012345", "ABCDFGHJKLQWE5RT")
         val good = setOf("testName", "John Smith", "Someone", "Alice", "Bob", "ABC", "JKL",
             "Zulo", "***ThisIsValid...", "\"SomeRealLongNameWillHaveFourCharWordAlwa\"")
-        assertValidityOverSet(wrong, Patient::name, isValidValueSet = false)
-        assertValidityOverSet(good, Patient::name, isValidValueSet = true)
+        assertValidityOverSet(wrong, Patient::name, areAllValuesValid = false)
+        assertValidityOverSet(good, Patient::name, areAllValuesValid = true)
     }
 
     @Test
@@ -154,9 +134,9 @@ class PatientTests {
         // Since this patient doesn't have an age, we expect null / empty to be invalid.
         assertValidityOverSet(
             wrong union BLANK_AND_NULL_STRINGS, Patient::dob,
-            isValidValueSet = false, patientInstance = patientWithoutAge
+            areAllValuesValid = false, patientInstance = patientWithoutAge
         )
-        assertValidityOverSet(good, Patient::dob, isValidValueSet = true, patientInstance = patientWithoutAge)
+        assertValidityOverSet(good, Patient::dob, areAllValuesValid = true, patientInstance = patientWithoutAge)
 
         val patientWithAge = Patient(
             id = "3453455",
@@ -169,18 +149,18 @@ class PatientTests {
         // Since this patient has an age, we expect null / blank / empty to be valid.
         assertValidityOverSet(
             wrong , Patient::dob,
-            isValidValueSet = false, patientInstance = patientWithAge
+            areAllValuesValid = false, patientInstance = patientWithAge
         )
         assertValidityOverSet(
             good union BLANK_AND_NULL_STRINGS, Patient::dob,
-            isValidValueSet = true, patientInstance = patientWithAge
+            areAllValuesValid = true, patientInstance = patientWithAge
         )
 
         // If we don't have any instance to compare it to, we assume it's bad.
         assertThrows(IllegalArgumentException::class.java) {
             assertValidityOverSet(
                 BLANK_AND_NULL_STRINGS, Patient::dob,
-                isValidValueSet = false, patientInstance = null
+                areAllValuesValid = false, patientInstance = null
             )
         }
     }
@@ -197,17 +177,17 @@ class PatientTests {
         // If the patient already has some age, then all blank / null values are valid.
         assertValidityOverSet(
             BLANK_AND_NULL_STRINGS, Patient::dob,
-            isValidValueSet = true, patientInstance = null,
+            areAllValuesValid = true, patientInstance = null,
             dependentPropertiesMap = mapOf(Patient::age to 50)
         )
         assertValidityOverSet(
             good, Patient::dob,
-            isValidValueSet = true, patientInstance = null,
+            areAllValuesValid = true, patientInstance = null,
             dependentPropertiesMap = mapOf(Patient::age to 50)
         )
         assertValidityOverSet(
             wrong, Patient::dob,
-            isValidValueSet = false, patientInstance = null,
+            areAllValuesValid = false, patientInstance = null,
             dependentPropertiesMap = mapOf(Patient::age to 50)
         )
     }
@@ -228,11 +208,11 @@ class PatientTests {
         // Since this patient doesn't have a dob, we expect null age to be invalid.
         assertValidityOverSet(
             wrong union setOf<Int?>(null), Patient::age,
-            isValidValueSet = false, patientInstance = patientWithoutDob
+            areAllValuesValid = false, patientInstance = patientWithoutDob
         )
         assertValidityOverSet(
             good, Patient::age,
-            isValidValueSet = true, patientInstance = patientWithoutDob
+            areAllValuesValid = true, patientInstance = patientWithoutDob
         )
 
         val patientWithDob = Patient(
@@ -245,12 +225,12 @@ class PatientTests {
         )
         assertValidityOverSet(
             wrong, Patient::age,
-            isValidValueSet = false, patientInstance = patientWithDob
+            areAllValuesValid = false, patientInstance = patientWithDob
         )
         // Since this patient has dob, we expect null age to be valid.
         assertValidityOverSet(
             good union setOf<Int?>(null), Patient::age,
-            isValidValueSet = true, patientInstance = patientWithDob
+            areAllValuesValid = true, patientInstance = patientWithDob
         )
     }
 
@@ -268,7 +248,7 @@ class PatientTests {
         // An age of 0
         assertValidityOverSet(
             setOf(null, GestationalAgeWeeks(Weeks(0L))), Patient::gestationalAge,
-            isValidValueSet = false, patientInstance = patientFemalePregnant
+            areAllValuesValid = false, patientInstance = patientFemalePregnant
         )
         // calls to getString happen iff not valid
         verifyOrder {
@@ -280,7 +260,7 @@ class PatientTests {
         val validGestationalAges = (1..43).map { GestationalAgeWeeks(Weeks(it.toLong())) }.toSet()
         assertValidityOverSet(
             validGestationalAges, Patient::gestationalAge,
-            isValidValueSet = true, patientInstance = patientFemalePregnant
+            areAllValuesValid = true, patientInstance = patientFemalePregnant
         )
         // the two errors from the previous run
         verify(exactly = 2) { mockContext.getString(any()) }
@@ -291,7 +271,7 @@ class PatientTests {
         }.toSet()
         assertValidityOverSet(
             invalidGestationalAges, Patient::gestationalAge,
-            isValidValueSet = false, patientInstance = patientFemalePregnant
+            areAllValuesValid = false, patientInstance = patientFemalePregnant
         )
         verify(exactly = 1) { mockContext.getString(R.string.patient_error_gestation_must_be_not_zero) }
         verify(exactly = invalidGestationalAges.size) {
@@ -303,19 +283,19 @@ class PatientTests {
     }
 
     /**
-     * @param isValidValueSet If true, all elements in [set] are values that would be invalid for
+     * @param areAllValuesValid If true, all elements in [set] are values that would be invalid for
      * [property]. If false, all elements in [set] are values that would be valid for [property]
      */
     private fun assertValidityOverSet(
         set: Set<*>, property: KProperty<*>,
-        isValidValueSet: Boolean, patientInstance: Patient? = null,
+        areAllValuesValid: Boolean, patientInstance: Patient? = null,
         dependentPropertiesMap: Map<KProperty<*>, Any?>? = null
     ) {
         set.forEach{
             val pair = Patient.Companion.isValueValid(
                 property, it, mockContext, patientInstance, dependentPropertiesMap
             )
-            if (isValidValueSet) {
+            if (areAllValuesValid) {
                 assert(pair.first) {
                     "expected $it to be an valid ${property.name};" +
                         " but got mocked error message \"${pair.second}\""
