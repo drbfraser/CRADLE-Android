@@ -20,6 +20,7 @@ import com.cradle.neptune.model.UrineTest
 import com.cradle.neptune.utilitiles.LiveDataDynamicModelBuilder
 import com.cradle.neptune.view.ReadingActivity
 import java.lang.IllegalStateException
+import kotlin.reflect.KProperty
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -183,4 +184,22 @@ class PatientReadingViewModel constructor(
     val previousReadingIds: MutableLiveData<MutableList<String>?>
         get() = readingBuilder.get<List<String>?>(Reading::previousReadingIds)
             as MutableLiveData<MutableList<String>?>
+
+    private val _errors = MutableLiveData<Map<KProperty<*>, String?>>(hashMapOf())
+    val errors: LiveData<Map<KProperty<*>, String?>>
+        get() = _errors
+
+    fun onInputTextChanged(text: CharSequence, property: KProperty<*>?, isPatientField: Boolean) {
+        Toast.makeText(getApplication() as Application, "Hello", Toast.LENGTH_SHORT).show()
+        if (property == null) {
+            // TODO: Other things
+
+            return
+        }
+
+        if (isPatientField) {
+            with(Patient.isValueValid(property, text, getApplication())) {
+            }
+        }
+    }
 }

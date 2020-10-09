@@ -5,14 +5,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
-import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.observe
 import com.cradle.neptune.R
 import com.cradle.neptune.databinding.FragmentPatientInfoBinding
+import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Sex
 import com.cradle.neptune.utilitiles.unreachable
 import com.google.android.material.textfield.TextInputEditText
+import kotlin.reflect.KProperty
+
+private const val TAG = "PatientInfoFragment"
 
 private const val GA_UNIT_INDEX_WEEKS = 0
 private const val GA_UNIT_INDEX_MONTHS = 1
@@ -58,22 +61,52 @@ class PatientInfoFragment : BaseFragment() {
         binding?.viewModel = viewModel
 
         viewModel.patientId.observe(viewLifecycleOwner) {
-            Toast.makeText(context, "The patient id should be $it", Toast.LENGTH_SHORT).show()
+            val textView = view.findViewById<TextInputEditText>(R.id.patient_id_text)
+                ?: return@observe
+            handleTextViewErrors(
+                textView, value = it,
+                isForPatient = true, property = Patient::id
+            )
         }
-        /*
         viewModel.patientName.observe(viewLifecycleOwner) {
-            view.findViewById<TextInputEditText>(R.id.initials_text).setText(it)
-        }
-        viewModel.patientId.observe(viewLifecycleOwner) {
-            view.findViewById<TextInputEditText>(R.id.patient_id_text).setText(it)
+            val textView = view.findViewById<TextInputEditText>(R.id.initials_text)
+                ?: return@observe
+            handleTextViewErrors(
+                textView, value = it,
+                isForPatient = true, property = Patient::name
+            )
         }
         viewModel.patientZone.observe(viewLifecycleOwner) {
-            view.findViewById<TextInputEditText>(R.id.zone_text).setText(it)
+            val textView = view.findViewById<TextInputEditText>(R.id.zone_text)
+                ?: return@observe
+            handleTextViewErrors(
+                textView, value = it,
+                isForPatient = true, property = Patient::zone
+            )
         }
         viewModel.patientVillageNumber.observe(viewLifecycleOwner) {
-            view.findViewById<TextInputEditText>(R.id.village_text).setText(it)
+            val textView = view.findViewById<TextInputEditText>(R.id.village_text)
+                ?: return@observe
+            handleTextViewErrors(
+                textView, value = it,
+                isForPatient = true, property = Patient::villageNumber
+            )
         }
-         */
+    }
+
+    private fun handleTextViewErrors(
+        textView: TextInputEditText,
+        value: Any?,
+        isForPatient: Boolean,
+        property: KProperty<*>
+    ) {
+        if (context == null) {
+            return
+        }
+        if (isForPatient) {
+            val (isValid, errorMsg) = Patient.isValueValid(property, value, requireContext())
+            textView.error = if (isValid) null else errorMsg
+        }
     }
 
     companion object {

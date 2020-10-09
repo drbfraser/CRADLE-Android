@@ -56,7 +56,7 @@ class ReadingActivity : AppCompatActivity() {
             readingId = intent.getStringExtra(EXTRA_READING_ID)
         )
 
-        viewModel.isInitialized.observe(this ) {
+        viewModel.isInitialized.observe(this) {
             if (!it) {
                 return@observe
             }
