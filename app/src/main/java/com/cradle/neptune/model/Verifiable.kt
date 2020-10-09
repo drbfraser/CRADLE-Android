@@ -145,18 +145,27 @@ interface Verifiable<in T : Any> {
  * dependent.
  *
  * ### Background
- * For a property P of a type T where the validity of values for P depends
+ * The `dependentPropertiesMap` solves the dependent properties problem in
+ * the original design.
+ *
+ * For a property P of a class T where the validity of values for P depend
  * on the values of other properties in an instance of T, we can't reliably
- * test the validity of a value for P without creating an instance for T.
+ * test the validity of a value for P from another different class without
+ * creating an instance of T.
  *
- * For example, for a Patient, a null age is valid iff the patient has a
- * date of birth. So, if we want to determine if a null age is valid, we
- * need an instance of a Patient. However, if we're filling out a form and
- * we want to do real-time validation as the user enters, this would mean
- * creating new Patient instances every time the user enters something.
- * This is inefficient.
+ * For example, for a Patient, a null GestationalAge is valid iff the
+ * patient is not pregnant or is male. So, if we want to determine if a
+ * null GestationalAge is valid, we need an instance of a Patient to get
+ * the other properties. However, if we're filling out a form and we want
+ * to do real-time validation as the user enters, this would mean creating
+ * new Patient instances every time the user enters something. This is
+ * inefficient.
  *
- * Solution: Supply a map
+ * The solution is to have the caller implement some map that contains all
+ * the properties so far, and then use that to get the dependent
+ * properties. It can be extended in the future to just use the map that
+ * the LiveDataDynamicModelBuilder has to save the trouble of having to
+ * create new maps every time an input is entered.
  *
  * @throws IllegalArgumentException if [instance] is null. We make [instance] nullable to make sure
  * that this function can also serve as a check.
