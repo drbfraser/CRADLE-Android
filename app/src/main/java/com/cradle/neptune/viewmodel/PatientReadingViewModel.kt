@@ -1,11 +1,12 @@
 package com.cradle.neptune.viewmodel
 
+import android.app.Application
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.MainThread
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
@@ -29,8 +30,9 @@ import kotlinx.coroutines.withContext
 @SuppressWarnings("LargeClass")
 class PatientReadingViewModel constructor(
     private val readingManager: ReadingManager,
-    private val patientManager: PatientManager
-) : ViewModel() {
+    private val patientManager: PatientManager,
+    private val app: Application
+) : AndroidViewModel(app) {
     private val patientBuilder = LiveDataDynamicModelBuilder()
     private val readingBuilder = LiveDataDynamicModelBuilder()
 
