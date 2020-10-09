@@ -209,20 +209,18 @@ class PatientReadingViewModel constructor(
     /**
      * @param isForPatient True if viewing patient property; false if viewing reading property
      */
-    @Suppress("LongParameterList")
     fun handleEditTextErrors(
         rootView: View,
         @IdRes resId: Int,
         value: Any?,
         isForPatient: Boolean,
-        property: KProperty<*>,
-        dependentPropertiesMap: Map<KProperty<*>, Any?>? = null
+        property: KProperty<*>
     ) {
         val textView = rootView.findViewById<TextInputEditText>(resId) ?: return
         val (isValid, errorMsg) = if (isForPatient) {
             Patient.isValueValid(
                 property, value, getApplication(),
-                patientInstance = null, dependentPropertiesMap = dependentPropertiesMap
+                patientInstance = null, currentValues = patientBuilder.publicMap
             )
         } else {
             TODO("Implement validation for Reading")

@@ -522,18 +522,19 @@ class PatientTests {
         areAllValuesValid: Boolean, patientInstance: Patient? = null,
         dependentPropertiesMap: Map<KProperty<*>, Any?>? = null
     ) {
-        set.forEach{
+        set.forEach{ setElement ->
             val pair = Patient.Companion.isValueValid(
-                property, it, mockContext, patientInstance, dependentPropertiesMap
+                property, setElement, mockContext, patientInstance,
+                dependentPropertiesMap?.mapKeys { it.key.name }?.toMap()
             )
             if (areAllValuesValid) {
                 assert(pair.first) {
-                    "expected $it to be an valid ${property.name};" +
+                    "expected $setElement to be an valid ${property.name};" +
                         " but got mocked error message \"${pair.second}\""
                 }
             } else {
                 assert(!pair.first) {
-                    "expected $it to be an invalid ${property.name};" +
+                    "expected $setElement to be an invalid ${property.name};" +
                         " but it was accepted as valid"
                 }
             }

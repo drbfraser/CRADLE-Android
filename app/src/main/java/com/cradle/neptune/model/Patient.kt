@@ -137,8 +137,11 @@ data class Patient(
          * @param patientInstance For dependent properties, check against this Patient's values.
          * Can be null if checking to see if a value would be valid when a patient isn't created
          * yet.
-         * @param dependentPropertiesMap: For checking properties that depend on other properties
-         * for validity, supply a map of values of the dependent properties.
+         * @param currentValues: For checking properties that depend on other properties
+         * for validity, supply a map of the current values for the dependent properties.
+         * The map is obtained by mapping names of KProperties to current values. For example,
+         * mapOf(Patient::name.name to "Abc") is acceptable. Usually, this should just be from
+         * the LiveDataDynamicModelBuilder.
          */
         @Suppress("ReturnCount", "SimpleDateFormat", "NestedBlockDepth")
         fun isValueValid(
@@ -146,7 +149,7 @@ data class Patient(
             value: Any?,
             context: Context,
             patientInstance: Patient? = null,
-            dependentPropertiesMap: Map<KProperty<*>, Any?>? = null
+            currentValues: Map<String, Any?>? = null
         ): Pair<Boolean, String> = when (property) {
             // doesn't depend on other properties
             Patient::id -> with(value as String) {
@@ -192,14 +195,14 @@ data class Patient(
             // validity of dob depends on age
             Patient::dob -> with(value as String?) {
                 if (this == null || isBlank()) {
-                    val dependentProperties = setupDependentPropertiesMapForInstance(
-                        patientInstance,
-                        dependentPropertiesMap,
-                        Patient::age
+                    val dependentProperties = setupDependentPropertiesMap(
+                            patientInstance,
+                            currentValues,
+                            Patient::age
                     )
 
                     // If both age and dob are missing, it's invalid.
-                    return if (dependentProperties[Patient::age] as Int? == null) {
+                    return if (dependentProperties[Patient::age.name] as Int? == null) {
                         Pair(false, context.getString(R.string.patient_error_age_or_dob_missing))
                     } else {
                         Pair(true, "")
@@ -233,14 +236,14 @@ data class Patient(
             // validity of age depends on dob
             Patient::age -> with(value as Int?) {
                 if (this == null) {
-                    val dependentProperties = setupDependentPropertiesMapForInstance(
+                    val dependentProperties = setupDependentPropertiesMap(
                         patientInstance,
-                        dependentPropertiesMap,
+                        currentValues,
                         Patient::dob
                     )
 
                     // If both age and dob are missing, it's invalid.
-                    return if (dependentProperties[Patient::dob] == null) {
+                    return if (dependentProperties[Patient::dob.name] == null) {
                         Pair(false, context.getString(R.string.patient_error_age_or_dob_missing))
                     } else {
                         Pair(true, "")
@@ -264,14 +267,13 @@ data class Patient(
             // be more robust about it. Note: If gender is not male or is not pregnant, this is
             // still validated.
             Patient::gestationalAge -> with(value as GestationalAge?) {
-                val dependentProperties = setupDependentPropertiesMapForInstance(
+                val dependentProperties = setupDependentPropertiesMap(
                     patientInstance,
-                    dependentPropertiesMap,
+                    currentValues,
                     Patient::sex, Patient::isPregnant
                 )
-                if (dependentProperties[Patient::sex] == Sex.MALE ||
-                    dependentProperties[Patient::isPregnant] == false
-                ) {
+                if (dependentProperties[Patient::sex.name] == Sex.MALE ||
+                    dependentProperties[Patient::isPregnant.name] == false) {
                     return Pair(true, "")
                 }
                 if (this == null) {

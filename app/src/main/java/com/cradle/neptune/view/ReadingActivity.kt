@@ -43,7 +43,7 @@ class ReadingActivity : AppCompatActivity() {
                     }
                 }
             },
-            true
+            true /* recursive */
         )
 
         super.onCreate(savedInstanceState)

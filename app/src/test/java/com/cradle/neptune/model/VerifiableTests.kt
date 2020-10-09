@@ -3,6 +3,7 @@ package com.cradle.neptune.model
 import android.content.Context
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -160,6 +161,31 @@ class VerifiableTests {
             simpleNumber.isPropertyValid(PositiveRationalNumber::numerator, mockContext)
         }
     }
+
+    @Test
+    fun isPropertyValid_dependentProperties() {
+        // it's fine to be missing gestational age when not pregnant
+        val missingGestAgeNotPregnant = PregnancyRecord(
+            isPregnant = false, gestationalAgeWeeks = null
+        )
+        assert(missingGestAgeNotPregnant.getAllMembersWithInvalidValues(mockContext).isEmpty())
+
+        // it's not fine to be missing gestational age if pregnant
+        val missingGestButPregnant = PregnancyRecord(
+            isPregnant = true, gestationalAgeWeeks = null
+        )
+        assertEquals(1, missingGestButPregnant.getAllMembersWithInvalidValues(mockContext).size)
+        // check the the only invalid property is the gestational age
+        val (isValid, _) = missingGestButPregnant.isPropertyValid(
+            PregnancyRecord::gestationalAgeWeeks, mockContext
+        )
+        assert(!isValid)
+
+        val pregnant = PregnancyRecord(
+            isPregnant = true, gestationalAgeWeeks = 5
+        )
+        assert(pregnant.getAllMembersWithInvalidValues(mockContext).isEmpty())
+    }
 }
 
 internal data class SimpleNumber(
@@ -214,6 +240,52 @@ internal data class PositiveRationalNumber(
                 }
             }
             return Pair(true, "")
+        }
+    }
+}
+
+internal data class PregnancyRecord(
+    val isPregnant: Boolean,
+    val gestationalAgeWeeks: Int? = null
+): Verifiable<PregnancyRecord> {
+
+    override fun isValueForPropertyValid(
+        property: KProperty<*>,
+        value: Any?,
+        context: Context
+    ): Pair<Boolean, String> = isValueValid(property, value, context, this)
+
+    companion object {
+        fun isValueValid(
+            property: KProperty<*>,
+            value: Any?,
+            context: Context,
+            instance: PregnancyRecord? = null,
+            currentValues: Map<String, Any?>? = null
+        ): Pair<Boolean, String> {
+            return when (property) {
+                PregnancyRecord::isPregnant -> {
+                    true to ""
+                }
+                PregnancyRecord::gestationalAgeWeeks -> with(value as Int?) {
+                    val currentProperties = setupDependentPropertiesMap(
+                        instance, currentValues, PregnancyRecord::isPregnant
+                    )
+                    if (this == null) {
+                        return if (
+                            currentProperties[PregnancyRecord::isPregnant.name] == false
+                        ) {
+                            true to ""
+                        } else {
+                            false to "Missing gestational age despite being pregnant"
+                        }
+                    }
+                    true to ""
+                }
+                else -> {
+                    true to ""
+                }
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.cradle.neptune.model
 
 import android.content.Context
+import androidx.lifecycle.LiveData
 import java.lang.IllegalArgumentException
 import java.lang.reflect.InvocationTargetException
 import kotlin.reflect.KProperty
@@ -215,6 +216,8 @@ interface Verifier<in T> {
  * the LiveDataDynamicModelBuilder has to save the trouble of having to
  * create new maps every time an input is entered.
  *
+ * @sample com.cradle.neptune.model.ClassWithDependentProperties.Companion.isValueValid
+ *
  * @param instance An instance to check against. The current values will be taken from this instance
  * if a current values map is not given, but the current values map is given priority.
  * @param givenDependentPropertiesMap The current values to get dependent properties from
@@ -225,16 +228,22 @@ interface Verifier<in T> {
  * @throws IllegalArgumentException if [instance] is null and no currentValuesMap were given. We
  * make [instance] nullable to make sure that this function can also serve as a check.
  */
-fun setupDependentPropertiesMapForInstance(
+fun setupDependentPropertiesMap(
     instance: Any?,
-    givenDependentPropertiesMap: Map<KProperty<*>, Any?>?,
-    vararg existingProperties: KProperty<*>
-): Map<KProperty<*>, Any?> =
-    givenDependentPropertiesMap
-        ?: if (instance == null) {
+    currentValuesMap: Map<String, Any?>?,
+    vararg dependentProperties: KProperty<*>
+): Map<String, Any?> =
+    currentValuesMap?.run {
+        if (this.values.find { it is LiveData<*>? } != null) {
+            // If this was given by a LiveDataDynamicModelBuilder, extract the values.
+            this.mapValues { (it.value as LiveData<*>?)?.value }.toMap()
+        } else {
+            this
+        }
+    } ?: if (instance == null) {
             throw IllegalArgumentException("null instance requires non-null dependentPropertiesMap")
         } else {
-            // since there is an instance, create a new map just containing the values. This is so
+            // Since there is an instance, create a new map just containing the values. This is so
             // that we don't have to repeat code.
-            existingProperties.map { it to it.getter.call(instance) }.toMap()
+            dependentProperties.map { it.name to it.getter.call(instance) }.toMap()
         }

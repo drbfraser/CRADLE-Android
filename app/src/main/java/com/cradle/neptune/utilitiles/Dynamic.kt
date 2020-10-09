@@ -236,6 +236,9 @@ class LiveDataDynamicModelBuilder : DynamicModelBuilder() {
 open class DynamicModelBuilder {
     protected val map: MutableMap<String, Any?> = mutableMapOf()
 
+    val publicMap: Map<String, Any?>
+        get() = map
+
     protected open val stringMap get() = map.toMap()
 
     /**
