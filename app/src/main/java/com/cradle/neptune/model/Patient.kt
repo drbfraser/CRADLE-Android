@@ -34,7 +34,6 @@ import kotlin.reflect.KProperty
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import java.lang.IllegalStateException
 
 // TODO: Figure out which of these fields must be optional and which are never
 //  used at all.
@@ -272,6 +271,16 @@ data class Patient(
                         Pair(true, "")
                     }
                 }
+                // to see where the logic is derived from, run
+                // $ cat cradle-platform/server/validation/patients.py
+                // $ cat cradle-platform/client/src/pages/newReading/demographic/index.tsx
+                if (this.age.weeks < 1) {
+                    return Pair(
+                        false,
+                        context.getString(R.string.patient_error_gestation_must_be_not_zero)
+                    )
+                }
+
                 if (this.age.weeks > GESTATIONAL_AGE_WEEKS_MAX) {
                     return if (this is GestationalAgeWeeks) {
                         Pair(
