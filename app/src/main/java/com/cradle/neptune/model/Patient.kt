@@ -252,8 +252,9 @@ data class Patient(
                 }
                 return Pair(true, "")
             }
-            // validity of gestational age depends on gender and pregnancy; we are requiring both to
-            // be more robust about it
+            // Validity of gestational age depends on gender and pregnancy; we are requiring both to
+            // be more robust about it. Note: If gender is not male or is not pregnant, this is
+            // still validated.
             Patient::gestationalAge -> with(value as GestationalAge?) {
                 if (this == null) {
                     val dependentProperties = setupDependentPropertiesMapForInstance(
@@ -262,8 +263,8 @@ data class Patient(
                         Patient::sex, Patient::isPregnant
                     )
 
-                    // If female and pregnant, gestational age is required.
-                    return if (dependentProperties[Patient::sex] == Sex.FEMALE &&
+                    // If not male and pregnant, gestational age is required.
+                    return if (dependentProperties[Patient::sex] != Sex.MALE &&
                         dependentProperties[Patient::isPregnant] == true
                     ) {
                         Pair(false, context.getString(R.string.patient_error_gestational_age_missing))
