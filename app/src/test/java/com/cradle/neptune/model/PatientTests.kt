@@ -8,6 +8,9 @@ import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import io.mockk.verify
+import io.mockk.verifyAll
+import io.mockk.verifyOrder
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -253,8 +256,6 @@ class PatientTests {
 
     @Test
     fun verify_gestationalAgeWeeks_withPatientInstance() {
-        val validGestationalAges = (1..43).map { GestationalAgeWeeks(Weeks(it.toLong())) }.toSet()
-        val invalidGestationalAges = (44..120).map { GestationalAgeWeeks(Weeks(it.toLong())) }.toSet()
         val patientFemalePregnant = Patient(
             id = "3453455",
             name = "TEST",
@@ -263,18 +264,42 @@ class PatientTests {
             sex = Sex.FEMALE,
             isPregnant = true
         )
+
+        // An age of 0
         assertValidityOverSet(
-            setOf(null), Patient::gestationalAge,
+            setOf(null, GestationalAgeWeeks(Weeks(0L))), Patient::gestationalAge,
             isValidValueSet = false, patientInstance = patientFemalePregnant
         )
+        // calls to getString happen iff not valid
+        verifyOrder {
+            mockContext.getString(R.string.patient_error_gestational_age_missing)
+            mockContext.getString(R.string.patient_error_gestation_must_be_not_zero)
+        }
+        verify(exactly = 0) { mockContext.getString(any(), *anyVararg()) }
+
+        val validGestationalAges = (1..43).map { GestationalAgeWeeks(Weeks(it.toLong())) }.toSet()
         assertValidityOverSet(
             validGestationalAges, Patient::gestationalAge,
             isValidValueSet = true, patientInstance = patientFemalePregnant
         )
+        // the two errors from the previous run
+        verify(exactly = 2) { mockContext.getString(any()) }
+        verify(exactly = 0) { mockContext.getString(any(), *anyVararg()) }
+
+        val invalidGestationalAges = (44..120).map {
+            GestationalAgeWeeks(Weeks(it.toLong()))
+        }.toSet()
         assertValidityOverSet(
             invalidGestationalAges, Patient::gestationalAge,
             isValidValueSet = false, patientInstance = patientFemalePregnant
         )
+        verify(exactly = 1) { mockContext.getString(R.string.patient_error_gestation_must_be_not_zero) }
+        verify(exactly = invalidGestationalAges.size) {
+            mockContext.getString(
+                R.string.patient_error_gestation_greater_than_n_weeks,
+                *varargAny { nArgs == 1 }
+            )
+        }
     }
 
     /**
