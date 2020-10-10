@@ -28,10 +28,11 @@ interface Verifiable<in T : Any> {
      * easy to do this by having an else block in a when statement that returns true, and then only
      * having the members that need validation get their own when block.
      *
-     * It's recommended that the validator function for an class be put in a Companion object for
-     * that class so that other classes can access it without needing to create an instance first.
-     * Then, the member function can just invoke the function inside of the Companion object.
-     * See the sample (CTRL + Q in Android Studio) for an example.
+     * It's recommended that the actual validator function for a class be put in a Companion object
+     * for that class (have the Companion implement the [Verifier] interface) so that other classes
+     * can access it without needing to create an instance first. Then, the member function can just
+     * invoke the function inside of the Companion object. See the sample (CTRL + Q in Android
+     * Studio) for an example.
      *
      * @sample com.cradle.neptune.model.TestClass.isValueForPropertyValid
      * @sample com.cradle.neptune.model.TestClass.Companion.isValueValid
@@ -140,9 +141,40 @@ interface Verifiable<in T : Any> {
 }
 
 /**
+ * A verification function, meant to be used as an object inside of the classes that implement
+ * [Verifiable].
+ */
+interface Verifier<in T> {
+    /**
+     * Determines if the [value] for property [property] is valid. If valid, the [Pair] returned
+     * will have a Boolean value of true in the first component. Otherwise, false will be in the
+     * first component and an error message will be present ([context] is required to get a
+     * localized error message).
+     *
+     * When implementing, use [setupDependentPropertiesMap] if checking a certain property requires
+     * the values of other properties.
+     *
+     * @sample com.cradle.neptune.model.PregnancyRecord.Companion.isValueValid
+     *
+     * @param instance An instance of the object to take current values from for properties that
+     * check other properties for validity. Optional, but don't specify both a non-null [instance]
+     * and a [currentValues] map.
+     * @param currentValues A Map of KProperty.name to their values to describe current values for
+     * properties that check other properties for validity. Optional only if not passing in an
+     * instance. (The values in here take precedence if you do.)
+     */
+    fun isValueValid(
+        property: KProperty<*>,
+        value: Any?,
+        context: Context,
+        instance: T? = null,
+        currentValues: Map<String, Any?>? = null
+    ): Pair<Boolean, String>
+}
+
+/**
  * Sets up a dependent properties map when an instance is given. This map is used when implementing
- * [Verifiable.isValueForPropertyValid] to access properties that are
- * dependent.
+ * [Verifiable.isValueForPropertyValid] to access dependent properties.
  *
  * ### Background
  * The `dependentPropertiesMap` solves the dependent properties problem in
@@ -167,8 +199,15 @@ interface Verifiable<in T : Any> {
  * the LiveDataDynamicModelBuilder has to save the trouble of having to
  * create new maps every time an input is entered.
  *
- * @throws IllegalArgumentException if [instance] is null. We make [instance] nullable to make sure
- * that this function can also serve as a check.
+ * @param instance An instance to check against. The current values will be taken from this instance
+ * if a current values map is not given, but the current values map is given priority.
+ * @param currentValuesMap The current values to get dependent properties from
+ * @param dependentProperties A declaration of all the properties that are needed.
+ * @return A mapping from the names of the properties to their current values. The names are
+ * obtained by KProperty.name.
+ *
+ * @throws IllegalArgumentException if [instance] is null and no currentValuesMap were given. We
+ * make [instance] nullable to make sure that this function can also serve as a check.
  */
 fun setupDependentPropertiesMapForInstance(
     instance: Any?,
