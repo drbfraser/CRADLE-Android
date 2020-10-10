@@ -21,6 +21,7 @@ import com.cradle.neptune.ext.stringField
 import com.cradle.neptune.ext.union
 import java.io.Serializable
 import java.util.UUID
+import kotlin.reflect.KProperty
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -139,7 +140,17 @@ data class Reading(
         put(ReadingField.PREVIOUS_READING_IDS, previousReadingIds.joinToString(","))
     }
 
-    companion object : Unmarshal<Reading, JSONObject> {
+    companion object : Unmarshal<Reading, JSONObject>, Verifier<Reading> {
+        override fun isValueValid(
+            property: KProperty<*>,
+            value: Any?,
+            context: Context,
+            instance: Reading?,
+            currentValues: Map<String, Any?>?
+        ): Pair<Boolean, String> = when (property) {
+            else -> true to ""
+        }
+
         /**
          * Constructs a [Reading] object form a [JSONObject].
          *
