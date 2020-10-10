@@ -15,8 +15,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import java.lang.IllegalArgumentException
-import java.util.Calendar
-import java.util.TimeZone
 import kotlin.reflect.KProperty
 
 @ExtendWith(MockKExtension::class)
@@ -118,10 +116,11 @@ class PatientTests {
 
     @Test
     fun verify_patientDateOfBirth_withPatientInstance() {
-        val wrong = setOf("sad_345", "11", "Johh5", "3453453453543 5 345435 345345",
+        val wrongFormat = setOf("sad_345", "11", "Johh5", "3453453453543 5 345435 345345",
             "123456789012345", "ABCDFGHJKLQWE5RT", "23-2-2004", "1-20-2004", "1-20-2004",
             "1995-05-0", "1995-0-0", "1995-0-05", "1995-0-5", "1995-5-5")
-        val good = setOf("2004-05-22", "1995-04-08", "1995-05-01")
+        val badAgeButGoodFormat = setOf("2015-05-22", "2017-04-08", "2020-05-01", "1900-04-01", "1850-03-01")
+        val good = setOf("1980-05-22", "1995-04-08", "1995-05-01")
 
         val patientWithoutAge = Patient(
             id = "3453455",
@@ -133,7 +132,11 @@ class PatientTests {
         )
         // Since this patient doesn't have an age, we expect null / empty to be invalid.
         assertValidityOverSet(
-            wrong union BLANK_AND_NULL_STRINGS, Patient::dob,
+            wrongFormat union BLANK_AND_NULL_STRINGS, Patient::dob,
+            areAllValuesValid = false, patientInstance = patientWithoutAge
+        )
+        assertValidityOverSet(
+            badAgeButGoodFormat, Patient::dob,
             areAllValuesValid = false, patientInstance = patientWithoutAge
         )
         assertValidityOverSet(good, Patient::dob, areAllValuesValid = true, patientInstance = patientWithoutAge)
@@ -148,7 +151,11 @@ class PatientTests {
         )
         // Since this patient has an age, we expect null / blank / empty to be valid.
         assertValidityOverSet(
-            wrong , Patient::dob,
+            wrongFormat , Patient::dob,
+            areAllValuesValid = false, patientInstance = patientWithAge
+        )
+        assertValidityOverSet(
+            badAgeButGoodFormat , Patient::dob,
             areAllValuesValid = false, patientInstance = patientWithAge
         )
         assertValidityOverSet(
