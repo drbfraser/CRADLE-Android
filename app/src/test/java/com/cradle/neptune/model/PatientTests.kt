@@ -132,14 +132,37 @@ class PatientTests {
         )
         // Since this patient doesn't have an age, we expect null / empty to be invalid.
         assertValidityOverSet(
-            wrongFormat union BLANK_AND_NULL_STRINGS, Patient::dob,
+            BLANK_AND_NULL_STRINGS, Patient::dob,
             areAllValuesValid = false, patientInstance = patientWithoutAge
         )
+        verify(exactly = BLANK_AND_NULL_STRINGS.size) {
+            mockContext.getString(R.string.patient_error_age_or_dob_missing)
+        }
+
+        // Wrong format.
+        assertValidityOverSet(
+            wrongFormat, Patient::dob,
+            areAllValuesValid = false, patientInstance = patientWithoutAge
+        )
+        verify(exactly = wrongFormat.size) {
+            mockContext.getString(R.string.patient_error_dob_format, *anyVararg())
+        }
+
+        // Age out of bounds.
         assertValidityOverSet(
             badAgeButGoodFormat, Patient::dob,
             areAllValuesValid = false, patientInstance = patientWithoutAge
         )
-        assertValidityOverSet(good, Patient::dob, areAllValuesValid = true, patientInstance = patientWithoutAge)
+        verify(exactly = badAgeButGoodFormat.size) {
+            mockContext.getString(
+                R.string.patient_error_age_between_n_and_m,
+                Patient.AGE_LOWER_BOUND, Patient.AGE_UPPER_BOUND
+            )
+        }
+
+        assertValidityOverSet(
+            good, Patient::dob, areAllValuesValid = true, patientInstance = patientWithoutAge
+        )
 
         val patientWithAge = Patient(
             id = "3453455",
@@ -187,16 +210,23 @@ class PatientTests {
             areAllValuesValid = true, patientInstance = null,
             dependentPropertiesMap = mapOf(Patient::age to 50)
         )
+        verify(exactly = 0) { mockContext.getString(any()) }
+        verify(exactly = 0) { mockContext.getString(any(), *anyVararg()) }
+
         assertValidityOverSet(
             good, Patient::dob,
             areAllValuesValid = true, patientInstance = null,
             dependentPropertiesMap = mapOf(Patient::age to 50)
         )
+        verify(exactly = 0) { mockContext.getString(any()) }
+        verify(exactly = 0) { mockContext.getString(any(), *anyVararg()) }
+
         assertValidityOverSet(
             wrong, Patient::dob,
             areAllValuesValid = false, patientInstance = null,
             dependentPropertiesMap = mapOf(Patient::age to 50)
         )
+        verify(exactly = wrong.size) { mockContext.getString(any(), *anyVararg()) }
     }
 
     @Test
