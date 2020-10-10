@@ -36,10 +36,10 @@ const val SHOCK_HIGH = 1.7
 const val SHOCK_MEDIUM = 0.9
 
 const val MAX_SYSTOLIC = 300
-const val MIN_SYSTOLIC = 10
-const val MAX_DIASTOLIC = 300
-const val MIN_DIASTOLIC = 10
-const val MAX_HEART_RATE = 200
+const val MIN_SYSTOLIC = 50
+const val MAX_DIASTOLIC = 200
+const val MIN_DIASTOLIC = 30
+const val MAX_HEART_RATE = 250
 const val MIN_HEART_RATE = 30
 
 private const val SECONDS_IN_MIN = 60
