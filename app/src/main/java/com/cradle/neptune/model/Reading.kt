@@ -149,14 +149,23 @@ data class Reading(
             instance: Reading?,
             currentValues: Map<String, Any?>?
         ): Pair<Boolean, String> = when (property) {
-            Reading::patientId -> true to ""
-            Reading::bloodPressure -> with(value as BloodPressure) {
-                return if (value == null) {
+            Reading::patientId -> {
+                // Safe to call without instance or currentValues, as id doesn't depend on anything
+                // else.
+                Patient.isValueValid(Patient::id, value, context, null, null)
+            }
+            Reading::bloodPressure -> with(value as? BloodPressure) {
+                return if (this == null) {
                     Pair(true, "")
                 } else {
-                    Pair(false, "Bad blood pressure")
+                    // Derive errors from BloodPressure from its implementation.
+                    return with(getAllMembersWithInvalidValues(context)) {
+                        val isValid = isEmpty()
+                        Pair(isValid, this.joinToString(separator = ",") { it.second })
+                    }
                 }
             }
+            Reading::urineTest -> Pair(true, "")
             else -> Pair(true, "")
         }
 
