@@ -266,11 +266,6 @@ data class BloodPressure(
             else -> ReadingAnalysis.GREEN
         }
 
-    val isValid: Boolean
-        get() = systolic in MIN_SYSTOLIC..MAX_SYSTOLIC &&
-            diastolic in MIN_DIASTOLIC..MAX_DIASTOLIC &&
-            heartRate in MIN_HEART_RATE..MAX_HEART_RATE
-
     /**
      * Marshals this object to JSON.
      */
