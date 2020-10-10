@@ -101,7 +101,8 @@ interface Verifiable<in T : Any> {
      */
     fun getAllMembersWithInvalidValues(
         context: Context,
-        shouldIgnoreAccessibility: Boolean = true
+        shouldIgnoreAccessibility: Boolean = true,
+        shouldStopAtFirstError: Boolean = false
     ): List<Pair<String, String>> {
         @Suppress("UNCHECKED_CAST")
         val thisTypedAsT = this as T
@@ -119,6 +120,9 @@ interface Verifiable<in T : Any> {
                 val result = isValueForPropertyValid(property, property.getter.call(thisTypedAsT), context)
                 if (!result.first) {
                     listOfInvalidProperties.add(Pair(property.name, result.second))
+                    if (shouldStopAtFirstError) {
+                        return listOfInvalidProperties
+                    }
                 }
             } catch (ignored: IllegalCallableAccessException) {
                 // We ignore any exceptions caused by non-accessibility of the member (e.g., this
