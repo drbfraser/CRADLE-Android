@@ -303,7 +303,7 @@
     <string name="patient_error_id_too_long_max_n_digits">ID is too long; max is %1$d digits.</string>
     <string name="patient_error_name_missing">Missing initials / name</string>
     <string name="patient_error_dob_missing">Missing date of birth</string>
-    <string name="patient_error_dob_format">Wrong date of birth format (need YYYY-MM-DD)</string>
+    <string name="patient_error_dob_format">Wrong date of birth format (need %1$s)</string>
     <string name="patient_error_age_between_n_and_m">Age must be between %1$d and %2$d</string>
     <string name="patient_error_age_or_dob_missing">Missing age or date of birth</string>
     <string name="patient_error_name_must_be_characters">Initials / name must be characters</string>

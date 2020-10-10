@@ -111,8 +111,8 @@ data class Patient(
     @Suppress("LargeClass")
     companion object : Unmarshal<Patient, JSONObject> {
         private const val ID_MAX_LENGTH = 14
-        private const val AGE_LOWER_BOUND = 15
-        private const val AGE_UPPER_BOUND = 65
+        const val AGE_LOWER_BOUND = 15
+        const val AGE_UPPER_BOUND = 65
         private const val DOB_FORMAT_SIMPLEDATETIME = "yyyy-MM-dd"
         private const val GESTATIONAL_AGE_WEEKS_MAX = 43
 
@@ -197,7 +197,12 @@ data class Patient(
                 val age = try {
                     calculateAgeFromDateString(this)
                 } catch (e: ParseException) {
-                    return@with Pair(false, context.getString(R.string.patient_error_dob_format))
+                    return@with Pair(
+                        false, context.getString(
+                            R.string.patient_error_dob_format,
+                            DOB_FORMAT_SIMPLEDATETIME
+                        )
+                    )
                 }
 
                 if (age > AGE_UPPER_BOUND || age < AGE_LOWER_BOUND) {
