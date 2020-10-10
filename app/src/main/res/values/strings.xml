@@ -311,6 +311,9 @@
     <string name="patient_error_gestation_greater_than_n_weeks">Gestation is greater than %1$d weeks</string>
     <string name="patient_error_gestation_greater_than_n_months">Gestation is greater than %1$d months</string>
     <string name="patient_error_gestation_must_be_not_zero">Can\'t be 0</string>
+    <string name="blood_pressure_error_systolic_out_of_bounds">Systolic blood pressure needs to be %1$d and %2$d</string>
+    <string name="blood_pressure_error_diastolic_out_of_bounds">Diastolic blood pressure needs to be %1$d - %2$d</string>
+    <string name="blood_pressure_error_heart_rate_out_of_bounds">Heart rate needs to be %1$d - %2$d</string>
 
     <string name="login_activity_device_is_outdated_dialog_title">Device is out of date</string>
     <string name="login_activity_device_is_outdated_dialog_message">Your device is unable to connect to the servers securely. Since Google Play services are unavailable on your device, we\'re unable to try to upgrade your device\'s security provider. Please ensure that your device supports TLS 1.2 or higher.</string>

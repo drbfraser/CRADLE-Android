@@ -1,6 +1,7 @@
 package com.cradle.neptune.model
 
 import android.content.Context
+import androidx.annotation.StringRes
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -148,7 +149,15 @@ data class Reading(
             instance: Reading?,
             currentValues: Map<String, Any?>?
         ): Pair<Boolean, String> = when (property) {
-            else -> true to ""
+            Reading::patientId -> true to ""
+            Reading::bloodPressure -> with(value as BloodPressure) {
+                return if (value == null) {
+                    Pair(true, "")
+                } else {
+                    Pair(false, "Bad blood pressure")
+                }
+            }
+            else -> Pair(true, "")
         }
 
         /**
@@ -215,7 +224,7 @@ data class BloodPressure(
     val systolic: Int,
     val diastolic: Int,
     val heartRate: Int
-) : Serializable, Marshal<JSONObject> {
+) : Serializable, Marshal<JSONObject>, Verifiable<BloodPressure> {
     /**
      * The shock index for this blood pressure result.
      */
@@ -248,15 +257,6 @@ data class BloodPressure(
         }
 
     /**
-     * True if this blood pressure reading is valid (i.e., all fields are
-     * within bounds).
-     */
-    val isValid: Boolean
-        get() = systolic in MIN_SYSTOLIC..MAX_SYSTOLIC &&
-            diastolic in MIN_DIASTOLIC..MAX_DIASTOLIC &&
-            heartRate in MIN_HEART_RATE..MAX_HEART_RATE
-
-    /**
      * Marshals this object to JSON.
      */
     override fun marshal(): JSONObject = with(JSONObject()) {
@@ -265,7 +265,40 @@ data class BloodPressure(
         put(BloodPressureField.HEART_RATE, heartRate)
     }
 
-    companion object : Unmarshal<BloodPressure, JSONObject> {
+    companion object : Unmarshal<BloodPressure, JSONObject>, Verifier<BloodPressure> {
+        override fun isValueValid(
+            property: KProperty<*>,
+            value: Any?,
+            context: Context,
+            instance: BloodPressure?,
+            currentValues: Map<String, Any?>?
+        ): Pair<Boolean, String> = with(value as? Int) {
+            if (this == null) return@with Pair(true, "")
+            // All the fields we check are of type Int.
+            val (lowerBound, upperBound, @StringRes resId) = when (property) {
+                BloodPressure::systolic -> Triple(
+                    MIN_SYSTOLIC, MAX_SYSTOLIC,
+                    R.string.blood_pressure_error_systolic_out_of_bounds
+                )
+                BloodPressure::diastolic -> Triple(
+                    MIN_DIASTOLIC, MAX_DIASTOLIC,
+                    R.string.blood_pressure_error_diastolic_out_of_bounds
+                )
+                BloodPressure::heartRate -> Triple(
+                    MIN_HEART_RATE, MAX_HEART_RATE,
+                    R.string.blood_pressure_error_heart_rate_out_of_bounds
+                )
+                // not a verifiable property; true by default.
+                else -> {
+                    return@with Pair(true, "")
+                }
+            }
+            return if (lowerBound <= this && this <= upperBound) {
+                Pair(true, "")
+            } else {
+                Pair(false, context.getString(resId, lowerBound, upperBound))
+            }
+        }
         /**
          * Constructs a [BloodPressure] object from a [JSONObject].
          *
@@ -278,6 +311,12 @@ data class BloodPressure(
             return BloodPressure(systolic, diastolic, heartRate)
         }
     }
+
+    override fun isValueForPropertyValid(
+        property: KProperty<*>,
+        value: Any?,
+        context: Context
+    ): Pair<Boolean, String> = isValueValid(property, value, context)
 }
 
 /**
