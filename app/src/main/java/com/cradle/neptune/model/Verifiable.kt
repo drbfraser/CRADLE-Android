@@ -37,7 +37,8 @@ interface Verifiable<in T : Any> {
      * @sample com.cradle.neptune.model.TestClass.isValueForPropertyValid
      * @sample com.cradle.neptune.model.TestClass.Companion.isValueValid
      *
-     * @param property The property to check [value] for.
+     * @param property The property to check [value] for. You **must** use `ClassName::PropertyName`,
+     * not `::PropertyName`, not `this::PropertyName`, etc.
      * @param value The value to test. This should be the same type the type in [property].
      * @param context A Context required to get localized error messages.
      * @return A [Pair], where the left value is whether the value is valid for the given property,
@@ -53,6 +54,9 @@ interface Verifiable<in T : Any> {
     /**
      * Determines validity of value for [property] for this object. [context] is needed to get a
      * localized error message.
+     *
+     * For the [property], you **must** use `ClassName::PropertyName`, not `::PropertyName`, not
+     * `this::PropertyName`, etc.
      *
      * @throws UninitializedPropertyAccessException if checking a lateinit property
      * @return whether the value in the class's [property] is valid.
@@ -154,6 +158,17 @@ interface Verifier<in T> {
      * When implementing, use [setupDependentPropertiesMap] if checking a certain property requires
      * the values of other properties.
      *
+     * Example call:
+     *
+     * ```
+     * val readingBuilder: LiveDataDynamicModelBuilder()
+     * ...
+     * Patient.isValueValid(Patient::id, "32252", context, null, readingBuilder.publicMap)
+     * ```
+     *
+     * For [property], you **must** use `ClassName::PropertyName`, not `::PropertyName`, not
+     * `this::PropertyName`, etc.
+     *
      * @sample com.cradle.neptune.model.PregnancyRecord.Companion.isValueValid
      *
      * @param instance An instance of the object to take current values from for properties that
@@ -201,8 +216,8 @@ interface Verifier<in T> {
  *
  * @param instance An instance to check against. The current values will be taken from this instance
  * if a current values map is not given, but the current values map is given priority.
- * @param currentValuesMap The current values to get dependent properties from
- * @param dependentProperties A declaration of all the properties that are needed.
+ * @param givenDependentPropertiesMap The current values to get dependent properties from
+ * @param existingProperties A declaration of all the properties that are needed.
  * @return A mapping from the names of the properties to their current values. The names are
  * obtained by KProperty.name.
  *
