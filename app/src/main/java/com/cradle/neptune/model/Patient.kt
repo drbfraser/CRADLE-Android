@@ -1,5 +1,6 @@
 package com.cradle.neptune.model
 
+import android.annotation.SuppressLint
 import android.content.Context
 import androidx.core.text.isDigitsOnly
 import androidx.room.ColumnInfo
@@ -180,9 +181,9 @@ data class Patient(
             Patient::dob -> with(value as String?) {
                 if (this == null || isBlank()) {
                     val dependentProperties = setupDependentPropertiesMapForInstance(
-                            patientInstance,
-                            dependentPropertiesMap,
-                            Patient::age
+                        patientInstance,
+                        dependentPropertiesMap,
+                        Patient::age
                     )
 
                     // If both age and dob are missing, it's invalid.
@@ -193,26 +194,12 @@ data class Patient(
                     }
                 }
 
-                if (this.length != DOB_FORMAT_SIMPLEDATETIME.length) {
-                    return Pair(false, context.getString(R.string.patient_error_dob_format))
-                }
-
-                try {
-                    SimpleDateFormat(DOB_FORMAT_SIMPLEDATETIME).let {
-                        it.isLenient = false
-                        it.timeZone = TimeZone.getTimeZone("UTC")
-                        it.parse(this)
-                    }
+                val age = try {
+                    calculateAgeFromDateString(this)
                 } catch (e: ParseException) {
                     return@with Pair(false, context.getString(R.string.patient_error_dob_format))
                 }
-                val year = substring(0, indexOf('-')).toIntOrNull()
-                val yearNow = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-                    .get(Calendar.YEAR)
-                if (year == null) {
-                    return Pair(false, context.getString(R.string.patient_error_dob_format))
-                }
-                val age = yearNow - year
+
                 if (age > AGE_UPPER_BOUND || age < AGE_LOWER_BOUND) {
                     return Pair(
                         false,
@@ -266,7 +253,8 @@ data class Patient(
                     Patient::sex, Patient::isPregnant
                 )
                 if (dependentProperties[Patient::sex] == Sex.MALE ||
-                    dependentProperties[Patient::isPregnant] == false) {
+                    dependentProperties[Patient::isPregnant] == false
+                ) {
                     return Pair(true, "")
                 }
                 if (this == null) {
@@ -296,7 +284,7 @@ data class Patient(
                     } else {
                         val months = round(
                             this.age.weeks * WeeksAndDays.DAYS_PER_WEEK /
-                            (WeeksAndDays.DAYS_PER_MONTH).toDouble()
+                                (WeeksAndDays.DAYS_PER_MONTH).toDouble()
                         )
                         Pair(
                             false,
@@ -346,6 +334,30 @@ data class Patient(
                 ?.run { if (isBlank()) emptyList() else listOf(this) } ?: emptyList()
             lastEdited = data.optLongField(PatientField.LAST_EDITED)
             base = data.optLongField(PatientField.BASE)
+        }
+
+        /**
+         * Given a date string of the from specified by [DOB_FORMAT_SIMPLEDATETIME], returns the
+         * age. This logic is the same logic that is used in the frontend
+         *
+         * @throws ParseException if date is invalid, or not in the specified form.
+         */
+        @SuppressLint("SimpleDateFormat")
+        fun calculateAgeFromDateString(dateString: String): Int = with(dateString) {
+            if (dateString.length != DOB_FORMAT_SIMPLEDATETIME.length) {
+                throw ParseException("wrong format length", 0)
+            }
+
+            SimpleDateFormat(DOB_FORMAT_SIMPLEDATETIME).let {
+                it.isLenient = false
+                it.timeZone = TimeZone.getTimeZone("UTC")
+                it.parse(this)
+            }
+
+            val year = substring(0, indexOf('-')).toIntOrNull()
+                ?: throw ParseException("bad year", 0)
+            val yearNow = Calendar.getInstance(TimeZone.getTimeZone("UTC")).get(Calendar.YEAR)
+            return@with yearNow - year
         }
     }
 }
