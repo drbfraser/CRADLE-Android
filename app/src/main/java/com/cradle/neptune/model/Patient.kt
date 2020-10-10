@@ -120,7 +120,7 @@ data class Patient(
         private const val ID_MAX_LENGTH = 14
         const val AGE_LOWER_BOUND = 15
         const val AGE_UPPER_BOUND = 65
-        private const val DOB_FORMAT_SIMPLEDATETIME = "yyyy-MM-dd"
+        const val DOB_FORMAT_SIMPLEDATETIME = "yyyy-MM-dd"
         private const val GESTATIONAL_AGE_WEEKS_MAX = 43
         @Suppress("ObjectPropertyNaming")
         private val GESTATIONAL_AGE_MONTHS_MAX = round(

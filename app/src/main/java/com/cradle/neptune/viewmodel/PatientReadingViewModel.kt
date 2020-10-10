@@ -2,10 +2,8 @@ package com.cradle.neptune.viewmodel
 
 import android.app.Application
 import android.util.Log
-import android.view.View
-import android.widget.Toast
-import androidx.annotation.IdRes
 import androidx.annotation.MainThread
+import androidx.databinding.ObservableArrayMap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -21,7 +19,6 @@ import com.cradle.neptune.model.Sex
 import com.cradle.neptune.model.UrineTest
 import com.cradle.neptune.utilitiles.LiveDataDynamicModelBuilder
 import com.cradle.neptune.view.ReadingActivity
-import com.google.android.material.textfield.TextInputEditText
 import java.lang.IllegalStateException
 import kotlin.reflect.KProperty
 import kotlinx.coroutines.Dispatchers
@@ -188,43 +185,56 @@ class PatientReadingViewModel constructor(
         get() = readingBuilder.get<List<String>?>(Reading::previousReadingIds)
             as MutableLiveData<MutableList<String>?>
 
-    private val _errors = MutableLiveData<Map<KProperty<*>, String?>>(hashMapOf())
-    val errors: LiveData<Map<KProperty<*>, String?>>
-        get() = _errors
+    /**
+     * A map of KProperty.name to error messages. If an error message is null, that means the field
+     * is valid. Used by Data Binding.
+     */
+    val errorMap = ObservableArrayMap<String, String?>()
 
-    fun onInputTextChanged(text: CharSequence, property: KProperty<*>?, isPatientField: Boolean) {
-        Toast.makeText(getApplication() as Application, "Hello", Toast.LENGTH_SHORT).show()
-        if (property == null) {
-            // TODO: Other things
+    private val _isUsingDateOfBirth = MutableLiveData<Boolean>(patientDob.value != null)
+    val isUsingDateOfBirth: LiveData<Boolean>
+        get() = _isUsingDateOfBirth
 
-            return
+    /**
+     * Sets the new age state. If called with [useDateOfBirth] false, then the date of birth
+     * will be cleared (nulled) out.
+     */
+    @MainThread
+    fun setAgeState(useDateOfBirth: Boolean) {
+        if (!useDateOfBirth) {
+            patientDob.value = null
         }
-
-        if (isPatientField) {
-            with(Patient.isValueValid(property, text, getApplication())) {
-            }
-        }
+        _isUsingDateOfBirth.value = useDateOfBirth
     }
 
     /**
      * @param isForPatient True if viewing patient property; false if viewing reading property
      */
-    fun handleEditTextErrors(
-        rootView: View,
-        @IdRes resId: Int,
+    fun getValidityErrorMessagePair(
         value: Any?,
         isForPatient: Boolean,
-        property: KProperty<*>
-    ) {
-        val textView = rootView.findViewById<TextInputEditText>(resId) ?: return
-        val (isValid, errorMsg) = if (isForPatient) {
+        property: KProperty<*>,
+        putInErrorMap: Boolean = true
+    ): Pair<Boolean, String> = if (isForPatient) {
             Patient.isValueValid(
                 property, value, getApplication(),
                 instance = null, currentValues = patientBuilder.publicMap
             )
         } else {
-            TODO("Implement validation for Reading")
+            Reading.isValueValid(
+                property, value, getApplication(),
+                instance = null, currentValues = readingBuilder.publicMap
+            )
         }
-        textView.error = if (isValid) null else errorMsg
-    }
+        .also {
+            if (!putInErrorMap) {
+                return@also
+            }
+
+            if (!it.first) {
+                errorMap[property.name] = it.second
+            } else {
+                errorMap[property.name] = null
+            }
+        }
 }

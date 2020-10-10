@@ -6,16 +6,16 @@ import java.lang.NumberFormatException
 object BindingConverter {
     @InverseMethod("stringToInt")
     @JvmStatic
-    fun intToString(value: Int): String {
-        return value.toString()
+    fun intToString(value: Int?): String? {
+        return value?.toString()
     }
 
     @JvmStatic
-    fun stringToInt(value: String): Int {
+    fun stringToInt(value: String?): Int? {
         return try {
-            value.toInt()
+            value?.toInt()
         } catch (e: NumberFormatException) {
-            0
+            null
         }
     }
 }

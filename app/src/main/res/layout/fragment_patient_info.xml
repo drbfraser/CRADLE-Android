@@ -5,7 +5,9 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-        <import type="com.cradle.neptune.binding.BindingConverter"/>
+        <import type="com.cradle.neptune.binding.BindingConverter" />
+        <import type="android.text.InputType" />
+
         <variable
             name="viewModel"
             type="com.cradle.neptune.viewmodel.PatientReadingViewModel" />
@@ -47,8 +49,9 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="4dp"
                         android:hint="@string/initials"
+                        app:errorMessage='@{viewModel.errorMap["name"]}'
                         app:layout_constraintEnd_toStartOf="@+id/patient_id_text_layout"
-                        app:layout_constraintHorizontal_chainStyle="spread_inside"
+                        app:layout_constraintHorizontal_bias="0.5"
                         app:layout_constraintHorizontal_weight="0.5"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent">
@@ -69,7 +72,9 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="4dp"
                         android:hint="@string/id"
-                        app:layout_constraintEnd_toStartOf="@+id/guideline"
+                        app:errorMessage='@{viewModel.errorMap["id"]}'
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.5"
                         app:layout_constraintHorizontal_weight="0.5"
                         app:layout_constraintStart_toEndOf="@+id/initials_layout"
                         app:layout_constraintTop_toTopOf="parent">
@@ -84,6 +89,7 @@
                             tools:text="12345678901234" />
                     </com.google.android.material.textfield.TextInputLayout>
 
+                    <!-- TODO: add error message -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/household_number_layout"
                         android:layout_width="0dp"
@@ -91,9 +97,10 @@
                         android:layout_margin="4dp"
                         android:hint="@string/household_number"
                         app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.5"
                         app:layout_constraintHorizontal_weight="0.5"
-                        app:layout_constraintStart_toStartOf="@+id/guideline"
-                        app:layout_constraintTop_toTopOf="parent">
+                        app:layout_constraintStart_toEndOf="@+id/zone_layout"
+                        app:layout_constraintTop_toBottomOf="@+id/initials_layout">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/household_number_text"
@@ -109,7 +116,9 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="4dp"
                         android:hint="@string/zone"
-                        app:layout_constraintEnd_toStartOf="@+id/guideline"
+                        app:layout_constraintEnd_toStartOf="@+id/household_number_layout"
+                        app:layout_constraintHorizontal_weight="0.5"
+                        app:layout_constraintHorizontal_bias="0.5"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/initials_layout">
 
@@ -128,9 +137,9 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="4dp"
                         android:hint="@string/village"
+                        app:errorMessage='@{viewModel.errorMap["villageNumber"]}'
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintHorizontal_bias="0.5"
-                        app:layout_constraintStart_toStartOf="@+id/guideline"
+                        app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/household_number_layout">
 
                         <com.google.android.material.textfield.TextInputEditText
@@ -142,46 +151,31 @@
                             tools:text="my village" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <com.google.android.material.button.MaterialButtonToggleGroup
-                        android:id="@+id/dob_age_toggle_group"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="4dp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/zone_layout"
-                        app:selectionRequired="true"
-                        app:singleSelection="true">
-
-                        <Button
-                            android:id="@+id/dob_button"
-                            style="?attr/materialButtonOutlinedStyle"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Date of birth" />
-
-                        <Button
-                            android:id="@+id/age_button"
-                            style="?attr/materialButtonOutlinedStyle"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Estimated age" />
-                    </com.google.android.material.button.MaterialButtonToggleGroup>
-
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/age_input_layout"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_margin="4dp"
                         android:hint="@string/age"
-                        app:layout_constraintEnd_toEndOf="@+id/dob_age_toggle_group"
+                        app:helperText="@string/fragment_patient_info_dob_helper"
+                        app:helperTextEnabled="true"
+                        app:hintEnabled="true"
+                        app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/dob_age_toggle_group">
+                        app:layout_constraintTop_toBottomOf="@+id/village_layout"
+                        app:startIconContentDescription="Date picker for date of birth"
+                        app:startIconDrawable="@drawable/ic_baseline_calendar_today_24"
+                        app:patientAge="@{viewModel.patientAge}"
+                        app:patientDob="@{viewModel.patientDob}">
+                        <!--app:suffixText="@string/age_input_suffix_approximate_years_old"> -->
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/age_input_text"
+                            style="@style/ReadingFlowTheme"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:inputType="textNoSuggestions|number"
+                            app:patientAge="@{viewModel.patientAge}"
+                            app:patientDob="@{viewModel.patientDob}"
                             android:text="@={BindingConverter.intToString(viewModel.patientAge)}"
                             tools:text="45" />
                     </com.google.android.material.textfield.TextInputLayout>
