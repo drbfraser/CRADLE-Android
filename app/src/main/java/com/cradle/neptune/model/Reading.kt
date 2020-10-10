@@ -142,6 +142,7 @@ data class Reading(
     }
 
     companion object : Unmarshal<Reading, JSONObject>, Verifier<Reading> {
+        @Suppress("NestedBlockDepth")
         override fun isValueValid(
             property: KProperty<*>,
             value: Any?,

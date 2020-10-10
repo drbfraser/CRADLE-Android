@@ -99,6 +99,7 @@ interface Verifiable<in T : Any> {
      * The List is empty if all values are valid.
      * @throws UninitializedPropertyAccessException if there are uninitialized lateinit properties
      */
+    @Suppress("NestedBlockDepth")
     fun getAllMembersWithInvalidValues(
         context: Context,
         shouldIgnoreAccessibility: Boolean = true,
