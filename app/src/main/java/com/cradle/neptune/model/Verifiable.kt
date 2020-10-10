@@ -147,6 +147,13 @@ interface Verifiable<in T : Any> {
             listOfInvalidProperties
         }
     }
+
+    /**
+     * Determine if this is a valid instance as determined by [getAllMembersWithInvalidValues]
+     * (which is dependent on [isValueForPropertyValid]
+     */
+    fun isValidInstance(context: Context) =
+        getAllMembersWithInvalidValues(context, shouldStopAtFirstError = true).isEmpty()
 }
 
 /**
