@@ -216,7 +216,7 @@ interface Verifier<in T> {
  * the LiveDataDynamicModelBuilder has to save the trouble of having to
  * create new maps every time an input is entered.
  *
- * @sample com.cradle.neptune.model.ClassWithDependentProperties.Companion.isValueValid
+ * @sample com.cradle.neptune.model.PregnancyRecord.Companion.isValueValid
  *
  * @param instance An instance to check against. The current values will be taken from this instance
  * if a current values map is not given, but the current values map is given priority.

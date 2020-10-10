@@ -220,7 +220,7 @@ class PatientReadingViewModel constructor(
         val (isValid, errorMsg) = if (isForPatient) {
             Patient.isValueValid(
                 property, value, getApplication(),
-                patientInstance = null, currentValues = patientBuilder.publicMap
+                instance = null, currentValues = patientBuilder.publicMap
             )
         } else {
             TODO("Implement validation for Reading")

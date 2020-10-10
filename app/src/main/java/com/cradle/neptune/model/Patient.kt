@@ -113,10 +113,10 @@ data class Patient(
         property: KProperty<*>,
         value: Any?,
         context: Context
-    ): Pair<Boolean, String> = isValueValid(property, value, context, patientInstance = this)
+    ): Pair<Boolean, String> = isValueValid(property, value, context, instance = this)
 
     @Suppress("LargeClass")
-    companion object : Unmarshal<Patient, JSONObject> {
+    companion object : Unmarshal<Patient, JSONObject>, Verifier<Patient> {
         private const val ID_MAX_LENGTH = 14
         const val AGE_LOWER_BOUND = 15
         const val AGE_UPPER_BOUND = 65
@@ -134,22 +134,25 @@ data class Patient(
          * - cradle-platform/client/src/pages/newReading/demographic/validation/index.tsx
          * - cradle-platform/server/validation/patients.py
          *
-         * @param patientInstance For dependent properties, check against this Patient's values.
-         * Can be null if checking to see if a value would be valid when a patient isn't created
-         * yet.
-         * @param currentValues: For checking properties that depend on other properties
-         * for validity, supply a map of the current values for the dependent properties.
-         * The map is obtained by mapping names of KProperties to current values. For example,
-         * mapOf(Patient::name.name to "Abc") is acceptable. Usually, this should just be from
-         * the LiveDataDynamicModelBuilder.
+         * Determines if the [value] for property [property] is valid. If valid, the [Pair] returned
+         * will have a Boolean value of true in the first component. Otherwise, false will be in the
+         * first component and an error message will be present ([context] is required to get a
+         * localized error message).
+         *
+         * @param instance An instance of the object to take current values from for properties that
+         * check other properties for validity. Optional, but don't specify both a non-null
+         * [instance] and a [currentValues] map.
+         * @param currentValues A Map of KProperty.name to their values to describe current values for
+         * properties that check other properties for validity. Optional only if not passing in an
+         * instance. (The values in here take precedence if you do.)
          */
         @Suppress("ReturnCount", "SimpleDateFormat", "NestedBlockDepth")
-        fun isValueValid(
+        override fun isValueValid(
             property: KProperty<*>,
             value: Any?,
             context: Context,
-            patientInstance: Patient? = null,
-            currentValues: Map<String, Any?>? = null
+            instance: Patient?,
+            currentValues: Map<String, Any?>?
         ): Pair<Boolean, String> = when (property) {
             // doesn't depend on other properties
             Patient::id -> with(value as String) {
@@ -196,7 +199,7 @@ data class Patient(
             Patient::dob -> with(value as String?) {
                 if (this == null || isBlank()) {
                     val dependentProperties = setupDependentPropertiesMap(
-                            patientInstance,
+                            instance,
                             currentValues,
                             Patient::age
                     )
@@ -237,7 +240,7 @@ data class Patient(
             Patient::age -> with(value as Int?) {
                 if (this == null) {
                     val dependentProperties = setupDependentPropertiesMap(
-                        patientInstance,
+                        instance,
                         currentValues,
                         Patient::dob
                     )
@@ -268,7 +271,7 @@ data class Patient(
             // still validated.
             Patient::gestationalAge -> with(value as GestationalAge?) {
                 val dependentProperties = setupDependentPropertiesMap(
-                    patientInstance,
+                    instance,
                     currentValues,
                     Patient::sex, Patient::isPregnant
                 )

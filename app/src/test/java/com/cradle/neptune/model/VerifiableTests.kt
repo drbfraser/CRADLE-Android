@@ -255,13 +255,13 @@ internal data class PregnancyRecord(
         context: Context
     ): Pair<Boolean, String> = isValueValid(property, value, context, this)
 
-    companion object {
-        fun isValueValid(
+    companion object : Verifier<PregnancyRecord> {
+        override fun isValueValid(
             property: KProperty<*>,
             value: Any?,
             context: Context,
-            instance: PregnancyRecord? = null,
-            currentValues: Map<String, Any?>? = null
+            instance: PregnancyRecord?,
+            currentValues: Map<String, Any?>?
         ): Pair<Boolean, String> {
             return when (property) {
                 PregnancyRecord::isPregnant -> {
