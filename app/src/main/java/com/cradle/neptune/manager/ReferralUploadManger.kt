@@ -42,11 +42,12 @@ class ReferralUploadManger @Inject constructor(private val restApi: RestApi) {
         // API for this so we use the response code of the get patient info
         // API to determine whether the patient exists or not.
         val patientExists = when (val result = restApi.getPatientInfo(patient.id)) {
-            is Failure -> if (result.statusCode == HTTP_NOT_FOUND) {
-                false
-            } else {
-                return result.cast()
-            }
+            is Failure ->
+                if (result.statusCode == HTTP_NOT_FOUND) {
+                    false
+                } else {
+                    return result.cast()
+                }
             is Success -> true
             is NetworkException -> return result.cast()
         }

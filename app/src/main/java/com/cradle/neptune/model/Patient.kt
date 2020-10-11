@@ -241,16 +241,18 @@ sealed class GestationalAge(val value: Long) : Marshal<JSONObject>, Serializable
         }
 
         return when (other) {
-            is GestationalAgeWeeks -> if (this is GestationalAgeWeeks) {
-                this.value == other.value
-            } else {
-                false
-            }
-            is GestationalAgeMonths -> if (this is GestationalAgeMonths) {
-                this.value == other.value
-            } else {
-                false
-            }
+            is GestationalAgeWeeks ->
+                if (this is GestationalAgeWeeks) {
+                    this.value == other.value
+                } else {
+                    false
+                }
+            is GestationalAgeMonths ->
+                if (this is GestationalAgeMonths) {
+                    this.value == other.value
+                } else {
+                    false
+                }
             else -> false
         }
     }

@@ -186,8 +186,8 @@ class SyncStepperImplementation(
      */
     override suspend fun stepThreeDownloadAllInfo(context: Context) = withContext(IO) {
         val totalRequestNum =
-            (updateApiData.editedPatientsIds.size + updateApiData.newReadingsIds.size +
-                updateApiData.followupIds.size + updateApiData.newPatientsIds.size)
+            updateApiData.editedPatientsIds.size + updateApiData.newReadingsIds.size +
+                updateApiData.followupIds.size + updateApiData.newPatientsIds.size
 
         downloadRequestStatus = TotalRequestStatus(totalRequestNum, 0, 0)
 

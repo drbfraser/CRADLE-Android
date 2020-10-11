@@ -243,9 +243,11 @@ class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : D
                 // it would need to reconstruct the models from the view model
                 // instead of being able to used the result of the network call.
                 patientManager.add(result.value.patient)
-                readingManager.addReading(result.value.readings[0].apply {
-                    isUploadedToServer = true
-                })
+                readingManager.addReading(
+                    result.value.readings[0].apply {
+                        isUploadedToServer = true
+                    }
+                )
                 dismiss()
                 onSuccessfulUpload()
             }

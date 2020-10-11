@@ -54,20 +54,25 @@ sealed class NetworkResult<T> {
      *  if this result is a [Success] variant.
      */
     fun getErrorMessage(context: Context): String? = when (this) {
-            is Success -> null
-            is NetworkException -> this.cause.message
-            is Failure -> when (this.statusCode) {
-                UNAUTHORIZED -> context.getString(
-                    R.string.network_result_error_server_rejected_credentials)
-                BAD_REQUEST -> context.getString(
-                    R.string.network_result_error_server_rejected_upload_request)
-                NOT_FOUND -> context.getString(R.string.network_result_error_server_rejected_url)
-                CONFLICT -> context.getString(
-                    R.string.network_result_error_reading_or_patient_might_already_exist)
-                else -> context.getString(R.string.network_result_error_generic_status_code,
-                    statusCode)
-            }
+        is Success -> null
+        is NetworkException -> this.cause.message
+        is Failure -> when (this.statusCode) {
+            UNAUTHORIZED -> context.getString(
+                R.string.network_result_error_server_rejected_credentials
+            )
+            BAD_REQUEST -> context.getString(
+                R.string.network_result_error_server_rejected_upload_request
+            )
+            NOT_FOUND -> context.getString(R.string.network_result_error_server_rejected_url)
+            CONFLICT -> context.getString(
+                R.string.network_result_error_reading_or_patient_might_already_exist
+            )
+            else -> context.getString(
+                R.string.network_result_error_generic_status_code,
+                statusCode
+            )
         }
+    }
 
     /**
      * Applies a closure [f] to transform the value field of a [Success] result.

@@ -141,37 +141,37 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
 
         // adding onclick for adapter
         globalPatientAdapter.addPatientClickObserver(object :
-            GlobalPatientAdapter.OnGlobalPatientClickListener {
-            override fun onCardClick(patient: GlobalPatient) {
+                GlobalPatientAdapter.OnGlobalPatientClickListener {
+                override fun onCardClick(patient: GlobalPatient) {
 
-                startActivityForPatient(patient, localPatientSet.contains(patient.id))
-            }
-
-            override fun onAddToLocalClicked(patient: GlobalPatient) {
-                if (patient.isMyPatient) {
-                    Snackbar.make(
-                        searchView,
-                        R.string.global_patient_search_patient_already_added,
-                        Snackbar.LENGTH_LONG
-                    ).show()
-                    return
+                    startActivityForPatient(patient, localPatientSet.contains(patient.id))
                 }
-                val alertDialog =
-                    AlertDialog.Builder(this@GlobalPatientSearchActivity)
-                        .setTitle(R.string.global_patient_search_add_patient_dialog_title)
-                        .setMessage(R.string.global_patient_search_add_patient_dialog_message)
-                        .setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int ->
-                            fetchInformationForThisPatient(
-                                patient,
-                                globalPatientList,
-                                globalPatientAdapter
-                            )
-                        }
-                        .setNegativeButton(android.R.string.no) { _: DialogInterface, _: Int -> }
-                        .setIcon(R.drawable.ic_sync)
-                alertDialog.show()
-            }
-        })
+
+                override fun onAddToLocalClicked(patient: GlobalPatient) {
+                    if (patient.isMyPatient) {
+                        Snackbar.make(
+                            searchView,
+                            R.string.global_patient_search_patient_already_added,
+                            Snackbar.LENGTH_LONG
+                        ).show()
+                        return
+                    }
+                    val alertDialog =
+                        AlertDialog.Builder(this@GlobalPatientSearchActivity)
+                            .setTitle(R.string.global_patient_search_add_patient_dialog_title)
+                            .setMessage(R.string.global_patient_search_add_patient_dialog_message)
+                            .setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int ->
+                                fetchInformationForThisPatient(
+                                    patient,
+                                    globalPatientList,
+                                    globalPatientAdapter
+                                )
+                            }
+                            .setNegativeButton(android.R.string.no) { _: DialogInterface, _: Int -> }
+                            .setIcon(R.drawable.ic_sync)
+                    alertDialog.show()
+                }
+            })
     }
 
     /**

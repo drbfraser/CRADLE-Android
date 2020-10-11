@@ -199,7 +199,7 @@ class ReadingManager @Inject constructor(
                 }
             }
             result.map { Unit }
-    }
+        }
 
     suspend fun downloadAssessment(assessmentId: String): NetworkResult<Unit> =
         withContext(IO) {
