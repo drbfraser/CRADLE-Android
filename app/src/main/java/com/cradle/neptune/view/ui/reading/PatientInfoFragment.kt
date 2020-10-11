@@ -9,26 +9,25 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
-import android.widget.EditText
 import androidx.core.content.res.ResourcesCompat
+import androidx.databinding.DataBindingComponent
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import com.cradle.neptune.R
+import com.cradle.neptune.binding.FragmentDataBindingComponent
 import com.cradle.neptune.databinding.FragmentPatientInfoBinding
 import com.cradle.neptune.model.Patient
-import com.cradle.neptune.model.Sex
-import com.cradle.neptune.utilitiles.unreachable
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
-import kotlinx.android.synthetic.main.fragment_symptoms.*
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.TimeZone
+import kotlinx.android.synthetic.main.fragment_symptoms.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -50,6 +49,8 @@ private const val PATIENT_SEX_OTHER = 2
 @Suppress("LargeClass")
 class PatientInfoFragment : BaseFragment() {
 
+    val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent(this)
+
     var binding: FragmentPatientInfoBinding? = null
 
     /**
@@ -69,20 +70,19 @@ class PatientInfoFragment : BaseFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val dataBinding = DataBindingUtil.inflate<FragmentPatientInfoBinding>(
+        binding = DataBindingUtil.inflate(
             inflater,
             R.layout.fragment_patient_info,
             container,
-            false
-        ).apply {
-            executePendingBindings()
-            viewModel = this@PatientInfoFragment.viewModel
-        }
-        binding = dataBinding
-        return dataBinding.root
+            false,
+            dataBindingComponent
+        )
+        return binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        binding?.lifecycleOwner = viewLifecycleOwner
+        binding?.viewModel = viewModel
         super.onViewCreated(view, savedInstanceState)
         viewModel.patientId.observe(viewLifecycleOwner) {
             viewModel.getValidityErrorMessagePair(
@@ -119,9 +119,11 @@ class PatientInfoFragment : BaseFragment() {
                 // TODO: Remove me.
                 @Suppress("MagicNumber")
                 delay(6000L)
-                Log.d(TAG, "DEBUG: patientAge is ${viewModel.patientAge.value}, dob is ${viewModel.patientDob.value}")
+                Log.d(TAG, "DEBUG: patientAge is ${viewModel.patientAge.value}, " +
+                    "dob is ${viewModel.patientDob.value}")
                 Log.d(TAG, "DEBUG: gender editText has selection: ${autoTextView?.listSelection}")
-                Log.d(TAG, "DEBUG: gender editText has text: ${autoTextView?.text}")
+                Log.d(TAG, "DEBUG: gender editText has text: ${autoTextView?.text}; gender is " +
+                    "actually ${viewModel.patientSex.value}")
             }
         }
     }
