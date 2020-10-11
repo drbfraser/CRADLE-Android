@@ -27,7 +27,6 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.TimeZone
-import kotlinx.android.synthetic.main.fragment_symptoms.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -49,9 +48,9 @@ private const val PATIENT_SEX_OTHER = 2
 @Suppress("LargeClass")
 class PatientInfoFragment : BaseFragment() {
 
-    val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent(this)
+    private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent(this)
 
-    var binding: FragmentPatientInfoBinding? = null
+    private var binding: FragmentPatientInfoBinding? = null
 
     /**
      * A Mutex to lock the changing of the helper and error texts for age input.
@@ -110,10 +109,10 @@ class PatientInfoFragment : BaseFragment() {
 
         val genderTextLayout = view.findViewById<TextInputLayout>(R.id.gender_input_layout)
         val genders = view.resources.getStringArray(R.array.sex)
-        val genderAdapter = ArrayAdapter(view.context, R.layout.list_item, genders)
+        val genderAdapter = ArrayAdapter(view.context, R.layout.list_dropdown_menu_item, genders)
         (genderTextLayout.editText as? AutoCompleteTextView)?.setAdapter(genderAdapter)
 
-        lifecycleScope.launch(Dispatchers.Default) {
+        lifecycleScope.launch(Dispatchers.Main) {
             val autoTextView = genderTextLayout.editText as? AutoCompleteTextView?
             while (true) {
                 // TODO: Remove me.
