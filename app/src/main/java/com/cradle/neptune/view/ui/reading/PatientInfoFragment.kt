@@ -122,6 +122,7 @@ class PatientInfoFragment : BaseFragment() {
                 Log.d(TAG, "DEBUG: gender editText has selection: ${autoTextView?.listSelection}")
                 Log.d(TAG, "DEBUG: gender editText has text: ${autoTextView?.text}; gender is " +
                     "actually ${viewModel.patientSex.value}")
+                Log.d(TAG, "DEBUG: is using dob: ${viewModel.isUsingDateOfBirth.value}")
             }
         }
     }
@@ -140,14 +141,13 @@ class PatientInfoFragment : BaseFragment() {
                     viewModel.patientDob.value =
                         SimpleDateFormat(Patient.DOB_FORMAT_SIMPLEDATETIME).format(Date(it))
                     Log.d(TAG, "DEBUG: DOB received from picker: ${viewModel.patientDob.value}")
-                    viewModel.setAgeState(useDateOfBirth = true)
                 }
             }
         ageInputLayout.apply {
             setStartIconOnClickListener {
                 if (viewModel.isUsingDateOfBirth.value == true) {
                     // Clear icon is shown: handle clear icon actions
-                    viewModel.setAgeState(useDateOfBirth = false)
+                    viewModel.setUsingDateOfBirth(useDateOfBirth = false)
                 } else {
                     // Calendar icon is shown: handle calendar icon actions
                     datePicker.show(childFragmentManager, datePicker.toString())

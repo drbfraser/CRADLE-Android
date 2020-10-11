@@ -6,6 +6,7 @@ import androidx.annotation.MainThread
 import androidx.databinding.ObservableArrayMap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.cradle.neptune.manager.PatientManager
@@ -191,15 +192,26 @@ class PatientReadingViewModel constructor(
      */
     val errorMap = ObservableArrayMap<String, String?>()
 
-    private val _isUsingDateOfBirth = MutableLiveData<Boolean>(patientDob.value != null)
+    /**
+     * Describes the age input state. If the value inside is true, that means that age is derived
+     * from date of birth, and the user has to clear the date of birth before adding new input.
+     * If the value inside is false, they can add an approximate age, or overwrite that with a
+     * date of birth via a date picker.
+     */
+    private val _isUsingDateOfBirth = MediatorLiveData<Boolean>().apply {
+        addSource(patientDob) { dob ->
+            // We use the date of birth iff there is a date of birth.
+            value = dob != null
+        }
+    }
     val isUsingDateOfBirth: LiveData<Boolean> = _isUsingDateOfBirth
 
     /**
-     * Sets the new age state. If called with [useDateOfBirth] false, then the date of birth
+     * Sets the new age input state. If called with [useDateOfBirth] false, then the date of birth
      * will be cleared (nulled) out.
      */
     @MainThread
-    fun setAgeState(useDateOfBirth: Boolean) {
+    fun setUsingDateOfBirth(useDateOfBirth: Boolean) {
         if (!useDateOfBirth) {
             patientDob.value = null
         }
