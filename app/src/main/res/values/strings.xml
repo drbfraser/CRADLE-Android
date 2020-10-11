@@ -329,6 +329,7 @@
     <string name="field_required">*Required</string>
     <string name="fragment_patient_info_age_label">Age*</string>
     <string name="fragment_patient_info_village_number_label">Village number*</string>
+    <string name="fragment_patient_info_gender_label">Gender</string>
     <string name="fragment_patient_info_village_number_label">Village number</string>
 
     <string name="login_activity_device_is_outdated_dialog_title">Device is out of date</string>

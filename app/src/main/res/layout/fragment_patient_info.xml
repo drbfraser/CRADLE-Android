@@ -37,6 +37,31 @@
                     android:layout_height="wrap_content"
                     android:paddingBottom="8dp">
 
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/gender_input_layout"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="4dp"
+                        android:hint="@string/fragment_patient_info_gender_label"
+                        android:paddingBottom="0dp"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                        app:helperText=" "
+                        app:layout_constraintEnd_toStartOf="@+id/guideline"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/age_input_layout"
+                        app:patientAge="@{viewModel.patientAge}"
+                        app:patientDob="@{viewModel.patientDob}">
+                        <!--app:suffixText="@string/age_input_suffix_approximate_years_old"> -->
+
+                        <AutoCompleteTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none"
+                            android:labelFor="@string/fragment_patient_info_gender_label"
+                            android:text="@={BindingConverter.sexToString(context, viewModel.patientSex)}"
+                            />
+                    </com.google.android.material.textfield.TextInputLayout>
+
                     <androidx.constraintlayout.widget.Guideline
                         android:id="@+id/guideline"
                         android:layout_width="wrap_content"

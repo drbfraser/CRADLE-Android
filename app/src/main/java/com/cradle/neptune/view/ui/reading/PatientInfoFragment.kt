@@ -7,6 +7,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.EditText
 import androidx.core.content.res.ResourcesCompat
 import androidx.databinding.DataBindingUtil
@@ -21,6 +23,7 @@ import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import kotlinx.android.synthetic.main.fragment_symptoms.*
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -105,12 +108,20 @@ class PatientInfoFragment : BaseFragment() {
 
         setupAndObserveAgeInfo(view)
 
+        val genderTextLayout = view.findViewById<TextInputLayout>(R.id.gender_input_layout)
+        val genders = view.resources.getStringArray(R.array.sex)
+        val genderAdapter = ArrayAdapter(view.context, R.layout.list_item, genders)
+        (genderTextLayout.editText as? AutoCompleteTextView)?.setAdapter(genderAdapter)
+
         lifecycleScope.launch(Dispatchers.Default) {
+            val autoTextView = genderTextLayout.editText as? AutoCompleteTextView?
             while (true) {
                 // TODO: Remove me.
                 @Suppress("MagicNumber")
                 delay(6000L)
                 Log.d(TAG, "DEBUG: patientAge is ${viewModel.patientAge.value}, dob is ${viewModel.patientDob.value}")
+                Log.d(TAG, "DEBUG: gender editText has selection: ${autoTextView?.listSelection}")
+                Log.d(TAG, "DEBUG: gender editText has text: ${autoTextView?.text}")
             }
         }
     }
@@ -292,31 +303,3 @@ class PatientInfoFragment : BaseFragment() {
         private const val EDIT_TEXT_DOB_STATE_TAG = 1
     }
 }
-
-/**
- * Converts [sex] into an index.
- *
- * We use this function instead of [Sex.ordinal] because, in the event that
- * someone re-orders or adds a new [Sex] variant, the UI would silently break.
- */
-private fun sexIndex(sex: Sex): Int = when (sex) {
-    Sex.MALE -> PATIENT_SEX_MALE
-    Sex.FEMALE -> PATIENT_SEX_FEMALE
-    Sex.OTHER -> PATIENT_SEX_OTHER
-}
-
-/**
- * Converts an index into a [Sex] variant.
- */
-private fun sexFromIndex(index: Int): Sex = when (index) {
-    PATIENT_SEX_MALE -> Sex.MALE
-    PATIENT_SEX_FEMALE -> Sex.FEMALE
-    PATIENT_SEX_OTHER -> Sex.OTHER
-    else -> unreachable("illegal sex index")
-}
-
-private fun View.editText(id: Int): String = this
-    .findViewById<EditText>(id)
-    .text
-    .toString()
-    .trim()
