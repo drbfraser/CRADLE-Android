@@ -288,8 +288,12 @@ data class BloodPressure(
             instance: BloodPressure?,
             currentValues: Map<String, Any?>?
         ): Pair<Boolean, String> = with(value as? Int) {
+            // Normally, we would use a `when (property)` statement here.
+            // We do a `with(value as? Int)` here because we assume that all the properties that we
+            // want to check in this class are of type Int, and they're all verified in the exact
+            // same way up to the boundaries used. So we assume that the [value] passed here is an
+            // Int for one of systolic, diastolic, or heartRate.
             if (this == null) return@with Pair(true, "")
-            // All the fields we check are of type Int.
             val (lowerBound, upperBound, @StringRes resId) = when (property) {
                 BloodPressure::systolic -> Triple(
                     MIN_SYSTOLIC, MAX_SYSTOLIC,
