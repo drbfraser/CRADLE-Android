@@ -39,7 +39,10 @@ class ReadingBindingAdapters constructor(val fragment: Fragment) {
                 Log.d(TAG, "onAgeStateChange: dob in EditText is now $text")
             }
             textInputLayout.apply {
+                val currentError = error
                 helperText = context.getString(R.string.dob_helper_using_age_from_date_of_birth)
+                error = currentError
+
                 startIconDrawable = ResourcesCompat.getDrawable(
                     resources, R.drawable.ic_baseline_clear_24, context.theme
                 )
@@ -48,8 +51,11 @@ class ReadingBindingAdapters constructor(val fragment: Fragment) {
         } else {
             Log.d(TAG, "onAgeStateChange: setting up age")
             textInputLayout.apply {
-                suffixText = context.getString(R.string.age_input_suffix_approximate_years_old)
+                val currentError = error
                 helperText = context.getString(R.string.fragment_patient_info_dob_helper)
+                error = currentError
+
+                suffixText = context.getString(R.string.age_input_suffix_approximate_years_old)
                 startIconDrawable = ResourcesCompat.getDrawable(
                     resources, R.drawable.ic_baseline_calendar_today_24, context.theme
                 )

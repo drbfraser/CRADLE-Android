@@ -210,7 +210,11 @@ class PatientReadingViewModel constructor(
      * date of birth via a date picker.
      */
     private val _isUsingDateOfBirth = MediatorLiveData<Boolean>().apply {
+        // Catch the presence of the date of birth as soon as it decomposes.
         addSource(patientDob) { dob ->
+            // Don't need to listen to changes; should use `setUsingDateOfBirth` to change this
+            // in the future.
+            removeSource(patientDob)
             // We use the date of birth iff there is a date of birth.
             value = dob != null
         }

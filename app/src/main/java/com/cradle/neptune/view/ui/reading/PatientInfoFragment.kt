@@ -150,6 +150,7 @@ class PatientInfoFragment : BaseFragment() {
             .setCalendarConstraints(setupCalendarConstraints())
             .build().apply {
                 addOnPositiveButtonClickListener {
+                    viewModel.setUsingDateOfBirth(useDateOfBirth = true)
                     @SuppressLint("SimpleDateFormat")
                     viewModel.patientDob.value =
                         SimpleDateFormat(Patient.DOB_FORMAT_SIMPLEDATETIME).format(Date(it))
@@ -172,7 +173,7 @@ class PatientInfoFragment : BaseFragment() {
             if (viewModel.isUsingDateOfBirth.value == true) {
                 // This may be triggered when we calculate the actual age from the date of birth.
                 // So, we bail out.
-                Log.d(TAG, "DEBUG: patientAge observe(): exiting since dob is not null")
+                Log.d(TAG, "DEBUG: patientAge observe(): exiting since isUsingDateOfBirth true")
                 return@observe
             }
             val (isValid, errorMessage) = viewModel.getValidityErrorMessagePair(
@@ -186,6 +187,11 @@ class PatientInfoFragment : BaseFragment() {
             }
         }
         viewModel.patientDob.observe(viewLifecycleOwner) {
+            if (viewModel.isUsingDateOfBirth.value == false) {
+                Log.d(TAG, "DEBUG: patientDob observe(): exiting since isUsingDateOfBirth false")
+                return@observe
+            }
+
             val (isValid, errorMessage) = viewModel.getValidityErrorMessagePair(
                 value = it, isForPatient = true, property = Patient::dob, putInErrorMap = false
             )
