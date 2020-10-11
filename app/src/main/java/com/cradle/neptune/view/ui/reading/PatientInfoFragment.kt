@@ -3,6 +3,7 @@ package com.cradle.neptune.view.ui.reading
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.InputType
+import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -10,11 +11,13 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.widget.doOnTextChanged
 import androidx.databinding.DataBindingComponent
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import com.cradle.neptune.R
+import com.cradle.neptune.binding.BindingConverter
 import com.cradle.neptune.binding.FragmentDataBindingComponent
 import com.cradle.neptune.databinding.FragmentPatientInfoBinding
 import com.cradle.neptune.model.Patient
@@ -48,6 +51,9 @@ private const val PATIENT_SEX_OTHER = 2
 @Suppress("LargeClass")
 class PatientInfoFragment : BaseFragment() {
 
+    private var genderTextWatcher: TextWatcher? = null
+    private var genderMenuTextView: AutoCompleteTextView? = null
+
     private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent(this)
 
     private var binding: FragmentPatientInfoBinding? = null
@@ -62,6 +68,13 @@ class PatientInfoFragment : BaseFragment() {
     override fun onDestroy() {
         super.onDestroy()
         binding = null
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        genderTextWatcher?.run {
+            genderMenuTextView?.removeTextChangedListener(this)
+        }
     }
 
     override fun onCreateView(
@@ -106,14 +119,10 @@ class PatientInfoFragment : BaseFragment() {
         }
 
         setupAndObserveAgeInfo(view)
-
-        val genderTextLayout = view.findViewById<TextInputLayout>(R.id.gender_input_layout)
-        val genders = view.resources.getStringArray(R.array.sex)
-        val genderAdapter = ArrayAdapter(view.context, R.layout.list_dropdown_menu_item, genders)
-        (genderTextLayout.editText as? AutoCompleteTextView)?.setAdapter(genderAdapter)
+        setupAndObserveGenderList(view)
 
         lifecycleScope.launch(Dispatchers.Main) {
-            val autoTextView = genderTextLayout.editText as? AutoCompleteTextView?
+            val autoTextView = genderMenuTextView
             while (true) {
                 // TODO: Remove me.
                 @Suppress("MagicNumber")
@@ -211,6 +220,31 @@ class PatientInfoFragment : BaseFragment() {
 
         viewModel.isUsingDateOfBirth.observe(viewLifecycleOwner) {
             lifecycleScope.launch { onAgeStateChange(it, ageInputLayout, ageEditText) }
+        }
+    }
+
+    private fun setupAndObserveGenderList(view: View) {
+        val genderTextLayout = view.findViewById<TextInputLayout>(R.id.gender_input_layout)
+        val genders = view.resources.getStringArray(R.array.sex)
+        val genderAdapter = ArrayAdapter(view.context, R.layout.list_dropdown_menu_item, genders)
+        genderMenuTextView = genderTextLayout.editText as? AutoCompleteTextView?
+        genderMenuTextView?.setAdapter(genderAdapter)
+
+        viewModel.patientSex.observe(viewLifecycleOwner) { sex ->
+            genderMenuTextView?.apply {
+                val sexAsString = BindingConverter.sexToString(view.context, sex)
+                // Prevent infinite loops.
+                if ((sexAsString != null || text.isNotEmpty()) &&
+                    text.toString() != sexAsString) {
+
+                    // We need to pass in false for filter
+                    // (https://material.io/develop/android/components/menu#setting-a-default-value)
+                    setText(sexAsString, false)
+                }
+            }
+        }
+        genderTextWatcher = genderMenuTextView?.doOnTextChanged { text, _, _, _ ->
+            viewModel.patientSex.value = BindingConverter.stringToSex(view.context, text.toString())
         }
     }
 
