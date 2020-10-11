@@ -293,7 +293,27 @@ data class BloodPressure(
             // want to check in this class are of type Int, and they're all verified in the exact
             // same way up to the boundaries used. So we assume that the [value] passed here is an
             // Int for one of systolic, diastolic, or heartRate.
-            if (this == null) return@with Pair(true, "")
+            // If that's not the case, the cast will fail, and `this` will be null.
+            if (this == null) {
+                when (property) {
+                    BloodPressure::systolic -> {
+                        return@with Pair(
+                            false, context.getString(R.string.blood_pressure_error_missing_systolic)
+                        )
+                    }
+                    BloodPressure::diastolic -> {
+                        return@with Pair(
+                            false, context.getString(R.string.blood_pressure_error_missing_diastolic)
+                        )
+                    }
+                    BloodPressure::heartRate -> {
+                        return@with Pair(
+                            false, context.getString(R.string.blood_pressure_error_missing_heart_rate)
+                        )
+                    }
+                    else -> return Pair(true, "")
+                }
+            }
             val (lowerBound, upperBound, @StringRes resId) = when (property) {
                 BloodPressure::systolic -> Triple(
                     MIN_SYSTOLIC, MAX_SYSTOLIC,
