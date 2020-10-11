@@ -8,11 +8,14 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import androidx.lifecycle.viewModelScope
+import com.cradle.neptune.R
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.model.BloodPressure
 import com.cradle.neptune.model.GestationalAge
+import com.cradle.neptune.model.GestationalAgeMonths
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.Referral
@@ -137,6 +140,14 @@ class PatientReadingViewModel constructor(
 
     val patientGestationalAge: MutableLiveData<GestationalAge?>
         get() = patientBuilder.get<GestationalAge?>(Patient::gestationalAge)
+
+    val patientGestationalAgeUnits: LiveData<String> = Transformations.map(patientGestationalAge) {
+        if (it is GestationalAgeMonths) {
+            app.resources.getStringArray(R.array.reading_ga_units)[1]
+        } else {
+            app.resources.getStringArray(R.array.reading_ga_units)[0]
+        }
+    }
 
     val patientSex: MutableLiveData<Sex?>
         get() = patientBuilder.get<Sex?>(Patient::sex)

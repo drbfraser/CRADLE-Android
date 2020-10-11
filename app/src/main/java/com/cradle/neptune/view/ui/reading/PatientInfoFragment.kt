@@ -1,12 +1,14 @@
 package com.cradle.neptune.view.ui.reading
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
 import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import androidx.core.widget.doOnTextChanged
@@ -18,7 +20,11 @@ import com.cradle.neptune.R
 import com.cradle.neptune.binding.BindingConverter
 import com.cradle.neptune.binding.FragmentDataBindingComponent
 import com.cradle.neptune.databinding.FragmentPatientInfoBinding
+import com.cradle.neptune.model.GestationalAgeMonths
+import com.cradle.neptune.model.GestationalAgeWeeks
 import com.cradle.neptune.model.Patient
+import com.cradle.neptune.utilitiles.Months
+import com.cradle.neptune.utilitiles.Weeks
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputEditText
@@ -50,6 +56,9 @@ class PatientInfoFragment : BaseFragment() {
 
     private var genderTextWatcher: TextWatcher? = null
     private var genderMenuTextView: AutoCompleteTextView? = null
+
+    private var gestAgeUnitsTextWatcher: TextWatcher? = null
+    private var gestAgeMenuTextView: AutoCompleteTextView? = null
 
     private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent(this)
 
@@ -110,6 +119,7 @@ class PatientInfoFragment : BaseFragment() {
 
         setupAndObserveAgeInfo(view)
         setupAndObserveGenderList(view)
+        setupAndObserveGestationalAge(view)
 
         lifecycleScope.launch(Dispatchers.Main) {
             val autoTextView = genderMenuTextView
@@ -123,6 +133,9 @@ class PatientInfoFragment : BaseFragment() {
                 Log.d(TAG, "DEBUG: gender editText has text: ${autoTextView?.text}; gender is " +
                     "actually ${viewModel.patientSex.value}")
                 Log.d(TAG, "DEBUG: is using dob: ${viewModel.isUsingDateOfBirth.value}")
+
+                Log.d(TAG, "DEBUG: gestAge is ${viewModel.patientGestationalAge.value} " +
+                    "with units ${viewModel.patientGestationalAgeUnits.value}")
             }
         }
     }
@@ -228,6 +241,45 @@ class PatientInfoFragment : BaseFragment() {
         genderTextWatcher = genderMenuTextView?.doOnTextChanged { text, _, _, _ ->
             viewModel.patientSex.value = BindingConverter.stringToSex(view.context, text.toString())
         }
+        genderMenuTextView?.setOnClickListener {
+            dismissKeyboard(view)
+        }
+    }
+
+    private fun setupAndObserveGestationalAge(view: View) {
+        val gestAgeUnitsTextLayout = view.findViewById<TextInputLayout>(
+            R.id.gestational_age_units_layout
+        )
+        val ageUnits = view.resources.getStringArray(R.array.reading_ga_units)
+        val genderAdapter = ArrayAdapter(view.context, R.layout.list_dropdown_menu_item, ageUnits)
+        gestAgeMenuTextView = gestAgeUnitsTextLayout.editText as? AutoCompleteTextView?
+        gestAgeMenuTextView?.setAdapter(genderAdapter)
+
+        viewModel.patientGestationalAgeUnits.observe(viewLifecycleOwner) { units ->
+            gestAgeMenuTextView?.apply {
+                // Prevent infinite loops.
+                if (text.toString() != units) {
+
+                    // We need to pass in false for filter
+                    // (https://material.io/develop/android/components/menu#setting-a-default-value)
+                    setText(units, false)
+                }
+            }
+        }
+        gestAgeUnitsTextWatcher = gestAgeMenuTextView?.doOnTextChanged { text, _, _, _ ->
+            if (viewModel.patientGestationalAgeUnits.value == text.toString()) {
+                return@doOnTextChanged
+            }
+
+            if (text.toString() == view.resources.getStringArray(R.array.reading_ga_units)[1]) {
+                viewModel.patientGestationalAge.value = GestationalAgeMonths(Months(0))
+            } else {
+                viewModel.patientGestationalAge.value = GestationalAgeWeeks(Weeks(0))
+            }
+        }
+        gestAgeMenuTextView?.setOnClickListener {
+            dismissKeyboard(view)
+        }
     }
 
     private fun setupCalendarConstraints(): CalendarConstraints {
@@ -249,6 +301,12 @@ class PatientInfoFragment : BaseFragment() {
             .setEnd(upperBoundMillis)
             .setOpenAt(defaultDateInMillis)
             .build()
+    }
+
+    private fun dismissKeyboard(view: View) {
+        val manager = activity?.getSystemService(Context.INPUT_METHOD_SERVICE)
+            as? InputMethodManager
+        manager?.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
     companion object {

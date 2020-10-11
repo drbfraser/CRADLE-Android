@@ -8,6 +8,7 @@ import androidx.databinding.BindingAdapter
 import androidx.fragment.app.Fragment
 import com.cradle.neptune.R
 import com.cradle.neptune.model.Sex
+import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 
 private const val TAG = "ReadingBindingAdapter"
@@ -65,9 +66,62 @@ class ReadingBindingAdapters constructor(val fragment: Fragment) {
         checkBox: CheckBox,
         sex: Sex?
     ) {
-        when (sex) {
-            Sex.MALE, null -> checkBox.isEnabled = false
-            else -> checkBox.isEnabled = true
+        checkBox.apply {
+            when (sex) {
+                Sex.MALE, null -> {
+                    isEnabled = false
+                    isChecked = false
+                }
+                else -> isEnabled = true
+            }
         }
     }
+
+    @BindingAdapter("bind:gestationalAgeUnits")
+    fun onGestationalAgeUnitsChanged(
+        textInputLayout: TextInputLayout,
+        oldUnits: String?,
+        newUnits: String?
+    ) {
+        Log.d(TAG, "onGestationalAgeUnitsChanged: old,new $oldUnits, $newUnits")
+        if (oldUnits == newUnits) {
+            return
+        }
+        newUnits ?: return
+        val editText = textInputLayout.editText ?: return
+        (editText as? TextInputEditText)?.apply {
+            inputType = if (newUnits == context.resources.getStringArray(R.array.reading_ga_units)[0]) {
+                InputType.TYPE_CLASS_NUMBER
+            } else {
+                InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
+            }
+        }
+    }
+
+    /*
+    @BindingAdapter("android:text", "bind:gestationalAgeUnits", requireAll = true)
+    fun onGestationalAgeChanged(
+        textInputLayout: TextInputLayout,
+        oldText: CharSequence?,
+        oldGestAgeUnits: String?,
+        text: CharSequence?,
+        gestAgeUnits: String?
+    ) {
+        val editText = textInputLayout.editText ?: return
+        val oldTextFromView = editText.text ?: return
+        Log.d(TAG, "onGestationalAgeChanged: old,oldTextFromView,new $oldText, $oldTextFromView, $text")
+        Log.d(TAG, "onGestationalAgeChanged: old units, new units $oldGestAgeUnits, $gestAgeUnits")
+        if (oldText == text || oldTextFromView == text) {
+            return
+        }
+        if (gestAgeUnits != oldGestAgeUnits) {
+            return
+        }
+        gestAgeUnits ?: return
+
+        (editText as? TextInputEditText)?.apply {
+            s
+        }
+    }
+     */
 }

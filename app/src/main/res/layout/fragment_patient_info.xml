@@ -171,11 +171,10 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/village_layout"
-                        bind:isUsingDateOfBirth="@{viewModel.isUsingDateOfBirth}"
                         app:startIconContentDescription="Date picker for date of birth"
                         app:startIconDrawable="@drawable/ic_baseline_calendar_today_24"
-                        app:suffixText="@string/age_input_suffix_approximate_years_old">
-                        <!--app:suffixText="@string/age_input_suffix_approximate_years_old"> -->
+                        app:suffixText="@string/age_input_suffix_approximate_years_old"
+                        bind:isUsingDateOfBirth="@{viewModel.isUsingDateOfBirth}">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/age_input_text"
@@ -193,8 +192,8 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="4dp"
                         android:hint="@string/fragment_patient_info_gender_label"
-                        android:paddingBottom="0dp"
                         android:labelFor="@id/gender_input_auto_complete_text"
+                        android:paddingBottom="0dp"
                         app:helperText=" "
                         app:layout_constraintEnd_toStartOf="@+id/guideline"
                         app:layout_constraintStart_toStartOf="parent"
@@ -205,7 +204,7 @@
                             android:id="@+id/gender_input_auto_complete_text"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:inputType="none"/>
+                            android:inputType="none" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <CheckBox
@@ -215,9 +214,56 @@
                         android:layout_marginStart="8dp"
                         android:layout_marginTop="8dp"
                         android:text="@string/fragment_patient_info_pregnant_checkbox_label"
-                        bind:sex="@{viewModel.patientSex}"
+                        android:checked="@{viewModel.patientIsPregnant}"
                         app:layout_constraintStart_toStartOf="@+id/guideline"
-                        app:layout_constraintTop_toBottomOf="@+id/age_input_layout" />
+                        app:layout_constraintTop_toBottomOf="@+id/age_input_layout"
+                        bind:sex="@{viewModel.patientSex}" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/gestational_age_layout"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="4dp"
+                        android:hint="@string/fragment_patient_info_gestational_age_label"
+                        android:paddingBottom="0dp"
+                        bind:gestationalAgeUnits="@{viewModel.patientGestationalAgeUnits}"
+                        app:helperText=" "
+                        app:layout_constraintEnd_toStartOf="@+id/gestational_age_units_layout"
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/gender_input_layout">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/gestational_age_text"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textNoSuggestions"
+                            tools:text="23" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/gestational_age_units_layout"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="4dp"
+                        android:hint="@string/fragment_patient_info_gestational_age_units_label"
+                        android:labelFor="@id/gestational_age_units_input_auto_complete_text"
+                        android:paddingBottom="0dp"
+                        app:errorEnabled="false"
+                        app:helperText=" "
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintStart_toEndOf="@+id/gestational_age_layout"
+                        app:layout_constraintTop_toBottomOf="@+id/gender_input_layout">
+
+                        <AutoCompleteTextView
+                            android:id="@+id/gestational_age_units_input_auto_complete_text"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none"
+                            tools:text="weeks" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
