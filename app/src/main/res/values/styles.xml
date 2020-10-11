@@ -39,6 +39,10 @@
         <item name="textInputStyle">@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox</item>
     </style>
 
+    <style name="FormTextInputStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <!-- <item name="android:paddingBottom">@dimen/material_edit_text_bottom_padding</item> -->
+    </style>
+
     <style name="LargeTitle" parent="AppTheme">
         <item name="android:fontFamily">@font/open_sans_bold</item>
         <item name="android:textColor">@color/colorOffWhite</item>
