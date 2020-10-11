@@ -127,10 +127,10 @@ class PatientReadingViewModel constructor(
 
     /* Patient Info */
     val patientId: MutableLiveData<String>
-        get() = patientBuilder.get(Patient::id, "")
+        get() = patientBuilder.get<String>(Patient::id)
 
     val patientName: MutableLiveData<String>
-        get() = patientBuilder.get(Patient::name, "")
+        get() = patientBuilder.get<String>(Patient::name)
 
     val patientDob: MutableLiveData<String?>
         get() = patientBuilder.get<String?>(Patient::dob)
