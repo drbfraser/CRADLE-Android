@@ -192,8 +192,7 @@ class PatientReadingViewModel constructor(
     val errorMap = ObservableArrayMap<String, String?>()
 
     private val _isUsingDateOfBirth = MutableLiveData<Boolean>(patientDob.value != null)
-    val isUsingDateOfBirth: LiveData<Boolean>
-        get() = _isUsingDateOfBirth
+    val isUsingDateOfBirth: LiveData<Boolean> = _isUsingDateOfBirth
 
     /**
      * Sets the new age state. If called with [useDateOfBirth] false, then the date of birth

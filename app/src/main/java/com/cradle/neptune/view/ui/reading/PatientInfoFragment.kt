@@ -2,7 +2,6 @@ package com.cradle.neptune.view.ui.reading
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.text.InputType
 import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
@@ -10,7 +9,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
-import androidx.core.content.res.ResourcesCompat
 import androidx.core.widget.doOnTextChanged
 import androidx.databinding.DataBindingComponent
 import androidx.databinding.DataBindingUtil
@@ -33,7 +31,6 @@ import java.util.TimeZone
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
 
 private const val TAG = "PatientInfoFragment"
 
@@ -57,13 +54,6 @@ class PatientInfoFragment : BaseFragment() {
     private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent(this)
 
     private var binding: FragmentPatientInfoBinding? = null
-
-    /**
-     * A Mutex to lock the changing of the helper and error texts for age input.
-     * If one thread sets an error text and then another thread sets an helper text,
-     * the error text will be ignored.
-     */
-    private val ageHelperErrorTextMutex = Mutex(locked = false)
 
     override fun onDestroy() {
         super.onDestroy()
@@ -177,10 +167,8 @@ class PatientInfoFragment : BaseFragment() {
             )
             ageInputLayout.apply {
                 lifecycleScope.launch {
-                    ageHelperErrorTextMutex.lock()
                     error = if (isValid) null else errorMessage
                     Log.d(TAG, "DEBUG: patient age: set error message to $error")
-                    ageHelperErrorTextMutex.unlock()
                 }
             }
         }
@@ -193,10 +181,8 @@ class PatientInfoFragment : BaseFragment() {
 
             ageInputLayout.apply {
                 lifecycleScope.launch {
-                    ageHelperErrorTextMutex.lock()
                     error = if (isValid) null else errorMessage
                     Log.d(TAG, "DEBUG: patient dob: set error message to $error")
-                    ageHelperErrorTextMutex.unlock()
                 }
 
                 if (it != null) {
@@ -216,10 +202,6 @@ class PatientInfoFragment : BaseFragment() {
                     )
                 }
             }
-        }
-
-        viewModel.isUsingDateOfBirth.observe(viewLifecycleOwner) {
-            lifecycleScope.launch { onAgeStateChange(it, ageInputLayout, ageEditText) }
         }
     }
 
@@ -267,67 +249,6 @@ class PatientInfoFragment : BaseFragment() {
             .setEnd(upperBoundMillis)
             .setOpenAt(defaultDateInMillis)
             .build()
-    }
-
-    /**
-     * Switches between state where user can input approximate age, and the state where user
-     * selected a date of birth.
-     *
-     * - Date of birth state:
-     *   If date of birth is being used, user input is denied, and the other thing the user can do
-     *   is clear the date of birth. Clearing the date of birth brings it into the approximate age
-     *   state.
-     *
-     * - Age input state:
-     *   If date of birth is not being used, user input is allowed for approximate age. User also has
-     *   the option to input a date of birth using a date picker.
-     */
-    @Suppress("NestedBlockDepth")
-    private suspend fun onAgeStateChange(
-        isUsingDateOfBirth: Boolean,
-        layout: TextInputLayout,
-        editText: TextInputEditText
-    ) {
-        // Mutex is needed to prevent helper text changes from overriding error messages.
-        // We use the mutex over this entire function, since this function indirectly modifies a
-        // LiveData value. This modification triggers the observers that set error messages.
-        // Those observers need to be blocked until the helper text is set.
-        ageHelperErrorTextMutex.lock()
-        val context = layout.context
-        if (isUsingDateOfBirth) {
-            Log.d(TAG, "onAgeStateChange: setting up dob")
-            editText.apply {
-                inputType = InputType.TYPE_NULL
-                Log.d(TAG, "onAgeStateChange: dob in EditText is now $text")
-            }
-            layout.apply {
-                helperText = context.getString(R.string.dob_helper_using_age_from_date_of_birth)
-                startIconDrawable = ResourcesCompat.getDrawable(
-                    resources, R.drawable.ic_baseline_clear_24, context.theme
-                )
-            }
-            Log.d(TAG, "onAgeStateChange: done setting up dob")
-        } else {
-            Log.d(TAG, "onAgeStateChange: setting up age")
-            val currentAge: Int? = viewModel.patientAge.value
-            editText.apply {
-                inputType = InputType.TYPE_CLASS_NUMBER
-                if (currentAge != null) {
-                    // Changing the input type doesn't play nice with Data Binding; we need to
-                    // manually set the text to this.
-                    setText(currentAge.toString())
-                }
-            }
-            layout.apply {
-                suffixText = context.getString(R.string.age_input_suffix_approximate_years_old)
-                helperText = context.getString(R.string.fragment_patient_info_dob_helper)
-                startIconDrawable = ResourcesCompat.getDrawable(
-                    resources, R.drawable.ic_baseline_calendar_today_24, context.theme
-                )
-            }
-            Log.d(TAG, "onAgeStateChange: done setting up age")
-        }
-        ageHelperErrorTextMutex.unlock()
     }
 
     companion object {
