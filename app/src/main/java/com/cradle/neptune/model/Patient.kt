@@ -115,6 +115,11 @@ data class Patient(
         const val AGE_UPPER_BOUND = 65
         private const val DOB_FORMAT_SIMPLEDATETIME = "yyyy-MM-dd"
         private const val GESTATIONAL_AGE_WEEKS_MAX = 43
+        @Suppress("ObjectPropertyNaming")
+        private val GESTATIONAL_AGE_MONTHS_MAX = round(
+            GESTATIONAL_AGE_WEEKS_MAX * WeeksAndDays.DAYS_PER_WEEK /
+                (WeeksAndDays.DAYS_PER_MONTH).toDouble()
+        ).toInt()
 
         /**
          * Validates the patient's info
@@ -287,15 +292,11 @@ data class Patient(
                             )
                         )
                     } else {
-                        val maxInMonths = round(
-                            this.age.weeks * WeeksAndDays.DAYS_PER_WEEK /
-                                (WeeksAndDays.DAYS_PER_MONTH).toDouble()
-                        )
                         Pair(
                             false,
                             context.getString(
                                 R.string.patient_error_gestation_greater_than_n_months,
-                                maxInMonths
+                                GESTATIONAL_AGE_MONTHS_MAX
                             )
                         )
                     }
