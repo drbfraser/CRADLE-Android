@@ -283,11 +283,11 @@ data class Patient(
                             false,
                             context.getString(
                                 R.string.patient_error_gestation_greater_than_n_weeks,
-                                this.age.weeks
+                                GESTATIONAL_AGE_WEEKS_MAX
                             )
                         )
                     } else {
-                        val months = round(
+                        val maxInMonths = round(
                             this.age.weeks * WeeksAndDays.DAYS_PER_WEEK /
                                 (WeeksAndDays.DAYS_PER_MONTH).toDouble()
                         )
@@ -295,7 +295,7 @@ data class Patient(
                             false,
                             context.getString(
                                 R.string.patient_error_gestation_greater_than_n_months,
-                                months
+                                maxInMonths
                             )
                         )
                     }
