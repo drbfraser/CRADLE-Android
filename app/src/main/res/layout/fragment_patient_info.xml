@@ -281,6 +281,56 @@
                                 android:inputType="none"
                                 tools:text="weeks" />
                         </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/drug_history_layout"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="4dp"
+                            android:hint="@string/fragment_patient_info_drug_history_label"
+                            android:paddingBottom="0dp"
+                            app:helperText=" "
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/gestational_age_layout">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/drug_history_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="textLongMessage|textMultiLine|textNoSuggestions"
+                                android:maxLines="4"
+                                android:scrollbarStyle="outsideOverlay"
+                                android:scrollbars="vertical"
+                                android:text="@={BindingConverter.singleElementListToString(viewModel.patientDrugHistory)}"
+                                android:verticalScrollbarPosition="right"
+                                tools:text="Drug history sample" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/medical_history_layout"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="4dp"
+                            android:hint="@string/fragment_patient_info_medical_history_label"
+                            android:paddingBottom="0dp"
+                            app:helperText=" "
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/drug_history_layout">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/dmedical_history_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="textLongMessage|textMultiLine|textNoSuggestions"
+                                android:maxLines="4"
+                                android:scrollbarStyle="outsideOverlay"
+                                android:scrollbars="vertical"
+                                android:verticalScrollbarPosition="right"
+                                android:text="@={BindingConverter.singleElementListToString(viewModel.patientMedicalHistory)}"
+                                tools:text="Medical history sample" />
+                        </com.google.android.material.textfield.TextInputLayout>
                     </androidx.constraintlayout.widget.ConstraintLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>

@@ -34,4 +34,14 @@ object BindingConverter {
         context.resources.getStringArray(R.array.sex)[2] -> Sex.OTHER
         else -> null
     }
+
+    /**
+     * Required for converting the drug and medical histories, since they store them as a List
+     * of Strings.
+     */
+    @InverseMethod("stringToSingleElementList")
+    @JvmStatic fun singleElementListToString(list: List<String>?): String =
+        if (list?.isNotEmpty() == true) list[0] else ""
+
+    @JvmStatic fun stringToSingleElementList(string: String): List<String>? = listOf(string)
 }

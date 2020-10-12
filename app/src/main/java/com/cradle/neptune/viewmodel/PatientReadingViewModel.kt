@@ -290,6 +290,12 @@ class PatientReadingViewModel constructor(
     val patientVillageNumber: MutableLiveData<String?>
         get() = patientBuilder.get<String?>(Patient::villageNumber)
 
+    val patientDrugHistory: MutableLiveData<List<String>> =
+        patientBuilder.get<List<String>>(Patient::drugHistoryList, defaultValue = emptyList())
+
+    val patientMedicalHistory: MutableLiveData<List<String>> =
+        patientBuilder.get<List<String>>(Patient::medicalHistoryList, defaultValue = emptyList())
+
     val patientLastEdited: MutableLiveData<Long?>
         get() = patientBuilder.get<Long?>(Patient::lastEdited)
 
