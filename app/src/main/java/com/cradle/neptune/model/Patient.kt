@@ -316,6 +316,14 @@ data class Patient(
                 return Pair(true, "")
             }
 
+            Patient::sex -> {
+                if (value != null) {
+                    Pair(true, "")
+                } else {
+                    Pair(false, context.getString(R.string.patient_error_sex_missing))
+                }
+            }
+
             // Default to true for all other fields / stuff that isn't implemented.
             else -> {
                 Pair(true, "")

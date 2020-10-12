@@ -1,8 +1,11 @@
 package com.cradle.neptune.binding
 
+import android.text.InputFilter
 import android.text.InputType
 import android.util.Log
+import android.view.View
 import android.widget.CheckBox
+import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import androidx.databinding.BindingAdapter
 import androidx.fragment.app.Fragment
@@ -13,10 +16,46 @@ import com.google.android.material.textfield.TextInputLayout
 
 private const val TAG = "ReadingBindingAdapter"
 
+/**
+ * Contains the BindingAdapters for Fragments in the Reading creation flow.
+ * We use the `bind` name space just to clarify that it is part of our custom BindingAdapter set;
+ * the Data Binding library in reality just ignores custom name spaces.
+ */
 class ReadingBindingAdapters constructor(val fragment: Fragment) {
-    @BindingAdapter("errorMessage")
+    @BindingAdapter("bind:enabledOnlyWhen")
+    fun enabledOnlyWhen(view: View, condition: Boolean) {
+        if (!condition && view.isEnabled) {
+            view.isEnabled = false
+        } else if (condition && !view.isEnabled) {
+            view.isEnabled = true
+        }
+    }
+
+    @BindingAdapter("bind:makeTextEmptyWhen")
+    fun makeTextEmptyWhen(view: TextView, condition: Boolean) {
+        if (condition && view.text.isNotEmpty()) {
+            view.text = ""
+        }
+    }
+
+    /**
+     * Adds a mandatory star to the hint text / label when true.
+     */
+    @BindingAdapter("bind:addMandatoryStarToLabelWhen")
+    fun addMandatoryStarToLabelWhen(view: TextInputLayout, condition: Boolean) {
+        val currentHint = view.hint as? String ?: return
+        if (!condition && currentHint.endsWith('*') && currentHint.isNotEmpty()) {
+            view.hint = currentHint.subSequence(0, currentHint.length - 1)
+        } else if (condition && !currentHint.endsWith('*') && currentHint.isNotEmpty()) {
+            view.hint = "$currentHint*"
+        }
+    }
+
+    @BindingAdapter("bind:errorMessage")
     fun setError(textInputLayout: TextInputLayout, errorMessage: String?) {
-        textInputLayout.error = errorMessage
+        if (textInputLayout.error != errorMessage) {
+            textInputLayout.error = errorMessage
+        }
     }
 
     @BindingAdapter("bind:isUsingDateOfBirth")
@@ -96,38 +135,14 @@ class ReadingBindingAdapters constructor(val fragment: Fragment) {
         newUnits ?: return
         val editText = textInputLayout.editText ?: return
         (editText as? TextInputEditText)?.apply {
-            inputType = if (newUnits == context.resources.getStringArray(R.array.reading_ga_units)[0]) {
-                InputType.TYPE_CLASS_NUMBER
+            if (newUnits == context.resources.getStringArray(R.array.reading_ga_units)[0]) {
+                inputType = InputType.TYPE_CLASS_NUMBER
+                filters = arrayOf(InputFilter.LengthFilter(2))
             } else {
-                InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
+                inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
+                @Suppress("MagicNumber")
+                filters = arrayOf(InputFilter.LengthFilter(10))
             }
         }
     }
-
-    /*
-    @BindingAdapter("android:text", "bind:gestationalAgeUnits", requireAll = true)
-    fun onGestationalAgeChanged(
-        textInputLayout: TextInputLayout,
-        oldText: CharSequence?,
-        oldGestAgeUnits: String?,
-        text: CharSequence?,
-        gestAgeUnits: String?
-    ) {
-        val editText = textInputLayout.editText ?: return
-        val oldTextFromView = editText.text ?: return
-        Log.d(TAG, "onGestationalAgeChanged: old,oldTextFromView,new $oldText, $oldTextFromView, $text")
-        Log.d(TAG, "onGestationalAgeChanged: old units, new units $oldGestAgeUnits, $gestAgeUnits")
-        if (oldText == text || oldTextFromView == text) {
-            return
-        }
-        if (gestAgeUnits != oldGestAgeUnits) {
-            return
-        }
-        gestAgeUnits ?: return
-
-        (editText as? TextInputEditText)?.apply {
-            s
-        }
-    }
-     */
 }

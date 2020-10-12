@@ -20,11 +20,7 @@ import com.cradle.neptune.R
 import com.cradle.neptune.binding.BindingConverter
 import com.cradle.neptune.binding.FragmentDataBindingComponent
 import com.cradle.neptune.databinding.FragmentPatientInfoBinding
-import com.cradle.neptune.model.GestationalAgeMonths
-import com.cradle.neptune.model.GestationalAgeWeeks
 import com.cradle.neptune.model.Patient
-import com.cradle.neptune.utilitiles.Months
-import com.cradle.neptune.utilitiles.Weeks
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputEditText
@@ -116,6 +112,11 @@ class PatientInfoFragment : BaseFragment() {
                 value = it, isForPatient = true, property = Patient::villageNumber
             )
         }
+        viewModel.patientSex.observe(viewLifecycleOwner) {
+            viewModel.getValidityErrorMessagePair(
+                value = it, isForPatient = true, property = Patient::sex
+            )
+        }
 
         setupAndObserveAgeInfo(view)
         setupAndObserveGenderList(view)
@@ -125,8 +126,6 @@ class PatientInfoFragment : BaseFragment() {
             val autoTextView = genderMenuTextView
             while (true) {
                 // TODO: Remove me.
-                @Suppress("MagicNumber")
-                delay(6000L)
                 Log.d(TAG, "DEBUG: patientAge is ${viewModel.patientAge.value}, " +
                     "dob is ${viewModel.patientDob.value}")
                 Log.d(TAG, "DEBUG: gender editText has selection: ${autoTextView?.listSelection}")
@@ -135,7 +134,11 @@ class PatientInfoFragment : BaseFragment() {
                 Log.d(TAG, "DEBUG: is using dob: ${viewModel.isUsingDateOfBirth.value}")
 
                 Log.d(TAG, "DEBUG: gestAge is ${viewModel.patientGestationalAge.value} " +
-                    "with units ${viewModel.patientGestationalAgeUnits.value}")
+                    "with units ${viewModel.patientGestationalAgeUnits.value} " +
+                    "and text input ${viewModel.patientGestationalAgeInput.value}")
+
+                @Suppress("MagicNumber")
+                delay(6000L)
             }
         }
     }
@@ -262,10 +265,11 @@ class PatientInfoFragment : BaseFragment() {
         gestAgeMenuTextView?.setAdapter(genderAdapter)
 
         viewModel.patientGestationalAgeUnits.observe(viewLifecycleOwner) { units ->
+            Log.d(TAG, "patientGestationalAgeUnits observe()")
             gestAgeMenuTextView?.apply {
                 // Prevent infinite loops.
                 if (text.toString() != units) {
-
+                    Log.d(TAG, "patientGestationalAgeUnits observe(): setting text")
                     // We need to pass in false for filter
                     // (https://material.io/develop/android/components/menu#setting-a-default-value)
                     setText(units, false)
@@ -274,17 +278,20 @@ class PatientInfoFragment : BaseFragment() {
         }
         gestAgeUnitsTextWatcher = gestAgeMenuTextView?.doOnTextChanged { text, _, _, _ ->
             if (viewModel.patientGestationalAgeUnits.value == text.toString()) {
+                Log.d(TAG, "gestAgeUnitsTextWatcher doOnTextChanged(): bailed")
                 return@doOnTextChanged
             }
-
-            if (text.toString() == view.resources.getStringArray(R.array.reading_ga_units)[1]) {
-                viewModel.patientGestationalAge.value = GestationalAgeMonths(Months(0))
-            } else {
-                viewModel.patientGestationalAge.value = GestationalAgeWeeks(Weeks(0))
-            }
+            Log.d(TAG, "gestAgeUnitsTextWatcher doOnTextChanged(): changing units")
+            viewModel.patientGestationalAgeUnits.value = text.toString()
         }
         gestAgeMenuTextView?.setOnClickListener {
             dismissKeyboard(view)
+        }
+
+        viewModel.patientGestationalAge.observe(viewLifecycleOwner) {
+            viewModel.getValidityErrorMessagePair(
+                value = it, isForPatient = true, property = Patient::gestationalAge
+            )
         }
     }
 

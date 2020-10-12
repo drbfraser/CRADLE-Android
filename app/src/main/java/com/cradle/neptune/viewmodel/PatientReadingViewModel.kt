@@ -8,7 +8,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import androidx.lifecycle.viewModelScope
 import com.cradle.neptune.R
 import com.cradle.neptune.manager.PatientManager
@@ -16,18 +15,26 @@ import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.model.BloodPressure
 import com.cradle.neptune.model.GestationalAge
 import com.cradle.neptune.model.GestationalAgeMonths
+import com.cradle.neptune.model.GestationalAgeWeeks
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.Referral
 import com.cradle.neptune.model.Sex
 import com.cradle.neptune.model.UrineTest
 import com.cradle.neptune.utilitiles.LiveDataDynamicModelBuilder
+import com.cradle.neptune.utilitiles.Months
+import com.cradle.neptune.utilitiles.Weeks
 import com.cradle.neptune.view.ReadingActivity
 import java.lang.IllegalStateException
+import java.text.DecimalFormat
 import kotlin.reflect.KProperty
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
+// The index of the gestational age units inside of the string.xml array, R.array.reading_ga_units
+private const val GEST_AGE_UNIT_WEEKS_INDEX = 0
+private const val GEST_AGE_UNIT_MONTHS_INDEX = 1
 
 /**
  * The ViewModel that is used in [ReadingActivity] and its [BaseFragment]s
@@ -40,6 +47,11 @@ class PatientReadingViewModel constructor(
 ) : AndroidViewModel(app) {
     private val patientBuilder = LiveDataDynamicModelBuilder()
     private val readingBuilder = LiveDataDynamicModelBuilder()
+
+    private val monthsUnitString = app.resources
+        .getStringArray(R.array.reading_ga_units)[GEST_AGE_UNIT_MONTHS_INDEX]
+    private val weeksUnitString = app.resources
+        .getStringArray(R.array.reading_ga_units)[GEST_AGE_UNIT_WEEKS_INDEX]
 
     private lateinit var reasonForLaunch: ReadingActivity.LaunchReason
 
@@ -138,14 +150,110 @@ class PatientReadingViewModel constructor(
     val patientAge: MutableLiveData<Int?>
         get() = patientBuilder.get<Int?>(Patient::age)
 
-    val patientGestationalAge: MutableLiveData<GestationalAge?>
-        get() = patientBuilder.get<GestationalAge?>(Patient::gestationalAge)
+    val patientGestationalAge: MediatorLiveData<GestationalAge?> =
+        patientBuilder.get<GestationalAge?>(Patient::gestationalAge)
 
-    val patientGestationalAgeUnits: LiveData<String> = Transformations.map(patientGestationalAge) {
-        if (it is GestationalAgeMonths) {
-            app.resources.getStringArray(R.array.reading_ga_units)[1]
-        } else {
-            app.resources.getStringArray(R.array.reading_ga_units)[0]
+    /**
+     * Input that is taken directly from the form as a String.
+     */
+    val patientGestationalAgeInput: MutableLiveData<String> = MediatorLiveData<String>()
+
+    val patientGestationalAgeUnits: MutableLiveData<String> = MediatorLiveData<String>().apply {
+        value = weeksUnitString
+    }
+
+    /**
+     * Used when converting weeks to months. We don't want to show some really long Double with
+     * a lot of trailing zeros to the user, so we truncate when possible.
+     */
+    private val gestationalAgeDecimalFormat = DecimalFormat("#.####")
+
+    init {
+        addSourcesForGestationAgeMediatorLiveData()
+    }
+
+    private fun addSourcesForGestationAgeMediatorLiveData() {
+        (patientGestationalAgeInput as MediatorLiveData<String>).apply {
+            // Listen for the first change to gestational age in order to show the right text.
+            addSource(patientGestationalAge) {
+                // Must remove, since `patientGestationalAge` LiveData has this input LiveData as
+                // a source
+                removeSource(patientGestationalAge)
+                value = when (it) {
+                    is GestationalAgeMonths -> {
+                        gestationalAgeDecimalFormat.format(it.age.asMonths())
+                    }
+                    is GestationalAgeWeeks -> {
+                        // This also makes the default units in weeks.
+                        it.age.weeks.toString()
+                    }
+                    else -> {
+                        ""
+                    }
+                }
+            }
+        }
+
+        (patientGestationalAgeUnits as MediatorLiveData<String>).apply {
+            // Listen for the first change to gestational age in order to set the right units.
+            addSource(patientGestationalAge) {
+                removeSource(patientGestationalAge)
+                value = if (it is GestationalAgeMonths) {
+                    monthsUnitString
+                } else {
+                    // This also makes the default units in weeks.
+                    weeksUnitString
+                }
+            }
+        }
+
+        patientGestationalAge.apply {
+            addSource(patientGestationalAgeUnits) {
+                // If we received an update to the units used, convert the GestationalAge object
+                // into the right type.
+                Log.d(TAG, "DEBUG: patientGestationalAge: units source: $it")
+                it ?: return@addSource
+
+                if (it == monthsUnitString && value is GestationalAgeWeeks) {
+                    Log.d(TAG, "DEBUG: patientGestationalAge units source: converting to Months")
+
+                    value = GestationalAgeMonths((value as GestationalAge).value)
+                    // Zero out the input when changing units.
+                    patientGestationalAgeInput.value = "0"
+                } else if (it == weeksUnitString && value is GestationalAgeMonths) {
+                    Log.d(TAG, "DEBUG: patientGestationalAge units source: converting to Weeks")
+
+                    value = GestationalAgeWeeks((value as GestationalAge).value)
+                    // Zero out the input when changing units.
+                    patientGestationalAgeInput.value = "0"
+                } else {
+                    Log.d(TAG, "DEBUG: patientGestationalAge units source: didn't do anything")
+                }
+            }
+            addSource(patientGestationalAgeInput) {
+                // If the user typed something in, create a new GestationalAge object with the
+                // specified values.
+                Log.d(TAG, "DEBUG: patientGestationalAge input source: $it")
+                it ?: return@addSource
+                if (it.isBlank()) {
+                    value = null
+                    return@addSource
+                }
+
+                val currentUnitsString = patientGestationalAgeUnits.value
+                value = if (currentUnitsString == monthsUnitString) {
+                    val userInput: Double = it.toDoubleOrNull() ?: 0.0
+                    GestationalAgeMonths(Months(userInput))
+                } else {
+                    val userInput: Long = it.toLongOrNull() ?: 0L
+                    GestationalAgeWeeks(Weeks(userInput))
+                }
+            }
+            addSource(patientIsPregnant) { isPregnant ->
+                if (isPregnant == false) {
+                    value = null
+                }
+            }
         }
     }
 
@@ -263,4 +371,8 @@ class PatientReadingViewModel constructor(
                 errorMap[property.name] = null
             }
         }
+
+    companion object {
+        private const val TAG = "PatientReadingViewModel"
+    }
 }

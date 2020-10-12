@@ -309,9 +309,9 @@
     <string name="patient_error_age_between_n_and_m">Age must be between %1$d and %2$d</string>
     <string name="patient_error_age_or_dob_missing">Missing age or date of birth</string>
     <string name="patient_error_name_must_be_characters">Name must be characters</string>
-    <string name="patient_error_gestational_age_missing">Gestational age is missing despite pregnancy</string>
-    <string name="patient_error_gestation_greater_than_n_weeks">Gestation is greater than %1$d weeks</string>
-    <string name="patient_error_gestation_greater_than_n_months">Gestation is greater than %1$d months</string>
+    <string name="patient_error_gestational_age_missing">Missing</string>
+    <string name="patient_error_gestation_greater_than_n_weeks">Over %1$d weeks</string>
+    <string name="patient_error_gestation_greater_than_n_months">Over %1$d months</string>
     <string name="patient_error_gestation_must_be_not_zero">Can\'t be 0</string>
     <string name="blood_pressure_error_systolic_out_of_bounds">Systolic blood pressure needs to be %1$d and %2$d</string>
     <string name="blood_pressure_error_diastolic_out_of_bounds">Diastolic blood pressure needs to be %1$d - %2$d</string>
@@ -319,7 +319,7 @@
     <string name="blood_pressure_error_missing_systolic">Missing systolic blood pressure</string>
     <string name="blood_pressure_error_missing_diastolic">Missing diastolic blood pressure</string>
     <string name="blood_pressure_error_missing_heart_rate">Missing heart rate</string>
-    <string name="fragment_patient_info_dob_helper">Enter approximate age, or use date of birth</string>
+    <string name="fragment_patient_info_dob_helper">Enter approximate age, or use date of birth via icon</string>
     <string name="age_date_picker_title">Select date of birth</string>
     <string name="age_input_suffix_approximate_years_old">years old (approximate)</string>
     <string name="age_input_calculated_age">(%1$d years old)</string>
@@ -329,10 +329,12 @@
     <string name="field_required">*Required</string>
     <string name="fragment_patient_info_age_label">Age*</string>
     <string name="fragment_patient_info_village_number_label">Village number*</string>
-    <string name="fragment_patient_info_gender_label">Gender</string>
+    <string name="fragment_patient_info_gender_label">Gender*</string>
     <string name="fragment_patient_info_pregnant_checkbox_label">Pregnant</string>
     <string name="fragment_patient_info_gestational_age_units_label">Gestational age units</string>
     <string name="fragment_patient_info_gestational_age_label">Gestational age</string>
+    <string name="patient_error_sex_missing">Missing gender</string>
+    <string name="fragment_patient_info_id_label">ID*</string>
     <string name="fragment_patient_info_village_number_label">Village number</string>
 
     <string name="login_activity_device_is_outdated_dialog_title">Device is out of date</string>

@@ -52,8 +52,8 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="4dp"
                         android:hint="@string/fragment_patient_info_name_label"
-                        app:errorMessage='@{viewModel.errorMap["name"]}'
-                        app:helperText="@string/field_required"
+                        bind:errorMessage='@{viewModel.errorMap["name"]}'
+                        app:helperText=" "
                         app:layout_constraintEnd_toStartOf="@+id/patient_id_text_layout"
                         app:layout_constraintHorizontal_bias="0.5"
                         app:layout_constraintHorizontal_weight="0.5"
@@ -75,14 +75,14 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_margin="4dp"
-                        android:hint="@string/id"
-                        app:errorMessage='@{viewModel.errorMap["id"]}'
-                        app:helperText="@string/field_required"
+                        android:hint="@string/fragment_patient_info_id_label"
+                        app:helperText=" "
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintHorizontal_bias="0.5"
                         app:layout_constraintHorizontal_weight="0.5"
                         app:layout_constraintStart_toEndOf="@+id/initials_layout"
-                        app:layout_constraintTop_toTopOf="parent">
+                        app:layout_constraintTop_toTopOf="parent"
+                        bind:errorMessage='@{viewModel.errorMap["id"]}'>
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/patient_id_text"
@@ -145,8 +145,8 @@
                         android:layout_margin="4dp"
                         android:hint="@string/fragment_patient_info_village_number_label"
                         android:paddingBottom="0dp"
-                        app:errorMessage='@{viewModel.errorMap["villageNumber"]}'
-                        app:helperText="@string/field_required"
+                        bind:errorMessage='@{viewModel.errorMap["villageNumber"]}'
+                        app:helperText=" "
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/zone_layout">
@@ -194,6 +194,7 @@
                         android:hint="@string/fragment_patient_info_gender_label"
                         android:labelFor="@id/gender_input_auto_complete_text"
                         android:paddingBottom="0dp"
+                        bind:errorMessage='@{viewModel.errorMap["sex"]}'
                         app:helperText=" "
                         app:layout_constraintEnd_toStartOf="@+id/guideline"
                         app:layout_constraintStart_toStartOf="parent"
@@ -214,7 +215,7 @@
                         android:layout_marginStart="8dp"
                         android:layout_marginTop="8dp"
                         android:text="@string/fragment_patient_info_pregnant_checkbox_label"
-                        android:checked="@{viewModel.patientIsPregnant}"
+                        android:checked="@={viewModel.patientIsPregnant}"
                         app:layout_constraintStart_toStartOf="@+id/guideline"
                         app:layout_constraintTop_toBottomOf="@+id/age_input_layout"
                         bind:sex="@{viewModel.patientSex}" />
@@ -226,7 +227,10 @@
                         android:layout_margin="4dp"
                         android:hint="@string/fragment_patient_info_gestational_age_label"
                         android:paddingBottom="0dp"
+                        bind:enabledOnlyWhen="@{viewModel.patientIsPregnant}"
+                        bind:addMandatoryStarToLabelWhen="@{viewModel.patientIsPregnant}"
                         bind:gestationalAgeUnits="@{viewModel.patientGestationalAgeUnits}"
+                        bind:errorMessage='@{viewModel.errorMap["gestationalAge"]}'
                         app:helperText=" "
                         app:layout_constraintEnd_toStartOf="@+id/gestational_age_units_layout"
                         app:layout_constraintHorizontal_bias="0.5"
@@ -238,6 +242,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="textNoSuggestions"
+                            android:text="@={viewModel.patientGestationalAgeInput}"
+                            bind:makeTextEmptyWhen="@{!viewModel.patientIsPregnant}"
                             tools:text="23" />
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -252,10 +258,12 @@
                         android:paddingBottom="0dp"
                         app:errorEnabled="false"
                         app:helperText=" "
+                        app:hintAnimationEnabled="false"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintHorizontal_bias="0.5"
                         app:layout_constraintStart_toEndOf="@+id/gestational_age_layout"
-                        app:layout_constraintTop_toBottomOf="@+id/gender_input_layout">
+                        app:layout_constraintTop_toBottomOf="@+id/gender_input_layout"
+                        bind:enabledOnlyWhen="@{viewModel.patientIsPregnant}">
 
                         <AutoCompleteTextView
                             android:id="@+id/gestational_age_units_input_auto_complete_text"
