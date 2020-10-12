@@ -93,32 +93,6 @@ class PatientInfoFragment : BaseFragment() {
         binding?.lifecycleOwner = viewLifecycleOwner
         binding?.viewModel = viewModel
         super.onViewCreated(view, savedInstanceState)
-        viewModel.patientId.observe(viewLifecycleOwner) {
-            viewModel.getValidityErrorMessagePair(
-                value = it, isForPatient = true, property = Patient::id
-            )
-        }
-        viewModel.patientName.observe(viewLifecycleOwner) {
-            viewModel.getValidityErrorMessagePair(
-                value = it, isForPatient = true, property = Patient::name
-            )
-        }
-
-        viewModel.patientZone.observe(viewLifecycleOwner) {
-            viewModel.getValidityErrorMessagePair(
-                value = it, isForPatient = true, property = Patient::zone
-            )
-        }
-        viewModel.patientVillageNumber.observe(viewLifecycleOwner) {
-            viewModel.getValidityErrorMessagePair(
-                value = it, isForPatient = true, property = Patient::villageNumber
-            )
-        }
-        viewModel.patientSex.observe(viewLifecycleOwner) {
-            viewModel.getValidityErrorMessagePair(
-                value = it, isForPatient = true, property = Patient::sex
-            )
-        }
 
         setupAndObserveAgeInfo(view)
         setupAndObserveGenderList(view)
@@ -177,38 +151,14 @@ class PatientInfoFragment : BaseFragment() {
                 }
             }
         }
-        viewModel.patientAge.observe(viewLifecycleOwner) {
-            Log.d(TAG, "DEBUG: patientAge observe()")
-            if (viewModel.isUsingDateOfBirth.value == true) {
-                // This may be triggered when we calculate the actual age from the date of birth.
-                // So, we bail out.
-                Log.d(TAG, "DEBUG: patientAge observe(): exiting since isUsingDateOfBirth true")
-                return@observe
-            }
-            val (isValid, errorMessage) = viewModel.getValidityErrorMessagePair(
-                value = it, isForPatient = true, property = Patient::age, putInErrorMap = false
-            )
-            ageInputLayout.apply {
-                error = if (isValid) null else errorMessage
-                Log.d(TAG, "DEBUG: patient age: set error message to $error")
-            }
-        }
+
         viewModel.patientDob.observe(viewLifecycleOwner) {
             if (viewModel.isUsingDateOfBirth.value == false) {
                 Log.d(TAG, "DEBUG: patientDob observe(): exiting since isUsingDateOfBirth false")
                 return@observe
             }
 
-            val (isValid, errorMessage) = viewModel.getValidityErrorMessagePair(
-                value = it, isForPatient = true, property = Patient::dob, putInErrorMap = false
-            )
-            Log.d(TAG, "DEBUG: patient dob observe() value: $it, valid: $isValid, " +
-                "errors: $errorMessage")
-
             ageInputLayout.apply {
-                error = if (isValid) null else errorMessage
-                Log.d(TAG, "DEBUG: patient dob: set error message to $error")
-
                 if (it != null) {
                     Log.d(TAG, "DEBUG: patient dob: setting patient age")
                     viewModel.patientAge.value = try {
@@ -288,12 +238,6 @@ class PatientInfoFragment : BaseFragment() {
         }
         gestAgeMenuTextView?.setOnClickListener {
             dismissKeyboard(view)
-        }
-
-        viewModel.patientGestationalAge.observe(viewLifecycleOwner) {
-            viewModel.getValidityErrorMessagePair(
-                value = it, isForPatient = true, property = Patient::gestationalAge
-            )
         }
     }
 

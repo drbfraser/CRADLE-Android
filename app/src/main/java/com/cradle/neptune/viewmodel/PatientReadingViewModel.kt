@@ -2,8 +2,10 @@ package com.cradle.neptune.viewmodel
 
 import android.app.Application
 import android.util.Log
+import androidx.annotation.GuardedBy
 import androidx.annotation.MainThread
-import androidx.databinding.ObservableArrayMap
+import androidx.collection.ArrayMap
+import androidx.collection.arrayMapOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
@@ -30,6 +32,7 @@ import java.text.DecimalFormat
 import kotlin.reflect.KProperty
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 
 // The index of the gestational age units inside of the string.xml array, R.array.reading_ga_units
@@ -37,7 +40,8 @@ private const val GEST_AGE_UNIT_WEEKS_INDEX = 0
 private const val GEST_AGE_UNIT_MONTHS_INDEX = 1
 
 /**
- * The ViewModel that is used in [ReadingActivity] and its [BaseFragment]s
+ * The ViewModel that is used in [ReadingActivity] and its [BaseFragment]s.
+ * This should be initialized before the Fragments are created
  */
 @SuppressWarnings("LargeClass")
 class PatientReadingViewModel constructor(
@@ -55,64 +59,84 @@ class PatientReadingViewModel constructor(
 
     private lateinit var reasonForLaunch: ReadingActivity.LaunchReason
 
+    private val isInitializedMutex = Mutex(locked = false)
+
+    @GuardedBy("isInitializedMutex")
+    private val _isInitialized = MutableLiveData<Boolean>(false)
+    // It's not a problem that this variable isn't locked, since it's not meant to be Mutable, and
+    // the only things that happen is that this is being observed.
+    val isInitialized: LiveData<Boolean>
+        get() = _isInitialized
+
     /**
      * If not creating a new patient, the patient and reading requested will be asynchronously
      * initialized, and then [isInitialized] will emit true if no errors occur.
+     * This needs to be run before the ViewModel can be used.
      */
     @MainThread
     fun initialize(
         launchReason: ReadingActivity.LaunchReason,
         readingId: String?
     ) {
-        if (_isInitialized.value == true) {
-            return
-        }
-
-        reasonForLaunch = launchReason
-        if (reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
-            _isInitialized.value = true
-            return
-        }
-
-        check(!readingId.isNullOrEmpty()) {
-            "was given no readingId despite not creating new reading"
-        }
-
         viewModelScope.launch(Dispatchers.Default) {
-            val reading = readingManager.getReadingById(readingId)
-                ?: throw IllegalStateException("no reading associated with given id")
-            val patient = patientManager.getPatientById(reading.patientId)
-                ?: throw IllegalStateException("no patient associated with given reading")
-
-            when (reasonForLaunch) {
-                ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT -> {
-                    decompose(patient, reading)
+            isInitializedMutex.lock()
+            try {
+                if (_isInitialized.value == true) {
+                    return@launch
                 }
-                ReadingActivity.LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {
-                    decompose(patient)
-                }
-                ReadingActivity.LaunchReason.LAUNCH_REASON_RECHECK -> {
-                    decompose(patient)
 
-                    // Add the old reading to the previous list of the new reading.
-                    val previousIds = previousReadingIds.value ?: ArrayList()
-                    with(previousIds) {
-                        add(reading.id)
-                        previousReadingIds.postValue(this)
+                reasonForLaunch = launchReason
+                if (reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
+                    // _isInitialized will be set to true via the finally branch.
+                    return@launch
+                }
+
+                check(!readingId.isNullOrEmpty()) {
+                    "was given no readingId despite not creating new reading"
+                }
+
+                val reading = readingManager.getReadingById(readingId)
+                    ?: throw IllegalStateException("no reading associated with given id")
+                val patient = patientManager.getPatientById(reading.patientId)
+                    ?: throw IllegalStateException("no patient associated with given reading")
+
+                when (reasonForLaunch) {
+                    ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT -> {
+                        check(!reading.isUploadedToServer) {
+                            "trying to edit a reading that has already been uploaded"
+                        }
+                        decompose(patient, reading)
+                    }
+                    ReadingActivity.LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {
+                        decompose(patient)
+                    }
+                    ReadingActivity.LaunchReason.LAUNCH_REASON_RECHECK -> {
+                        decompose(patient)
+
+                        // Add the old reading to the previous list of the new reading.
+                        val previousIds = previousReadingIds.value ?: ArrayList()
+                        with(previousIds) {
+                            add(reading.id)
+                            previousReadingIds.postValue(this)
+                        }
+                    }
+                    else -> {
+                        check(false) { "invalid launch reason" }
                     }
                 }
-                else -> {
-                    check(false) { "invalid launch reason" }
+            } finally {
+                // Make sure we don't retrigger observers if this is run twice for some reason.
+                if (_isInitialized.value == false) {
+                    withContext(Dispatchers.Main) {
+                        _isInitialized.value = true
+                    }
                 }
+                isInitializedMutex.unlock()
             }
-
-            withContext(Dispatchers.Main) {
-                _isInitialized.value = true
-            }
-            Log.d("PatientReadingViewModel", "initialized, with id ${patientId.value}")
         }
     }
 
+    @GuardedBy("isInitializedMutex")
     private fun decompose(patient: Patient) {
         if (_isInitialized.value == true) {
             return
@@ -120,6 +144,7 @@ class PatientReadingViewModel constructor(
         patientBuilder.decompose(patient)
     }
 
+    @GuardedBy("isInitializedMutex")
     private fun decompose(patient: Patient, reading: Reading) {
         if (_isInitialized.value == true) {
             return
@@ -132,10 +157,6 @@ class PatientReadingViewModel constructor(
         }
         readingBuilder.decompose(reading.copy(symptoms = symptomsCopy))
     }
-
-    private val _isInitialized = MutableLiveData<Boolean>(false)
-    val isInitialized: LiveData<Boolean>
-        get() = _isInitialized
 
     /* Patient Info */
     val patientId: MutableLiveData<String>
@@ -309,7 +330,51 @@ class PatientReadingViewModel constructor(
      * A map of KProperty.name to error messages. If an error message is null, that means the field
      * is valid. Used by Data Binding.
      */
-    val errorMap = ObservableArrayMap<String, String?>()
+    private val _errorMap = MediatorLiveData<ArrayMap<String, String?>>().apply {
+        value = arrayMapOf()
+        addSource(patientId) {
+            setErrorMessageInErrorMap(
+                value = it, propertyToCheck = Patient::id, isForPatient = true
+            )
+        }
+        addSource(patientName) {
+            setErrorMessageInErrorMap(
+                value = it, propertyToCheck = Patient::name, isForPatient = true
+            )
+        }
+        addSource(patientDob) {
+            if (_isUsingDateOfBirth.value == false) {
+                // The date of birth and age will use the same key for the error map.
+                // Prefer errors that come from the age if using age.
+                return@addSource
+            }
+            setErrorMessageInErrorMap(
+                value = it, propertyToCheck = Patient::dob,
+                isForPatient = true, propertyForMap = Patient::age
+            )
+        }
+        addSource(patientAge) {
+            if (_isUsingDateOfBirth.value == true) {
+                // The date of birth and age will use the same key for the error map.
+                // Prefer errors that come from the date of birth if using date of birth.
+                return@addSource
+            }
+            setErrorMessageInErrorMap(
+                value = it, propertyToCheck = Patient::age, isForPatient = true
+            )
+        }
+        addSource(patientGestationalAge) {
+            setErrorMessageInErrorMap(
+                value = it, propertyToCheck = Patient::gestationalAge, isForPatient = true
+            )
+        }
+        addSource(patientSex) {
+            setErrorMessageInErrorMap(
+                value = it, propertyToCheck = Patient::sex, isForPatient = true
+            )
+        }
+    }
+    val errorMap: LiveData<ArrayMap<String, String?>> = _errorMap
 
     /**
      * Describes the age input state. If the value inside is true, that means that age is derived
@@ -320,8 +385,8 @@ class PatientReadingViewModel constructor(
     private val _isUsingDateOfBirth = MediatorLiveData<Boolean>().apply {
         // Catch the presence of the date of birth as soon as it decomposes.
         addSource(patientDob) { dob ->
-            // Don't need to listen to changes; should use `setUsingDateOfBirth` to change this
-            // in the future.
+            // Don't need to listen to anymore changes; should use `setUsingDateOfBirth` to change
+            // _isUsingDateOfBirth
             removeSource(patientDob)
             // We use the date of birth iff there is a date of birth.
             value = dob != null
@@ -344,33 +409,35 @@ class PatientReadingViewModel constructor(
     /**
      * @param isForPatient True if viewing patient property; false if viewing reading property
      */
-    fun getValidityErrorMessagePair(
+    @MainThread
+    private fun setErrorMessageInErrorMap(
         value: Any?,
+        propertyToCheck: KProperty<*>,
         isForPatient: Boolean,
-        property: KProperty<*>,
-        putInErrorMap: Boolean = true
-    ): Pair<Boolean, String> = if (isForPatient) {
+        propertyForMap: KProperty<*> = propertyToCheck
+    ) {
+        val (isValid, errorMessage) = if (isForPatient) {
             Patient.isValueValid(
-                property, value, getApplication(),
+                propertyToCheck, value, getApplication(),
                 instance = null, currentValues = patientBuilder.publicMap
             )
         } else {
             Reading.isValueValid(
-                property, value, getApplication(),
+                propertyToCheck, value, getApplication(),
                 instance = null, currentValues = readingBuilder.publicMap
             )
         }
-        .also {
-            if (!putInErrorMap) {
-                return@also
-            }
 
-            if (!it.first) {
-                errorMap[property.name] = it.second
-            } else {
-                errorMap[property.name] = null
-            }
+        val errorMessageForMap = if (!isValid) errorMessage else null
+        val currentMap = _errorMap.value ?: arrayMapOf()
+
+        // Don't notify observers if the error message is the exact same message.
+        if (currentMap[propertyForMap.name] != errorMessageForMap) {
+            currentMap[propertyForMap.name] = errorMessageForMap
+            _errorMap.value = currentMap
+            _errorMap.value = errorMap.value
         }
+    }
 
     companion object {
         private const val TAG = "PatientReadingViewModel"
