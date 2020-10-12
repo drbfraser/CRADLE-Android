@@ -3,6 +3,7 @@ package com.cradle.neptune.model
 import android.content.Context
 import android.text.TextUtils
 import com.cradle.neptune.R
+import com.cradle.neptune.utilitiles.Months
 import com.cradle.neptune.utilitiles.Weeks
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import java.lang.IllegalArgumentException
+import java.time.Month
 import kotlin.reflect.KProperty
 
 @ExtendWith(MockKExtension::class)
@@ -394,6 +396,74 @@ class PatientTests {
             // invalid when out of range
             val invalidGestationalAges = (0..0 union 44..120).map {
                 GestationalAgeWeeks(Weeks(it.toLong()))
+            }.toSet()
+            assertValidityOverSet(
+                invalidGestationalAges, Patient::gestationalAge,
+                areAllValuesValid = false, dependentPropertiesMap = mapOf(
+                    Patient::sex to sex, Patient::isPregnant to isPregnant
+                )
+            )
+        }
+
+        val gestationalAgeIgnored = setOf(
+            Pair(Sex.FEMALE, false),
+            Pair(Sex.OTHER, false),
+            Pair(Sex.MALE, false),
+            Pair(Sex.MALE, true)
+        )
+        for ((sex, isPregnant) in gestationalAgeIgnored) {
+            assertValidityOverSet(
+                setOf(null), Patient::gestationalAge,
+                areAllValuesValid = true, dependentPropertiesMap = mapOf(
+                    Patient::sex to sex, Patient::isPregnant to isPregnant
+                )
+            )
+        }
+    }
+
+    @Test
+    fun verify_gestationalAgeMonths_withoutPatientInstance() {
+        val validGestationalAges =
+            (1..10).map { GestationalAgeMonths(Months(it.toLong())) }.toSet()
+
+        val validGestationalAgesDouble = mutableSetOf<Double>().apply {
+            var doubleValue = 1.0
+            while (doubleValue < 9.9) {
+                this.add(doubleValue)
+                doubleValue += 0.1
+            }
+        }.map { GestationalAgeMonths(Months(it)) }.toSet()
+
+        val gestationalAgeNeeded = setOf(
+            Pair(Sex.FEMALE, true),
+            Pair(Sex.OTHER, true)
+        )
+        for ((sex, isPregnant) in gestationalAgeNeeded) {
+            assertValidityOverSet(
+                validGestationalAges, Patient::gestationalAge,
+                areAllValuesValid = true, dependentPropertiesMap = mapOf(
+                    Patient::sex to sex, Patient::isPregnant to isPregnant
+                )
+            )
+
+            assertValidityOverSet(
+                validGestationalAgesDouble, Patient::gestationalAge,
+                areAllValuesValid = true, dependentPropertiesMap = mapOf(
+                    Patient::sex to sex, Patient::isPregnant to isPregnant
+                )
+            )
+
+            // invalid if gestational age needed but it's missing
+            assertValidityOverSet(
+                setOf(null), Patient::gestationalAge,
+                areAllValuesValid = false, dependentPropertiesMap = mapOf(
+                    Patient::sex to sex, Patient::isPregnant to isPregnant
+                )
+            )
+
+            // invalid when out of range
+            val invalidGestationalAges = (0..0 union 44..120).map {
+                GestationalAgeMonths(Months(it.toLong()))
             }.toSet()
             assertValidityOverSet(
                 invalidGestationalAges, Patient::gestationalAge,
