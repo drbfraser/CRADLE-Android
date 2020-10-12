@@ -15,14 +15,12 @@ import com.cradle.neptune.ext.optLongField
 import com.cradle.neptune.ext.optStringField
 import com.cradle.neptune.ext.put
 import com.cradle.neptune.ext.stringField
-import com.cradle.neptune.ext.toList
 import com.cradle.neptune.ext.union
 import com.cradle.neptune.utilitiles.Months
 import com.cradle.neptune.utilitiles.Seconds
 import com.cradle.neptune.utilitiles.UnixTimestamp
 import com.cradle.neptune.utilitiles.Weeks
 import java.io.Serializable
-import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -47,6 +45,9 @@ import org.json.JSONObject
  * @property drugHistoryList A list of drug history for the patient.
  * @property medicalHistoryList A list of medical history for the patient.
  * @property lastEdited Last time patient info was edited
+ *
+ * TODO: Move drug and medical history to just be Strings, or get the frontend and backend to change
+ * this into a list. There's no point in doing things different on Android and the frontend / backend.
  */
 @Entity
 data class Patient(
@@ -112,11 +113,12 @@ data class Patient(
             isPregnant = data.optBooleanField(PatientField.IS_PREGNANT)
             zone = data.optStringField(PatientField.ZONE)
             villageNumber = data.optStringField(PatientField.VILLAGE_NUMBER)
-
-            drugHistoryList = data.optArrayField(PatientField.DRUG_HISTORY)
-                ?.toList(JSONArray::getString) ?: emptyList()
-            medicalHistoryList = data.optArrayField(PatientField.MEDICAL_HISTORY)
-                ?.toList(JSONArray::getString) ?: emptyList()
+            // Server returns a String for drug and medical histories.
+            // TODO: see Patient doc comment for the note
+            drugHistoryList = data.optStringField(PatientField.DRUG_HISTORY)
+                ?.run { listOf(this) } ?: emptyList()
+            medicalHistoryList = data.optStringField(PatientField.MEDICAL_HISTORY)
+                ?.run { listOf(this) } ?: emptyList()
             lastEdited = data.optLongField(PatientField.LAST_EDITED)
             base = data.optLongField(PatientField.BASE)
         }
