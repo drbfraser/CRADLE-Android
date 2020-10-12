@@ -43,6 +43,8 @@ private const val PATIENT_SEX_MALE = 0
 private const val PATIENT_SEX_FEMALE = 1
 private const val PATIENT_SEX_OTHER = 2
 
+private const val FRAGMENT_TAG_DATE_PICKER = "DatePicker"
+
 /**
  * Logic for the UI fragment which collects patient information when creating
  * or updating a reading.
@@ -146,20 +148,22 @@ class PatientInfoFragment : BaseFragment() {
     private fun setupAndObserveAgeInfo(view: View) {
         val ageInputLayout = view.findViewById<TextInputLayout>(R.id.age_input_layout)
         val ageEditText = view.findViewById<TextInputEditText>(R.id.age_input_text)
+
         // https://github.com/material-components/material-components-android/blob/master/catalog/
         // java/io/material/catalog/datepicker/DatePickerMainDemoFragment.java
         val datePicker = MaterialDatePicker.Builder.datePicker()
             .setTitleText(R.string.age_date_picker_title)
             .setCalendarConstraints(setupCalendarConstraints())
-            .build().apply {
-                addOnPositiveButtonClickListener {
-                    viewModel.setUsingDateOfBirth(useDateOfBirth = true)
-                    @SuppressLint("SimpleDateFormat")
-                    viewModel.patientDob.value =
-                        SimpleDateFormat(Patient.DOB_FORMAT_SIMPLEDATETIME).format(Date(it))
-                    Log.d(TAG, "DEBUG: DOB received from picker: ${viewModel.patientDob.value}")
-                }
+            .build()
+        datePicker.apply {
+            addOnPositiveButtonClickListener {
+                viewModel.setUsingDateOfBirth(useDateOfBirth = true)
+                @SuppressLint("SimpleDateFormat")
+                viewModel.patientDob.value =
+                    SimpleDateFormat(Patient.DOB_FORMAT_SIMPLEDATETIME).format(Date(it))
+                Log.d(TAG, "DEBUG: DOB received from picker: ${viewModel.patientDob.value}")
             }
+        }
         ageInputLayout.apply {
             setStartIconOnClickListener {
                 if (viewModel.isUsingDateOfBirth.value == true) {
@@ -167,7 +171,9 @@ class PatientInfoFragment : BaseFragment() {
                     viewModel.setUsingDateOfBirth(useDateOfBirth = false)
                 } else {
                     // Calendar icon is shown: handle calendar icon actions
-                    datePicker.show(childFragmentManager, datePicker.toString())
+                    if (childFragmentManager.findFragmentByTag(FRAGMENT_TAG_DATE_PICKER) == null) {
+                        datePicker.show(childFragmentManager, FRAGMENT_TAG_DATE_PICKER)
+                    }
                 }
             }
         }
@@ -183,10 +189,8 @@ class PatientInfoFragment : BaseFragment() {
                 value = it, isForPatient = true, property = Patient::age, putInErrorMap = false
             )
             ageInputLayout.apply {
-                lifecycleScope.launch {
-                    error = if (isValid) null else errorMessage
-                    Log.d(TAG, "DEBUG: patient age: set error message to $error")
-                }
+                error = if (isValid) null else errorMessage
+                Log.d(TAG, "DEBUG: patient age: set error message to $error")
             }
         }
         viewModel.patientDob.observe(viewLifecycleOwner) {
@@ -202,10 +206,8 @@ class PatientInfoFragment : BaseFragment() {
                 "errors: $errorMessage")
 
             ageInputLayout.apply {
-                lifecycleScope.launch {
-                    error = if (isValid) null else errorMessage
-                    Log.d(TAG, "DEBUG: patient dob: set error message to $error")
-                }
+                error = if (isValid) null else errorMessage
+                Log.d(TAG, "DEBUG: patient dob: set error message to $error")
 
                 if (it != null) {
                     Log.d(TAG, "DEBUG: patient dob: setting patient age")
