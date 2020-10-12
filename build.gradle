@@ -10,6 +10,9 @@ buildscript {
         
     }
     dependencies {
+        // TODO: Update to 4.1.0 when done with Reading flow redesign.
+        // This requires updating our outdated detekt version, which will bring a ton of other
+        // linting changes. It's not worth dealing with all the conflicts right now.
         classpath 'com.android.tools.build:gradle:4.0.2'
         classpath "de.mannodermaus.gradle.plugins:android-junit5:1.5.2.0"
         classpath 'com.google.gms:google-services:4.3.4'
@@ -23,7 +26,7 @@ buildscript {
 }
 
 plugins {
-    id("io.gitlab.arturbosch.detekt").version("1.0.1")
+    id("io.gitlab.arturbosch.detekt").version("$detekt_version")
 }
 
 allprojects {
