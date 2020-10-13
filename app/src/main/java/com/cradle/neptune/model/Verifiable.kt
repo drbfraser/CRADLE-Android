@@ -63,19 +63,8 @@ interface Verifiable<in T : Any> {
      */
     @Suppress("ThrowsCount")
     fun isPropertyValid(property: KProperty<*>, context: Context): Pair<Boolean, String> {
-        @Suppress("UNCHECKED_CAST")
-        val thisTypedAsT = this as T
-
-        // Find the property as a member property.
-        val memberProperty = thisTypedAsT::class.memberProperties.find {
-            // Properties must have unique names.
-            property.name == it.name
-        } ?: throw IllegalArgumentException(
-            "property ${property.name} doesn't exist for ${thisTypedAsT::class.java.simpleName}"
-        )
-
         try {
-            return isValueForPropertyValid(memberProperty, memberProperty.getter.call(this), context)
+            return isValueForPropertyValid(property, property.getter.call(this), context)
         } catch (e: InvocationTargetException) {
             if (e.cause is UninitializedPropertyAccessException) {
                 // Propagate any attempts to access uninitialized lateinit vars as an
