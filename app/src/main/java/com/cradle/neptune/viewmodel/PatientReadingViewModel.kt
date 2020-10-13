@@ -213,6 +213,15 @@ class PatientReadingViewModel constructor(
                     }
                 }
             }
+            // Ensure that gestational age input is blank if not pregnant.
+            // Without this, there's a bug where viewing a patient that isn't pregnant but somehow
+            // has a gestational age will show the gestational age.
+            addSource(patientIsPregnant) { isPregnant ->
+                removeSource(patientIsPregnant)
+                if (isPregnant != true) {
+                    value = ""
+                }
+            }
         }
 
         (patientGestationalAgeUnits as MediatorLiveData<String>).apply {

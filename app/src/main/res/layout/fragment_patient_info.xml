@@ -252,7 +252,7 @@
                                 android:layout_height="wrap_content"
                                 android:inputType="textNoSuggestions"
                                 android:text="@={viewModel.patientGestationalAgeInput}"
-                                bind:makeTextEmptyWhen="@{!viewModel.patientIsPregnant}"
+                                bind:makeTextEmptyWhen="@{viewModel.patientIsPregnant != true}"
                                 tools:text="23" />
                         </com.google.android.material.textfield.TextInputLayout>
 

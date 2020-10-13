@@ -113,6 +113,9 @@ class PatientInfoFragment : BaseFragment() {
                     "with units ${viewModel.patientGestationalAgeUnits.value} " +
                     "and text input ${viewModel.patientGestationalAgeInput.value}")
 
+                Log.d(TAG, "DEBUG: drug history: ${viewModel.patientDrugHistory.value}, " +
+                    "medical history: ${viewModel.patientMedicalHistory.value}")
+
                 @Suppress("MagicNumber")
                 delay(6000L)
             }
