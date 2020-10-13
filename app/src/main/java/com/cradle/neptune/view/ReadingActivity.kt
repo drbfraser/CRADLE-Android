@@ -2,22 +2,32 @@ package com.cradle.neptune.view
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.Resources
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.observe
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.navigateUp
+import androidx.navigation.ui.setupActionBarWithNavController
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.view.ui.reading.BaseFragment
-import com.cradle.neptune.view.ui.reading.SymptomsFragment
 import com.cradle.neptune.viewmodel.PatientReadingViewModel
 import com.cradle.neptune.viewmodel.PatientReadingViewModelFactory
 import javax.inject.Inject
 
 @SuppressWarnings("LargeClass")
 class ReadingActivity : AppCompatActivity() {
+    private lateinit var appBarConfiguration: AppBarConfiguration
+
     @Inject
     lateinit var viewModelFactory: PatientReadingViewModelFactory
 
@@ -50,6 +60,26 @@ class ReadingActivity : AppCompatActivity() {
         // TODO: Use activity_reading when done design
         setContentView(R.layout.activity_placeholder)
 
+        val toolbar = findViewById<Toolbar>(R.id.toolbar3)
+        setSupportActionBar(toolbar)
+
+        val host: NavHostFragment = supportFragmentManager
+            .findFragmentById(R.id.reading_nav_host) as NavHostFragment? ?: return
+        val navController = host.navController
+        appBarConfiguration = AppBarConfiguration(navController.graph)
+        setupActionBarWithNavController(navController, appBarConfiguration)
+
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            val dest: String = try {
+                resources.getResourceName(destination.id)
+            } catch (e: Resources.NotFoundException) {
+                destination.id.toString()
+            }
+
+            Toast.makeText(this@ReadingActivity, "Navigated to $dest", Toast.LENGTH_SHORT).show()
+            Log.d("ReadingActivity", "Navigated to $dest")
+        }
+
         check(intent.hasExtra(EXTRA_LAUNCH_REASON))
         viewModel.initialize(
             launchReason = intent.getSerializableExtra(EXTRA_LAUNCH_REASON) as LaunchReason,
@@ -60,17 +90,13 @@ class ReadingActivity : AppCompatActivity() {
             if (!it) {
                 return@observe
             }
-
-            // TODO: Remove this when navigation is added back
-            if (savedInstanceState == null) {
-                val fragment = SymptomsFragment()
-                supportFragmentManager
-                    .beginTransaction()
-                    .add(R.id.container_placeholder, fragment)
-                    .commit()
-            }
+            navController.navigate(R.id.action_loadingFragment_to_patientInfoFragment)
             viewModel.isInitialized.removeObservers(this)
         }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        return findNavController(R.id.reading_nav_host).navigateUp(appBarConfiguration)
     }
 
     enum class LaunchReason {

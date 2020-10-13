@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_reading_flow"
+    app:startDestination="@id/loadingFragment">
+
+    <fragment
+        android:id="@+id/patientInfoFragment"
+        android:name="com.cradle.neptune.view.ui.reading.PatientInfoFragment"
+        android:label="Patient info"
+        tools:layout="@layout/fragment_patient_info">
+        <action
+            android:id="@+id/action_patientInfoFragment_to_symptomsFragment"
+            app:destination="@id/symptomsFragment" />
+        <action
+            android:id="@+id/action_patientInfoFragment_pop"
+            app:popUpToInclusive="true"
+            app:popUpTo="@id/patientInfoFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/symptomsFragment"
+        android:name="com.cradle.neptune.view.ui.reading.SymptomsFragment"
+        android:label="Symptoms"
+        tools:layout="@layout/fragment_symptoms">
+        <action
+            android:id="@+id/action_symptomsFragment_to_patientInfoFragment"
+            app:destination="@id/patientInfoFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/loadingFragment"
+        android:name="com.cradle.neptune.view.ui.reading.LoadingFragment"
+        android:label="fragment_loading"
+        tools:layout="@layout/fragment_loading" >
+        <action
+            android:id="@+id/action_loadingFragment_to_patientInfoFragment"
+            app:destination="@id/patientInfoFragment"
+            app:enterAnim="@anim/fragment_fade_enter"
+            app:exitAnim="@anim/fragment_fade_exit"
+            app:popEnterAnim="@anim/fragment_close_enter"
+            app:popExitAnim="@anim/fragment_close_exit" />
+    </fragment>
+</navigation>

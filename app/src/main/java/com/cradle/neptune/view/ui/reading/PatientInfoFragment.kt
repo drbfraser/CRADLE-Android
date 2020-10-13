@@ -10,10 +10,12 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
+import android.widget.Button
 import androidx.databinding.DataBindingComponent
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
+import androidx.navigation.Navigation
 import com.cradle.neptune.R
 import com.cradle.neptune.binding.FragmentDataBindingComponent
 import com.cradle.neptune.databinding.FragmentPatientInfoBinding
@@ -85,6 +87,13 @@ class PatientInfoFragment : BaseFragment() {
         binding?.lifecycleOwner = viewLifecycleOwner
         binding?.viewModel = viewModel
         super.onViewCreated(view, savedInstanceState)
+
+        view.findViewById<Button>(R.id.next_button)?.setOnClickListener(
+            Navigation.createNavigateOnClickListener(
+                R.id.action_patientInfoFragment_to_symptomsFragment,
+                null
+            )
+        )
 
         setupAndObserveAgeInfo(view)
         setupAndObserveGenderList(view)
