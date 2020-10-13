@@ -106,7 +106,9 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
+                            android:enabled="false"
                             android:hint="@string/household_number"
+                            app:hintAnimationEnabled="false"
                             app:helperText=" "
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintHorizontal_bias="0.5"
@@ -119,7 +121,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="number"
-                                tools:text="12345" />
+                                android:text="@string/edit_text_unavailable_hint" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
