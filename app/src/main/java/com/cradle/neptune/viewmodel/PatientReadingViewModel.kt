@@ -134,10 +134,8 @@ class PatientReadingViewModel constructor(
                 initializeLiveData()
 
                 // Make sure we don't retrigger observers if this is run twice for some reason.
-                if (_isInitialized.value == false) {
-                    withContext(Dispatchers.Main) {
-                        _isInitialized.value = true
-                    }
+                if (_isInitialized.value != true) {
+                    _isInitialized.value = true
                 }
                 isInitializedMutex.unlock()
             }
@@ -172,6 +170,8 @@ class PatientReadingViewModel constructor(
     @GuardedBy("isInitializedMutex")
     private fun initializeLiveData() {
         if (_isInitialized.value == true) return
+
+        _isUsingDateOfBirth.value = patientDob.value != null
 
         val symptoms = symptoms.value ?: emptyList()
         SymptomsState(
@@ -459,16 +459,7 @@ class PatientReadingViewModel constructor(
      * If the value inside is false, they can add an approximate age, or overwrite that with a
      * date of birth via a date picker.
      */
-    private val _isUsingDateOfBirth = MediatorLiveData<Boolean>().apply {
-        // Catch the presence of the date of birth as soon as it decomposes.
-        addSource(patientDob) { dob ->
-            // Don't need to listen to anymore changes; should use `setUsingDateOfBirth` to change
-            // _isUsingDateOfBirth
-            removeSource(patientDob)
-            // We use the date of birth iff there is a date of birth.
-            value = dob != null
-        }
-    }
+    private val _isUsingDateOfBirth = MutableLiveData<Boolean>()
     val isUsingDateOfBirth: LiveData<Boolean> = _isUsingDateOfBirth
 
     /**
@@ -512,7 +503,6 @@ class PatientReadingViewModel constructor(
         if (currentMap[propertyForMap.name] != errorMessageForMap) {
             currentMap[propertyForMap.name] = errorMessageForMap
             _errorMap.value = currentMap
-            _errorMap.value = errorMap.value
         }
     }
 
