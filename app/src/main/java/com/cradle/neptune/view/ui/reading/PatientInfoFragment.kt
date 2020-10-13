@@ -3,7 +3,6 @@ package com.cradle.neptune.view.ui.reading
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
-import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -11,13 +10,11 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
-import androidx.core.widget.doOnTextChanged
 import androidx.databinding.DataBindingComponent
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import com.cradle.neptune.R
-import com.cradle.neptune.binding.Converter
 import com.cradle.neptune.binding.FragmentDataBindingComponent
 import com.cradle.neptune.databinding.FragmentPatientInfoBinding
 import com.cradle.neptune.model.Patient
@@ -52,10 +49,8 @@ private const val FRAGMENT_TAG_DATE_PICKER = "DatePicker"
 @Suppress("LargeClass")
 class PatientInfoFragment : BaseFragment() {
 
-    private var genderTextWatcher: TextWatcher? = null
     private var genderMenuTextView: AutoCompleteTextView? = null
 
-    private var gestAgeUnitsTextWatcher: TextWatcher? = null
     private var gestAgeMenuTextView: AutoCompleteTextView? = null
 
     private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent(this)
@@ -69,9 +64,6 @@ class PatientInfoFragment : BaseFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        genderTextWatcher?.run {
-            genderMenuTextView?.removeTextChangedListener(this)
-        }
     }
 
     override fun onCreateView(
@@ -188,23 +180,6 @@ class PatientInfoFragment : BaseFragment() {
         val genderAdapter = ArrayAdapter(view.context, R.layout.list_dropdown_menu_item, genders)
         genderMenuTextView = genderTextLayout.editText as? AutoCompleteTextView?
         genderMenuTextView?.setAdapter(genderAdapter)
-
-        viewModel.patientSex.observe(viewLifecycleOwner) { sex ->
-            genderMenuTextView?.apply {
-                val sexAsString = Converter.sexToString(view.context, sex)
-                // Prevent infinite loops.
-                if ((sexAsString != null || text.isNotEmpty()) &&
-                    text.toString() != sexAsString) {
-
-                    // We need to pass in false for filter
-                    // (https://material.io/develop/android/components/menu#setting-a-default-value)
-                    setText(sexAsString, false)
-                }
-            }
-        }
-        genderTextWatcher = genderMenuTextView?.doOnTextChanged { text, _, _, _ ->
-            viewModel.patientSex.value = Converter.stringToSex(view.context, text.toString())
-        }
         genderMenuTextView?.setOnClickListener {
             dismissKeyboard(view)
         }
@@ -219,26 +194,6 @@ class PatientInfoFragment : BaseFragment() {
         gestAgeMenuTextView = gestAgeUnitsTextLayout.editText as? AutoCompleteTextView?
         gestAgeMenuTextView?.setAdapter(genderAdapter)
 
-        viewModel.patientGestationalAgeUnits.observe(viewLifecycleOwner) { units ->
-            Log.d(TAG, "patientGestationalAgeUnits observe()")
-            gestAgeMenuTextView?.apply {
-                // Prevent infinite loops.
-                if (text.toString() != units) {
-                    Log.d(TAG, "patientGestationalAgeUnits observe(): setting text")
-                    // We need to pass in false for filter
-                    // (https://material.io/develop/android/components/menu#setting-a-default-value)
-                    setText(units, false)
-                }
-            }
-        }
-        gestAgeUnitsTextWatcher = gestAgeMenuTextView?.doOnTextChanged { text, _, _, _ ->
-            if (viewModel.patientGestationalAgeUnits.value == text.toString()) {
-                Log.d(TAG, "gestAgeUnitsTextWatcher doOnTextChanged(): bailed")
-                return@doOnTextChanged
-            }
-            Log.d(TAG, "gestAgeUnitsTextWatcher doOnTextChanged(): changing units")
-            viewModel.patientGestationalAgeUnits.value = text.toString()
-        }
         gestAgeMenuTextView?.setOnClickListener {
             dismissKeyboard(view)
         }

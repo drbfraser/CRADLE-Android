@@ -226,7 +226,9 @@
                                 android:id="@+id/gender_input_auto_complete_text"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:inputType="none" />
+                                android:inputType="none"
+                                android:text="@={Converter.sexToString(context, viewModel.patientSex)}"
+                                />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <CheckBox
@@ -291,6 +293,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="none"
+                                android:text="@={viewModel.patientGestationalAgeUnits}"
                                 tools:text="weeks" />
                         </com.google.android.material.textfield.TextInputLayout>
 

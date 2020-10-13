@@ -2,8 +2,10 @@ package com.cradle.neptune.binding
 
 import android.text.InputFilter
 import android.text.InputType
+import android.text.Spanned
 import android.util.Log
 import android.view.View
+import android.widget.AutoCompleteTextView
 import android.widget.CheckBox
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
@@ -144,5 +146,72 @@ class ReadingBindingAdapters constructor(val fragment: Fragment) {
                 filters = arrayOf(InputFilter.LengthFilter(10))
             }
         }
+    }
+
+    /**
+     * A BindingAdapter for setting the selected text in a dropdown menu. This code is copy and
+     * pasted(and converted to Kotlin) from
+     *
+     * The only different is in the last line. In `setText`, we need to set filter = false to work
+     * with menus in Material Design. It's copy and pasted because we only need to change one line
+     * in this default provided function for things to work.
+     *
+     * (refer to https://material.io/develop/android/components/menu#setting-a-default-value:
+     *  "In order to have a pre-selected value displayed, you can call setText(CharSequence text,
+     *  boolean filter) on the AutoCompleteTextView with the filter set to false.")
+     *
+     * Copyright (C) 2015 The Android Open Source Project
+     * Licensed under the Apache License, Version 2.0
+     * https://android.googlesource.com/platform/frameworks/data-binding/+/refs/heads/
+     * studio-master-dev/extensions/baseAdapters/src/main/java/androidx/databinding/adapters/
+     * TextViewBindingAdapter.java#68
+     */
+    @BindingAdapter("android:text")
+    fun setDropdownMenuText(autoCompleteTextView: AutoCompleteTextView, text: CharSequence?) {
+        val oldText: CharSequence = autoCompleteTextView.text
+        if (text == oldText || (text == null && oldText.isEmpty())) {
+            return
+        }
+        if (text is Spanned) {
+            if (text == oldText) {
+                // No change in the spans, so don't set anything.
+                return
+            }
+        } else if (!haveContentsChanged(text, oldText)) {
+            // No content changes, so don't set anything.
+            return
+        }
+        // Using filter = false in order to properly set the drop down menu. If we don't do this,
+        // all the items in the menu will be removed.
+        autoCompleteTextView.setText(text, false)
+    }
+
+    /**
+     *
+     * We need to copy and paste since the method is used for [setDropdownMenuText] and this
+     * method is originally private.
+     *
+     * Copyright (C) 2015 The Android Open Source Project
+     * Licensed under the Apache License, Version 2.0
+     * https://android.googlesource.com/platform/frameworks/data-binding/+/refs/heads/
+     * studio-master-dev/extensions/baseAdapters/src/main/java/androidx/databinding/adapters/
+     * TextViewBindingAdapter.java#332
+     */
+    private fun haveContentsChanged(str1: CharSequence?, str2: CharSequence?): Boolean {
+        if (str1 == null != (str2 == null)) {
+            return true
+        } else if (str1 == null) {
+            return false
+        }
+        val length = str1.length
+        if (length != str2!!.length) {
+            return true
+        }
+        for (i in 0 until length) {
+            if (str1[i] != str2[i]) {
+                return true
+            }
+        }
+        return false
     }
 }
