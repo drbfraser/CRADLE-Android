@@ -75,6 +75,9 @@ class PatientReadingViewModel constructor(
      * If not creating a new patient, the patient and reading requested will be asynchronously
      * initialized, and then [isInitialized] will emit true if no errors occur.
      * This needs to be run before the ViewModel can be used.
+     *
+     * We **must** launch this from the main thread in order to guarantee that all the LiveData
+     * will use values that are ready after decompose is finished.
      */
     @MainThread
     fun initialize(
@@ -99,9 +102,9 @@ class PatientReadingViewModel constructor(
                 }
 
                 val reading = readingManager.getReadingById(readingId)
-                    ?: throw IllegalStateException("no reading associated with given id")
+                    ?: error("no reading associated with given id")
                 val patient = patientManager.getPatientById(reading.patientId)
-                    ?: throw IllegalStateException("no patient associated with given reading")
+                    ?: error("no patient associated with given reading")
 
                 when (reasonForLaunch) {
                     ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT -> {
@@ -124,21 +127,12 @@ class PatientReadingViewModel constructor(
                         }
                     }
                     else -> {
-                        check(false) { "invalid launch reason" }
+                        error("invalid launch reason")
                     }
                 }
-
-                Log.d(TAG, "DEBUG: initialize: symptoms is ${symptoms.value}")
-
-                val symptoms = symptoms.value ?: emptyList()
-                SymptomsState(
-                    symptoms,
-                    getEnglishResources().getStringArray(R.array.reading_symptoms)
-                ).let {
-                    _symptomsState.value = it
-                    otherSymptomsInput.value = it.otherSymptoms
-                }
             } finally {
+                initializeLiveData()
+
                 // Make sure we don't retrigger observers if this is run twice for some reason.
                 if (_isInitialized.value == false) {
                     withContext(Dispatchers.Main) {
@@ -152,17 +146,15 @@ class PatientReadingViewModel constructor(
 
     @GuardedBy("isInitializedMutex")
     private fun decompose(patient: Patient) {
-        if (_isInitialized.value == true) {
-            return
-        }
+        if (_isInitialized.value == true) return
+
         patientBuilder.decompose(patient)
     }
 
     @GuardedBy("isInitializedMutex")
     private fun decompose(patient: Patient, reading: Reading) {
-        if (_isInitialized.value == true) {
-            return
-        }
+        if (_isInitialized.value == true) return
+
         patientBuilder.decompose(patient)
         // We have to do this so that the Activity and ViewModel don't share the same reference for
         // symptoms.
@@ -172,109 +164,64 @@ class PatientReadingViewModel constructor(
         readingBuilder.decompose(reading.copy(symptoms = symptomsCopy))
     }
 
-    /* Patient Info */
-    val patientId: MutableLiveData<String>
-        get() = patientBuilder.get<String>(Patient::id)
-
-    val patientName: MutableLiveData<String>
-        get() = patientBuilder.get<String>(Patient::name)
-
-    val patientDob: MutableLiveData<String?>
-        get() = patientBuilder.get<String?>(Patient::dob)
-
-    val patientAge: MutableLiveData<Int?>
-        get() = patientBuilder.get<Int?>(Patient::age)
-
-    val patientGestationalAge: MediatorLiveData<GestationalAge?> =
-        patientBuilder.get<GestationalAge?>(Patient::gestationalAge)
-
     /**
-     * Input that is taken directly from the form as a String.
+     * Initializes the various LiveData properties of this ViewModel. This **must** be run after
+     * decomposing patients and readings, or else the values the functions will use will be
+     * inconsistent.
      */
-    val patientGestationalAgeInput: MutableLiveData<String> = MediatorLiveData<String>()
+    @GuardedBy("isInitializedMutex")
+    private fun initializeLiveData() {
+        if (_isInitialized.value == true) return
 
-    val patientGestationalAgeUnits: MutableLiveData<String> = MediatorLiveData<String>().apply {
-        value = weeksUnitString
-    }
-
-    /**
-     * Used when converting weeks to months. We don't want to show some really long Double with
-     * a lot of trailing zeros to the user, so we truncate when possible.
-     */
-    private val gestationalAgeDecimalFormat = DecimalFormat("#.####")
-
-    val patientSex: MutableLiveData<Sex?>
-        get() = patientBuilder.get<Sex?>(Patient::sex)
-
-    val patientIsPregnant: MutableLiveData<Boolean?>
-        get() = patientBuilder.get<Boolean?>(Patient::isPregnant)
-
-    val patientZone: MutableLiveData<String?>
-        get() = patientBuilder.get<String?>(Patient::zone)
-
-    val patientVillageNumber: MutableLiveData<String?>
-        get() = patientBuilder.get<String?>(Patient::villageNumber)
-
-    val patientDrugHistory: MutableLiveData<List<String>> =
-        patientBuilder.get<List<String>>(Patient::drugHistoryList, defaultValue = emptyList())
-
-    val patientMedicalHistory: MutableLiveData<List<String>> =
-        patientBuilder.get<List<String>>(Patient::medicalHistoryList, defaultValue = emptyList())
-
-    val patientLastEdited: MutableLiveData<Long?>
-        get() = patientBuilder.get<Long?>(Patient::lastEdited)
-
-    /* Blood Pressure Info */
-    val bloodPressure: MutableLiveData<BloodPressure?>
-        get() = readingBuilder.get<BloodPressure?>(Reading::bloodPressure)
-
-    /* Urine Test Info */
-    val urineTest: MutableLiveData<UrineTest?>
-        get() = readingBuilder.get<UrineTest?>(Reading::urineTest)
-
-    /* Referral Info */
-    val referral: MutableLiveData<Referral?>
-        get() = readingBuilder.get<Referral?>(Reading::referral)
-
-    /* Reading Info */
-    val readingId: MutableLiveData<String>
-        get() = readingBuilder.get(Reading::id, "")
-
-    val dateTimeTaken: MutableLiveData<Long?>
-        get() = readingBuilder.get<Long?>(Reading::dateTimeTaken)
-
-    val symptoms: MediatorLiveData<List<String>> =
-        readingBuilder.get<List<String>>(Reading::symptoms)
-
-    /**
-     * Keeps track of the symptoms that are checked. The checkboxes are as ordered in the string
-     * array, R.array.reading_symptoms, except the last checkbox represents the other symptoms.
-     * This will be changed directly by the CheckBoxes via [setSymptomsState]
-     */
-    private val _symptomsState = MediatorLiveData<SymptomsState>().apply {
-        val numOfDefaultSymptoms = app.resources.getStringArray(R.array.reading_symptoms).size
-        value = SymptomsState(numOfDefaultSymptoms)
-    }
-    val symptomsState: LiveData<SymptomsState> = _symptomsState
-
-    /**
-     * The user's input for the other symptoms is tracked here.
-     */
-    val otherSymptomsInput = MutableLiveData("")
-
-    @MainThread
-    fun setSymptomsState(index: Int, newValue: Boolean) {
-        val currentSymptomsState = _symptomsState.value ?: return
-
-        // Prevent infinite loops and unnecessary updates.
-        if (currentSymptomsState.isSymptomIndexChecked(index) != newValue) {
-            currentSymptomsState.setSymptomIndexState(index, newValue)
-            _symptomsState.value = currentSymptomsState
+        val symptoms = symptoms.value ?: emptyList()
+        SymptomsState(
+            symptoms,
+            getEnglishResources().getStringArray(R.array.reading_symptoms)
+        ).let {
+            _symptomsState.value = it
+            otherSymptomsInput.value = it.otherSymptoms
         }
+
+        patientGestationalAgeInput.apply {
+            value = if (patientIsPregnant.value != true) {
+                // If not pregnant, make the input blank. Note: If this is the empty string, then
+                // an error will be triggered when the Pregnant CheckBox is ticked for the first
+                // time.
+                null
+            } else {
+                when (val gestationalAge = patientGestationalAge.value) {
+                    is GestationalAgeMonths -> {
+                        // We don't want to show an excessive amount of decimal places.
+                        DecimalFormat("#.####").format(gestationalAge.age.asMonths())
+                    }
+                    is GestationalAgeWeeks -> {
+                        // This also makes the default units in weeks.
+                        gestationalAge.age.weeks.toString()
+                    }
+                    else -> {
+                        // If it's missing, default to nothing.
+                        ""
+                    }
+                }
+            }
+        }
+
+        patientGestationalAgeUnits.apply {
+            value = if (patientGestationalAge.value is GestationalAgeMonths) {
+                monthsUnitString
+            } else {
+                // This also makes the default units in weeks.
+                weeksUnitString
+            }
+        }
+
+        addSourcesForSymptomsLiveData()
+        addSourcesForGestationAgeMediatorLiveData()
     }
 
-    init {
-        addSourcesForGestationAgeMediatorLiveData()
+    @GuardedBy("isInitializedMutex")
+    private fun addSourcesForSymptomsLiveData() {
+        if (_isInitialized.value == true) return
 
         _symptomsState.apply {
             addSource(otherSymptomsInput) { otherSymptomsString ->
@@ -296,49 +243,9 @@ class PatientReadingViewModel constructor(
         }
     }
 
+    @GuardedBy("isInitializedMutex")
     private fun addSourcesForGestationAgeMediatorLiveData() {
-        (patientGestationalAgeInput as MediatorLiveData<String>).apply {
-            // Listen for the first change to gestational age in order to show the right text.
-            addSource(patientGestationalAge) {
-                // Must remove, since `patientGestationalAge` LiveData has this input LiveData as
-                // a source
-                removeSource(patientGestationalAge)
-                value = when (it) {
-                    is GestationalAgeMonths -> {
-                        gestationalAgeDecimalFormat.format(it.age.asMonths())
-                    }
-                    is GestationalAgeWeeks -> {
-                        // This also makes the default units in weeks.
-                        it.age.weeks.toString()
-                    }
-                    else -> {
-                        ""
-                    }
-                }
-            }
-            // Ensure that gestational age input is blank if not pregnant.
-            // Without this, there's a bug where viewing a patient that isn't pregnant but somehow
-            // has a gestational age will show the gestational age.
-            addSource(patientIsPregnant) { isPregnant ->
-                removeSource(patientIsPregnant)
-                if (isPregnant != true) {
-                    value = ""
-                }
-            }
-        }
-
-        (patientGestationalAgeUnits as MediatorLiveData<String>).apply {
-            // Listen for the first change to gestational age in order to set the right units.
-            addSource(patientGestationalAge) {
-                removeSource(patientGestationalAge)
-                value = if (it is GestationalAgeMonths) {
-                    monthsUnitString
-                } else {
-                    // This also makes the default units in weeks.
-                    weeksUnitString
-                }
-            }
-        }
+        if (_isInitialized.value == true) return
 
         patientGestationalAge.apply {
             addSource(patientGestationalAgeUnits) {
@@ -394,6 +301,96 @@ class PatientReadingViewModel constructor(
         Configuration(app.resources.configuration)
             .apply { setLocale(Locale.ENGLISH) }
             .run { app.createConfigurationContext(this).resources }
+
+    /* Patient Info */
+    val patientId: MutableLiveData<String>
+        get() = patientBuilder.get<String>(Patient::id)
+
+    val patientName: MutableLiveData<String>
+        get() = patientBuilder.get<String>(Patient::name)
+
+    val patientDob: MutableLiveData<String?>
+        get() = patientBuilder.get<String?>(Patient::dob)
+
+    val patientAge: MutableLiveData<Int?>
+        get() = patientBuilder.get<Int?>(Patient::age)
+
+    val patientGestationalAge: MediatorLiveData<GestationalAge?> =
+        patientBuilder.get<GestationalAge?>(Patient::gestationalAge)
+
+    /**
+     * Input that is taken directly from the form as a String.
+     */
+    val patientGestationalAgeInput: MutableLiveData<String> = MediatorLiveData<String>()
+
+    val patientGestationalAgeUnits: MutableLiveData<String> = MediatorLiveData<String>()
+
+    val patientSex: MutableLiveData<Sex?>
+        get() = patientBuilder.get<Sex?>(Patient::sex)
+
+    val patientIsPregnant: MutableLiveData<Boolean?>
+        get() = patientBuilder.get<Boolean?>(Patient::isPregnant)
+
+    val patientZone: MutableLiveData<String?>
+        get() = patientBuilder.get<String?>(Patient::zone)
+
+    val patientVillageNumber: MutableLiveData<String?>
+        get() = patientBuilder.get<String?>(Patient::villageNumber)
+
+    val patientDrugHistory: MutableLiveData<List<String>> =
+        patientBuilder.get<List<String>>(Patient::drugHistoryList, defaultValue = emptyList())
+
+    val patientMedicalHistory: MutableLiveData<List<String>> =
+        patientBuilder.get<List<String>>(Patient::medicalHistoryList, defaultValue = emptyList())
+
+    val patientLastEdited: MutableLiveData<Long?>
+        get() = patientBuilder.get<Long?>(Patient::lastEdited)
+
+    /* Blood Pressure Info */
+    val bloodPressure: MutableLiveData<BloodPressure?>
+        get() = readingBuilder.get<BloodPressure?>(Reading::bloodPressure)
+
+    /* Urine Test Info */
+    val urineTest: MutableLiveData<UrineTest?>
+        get() = readingBuilder.get<UrineTest?>(Reading::urineTest)
+
+    /* Referral Info */
+    val referral: MutableLiveData<Referral?>
+        get() = readingBuilder.get<Referral?>(Reading::referral)
+
+    /* Reading Info */
+    val readingId: MutableLiveData<String>
+        get() = readingBuilder.get(Reading::id, "")
+
+    val dateTimeTaken: MutableLiveData<Long?>
+        get() = readingBuilder.get<Long?>(Reading::dateTimeTaken)
+
+    val symptoms: MediatorLiveData<List<String>> =
+        readingBuilder.get<List<String>>(Reading::symptoms)
+
+    /**
+     * Keeps track of the symptoms that are checked. The checkboxes are as ordered in the string
+     * array, R.array.reading_symptoms, except the last checkbox represents the other symptoms.
+     * This will be changed directly by the CheckBoxes via [setSymptomsState]
+     */
+    private val _symptomsState = MediatorLiveData<SymptomsState>()
+    val symptomsState: LiveData<SymptomsState> = _symptomsState
+
+    /**
+     * The user's input for the other symptoms is tracked here.
+     */
+    val otherSymptomsInput = MutableLiveData("")
+
+    @MainThread
+    fun setSymptomsState(index: Int, newValue: Boolean) {
+        val currentSymptomsState = _symptomsState.value ?: return
+
+        // Prevent infinite loops and unnecessary updates.
+        if (currentSymptomsState.isSymptomIndexChecked(index) != newValue) {
+            currentSymptomsState.setSymptomIndexState(index, newValue)
+            _symptomsState.value = currentSymptomsState
+        }
+    }
 
     val dateRecheckVitalsNeeded: MutableLiveData<Long?>
         get() = readingBuilder.get<Long?>(Reading::dateRecheckVitalsNeeded)
