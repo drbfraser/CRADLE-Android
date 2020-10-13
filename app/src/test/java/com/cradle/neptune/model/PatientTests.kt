@@ -5,18 +5,19 @@ import android.text.TextUtils
 import com.cradle.neptune.R
 import com.cradle.neptune.utilitiles.Months
 import com.cradle.neptune.utilitiles.Weeks
+import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.verify
 import io.mockk.verifyOrder
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import java.lang.IllegalArgumentException
-import java.time.Month
 import kotlin.reflect.KProperty
 
 @ExtendWith(MockKExtension::class)
@@ -38,6 +39,15 @@ class PatientTests {
             (arg<CharSequence>(0)).find { !it.isDigit() } == null
         }
 
+        clearAndApplyMocksToMockContext()
+    }
+
+    /**
+     * Cleans out and reapply the mocks to the mocked Context. This is helpful when looping through
+     * test values to verify error messages.
+     */
+    private fun clearAndApplyMocksToMockContext() {
+        clearMocks(mockContext)
         every { mockContext.getString(any(), *anyVararg()) } answers { getMockStringFromResId(arg(0)) }
         every { mockContext.getString(any()) } answers { getMockStringFromResId(arg(0)) }
     }
@@ -438,6 +448,7 @@ class PatientTests {
             Pair(Sex.FEMALE, true),
             Pair(Sex.OTHER, true)
         )
+
         for ((sex, isPregnant) in gestationalAgeNeeded) {
             assertValidityOverSet(
                 validGestationalAges, Patient::gestationalAge,
@@ -445,24 +456,27 @@ class PatientTests {
                     Patient::sex to sex, Patient::isPregnant to isPregnant
                 )
             )
-
             assertValidityOverSet(
                 validGestationalAgesDouble, Patient::gestationalAge,
                 areAllValuesValid = true, dependentPropertiesMap = mapOf(
                     Patient::sex to sex, Patient::isPregnant to isPregnant
                 )
             )
+            verify(exactly = 0) { mockContext.getString(any()) }
+            verify(exactly = 0) { mockContext.getString(any(), *varargAny { nArgs == 1 }) }
 
-            // invalid if gestational age needed but it's missing
+            // invalid if gestational age needed but it's missing or 0
             assertValidityOverSet(
-                setOf(null), Patient::gestationalAge,
+                setOf(null, GestationalAgeMonths(Months(0L))), Patient::gestationalAge,
                 areAllValuesValid = false, dependentPropertiesMap = mapOf(
                     Patient::sex to sex, Patient::isPregnant to isPregnant
                 )
             )
+            verify(exactly = 1) { mockContext.getString(R.string.patient_error_gestational_age_missing) }
+            verify(exactly = 1) { mockContext.getString(R.string.patient_error_gestation_must_be_not_zero) }
 
             // invalid when out of range
-            val invalidGestationalAges = (0..0 union 44..120).map {
+            val invalidGestationalAges = (11..50).map {
                 GestationalAgeMonths(Months(it.toLong()))
             }.toSet()
             assertValidityOverSet(
@@ -471,6 +485,14 @@ class PatientTests {
                     Patient::sex to sex, Patient::isPregnant to isPregnant
                 )
             )
+            verify(exactly = invalidGestationalAges.size) {
+                mockContext.getString(
+                    R.string.patient_error_gestation_greater_than_n_months,
+                    *varargAny { nArgs == 1 }
+                )
+            }
+
+            clearAndApplyMocksToMockContext()
         }
 
         val gestationalAgeIgnored = setOf(
@@ -486,6 +508,8 @@ class PatientTests {
                     Patient::sex to sex, Patient::isPregnant to isPregnant
                 )
             )
+            verify(exactly = 0) { mockContext.getString(any()) }
+            verify(exactly = 0) { mockContext.getString(any(), *varargAny { nArgs == 1 }) }
         }
     }
 
