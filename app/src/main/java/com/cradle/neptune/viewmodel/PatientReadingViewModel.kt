@@ -1,6 +1,8 @@
 package com.cradle.neptune.viewmodel
 
 import android.app.Application
+import android.content.res.Configuration
+import android.content.res.Resources
 import android.util.Log
 import androidx.annotation.GuardedBy
 import androidx.annotation.MainThread
@@ -22,13 +24,14 @@ import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.Referral
 import com.cradle.neptune.model.Sex
+import com.cradle.neptune.model.SymptomsState
 import com.cradle.neptune.model.UrineTest
 import com.cradle.neptune.utilitiles.LiveDataDynamicModelBuilder
 import com.cradle.neptune.utilitiles.Months
 import com.cradle.neptune.utilitiles.Weeks
 import com.cradle.neptune.view.ReadingActivity
-import java.lang.IllegalStateException
 import java.text.DecimalFormat
+import java.util.Locale
 import kotlin.reflect.KProperty
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -189,8 +192,87 @@ class PatientReadingViewModel constructor(
      */
     private val gestationalAgeDecimalFormat = DecimalFormat("#.####")
 
+    val patientSex: MutableLiveData<Sex?>
+        get() = patientBuilder.get<Sex?>(Patient::sex)
+
+    val patientIsPregnant: MutableLiveData<Boolean?>
+        get() = patientBuilder.get<Boolean?>(Patient::isPregnant)
+
+    val patientZone: MutableLiveData<String?>
+        get() = patientBuilder.get<String?>(Patient::zone)
+
+    val patientVillageNumber: MutableLiveData<String?>
+        get() = patientBuilder.get<String?>(Patient::villageNumber)
+
+    val patientDrugHistory: MutableLiveData<List<String>> =
+        patientBuilder.get<List<String>>(Patient::drugHistoryList, defaultValue = emptyList())
+
+    val patientMedicalHistory: MutableLiveData<List<String>> =
+        patientBuilder.get<List<String>>(Patient::medicalHistoryList, defaultValue = emptyList())
+
+    val patientLastEdited: MutableLiveData<Long?>
+        get() = patientBuilder.get<Long?>(Patient::lastEdited)
+
+    /* Blood Pressure Info */
+    val bloodPressure: MutableLiveData<BloodPressure?>
+        get() = readingBuilder.get<BloodPressure?>(Reading::bloodPressure)
+
+    /* Urine Test Info */
+    val urineTest: MutableLiveData<UrineTest?>
+        get() = readingBuilder.get<UrineTest?>(Reading::urineTest)
+
+    /* Referral Info */
+    val referral: MutableLiveData<Referral?>
+        get() = readingBuilder.get<Referral?>(Reading::referral)
+
+    /* Reading Info */
+    val readingId: MutableLiveData<String>
+        get() = readingBuilder.get(Reading::id, "")
+
+    val dateTimeTaken: MutableLiveData<Long?>
+        get() = readingBuilder.get<Long?>(Reading::dateTimeTaken)
+
+    val symptoms: MediatorLiveData<List<String>> =
+        readingBuilder.get(Reading::symptoms, emptyList())
+
+    /**
+     * Keeps track of the symptoms that are checked. The checkboxes are as ordered in the string
+     * array, R.array.reading_symptoms, except the last checkbox represents the other symptoms.
+     * This will be changed directly by the CheckBoxes via [setSymptomsState]
+     */
+    private val _symptomsState = MediatorLiveData<SymptomsState>().apply {
+        val numOfDefaultSymptoms = app.resources.getStringArray(R.array.reading_symptoms).size
+        value = SymptomsState(numOfDefaultSymptoms)
+    }
+    val symptomsState: LiveData<SymptomsState> = _symptomsState
+
+    fun setSymptomsState(index: Int, newValue: Boolean) {
+        val currentSymptomsState = _symptomsState.value ?: return
+        currentSymptomsState.setSymptomIndexState(index, newValue)
+    }
+
     init {
         addSourcesForGestationAgeMediatorLiveData()
+
+        _symptomsState.apply{
+            addSource(symptoms) { listOfSymptomStrings ->
+                listOfSymptomStrings ?: return@addSource
+                removeSource(symptoms)
+
+                value = SymptomsState(
+                    listOfSymptomStrings, getEnglishResources().getStringArray(R.array.reading_symptoms)
+                )
+            }
+        }
+
+        symptoms.apply {
+            addSource(_symptomsState) { symptomsState ->
+                // Store only English symptoms.
+                val defaultEnglishSymptoms =
+                    getEnglishResources().getStringArray(R.array.reading_symptoms)
+                value = symptomsState.buildSymptomsList(defaultEnglishSymptoms)
+            }
+        }
     }
 
     private fun addSourcesForGestationAgeMediatorLiveData() {
@@ -287,48 +369,11 @@ class PatientReadingViewModel constructor(
         }
     }
 
-    val patientSex: MutableLiveData<Sex?>
-        get() = patientBuilder.get<Sex?>(Patient::sex)
 
-    val patientIsPregnant: MutableLiveData<Boolean?>
-        get() = patientBuilder.get<Boolean?>(Patient::isPregnant)
-
-    val patientZone: MutableLiveData<String?>
-        get() = patientBuilder.get<String?>(Patient::zone)
-
-    val patientVillageNumber: MutableLiveData<String?>
-        get() = patientBuilder.get<String?>(Patient::villageNumber)
-
-    val patientDrugHistory: MutableLiveData<List<String>> =
-        patientBuilder.get<List<String>>(Patient::drugHistoryList, defaultValue = emptyList())
-
-    val patientMedicalHistory: MutableLiveData<List<String>> =
-        patientBuilder.get<List<String>>(Patient::medicalHistoryList, defaultValue = emptyList())
-
-    val patientLastEdited: MutableLiveData<Long?>
-        get() = patientBuilder.get<Long?>(Patient::lastEdited)
-
-    /* Blood Pressure Info */
-    val bloodPressure: MutableLiveData<BloodPressure?>
-        get() = readingBuilder.get<BloodPressure?>(Reading::bloodPressure)
-
-    /* Urine Test Info */
-    val urineTest: MutableLiveData<UrineTest?>
-        get() = readingBuilder.get<UrineTest?>(Reading::urineTest)
-
-    /* Referral Info */
-    val referral: MutableLiveData<Referral?>
-        get() = readingBuilder.get<Referral?>(Reading::referral)
-
-    /* Reading Info */
-    val readingId: MutableLiveData<String>
-        get() = readingBuilder.get(Reading::id, "")
-
-    val dateTimeTaken: MutableLiveData<Long?>
-        get() = readingBuilder.get<Long?>(Reading::dateTimeTaken)
-
-    val symptoms: MutableLiveData<List<String>?>
-        get() = readingBuilder.get<List<String>?>(Reading::symptoms)
+    private fun getEnglishResources(): Resources =
+        Configuration(app.resources.configuration)
+            .apply { setLocale(Locale.ENGLISH) }
+            .run { app.createConfigurationContext(this).resources }
 
     val dateRecheckVitalsNeeded: MutableLiveData<Long?>
         get() = readingBuilder.get<Long?>(Reading::dateRecheckVitalsNeeded)
