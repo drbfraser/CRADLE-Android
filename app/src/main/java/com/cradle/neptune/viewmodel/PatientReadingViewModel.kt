@@ -81,7 +81,7 @@ class PatientReadingViewModel constructor(
         launchReason: ReadingActivity.LaunchReason,
         readingId: String?
     ) {
-        viewModelScope.launch(Dispatchers.Default) {
+        viewModelScope.launch(Dispatchers.Main) {
             isInitializedMutex.lock()
             try {
                 if (_isInitialized.value == true) {
@@ -127,6 +127,14 @@ class PatientReadingViewModel constructor(
                         check(false) { "invalid launch reason" }
                     }
                 }
+
+                Log.d(TAG, "DEBUG: initialize: symptoms is ${symptoms.value}")
+
+                val symptoms = symptoms.value ?: emptyList()
+                _symptomsState.value = SymptomsState(
+                    symptoms,
+                    getEnglishResources().getStringArray(R.array.reading_symptoms)
+                )
             } finally {
                 // Make sure we don't retrigger observers if this is run twice for some reason.
                 if (_isInitialized.value == false) {
@@ -233,7 +241,7 @@ class PatientReadingViewModel constructor(
         get() = readingBuilder.get<Long?>(Reading::dateTimeTaken)
 
     val symptoms: MediatorLiveData<List<String>> =
-        readingBuilder.get(Reading::symptoms, emptyList())
+        readingBuilder.get<List<String>>(Reading::symptoms)
 
     /**
      * Keeps track of the symptoms that are checked. The checkboxes are as ordered in the string
@@ -246,31 +254,26 @@ class PatientReadingViewModel constructor(
     }
     val symptomsState: LiveData<SymptomsState> = _symptomsState
 
+    @MainThread
     fun setSymptomsState(index: Int, newValue: Boolean) {
         val currentSymptomsState = _symptomsState.value ?: return
-        currentSymptomsState.setSymptomIndexState(index, newValue)
+        if (currentSymptomsState.isSymptomIndexChecked(index) != newValue) {
+            currentSymptomsState.setSymptomIndexState(index, newValue)
+            _symptomsState.value = currentSymptomsState
+        }
     }
 
     init {
         addSourcesForGestationAgeMediatorLiveData()
 
-        _symptomsState.apply{
-            addSource(symptoms) { listOfSymptomStrings ->
-                listOfSymptomStrings ?: return@addSource
-                removeSource(symptoms)
-
-                value = SymptomsState(
-                    listOfSymptomStrings, getEnglishResources().getStringArray(R.array.reading_symptoms)
-                )
-            }
-        }
-
         symptoms.apply {
             addSource(_symptomsState) { symptomsState ->
                 // Store only English symptoms.
+                Log.d(TAG, "DEBUG: symptoms observed new value: $symptomsState")
                 val defaultEnglishSymptoms =
                     getEnglishResources().getStringArray(R.array.reading_symptoms)
                 value = symptomsState.buildSymptomsList(defaultEnglishSymptoms)
+                Log.d(TAG, "DEBUG: symptoms observed made new list: $value")
             }
         }
     }
@@ -368,7 +371,6 @@ class PatientReadingViewModel constructor(
             }
         }
     }
-
 
     private fun getEnglishResources(): Resources =
         Configuration(app.resources.configuration)

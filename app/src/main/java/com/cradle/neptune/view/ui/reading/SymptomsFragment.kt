@@ -1,13 +1,18 @@
 package com.cradle.neptune.view.ui.reading
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.LinearLayout
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import com.cradle.neptune.R
+import kotlinx.coroutines.launch
+
+private const val TAG = "SymptomsFragment"
 
 /**
  * Gather information about the patient.
@@ -43,12 +48,17 @@ class SymptomsFragment : BaseFragment() {
             .toList()
 
         viewModel.symptomsState.observe(viewLifecycleOwner) { newSymptomsState ->
+            Log.d(TAG, "DEBUG: symptomsState observed new value: $newSymptomsState")
             checkBoxes.forEachIndexed { index, checkBox ->
                 val newState = newSymptomsState.isSymptomIndexChecked(index)
                 if (newState != checkBox.isChecked) {
                     checkBox.isChecked = newState
                 }
             }
+        }
+
+        lifecycleScope.launch {
+            Log.d(TAG, "DEBUG: symptoms are: ${viewModel.symptoms.value}")
         }
     }
 }

@@ -213,10 +213,10 @@ class LiveDataDynamicModelBuilder : DynamicModelBuilder() {
         return this
     }
 
-    @WorkerThread
+    @MainThread
     override fun <T : Any> decompose(k: KClass<T>, obj: T): LiveDataDynamicModelBuilder {
         for (property in k.memberProperties) {
-            setWorkerThread(property, property.get(obj))
+            set(property, property.get(obj))
         }
         return this
     }
@@ -229,6 +229,7 @@ class LiveDataDynamicModelBuilder : DynamicModelBuilder() {
      *
      * @return this object, as a [LiveDataDynamicModelBuilder]
      */
+    @MainThread
     inline fun <reified T : Any> decomposeToLiveData(obj: T) = decompose(T::class, obj)
 }
 
@@ -298,6 +299,7 @@ open class DynamicModelBuilder {
      *
      * @return this object
      */
+    @MainThread
     inline fun <reified T : Any> decompose(obj: T) = decompose(T::class, obj)
 
     /**
