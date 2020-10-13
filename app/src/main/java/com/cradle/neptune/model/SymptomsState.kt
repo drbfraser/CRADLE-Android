@@ -3,20 +3,24 @@ package com.cradle.neptune.model
 import java.util.Locale
 
 /**
- * Keeps track of the symptoms checkbox state. We do not deal with direct strings aside from the
- * [otherSymptoms] property, since we want to send English strings to the server only.
+ * Keeps track of the checked state of the symptoms. We do not deal with direct strings aside from
+ * the [otherSymptoms] property, since we want to send English strings for the default strings to
+ * the server only. We use a [BooleanArray] instead of a Map for efficiency.
  *
- * Why: Because the server sends and receives all symptoms in English. We want to support showing
- * localized default symptoms to the user. So, we use the symptoms array as the canonical source
- * of the symptoms.
+ * Why: Because the server sends and receives all default symptoms in English. We want to support
+ * showing localized default symptoms to the user.
  *
- * @property defaultSymptomsState The default symptoms that are checked, where the index
- * corresponds to the symptoms in the string array R.array.reading_symptoms in res/values.
  */
 class SymptomsState(val numberOfDefaultSymptoms: Int) {
     /**
      * Holds the state of all default symptoms, where a symptom is present if and only if its
-     * value in the array is true.
+     * value in the array is true. The index corresponds to the symptoms in the string array
+     * R.array.reading_symptoms in res/values.
+     *
+     * The [SymptomsState] ensures that this BooleanArray has the following property:
+     *
+     *     defaultSymptomsState[0] (the No Symptoms checkbox) is true if and only if
+     *     all the others are false and otherSymptoms == "".
      */
     private val defaultSymptomsState = BooleanArray(numberOfDefaultSymptoms)
 
@@ -63,8 +67,12 @@ class SymptomsState(val numberOfDefaultSymptoms: Int) {
         setOtherSymptoms(otherSymptomsBuilder.removeSuffix(", ").toString())
     }
 
-    fun buildSymptomsList(defaultEnglishSymptoms: Array<String>): List<String> {
-        val list = defaultEnglishSymptoms
+    /**
+     * Builds a list of symptoms given a String array from R.array.reading_symptoms.
+     * [defaultSymptoms] can be in any language.
+     */
+    fun buildSymptomsList(defaultSymptoms: Array<String>): List<String> {
+        val list = defaultSymptoms
             .filterIndexed { index, _ -> defaultSymptomsState[index] }
             .toMutableList()
         if (areThereOtherSymptoms()) list.add(otherSymptoms)
@@ -88,8 +96,12 @@ class SymptomsState(val numberOfDefaultSymptoms: Int) {
     }
 
     fun setSymptomIndexState(index: Int, newValue: Boolean) {
-        if (index == 0 && newValue) {
-            clearSymptoms()
+        if (index == 0) {
+            // This makes it so that defaultSymptomsState[0] is true, and it cannot be turned off
+            // by toggling it again.
+            if (newValue && !defaultSymptomsState[0]) {
+                clearSymptoms()
+            }
         } else {
             defaultSymptomsState[index] = newValue
             defaultSymptomsState[0] = false
@@ -102,7 +114,8 @@ class SymptomsState(val numberOfDefaultSymptoms: Int) {
     }
 
     /**
-     * Lowercases and removes all whitespaces for comparison.
+     * Lowercases and removes all whitespaces for comparison. The frontend/backend may use symptoms
+     * of all caps.
      */
     private fun trimAndLowercase(symptomString: String) =
         symptomString.toLowerCase(Locale.getDefault()).replace("\\s".toRegex(), "")

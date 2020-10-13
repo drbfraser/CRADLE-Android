@@ -23,6 +23,7 @@ private const val TAG = "ReadingBindingAdapter"
  * We use the `bind` name space just to clarify that it is part of our custom BindingAdapter set;
  * the Data Binding library in reality just ignores custom name spaces.
  */
+@Suppress("LargeClass")
 class ReadingBindingAdapters constructor(val fragment: Fragment) {
     @BindingAdapter("bind:enabledOnlyWhen")
     fun enabledOnlyWhen(view: View, condition: Boolean) {
@@ -37,6 +38,16 @@ class ReadingBindingAdapters constructor(val fragment: Fragment) {
     fun makeTextEmptyWhen(view: TextView, condition: Boolean) {
         if (condition && view.text.isNotEmpty()) {
             view.text = ""
+        }
+    }
+
+    /**
+     * To use this properly, make sure there is another focusable view in the layout.
+     */
+    @BindingAdapter("bind:loseFocuswhen")
+    fun loseFocusWhen(view: TextView, condition: Boolean) {
+        if (condition && view.hasFocus()) {
+            view.clearFocus()
         }
     }
 

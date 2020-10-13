@@ -14,6 +14,36 @@ class SymptomsStateTests {
     }
 
     @Test
+    fun `setSymptomIndexState when index 0 is checked, it cannot be unchecked again`() {
+        val symptomsState = SymptomsState(DEFAULT_SIZE)
+        assertEquals(DEFAULT_SIZE, symptomsState.numberOfDefaultSymptoms)
+        assert(!symptomsState.areThereDefaultSymptoms())
+        assert(!symptomsState.areThereOtherSymptoms())
+        assert(symptomsState.isSymptomIndexChecked(0))
+        for (i in 1 until DEFAULT_SIZE) {
+            assert(!symptomsState.isSymptomIndexChecked(i))
+        }
+
+        // Setting index 0 to true should not do anything.
+        symptomsState.setSymptomIndexState(0, true)
+        assert(!symptomsState.areThereDefaultSymptoms())
+        assert(!symptomsState.areThereOtherSymptoms())
+        assert(symptomsState.isSymptomIndexChecked(0))
+        for (i in 1 until DEFAULT_SIZE) {
+            assert(!symptomsState.isSymptomIndexChecked(i))
+        }
+
+        // Setting index 0 to false should reject that change, and not do anything.
+        symptomsState.setSymptomIndexState(0, false)
+        assert(!symptomsState.areThereDefaultSymptoms())
+        assert(!symptomsState.areThereOtherSymptoms())
+        assert(symptomsState.isSymptomIndexChecked(0))
+        for (i in 1 until DEFAULT_SIZE) {
+            assert(!symptomsState.isSymptomIndexChecked(i))
+        }
+    }
+
+    @Test
     fun `setSymptomIndexState makes first false and clearing symptoms turns all others off`() {
         val symptomsState = SymptomsState(DEFAULT_SIZE)
 

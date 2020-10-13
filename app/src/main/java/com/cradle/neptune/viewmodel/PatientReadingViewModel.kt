@@ -131,10 +131,13 @@ class PatientReadingViewModel constructor(
                 Log.d(TAG, "DEBUG: initialize: symptoms is ${symptoms.value}")
 
                 val symptoms = symptoms.value ?: emptyList()
-                _symptomsState.value = SymptomsState(
+                SymptomsState(
                     symptoms,
                     getEnglishResources().getStringArray(R.array.reading_symptoms)
-                )
+                ).let {
+                    _symptomsState.value = it
+                    otherSymptomsInput.value = it.otherSymptoms
+                }
             } finally {
                 // Make sure we don't retrigger observers if this is run twice for some reason.
                 if (_isInitialized.value == false) {
@@ -254,9 +257,16 @@ class PatientReadingViewModel constructor(
     }
     val symptomsState: LiveData<SymptomsState> = _symptomsState
 
+    /**
+     * The user's input for the other symptoms is tracked here.
+     */
+    val otherSymptomsInput = MutableLiveData("")
+
     @MainThread
     fun setSymptomsState(index: Int, newValue: Boolean) {
         val currentSymptomsState = _symptomsState.value ?: return
+
+        // Prevent infinite loops and unnecessary updates.
         if (currentSymptomsState.isSymptomIndexChecked(index) != newValue) {
             currentSymptomsState.setSymptomIndexState(index, newValue)
             _symptomsState.value = currentSymptomsState
@@ -266,14 +276,22 @@ class PatientReadingViewModel constructor(
     init {
         addSourcesForGestationAgeMediatorLiveData()
 
+        _symptomsState.apply {
+            addSource(otherSymptomsInput) { otherSymptomsString ->
+                val currentSymptomsState = value ?: return@addSource
+                if (currentSymptomsState.otherSymptoms != otherSymptomsString) {
+                    currentSymptomsState.setOtherSymptoms(otherSymptomsString)
+                    value = currentSymptomsState
+                }
+            }
+        }
+
         symptoms.apply {
             addSource(_symptomsState) { symptomsState ->
                 // Store only English symptoms.
-                Log.d(TAG, "DEBUG: symptoms observed new value: $symptomsState")
                 val defaultEnglishSymptoms =
                     getEnglishResources().getStringArray(R.array.reading_symptoms)
                 value = symptomsState.buildSymptomsList(defaultEnglishSymptoms)
-                Log.d(TAG, "DEBUG: symptoms observed made new list: $value")
             }
         }
     }

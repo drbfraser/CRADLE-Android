@@ -61,7 +61,33 @@
                             android:orientation="vertical"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/patient_info_title"></LinearLayout>
+                            app:layout_constraintTop_toBottomOf="@+id/patient_info_title" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/other_symptoms_layout"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="4dp"
+                            android:hint="@string/fragment_symptoms_other_symptoms_label"
+                            android:paddingBottom="0dp"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/symptoms_checkbox_container">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/other_symptoms_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="textLongMessage|textMultiLine|textNoSuggestions"
+                                android:maxLines="4"
+                                android:scrollbarStyle="outsideOverlay"
+                                android:scrollbars="vertical"
+                                android:text="@={viewModel.otherSymptomsInput}"
+                                android:verticalScrollbarPosition="right"
+                                bind:loseFocuswhen="@{!viewModel.symptomsState.areThereDefaultSymptoms()}"
+                                bind:makeTextEmptyWhen="@{!viewModel.symptomsState.areThereDefaultSymptoms()}"
+                                tools:text="Other symptoms example" />
+                        </com.google.android.material.textfield.TextInputLayout>
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
                 </com.google.android.material.card.MaterialCardView>

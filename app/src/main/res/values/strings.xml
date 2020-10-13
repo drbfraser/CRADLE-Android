@@ -44,6 +44,14 @@
         <item>Bleeding</item>
         <item>Feverish</item>
         <item>Unwell</item>
+        <item>Cough</item>
+        <item>Shortness of breath</item>
+        <item>Sore throat</item>
+        <item>Muscle ache</item>
+        <item>Fatigue</item>
+        <item>Loss of sense</item>
+        <item>Loss of taste</item>
+        <item>Loss of smell</item>
     </string-array>
 
     <string-array name="reading_ga_units">
@@ -339,6 +347,7 @@
     <string name="fragment_patient_info_drug_history_label">Drug history</string>
     <string name="edit_text_unavailable_hint">(unavailable)</string>
     <string name="fragment_patient_info_title">Demographics</string>
+    <string name="fragment_symptoms_other_symptoms_label">Other symptoms</string>
     <string name="fragment_patient_info_village_number_label">Village number</string>
 
     <string name="login_activity_device_is_outdated_dialog_title">Device is out of date</string>
