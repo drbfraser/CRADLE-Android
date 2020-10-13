@@ -338,6 +338,7 @@
     <string name="fragment_patient_info_medical_history_label">Medical history</string>
     <string name="fragment_patient_info_drug_history_label">Drug history</string>
     <string name="edit_text_unavailable_hint">(unavailable)</string>
+    <string name="fragment_patient_info_title">Demographics</string>
     <string name="fragment_patient_info_village_number_label">Village number</string>
 
     <string name="login_activity_device_is_outdated_dialog_title">Device is out of date</string>
