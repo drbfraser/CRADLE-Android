@@ -11,7 +11,7 @@ import androidx.lifecycle.observe
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.view.ui.reading.BaseFragment
-import com.cradle.neptune.view.ui.reading.PatientInfoFragment
+import com.cradle.neptune.view.ui.reading.SymptomsFragment
 import com.cradle.neptune.viewmodel.PatientReadingViewModel
 import com.cradle.neptune.viewmodel.PatientReadingViewModelFactory
 import javax.inject.Inject
@@ -63,7 +63,7 @@ class ReadingActivity : AppCompatActivity() {
 
             // TODO: Remove this when navigation is added back
             if (savedInstanceState == null) {
-                val fragment = PatientInfoFragment()
+                val fragment = SymptomsFragment()
                 supportFragmentManager
                     .beginTransaction()
                     .add(R.id.container_placeholder, fragment)
