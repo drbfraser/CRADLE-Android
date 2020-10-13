@@ -17,7 +17,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import com.cradle.neptune.R
-import com.cradle.neptune.binding.BindingConverter
+import com.cradle.neptune.binding.Converter
 import com.cradle.neptune.binding.FragmentDataBindingComponent
 import com.cradle.neptune.databinding.FragmentPatientInfoBinding
 import com.cradle.neptune.model.Patient
@@ -191,7 +191,7 @@ class PatientInfoFragment : BaseFragment() {
 
         viewModel.patientSex.observe(viewLifecycleOwner) { sex ->
             genderMenuTextView?.apply {
-                val sexAsString = BindingConverter.sexToString(view.context, sex)
+                val sexAsString = Converter.sexToString(view.context, sex)
                 // Prevent infinite loops.
                 if ((sexAsString != null || text.isNotEmpty()) &&
                     text.toString() != sexAsString) {
@@ -203,7 +203,7 @@ class PatientInfoFragment : BaseFragment() {
             }
         }
         genderTextWatcher = genderMenuTextView?.doOnTextChanged { text, _, _, _ ->
-            viewModel.patientSex.value = BindingConverter.stringToSex(view.context, text.toString())
+            viewModel.patientSex.value = Converter.stringToSex(view.context, text.toString())
         }
         genderMenuTextView?.setOnClickListener {
             dismissKeyboard(view)

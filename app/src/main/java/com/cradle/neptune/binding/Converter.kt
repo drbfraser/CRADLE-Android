@@ -6,7 +6,7 @@ import com.cradle.neptune.R
 import com.cradle.neptune.model.Sex
 import java.lang.NumberFormatException
 
-object BindingConverter {
+object Converter {
     @InverseMethod("stringToInt")
     @JvmStatic fun intToString(value: Int?): String? {
         return value?.toString()

@@ -6,7 +6,7 @@
     xmlns:bind="http://schemas.android.com/apk/res-auto">
 
     <data>
-        <import type="com.cradle.neptune.binding.BindingConverter" />
+        <import type="com.cradle.neptune.binding.Converter" />
         <import type="android.text.InputType" />
 
         <variable
@@ -192,7 +192,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="number"
-                                android:text="@={BindingConverter.intToString(viewModel.patientAge)}"
+                                android:text="@={Converter.intToString(viewModel.patientAge)}"
                                 tools:text="45" />
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -304,7 +304,7 @@
                                 android:maxLines="4"
                                 android:scrollbarStyle="outsideOverlay"
                                 android:scrollbars="vertical"
-                                android:text="@={BindingConverter.singleElementListToString(viewModel.patientDrugHistory)}"
+                                android:text="@={Converter.singleElementListToString(viewModel.patientDrugHistory)}"
                                 android:verticalScrollbarPosition="right"
                                 tools:text="Drug history sample" />
                         </com.google.android.material.textfield.TextInputLayout>
@@ -330,7 +330,7 @@
                                 android:scrollbarStyle="outsideOverlay"
                                 android:scrollbars="vertical"
                                 android:verticalScrollbarPosition="right"
-                                android:text="@={BindingConverter.singleElementListToString(viewModel.patientMedicalHistory)}"
+                                android:text="@={Converter.singleElementListToString(viewModel.patientMedicalHistory)}"
                                 tools:text="Medical history sample" />
                         </com.google.android.material.textfield.TextInputLayout>
                     </androidx.constraintlayout.widget.ConstraintLayout>
