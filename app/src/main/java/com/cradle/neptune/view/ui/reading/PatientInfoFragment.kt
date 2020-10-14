@@ -8,7 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
 import androidx.activity.addCallback
@@ -19,6 +18,7 @@ import androidx.lifecycle.observe
 import androidx.navigation.Navigation
 import com.cradle.neptune.R
 import com.cradle.neptune.binding.FragmentDataBindingComponent
+import com.cradle.neptune.binding.MaterialSpinnerArrayAdapter
 import com.cradle.neptune.databinding.FragmentPatientInfoBinding
 import com.cradle.neptune.model.Patient
 import com.google.android.material.datepicker.CalendarConstraints
@@ -98,7 +98,7 @@ class PatientInfoFragment : BaseFragment() {
 
         setupAndObserveAgeInfo(view)
         setupAndObserveGenderList(view)
-        setupAndObserveGestationalAge(view)
+        setupGestationalAge(view)
 
         lifecycleScope.launch(Dispatchers.Main) {
             val autoTextView = genderMenuTextView
@@ -192,25 +192,34 @@ class PatientInfoFragment : BaseFragment() {
     private fun setupAndObserveGenderList(view: View) {
         val genderTextLayout = view.findViewById<TextInputLayout>(R.id.gender_input_layout)
         val genders = view.resources.getStringArray(R.array.sex)
-        val genderAdapter = ArrayAdapter(view.context, R.layout.list_dropdown_menu_item, genders)
-        genderMenuTextView = genderTextLayout.editText as? AutoCompleteTextView?
-        genderMenuTextView?.setAdapter(genderAdapter)
-        genderMenuTextView?.setOnClickListener {
-            dismissKeyboard(view)
+        val genderAdapter = MaterialSpinnerArrayAdapter(
+            view.context,
+            R.layout.list_dropdown_menu_item,
+            genders
+        )
+        genderMenuTextView = (genderTextLayout.editText as? AutoCompleteTextView?)?.apply {
+            setAdapter(genderAdapter)
+            setOnClickListener {
+                dismissKeyboard(view)
+            }
         }
     }
 
-    private fun setupAndObserveGestationalAge(view: View) {
+    private fun setupGestationalAge(view: View) {
         val gestAgeUnitsTextLayout = view.findViewById<TextInputLayout>(
             R.id.gestational_age_units_layout
         )
         val ageUnits = view.resources.getStringArray(R.array.reading_ga_units)
-        val genderAdapter = ArrayAdapter(view.context, R.layout.list_dropdown_menu_item, ageUnits)
-        gestAgeMenuTextView = gestAgeUnitsTextLayout.editText as? AutoCompleteTextView?
-        gestAgeMenuTextView?.setAdapter(genderAdapter)
-
-        gestAgeMenuTextView?.setOnClickListener {
-            dismissKeyboard(view)
+        val gestationalAgeAdapter = MaterialSpinnerArrayAdapter(
+            view.context,
+            R.layout.list_dropdown_menu_item,
+            ageUnits
+        )
+        gestAgeMenuTextView = (gestAgeUnitsTextLayout.editText as? AutoCompleteTextView?)?.apply {
+            setAdapter(gestationalAgeAdapter)
+            setOnClickListener {
+                dismissKeyboard(view)
+            }
         }
     }
 
