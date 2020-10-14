@@ -24,8 +24,8 @@
         android:label="Symptoms"
         tools:layout="@layout/fragment_symptoms">
         <action
-            android:id="@+id/action_symptomsFragment_to_patientInfoFragment"
-            app:destination="@id/patientInfoFragment" />
+            android:id="@+id/action_symptomsFragment_to_vitalSignsFragment"
+            app:destination="@id/vitalSignsFragment" />
     </fragment>
     <fragment
         android:id="@+id/loadingFragment"
@@ -40,4 +40,18 @@
             app:popEnterAnim="@anim/fragment_close_enter"
             app:popExitAnim="@anim/fragment_close_exit" />
     </fragment>
+    <fragment
+        android:id="@+id/vitalSignsFragment"
+        android:name="com.cradle.neptune.view.ui.reading.VitalSignsFragment"
+        android:label="VitalSignsFragment"
+        tools:layout="@layout/fragment_vital_signs">
+        <action
+            android:id="@+id/action_vitalSignsFragment_to_cameraFragment"
+            app:destination="@id/cameraFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/cameraFragment"
+        android:name="com.cradle.neptune.view.ui.reading.CameraFragment"
+        android:label="fragment_camera"
+        tools:layout="@layout/fragment_camera" />
 </navigation>

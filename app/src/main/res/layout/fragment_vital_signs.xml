@@ -1,266 +1,269 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    xmlns:bind="http://schemas.android.com/apk/res-auto">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <data>
+        <import type="com.cradle.neptune.binding.Converter" />
+
+        <variable
+            name="viewModel"
+            type="com.cradle.neptune.viewmodel.PatientReadingViewModel" />
+    </data>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".view.ui.reading.VitalSignsFragment">
+        android:layout_height="match_parent">
 
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentBottom="true"
+            android:fitsSystemWindows="true">
 
-            <!-- Systolic -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/txtSystolic"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="120dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:hint="@string/confirm_data_fragment_systolic_hint"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <EditText
-                android:id="@+id/etSystolic"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="number"
-                android:selectAllOnFocus="true" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:orientation="vertical">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="16dp"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardElevation="3dp">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="8dp">
 
 
-            <!-- Diastolic -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/txtDiastolic"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="120dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:hint="@string/confirm_data_fragment_diastolic_hint"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/txtSystolic">
+                        <TextView
+                            android:id="@+id/cradle_vsa_card_title_textview"
+                            style="@style/ReadingFlowHeader"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="8dp"
+                            android:text="Cradle VSA readings"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
 
-            <EditText
-                android:id="@+id/etDiastolic"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="number"
-                android:selectAllOnFocus="true" />
-        </com.google.android.material.textfield.TextInputLayout>
+                        <Button
+                            android:id="@+id/cradle_vsa_take_photo_button"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Take picture of CRADLE VSA"
+                            app:icon="@drawable/ic_baseline_camera_alt_24"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/cradle_vsa_card_title_textview" />
 
-            <!-- Heart Rate -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/txtHeartRate"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="120dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:hint="@string/confirm_data_fragment_heart_rate_hint"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/txtDiastolic">
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/systolic_input"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="4dp"
+                            android:layout_marginTop="8dp"
+                            android:hint="Systolic"
+                            android:paddingBottom="0dp"
+                            app:helperText=" "
+                            app:hintAnimationEnabled="false"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/cradle_vsa_take_photo_button"
+                            app:suffixText="mm/Hg">
 
-            <EditText
-                android:id="@+id/etHeartRate"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="number"
-                android:selectAllOnFocus="true" />
-        </com.google.android.material.textfield.TextInputLayout>
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/systolic_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="number"
+                                android:maxLines="4"
+                                android:verticalScrollbarPosition="right"
+                                tools:text="100" />
+                        </com.google.android.material.textfield.TextInputLayout>
 
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/diastolic_input"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="4dp"
+                            android:hint="Diastolic"
+                            android:paddingBottom="0dp"
+                            app:helperText=" "
+                            app:hintAnimationEnabled="false"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/systolic_input"
+                            app:suffixText="mm/Hg">
 
-        <ImageView
-            android:id="@+id/imageViewPhoto"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:scaleType="fitStart"
-            app:layout_constraintEnd_toStartOf="@+id/txtHeartRate"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:layout_height="300dp"
-            tools:src="@drawable/cradle_just_screen" />
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/diastolic_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="number"
+                                android:maxLines="4"
+                                android:verticalScrollbarPosition="right"
+                                tools:text="100" />
+                        </com.google.android.material.textfield.TextInputLayout>
 
-        <TextView
-            android:id="@+id/txtDirections"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:clickable="false"
-            android:focusable="false"
-            android:selectAllOnFocus="false"
-            android:text="@string/confirm_data_fragment_go_to_summary_screen_next_to_review_data_and_save"
-            android:textSize="18sp"
-            app:layout_constraintEnd_toEndOf="@+id/txtHeartRate"
-            app:layout_constraintStart_toStartOf="@+id/txtHeartRate"
-            app:layout_constraintTop_toBottomOf="@+id/txtHeartRate" />
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/heart_rate_layout"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="4dp"
+                            android:hint="Heart rate"
+                            android:paddingBottom="0dp"
+                            app:helperText=" "
+                            app:hintAnimationEnabled="true"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/diastolic_input"
+                            app:suffixText="beats per minute">
 
-        <TextView
-            android:id="@+id/txtNoPhotoWarning"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="8dp"
-            android:clickable="false"
-            android:focusable="false"
-            android:selectAllOnFocus="false"
-            android:text="@string/confirm_data_fragment_no_photo_taken_for_reading"
-            android:textSize="30sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toStartOf="@+id/txtHeartRate"
-            app:layout_constraintStart_toStartOf="@+id/imageViewPhoto"
-            app:layout_constraintTop_toTopOf="parent" />
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/heart_rate_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="number"
+                                android:maxLines="4"
+                                android:verticalScrollbarPosition="right"
+                                tools:text="100" />
+                        </com.google.android.material.textfield.TextInputLayout>
 
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-        <TextView
-            android:id="@+id/tvOcrDisabled"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="@string/confirm_data_fragment_ocr_disabled_enter_manually"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/imageViewPhoto" />
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="16dp"
+                    app:cardElevation="3dp">
 
-
-        <androidx.constraintlayout.widget.Barrier
-            android:id="@+id/debugOcrBarrierTop"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:barrierDirection="bottom"
-            app:constraint_referenced_ids="txtNoPhotoWarning, imageViewPhoto, txtDirections, tvOcrDisabled"
-            tools:layout_editor_absoluteY="348dp" />
-
-        <!--<androidx.constraintlayout.widget.ConstraintLayout-->
-        <!--android:id="@+id/groupDebugOcr"-->
-        <!--android:layout_width="0dp"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_marginStart="8dp"-->
-        <!--android:layout_marginTop="8dp"-->
-        <!--android:layout_marginEnd="8dp"-->
-        <!--app:layout_constraintEnd_toEndOf="parent"-->
-        <!--app:layout_constraintStart_toStartOf="parent"-->
-        <!--app:layout_constraintTop_toBottomOf="@+id/debugOcrBarrierTop">-->
-
-        <ImageView
-            android:id="@+id/ivOcrScaled0"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/debugOcrBarrierTop"
-            app:srcCompat="@drawable/baseline_check_circle_black_24" />
-
-        <ImageView
-            android:id="@+id/ivOcrRaw0"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            app:layout_constraintStart_toEndOf="@+id/ivOcrScaled0"
-            app:layout_constraintTop_toTopOf="@+id/ivOcrScaled0"
-            app:srcCompat="@drawable/baseline_check_circle_black_24" />
-
-        <TextView
-            android:id="@+id/tvOcrText0"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            app:layout_constraintStart_toStartOf="@+id/ivOcrRaw0"
-            app:layout_constraintTop_toBottomOf="@+id/ivOcrRaw0"
-            tools:text="123" />
-
-        <ImageView
-            android:id="@+id/ivOcrScaled1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="24dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ivOcrScaled0"
-            app:srcCompat="@drawable/baseline_check_circle_black_24" />
-
-        <ImageView
-            android:id="@+id/ivOcrRaw1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            app:layout_constraintStart_toEndOf="@+id/ivOcrScaled1"
-            app:layout_constraintTop_toTopOf="@+id/ivOcrScaled1"
-            app:srcCompat="@drawable/baseline_check_circle_black_24" />
-
-        <TextView
-            android:id="@+id/tvOcrText1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            app:layout_constraintStart_toStartOf="@+id/ivOcrRaw1"
-            app:layout_constraintTop_toBottomOf="@+id/ivOcrRaw1"
-            tools:text="456" />
-
-        <ImageView
-            android:id="@+id/ivOcrScaled2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="24dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ivOcrScaled1"
-            app:srcCompat="@drawable/baseline_check_circle_black_24" />
-
-        <ImageView
-            android:id="@+id/ivOcrRaw2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            app:layout_constraintStart_toEndOf="@+id/ivOcrScaled2"
-            app:layout_constraintTop_toTopOf="@+id/ivOcrScaled2"
-            app:srcCompat="@drawable/baseline_check_circle_black_24" />
-
-        <TextView
-            android:id="@+id/tvOcrText2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            app:layout_constraintStart_toStartOf="@+id/ivOcrRaw2"
-            app:layout_constraintTop_toBottomOf="@+id/ivOcrRaw2"
-            tools:text="789" />
-
-        <EditText
-            android:id="@+id/etBlurRadius"
-            android:layout_width="82dp"
-            android:layout_height="41dp"
-            android:layout_marginTop="24dp"
-            android:ems="10"
-            android:inputType="textPersonName"
-            android:text="1"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ivOcrScaled2"
-            tools:ignore="HardcodedText" />
-
-        <!--TODO: Is this user friendly?-->
-        <Button
-            android:id="@+id/btnSetBlurSize"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="@string/confirm_data_fragment_set_blur_radius"
-            app:layout_constraintStart_toEndOf="@+id/etBlurRadius"
-            app:layout_constraintTop_toTopOf="@+id/etBlurRadius" />
-
-        <androidx.constraintlayout.widget.Group
-            android:id="@+id/groupDebugOcr"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:constraint_referenced_ids="ivOcrScaled0, ivOcrScaled1, ivOcrScaled2, ivOcrRaw0, ivOcrRaw1, ivOcrRaw2, tvOcrText0, tvOcrText1, tvOcrText2, etBlurRadius, btnSetBlurSize" />
-
-        <!--</androidx.constraintlayout.widget.ConstraintLayout>-->
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="8dp">
 
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</ScrollView>
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/respiratory_rate_input"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="4dp"
+                            android:hint="Respiratory rate"
+                            android:paddingBottom="0dp"
+                            app:helperText=" "
+                            app:hintAnimationEnabled="false"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:suffixText="breaths per minute">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/respiratory_rate_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="number"
+                                android:maxLines="4"
+                                android:verticalScrollbarPosition="right"
+                                tools:text="100" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/oxygen_saturation_layout"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="4dp"
+                            android:hint="Oxygen saturation"
+                            android:paddingBottom="0dp"
+                            app:helperText=" "
+                            app:hintAnimationEnabled="false"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/respiratory_rate_input"
+                            app:suffixText="%">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/oxygen_saturation_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="number"
+                                android:maxLines="4"
+                                android:verticalScrollbarPosition="right"
+                                tools:text="100" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/temperature_layout"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="4dp"
+                            android:hint="Temperature"
+                            android:paddingBottom="0dp"
+                            app:helperText=" "
+                            app:hintAnimationEnabled="true"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/oxygen_saturation_layout"
+                            app:suffixText="\u00B0C">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/temperature_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="number"
+                                android:maxLines="4"
+                                android:verticalScrollbarPosition="right"
+                                tools:text="100" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp">
+
+                    <Button
+                        android:id="@+id/back_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="4dp"
+                        android:text="@string/back"
+                        app:layout_constraintEnd_toStartOf="@+id/next_button"
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintHorizontal_chainStyle="spread_inside"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <Button
+                        android:id="@+id/next_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="4dp"
+                        android:text="@string/next"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintStart_toEndOf="@+id/back_button"
+                        app:layout_constraintTop_toTopOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </LinearLayout>
+        </ScrollView>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

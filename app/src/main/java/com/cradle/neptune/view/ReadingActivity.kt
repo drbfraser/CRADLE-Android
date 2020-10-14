@@ -69,6 +69,8 @@ class ReadingActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(navController.graph)
         setupActionBarWithNavController(navController, appBarConfiguration)
 
+        // TODO: remove this when done
+        // adapted from https://github.com/googlecodelabs/android-navigation
         navController.addOnDestinationChangedListener { _, destination, _ ->
             val dest: String = try {
                 resources.getResourceName(destination.id)
@@ -76,7 +78,6 @@ class ReadingActivity : AppCompatActivity() {
                 destination.id.toString()
             }
 
-            Toast.makeText(this@ReadingActivity, "Navigated to $dest", Toast.LENGTH_SHORT).show()
             Log.d("ReadingActivity", "Navigated to $dest")
         }
 
@@ -90,7 +91,9 @@ class ReadingActivity : AppCompatActivity() {
             if (!it) {
                 return@observe
             }
-            navController.navigate(R.id.action_loadingFragment_to_patientInfoFragment)
+            if (navController.currentDestination?.id == R.id.loadingFragment) {
+                navController.navigate(R.id.action_loadingFragment_to_patientInfoFragment)
+            }
             viewModel.isInitialized.removeObservers(this)
         }
     }

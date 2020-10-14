@@ -21,6 +21,7 @@ import com.cradle.neptune.binding.FragmentDataBindingComponent
 import com.cradle.neptune.binding.MaterialSpinnerArrayAdapter
 import com.cradle.neptune.databinding.FragmentPatientInfoBinding
 import com.cradle.neptune.model.Patient
+import com.cradle.neptune.view.ReadingActivity
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputEditText
@@ -31,6 +32,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.TimeZone
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -59,6 +61,9 @@ class PatientInfoFragment : BaseFragment() {
     private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent(this)
 
     private var binding: FragmentPatientInfoBinding? = null
+
+    // TODO: remove me
+    private var debugPeriodicPrintJob: Job? = null
 
     override fun onDestroy() {
         super.onDestroy()
@@ -96,13 +101,18 @@ class PatientInfoFragment : BaseFragment() {
             )
         )
 
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            (activity as? ReadingActivity)?.onSupportNavigateUp()
+        }
+
         lifecycleScope.apply {
             launch { setupAndObserveAgeInfo(view) }
             launch { setupAndObserveGenderList(view) }
             launch { setupGestationalAge(view) }
         }
 
-        lifecycleScope.launch(Dispatchers.Main) {
+        debugPeriodicPrintJob?.cancel()
+        debugPeriodicPrintJob = lifecycleScope.launch(Dispatchers.Main) {
             val autoTextView = genderMenuTextView
             while (true) {
                 // TODO: Remove me.
@@ -123,11 +133,6 @@ class PatientInfoFragment : BaseFragment() {
                 @Suppress("MagicNumber")
                 delay(6000L)
             }
-        }
-
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-            // TODO: Show some dialog.
-            requireActivity().finish()
         }
     }
 
