@@ -96,7 +96,16 @@ class ReadingActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        return findNavController(R.id.reading_nav_host).navigateUp(appBarConfiguration)
+        Toast.makeText(this, "onSupportNavigateUp", Toast.LENGTH_SHORT).show()
+        val navController = findNavController(R.id.reading_nav_host)
+
+        return if (navController.currentDestination?.id == R.id.patientInfoFragment) {
+            // TODO: add dialog
+            finish()
+            true
+        } else {
+            navController.navigateUp(appBarConfiguration)
+        }
     }
 
     enum class LaunchReason {

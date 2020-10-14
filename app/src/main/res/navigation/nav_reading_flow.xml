@@ -15,8 +15,8 @@
             app:destination="@id/symptomsFragment" />
         <action
             android:id="@+id/action_patientInfoFragment_pop"
-            app:popUpToInclusive="true"
-            app:popUpTo="@id/patientInfoFragment" />
+            app:popUpTo="@id/loadingFragment"
+            app:popUpToInclusive="true" />
     </fragment>
     <fragment
         android:id="@+id/symptomsFragment"

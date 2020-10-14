@@ -11,6 +11,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
+import androidx.activity.addCallback
 import androidx.databinding.DataBindingComponent
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
@@ -120,6 +121,11 @@ class PatientInfoFragment : BaseFragment() {
                 @Suppress("MagicNumber")
                 delay(6000L)
             }
+        }
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            // TODO: Show some dialog.
+            requireActivity().finish()
         }
     }
 
