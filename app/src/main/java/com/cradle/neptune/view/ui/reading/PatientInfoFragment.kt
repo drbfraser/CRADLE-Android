@@ -96,9 +96,11 @@ class PatientInfoFragment : BaseFragment() {
             )
         )
 
-        setupAndObserveAgeInfo(view)
-        setupAndObserveGenderList(view)
-        setupGestationalAge(view)
+        lifecycleScope.apply {
+            launch { setupAndObserveAgeInfo(view) }
+            launch { setupAndObserveGenderList(view) }
+            launch { setupGestationalAge(view) }
+        }
 
         lifecycleScope.launch(Dispatchers.Main) {
             val autoTextView = genderMenuTextView
