@@ -410,12 +410,12 @@ class PatientReadingViewModel constructor(
         value = arrayMapOf()
         addSource(patientId) {
             setErrorMessageInErrorMap(
-                value = it, propertyToCheck = Patient::id, isForPatient = true
+                value = it, propertyToCheck = Patient::id, verifier = Patient.Companion
             )
         }
         addSource(patientName) {
             setErrorMessageInErrorMap(
-                value = it, propertyToCheck = Patient::name, isForPatient = true
+                value = it, propertyToCheck = Patient::name, verifier = Patient.Companion
             )
         }
         addSource(patientDob) {
@@ -426,7 +426,7 @@ class PatientReadingViewModel constructor(
             }
             setErrorMessageInErrorMap(
                 value = it, propertyToCheck = Patient::dob,
-                isForPatient = true, propertyForMap = Patient::age
+                verifier = Patient.Companion, propertyForMap = Patient::age
             )
         }
         addSource(patientAge) {
@@ -436,17 +436,17 @@ class PatientReadingViewModel constructor(
                 return@addSource
             }
             setErrorMessageInErrorMap(
-                value = it, propertyToCheck = Patient::age, isForPatient = true
+                value = it, propertyToCheck = Patient::age, verifier = Patient.Companion
             )
         }
         addSource(patientGestationalAge) {
             setErrorMessageInErrorMap(
-                value = it, propertyToCheck = Patient::gestationalAge, isForPatient = true
+                value = it, propertyToCheck = Patient::gestationalAge, verifier = Patient.Companion
             )
         }
         addSource(patientSex) {
             setErrorMessageInErrorMap(
-                value = it, propertyToCheck = Patient::sex, isForPatient = true
+                value = it, propertyToCheck = Patient::sex, verifier = Patient.Companion
             )
         }
     }
@@ -480,27 +480,28 @@ class PatientReadingViewModel constructor(
     private fun setErrorMessageInErrorMap(
         value: Any?,
         propertyToCheck: KProperty<*>,
-        isForPatient: Boolean,
-        propertyForMap: KProperty<*> = propertyToCheck
+        verifier: Verifier<*>,
+        propertyForErrorMapKey: KProperty<*> = propertyToCheck,
+        currentValuesMap: Map<String, Any?>? = null
     ) {
-        val (isValid, errorMessage) = if (isForPatient) {
-            Patient.isValueValid(
+        val currentValuesMapToUse = currentValuesMap
+            ?: if (verifier is Patient.Companion) {
+                patientBuilder.publicMap
+            } else {
+                readingBuilder.publicMap
+            }
+
+        val (isValid, errorMessage) = verifier.isValueValid(
                 propertyToCheck, value, getApplication(),
-                instance = null, currentValues = patientBuilder.publicMap
+                instance = null, currentValues = currentValuesMapToUse
             )
-        } else {
-            Reading.isValueValid(
-                propertyToCheck, value, getApplication(),
-                instance = null, currentValues = readingBuilder.publicMap
-            )
-        }
 
         val errorMessageForMap = if (!isValid) errorMessage else null
         val currentMap = _errorMap.value ?: arrayMapOf()
 
         // Don't notify observers if the error message is the exact same message.
-        if (currentMap[propertyForMap.name] != errorMessageForMap) {
-            currentMap[propertyForMap.name] = errorMessageForMap
+        if (currentMap[propertyForErrorMapKey.name] != errorMessageForMap) {
+            currentMap[propertyForErrorMapKey.name] = errorMessageForMap
             _errorMap.value = currentMap
         }
     }
