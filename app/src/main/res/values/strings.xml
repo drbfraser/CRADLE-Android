@@ -67,6 +67,14 @@
         <item>Intersex</item>
     </string-array>
 
+    <!-- Same order as presented on frontend -->
+    <string-array name="urine_test_symbols" translatable="false">
+        <item>NAD</item>
+        <item>+</item>
+        <item>++</item>
+        <item>+++</item>
+    </string-array>
+
     <!-- Reading Descriptions -->
     <string name="reading_recheck_vitals_now">Recheck vitals now</string>
     <string name="reading_recheck_vitals_in_one_minute">Recheck vitals in 1 minute</string>
@@ -349,7 +357,13 @@
     <string name="fragment_patient_info_title">Demographics</string>
     <string name="fragment_symptoms_other_symptoms_label">Other symptoms</string>
     <string name="back">Back</string>
-    <string name="fragment_patient_info_village_number_label">Village number</string>
+    <string name="urine_test_error_blood_missing">Missing blood test</string>
+    <string name="urine_test_error_glucose_missing">Missing glucose</string>
+    <string name="urine_test_error_leukocytes_missing">Missing leukocytes</string>
+    <string name="urine_test_error_nitrites_missing">Missing nitrites</string>
+    <string name="urine_test_error_invalid_value">Invalid urine test value</string>
+    <string name="urine_test_card_header">Urine test</string>
+    <string name="urine_test_error_protein_missing">Protein missing</string>
 
     <string name="login_activity_device_is_outdated_dialog_title">Device is out of date</string>
     <string name="login_activity_device_is_outdated_dialog_message">Your device is unable to connect to the servers securely. Since Google Play services are unavailable on your device, we\'re unable to try to upgrade your device\'s security provider. Please ensure that your device supports TLS 1.2 or higher.</string>

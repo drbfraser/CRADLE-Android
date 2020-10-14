@@ -129,6 +129,16 @@ class PatientInfoFragment : BaseFragment() {
                 Log.d(TAG, "DEBUG: drug history: ${viewModel.patientDrugHistory.value}, " +
                     "medical history: ${viewModel.patientMedicalHistory.value}")
 
+                Log.d(TAG, "DEBUG: bloodPressureHeartRateInput: " +
+                    "hasObservers ${viewModel.bloodPressureHeartRateInput.hasObservers()}, " +
+                    "hasActiveObservers: ${viewModel.bloodPressureHeartRateInput.hasActiveObservers()}")
+
+                Log.d(TAG, "DEBUG: patientId: " +
+                    "hasObservers ${viewModel.patientId.hasObservers()}, " +
+                    "hasActiveObservers: ${viewModel.patientId.hasActiveObservers()}")
+
+                Log.d(TAG, "DEBUG: UrineTest right now is ${viewModel.urineTest.value}")
+
                 @Suppress("MagicNumber")
                 delay(6000L)
             }

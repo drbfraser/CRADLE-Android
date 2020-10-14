@@ -26,6 +26,7 @@ import com.cradle.neptune.model.Referral
 import com.cradle.neptune.model.Sex
 import com.cradle.neptune.model.SymptomsState
 import com.cradle.neptune.model.UrineTest
+import com.cradle.neptune.model.Verifier
 import com.cradle.neptune.utilitiles.LiveDataDynamicModelBuilder
 import com.cradle.neptune.utilitiles.Months
 import com.cradle.neptune.utilitiles.Weeks
@@ -63,12 +64,21 @@ class PatientReadingViewModel constructor(
 
     private val isInitializedMutex = Mutex(locked = false)
 
+    /**
+     * The initialization state as a MutableLiveData. This must be set to true by the [initialize]
+     * function before any other funtions and LiveData can be used in this ViewModel.
+     *
+     * Any things marked with the [GuardedBy] annotation are intended to only be used in the
+     * [initialize] function, which holds the [isInitializedMutex].
+     */
     @GuardedBy("isInitializedMutex")
     private val _isInitialized = MutableLiveData<Boolean>(false)
-    // It's not a problem that this variable isn't locked, since it's not meant to be Mutable, and
-    // the only things that happen is that this is being observed.
-    val isInitialized: LiveData<Boolean>
-        get() = _isInitialized
+
+    /**
+     * The observable initialization state. This is immutable since Fragments / Activities are not
+     * meant to modify this in any circumstance.
+     */
+    val isInitialized: LiveData<Boolean> = _isInitialized
 
     /**
      * If not creating a new patient, the patient and reading requested will be asynchronously
@@ -214,8 +224,53 @@ class PatientReadingViewModel constructor(
             }
         }
 
+        bloodPressure.value?.let {
+            bloodPressureSystolicInput.value = it.systolic
+            bloodPressureDiastolicInput.value = it.diastolic
+            bloodPressureHeartRateInput.value = it.heartRate
+        }
+
         addSourcesForSymptomsLiveData()
         addSourcesForGestationAgeMediatorLiveData()
+        addSourcesForBloodPressureLiveData()
+        setupUrineTestAndSourcesLiveData()
+    }
+
+    @GuardedBy("isInitializedMutex")
+    private fun addSourcesForBloodPressureLiveData() {
+        bloodPressure.apply {
+            addSource(bloodPressureSystolicInput) { systolic ->
+                maybeConstructBloodPressure(
+                    systolic,
+                    bloodPressureDiastolicInput.value,
+                    bloodPressureHeartRateInput.value
+                )
+            }
+            addSource(bloodPressureDiastolicInput) { diastolic ->
+                maybeConstructBloodPressure(
+                    bloodPressureSystolicInput.value,
+                    diastolic,
+                    bloodPressureHeartRateInput.value
+                )
+            }
+            addSource(bloodPressureHeartRateInput) { heartRate ->
+                maybeConstructBloodPressure(
+                    bloodPressureSystolicInput.value,
+                    bloodPressureDiastolicInput.value,
+                    heartRate
+                )
+            }
+        }
+    }
+
+    /**
+     * Constructs and sets the BloodPressure only when all values are present.
+     * Note: This isn't going to necessarily be held by [isInitializedMutex], since the Observer set
+     * by [MediatorLiveData.addSource] code runs at any time.
+     */
+    private fun maybeConstructBloodPressure(systolic: Int?, diastolic: Int?, heartRate: Int?) {
+        if (systolic == null || diastolic == null || heartRate == null) return
+        bloodPressure.value = BloodPressure(systolic, diastolic, heartRate)
     }
 
     @GuardedBy("isInitializedMutex")
@@ -296,6 +351,60 @@ class PatientReadingViewModel constructor(
         }
     }
 
+    @GuardedBy("isInitializedMutex")
+    private fun setupUrineTestAndSourcesLiveData() {
+        if (_isInitialized.value == true) return
+
+        val currentUrineTest = urineTest.value
+
+        isUsingUrineTest.value = if (reasonForLaunch !=
+                ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT) {
+            true
+        } else {
+            currentUrineTest != null
+        }
+
+        val liveDataMap = mapOf(
+            UrineTest::leukocytes to urineTestLeukocytesInput,
+            UrineTest::nitrites to urineTestNitritesInput,
+            UrineTest::glucose to urineTestGlucoseInput,
+            UrineTest::protein to urineTestProteinInput,
+            UrineTest::blood to urineTestBloodInput
+        )
+        for ((property, inputLiveData) in liveDataMap) {
+            if (currentUrineTest != null) {
+                inputLiveData.value = property.getter.call(currentUrineTest)
+            }
+
+            urineTest.apply {
+                addSource(inputLiveData) {
+                    if (isUsingUrineTest.value == false && urineTest.value != null) {
+                        value = null
+                        return@addSource
+                    }
+                    val leukocytes = urineTestLeukocytesInput.value ?: return@addSource
+                    val nitrites = urineTestNitritesInput.value ?: return@addSource
+                    val glucose = urineTestGlucoseInput.value ?: return@addSource
+                    val protein = urineTestProteinInput.value ?: return@addSource
+                    val blood = urineTestBloodInput.value ?: return@addSource
+                    val newUrineTest = UrineTest(
+                        leukocytes = leukocytes, nitrites = nitrites, glucose = glucose,
+                        protein = protein, blood = blood
+                    )
+
+                    if (value != newUrineTest) {
+                        value = newUrineTest
+                    }
+                }
+            }
+        }
+        urineTest.addSource(isUsingUrineTest) {
+            if (it == false && urineTest.value != null) {
+                urineTest.value = null
+            }
+        }
+    }
+
     private fun getEnglishResources(): Resources =
         Configuration(app.resources.configuration)
             .apply { setLocale(Locale.ENGLISH) }
@@ -346,12 +455,21 @@ class PatientReadingViewModel constructor(
         get() = patientBuilder.get<Long?>(Patient::lastEdited)
 
     /* Blood Pressure Info */
-    val bloodPressure: MutableLiveData<BloodPressure?>
-        get() = readingBuilder.get<BloodPressure?>(Reading::bloodPressure)
+    val bloodPressure: MediatorLiveData<BloodPressure?> =
+        readingBuilder.get<BloodPressure?>(Reading::bloodPressure)
+
+    val bloodPressureSystolicInput = MutableLiveData<Int>()
+    val bloodPressureDiastolicInput = MutableLiveData<Int>()
+    val bloodPressureHeartRateInput = MutableLiveData<Int>()
 
     /* Urine Test Info */
-    val urineTest: MutableLiveData<UrineTest?>
-        get() = readingBuilder.get<UrineTest?>(Reading::urineTest)
+    val urineTest: MediatorLiveData<UrineTest?> = readingBuilder.get<UrineTest?>(Reading::urineTest)
+    val isUsingUrineTest = MutableLiveData<Boolean>()
+    val urineTestLeukocytesInput = MutableLiveData<String>()
+    val urineTestNitritesInput = MutableLiveData<String>()
+    val urineTestGlucoseInput = MutableLiveData<String>()
+    val urineTestProteinInput = MutableLiveData<String>()
+    val urineTestBloodInput = MutableLiveData<String>()
 
     /* Referral Info */
     val referral: MutableLiveData<Referral?>
@@ -404,17 +522,20 @@ class PatientReadingViewModel constructor(
 
     /**
      * A map of KProperty.name to error messages. If an error message is null, that means the field
-     * is valid. Used by Data Binding.
+     * is valid. The values are set from the function [testValueForValidityAndSetErrorMap]]
+     *
+     * @see errorMap
+     * @see [testValueForValidityAndSetErrorMap]
      */
     private val _errorMap = MediatorLiveData<ArrayMap<String, String?>>().apply {
         value = arrayMapOf()
         addSource(patientId) {
-            setErrorMessageInErrorMap(
+            testValueForValidityAndSetErrorMap(
                 value = it, propertyToCheck = Patient::id, verifier = Patient.Companion
             )
         }
         addSource(patientName) {
-            setErrorMessageInErrorMap(
+            testValueForValidityAndSetErrorMap(
                 value = it, propertyToCheck = Patient::name, verifier = Patient.Companion
             )
         }
@@ -424,9 +545,9 @@ class PatientReadingViewModel constructor(
                 // Prefer errors that come from the age if using age.
                 return@addSource
             }
-            setErrorMessageInErrorMap(
+            testValueForValidityAndSetErrorMap(
                 value = it, propertyToCheck = Patient::dob,
-                verifier = Patient.Companion, propertyForMap = Patient::age
+                verifier = Patient.Companion, propertyForErrorMapKey = Patient::age
             )
         }
         addSource(patientAge) {
@@ -435,21 +556,77 @@ class PatientReadingViewModel constructor(
                 // Prefer errors that come from the date of birth if using date of birth.
                 return@addSource
             }
-            setErrorMessageInErrorMap(
+            testValueForValidityAndSetErrorMap(
                 value = it, propertyToCheck = Patient::age, verifier = Patient.Companion
             )
         }
         addSource(patientGestationalAge) {
-            setErrorMessageInErrorMap(
+            testValueForValidityAndSetErrorMap(
                 value = it, propertyToCheck = Patient::gestationalAge, verifier = Patient.Companion
             )
         }
         addSource(patientSex) {
-            setErrorMessageInErrorMap(
+            testValueForValidityAndSetErrorMap(
                 value = it, propertyToCheck = Patient::sex, verifier = Patient.Companion
             )
         }
+
+        // Errors from Readings
+        addSource(bloodPressureSystolicInput) {
+            testValueForValidityAndSetErrorMap(
+                value = it, propertyToCheck = BloodPressure::systolic,
+                verifier = BloodPressure.Companion
+            )
+        }
+        addSource(bloodPressureDiastolicInput) {
+            testValueForValidityAndSetErrorMap(
+                value = it, propertyToCheck = BloodPressure::diastolic,
+                verifier = BloodPressure.Companion
+            )
+        }
+        addSource(bloodPressureHeartRateInput) {
+            testValueForValidityAndSetErrorMap(
+                value = it, propertyToCheck = BloodPressure::heartRate,
+                verifier = BloodPressure.Companion
+            )
+        }
+
+        val urineTestLiveDataMap = mapOf(
+            UrineTest::leukocytes to urineTestLeukocytesInput,
+            UrineTest::nitrites to urineTestNitritesInput,
+            UrineTest::glucose to urineTestGlucoseInput,
+            UrineTest::protein to urineTestProteinInput,
+            UrineTest::blood to urineTestBloodInput
+        )
+        for ((property, liveData) in urineTestLiveDataMap) {
+            addSource(liveData) {
+                if (isUsingUrineTest.value == false) return@addSource
+
+                testValueForValidityAndSetErrorMap(
+                    value = it, propertyToCheck = property, verifier = UrineTest.FromJson
+                )
+            }
+        }
+        addSource(isUsingUrineTest) {
+            // Clear all urine test errors if it is disabled.
+            if (it != false) return@addSource
+            val currentErrorMap = value ?: return@addSource
+
+            for ((property, _) in urineTestLiveDataMap) {
+                currentErrorMap.remove(property.name)
+            }
+        }
     }
+    /**
+     * Immutable LiveData variant of [_errorMap ] so that Fragments can only observe this and not
+     * modify. The values are set from the function [testValueForValidityAndSetErrorMap]
+     *
+     * Observed by Data Binding.
+     *
+     * @see _errorMap
+     * @see testValueForValidityAndSetErrorMap
+     * @see com.cradle.neptune.binding.ReadingBindingAdapters.setError
+     */
     val errorMap: LiveData<ArrayMap<String, String?>> = _errorMap
 
     /**
@@ -474,21 +651,40 @@ class PatientReadingViewModel constructor(
     }
 
     /**
-     * @param isForPatient True if viewing patient property; false if viewing reading property
+     * Tests the validity of the [value] for the [propertyToCheck] that belongs to the class
+     * that [verifier] verifies. If not valid, an error message will be added to the [_errorMap],
+     * which is map of error messages for a property that uses the name of [propertyForErrorMapKey]
+     * for the key. If valid, the error message set will be null.
+     *
+     * The error messages are observed via the immutable LiveData [errorMap] in the XML layout files
+     * under the errorMessage attribute, and they update in real time.
+     *
+     * @see _errorMap
+     * @see errorMap
+     * @see com.cradle.neptune.binding.ReadingBindingAdapters.setError
      */
     @MainThread
-    private fun setErrorMessageInErrorMap(
+    private fun testValueForValidityAndSetErrorMap(
         value: Any?,
         propertyToCheck: KProperty<*>,
         verifier: Verifier<*>,
         propertyForErrorMapKey: KProperty<*> = propertyToCheck,
         currentValuesMap: Map<String, Any?>? = null
     ) {
+        // Selects the map to use for all the other fields on the form. The validity of a property
+        // might depend on other properties being there, e.g. a null date of birth is acceptable
+        // if there is an estimated age.
         val currentValuesMapToUse = currentValuesMap
-            ?: if (verifier is Patient.Companion) {
-                patientBuilder.publicMap
-            } else {
-                readingBuilder.publicMap
+            ?: when (verifier) {
+                is Patient.Companion -> {
+                    patientBuilder.publicMap
+                }
+                is Reading.Companion -> {
+                    readingBuilder.publicMap
+                }
+                else -> {
+                    null
+                }
             }
 
         val (isValid, errorMessage) = verifier.isValueValid(

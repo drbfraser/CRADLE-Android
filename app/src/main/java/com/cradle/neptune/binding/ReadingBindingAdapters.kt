@@ -4,6 +4,7 @@ import android.text.InputFilter
 import android.text.InputType
 import android.util.Log
 import android.view.View
+import android.widget.AutoCompleteTextView
 import android.widget.CheckBox
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
@@ -155,5 +156,23 @@ class ReadingBindingAdapters constructor(val fragment: Fragment) {
                 filters = arrayOf(InputFilter.LengthFilter(10))
             }
         }
+    }
+
+    @BindingAdapter("bind:setMaterialSpinnerItemsWithArray")
+    fun onSpinnerItemsChanged(
+        view: AutoCompleteTextView,
+        oldArray: Array<String>?,
+        newArray: Array<String>?
+    ) {
+        if (oldArray === newArray) return
+        if (newArray == null) return
+        if (oldArray?.contentEquals(newArray) == true) return
+
+        val adapter = MaterialSpinnerArrayAdapter(
+            view.context,
+            R.layout.list_dropdown_menu_item,
+            newArray
+        )
+        view.setAdapter(adapter)
     }
 }

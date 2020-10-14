@@ -193,6 +193,9 @@ interface Verifier<in T> {
  * Sets up a dependent properties map when an instance is given. This map is used when implementing
  * [Verifiable.isValueForPropertyValid] to access dependent properties.
  *
+ * If we need to access to the values of other properties, we use [setupDependentPropertiesMap] to
+ * get them. If we don't then don't call it. See the sample by CTRL+Q in Android Studio.
+ *
  * ### Background
  * The `dependentPropertiesMap` solves the dependent properties problem in
  * the original design.
@@ -208,24 +211,23 @@ interface Verifier<in T> {
  * the other properties. However, if we're filling out a form and we want
  * to do real-time validation as the user enters, this would mean creating
  * new Patient instances every time the user enters something. This is
- * inefficient.
+ * inefficient, and might not work properly because the user might not have
+ * given values for mandatory properties for Patient yet.
  *
  * The solution is to have the caller implement some map that contains all
  * the properties so far, and then use that to get the dependent
- * properties. It can be extended in the future to just use the map that
- * the LiveDataDynamicModelBuilder has to save the trouble of having to
- * create new maps every time an input is entered.
+ * properties.
  *
  * @sample com.cradle.neptune.model.PregnancyRecord.Companion.isValueValid
  *
  * @param instance An instance to check against. The current values will be taken from this instance
  * if a current values map is not given, but the current values map is given priority.
- * @param givenDependentPropertiesMap The current values to get dependent properties from
- * @param existingProperties A declaration of all the properties that are needed.
+ * @param currentValuesMap The current values to get dependent properties from
+ * @param dependentProperties A declaration of all the properties that are needed.
  * @return A mapping from the names of the properties to their current values. The names are
  * obtained by KProperty.name.
  *
- * @throws IllegalArgumentException if [instance] is null and no currentValuesMap were given. We
+ * @throws IllegalArgumentException if [instance] is null and no [currentValuesMap] were given. We
  * make [instance] nullable to make sure that this function can also serve as a check.
  */
 fun setupDependentPropertiesMap(
@@ -243,7 +245,9 @@ fun setupDependentPropertiesMap(
     } ?: if (instance == null) {
             throw IllegalArgumentException("null instance requires non-null dependentPropertiesMap")
         } else {
-            // Since there is an instance, create a new map just containing the values. This is so
-            // that we don't have to repeat code.
+            // Since there is an instance, create a new map just containing the values taken from
+            // that instance. This is so that we don't have to repeat code in the Verifier.
+            // Verifier just uses mapName[ClassName::PropertyName.name] syntax to obtain a
+            // dependency
             dependentProperties.map { it.name to it.getter.call(instance) }.toMap()
         }

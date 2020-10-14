@@ -85,7 +85,7 @@ data class Reading(
 
     @ColumnInfo var metadata: ReadingMetadata = ReadingMetadata(),
     @ColumnInfo var isUploadedToServer: Boolean = false
-) : Serializable, Marshal<JSONObject> {
+) : Serializable, Marshal<JSONObject>, Verifiable<Reading> {
 
     /**
      * True if this reading has a referral attached to it.
@@ -123,6 +123,12 @@ data class Reading(
      * True if this reading has an associated referral attached to it.
      */
     val hasReferral get() = referral != null
+
+    override fun isValueForPropertyValid(
+        property: KProperty<*>,
+        value: Any?,
+        context: Context
+    ): Pair<Boolean, String> = isValueForPropertyValid(property, value, context)
 
     /**
      * Converts this [Reading] object into a [JSONObject].
