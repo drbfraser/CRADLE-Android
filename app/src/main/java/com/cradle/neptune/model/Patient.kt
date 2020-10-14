@@ -155,7 +155,7 @@ data class Patient(
                     )
                 }
                 if (!isDigitsOnly()) {
-                    return Pair(false, "ID must be a number")
+                    return Pair(false, context.getString(R.string.patient_error_id_must_be_number))
                 }
 
                 return Pair(true, "")

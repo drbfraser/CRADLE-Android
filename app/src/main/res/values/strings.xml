@@ -300,6 +300,7 @@
     <string name="urine_test_layout_glucose">Glucose</string>
     <string name="urine_test_layout_table_header_result">Result</string>
     <string name="patient_error_id_missing">Missing patient ID</string>
+    <string name="patient_error_id_must_be_number">ID must be a number</string>
     <string name="patient_error_id_too_long_max_n_digits">ID is too long; max is %1$d digits.</string>
     <string name="patient_error_name_missing">Missing initials / name</string>
     <string name="patient_error_dob_missing">Missing date of birth</string>
