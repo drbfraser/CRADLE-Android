@@ -9,15 +9,14 @@ import com.cradle.neptune.R
 /**
  * Allow user to confirm data from the CRADLE photo.
  */
-@Suppress("LargeClass")
-class ConfirmDataFragment : BaseFragment() {
+class VitalSignsFragment : BaseFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_confirm_data, container, false)
+        return inflater.inflate(R.layout.fragment_vital_signs, container, false)
     }
 
     companion object {
@@ -38,8 +37,8 @@ class ConfirmDataFragment : BaseFragment() {
             intArrayOf(R.id.ivOcrScaled2, R.id.ivOcrRaw2, R.id.tvOcrText2)
         )
 
-        fun newInstance(): ConfirmDataFragment {
-            return ConfirmDataFragment()
+        fun newInstance(): VitalSignsFragment {
+            return VitalSignsFragment()
         }
     }
 }

@@ -12,8 +12,8 @@ import com.cradle.neptune.view.StatsActivity
 import com.cradle.neptune.view.SyncActivity
 import com.cradle.neptune.view.VideoActivity
 import com.cradle.neptune.view.ui.reading.BaseFragment
-import com.cradle.neptune.view.ui.reading.ConfirmDataFragment
 import com.cradle.neptune.view.ui.reading.ReferralDialogFragment
+import com.cradle.neptune.view.ui.reading.VitalSignsFragment
 import com.cradle.neptune.view.ui.settings.AdvancedSettingsFragment
 import com.cradle.neptune.view.ui.settings.SettingsFragment
 import com.cradle.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity
@@ -37,7 +37,7 @@ interface AppComponent {
     fun inject(fragment: SettingsFragment?)
     fun inject(fragment: AdvancedSettingsFragment?)
     fun inject(activity: IntroActivity?)
-    fun inject(activity: ConfirmDataFragment?)
+    fun inject(activity: VitalSignsFragment?)
     fun inject(activity: PatientProfileActivity?)
     fun inject(globalPatientProfileActivity: GlobalPatientProfileActivity?)
     fun inject(statsActivity: StatsActivity?)

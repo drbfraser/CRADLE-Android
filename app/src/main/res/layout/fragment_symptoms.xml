@@ -7,7 +7,6 @@
 
     <data>
         <import type="com.cradle.neptune.binding.Converter" />
-        <import type="android.text.InputType" />
 
         <variable
             name="viewModel"
