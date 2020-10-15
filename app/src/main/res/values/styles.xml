@@ -9,6 +9,26 @@
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
     </style>
 
+    <!-- Text styles -->
+    <!-- Style format and style name convention adapted from
+         https://github.com/google/iosched/blob/master/mobile/src/main/res/values/styles.xml#L43 -->
+    <style name="TextAppearance.Cradle.H1" parent="@style/TextAppearance.MaterialComponents.Headline5">
+        <item name="android:fontFamily">@font/open_sans_bold</item>
+        <item name="android:textSize">@dimen/text_size_h1</item>
+        <item name="fontFamily">@font/open_sans_bold</item>
+    </style>
+
+    <style name="TextAppearance.Cradle.H2" parent="TextAppearance.Cradle.H1">
+        <item name="android:textSize">@dimen/text_size_h2</item>
+        <!-- <item name="android:textAllCaps">true</item> -->
+    </style>
+
+    <style name="TextAppearance.Cradle.Body1" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="android:fontFamily">@font/ibm_plex_sans_regular</item>
+        <item name="android:textSize">@dimen/text_size_body1</item>
+        <item name="fontFamily">@font/ibm_plex_sans_regular</item>
+    </style>
+
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
