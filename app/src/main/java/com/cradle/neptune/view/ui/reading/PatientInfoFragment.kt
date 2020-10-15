@@ -18,7 +18,6 @@ import androidx.lifecycle.observe
 import androidx.navigation.Navigation
 import com.cradle.neptune.R
 import com.cradle.neptune.binding.FragmentDataBindingComponent
-import com.cradle.neptune.binding.MaterialSpinnerArrayAdapter
 import com.cradle.neptune.databinding.FragmentPatientInfoBinding
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.view.ReadingActivity
@@ -198,14 +197,7 @@ class PatientInfoFragment : BaseFragment() {
 
     private fun setupAndObserveGenderList(view: View) {
         val genderTextLayout = view.findViewById<TextInputLayout>(R.id.gender_input_layout)
-        val genders = view.resources.getStringArray(R.array.sex)
-        val genderAdapter = MaterialSpinnerArrayAdapter(
-            view.context,
-            R.layout.list_dropdown_menu_item,
-            genders
-        )
         genderMenuTextView = (genderTextLayout.editText as? AutoCompleteTextView?)?.apply {
-            setAdapter(genderAdapter)
             setOnClickListener {
                 dismissKeyboard(view)
             }
@@ -216,14 +208,7 @@ class PatientInfoFragment : BaseFragment() {
         val gestAgeUnitsTextLayout = view.findViewById<TextInputLayout>(
             R.id.gestational_age_units_layout
         )
-        val ageUnits = view.resources.getStringArray(R.array.reading_ga_units)
-        val gestationalAgeAdapter = MaterialSpinnerArrayAdapter(
-            view.context,
-            R.layout.list_dropdown_menu_item,
-            ageUnits
-        )
         gestAgeMenuTextView = (gestAgeUnitsTextLayout.editText as? AutoCompleteTextView?)?.apply {
-            setAdapter(gestationalAgeAdapter)
             setOnClickListener {
                 dismissKeyboard(view)
             }
@@ -252,7 +237,7 @@ class PatientInfoFragment : BaseFragment() {
     }
 
     private fun dismissKeyboard(view: View) {
-        val manager = activity?.getSystemService(Context.INPUT_METHOD_SERVICE)
+        val manager = view.context.getSystemService(Context.INPUT_METHOD_SERVICE)
             as? InputMethodManager
         manager?.hideSoftInputFromWindow(view.windowToken, 0)
     }

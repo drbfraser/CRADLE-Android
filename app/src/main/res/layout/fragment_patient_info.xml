@@ -229,6 +229,7 @@
                                 android:layout_height="wrap_content"
                                 android:inputType="none"
                                 android:text="@={Converter.sexToString(context, viewModel.patientSex)}"
+                                bind:setMaterialSpinnerItemsWithArray="@{@stringArray/sex}"
                                 />
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -295,7 +296,8 @@
                                 android:layout_height="wrap_content"
                                 android:inputType="none"
                                 android:text="@={viewModel.patientGestationalAgeUnits}"
-                                tools:text="weeks" />
+                                tools:text="weeks"
+                                bind:setMaterialSpinnerItemsWithArray="@{@stringArray/reading_ga_units}" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
