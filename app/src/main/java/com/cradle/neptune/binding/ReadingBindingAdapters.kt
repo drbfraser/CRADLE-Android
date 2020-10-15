@@ -1,5 +1,6 @@
 package com.cradle.neptune.binding
 
+import android.os.Build
 import android.text.InputFilter
 import android.text.InputType
 import android.util.Log
@@ -10,6 +11,7 @@ import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import androidx.databinding.BindingAdapter
 import androidx.fragment.app.Fragment
+import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
 import com.cradle.neptune.R
 import com.cradle.neptune.model.Sex
 import com.google.android.material.textfield.TextInputEditText
@@ -94,9 +96,15 @@ class ReadingBindingAdapters constructor(val fragment: Fragment) {
                 helperText = context.getString(R.string.dob_helper_using_age_from_date_of_birth)
                 error = currentError
 
-                startIconDrawable = ResourcesCompat.getDrawable(
-                    resources, R.drawable.ic_baseline_clear_24, context.theme
-                )
+                startIconDrawable = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    ResourcesCompat.getDrawable(
+                        resources, R.drawable.ic_baseline_clear_24, context.theme
+                    )
+                } else {
+                    VectorDrawableCompat.create(
+                        resources, R.drawable.ic_baseline_clear_24, context.theme
+                    )
+                }
             }
             Log.d(TAG, "onAgeStateChange: done setting up dob")
         } else {
@@ -107,9 +115,15 @@ class ReadingBindingAdapters constructor(val fragment: Fragment) {
                 error = currentError
 
                 suffixText = context.getString(R.string.age_input_suffix_approximate_years_old)
-                startIconDrawable = ResourcesCompat.getDrawable(
-                    resources, R.drawable.ic_baseline_calendar_today_24, context.theme
-                )
+                startIconDrawable = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    ResourcesCompat.getDrawable(
+                        resources, R.drawable.ic_baseline_calendar_today_24, context.theme
+                    )
+                } else {
+                    VectorDrawableCompat.create(
+                        resources, R.drawable.ic_baseline_calendar_today_24, context.theme
+                    )
+                }
             }
             textInputLayout.editText?.apply {
                 inputType = InputType.TYPE_CLASS_NUMBER
