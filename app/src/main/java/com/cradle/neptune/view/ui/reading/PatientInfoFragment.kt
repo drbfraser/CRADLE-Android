@@ -57,7 +57,7 @@ class PatientInfoFragment : BaseFragment() {
 
     private var gestAgeMenuTextView: AutoCompleteTextView? = null
 
-    private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent(this)
+    private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent()
 
     private var binding: FragmentPatientInfoBinding? = null
 

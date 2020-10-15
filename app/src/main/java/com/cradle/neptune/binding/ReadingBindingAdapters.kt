@@ -10,7 +10,6 @@ import android.widget.CheckBox
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import androidx.databinding.BindingAdapter
-import androidx.fragment.app.Fragment
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
 import com.cradle.neptune.R
 import com.cradle.neptune.model.Sex
@@ -25,7 +24,7 @@ private const val TAG = "ReadingBindingAdapter"
  * the Data Binding library in reality just ignores custom name spaces.
  */
 @Suppress("LargeClass")
-class ReadingBindingAdapters constructor(val fragment: Fragment) {
+class ReadingBindingAdapters {
     @BindingAdapter("bind:enabledOnlyWhen")
     fun enabledOnlyWhen(view: View, condition: Boolean) {
         if (!condition && view.isEnabled) {
