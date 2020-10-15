@@ -35,8 +35,10 @@ import java.text.DecimalFormat
 import java.util.Locale
 import kotlin.reflect.KProperty
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.withContext
 
 // The index of the gestational age units inside of the string.xml array, R.array.reading_ga_units
 private const val GEST_AGE_UNIT_WEEKS_INDEX = 0
@@ -95,7 +97,9 @@ class PatientReadingViewModel constructor(
     ) {
         viewModelScope.launch(Dispatchers.Main) {
             isInitializedMutex.lock()
+            val startTime = System.currentTimeMillis()
             try {
+                Log.d(TAG, "initialize start")
                 if (_isInitialized.value == true) {
                     return@launch
                 }
@@ -140,35 +144,49 @@ class PatientReadingViewModel constructor(
                     }
                 }
             } finally {
-                initializeLiveData()
-
                 // Make sure we don't retrigger observers if this is run twice for some reason.
                 if (_isInitialized.value != true) {
+                    initializeLiveData()
                     _isInitialized.value = true
                 }
                 isInitializedMutex.unlock()
+                Log.d(TAG, "initialize took ${System.currentTimeMillis() - startTime} ms")
             }
         }
     }
 
     @GuardedBy("isInitializedMutex")
-    private fun decompose(patient: Patient) {
-        if (_isInitialized.value == true) return
+    private suspend fun decompose(patient: Patient) = withContext(Dispatchers.Main) {
+        if (_isInitialized.value == true) return@withContext
 
         patientBuilder.decompose(patient)
     }
 
     @GuardedBy("isInitializedMutex")
-    private fun decompose(patient: Patient, reading: Reading) {
-        if (_isInitialized.value == true) return
+    private suspend fun decompose(
+        patient: Patient,
+        reading: Reading
+    ) = withContext(Dispatchers.Main) {
+        if (_isInitialized.value == true) return@withContext
 
-        patientBuilder.decompose(patient)
         // We have to do this so that the Activity and ViewModel don't share the same reference for
         // symptoms.
         val symptomsCopy = ArrayList<String>().apply {
             addAll(reading.symptoms as ArrayList<String>)
         }
-        readingBuilder.decompose(reading.copy(symptoms = symptomsCopy))
+
+        logTime("double decompose") {
+            joinAll(
+                viewModelScope.launch {
+                    logTime("patient decompose") { patientBuilder.decompose(patient) }
+                },
+                viewModelScope.launch {
+                    logTime("reading decompose") {
+                        readingBuilder.decompose(reading.copy(symptoms = symptomsCopy))
+                    }
+                }
+            )
+        }
     }
 
     /**
@@ -177,67 +195,43 @@ class PatientReadingViewModel constructor(
      * inconsistent.
      */
     @GuardedBy("isInitializedMutex")
-    private fun initializeLiveData() {
+    private suspend fun initializeLiveData() {
         if (_isInitialized.value == true) return
 
         _isUsingDateOfBirth.value = patientDob.value != null
 
-        val symptoms = symptoms.value ?: emptyList()
-        SymptomsState(
-            symptoms,
-            getEnglishResources().getStringArray(R.array.reading_symptoms)
-        ).let {
-            _symptomsState.value = it
-            otherSymptomsInput.value = it.otherSymptoms
-        }
-
-        patientGestationalAgeInput.apply {
-            value = if (patientIsPregnant.value != true) {
-                // If not pregnant, make the input blank. Note: If this is the empty string, then
-                // an error will be triggered when the Pregnant CheckBox is ticked for the first
-                // time.
-                null
-            } else {
-                when (val gestationalAge = patientGestationalAge.value) {
-                    is GestationalAgeMonths -> {
-                        // We don't want to show an excessive amount of decimal places.
-                        DecimalFormat("#.####").format(gestationalAge.age.asMonths())
-                    }
-                    is GestationalAgeWeeks -> {
-                        // This also makes the default units in weeks.
-                        gestationalAge.age.weeks.toString()
-                    }
-                    else -> {
-                        // If it's missing, default to nothing.
-                        ""
-                    }
+        logTime("initializeLiveData") {
+            joinAll(
+                viewModelScope.launch {
+                    logTime("setUpSymptomsLiveData") { setUpSymptomsLiveData() }
+                },
+                viewModelScope.launch {
+                    logTime("setupGestationAgeLiveData") { setupGestationAgeLiveData() }
+                },
+                viewModelScope.launch {
+                    logTime("setupBloodPressureLiveData") { setupBloodPressureLiveData() }
+                },
+                viewModelScope.launch {
+                    logTime("setupUrineTestAndSourcesLiveData") { setupUrineTestAndSourcesLiveData() }
                 }
-            }
+            )
         }
+    }
 
-        patientGestationalAgeUnits.apply {
-            value = if (patientGestationalAge.value is GestationalAgeMonths) {
-                monthsUnitString
-            } else {
-                // This also makes the default units in weeks.
-                weeksUnitString
-            }
-        }
+    private inline fun logTime(functionName: String, block: () -> Unit) {
+        val startTime = System.currentTimeMillis()
+        block.invoke()
+        Log.d(TAG, "$functionName took ${System.currentTimeMillis() - startTime} ms")
+    }
 
+    @GuardedBy("isInitializedMutex")
+    private suspend fun setupBloodPressureLiveData() = withContext(Dispatchers.Main) {
         bloodPressure.value?.let {
             bloodPressureSystolicInput.value = it.systolic
             bloodPressureDiastolicInput.value = it.diastolic
             bloodPressureHeartRateInput.value = it.heartRate
         }
 
-        addSourcesForSymptomsLiveData()
-        addSourcesForGestationAgeMediatorLiveData()
-        addSourcesForBloodPressureLiveData()
-        setupUrineTestAndSourcesLiveData()
-    }
-
-    @GuardedBy("isInitializedMutex")
-    private fun addSourcesForBloodPressureLiveData() {
         bloodPressure.apply {
             addSource(bloodPressureSystolicInput) { systolic ->
                 maybeConstructBloodPressure(
@@ -274,8 +268,17 @@ class PatientReadingViewModel constructor(
     }
 
     @GuardedBy("isInitializedMutex")
-    private fun addSourcesForSymptomsLiveData() {
-        if (_isInitialized.value == true) return
+    private suspend fun setUpSymptomsLiveData() = withContext(Dispatchers.Main) {
+        if (_isInitialized.value == true) return@withContext
+
+        val currentSymptoms = symptoms.value ?: emptyList()
+        SymptomsState(
+            currentSymptoms,
+            getEnglishResources().getStringArray(R.array.reading_symptoms)
+        ).let {
+            _symptomsState.value = it
+            otherSymptomsInput.value = it.otherSymptoms
+        }
 
         _symptomsState.apply {
             addSource(otherSymptomsInput) { otherSymptomsString ->
@@ -298,8 +301,41 @@ class PatientReadingViewModel constructor(
     }
 
     @GuardedBy("isInitializedMutex")
-    private fun addSourcesForGestationAgeMediatorLiveData() {
-        if (_isInitialized.value == true) return
+    private suspend fun setupGestationAgeLiveData() = withContext(Dispatchers.Main) {
+        if (_isInitialized.value == true) return@withContext
+
+        patientGestationalAgeInput.apply {
+            value = if (patientIsPregnant.value != true) {
+                // If not pregnant, make the input blank. Note: If this is the empty string, then
+                // an error will be triggered when the Pregnant CheckBox is ticked for the first
+                // time.
+                null
+            } else {
+                when (val gestationalAge = patientGestationalAge.value) {
+                    is GestationalAgeMonths -> {
+                        // We don't want to show an excessive amount of decimal places.
+                        DecimalFormat("#.####").format(gestationalAge.age.asMonths())
+                    }
+                    is GestationalAgeWeeks -> {
+                        // This also makes the default units in weeks.
+                        gestationalAge.age.weeks.toString()
+                    }
+                    else -> {
+                        // If it's missing, default to nothing.
+                        ""
+                    }
+                }
+            }
+        }
+
+        patientGestationalAgeUnits.apply {
+            value = if (patientGestationalAge.value is GestationalAgeMonths) {
+                monthsUnitString
+            } else {
+                // This also makes the default units in weeks.
+                weeksUnitString
+            }
+        }
 
         patientGestationalAge.apply {
             addSource(patientGestationalAgeUnits) {
@@ -352,13 +388,14 @@ class PatientReadingViewModel constructor(
     }
 
     @GuardedBy("isInitializedMutex")
-    private fun setupUrineTestAndSourcesLiveData() {
-        if (_isInitialized.value == true) return
+    private suspend fun setupUrineTestAndSourcesLiveData() = withContext(Dispatchers.Main) {
+        if (_isInitialized.value == true) return@withContext
 
         val currentUrineTest = urineTest.value
 
         isUsingUrineTest.value = if (reasonForLaunch !=
                 ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT) {
+            // Ensure urine test enabled by default for new readings like the frontend.
             true
         } else {
             currentUrineTest != null
@@ -382,14 +419,24 @@ class PatientReadingViewModel constructor(
                         value = null
                         return@addSource
                     }
-                    val leukocytes = urineTestLeukocytesInput.value ?: return@addSource
-                    val nitrites = urineTestNitritesInput.value ?: return@addSource
-                    val glucose = urineTestGlucoseInput.value ?: return@addSource
-                    val protein = urineTestProteinInput.value ?: return@addSource
-                    val blood = urineTestBloodInput.value ?: return@addSource
+                    val leukocytes = urineTestLeukocytesInput.value.apply {
+                        if (isNullOrBlank()) return@addSource
+                    }
+                    val nitrites = urineTestNitritesInput.value.apply {
+                        if (isNullOrBlank()) return@addSource
+                    }
+                    val glucose = urineTestGlucoseInput.value.apply {
+                        if (isNullOrBlank()) return@addSource
+                    }
+                    val protein = urineTestProteinInput.value.apply {
+                        if (isNullOrBlank()) return@addSource
+                    }
+                    val blood = urineTestBloodInput.value.apply {
+                        if (isNullOrBlank()) return@addSource
+                    }
                     val newUrineTest = UrineTest(
-                        leukocytes = leukocytes, nitrites = nitrites, glucose = glucose,
-                        protein = protein, blood = blood
+                        leukocytes = leukocytes!!, nitrites = nitrites!!, glucose = glucose!!,
+                        protein = protein!!, blood = blood!!
                     )
 
                     if (value != newUrineTest) {

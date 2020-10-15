@@ -20,7 +20,6 @@ data class UrineTest(
     var blood: String,
     var glucose: String
 ) : Serializable, Marshal<JSONObject>, Verifiable<UrineTest> {
-
     /**
      * Converts this object to JSON.
      */
