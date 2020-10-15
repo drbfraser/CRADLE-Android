@@ -17,6 +17,15 @@ class DynamicModelBuilderTests {
     }
 
     @Test
+    fun dynamic_ifNullGivenForNonNullField_throwStuff() {
+        val map = mapOf("name" to null, "age" to null)
+        assertThrows(IllegalArgumentException::class.java) {
+            // Get value is required here as the `by` notation is lazy.
+            dynamic<Person>(map).getValue()
+        }
+    }
+
+    @Test
     fun dynamic_ifNullableFieldMissing_constructObjectWithoutIt() {
         val map = mapOf("name" to "Maya", "age" to 20)
         val person by dynamic<Person>(map)
