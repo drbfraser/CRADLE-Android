@@ -364,6 +364,16 @@
     <string name="urine_test_error_invalid_value">Invalid urine test value</string>
     <string name="urine_test_card_header">Urine test</string>
     <string name="urine_test_error_protein_missing">Protein missing</string>
+    <string name="patient_error_village_number_missing">Missing village number</string>
+    <string name="patient_error_village_number_not_number">Must be a number</string>
+    <string name="fragment_vital_signs_take_picture_button">Take picture of CRADLE VSA</string>
+    <string name="fragment_vital_signs_systolic_label">Systolic*</string>
+    <string name="fragment_vital_signs_diastolic_label">Diastolic*</string>
+    <string name="fragment_vital_signs_heart_rate_label">Heart rate*</string>
+    <string name="fragment_vital_signs_respiratory_rate_label">Respiratory rate</string>
+    <string name="fragment_vital_signs_temperature_label">Temperature</string>
+    <string name="fragment_vital_signs_oxygen_saturation_label">Oxygen saturation</string>
+    <string name="fragment_vital_signs_cradle_vsa_fields_card_header">Cradle VSA Readings</string>
 
     <string name="login_activity_device_is_outdated_dialog_title">Device is out of date</string>
     <string name="login_activity_device_is_outdated_dialog_message">Your device is unable to connect to the servers securely. Since Google Play services are unavailable on your device, we\'re unable to try to upgrade your device\'s security provider. Please ensure that your device supports TLS 1.2 or higher.</string>

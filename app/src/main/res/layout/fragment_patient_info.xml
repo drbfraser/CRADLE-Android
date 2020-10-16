@@ -174,7 +174,7 @@
                                 android:id="@+id/village_text"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:inputType="textNoSuggestions|number"
+                                android:inputType="number"
                                 android:text="@={viewModel.patientVillageNumber}"
                                 tools:text="my village" />
                         </com.google.android.material.textfield.TextInputLayout>
@@ -266,7 +266,7 @@
                                 android:id="@+id/gestational_age_text"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:inputType="textNoSuggestions"
+                                android:inputType="number"
                                 android:text="@={viewModel.patientGestationalAgeInput}"
                                 bind:makeTextEmptyWhen="@{viewModel.patientIsPregnant != true}"
                                 tools:text="23" />

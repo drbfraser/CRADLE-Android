@@ -324,6 +324,23 @@ data class Patient(
                 }
             }
 
+            Patient::villageNumber -> with(value as? String?) {
+                // TODO: make village number an Int, not a String
+                if (this.isNullOrBlank()) {
+                    return Pair(
+                        false, context.getString(R.string.patient_error_village_number_missing)
+                    )
+                }
+
+                if (!isDigitsOnly()) {
+                    return Pair(
+                        false, context.getString(R.string.patient_error_village_number_not_number)
+                    )
+                }
+
+                return true to ""
+            }
+
             // Default to true for all other fields / stuff that isn't implemented.
             else -> {
                 Pair(true, "")

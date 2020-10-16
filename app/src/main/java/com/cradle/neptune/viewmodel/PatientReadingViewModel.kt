@@ -591,6 +591,11 @@ class PatientReadingViewModel constructor(
                 value = it, propertyToCheck = Patient::name, verifier = Patient.Companion
             )
         }
+        addSource(patientVillageNumber) {
+            testValueForValidityAndSetErrorMap(
+                value = it, propertyToCheck = Patient::villageNumber, verifier = Patient.Companion
+            )
+        }
         addSource(patientDob) {
             if (_isUsingDateOfBirth.value == false) {
                 // The date of birth and age will use the same key for the error map.
