@@ -36,5 +36,5 @@ data class Months(val value: Double) : Duration() {
 
     constructor(value: Long) : this(value.toDouble())
 
-    constructor(seconds: Seconds) : this(seconds.value / SECONDS_PER_MONTH)
+    constructor(seconds: Seconds) : this(seconds.value / SECONDS_PER_MONTH.toDouble())
 }

@@ -597,7 +597,7 @@ class GestationalAgeMonths(timestamp: Long) : GestationalAge(timestamp), Seriali
     override val age: WeeksAndDays
         get() {
             val seconds = Seconds(UnixTimestamp.now - timestamp)
-            return WeeksAndDays.months(Months(seconds).value.toLong())
+            return WeeksAndDays.months(Months(seconds).value)
         }
 
     override fun marshal(): JSONObject = with(JSONObject()) {
@@ -630,15 +630,17 @@ data class WeeksAndDays(val weeks: Long, val days: Long) : Serializable {
     companion object {
         const val DAYS_PER_MONTH = 30
         const val DAYS_PER_WEEK = 7
+        const val SECONDS_PER_DAY = 60 * 60 * 24
+        const val SECONDS_PER_WEEK = SECONDS_PER_DAY * DAYS_PER_WEEK
         // Get as close as possible to the result of 30/7, a repeating decimal. However, due to the
         // finiteness of Doubles, anything past 4.2857142857142857 is ignored.
         private const val WEEKS_PER_MONTH = 4.2857142857142857
 
         fun weeks(weeks: Long) = WeeksAndDays(weeks, 0)
 
-        fun months(months: Long): WeeksAndDays {
+        fun months(months: Double): WeeksAndDays {
             val days = DAYS_PER_MONTH * months
-            return WeeksAndDays(days / DAYS_PER_WEEK, days % DAYS_PER_WEEK)
+            return WeeksAndDays((days / DAYS_PER_WEEK).toLong(), days.toLong() % DAYS_PER_WEEK)
         }
     }
 

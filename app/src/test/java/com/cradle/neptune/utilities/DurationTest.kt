@@ -27,6 +27,13 @@ class DurationTest {
 
     @Test
     fun months_doubleAsFractional() {
+        val halfAMonth = Months(0.5)
+        assertEquals(
+            0.5 * SECONDS_PER_MONTH,
+            halfAMonth.seconds.value.toDouble(),
+            0.0000000000001
+        )
+
         arrayOf(
             12.0001, 12.01, 12.1, 12.2, 12.3, 12.4, 12.5, 12.5555, 12.6, 12.7, 12.8, 12.9, 12.99,
             12.999
