@@ -374,6 +374,11 @@
     <string name="fragment_vital_signs_temperature_label">Temperature</string>
     <string name="fragment_vital_signs_oxygen_saturation_label">Oxygen saturation</string>
     <string name="fragment_vital_signs_cradle_vsa_fields_card_header">Cradle VSA Readings</string>
+    <string name="reading_flow_title_new_patient">Creating new patient and reading</string>
+    <string name="reading_flow_title_editing_reading">Editing unuploaded reading</string>
+    <string name="reading_flow_title_creating_new_reading_for_existing_patient">Create new reading</string>
+    <string name="reading_flow_title_recheck_vitals">Rechecking vitals</string>
+    <string name="activity_reading_next_button">Next</string>
 
     <string name="login_activity_device_is_outdated_dialog_title">Device is out of date</string>
     <string name="login_activity_device_is_outdated_dialog_message">Your device is unable to connect to the servers securely. Since Google Play services are unavailable on your device, we\'re unable to try to upgrade your device\'s security provider. Please ensure that your device supports TLS 1.2 or higher.</string>

@@ -74,7 +74,11 @@ class PatientReadingViewModel constructor(
      * function before any other funtions and LiveData can be used in this ViewModel.
      *
      * Any things marked with the [GuardedBy] annotation are intended to only be used in the
-     * [initialize] function, which holds the [isInitializedMutex].
+     * [initialize] function, which holds the [isInitializedMutex]. This means those functions are
+     * intended to only run once.
+     *
+     * While [_isInitialized] is false, when decompose is done, the LiveData won't be observed by
+     * the UI. The UI only observes the LiveData when [_isInitialized] is true.
      */
     @GuardedBy("isInitializedMutex")
     private val _isInitialized = MutableLiveData<Boolean>(false)
@@ -93,7 +97,6 @@ class PatientReadingViewModel constructor(
      * We **must** launch this from the main thread in order to guarantee that all the LiveData
      * will use values that are ready after decompose is finished.
      */
-    @MainThread
     fun initialize(
         launchReason: ReadingActivity.LaunchReason,
         readingId: String?
@@ -151,6 +154,8 @@ class PatientReadingViewModel constructor(
                 if (_isInitialized.value != true) {
                     initializeLiveData()
                     _isInitialized.value = true
+                } else {
+                    Log.w(TAG, "attempted to run initialize twice!")
                 }
                 isInitializedMutex.unlock()
                 Log.d(TAG, "initialize took ${System.currentTimeMillis() - startTime} ms")
@@ -158,11 +163,20 @@ class PatientReadingViewModel constructor(
         }
     }
 
+    /**
+     * Decompose the patient. Needs to be on the main thread, because we need the LiveData values
+     * to be instantly set via [MutableLiveData.setValue] and not [MutableLiveData.postValue].
+     */
     @GuardedBy("isInitializedMutex")
     private suspend fun decompose(patient: Patient) = withContext(Dispatchers.Main) {
         patientBuilder.decompose(patient)
     }
 
+    /**
+     * Decompose the patient and reading. Needs to be on the main thread, because we need the
+     * LiveData values to be instantly set via [MutableLiveData.setValue] and not
+     * [MutableLiveData.postValue].
+     */
     @GuardedBy("isInitializedMutex")
     private suspend fun decompose(
         patient: Patient,
@@ -218,8 +232,42 @@ class PatientReadingViewModel constructor(
                 },
                 viewModelScope.launch {
                     logTime("setupUrineTestAndSourcesLiveData") { setupUrineTestAndSourcesLiveData() }
+                },
+                viewModelScope.launch {
+                    logTime("setupIsPatientValidLiveData") { setupIsPatientValidLiveData() }
                 }
             )
+        }
+    }
+
+    /**
+     * Setup the [isPatientValid] LiveData that will attempt to construct a valid patient
+     * using the current patient data.
+     */
+    @GuardedBy("isInitializedMutex")
+    private fun setupIsPatientValidLiveData() {
+        isPatientValid.apply {
+            // When any of these change, attempt to construct a valid patient and post whether
+            // or not it succeeded. This is used to determine whether the Next button is enabled.
+            arrayOf(
+                patientName, patientId, patientDob, patientAge, patientGestationalAge, patientSex,
+                patientIsPregnant, patientVillageNumber
+            ).forEach { liveData ->
+                addSource(liveData) {
+                    if (_isInitialized.value != true) return@addSource
+
+                    Log.d(TAG, "attempting to construct patient for validation")
+                    viewModelScope.launch(Dispatchers.Default) {
+                        attemptToBuildValidPatient().let { patient ->
+                            if (patient == null) {
+                                postValue(false)
+                            } else {
+                                postValue(true)
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -231,6 +279,7 @@ class PatientReadingViewModel constructor(
 
     @GuardedBy("isInitializedMutex")
     private suspend fun setupBloodPressureLiveData() = withContext(Dispatchers.Main) {
+        // Populate the text fields using the current blood pressure data that was decomposed.
         bloodPressure.value?.let {
             bloodPressureSystolicInput.value = it.systolic
             bloodPressureDiastolicInput.value = it.diastolic
@@ -263,7 +312,7 @@ class PatientReadingViewModel constructor(
     }
 
     /**
-     * Constructs and sets the BloodPressure only when all values are present.
+     * Constructs and sets the [bloodPressure] LiveData value only when all values are present.
      * Note: This isn't going to necessarily be held by [isInitializedMutex], since the Observer set
      * by [MediatorLiveData.addSource] code runs at any time.
      */
@@ -276,6 +325,7 @@ class PatientReadingViewModel constructor(
     private suspend fun setUpSymptomsLiveData() = withContext(Dispatchers.Main) {
         if (_isInitialized.value == true) return@withContext
 
+        // Put an initial SymptomsState in _symptomsState based on the decomposed data.
         val currentSymptoms = symptoms.value ?: emptyList()
         SymptomsState(
             currentSymptoms,
@@ -309,6 +359,7 @@ class PatientReadingViewModel constructor(
     private suspend fun setupGestationAgeLiveData() = withContext(Dispatchers.Main) {
         if (_isInitialized.value == true) return@withContext
 
+        // Populate the gestational age input field / EditText.
         patientGestationalAgeInput.apply {
             value = if (patientIsPregnant.value != true) {
                 // If not pregnant, make the input blank. Note: If this is the empty string, then
@@ -333,6 +384,7 @@ class PatientReadingViewModel constructor(
             }
         }
 
+        // Populate the gestational age units input field.
         patientGestationalAgeUnits.apply {
             value = if (patientGestationalAge.value is GestationalAgeMonths) {
                 monthsUnitString
@@ -342,6 +394,7 @@ class PatientReadingViewModel constructor(
             }
         }
 
+        // Listen for changes from the input fields for gestational age
         patientGestationalAge.apply {
             addSource(patientGestationalAgeUnits) {
                 // If we received an update to the units used, convert the GestationalAge object
@@ -369,8 +422,7 @@ class PatientReadingViewModel constructor(
                 // If the user typed something in, create a new GestationalAge object with the
                 // specified values.
                 Log.d(TAG, "DEBUG: patientGestationalAge input source: $it")
-                it ?: return@addSource
-                if (it.isBlank()) {
+                if (it.isNullOrBlank()) {
                     value = null
                     return@addSource
                 }
@@ -398,13 +450,15 @@ class PatientReadingViewModel constructor(
 
         val currentUrineTest = urineTest.value
 
-        isUsingUrineTest.value = if (reasonForLaunch !=
-                ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT) {
-            // Ensure urine test enabled by default for new readings like the frontend.
-            true
-        } else {
-            currentUrineTest != null
-        }
+        // Set the initial urine test checkbox state
+        isUsingUrineTest.value =
+            if (reasonForLaunch != ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT) {
+                // Ensure urine test enabled by default for new readings like the frontend.
+                true
+            } else {
+                // Otherwise, derive urine test usage state from the present urine test.
+                currentUrineTest != null
+            }
 
         val liveDataMap = mapOf(
             UrineTest::leukocytes to urineTestLeukocytesInput,
@@ -541,15 +595,21 @@ class PatientReadingViewModel constructor(
      * Keeps track of the symptoms that are checked. The checkboxes are as ordered in the string
      * array, R.array.reading_symptoms, except the last checkbox represents the other symptoms.
      * This will be changed directly by the CheckBoxes via [setSymptomsState]
+     *
+     * @see setUpSymptomsLiveData
      */
     private val _symptomsState = MediatorLiveData<SymptomsState>()
     val symptomsState: LiveData<SymptomsState> = _symptomsState
 
     /**
-     * The user's input for the other symptoms is tracked here.
+     * The user's arbitrary text input for the "Other symptoms" field is tracked here.
      */
     val otherSymptomsInput = MutableLiveData("")
 
+    /**
+     * Sets the symptom state for a particular symptom with index [index] inside of the symptoms
+     * string array to [newValue].
+     */
     @MainThread
     fun setSymptomsState(index: Int, newValue: Boolean) {
         val currentSymptomsState = _symptomsState.value ?: return
@@ -675,7 +735,7 @@ class PatientReadingViewModel constructor(
         }
     }
     /**
-     * Immutable LiveData variant of [_errorMap ] so that Fragments can only observe this and not
+     * Immutable LiveData variant of [_errorMap] so that Fragments can only observe this and not
      * modify. The values are set from the function [testValueForValidityAndSetErrorMap]
      *
      * Observed by Data Binding.
@@ -707,28 +767,12 @@ class PatientReadingViewModel constructor(
         _isUsingDateOfBirth.value = useDateOfBirth
     }
 
-    private val isPatientValid = MediatorLiveData<Boolean>().apply {
-        arrayOf(
-            patientName, patientId, patientDob, patientAge, patientGestationalAge, patientSex,
-            patientIsPregnant, patientZone, patientVillageNumber
-        ).forEach { liveData ->
-            addSource(liveData) {
-                if (_isInitialized.value != true) return@addSource
+    private val isPatientValid = MediatorLiveData<Boolean>()
 
-                Log.d(TAG, "attempting to construct patient for validation")
-                viewModelScope.launch(Dispatchers.Default) {
-                    attemptToBuildValidPatient().let { patient ->
-                        if (patient == null) {
-                            postValue(false)
-                        } else {
-                            postValue(true)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
+    /**
+     * @return a non-null Patient if and only if the Patient that can be constructed with the
+     * values in [patientBuilder] is valid.
+     */
     private fun attemptToBuildValidPatient(): Patient? {
         if (!patientBuilder.isConstructable<Patient>()) {
             Log.d(TAG, "patient not constructable")
@@ -754,11 +798,15 @@ class PatientReadingViewModel constructor(
             return null
         }
 
-        // 78982345464
         Log.d(TAG, "attemptToBuildValidPatient: built a valid patient")
         return patient
     }
 
+    /**
+     * Whether the next button is enabled.
+     *
+     * @see updateNextButtonCriteriaBasedOnDestination
+     */
     private val _isNextButtonEnabled = MediatorLiveData<Boolean>()
     val isNextButtonEnabled: LiveData<Boolean> = _isNextButtonEnabled
 
@@ -798,10 +846,8 @@ class PatientReadingViewModel constructor(
     @MainThread
     fun updateNextButtonCriteriaBasedOnDestination(@IdRes currentDestinationId: Int) {
         // Clear out any sources to be safe.
-        val nextButtonLiveDataSources = arrayOf(
-            isPatientValid, bloodPressure, isUsingUrineTest, urineTest
-        )
-        nextButtonLiveDataSources.forEach { _isNextButtonEnabled.removeSource(it) }
+        arrayOf(isPatientValid, bloodPressure, isUsingUrineTest, urineTest)
+            .forEach { _isNextButtonEnabled.removeSource(it) }
 
         _isNextButtonEnabled.apply {
             when (currentDestinationId) {
@@ -810,9 +856,7 @@ class PatientReadingViewModel constructor(
                         TAG,
                         "next button uses patientInfoFragment criteria: patient must be valid"
                     )
-                    addSource(isPatientValid) {
-                        _isNextButtonEnabled.value = it
-                    }
+                    addSource(isPatientValid) { _isNextButtonEnabled.value = it }
                 }
                 R.id.symptomsFragment -> {
                     Log.d(TAG, "next button uses symptomsFragment criteria: no criteria")
@@ -856,7 +900,12 @@ class PatientReadingViewModel constructor(
      * Tests the validity of the [value] for the [propertyToCheck] that belongs to the class
      * that [verifier] verifies. If not valid, an error message will be added to the [_errorMap],
      * which is map of error messages for a property that uses the name of [propertyForErrorMapKey]
-     * for the key. If valid, the error message set will be null.
+     * for the key. If valid, the error message for the property will be removed (so getting the
+     * error returns null).
+     *
+     * By default, [propertyForErrorMapKey] is just [propertyToCheck], but this can be overridden
+     * for cases where we might want to share a single error key-value pair between two properties,
+     * like date of birth and age since they use the same EditText.
      *
      * The error messages are observed via the immutable LiveData [errorMap] in the XML layout files
      * under the errorMessage attribute, and they update in real time.

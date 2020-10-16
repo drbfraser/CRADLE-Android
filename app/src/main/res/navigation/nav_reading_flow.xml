@@ -12,11 +12,12 @@
         tools:layout="@layout/fragment_patient_info">
         <action
             android:id="@+id/action_patientInfoFragment_to_symptomsFragment"
-            app:destination="@id/symptomsFragment" />
-        <action
-            android:id="@+id/action_patientInfoFragment_pop"
-            app:popUpTo="@id/loadingFragment"
-            app:popUpToInclusive="true" />
+            app:destination="@id/symptomsFragment"
+            app:enterAnim="@anim/slide_in_from_right"
+            app:exitAnim="@anim/slide_out_to_left"
+            app:popEnterAnim="@anim/slide_in_from_left"
+            app:popExitAnim="@anim/slide_out_to_right"
+            />
     </fragment>
     <fragment
         android:id="@+id/symptomsFragment"
@@ -25,7 +26,12 @@
         tools:layout="@layout/fragment_symptoms">
         <action
             android:id="@+id/action_symptomsFragment_to_vitalSignsFragment"
-            app:destination="@id/vitalSignsFragment" />
+            app:destination="@id/vitalSignsFragment"
+            app:enterAnim="@anim/slide_in_from_right"
+            app:exitAnim="@anim/slide_out_to_left"
+            app:popEnterAnim="@anim/slide_in_from_left"
+            app:popExitAnim="@anim/slide_out_to_right"
+            />
     </fragment>
     <fragment
         android:id="@+id/loadingFragment"
@@ -35,10 +41,13 @@
         <action
             android:id="@+id/action_loadingFragment_to_patientInfoFragment"
             app:destination="@id/patientInfoFragment"
-            app:enterAnim="@anim/fragment_fade_enter"
-            app:exitAnim="@anim/fragment_fade_exit"
-            app:popEnterAnim="@anim/fragment_close_enter"
-            app:popExitAnim="@anim/fragment_close_exit" />
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/fade_out" />
+        <action
+            android:id="@+id/action_loadingFragment_to_symptomsFragment"
+            app:destination="@id/symptomsFragment" />
     </fragment>
     <fragment
         android:id="@+id/vitalSignsFragment"
@@ -47,7 +56,11 @@
         tools:layout="@layout/fragment_vital_signs">
         <action
             android:id="@+id/action_vitalSignsFragment_to_cameraFragment"
-            app:destination="@id/cameraFragment" />
+            app:destination="@id/cameraFragment"
+            app:enterAnim="@anim/fragment_fade_enter"
+            app:exitAnim="@anim/fragment_fade_exit"
+            app:popEnterAnim="@anim/fragment_close_enter"
+            app:popExitAnim="@anim/fragment_close_exit" />
     </fragment>
     <fragment
         android:id="@+id/cameraFragment"

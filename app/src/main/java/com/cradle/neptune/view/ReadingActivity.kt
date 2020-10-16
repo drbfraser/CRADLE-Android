@@ -5,12 +5,15 @@ import android.content.Intent
 import android.content.res.Resources
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.viewModels
+import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -19,9 +22,7 @@ import androidx.lifecycle.observe
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupActionBarWithNavController
+import androidx.navigation.navOptions
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.databinding.ActivityPlaceholderBinding
@@ -35,9 +36,9 @@ import kotlinx.coroutines.launch
 
 @SuppressWarnings("LargeClass")
 class ReadingActivity : AppCompatActivity() {
-    private lateinit var appBarConfiguration: AppBarConfiguration
+    private lateinit var launchReason: LaunchReason
 
-    private var buttonJob: Job? = null
+    private var nextButtonJob: Job? = null
 
     private var binding: ActivityPlaceholderBinding? = null
 
@@ -70,9 +71,6 @@ class ReadingActivity : AppCompatActivity() {
         )
 
         super.onCreate(savedInstanceState)
-
-        onBackPressedDispatcher.addCallback(this) { onSupportNavigateUp() }
-
         // TODO: Use activity_reading when done design
         binding = DataBindingUtil.setContentView(this, R.layout.activity_placeholder)
         binding?.viewModel = viewModel
@@ -84,8 +82,6 @@ class ReadingActivity : AppCompatActivity() {
         val host: NavHostFragment = supportFragmentManager
             .findFragmentById(R.id.reading_nav_host) as NavHostFragment? ?: return
         val navController = host.navController
-        appBarConfiguration = AppBarConfiguration(navController.graph)
-        setupActionBarWithNavController(navController, appBarConfiguration)
 
         // TODO: remove this when done
         // adapted from https://github.com/googlecodelabs/android-navigation
@@ -97,14 +93,44 @@ class ReadingActivity : AppCompatActivity() {
             }
             Log.d("ReadingActivity", "Navigated to $dest")
 
-            viewModel.updateNextButtonCriteriaBasedOnDestination(currentDestinationId = destination.id)
+            viewModel.updateNextButtonCriteriaBasedOnDestination(destination.id)
+
+            val bottomNavBar = findViewById<ConstraintLayout>(R.id.nav_button_bottom_layout)
+            if (destination.id == R.id.cameraFragment) {
+                supportActionBar?.apply {
+                    if (isShowing) {
+                        hide()
+                    }
+                }
+                (bottomNavBar?.getViewById(R.id.next_button2) as? Button)?.apply {
+                    if (visibility != View.GONE) {
+                        visibility = View.GONE
+                    }
+                }
+            } else {
+                supportActionBar?.apply {
+                    if (!isShowing) {
+                        show()
+                    }
+                }
+                (bottomNavBar?.getViewById(R.id.next_button2) as? Button)?.apply {
+                    if (visibility != View.VISIBLE) {
+                        visibility = View.VISIBLE
+                    }
+                }
+            }
         }
 
         check(intent.hasExtra(EXTRA_LAUNCH_REASON))
+
+        launchReason = intent.getSerializableExtra(EXTRA_LAUNCH_REASON) as LaunchReason
         viewModel.initialize(
-            launchReason = intent.getSerializableExtra(EXTRA_LAUNCH_REASON) as LaunchReason,
+            launchReason = launchReason,
             readingId = intent.getStringExtra(EXTRA_READING_ID)
         )
+        supportActionBar?.apply {
+            title = getActionBarTitle()
+        }
 
         viewModel.isInitialized.observe(this) {
             if (!it) {
@@ -113,13 +139,27 @@ class ReadingActivity : AppCompatActivity() {
             viewModel.isInitialized.removeObservers(this)
 
             if (navController.currentDestination?.id == R.id.loadingFragment) {
-                navController.navigate(R.id.action_loadingFragment_to_patientInfoFragment)
+                val actionId = when (getStartDestinationId()) {
+                    R.id.patientInfoFragment -> R.id.action_loadingFragment_to_patientInfoFragment
+                    R.id.symptomsFragment -> R.id.action_loadingFragment_to_symptomsFragment
+                    else -> error("unsupported navigation action right now")
+                }
+                // force fading animations to appear
+                val navOptions = navOptions {
+                    anim {
+                        enter = R.anim.fade_in
+                        exit = R.anim.fade_out
+                        popEnter = R.anim.fade_in
+                        popExit = R.anim.fade_out
+                    }
+                }
+                navController.navigate(actionId, null, navOptions)
             }
         }
 
         findViewById<Button>(R.id.next_button2).setOnClickListener {
-            buttonJob?.cancel()
-            buttonJob = lifecycleScope.launch {
+            nextButtonJob?.cancel()
+            nextButtonJob = lifecycleScope.launch {
                 val error: ReadingFlowError = viewModel.onNextButtonClicked(
                     navController.currentDestination?.id ?: return@launch
                 )
@@ -137,6 +177,9 @@ class ReadingActivity : AppCompatActivity() {
                 }
             }
         }
+
+        onBackPressedDispatcher.addCallback(this) { onBackButtonPressed() }
+        findViewById<Button>(R.id.back_button).setOnClickListener { onBackButtonPressed() }
     }
 
     private fun onNextButtonClickedWithNoErrors(navController: NavController) {
@@ -154,17 +197,47 @@ class ReadingActivity : AppCompatActivity() {
         }
     }
 
-    override fun onSupportNavigateUp(): Boolean {
-        Toast.makeText(this, "onSupportNavigateUp", Toast.LENGTH_SHORT).show()
+    private fun onBackButtonPressed() {
         val navController = findNavController(R.id.reading_nav_host)
 
-        return if (navController.currentDestination?.id == R.id.patientInfoFragment) {
-            // TODO: add dialog
-            finish()
-            true
+        if (navController.currentDestination?.id == getStartDestinationId()) {
+            launchDiscardChangesDialogIfNeeded()
         } else {
-            navController.navigateUp(appBarConfiguration)
+            navController.navigateUp()
         }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        launchDiscardChangesDialogIfNeeded()
+        return false
+    }
+
+    private fun launchDiscardChangesDialogIfNeeded() {
+        // TODO: add dialog
+        finish()
+    }
+
+    @IdRes
+    private fun getStartDestinationId(): Int {
+        return when (launchReason) {
+            LaunchReason.LAUNCH_REASON_NEW, LaunchReason.LAUNCH_REASON_EDIT -> {
+                R.id.patientInfoFragment
+            }
+            LaunchReason.LAUNCH_REASON_RECHECK, LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {
+                R.id.symptomsFragment
+            }
+            else -> error("need a launch reason to be in ReadingActivity")
+        }
+    }
+
+    private fun getActionBarTitle(): String = when (launchReason) {
+        LaunchReason.LAUNCH_REASON_NEW -> getString(R.string.reading_flow_title_new_patient)
+        LaunchReason.LAUNCH_REASON_EDIT -> getString(R.string.reading_flow_title_editing_reading)
+        LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {
+            getString(R.string.reading_flow_title_creating_new_reading_for_existing_patient)
+        }
+        LaunchReason.LAUNCH_REASON_RECHECK -> getString(R.string.reading_flow_title_recheck_vitals)
+        else -> error("need a launch reason to be in ReadingActivity")
     }
 
     enum class LaunchReason {
@@ -175,6 +248,7 @@ class ReadingActivity : AppCompatActivity() {
     companion object {
         private const val EXTRA_LAUNCH_REASON = "enum of why we launched"
         private const val EXTRA_READING_ID = "ID of reading to load"
+        // TODO: remove this legacy extra
         private const val EXTRA_START_TAB = "idx of tab to start on"
 
         @JvmStatic
