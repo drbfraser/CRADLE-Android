@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.Toast
 import androidx.databinding.DataBindingComponent
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
@@ -15,7 +14,6 @@ import androidx.navigation.Navigation
 import com.cradle.neptune.R
 import com.cradle.neptune.binding.FragmentDataBindingComponent
 import com.cradle.neptune.databinding.FragmentVitalSignsBinding
-import com.cradle.neptune.view.ReadingActivity
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -52,18 +50,13 @@ class VitalSignsFragment : BaseFragment() {
         binding?.lifecycleOwner = viewLifecycleOwner
         binding?.viewModel = viewModel
         super.onViewCreated(view, savedInstanceState)
-        view.findViewById<Button>(R.id.next_button)?.setOnClickListener {
-            Toast.makeText(view.context, "Not implemented", Toast.LENGTH_SHORT).show()
-        }
+
         view.findViewById<Button>(R.id.cradle_vsa_take_photo_button)?.setOnClickListener(
             Navigation.createNavigateOnClickListener(
                 R.id.action_vitalSignsFragment_to_cameraFragment,
                 null
             )
         )
-        view.findViewById<Button>(R.id.back_button)?.setOnClickListener {
-            (activity as? ReadingActivity)?.onSupportNavigateUp()
-        }
 
         // Required to observe for source updates to come to these LiveData.
         viewModel.bloodPressure.observe(viewLifecycleOwner) {}

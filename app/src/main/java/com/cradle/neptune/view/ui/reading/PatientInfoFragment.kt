@@ -9,18 +9,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.AutoCompleteTextView
-import android.widget.Button
-import androidx.activity.addCallback
 import androidx.databinding.DataBindingComponent
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
-import androidx.navigation.Navigation
 import com.cradle.neptune.R
 import com.cradle.neptune.binding.FragmentDataBindingComponent
 import com.cradle.neptune.databinding.FragmentPatientInfoBinding
 import com.cradle.neptune.model.Patient
-import com.cradle.neptune.view.ReadingActivity
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputEditText
@@ -93,17 +89,6 @@ class PatientInfoFragment : BaseFragment() {
         binding?.viewModel = viewModel
         super.onViewCreated(view, savedInstanceState)
 
-        view.findViewById<Button>(R.id.next_button)?.setOnClickListener(
-            Navigation.createNavigateOnClickListener(
-                R.id.action_patientInfoFragment_to_symptomsFragment,
-                null
-            )
-        )
-
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-            (activity as? ReadingActivity)?.onSupportNavigateUp()
-        }
-
         lifecycleScope.apply {
             launch { setupAndObserveAgeInfo(view) }
             launch { setupAndObserveGenderList(view) }
@@ -138,6 +123,8 @@ class PatientInfoFragment : BaseFragment() {
                     "hasActiveObservers: ${viewModel.patientId.hasActiveObservers()}")
 
                 Log.d(TAG, "DEBUG: UrineTest right now is ${viewModel.urineTest.value}")
+
+                Log.d(TAG, "DEBUG: error map is ${viewModel.errorMap.value}")
 
                 @Suppress("MagicNumber")
                 delay(6000L)

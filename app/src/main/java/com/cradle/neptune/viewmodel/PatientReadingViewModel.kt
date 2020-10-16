@@ -5,6 +5,7 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import android.util.Log
 import androidx.annotation.GuardedBy
+import androidx.annotation.IdRes
 import androidx.annotation.MainThread
 import androidx.collection.ArrayMap
 import androidx.collection.arrayMapOf
@@ -31,6 +32,8 @@ import com.cradle.neptune.utilitiles.LiveDataDynamicModelBuilder
 import com.cradle.neptune.utilitiles.Months
 import com.cradle.neptune.utilitiles.Weeks
 import com.cradle.neptune.view.ReadingActivity
+import java.lang.IllegalArgumentException
+import java.lang.reflect.InvocationTargetException
 import java.text.DecimalFormat
 import java.util.Locale
 import kotlin.reflect.KProperty
@@ -157,8 +160,6 @@ class PatientReadingViewModel constructor(
 
     @GuardedBy("isInitializedMutex")
     private suspend fun decompose(patient: Patient) = withContext(Dispatchers.Main) {
-        if (_isInitialized.value == true) return@withContext
-
         patientBuilder.decompose(patient)
     }
 
@@ -197,6 +198,10 @@ class PatientReadingViewModel constructor(
     @GuardedBy("isInitializedMutex")
     private suspend fun initializeLiveData() {
         if (_isInitialized.value == true) return
+
+        if (patientIsPregnant.value == null) {
+            patientIsPregnant.value = false
+        }
 
         _isUsingDateOfBirth.value = patientDob.value != null
 
@@ -697,6 +702,151 @@ class PatientReadingViewModel constructor(
         _isUsingDateOfBirth.value = useDateOfBirth
     }
 
+    private val isPatientValid = MediatorLiveData<Boolean>().apply {
+        arrayOf(
+            patientName, patientId, patientDob, patientAge, patientGestationalAge, patientSex,
+            patientIsPregnant, patientZone, patientVillageNumber
+        ).forEach { liveData ->
+            addSource(liveData) {
+                if (_isInitialized.value != true) return@addSource
+
+                Log.d(TAG, "attempting to construct patient for validation")
+                viewModelScope.launch(Dispatchers.Default) {
+                    attemptToBuildValidPatient().let { patient ->
+                        if (patient == null) {
+                            postValue(false)
+                        } else {
+                            postValue(true)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun attemptToBuildValidPatient(): Patient? {
+        if (!patientBuilder.isConstructable<Patient>()) {
+            Log.d(TAG, "patient not constructable")
+            return null
+        }
+
+        val patient = try {
+            patientBuilder.build<Patient>()
+        } catch (e: IllegalArgumentException) {
+            Log.d(TAG, "attemptToBuildValidPatient: " +
+                "patient failed to build, exception ${e.cause?.message ?: e.message}")
+            return null
+        } catch (e: InvocationTargetException) {
+            Log.d(TAG, "attemptToBuildValidPatient: " +
+                "patient failed to build, exception ${e.cause?.message ?: e.message}")
+            return null
+        }
+
+        if (!patient.isValidInstance(app)) {
+            Log.d(TAG, "attemptToBuildValidPatient: " +
+                "patient is invalid, " +
+                "errors: ${patient.getAllMembersWithInvalidValues(app)}")
+            return null
+        }
+
+        // 78982345464
+        Log.d(TAG, "attemptToBuildValidPatient: built a valid patient")
+        return patient
+    }
+
+    private val _isNextButtonEnabled = MediatorLiveData<Boolean>()
+    val isNextButtonEnabled: LiveData<Boolean> = _isNextButtonEnabled
+
+    @MainThread
+    suspend fun onNextButtonClicked(
+        @IdRes currentDestinationId: Int
+    ): ReadingFlowError = withContext(Dispatchers.Main) {
+        when (currentDestinationId) {
+            R.id.loadingFragment -> return@withContext ReadingFlowError.NO_ERROR
+            R.id.patientInfoFragment -> {
+                val patient = attemptToBuildValidPatient()
+                    ?: return@withContext ReadingFlowError.ERROR_INVALID_FIELDS
+
+                val existingPatient = patientManager.getPatientById(patient.id)
+                if (existingPatient != null) {
+                    return@withContext ReadingFlowError.ERROR_PATIENT_ID_IN_USE
+                }
+
+                return@withContext ReadingFlowError.NO_ERROR
+            }
+            R.id.symptomsFragment -> return@withContext ReadingFlowError.NO_ERROR
+            R.id.vitalSignsFragment -> {
+                return@withContext if (isVitalSignsFragmentInputValid()) {
+                    ReadingFlowError.NO_ERROR
+                } else {
+                    ReadingFlowError.ERROR_INVALID_FIELDS
+                }
+            }
+            else -> return@withContext ReadingFlowError.NO_ERROR
+        }
+    }
+
+    /**
+     * Updates the criteria that's needed to be satisfied in order for the next button to be
+     * enabled.
+     */
+    @MainThread
+    fun updateNextButtonCriteriaBasedOnDestination(@IdRes currentDestinationId: Int) {
+        // Clear out any sources to be safe.
+        val nextButtonLiveDataSources = arrayOf(
+            isPatientValid, bloodPressure, isUsingUrineTest, urineTest
+        )
+        nextButtonLiveDataSources.forEach { _isNextButtonEnabled.removeSource(it) }
+
+        _isNextButtonEnabled.apply {
+            when (currentDestinationId) {
+                R.id.patientInfoFragment -> {
+                    Log.d(
+                        TAG,
+                        "next button uses patientInfoFragment criteria: patient must be valid"
+                    )
+                    addSource(isPatientValid) {
+                        _isNextButtonEnabled.value = it
+                    }
+                }
+                R.id.symptomsFragment -> {
+                    Log.d(TAG, "next button uses symptomsFragment criteria: no criteria")
+                    value = true
+                }
+                R.id.vitalSignsFragment -> {
+                    Log.d(
+                        TAG, "next button uses symptomsFragment criteria: valid BloodPressure, " +
+                            "and valid urine test if using urine test"
+                    )
+                    value = isVitalSignsFragmentInputValid()
+                    addSource(bloodPressure) { value = isVitalSignsFragmentInputValid() }
+                    addSource(isUsingUrineTest) { value = isVitalSignsFragmentInputValid() }
+                    addSource(urineTest) { value = isVitalSignsFragmentInputValid() }
+                }
+                R.id.loadingFragment -> return
+                else -> return
+            }
+        }
+    }
+
+    /**
+     * Determines if the blood pressure and urine tests right now are valid.
+     * Blood pressure is mandatory, so if it is null, it's not valid.
+     *
+     * Urine tests are optional, but if the reading is going to be using a urine test,
+     * then it must be a valid urine test.
+     */
+    private fun isVitalSignsFragmentInputValid(): Boolean {
+        val bloodPressureValid = bloodPressure.value?.isValidInstance(app) ?: false
+        if (!bloodPressureValid) return false
+
+        return if (isUsingUrineTest.value != false) {
+            urineTest.value?.isValidInstance(app) ?: false
+        } else {
+            true
+        }
+    }
+
     /**
      * Tests the validity of the [value] for the [propertyToCheck] that belongs to the class
      * that [verifier] verifies. If not valid, an error message will be added to the [_errorMap],
@@ -735,16 +885,21 @@ class PatientReadingViewModel constructor(
             }
 
         val (isValid, errorMessage) = verifier.isValueValid(
-                propertyToCheck, value, getApplication(),
-                instance = null, currentValues = currentValuesMapToUse
-            )
+            propertyToCheck, value, getApplication(),
+            instance = null, currentValues = currentValuesMapToUse
+        )
 
-        val errorMessageForMap = if (!isValid) errorMessage else null
         val currentMap = _errorMap.value ?: arrayMapOf()
+        val errorMessageForMap = if (!isValid) errorMessage else null
 
         // Don't notify observers if the error message is the exact same message.
         if (currentMap[propertyForErrorMapKey.name] != errorMessageForMap) {
-            currentMap[propertyForErrorMapKey.name] = errorMessageForMap
+            if (isValid) {
+                currentMap.remove(propertyForErrorMapKey.name)
+            } else {
+                currentMap[propertyForErrorMapKey.name] = errorMessageForMap
+            }
+
             _errorMap.value = currentMap
         }
     }
@@ -752,4 +907,8 @@ class PatientReadingViewModel constructor(
     companion object {
         private const val TAG = "PatientReadingViewModel"
     }
+}
+
+enum class ReadingFlowError {
+    NO_ERROR, ERROR_PATIENT_ID_IN_USE, ERROR_INVALID_FIELDS
 }

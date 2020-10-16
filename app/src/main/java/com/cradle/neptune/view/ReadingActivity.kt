@@ -5,13 +5,18 @@ import android.content.Intent
 import android.content.res.Resources
 import android.os.Bundle
 import android.util.Log
+import android.widget.Button
 import android.widget.Toast
+import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
@@ -19,14 +24,22 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
+import com.cradle.neptune.databinding.ActivityPlaceholderBinding
 import com.cradle.neptune.view.ui.reading.BaseFragment
 import com.cradle.neptune.viewmodel.PatientReadingViewModel
 import com.cradle.neptune.viewmodel.PatientReadingViewModelFactory
+import com.cradle.neptune.viewmodel.ReadingFlowError
 import javax.inject.Inject
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 @SuppressWarnings("LargeClass")
 class ReadingActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
+
+    private var buttonJob: Job? = null
+
+    private var binding: ActivityPlaceholderBinding? = null
 
     @Inject
     lateinit var viewModelFactory: PatientReadingViewModelFactory
@@ -57,8 +70,13 @@ class ReadingActivity : AppCompatActivity() {
         )
 
         super.onCreate(savedInstanceState)
+
+        onBackPressedDispatcher.addCallback(this) { onSupportNavigateUp() }
+
         // TODO: Use activity_reading when done design
-        setContentView(R.layout.activity_placeholder)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_placeholder)
+        binding?.viewModel = viewModel
+        binding?.lifecycleOwner = this
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar3)
         setSupportActionBar(toolbar)
@@ -77,8 +95,9 @@ class ReadingActivity : AppCompatActivity() {
             } catch (e: Resources.NotFoundException) {
                 destination.id.toString()
             }
-
             Log.d("ReadingActivity", "Navigated to $dest")
+
+            viewModel.updateNextButtonCriteriaBasedOnDestination(currentDestinationId = destination.id)
         }
 
         check(intent.hasExtra(EXTRA_LAUNCH_REASON))
@@ -91,10 +110,47 @@ class ReadingActivity : AppCompatActivity() {
             if (!it) {
                 return@observe
             }
+            viewModel.isInitialized.removeObservers(this)
+
             if (navController.currentDestination?.id == R.id.loadingFragment) {
                 navController.navigate(R.id.action_loadingFragment_to_patientInfoFragment)
             }
-            viewModel.isInitialized.removeObservers(this)
+        }
+
+        findViewById<Button>(R.id.next_button2).setOnClickListener {
+            buttonJob?.cancel()
+            buttonJob = lifecycleScope.launch {
+                val error: ReadingFlowError = viewModel.onNextButtonClicked(
+                    navController.currentDestination?.id ?: return@launch
+                )
+
+                when (error) {
+                    ReadingFlowError.NO_ERROR -> onNextButtonClickedWithNoErrors(navController)
+                    ReadingFlowError.ERROR_PATIENT_ID_IN_USE -> {
+                        Toast.makeText(
+                            this@ReadingActivity,
+                            "This ID is already in use",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    ReadingFlowError.ERROR_INVALID_FIELDS -> return@launch
+                }
+            }
+        }
+    }
+
+    private fun onNextButtonClickedWithNoErrors(navController: NavController) {
+        when (navController.currentDestination?.id) {
+            R.id.loadingFragment, null -> return
+            R.id.patientInfoFragment -> {
+                navController.navigate(R.id.action_patientInfoFragment_to_symptomsFragment)
+            }
+            R.id.symptomsFragment -> {
+                navController.navigate(R.id.action_symptomsFragment_to_vitalSignsFragment)
+            }
+            R.id.vitalSignsFragment -> {
+                Toast.makeText(this, "TODO: not supported yet", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

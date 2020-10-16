@@ -5,18 +5,15 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.CheckBox
 import android.widget.LinearLayout
 import androidx.databinding.DataBindingComponent
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
-import androidx.navigation.Navigation
 import com.cradle.neptune.R
 import com.cradle.neptune.binding.FragmentDataBindingComponent
 import com.cradle.neptune.databinding.FragmentSymptomsBinding
-import com.cradle.neptune.view.ReadingActivity
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -67,16 +64,6 @@ class SymptomsFragment : BaseFragment() {
         binding?.lifecycleOwner = viewLifecycleOwner
         binding?.viewModel = viewModel
         super.onViewCreated(view, savedInstanceState)
-
-        view.findViewById<Button>(R.id.next_button)?.setOnClickListener(
-            Navigation.createNavigateOnClickListener(
-                R.id.action_symptomsFragment_to_vitalSignsFragment,
-                null
-            )
-        )
-        view.findViewById<Button>(R.id.back_button)?.setOnClickListener {
-            (activity as? ReadingActivity)?.onSupportNavigateUp()
-        }
 
         val checkBoxContainer = view.findViewById<LinearLayout>(R.id.symptoms_checkbox_container)
             ?: error("no container")
