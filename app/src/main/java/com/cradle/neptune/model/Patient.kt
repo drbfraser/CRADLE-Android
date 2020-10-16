@@ -474,8 +474,9 @@ enum class Sex {
  *
  * @see GestationalAgeWeeks
  * @see GestationalAgeMonths
+ * @property timestamp The UNIX timestamp (in seconds)
  */
-sealed class GestationalAge(val value: Long) : Marshal<JSONObject>, Serializable {
+sealed class GestationalAge(val timestamp: Long) : Marshal<JSONObject>, Serializable {
     /**
      * The age in weeks and days.
      *
@@ -511,7 +512,7 @@ sealed class GestationalAge(val value: Long) : Marshal<JSONObject>, Serializable
 
     /**
      * True if `this` and [other] are an instance of the same class and have the
-     * same [value].
+     * same [timestamp].
      *
      * This means that a gestational age in weeks is never equal to a
      * gestational age in months even if they represent the same amount of time.
@@ -524,13 +525,13 @@ sealed class GestationalAge(val value: Long) : Marshal<JSONObject>, Serializable
         return when (other) {
             is GestationalAgeWeeks ->
                 if (this is GestationalAgeWeeks) {
-                    this.value == other.value
+                    this.timestamp == other.timestamp
                 } else {
                     false
                 }
             is GestationalAgeMonths ->
                 if (this is GestationalAgeMonths) {
-                    this.value == other.value
+                    this.timestamp == other.timestamp
                 } else {
                     false
                 }
@@ -539,13 +540,13 @@ sealed class GestationalAge(val value: Long) : Marshal<JSONObject>, Serializable
     }
 
     override fun hashCode(): Int {
-        var result = value.hashCode()
+        var result = timestamp.hashCode()
         result = 31 * result + age.hashCode()
         return result
     }
 
     override fun toString(): String {
-        return "GestationalAge($age, value=$value)"
+        return "GestationalAge($age, value=$timestamp)"
     }
 }
 
@@ -555,7 +556,7 @@ sealed class GestationalAge(val value: Long) : Marshal<JSONObject>, Serializable
 class GestationalAgeWeeks(timestamp: Long) : GestationalAge(timestamp), Serializable {
     override val age: WeeksAndDays
         get() {
-            val seconds = Seconds(UnixTimestamp.now - value)
+            val seconds = Seconds(UnixTimestamp.now - timestamp)
             return WeeksAndDays.weeks(Weeks(seconds).value)
         }
 
@@ -563,12 +564,12 @@ class GestationalAgeWeeks(timestamp: Long) : GestationalAge(timestamp), Serializ
 
     override fun marshal(): JSONObject = with(JSONObject()) {
         // For legacy interop we store the value as a string instead of an int.
-        put(PatientField.GESTATIONAL_AGE_VALUE, value.toString())
+        put(PatientField.GESTATIONAL_AGE_VALUE, timestamp.toString())
         put(PatientField.GESTATIONAL_AGE_UNIT, UNIT_VALUE_WEEKS)
     }
 
     override fun toString(): String {
-        return "GestationalAgeWeeks($age, value=$value)"
+        return "GestationalAgeWeeks($age, value=$timestamp)"
     }
 }
 
@@ -587,7 +588,7 @@ class GestationalAgeMonths(timestamp: Long) : GestationalAge(timestamp), Seriali
      *
      * TODO: Fix this when the fragments are rearchitected/redesigned
      */
-    var inputMonths: Months? = null
+    private var inputMonths: Months? = null
 
     constructor(duration: Months) : this(UnixTimestamp.ago(duration)) {
         inputMonths = duration
@@ -595,18 +596,18 @@ class GestationalAgeMonths(timestamp: Long) : GestationalAge(timestamp), Seriali
 
     override val age: WeeksAndDays
         get() {
-            val seconds = Seconds(UnixTimestamp.now - value)
+            val seconds = Seconds(UnixTimestamp.now - timestamp)
             return WeeksAndDays.months(Months(seconds).value.toLong())
         }
 
     override fun marshal(): JSONObject = with(JSONObject()) {
         // For legacy interop we store the value as a string instead of an int.
-        put(PatientField.GESTATIONAL_AGE_VALUE, value.toString())
+        put(PatientField.GESTATIONAL_AGE_VALUE, timestamp.toString())
         put(PatientField.GESTATIONAL_AGE_UNIT, UNIT_VALUE_MONTHS)
     }
 
     override fun toString(): String {
-        return "GestationalAgeMonths($age, value=$value)"
+        return "GestationalAgeMonths($age, value=$timestamp)"
     }
 }
 
@@ -640,6 +641,9 @@ data class WeeksAndDays(val weeks: Long, val days: Long) : Serializable {
             return WeeksAndDays(days / DAYS_PER_WEEK, days % DAYS_PER_WEEK)
         }
     }
+
+    override fun toString(): String = "WeeksAndDays(weeks=$weeks, days=$days, " +
+        "asWeeks()=${asWeeks()}, asMonths()=${asMonths()})"
 }
 
 /**

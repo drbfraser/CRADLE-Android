@@ -38,6 +38,7 @@ import java.text.DecimalFormat
 import java.util.Locale
 import kotlin.reflect.KProperty
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -241,6 +242,17 @@ class PatientReadingViewModel constructor(
     }
 
     /**
+     * There's a really ugly edge case where tapping the Pregnant checkbox and inputting a village
+     * number at the same time can result in the next button being active. Likely caused by the
+     * coroutine for the valid patient before winning over the coroutine for the invalid patient.
+     * Normally this doesn't happen since the user can only type in one field at a time, but the
+     * CheckBox is a special case, since users can interact with it as they are typing.
+     *
+     * So, we cancel the previous job to ensure the coroutine in [setupIsPatientValidLiveData] can
+     * launch with the most recent [patientBuilder] values.
+     */
+    private var isPatientValidJob: Job? = null
+    /**
      * Setup the [isPatientValid] LiveData that will attempt to construct a valid patient
      * using the current patient data.
      */
@@ -256,14 +268,12 @@ class PatientReadingViewModel constructor(
                 addSource(liveData) {
                     if (_isInitialized.value != true) return@addSource
 
-                    Log.d(TAG, "attempting to construct patient for validation")
-                    viewModelScope.launch(Dispatchers.Default) {
+                    isPatientValidJob?.cancel() ?: Log.d(TAG, "no job to cancel")
+                    isPatientValidJob = viewModelScope.launch(Dispatchers.Default) {
+                        Log.d(TAG, "attempting to construct patient for validation")
                         attemptToBuildValidPatient().let { patient ->
-                            if (patient == null) {
-                                postValue(false)
-                            } else {
-                                postValue(true)
-                            }
+                            // Post the value immediately: requires main thread to do so.
+                            withContext(Dispatchers.Main) { value = patient != null }
                         }
                     }
                 }
@@ -405,13 +415,13 @@ class PatientReadingViewModel constructor(
                 if (it == monthsUnitString && value is GestationalAgeWeeks) {
                     Log.d(TAG, "DEBUG: patientGestationalAge units source: converting to Months")
 
-                    value = GestationalAgeMonths((value as GestationalAge).value)
+                    value = GestationalAgeMonths((value as GestationalAge).timestamp)
                     // Zero out the input when changing units.
                     patientGestationalAgeInput.value = "0"
                 } else if (it == weeksUnitString && value is GestationalAgeMonths) {
                     Log.d(TAG, "DEBUG: patientGestationalAge units source: converting to Weeks")
 
-                    value = GestationalAgeWeeks((value as GestationalAge).value)
+                    value = GestationalAgeWeeks((value as GestationalAge).timestamp)
                     // Zero out the input when changing units.
                     patientGestationalAgeInput.value = "0"
                 } else {
@@ -633,26 +643,34 @@ class PatientReadingViewModel constructor(
             as MutableLiveData<MutableList<String>?>
 
     /**
+     * Required to guard against modifications to [_errorMap], since changing the [_errorMap] is not
+     * done on **the** (singular) main thread.
+     */
+    private val errorMapMutex = Mutex()
+    /**
      * A map of KProperty.name to error messages. If an error message is null, that means the field
-     * is valid. The values are set from the function [testValueForValidityAndSetErrorMap]]
+     * is valid. The values are set from the function [testValueForValidityAndSetErrorMapAsync]]
+     *
+     * Modifications to the _errorMap value must be done when [errorMapMutex] is held.
      *
      * @see errorMap
-     * @see [testValueForValidityAndSetErrorMap]
+     * @see [testValueForValidityAndSetErrorMapAsync]
      */
+    @GuardedBy("errorMapMutex")
     private val _errorMap = MediatorLiveData<ArrayMap<String, String?>>().apply {
         value = arrayMapOf()
         addSource(patientId) {
-            testValueForValidityAndSetErrorMap(
+            testValueForValidityAndSetErrorMapAsync(
                 value = it, propertyToCheck = Patient::id, verifier = Patient.Companion
             )
         }
         addSource(patientName) {
-            testValueForValidityAndSetErrorMap(
+            testValueForValidityAndSetErrorMapAsync(
                 value = it, propertyToCheck = Patient::name, verifier = Patient.Companion
             )
         }
         addSource(patientVillageNumber) {
-            testValueForValidityAndSetErrorMap(
+            testValueForValidityAndSetErrorMapAsync(
                 value = it, propertyToCheck = Patient::villageNumber, verifier = Patient.Companion
             )
         }
@@ -662,7 +680,7 @@ class PatientReadingViewModel constructor(
                 // Prefer errors that come from the age if using age.
                 return@addSource
             }
-            testValueForValidityAndSetErrorMap(
+            testValueForValidityAndSetErrorMapAsync(
                 value = it, propertyToCheck = Patient::dob,
                 verifier = Patient.Companion, propertyForErrorMapKey = Patient::age
             )
@@ -673,36 +691,36 @@ class PatientReadingViewModel constructor(
                 // Prefer errors that come from the date of birth if using date of birth.
                 return@addSource
             }
-            testValueForValidityAndSetErrorMap(
+            testValueForValidityAndSetErrorMapAsync(
                 value = it, propertyToCheck = Patient::age, verifier = Patient.Companion
             )
         }
         addSource(patientGestationalAge) {
-            testValueForValidityAndSetErrorMap(
+            testValueForValidityAndSetErrorMapAsync(
                 value = it, propertyToCheck = Patient::gestationalAge, verifier = Patient.Companion
             )
         }
         addSource(patientSex) {
-            testValueForValidityAndSetErrorMap(
+            testValueForValidityAndSetErrorMapAsync(
                 value = it, propertyToCheck = Patient::sex, verifier = Patient.Companion
             )
         }
 
         // Errors from Readings
         addSource(bloodPressureSystolicInput) {
-            testValueForValidityAndSetErrorMap(
+            testValueForValidityAndSetErrorMapAsync(
                 value = it, propertyToCheck = BloodPressure::systolic,
                 verifier = BloodPressure.Companion
             )
         }
         addSource(bloodPressureDiastolicInput) {
-            testValueForValidityAndSetErrorMap(
+            testValueForValidityAndSetErrorMapAsync(
                 value = it, propertyToCheck = BloodPressure::diastolic,
                 verifier = BloodPressure.Companion
             )
         }
         addSource(bloodPressureHeartRateInput) {
-            testValueForValidityAndSetErrorMap(
+            testValueForValidityAndSetErrorMapAsync(
                 value = it, propertyToCheck = BloodPressure::heartRate,
                 verifier = BloodPressure.Companion
             )
@@ -719,7 +737,7 @@ class PatientReadingViewModel constructor(
             addSource(liveData) {
                 if (isUsingUrineTest.value == false) return@addSource
 
-                testValueForValidityAndSetErrorMap(
+                testValueForValidityAndSetErrorMapAsync(
                     value = it, propertyToCheck = property, verifier = UrineTest.FromJson
                 )
             }
@@ -727,21 +745,25 @@ class PatientReadingViewModel constructor(
         addSource(isUsingUrineTest) {
             // Clear all urine test errors if it is disabled.
             if (it != false) return@addSource
-            val currentErrorMap = value ?: return@addSource
-
-            for ((property, _) in urineTestLiveDataMap) {
-                currentErrorMap.remove(property.name)
+            viewModelScope.launch(Dispatchers.Default) {
+                errorMapMutex.lock()
+                val currentErrorMap = value ?: return@launch
+                for ((property, _) in urineTestLiveDataMap) {
+                    currentErrorMap.remove(property.name)
+                }
+                withContext(Dispatchers.Main) { value = currentErrorMap }
+                errorMapMutex.unlock()
             }
         }
     }
     /**
      * Immutable LiveData variant of [_errorMap] so that Fragments can only observe this and not
-     * modify. The values are set from the function [testValueForValidityAndSetErrorMap]
+     * modify. The values are set from the function [testValueForValidityAndSetErrorMapAsync]
      *
      * Observed by Data Binding.
      *
      * @see _errorMap
-     * @see testValueForValidityAndSetErrorMap
+     * @see testValueForValidityAndSetErrorMapAsync
      * @see com.cradle.neptune.binding.ReadingBindingAdapters.setError
      */
     val errorMap: LiveData<ArrayMap<String, String?>> = _errorMap
@@ -897,15 +919,15 @@ class PatientReadingViewModel constructor(
     }
 
     /**
-     * Tests the validity of the [value] for the [propertyToCheck] that belongs to the class
-     * that [verifier] verifies. If not valid, an error message will be added to the [_errorMap],
-     * which is map of error messages for a property that uses the name of [propertyForErrorMapKey]
-     * for the key. If valid, the error message for the property will be removed (so getting the
-     * error returns null).
+     * Asynchronously tests the validity of the [value] for the [propertyToCheck] that belongs to
+     * the class that [verifier] verifies. If not valid, an error message will be added to the
+     * [_errorMap], which is map of error messages for a property that uses the name of
+     * [propertyForErrorMapKey] for the key. If valid, the error message for the property will be
+     * removed (so getting the error returns null).
      *
      * By default, [propertyForErrorMapKey] is just [propertyToCheck], but this can be overridden
      * for cases where we might want to share a single error key-value pair between two properties,
-     * like date of birth and age since they use the same EditText.
+     * like date of birth and age since they use the same EditText to display the errors.
      *
      * The error messages are observed via the immutable LiveData [errorMap] in the XML layout files
      * under the errorMessage attribute, and they update in real time.
@@ -914,47 +936,53 @@ class PatientReadingViewModel constructor(
      * @see errorMap
      * @see com.cradle.neptune.binding.ReadingBindingAdapters.setError
      */
-    @MainThread
-    private fun testValueForValidityAndSetErrorMap(
+    private fun testValueForValidityAndSetErrorMapAsync(
         value: Any?,
         propertyToCheck: KProperty<*>,
         verifier: Verifier<*>,
         propertyForErrorMapKey: KProperty<*> = propertyToCheck,
         currentValuesMap: Map<String, Any?>? = null
     ) {
-        // Selects the map to use for all the other fields on the form. The validity of a property
-        // might depend on other properties being there, e.g. a null date of birth is acceptable
-        // if there is an estimated age.
-        val currentValuesMapToUse = currentValuesMap
-            ?: when (verifier) {
-                is Patient.Companion -> {
-                    patientBuilder.publicMap
+        viewModelScope.launch(Dispatchers.Default) {
+            // Selects the map to use for all the other fields on the form. The validity of a
+            // property might depend on other properties being there, e.g. a null date of birth is
+            // acceptable if there is an estimated age.
+            val currentValuesMapToUse = currentValuesMap
+                ?: when (verifier) {
+                    is Patient.Companion -> {
+                        patientBuilder.publicMap
+                    }
+                    is Reading.Companion -> {
+                        readingBuilder.publicMap
+                    }
+                    else -> {
+                        null
+                    }
                 }
-                is Reading.Companion -> {
-                    readingBuilder.publicMap
+
+            val (isValid, errorMessage) = verifier.isValueValid(
+                property = propertyToCheck, value = value, context = app,
+                instance = null, currentValues = currentValuesMapToUse
+            )
+
+            val errorMessageForMap = if (!isValid) errorMessage else null
+
+            // Don't notify observers if the error message is the exact same message.
+            errorMapMutex.lock()
+            try {
+                val currentMap = _errorMap.value ?: arrayMapOf()
+                if (currentMap[propertyForErrorMapKey.name] != errorMessageForMap) {
+                    if (isValid) {
+                        currentMap.remove(propertyForErrorMapKey.name)
+                    } else {
+                        currentMap[propertyForErrorMapKey.name] = errorMessageForMap
+                    }
+
+                    withContext(Dispatchers.Main) { _errorMap.value = currentMap }
                 }
-                else -> {
-                    null
-                }
+            } finally {
+                errorMapMutex.unlock()
             }
-
-        val (isValid, errorMessage) = verifier.isValueValid(
-            propertyToCheck, value, getApplication(),
-            instance = null, currentValues = currentValuesMapToUse
-        )
-
-        val currentMap = _errorMap.value ?: arrayMapOf()
-        val errorMessageForMap = if (!isValid) errorMessage else null
-
-        // Don't notify observers if the error message is the exact same message.
-        if (currentMap[propertyForErrorMapKey.name] != errorMessageForMap) {
-            if (isValid) {
-                currentMap.remove(propertyForErrorMapKey.name)
-            } else {
-                currentMap[propertyForErrorMapKey.name] = errorMessageForMap
-            }
-
-            _errorMap.value = currentMap
         }
     }
 
