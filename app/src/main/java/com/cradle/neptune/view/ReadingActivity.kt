@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.annotation.IdRes
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -30,6 +31,7 @@ import com.cradle.neptune.view.ui.reading.BaseFragment
 import com.cradle.neptune.viewmodel.PatientReadingViewModel
 import com.cradle.neptune.viewmodel.PatientReadingViewModelFactory
 import com.cradle.neptune.viewmodel.ReadingFlowError
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -229,13 +231,18 @@ class ReadingActivity : AppCompatActivity() {
     }
 
     private fun launchDiscardChangesDialogIfNeeded() {
-        // TODO: add dialog
-        finish()
+        MaterialAlertDialogBuilder(this)
+            .setTitle(getDiscardTitleId())
+            .setNegativeButton(android.R.string.cancel) { _, _ -> /* noop */ }
+            .setPositiveButton(R.string.discard_dialog_discard) { _, _ ->
+                findNavController(R.id.reading_nav_host).popBackStack(R.id.loadingFragment, true)
+                finish()
+            }
+            .show()
     }
 
     @IdRes
-    private fun getStartDestinationId(): Int {
-        return when (launchReason) {
+    private fun getStartDestinationId(): Int = when (launchReason) {
             LaunchReason.LAUNCH_REASON_NEW, LaunchReason.LAUNCH_REASON_EDIT -> {
                 R.id.patientInfoFragment
             }
@@ -244,6 +251,16 @@ class ReadingActivity : AppCompatActivity() {
             }
             else -> error("need a launch reason to be in ReadingActivity")
         }
+
+    @StringRes
+
+    private fun getDiscardTitleId(): Int = when (launchReason) {
+        LaunchReason.LAUNCH_REASON_NEW, LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {
+            R.string.discard_dialog_new_reading
+        }
+        LaunchReason.LAUNCH_REASON_EDIT -> R.string.discard_dialog_changes
+        LaunchReason.LAUNCH_REASON_RECHECK -> R.string.discard_dialog_rechecking
+        else -> error("need a launch reason to be in ReadingActivity")
     }
 
     private fun getActionBarTitle(): String = when (launchReason) {
