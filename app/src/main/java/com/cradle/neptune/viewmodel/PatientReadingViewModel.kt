@@ -726,7 +726,7 @@ class PatientReadingViewModel constructor(
             )
         }
 
-        val urineTestLiveDataMap = mapOf(
+        val urineTestLiveDataMap = arrayMapOf(
             UrineTest::leukocytes to urineTestLeukocytesInput,
             UrineTest::nitrites to urineTestNitritesInput,
             UrineTest::glucose to urineTestGlucoseInput,
@@ -832,6 +832,10 @@ class PatientReadingViewModel constructor(
     private val _isNextButtonEnabled = MediatorLiveData<Boolean>()
     val isNextButtonEnabled: LiveData<Boolean> = _isNextButtonEnabled
 
+    /**
+     * Handles next button clicking.
+     * Will be run on the main thread to ensure the values are consistent.
+     */
     @MainThread
     suspend fun onNextButtonClicked(
         @IdRes currentDestinationId: Int
@@ -842,6 +846,7 @@ class PatientReadingViewModel constructor(
                 val patient = attemptToBuildValidPatient()
                     ?: return@withContext ReadingFlowError.ERROR_INVALID_FIELDS
 
+                // TODO: Add a better UI
                 val existingPatient = patientManager.getPatientById(patient.id)
                 if (existingPatient != null) {
                     return@withContext ReadingFlowError.ERROR_PATIENT_ID_IN_USE
@@ -899,6 +904,7 @@ class PatientReadingViewModel constructor(
             }
         }
     }
+
 
     /**
      * Determines if the blood pressure and urine tests right now are valid.

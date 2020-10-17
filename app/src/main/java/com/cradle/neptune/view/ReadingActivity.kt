@@ -173,7 +173,13 @@ class ReadingActivity : AppCompatActivity() {
                             Toast.LENGTH_SHORT
                         ).show()
                     }
-                    ReadingFlowError.ERROR_INVALID_FIELDS -> return@launch
+                    ReadingFlowError.ERROR_INVALID_FIELDS -> {
+                        Toast.makeText(
+                            this@ReadingActivity,
+                            "There are still errors left to correct!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             }
         }
