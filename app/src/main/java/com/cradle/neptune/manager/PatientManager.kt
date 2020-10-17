@@ -148,6 +148,13 @@ class PatientManager @Inject constructor(
         }
 
     /**
+     * Downloads just the demographic information about a patient with ID of [patientId] from
+     * the server. No associated readings will be downloaded.
+     */
+    suspend fun downloadPatientInfoFromServer(patientId: String): NetworkResult<Patient> =
+        restApi.getPatientInfo(patientId)
+
+    /**
      * Downloads all the information for a patient from the server.
      *
      * @param id id of the patient to download
