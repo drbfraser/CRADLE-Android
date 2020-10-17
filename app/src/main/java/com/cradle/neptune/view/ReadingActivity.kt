@@ -80,6 +80,14 @@ class ReadingActivity : AppCompatActivity() {
         binding?.viewModel = viewModel
         binding?.lifecycleOwner = this
 
+        check(intent.hasExtra(EXTRA_LAUNCH_REASON))
+
+        launchReason = intent.getSerializableExtra(EXTRA_LAUNCH_REASON) as LaunchReason
+        viewModel.initialize(
+            launchReason = launchReason,
+            readingId = intent.getStringExtra(EXTRA_READING_ID)
+        )
+
         val toolbar = findViewById<Toolbar>(R.id.toolbar3)
         setSupportActionBar(toolbar)
 
@@ -97,7 +105,7 @@ class ReadingActivity : AppCompatActivity() {
             }
             Log.d("ReadingActivity", "Navigated to $dest")
 
-            viewModel.updateNextButtonCriteriaBasedOnDestination(destination.id)
+            viewModel.onDestinationChange(destination.id)
 
             val bottomNavBar = findViewById<ConstraintLayout>(R.id.nav_button_bottom_layout)
             if (destination.id == R.id.cameraFragment) {
@@ -125,15 +133,11 @@ class ReadingActivity : AppCompatActivity() {
             }
         }
 
-        check(intent.hasExtra(EXTRA_LAUNCH_REASON))
-
-        launchReason = intent.getSerializableExtra(EXTRA_LAUNCH_REASON) as LaunchReason
-        viewModel.initialize(
-            launchReason = launchReason,
-            readingId = intent.getStringExtra(EXTRA_READING_ID)
-        )
-        supportActionBar?.apply {
-            title = getActionBarTitle()
+        viewModel.actionBarTitleAndSubtitle.observe(this@ReadingActivity) { titlePair ->
+            supportActionBar?.apply {
+                title = titlePair.first
+                subtitle = titlePair.second
+            }
         }
 
         viewModel.isInitialized.observe(this) {
@@ -291,33 +295,22 @@ class ReadingActivity : AppCompatActivity() {
 
     @IdRes
     private fun getStartDestinationId(): Int = when (launchReason) {
-            LaunchReason.LAUNCH_REASON_NEW, LaunchReason.LAUNCH_REASON_EDIT -> {
-                R.id.patientInfoFragment
-            }
-            LaunchReason.LAUNCH_REASON_RECHECK, LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {
-                R.id.symptomsFragment
-            }
-            else -> error("need a launch reason to be in ReadingActivity")
+        LaunchReason.LAUNCH_REASON_NEW, LaunchReason.LAUNCH_REASON_EDIT -> {
+            R.id.patientInfoFragment
         }
+        LaunchReason.LAUNCH_REASON_RECHECK, LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {
+            R.id.symptomsFragment
+        }
+        else -> error("need a launch reason to be in ReadingActivity")
+    }
 
     @StringRes
-
     private fun getDiscardTitleId(): Int = when (launchReason) {
         LaunchReason.LAUNCH_REASON_NEW, LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {
             R.string.discard_dialog_new_reading
         }
         LaunchReason.LAUNCH_REASON_EDIT -> R.string.discard_dialog_changes
         LaunchReason.LAUNCH_REASON_RECHECK -> R.string.discard_dialog_rechecking
-        else -> error("need a launch reason to be in ReadingActivity")
-    }
-
-    private fun getActionBarTitle(): String = when (launchReason) {
-        LaunchReason.LAUNCH_REASON_NEW -> getString(R.string.reading_flow_title_new_patient)
-        LaunchReason.LAUNCH_REASON_EDIT -> getString(R.string.reading_flow_title_editing_reading)
-        LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {
-            getString(R.string.reading_flow_title_creating_new_reading_for_existing_patient)
-        }
-        LaunchReason.LAUNCH_REASON_RECHECK -> getString(R.string.reading_flow_title_recheck_vitals)
         else -> error("need a launch reason to be in ReadingActivity")
     }
 

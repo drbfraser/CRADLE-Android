@@ -103,6 +103,7 @@ class PatientReadingViewModel constructor(
         launchReason: ReadingActivity.LaunchReason,
         readingId: String?
     ) {
+        reasonForLaunch = launchReason
         viewModelScope.launch(Dispatchers.Main) {
             isInitializedMutex.lock()
             val startTime = System.currentTimeMillis()
@@ -112,7 +113,6 @@ class PatientReadingViewModel constructor(
                     return@launch
                 }
 
-                reasonForLaunch = launchReason
                 if (reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
                     // _isInitialized will be set to true via the finally branch.
                     return@launch
@@ -828,7 +828,7 @@ class PatientReadingViewModel constructor(
     /**
      * Whether the next button is enabled.
      *
-     * @see updateNextButtonCriteriaBasedOnDestination
+     * @see onDestinationChange
      */
     private val _isNextButtonEnabled = MediatorLiveData<Boolean>()
     val isNextButtonEnabled: LiveData<Boolean> = _isNextButtonEnabled
@@ -847,6 +847,10 @@ class PatientReadingViewModel constructor(
     private val _bottomNavBarMessage = MutableLiveData("")
     val bottomNavBarMessage: LiveData<String>
         get() = _bottomNavBarMessage
+
+    private val _actionBarTitleAndSubtitle = MutableLiveData<Pair<String, String?>>("" to null)
+    val actionBarTitleAndSubtitle: LiveData<Pair<String, String?>>
+        get() = _actionBarTitleAndSubtitle
 
     /**
      * Handles next button clicking by validating the current Fragment inputs.
@@ -912,7 +916,10 @@ class PatientReadingViewModel constructor(
      * enabled.
      */
     @MainThread
-    fun updateNextButtonCriteriaBasedOnDestination(@IdRes currentDestinationId: Int) {
+    fun onDestinationChange(
+        @IdRes currentDestinationId: Int
+    ) {
+        updateActionBarAndSubtitle(currentDestinationId)
         setInputEnabledState(true)
         clearBottomNavBarMessage()
 
@@ -930,7 +937,6 @@ class PatientReadingViewModel constructor(
                     addSource(isPatientValid) { _isNextButtonEnabled.value = it }
                 }
                 R.id.symptomsFragment -> {
-                    Log.d(TAG, "next button uses symptomsFragment criteria: no criteria")
                     value = true
                 }
                 R.id.vitalSignsFragment -> {
@@ -947,6 +953,46 @@ class PatientReadingViewModel constructor(
                 else -> return
             }
         }
+    }
+
+    private fun updateActionBarAndSubtitle(
+        @IdRes currentDestination: Int
+    ) {
+        val subtitle = when (currentDestination) {
+            R.id.loadingFragment, R.id.patientInfoFragment -> null
+            else -> app.getString(
+                R.string.reading_activity_subtitle_name_and_id,
+                patientName.value, patientId.value
+            )
+        }
+
+        val title = when (reasonForLaunch) {
+            ReadingActivity.LaunchReason.LAUNCH_REASON_NEW -> {
+                if (currentDestination == R.id.patientInfoFragment ||
+                        currentDestination == R.id.loadingFragment) {
+                    app.getString(R.string.reading_activity_title_new_patient)
+                } else {
+                    app.getString(R.string.reading_activity_title_create_new_reading)
+                }
+            }
+            ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT -> {
+                app.getString(R.string.reading_activity_title_editing_reading)
+            }
+            ReadingActivity.LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {
+                app.getString(R.string.reading_activity_title_create_new_reading)
+            }
+            ReadingActivity.LaunchReason.LAUNCH_REASON_RECHECK -> {
+                app.getString(R.string.reading_activity_title_recheck_vitals)
+            }
+            else -> error("need a launch reason to be in ReadingActivity")
+        }
+
+        val (currentTitle, currentSubtitle) = _actionBarTitleAndSubtitle.value ?: Pair("", null)
+        if (currentTitle == title && currentSubtitle == subtitle) {
+            return
+        }
+
+        _actionBarTitleAndSubtitle.value = title to subtitle
     }
 
     /**
