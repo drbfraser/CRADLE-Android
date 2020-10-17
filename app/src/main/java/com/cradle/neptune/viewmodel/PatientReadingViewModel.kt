@@ -28,6 +28,7 @@ import com.cradle.neptune.model.Sex
 import com.cradle.neptune.model.SymptomsState
 import com.cradle.neptune.model.UrineTest
 import com.cradle.neptune.model.Verifier
+import com.cradle.neptune.net.Success
 import com.cradle.neptune.utilitiles.LiveDataDynamicModelBuilder
 import com.cradle.neptune.utilitiles.Months
 import com.cradle.neptune.utilitiles.Weeks
@@ -847,9 +848,13 @@ class PatientReadingViewModel constructor(
                     ?: return@withContext ReadingFlowError.ERROR_INVALID_FIELDS
 
                 // TODO: Add a better UI
-                val existingPatient = patientManager.getPatientById(patient.id)
-                if (existingPatient != null) {
-                    return@withContext ReadingFlowError.ERROR_PATIENT_ID_IN_USE
+                val existingLocalPatient = patientManager.getPatientById(patient.id)
+                if (existingLocalPatient != null) {
+                    return@withContext ReadingFlowError.ERROR_PATIENT_ID_IN_USE_LOCAL
+                }
+
+                if (patientManager.downloadPatientInfoFromServer(patient.id) is Success) {
+                    return@withContext ReadingFlowError.ERROR_PATIENT_ID_IN_USE_ON_SERVER
                 }
 
                 return@withContext ReadingFlowError.NO_ERROR
@@ -904,7 +909,6 @@ class PatientReadingViewModel constructor(
             }
         }
     }
-
 
     /**
      * Determines if the blood pressure and urine tests right now are valid.
@@ -998,5 +1002,29 @@ class PatientReadingViewModel constructor(
 }
 
 enum class ReadingFlowError {
-    NO_ERROR, ERROR_PATIENT_ID_IN_USE, ERROR_INVALID_FIELDS
+    /**
+     * When there are no errors with the current Fragment, this is returned to allow navigation to
+     * the next step of the Reading flow.
+     */
+    NO_ERROR,
+
+    /**
+     * This error occurs when there is a patient from the app's local database whose ID is the same
+     * as the one being created.
+     */
+    ERROR_PATIENT_ID_IN_USE_LOCAL,
+
+    /**
+     * This error occurs when there is a patient from the server whose ID is the same as the one
+     * being created. This error can only come up when the user has internet; it does not solve the
+     * conflict issue at all, just lowers the probability of it happening.
+     */
+    ERROR_PATIENT_ID_IN_USE_ON_SERVER,
+
+    /**
+     * This error occurs when there is am error in one of the fields for the current Fragment.
+     * This should rarely happen, since the Next button tries to make it so that it is enabled if
+     * and only if there are no errors in any of the fields.
+     */
+    ERROR_INVALID_FIELDS
 }

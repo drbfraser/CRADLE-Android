@@ -166,10 +166,20 @@ class ReadingActivity : AppCompatActivity() {
 
                 when (error) {
                     ReadingFlowError.NO_ERROR -> onNextButtonClickedWithNoErrors(navController)
-                    ReadingFlowError.ERROR_PATIENT_ID_IN_USE -> {
+                    // TODO: Handle this better. Maybe have another Fragment or some dialog that
+                    //  pops up that does the validation. Of course, only show the dialog for the
+                    //  network checks if the user has internet.
+                    ReadingFlowError.ERROR_PATIENT_ID_IN_USE_LOCAL -> {
                         Toast.makeText(
                             this@ReadingActivity,
                             "This ID is already in use",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    ReadingFlowError.ERROR_PATIENT_ID_IN_USE_ON_SERVER -> {
+                        Toast.makeText(
+                            this@ReadingActivity,
+                            "This ID is already in use on the server",
                             Toast.LENGTH_SHORT
                         ).show()
                     }
