@@ -8,6 +8,7 @@
     <data>
         <import type="com.cradle.neptune.binding.Converter" />
         <import type="android.text.InputType" />
+        <import type="com.cradle.neptune.model.Sex" />
 
         <variable
             name="viewModel"
@@ -239,17 +240,23 @@
                                 />
                         </com.google.android.material.textfield.TextInputLayout>
 
+                        <!-- Enabled:
+                             Only when input is enabled, and the gender is not male.
+                             Note: {viewModel.patientSex ?? Sex.MALE} means it will use MALE when
+                             the gender is null. The gender is null if creating a new patient,
+                             thus this makes the checkbox unchecked when creating a new patient. -->
                         <CheckBox
                             android:id="@+id/pregnant_checkbox"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
                             android:layout_marginTop="8dp"
+                            android:enabled="@{viewModel.isInputEnabled &amp;&amp; ((viewModel.patientSex ?? Sex.MALE) != Sex.MALE)}"
                             android:checked="@={viewModel.patientIsPregnant}"
                             android:text="@string/fragment_patient_info_pregnant_checkbox_label"
                             app:layout_constraintStart_toStartOf="@+id/guideline"
                             app:layout_constraintTop_toBottomOf="@+id/age_input_layout"
-                            bind:sex="@{viewModel.patientSex}" />
+                            bind:uncheckWhen="@{viewModel.patientSex == Sex.MALE}" />
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:id="@+id/gestational_age_layout"

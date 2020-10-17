@@ -11,7 +11,6 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.databinding.BindingAdapter
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
 import com.cradle.neptune.R
-import com.cradle.neptune.model.Sex
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 
@@ -121,18 +120,14 @@ class ReadingBindingAdapters {
         }
     }
 
-    @BindingAdapter("bind:sex")
-    fun onGenderChanged(
+    @BindingAdapter("bind:uncheckWhen")
+    fun uncheckWhen(
         checkBox: CheckBox,
-        sex: Sex?
+        shouldUncheck: Boolean?
     ) {
         checkBox.apply {
-            when (sex) {
-                Sex.MALE, null -> {
-                    isEnabled = false
-                    isChecked = false
-                }
-                else -> isEnabled = true
+            if (shouldUncheck == true && isChecked) {
+                isChecked = false
             }
         }
     }
