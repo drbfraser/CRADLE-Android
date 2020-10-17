@@ -68,6 +68,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled}"
                             android:hint="@string/fragment_patient_info_name_label"
                             app:helperText=" "
                             app:layout_constraintEnd_toStartOf="@+id/patient_id_text_layout"
@@ -92,6 +93,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled}"
                             android:hint="@string/fragment_patient_info_id_label"
                             app:helperText=" "
                             app:layout_constraintEnd_toEndOf="parent"
@@ -140,6 +142,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled}"
                             android:hint="@string/zone"
                             app:helperText=" "
                             app:layout_constraintEnd_toStartOf="@+id/household_number_layout"
@@ -162,6 +165,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled}"
                             android:hint="@string/fragment_patient_info_village_number_label"
                             android:paddingBottom="0dp"
                             app:helperText=" "
@@ -184,6 +188,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled}"
                             android:hint="@string/fragment_patient_info_age_label"
                             android:paddingBottom="0dp"
                             app:helperText="@string/fragment_patient_info_dob_helper"
@@ -213,6 +218,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled}"
                             android:hint="@string/fragment_patient_info_gender_label"
                             android:labelFor="@id/gender_input_auto_complete_text"
                             android:paddingBottom="0dp"
@@ -250,6 +256,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled &amp;&amp; viewModel.patientIsPregnant}"
                             android:hint="@string/fragment_patient_info_gestational_age_label"
                             android:paddingBottom="0dp"
                             app:helperText=" "
@@ -258,7 +265,6 @@
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/gender_input_layout"
                             bind:addMandatoryStarToLabelWhen="@{viewModel.patientIsPregnant}"
-                            bind:enabledOnlyWhen="@{viewModel.patientIsPregnant}"
                             bind:errorMessage='@{viewModel.errorMap["gestationalAge"]}'
                             bind:gestationalAgeUnits="@{viewModel.patientGestationalAgeUnits}">
 
@@ -278,6 +284,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled &amp;&amp; viewModel.patientIsPregnant}"
                             android:hint="@string/fragment_patient_info_gestational_age_units_label"
                             android:labelFor="@id/gestational_age_units_input_auto_complete_text"
                             android:paddingBottom="0dp"
@@ -287,8 +294,7 @@
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintHorizontal_bias="0.5"
                             app:layout_constraintStart_toEndOf="@+id/gestational_age_layout"
-                            app:layout_constraintTop_toBottomOf="@+id/gender_input_layout"
-                            bind:enabledOnlyWhen="@{viewModel.patientIsPregnant}">
+                            app:layout_constraintTop_toBottomOf="@+id/gender_input_layout">
 
                             <AutoCompleteTextView
                                 android:id="@+id/gestational_age_units_input_auto_complete_text"
@@ -305,6 +311,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled}"
                             android:hint="@string/fragment_patient_info_drug_history_label"
                             android:paddingBottom="0dp"
                             app:helperText=" "
@@ -330,6 +337,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled}"
                             android:hint="@string/fragment_patient_info_medical_history_label"
                             android:paddingBottom="0dp"
                             app:helperText=" "

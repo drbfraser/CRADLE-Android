@@ -4,7 +4,6 @@ import android.os.Build
 import android.text.InputFilter
 import android.text.InputType
 import android.util.Log
-import android.view.View
 import android.widget.AutoCompleteTextView
 import android.widget.CheckBox
 import android.widget.TextView
@@ -25,15 +24,6 @@ private const val TAG = "ReadingBindingAdapter"
  */
 @Suppress("LargeClass")
 class ReadingBindingAdapters {
-    @BindingAdapter("bind:enabledOnlyWhen")
-    fun enabledOnlyWhen(view: View, condition: Boolean) {
-        if (!condition && view.isEnabled) {
-            view.isEnabled = false
-        } else if (condition && !view.isEnabled) {
-            view.isEnabled = true
-        }
-    }
-
     @BindingAdapter("bind:makeTextEmptyWhen")
     fun makeTextEmptyWhen(view: TextView, condition: Boolean) {
         if (condition && view.text.isNotEmpty()) {

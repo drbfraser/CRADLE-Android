@@ -25,6 +25,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.navOptions
 import com.cradle.neptune.R
+import com.cradle.neptune.binding.Converter
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.databinding.ActivityPlaceholderBinding
 import com.cradle.neptune.utilitiles.dismissKeyboard
@@ -105,7 +106,7 @@ class ReadingActivity : AppCompatActivity() {
                         hide()
                     }
                 }
-                (bottomNavBar?.getViewById(R.id.next_button2) as? Button)?.apply {
+                (bottomNavBar?.getViewById(R.id.reading_next_button) as? Button)?.apply {
                     if (visibility != View.GONE) {
                         visibility = View.GONE
                     }
@@ -116,7 +117,7 @@ class ReadingActivity : AppCompatActivity() {
                         show()
                     }
                 }
-                (bottomNavBar?.getViewById(R.id.next_button2) as? Button)?.apply {
+                (bottomNavBar?.getViewById(R.id.reading_next_button) as? Button)?.apply {
                     if (visibility != View.VISIBLE) {
                         visibility = View.VISIBLE
                     }
@@ -160,12 +161,12 @@ class ReadingActivity : AppCompatActivity() {
             }
         }
 
-        findViewById<Button>(R.id.next_button2).setOnClickListener {
+        findViewById<Button>(R.id.reading_next_button).setOnClickListener {
             onNextButtonClicked(it)
         }
 
         onBackPressedDispatcher.addCallback(this) { onBackButtonPressed() }
-        findViewById<Button>(R.id.back_button).setOnClickListener { onBackButtonPressed() }
+        findViewById<Button>(R.id.reading_back_button).setOnClickListener { onBackButtonPressed() }
     }
 
     private fun onNextButtonClicked(button: View) {
@@ -174,9 +175,10 @@ class ReadingActivity : AppCompatActivity() {
 
         nextButtonJob?.cancel()
         nextButtonJob = lifecycleScope.launch {
-            val error: ReadingFlowError = viewModel.onNextButtonClicked(
+            val (error, patient) = viewModel.onNextButtonClicked(
                 navController.currentDestination?.id ?: return@launch
             )
+            viewModel.clearBottomNavBarMessage()
 
             when (error) {
                 ReadingFlowError.NO_ERROR -> onNextButtonClickedWithNoErrors(navController)
@@ -184,18 +186,54 @@ class ReadingActivity : AppCompatActivity() {
                 //  pops up that does the validation. Of course, only show the dialog for the
                 //  network checks if the user has internet.
                 ReadingFlowError.ERROR_PATIENT_ID_IN_USE_LOCAL -> {
-                    Toast.makeText(
-                        this@ReadingActivity,
-                        "This ID is already in use",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    check(patient != null)
+                    val msg = getString(
+                        R.string.reading_activity_patient_id_exists_dialog_message_local_patient,
+                        patient.id,
+                        patient.name,
+                        Converter.sexToString(this@ReadingActivity, patient.sex)
+                    )
+
+                    MaterialAlertDialogBuilder(this@ReadingActivity)
+                        .setTitle(R.string.reading_activity_patient_id_exists_dialog_title_local_patient)
+                        .setMessage(msg)
+                        .setCancelable(false)
+                        .setPositiveButton(android.R.string.yes) { _, _ ->
+                            onNextButtonClickedWithNoErrors(navController)
+                        }
+                        .setNegativeButton(android.R.string.no) { _, _ -> /* onDismissListener */ }
+                        .setOnDismissListener { viewModel.setInputEnabledState(true) }
+                        .show()
                 }
                 ReadingFlowError.ERROR_PATIENT_ID_IN_USE_ON_SERVER -> {
-                    Toast.makeText(
-                        this@ReadingActivity,
-                        "This ID is already in use on the server",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    viewModel.clearBottomNavBarMessage()
+                    check(patient != null)
+
+                    val title = getString(
+                        R.string.reading_activity_patient_id_exists_dialog_title_server_patient
+                    )
+                    val msg = getString(
+                        R.string.reading_activity_patient_id_exists_dialog_message_server_patient,
+                        patient.id,
+                        patient.name,
+                        Converter.sexToString(this@ReadingActivity, patient.sex)
+                    )
+                    val positiveButtonMessage = getString(
+                        R.string.reading_activity_patient_id_exists_dialog_download_button_server_patient
+                    )
+
+                    // There's no good way to shorten lines without losing the context.
+                    MaterialAlertDialogBuilder(this@ReadingActivity)
+                        .setTitle(title)
+                        .setCancelable(false)
+                        .setMessage(msg)
+                        .setPositiveButton(positiveButtonMessage) { _, _ ->
+                            // todo: download
+                            onNextButtonClickedWithNoErrors(navController)
+                        }
+                        .setNegativeButton(android.R.string.no) { _, _ -> /* onDismissListener */ }
+                        .setOnDismissListener { viewModel.setInputEnabledState(true) }
+                        .show()
                 }
                 ReadingFlowError.ERROR_INVALID_FIELDS -> {
                     Toast.makeText(
@@ -224,7 +262,7 @@ class ReadingActivity : AppCompatActivity() {
     }
 
     private fun onBackButtonPressed() {
-        findViewById<Button>(R.id.back_button)?.dismissKeyboard()
+        findViewById<Button>(R.id.reading_back_button)?.dismissKeyboard()
 
         val navController = findNavController(R.id.reading_nav_host)
 

@@ -267,6 +267,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled &amp;&amp; viewModel.isUsingUrineTest}"
                             android:hint="@string/urine_test_layout_leukocytes"
                             android:labelFor="@id/leukocytes_auto_complete_text"
                             app:helperText=" "
@@ -274,7 +275,6 @@
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/urine_test_check_box"
                             bind:addMandatoryStarToLabelWhen="@{viewModel.isUsingUrineTest}"
-                            bind:enabledOnlyWhen="@{viewModel.isUsingUrineTest}"
                             bind:errorMessage='@{viewModel.errorMap["leukocytes"]}'>
 
                             <AutoCompleteTextView
@@ -293,6 +293,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled &amp;&amp; viewModel.isUsingUrineTest}"
                             android:hint="@string/urine_test_layout_nitrites"
                             android:labelFor="@id/nitrites_auto_complete_text"
                             app:helperText=" "
@@ -300,7 +301,6 @@
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/leukocytes_input_layout"
                             bind:addMandatoryStarToLabelWhen="@{viewModel.isUsingUrineTest}"
-                            bind:enabledOnlyWhen="@{viewModel.isUsingUrineTest}"
                             bind:errorMessage='@{viewModel.errorMap["nitrites"]}'>
 
                             <AutoCompleteTextView
@@ -319,6 +319,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled &amp;&amp; viewModel.isUsingUrineTest}"
                             android:hint="@string/urine_test_layout_glucose"
                             android:labelFor="@id/glucose_auto_complete_text"
                             app:helperText=" "
@@ -326,7 +327,6 @@
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/nitrites_input_layout"
                             bind:addMandatoryStarToLabelWhen="@{viewModel.isUsingUrineTest}"
-                            bind:enabledOnlyWhen="@{viewModel.isUsingUrineTest}"
                             bind:errorMessage='@{viewModel.errorMap["glucose"]}'>
 
                             <AutoCompleteTextView
@@ -345,6 +345,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled &amp;&amp; viewModel.isUsingUrineTest}"
                             android:hint="@string/urine_test_layout_protein"
                             android:labelFor="@id/protein_auto_complete_text"
                             app:helperText=" "
@@ -352,7 +353,6 @@
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/glucose_input_layout"
                             bind:addMandatoryStarToLabelWhen="@{viewModel.isUsingUrineTest}"
-                            bind:enabledOnlyWhen="@{viewModel.isUsingUrineTest}"
                             bind:errorMessage='@{viewModel.errorMap["protein"]}'>
 
                             <AutoCompleteTextView
@@ -371,6 +371,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled &amp;&amp; viewModel.isUsingUrineTest}"
                             android:hint="@string/urine_test_layout_blood"
                             android:labelFor="@id/blood_auto_complete_text"
                             app:helperText=" "
@@ -378,7 +379,6 @@
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/protein_input_layout"
                             bind:addMandatoryStarToLabelWhen="@{viewModel.isUsingUrineTest}"
-                            bind:enabledOnlyWhen="@{viewModel.isUsingUrineTest}"
                             bind:errorMessage='@{viewModel.errorMap["blood"]}'>
 
                             <AutoCompleteTextView
@@ -390,10 +390,8 @@
                                 bind:makeTextEmptyWhen="@{!viewModel.isUsingUrineTest}"
                                 bind:setMaterialSpinnerItemsWithArray="@{@stringArray/urine_test_symbols}" />
                         </com.google.android.material.textfield.TextInputLayout>
-
                     </androidx.constraintlayout.widget.ConstraintLayout>
                 </com.google.android.material.card.MaterialCardView>
-
             </LinearLayout>
         </ScrollView>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -77,6 +77,7 @@
                                 android:id="@+id/other_symptoms_text"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:enabled="@{viewModel.isInputEnabled}"
                                 android:inputType="textLongMessage|textMultiLine|textNoSuggestions"
                                 android:maxLines="4"
                                 android:scrollbarStyle="outsideOverlay"

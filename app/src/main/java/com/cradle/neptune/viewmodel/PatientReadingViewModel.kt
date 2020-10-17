@@ -834,41 +834,77 @@ class PatientReadingViewModel constructor(
     val isNextButtonEnabled: LiveData<Boolean> = _isNextButtonEnabled
 
     /**
-     * Handles next button clicking.
+     * Whether the form input fields are enabled or disabled.
+     */
+    private val _isInputEnabled = MutableLiveData(true)
+    val isInputEnabled: LiveData<Boolean>
+        get() = _isInputEnabled
+
+    /**
+     * What message to show for the message in the nav bar. If the message is nonempty, a
+     * ProgressBar is also shown.
+     */
+    private val _bottomNavBarMessage = MutableLiveData("")
+    val bottomNavBarMessage: LiveData<String>
+        get() = _bottomNavBarMessage
+
+    /**
+     * Handles next button clicking by validating the current Fragment inputs.
      * Will be run on the main thread to ensure the values are consistent.
      */
     @MainThread
     suspend fun onNextButtonClicked(
         @IdRes currentDestinationId: Int
-    ): ReadingFlowError = withContext(Dispatchers.Main) {
+    ): Pair<ReadingFlowError, Patient?> = withContext(Dispatchers.Main) {
         when (currentDestinationId) {
-            R.id.loadingFragment -> return@withContext ReadingFlowError.NO_ERROR
+            R.id.loadingFragment -> return@withContext ReadingFlowError.NO_ERROR to null
             R.id.patientInfoFragment -> {
-                val patient = attemptToBuildValidPatient()
-                    ?: return@withContext ReadingFlowError.ERROR_INVALID_FIELDS
+                // Disable input while patient ID validation is happening.
+                setInputEnabledState(false)
+                setBottomNavBarMessage(app.getString(R.string.reading_bottom_nav_bar_checking_id))
 
-                // TODO: Add a better UI
+                val patient = attemptToBuildValidPatient()
+                    ?: return@withContext ReadingFlowError.ERROR_INVALID_FIELDS to null
+
                 val existingLocalPatient = patientManager.getPatientById(patient.id)
                 if (existingLocalPatient != null) {
-                    return@withContext ReadingFlowError.ERROR_PATIENT_ID_IN_USE_LOCAL
+                    return@withContext ReadingFlowError.ERROR_PATIENT_ID_IN_USE_LOCAL to
+                        existingLocalPatient
                 }
 
-                if (patientManager.downloadPatientInfoFromServer(patient.id) is Success) {
-                    return@withContext ReadingFlowError.ERROR_PATIENT_ID_IN_USE_ON_SERVER
+                val existingOnServer = patientManager.downloadPatientInfoFromServer(patient.id)
+                if (existingOnServer is Success) {
+                    return@withContext ReadingFlowError.ERROR_PATIENT_ID_IN_USE_ON_SERVER to
+                        existingOnServer.value
                 }
 
-                return@withContext ReadingFlowError.NO_ERROR
+                return@withContext ReadingFlowError.NO_ERROR to null
             }
-            R.id.symptomsFragment -> return@withContext ReadingFlowError.NO_ERROR
+            R.id.symptomsFragment -> return@withContext ReadingFlowError.NO_ERROR to null
             R.id.vitalSignsFragment -> {
                 return@withContext if (isVitalSignsFragmentInputValid()) {
-                    ReadingFlowError.NO_ERROR
+                    ReadingFlowError.NO_ERROR to null
                 } else {
-                    ReadingFlowError.ERROR_INVALID_FIELDS
+                    ReadingFlowError.ERROR_INVALID_FIELDS to null
                 }
             }
-            else -> return@withContext ReadingFlowError.NO_ERROR
+            else -> return@withContext ReadingFlowError.NO_ERROR to null
         }
+    }
+
+    @MainThread
+    fun setInputEnabledState(isEnabled: Boolean) {
+        _isInputEnabled.apply { if (value != isEnabled) value = isEnabled }
+    }
+
+    @MainThread
+    private fun setBottomNavBarMessage(message: String) {
+        _bottomNavBarMessage.apply { if (value != message) value = message }
+    }
+
+    @MainThread
+    fun clearBottomNavBarMessage() {
+        _bottomNavBarMessage.apply { if (value?.isEmpty() != true) value = "" }
     }
 
     /**
@@ -877,6 +913,9 @@ class PatientReadingViewModel constructor(
      */
     @MainThread
     fun updateNextButtonCriteriaBasedOnDestination(@IdRes currentDestinationId: Int) {
+        setInputEnabledState(true)
+        clearBottomNavBarMessage()
+
         // Clear out any sources to be safe.
         arrayOf(isPatientValid, bloodPressure, isUsingUrineTest, urineTest)
             .forEach { _isNextButtonEnabled.removeSource(it) }
