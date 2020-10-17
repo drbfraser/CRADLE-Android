@@ -5,6 +5,7 @@ import com.cradle.neptune.model.Marshal
 import java.lang.Exception
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.concurrent.TimeUnit
 
 /**
  * HTTP network driver.
@@ -31,16 +32,21 @@ open class Http {
      * @param url where to send the request
      * @param headers HTTP headers to include with the request
      * @param body an optional body to send along with the request
+     * @param timeout the connect and read timeout; defaults to 30 seconds
      * @return the result of the network request
      * @throws java.net.MalformedURLException if [url] is malformed
      */
+    @Suppress("MagicNumber")
     open fun request(
         method: Method,
         url: String,
         headers: Map<String, String>,
-        body: ByteArray?
+        body: ByteArray?,
+        timeout: Int = TimeUnit.SECONDS.toMillis(30).toInt()
     ): NetworkResult<ByteArray> =
         with(URL(url).openConnection() as HttpURLConnection) {
+            connectTimeout = timeout
+            readTimeout = timeout
             requestMethod = method.toString()
             headers.forEach { (k, v) -> addRequestProperty(k, v) }
             doInput = true
