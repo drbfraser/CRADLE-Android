@@ -1,13 +1,11 @@
 package com.cradle.neptune.view.ui.reading
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
 import android.widget.AutoCompleteTextView
 import androidx.databinding.DataBindingComponent
 import androidx.databinding.DataBindingUtil
@@ -17,6 +15,7 @@ import com.cradle.neptune.R
 import com.cradle.neptune.binding.FragmentDataBindingComponent
 import com.cradle.neptune.databinding.FragmentPatientInfoBinding
 import com.cradle.neptune.model.Patient
+import com.cradle.neptune.utilitiles.dismissKeyboard
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputEditText
@@ -195,9 +194,7 @@ class PatientInfoFragment : BaseFragment() {
     private fun setupAndObserveGenderList(view: View) {
         val genderTextLayout = view.findViewById<TextInputLayout>(R.id.gender_input_layout)
         genderMenuTextView = (genderTextLayout.editText as? AutoCompleteTextView?)?.apply {
-            setOnClickListener {
-                dismissKeyboard(view)
-            }
+            setOnClickListener { it.dismissKeyboard() }
         }
     }
 
@@ -206,9 +203,7 @@ class PatientInfoFragment : BaseFragment() {
             R.id.gestational_age_units_layout
         )
         gestAgeMenuTextView = (gestAgeUnitsTextLayout.editText as? AutoCompleteTextView?)?.apply {
-            setOnClickListener {
-                dismissKeyboard(view)
-            }
+            setOnClickListener { it.dismissKeyboard() }
         }
     }
 
@@ -231,12 +226,6 @@ class PatientInfoFragment : BaseFragment() {
             .setEnd(upperBoundMillis)
             .setOpenAt(defaultDateInMillis)
             .build()
-    }
-
-    private fun dismissKeyboard(view: View) {
-        val manager = view.context.getSystemService(Context.INPUT_METHOD_SERVICE)
-            as? InputMethodManager
-        manager?.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
     companion object {

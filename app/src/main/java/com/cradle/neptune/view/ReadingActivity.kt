@@ -27,6 +27,7 @@ import androidx.navigation.navOptions
 import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.databinding.ActivityPlaceholderBinding
+import com.cradle.neptune.utilitiles.dismissKeyboard
 import com.cradle.neptune.view.ui.reading.BaseFragment
 import com.cradle.neptune.viewmodel.PatientReadingViewModel
 import com.cradle.neptune.viewmodel.PatientReadingViewModelFactory
@@ -160,44 +161,51 @@ class ReadingActivity : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.next_button2).setOnClickListener {
-            nextButtonJob?.cancel()
-            nextButtonJob = lifecycleScope.launch {
-                val error: ReadingFlowError = viewModel.onNextButtonClicked(
-                    navController.currentDestination?.id ?: return@launch
-                )
-
-                when (error) {
-                    ReadingFlowError.NO_ERROR -> onNextButtonClickedWithNoErrors(navController)
-                    // TODO: Handle this better. Maybe have another Fragment or some dialog that
-                    //  pops up that does the validation. Of course, only show the dialog for the
-                    //  network checks if the user has internet.
-                    ReadingFlowError.ERROR_PATIENT_ID_IN_USE_LOCAL -> {
-                        Toast.makeText(
-                            this@ReadingActivity,
-                            "This ID is already in use",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                    ReadingFlowError.ERROR_PATIENT_ID_IN_USE_ON_SERVER -> {
-                        Toast.makeText(
-                            this@ReadingActivity,
-                            "This ID is already in use on the server",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                    ReadingFlowError.ERROR_INVALID_FIELDS -> {
-                        Toast.makeText(
-                            this@ReadingActivity,
-                            "There are still errors left to correct!",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-            }
+            onNextButtonClicked(it)
         }
 
         onBackPressedDispatcher.addCallback(this) { onBackButtonPressed() }
         findViewById<Button>(R.id.back_button).setOnClickListener { onBackButtonPressed() }
+    }
+
+    private fun onNextButtonClicked(button: View) {
+        button.dismissKeyboard()
+        val navController = findNavController(R.id.reading_nav_host)
+
+        nextButtonJob?.cancel()
+        nextButtonJob = lifecycleScope.launch {
+            val error: ReadingFlowError = viewModel.onNextButtonClicked(
+                navController.currentDestination?.id ?: return@launch
+            )
+
+            when (error) {
+                ReadingFlowError.NO_ERROR -> onNextButtonClickedWithNoErrors(navController)
+                // TODO: Handle this better. Maybe have another Fragment or some dialog that
+                //  pops up that does the validation. Of course, only show the dialog for the
+                //  network checks if the user has internet.
+                ReadingFlowError.ERROR_PATIENT_ID_IN_USE_LOCAL -> {
+                    Toast.makeText(
+                        this@ReadingActivity,
+                        "This ID is already in use",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                ReadingFlowError.ERROR_PATIENT_ID_IN_USE_ON_SERVER -> {
+                    Toast.makeText(
+                        this@ReadingActivity,
+                        "This ID is already in use on the server",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                ReadingFlowError.ERROR_INVALID_FIELDS -> {
+                    Toast.makeText(
+                        this@ReadingActivity,
+                        "There are still errors left to correct!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
     }
 
     private fun onNextButtonClickedWithNoErrors(navController: NavController) {
@@ -216,6 +224,8 @@ class ReadingActivity : AppCompatActivity() {
     }
 
     private fun onBackButtonPressed() {
+        findViewById<Button>(R.id.back_button)?.dismissKeyboard()
+
         val navController = findNavController(R.id.reading_nav_host)
 
         if (navController.currentDestination?.id == getStartDestinationId()) {
