@@ -5,6 +5,7 @@ import androidx.annotation.UiThread
 import androidx.annotation.WorkerThread
 import androidx.lifecycle.MediatorLiveData
 import java.lang.IllegalArgumentException
+import java.lang.reflect.InvocationTargetException
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KProperty
@@ -71,6 +72,10 @@ class DynamicConstructor<T : Any>(k: KClass<T>, private val map: Map<String, Any
      *
      * @throws IllegalArgumentException if any of the required parameters are
      * missing or are of the wrong type
+     * @throws InvocationTargetException if trying to build an object of type
+     * [T] that uses default values for constructor parameters, but missing
+     * values for them. DynamicModelBuilder doesn't support using default
+     * values set by a class; all the parameters must be explicitly given.
      *
      * @see dynamic
      */
@@ -332,6 +337,10 @@ open class DynamicModelBuilder {
      *
      * @throws IllegalArgumentException if any of the required parameters are
      * missing
+     * @throws InvocationTargetException if trying to build an object of type
+     * [T] that uses default values for constructor parameters, but missing
+     * values for them. DynamicModelBuilder doesn't support using default
+     * values set by a class; all the parameters must be explicitly given.
      */
     fun <T : Any> build(k: KClass<T>): T = constructor(k).getValue()
 
@@ -341,6 +350,10 @@ open class DynamicModelBuilder {
      *
      * @throws IllegalArgumentException if any of the required parameters are
      * missing
+     * @throws InvocationTargetException if trying to build an object of type
+     * [T] that uses default values for constructor parameters, but missing
+     * values for them. DynamicModelBuilder doesn't support using default
+     * values set by a class; all the parameters must be explicitly given.
      */
     inline fun <reified T : Any> build(): T = build(T::class)
 
