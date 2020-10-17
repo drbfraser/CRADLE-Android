@@ -64,7 +64,7 @@
     <string-array name="sex">
         <item>Male</item>
         <item>Female</item>
-        <item>Intersex</item>
+        <item>Other</item>
     </string-array>
 
     <!-- Same order as presented on frontend -->
