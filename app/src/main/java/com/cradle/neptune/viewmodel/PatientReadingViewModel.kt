@@ -128,7 +128,7 @@ class PatientReadingViewModel constructor(
                     ?: error("no patient associated with given reading")
 
                 when (reasonForLaunch) {
-                    ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT -> {
+                    ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT_READING -> {
                         check(!reading.isUploadedToServer) {
                             "trying to edit a reading that has already been uploaded"
                         }
@@ -463,7 +463,7 @@ class PatientReadingViewModel constructor(
 
         // Set the initial urine test checkbox state
         isUsingUrineTest.value =
-            if (reasonForLaunch != ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT) {
+            if (reasonForLaunch != ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT_READING) {
                 // Ensure urine test enabled by default for new readings like the frontend.
                 true
             } else {
@@ -975,7 +975,7 @@ class PatientReadingViewModel constructor(
                     app.getString(R.string.reading_activity_title_create_new_reading)
                 }
             }
-            ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT -> {
+            ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT_READING -> {
                 app.getString(R.string.reading_activity_title_editing_reading)
             }
             ReadingActivity.LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {

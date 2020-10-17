@@ -295,10 +295,11 @@ class ReadingActivity : AppCompatActivity() {
 
     @IdRes
     private fun getStartDestinationId(): Int = when (launchReason) {
-        LaunchReason.LAUNCH_REASON_NEW, LaunchReason.LAUNCH_REASON_EDIT -> {
+        LaunchReason.LAUNCH_REASON_NEW -> {
             R.id.patientInfoFragment
         }
-        LaunchReason.LAUNCH_REASON_RECHECK, LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {
+        LaunchReason.LAUNCH_REASON_RECHECK, LaunchReason.LAUNCH_REASON_EXISTINGNEW,
+        LaunchReason.LAUNCH_REASON_EDIT_READING -> {
             R.id.symptomsFragment
         }
         else -> error("need a launch reason to be in ReadingActivity")
@@ -309,21 +310,19 @@ class ReadingActivity : AppCompatActivity() {
         LaunchReason.LAUNCH_REASON_NEW, LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {
             R.string.discard_dialog_new_reading
         }
-        LaunchReason.LAUNCH_REASON_EDIT -> R.string.discard_dialog_changes
+        LaunchReason.LAUNCH_REASON_EDIT_READING -> R.string.discard_dialog_changes
         LaunchReason.LAUNCH_REASON_RECHECK -> R.string.discard_dialog_rechecking
         else -> error("need a launch reason to be in ReadingActivity")
     }
 
     enum class LaunchReason {
-        LAUNCH_REASON_NEW, LAUNCH_REASON_EDIT, LAUNCH_REASON_RECHECK, LAUNCH_REASON_NONE,
+        LAUNCH_REASON_NEW, LAUNCH_REASON_EDIT_READING, LAUNCH_REASON_RECHECK, LAUNCH_REASON_NONE,
         LAUNCH_REASON_EXISTINGNEW
     }
 
     companion object {
         private const val EXTRA_LAUNCH_REASON = "enum of why we launched"
         private const val EXTRA_READING_ID = "ID of reading to load"
-        // TODO: remove this legacy extra
-        private const val EXTRA_START_TAB = "idx of tab to start on"
 
         @JvmStatic
         fun makeIntentForNewReading(context: Context?): Intent {
@@ -333,11 +332,10 @@ class ReadingActivity : AppCompatActivity() {
         }
 
         @JvmStatic
-        fun makeIntentForEdit(context: Context?, readingId: String?): Intent {
+        fun makeIntentForEditReading(context: Context?, readingId: String?): Intent {
             val intent = Intent(context, ReadingActivity::class.java)
-            intent.putExtra(EXTRA_LAUNCH_REASON, LaunchReason.LAUNCH_REASON_EDIT)
+            intent.putExtra(EXTRA_LAUNCH_REASON, LaunchReason.LAUNCH_REASON_EDIT_READING)
             intent.putExtra(EXTRA_READING_ID, readingId)
-            intent.putExtra(EXTRA_START_TAB, 0)
             return intent
         }
 
@@ -346,7 +344,6 @@ class ReadingActivity : AppCompatActivity() {
             val intent = Intent(context, ReadingActivity::class.java)
             intent.putExtra(EXTRA_LAUNCH_REASON, LaunchReason.LAUNCH_REASON_RECHECK)
             intent.putExtra(EXTRA_READING_ID, readingId)
-            intent.putExtra(EXTRA_START_TAB, 0)
             return intent
         }
 
@@ -355,8 +352,6 @@ class ReadingActivity : AppCompatActivity() {
             val intent = Intent(context, ReadingActivity::class.java)
             intent.putExtra(EXTRA_LAUNCH_REASON, LaunchReason.LAUNCH_REASON_EXISTINGNEW)
             intent.putExtra(EXTRA_READING_ID, readingID)
-            intent.putExtra(EXTRA_START_TAB, 0)
-            // TODO("Do tabs indexing")
             return intent
         }
     }

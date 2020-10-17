@@ -296,7 +296,7 @@ public class PatientProfileActivity extends AppCompatActivity {
         listAdapter.setOnClickElementListener(new ReadingRecyclerViewAdapter.OnClickElement() {
             @Override
             public void onClick(String readingId) {
-                Intent intent = ReadingActivity.makeIntentForEdit(PatientProfileActivity.this, readingId);
+                Intent intent = ReadingActivity.makeIntentForEditReading(PatientProfileActivity.this, readingId);
                 startActivityForResult(intent, READING_ACTIVITY_DONE);
             }
 
