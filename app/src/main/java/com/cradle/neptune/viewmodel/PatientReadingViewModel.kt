@@ -29,7 +29,6 @@ import com.cradle.neptune.model.Sex
 import com.cradle.neptune.model.SymptomsState
 import com.cradle.neptune.model.UrineTest
 import com.cradle.neptune.model.Verifier
-import com.cradle.neptune.net.NetworkResult
 import com.cradle.neptune.net.Success
 import com.cradle.neptune.utilitiles.LiveDataDynamicModelBuilder
 import com.cradle.neptune.utilitiles.Months
@@ -290,6 +289,7 @@ class PatientReadingViewModel constructor(
                     isPatientValidJob = viewModelScope.launch(Dispatchers.Default) {
                         Log.d(TAG, "attempting to construct patient for validation")
                         attemptToBuildValidPatient().let { patient ->
+                            yield()
                             // Post the value immediately: requires main thread to do so.
                             withContext(Dispatchers.Main) { value = patient != null }
                         }
@@ -592,9 +592,9 @@ class PatientReadingViewModel constructor(
     val bloodPressure: MediatorLiveData<BloodPressure?> =
         readingBuilder.get<BloodPressure?>(Reading::bloodPressure)
 
-    val bloodPressureSystolicInput = MutableLiveData<Int>()
-    val bloodPressureDiastolicInput = MutableLiveData<Int>()
-    val bloodPressureHeartRateInput = MutableLiveData<Int>()
+    val bloodPressureSystolicInput = MutableLiveData<Int?>()
+    val bloodPressureDiastolicInput = MutableLiveData<Int?>()
+    val bloodPressureHeartRateInput = MutableLiveData<Int?>()
 
     /* Urine Test Info */
     val urineTest: MediatorLiveData<UrineTest?> = readingBuilder.get<UrineTest?>(Reading::urineTest)

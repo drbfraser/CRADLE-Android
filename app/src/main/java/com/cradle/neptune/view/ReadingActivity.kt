@@ -297,6 +297,7 @@ class ReadingActivity : AppCompatActivity() {
         val downloadLiveData = viewModel.downloadPatientFromServer(patientId)
         downloadLiveData.observe(this) {
             val newPatient = it.getOrElse {
+                // TODO: downloading and associating needs to be refactored into the patient manager
                 viewModel.setInputEnabledState(true)
                 viewModel.clearBottomNavBarMessage()
                 downloadLiveData.removeObservers(this)
