@@ -4,6 +4,7 @@ import android.app.ProgressDialog
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -14,10 +15,20 @@ import com.cradle.neptune.R
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.ext.hideKeyboard
 import com.cradle.neptune.manager.LoginManager
+import com.cradle.neptune.net.Failure
+import com.cradle.neptune.net.NetworkException
 import com.cradle.neptune.net.Success
+import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException
+import com.google.android.gms.common.GooglePlayServicesRepairableException
+import com.google.android.gms.security.ProviderInstaller
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import javax.inject.Inject
+import javax.net.ssl.SSLHandshakeException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class LoginActivity : AppCompatActivity() {
 
@@ -65,17 +76,55 @@ class LoginActivity : AppCompatActivity() {
                 val password = passwordET.text.toString()
                 val result = loginManager.login(email, password)
                 progressDialog.cancel()
-                if (result is Success) {
-                    Toast.makeText(
-                        this@LoginActivity,
-                        getString(R.string.login_successful),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    startIntroActivity()
-                } else {
-                    errorText.visibility = View.VISIBLE
+
+                when (result) {
+                    is Success -> {
+                        Toast.makeText(
+                            this@LoginActivity,
+                            getString(R.string.login_successful),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        startIntroActivity()
+                    }
+                    is Failure -> {
+                        errorText.visibility = View.VISIBLE
+                    }
+                    is NetworkException -> {
+                        if (result.cause is SSLHandshakeException) {
+                            Log.d("LoginActivity", "attempting to run ProviderInstaller")
+                            Toast.makeText(
+                                this@LoginActivity,
+                                R.string.login_activity_security_provider_toast,
+                                Toast.LENGTH_LONG
+                            ).show()
+                            // Attempt to update user's TLS version if they're outdated
+                            // source: https://medium.com/tech-quizlet/
+                            // working-with-tls-1-2-on-android-4-4-and-lower-f4f5205629a
+                            attemptProviderInstallerUpdate()
+                        }
+                    }
                 }
             }
+        }
+    }
+
+    /**
+     * Tries to upgrade the device's security provider in case their TLS version is out of date.
+     * https://medium.com/tech-quizlet/working-with-tls-1-2-on-android-4-4-and-lower-f4f5205629a
+     */
+    private suspend fun attemptProviderInstallerUpdate() = withContext(Dispatchers.Main) {
+        try {
+            ProviderInstaller.installIfNeeded(this@LoginActivity)
+        } catch (e: GooglePlayServicesRepairableException) {
+            GoogleApiAvailability.getInstance().showErrorNotification(
+                this@LoginActivity, e.connectionStatusCode
+            )
+        } catch (e: GooglePlayServicesNotAvailableException) {
+            MaterialAlertDialogBuilder(this@LoginActivity)
+                .setTitle(R.string.login_activity_device_is_outdated_dialog_title)
+                .setMessage(R.string.login_activity_device_is_outdated_dialog_message)
+                .setPositiveButton(android.R.string.ok) { _, _ -> /* noop */ }
+                .show()
         }
     }
 

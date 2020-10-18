@@ -299,6 +299,10 @@
     <string name="urine_test_layout_blood">Blood</string>
     <string name="urine_test_layout_glucose">Glucose</string>
     <string name="urine_test_layout_table_header_result">Result</string>
+
+    <string name="login_activity_device_is_outdated_dialog_title">Device is out of date</string>
+    <string name="login_activity_device_is_outdated_dialog_message">Your device is unable to connect to the servers securely. Since Google Play services are unavailable on your device, we\'re unable to try to upgrade your device\'s security provider. Please ensure that your device supports TLS 1.2 or higher.</string>
+    <string name="login_activity_security_provider_toast">Attempting to upgrade default security provider…</string>
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>
         <item quantity="other">%1$d readings still need to be uploaded to the server. These readings will be lost after signing out!</item>
