@@ -323,22 +323,8 @@ class ReadingActivity : AppCompatActivity() {
             return intent
         }
 
-        /**
-         * Legacy and should be updated to just pass in a patientId.
-         */
         @JvmStatic
-        @Deprecated(
-            message = "Use the updated intent maker",
-            replaceWith = ReplaceWith("makeIntentForNewReadingExistingPatientUsingPatientId")
-        )
-        fun makeIntentForNewReadingExistingPatient(context: Context?, readingID: String?): Intent {
-            val intent = Intent(context, ReadingActivity::class.java)
-            intent.putExtra(EXTRA_LAUNCH_REASON, LaunchReason.LAUNCH_REASON_EXISTINGNEW)
-            intent.putExtra(EXTRA_READING_ID, readingID)
-            return intent
-        }
-
-        fun makeIntentForNewReadingExistingPatientUsingPatientId(
+        fun makeIntentForNewReadingExistingPatient(
             context: Context?,
             patientId: String
         ): Intent =

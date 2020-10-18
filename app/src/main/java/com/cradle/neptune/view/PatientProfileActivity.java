@@ -263,22 +263,12 @@ public class PatientProfileActivity extends AppCompatActivity {
     private void setupCreatePatientReadingButton() {
         Button createButton = findViewById(R.id.newPatientReadingButton);
         createButton.setVisibility(View.VISIBLE);
-        List<Reading> readings = getThisPatientsReadings();
-        boolean readingFound = false;
-        Reading latestReading = null;
 
-        if (readings.size() > 0) {
-            readingFound = true;
-            latestReading = readings.get(0);
-        }
-        //button only works if a reading exist, which it always should
-        if (readingFound) {
-            String readingID = latestReading.getId();
-            createButton.setOnClickListener(v -> {
-                Intent intent = ReadingActivity.makeIntentForNewReadingExistingPatient(PatientProfileActivity.this, readingID);
-                startActivityForResult(intent, READING_ACTIVITY_DONE);
-            });
-        }
+        createButton.setOnClickListener(v -> {
+            Intent intent = ReadingActivity.makeIntentForNewReadingExistingPatient(
+                    PatientProfileActivity.this, currPatient.getId());
+            startActivityForResult(intent, READING_ACTIVITY_DONE);
+        });
     }
 
     void setupReadingsRecyclerView() {

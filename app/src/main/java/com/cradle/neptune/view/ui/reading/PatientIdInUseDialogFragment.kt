@@ -93,7 +93,7 @@ class PatientIdInUseDialogFragment : DialogFragment() {
                 if (isPatientInPatientsList) {
                     // TODO: use Navigation and make a deep link to the patient's profile
                     val newReadingIntent =
-                        ReadingActivity.makeIntentForNewReadingExistingPatientUsingPatientId(
+                        ReadingActivity.makeIntentForNewReadingExistingPatient(
                             context = requireContext(), patientId = patient.id
                         )
                     (requireActivity() as ReadingActivity).apply {
