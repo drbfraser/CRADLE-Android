@@ -1,6 +1,5 @@
 package com.cradle.neptune.view.ui.reading
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -24,6 +23,7 @@ import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 import java.util.TimeZone
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -144,10 +144,13 @@ class PatientInfoFragment : BaseFragment() {
         datePicker.apply {
             addOnPositiveButtonClickListener {
                 viewModel.setUsingDateOfBirth(useDateOfBirth = true)
-                @SuppressLint("SimpleDateFormat")
                 viewModel.patientDob.value =
-                    SimpleDateFormat(Patient.DOB_FORMAT_SIMPLEDATETIME).format(Date(it))
-                Log.d(TAG, "DEBUG: DOB received from picker: ${viewModel.patientDob.value}")
+                    with(SimpleDateFormat(Patient.DOB_FORMAT_SIMPLEDATETIME, Locale.getDefault())) {
+                        timeZone = TimeZone.getTimeZone(DATE_PICKER_TIME_ZONE)
+                        format(Date(it))
+                    }
+                Log.d(TAG, "DEBUG: DOB received from picker: ${viewModel.patientDob.value}, " +
+                    "based on timestamp $it")
             }
         }
         ageInputLayout.apply {
@@ -208,12 +211,13 @@ class PatientInfoFragment : BaseFragment() {
     }
 
     private fun setupCalendarConstraints(): CalendarConstraints {
-        val lowerBoundMillis = Calendar.getInstance(TimeZone.getTimeZone("UTC")).run {
+        val datePickerTimeZone = TimeZone.getTimeZone(DATE_PICKER_TIME_ZONE)
+        val lowerBoundMillis = Calendar.getInstance(datePickerTimeZone).run {
             set(Calendar.YEAR, DATE_PICKER_YEAR_LOWER_BOUND)
             timeInMillis
         }
         val upperBoundMillis = MaterialDatePicker.todayInUtcMilliseconds()
-        val defaultDateInMillis = Calendar.getInstance(TimeZone.getTimeZone("UTC")).run {
+        val defaultDateInMillis = Calendar.getInstance(datePickerTimeZone).run {
             set(Calendar.YEAR, DATE_PICKER_DEFAULT_YEAR)
             timeInMillis
         }
@@ -231,6 +235,7 @@ class PatientInfoFragment : BaseFragment() {
     companion object {
         private const val DATE_PICKER_DEFAULT_YEAR = 2000
         private const val DATE_PICKER_YEAR_LOWER_BOUND = 1900
+        private const val DATE_PICKER_TIME_ZONE = "UTC"
 
         private const val EDIT_TEXT_AGE_INPUT_STATE_TAG = 0
         private const val EDIT_TEXT_DOB_STATE_TAG = 1
