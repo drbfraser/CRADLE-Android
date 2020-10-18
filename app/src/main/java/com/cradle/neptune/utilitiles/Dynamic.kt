@@ -3,6 +3,7 @@ package com.cradle.neptune.utilitiles
 import androidx.annotation.MainThread
 import androidx.annotation.UiThread
 import androidx.annotation.WorkerThread
+import androidx.collection.arrayMapOf
 import androidx.lifecycle.MediatorLiveData
 import java.lang.IllegalArgumentException
 import java.lang.reflect.InvocationTargetException
@@ -244,7 +245,7 @@ class LiveDataDynamicModelBuilder : DynamicModelBuilder() {
  * an object.
  */
 open class DynamicModelBuilder {
-    protected val map: MutableMap<String, Any?> = mutableMapOf()
+    protected val map: MutableMap<String, Any?> = arrayMapOf()
 
     val publicMap: Map<String, Any?>
         get() = map
