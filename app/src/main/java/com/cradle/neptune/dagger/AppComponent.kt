@@ -32,6 +32,7 @@ import javax.inject.Singleton
     AndroidInjectionModule::class,
     AppModule::class,
     DataModule::class,
+    FragmentModule::class,
     ViewModelModule::class])
 interface AppComponent {
     fun inject(activity: ReadingActivity?)

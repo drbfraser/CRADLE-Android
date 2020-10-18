@@ -25,11 +25,11 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.navOptions
 import com.cradle.neptune.R
-import com.cradle.neptune.binding.Converter
 import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.databinding.ActivityPlaceholderBinding
 import com.cradle.neptune.utilitiles.dismissKeyboard
 import com.cradle.neptune.view.ui.reading.BaseFragment
+import com.cradle.neptune.view.ui.reading.PatientIdInUseDialogFragment
 import com.cradle.neptune.viewmodel.PatientReadingViewModel
 import com.cradle.neptune.viewmodel.PatientReadingViewModelFactory
 import com.cradle.neptune.viewmodel.ReadingFlowError
@@ -188,52 +188,22 @@ class ReadingActivity : AppCompatActivity() {
                 ReadingFlowError.NO_ERROR -> onNextButtonClickedWithNoErrors(navController)
                 ReadingFlowError.ERROR_PATIENT_ID_IN_USE_LOCAL -> {
                     check(patient != null)
-                    val msg = getString(
-                        R.string.reading_activity_patient_id_exists_dialog_message_local_patient,
-                        patient.id,
-                        patient.name,
-                        Converter.sexToString(this@ReadingActivity, patient.sex)
-                    )
 
-                    MaterialAlertDialogBuilder(this@ReadingActivity)
-                        .setTitle(R.string.reading_activity_patient_id_exists_dialog_title_local_patient)
-                        .setMessage(msg)
-                        .setCancelable(false)
-                        .setPositiveButton(android.R.string.yes) { _, _ ->
-                            onNextButtonClickedWithNoErrors(navController)
-                        }
-                        .setNegativeButton(android.R.string.no) { _, _ -> /* onDismissListener */ }
-                        .setOnDismissListener { viewModel.setInputEnabledState(true) }
-                        .show()
+                    PatientIdInUseDialogFragment.makeInstance(
+                        isPatientLocal = true, patient = patient
+                    ).run {
+                        show(supportFragmentManager, PATIENT_ID_IN_USE_FRAGMENT_TAG)
+                    }
                 }
                 ReadingFlowError.ERROR_PATIENT_ID_IN_USE_ON_SERVER -> {
                     viewModel.clearBottomNavBarMessage()
                     check(patient != null)
 
-                    val title = getString(
-                        R.string.reading_activity_patient_id_exists_dialog_title_server_patient
-                    )
-                    val msg = getString(
-                        R.string.reading_activity_patient_id_exists_dialog_message_server_patient,
-                        patient.id,
-                        patient.name,
-                        Converter.sexToString(this@ReadingActivity, patient.sex)
-                    )
-                    val positiveButtonMessage = getString(
-                        R.string.reading_activity_patient_id_exists_dialog_download_button_server_patient
-                    )
-
-                    MaterialAlertDialogBuilder(this@ReadingActivity)
-                        .setTitle(title)
-                        .setCancelable(false)
-                        .setMessage(msg)
-                        .setPositiveButton(positiveButtonMessage) { _, _ ->
-                            // todo: download
-                            onNextButtonClickedWithNoErrors(navController)
-                        }
-                        .setNegativeButton(android.R.string.no) { _, _ -> /* onDismissListener */ }
-                        .setOnDismissListener { viewModel.setInputEnabledState(true) }
-                        .show()
+                    PatientIdInUseDialogFragment.makeInstance(
+                        isPatientLocal = false, patient = patient
+                    ).run {
+                        show(supportFragmentManager, PATIENT_ID_IN_USE_FRAGMENT_TAG)
+                    }
                 }
                 ReadingFlowError.ERROR_INVALID_FIELDS -> {
                     Toast.makeText(
@@ -320,6 +290,8 @@ class ReadingActivity : AppCompatActivity() {
     companion object {
         private const val EXTRA_LAUNCH_REASON = "enum of why we launched"
         private const val EXTRA_READING_ID = "ID of reading to load"
+
+        private const val PATIENT_ID_IN_USE_FRAGMENT_TAG = "patientIdInuse"
 
         @JvmStatic
         fun makeIntentForNewReading(context: Context?): Intent {
