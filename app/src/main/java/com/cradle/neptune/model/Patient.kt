@@ -1,6 +1,5 @@
 package com.cradle.neptune.model
 
-import android.annotation.SuppressLint
 import android.content.Context
 import androidx.core.text.isDigitsOnly
 import androidx.room.ColumnInfo
@@ -29,6 +28,7 @@ import java.lang.IllegalArgumentException
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 import java.util.TimeZone
 import kotlin.math.round
 import kotlin.reflect.KProperty
@@ -129,6 +129,17 @@ data class Patient(
         ).toInt()
 
         /**
+         * This is currently how input validation is handled on frontend.
+         *
+         *     const isPatientInitialsValid = (myString: any) => {
+         *         return /^[a-zA-Z'\- ]*$/.test(myString);
+         *     };
+         *
+         */
+        @Suppress("ObjectPropertyNaming")
+        private val VALID_NAME_MATCHER = Regex("[A-Za-z'\\- ]+")
+
+        /**
          * Validates the patient's info
          * ref:
          * - cradle-platform/client/src/pages/newReading/demographic/validation/index.tsx
@@ -177,20 +188,14 @@ data class Patient(
 
             // doesn't depend on other properties
             Patient::name -> with(value as String) {
-                // This is currently how input validation is handled on frontend.
-                // The frontend uses:
-                //     if (hasNumber(value) || value.length === 0) {
-                //       patientError.patientInitialError = true;
-                //     }
                 if (isBlank()) {
                     return Pair(false, context.getString(R.string.patient_error_name_missing))
                 }
-                this.toCharArray().forEach {
-                    if (it.isDigit()) {
-                        return Pair(
-                            false, context.getString(R.string.patient_error_name_must_be_characters)
-                        )
-                    }
+                if (!VALID_NAME_MATCHER.matches(this)) {
+                    return Pair(
+                        false,
+                        context.getString(R.string.patient_error_name_must_be_characters)
+                    )
                 }
                 return Pair(true, "")
             }
@@ -269,7 +274,7 @@ data class Patient(
             // Validity of gestational age depends on gender and pregnancy; we are requiring both to
             // be more robust about it. Note: If gender is not male or is not pregnant, this is
             // still validated.
-            Patient::gestationalAge -> with(value as GestationalAge?) {
+            Patient::gestationalAge -> with(value as? GestationalAge?) {
                 val dependentProperties = setupDependentPropertiesMap(
                     instance,
                     currentValues,
@@ -277,7 +282,13 @@ data class Patient(
                 )
                 if (dependentProperties[Patient::sex.name] == Sex.MALE ||
                     dependentProperties[Patient::isPregnant.name] == false) {
-                    return Pair(true, "")
+
+                    return if (this == null) {
+                        Pair(true, "")
+                    } else {
+                        // Can't have gestational age if we're not pregnant.
+                        Pair(false, context.getString(R.string.patient_error_gestation_for_no_preg))
+                    }
                 }
                 if (this == null) {
                     return Pair(
@@ -316,8 +327,8 @@ data class Patient(
                 return Pair(true, "")
             }
 
-            Patient::sex -> {
-                if (value != null) {
+            Patient::sex -> with(value as? Sex?) {
+                if (this != null) {
                     Pair(true, "")
                 } else {
                     Pair(false, context.getString(R.string.patient_error_sex_missing))
@@ -384,13 +395,12 @@ data class Patient(
          *
          * @throws ParseException if date is invalid, or not in the specified form.
          */
-        @SuppressLint("SimpleDateFormat")
         fun calculateAgeFromDateString(dateString: String): Int = with(dateString) {
             if (dateString.length != DOB_FORMAT_SIMPLEDATETIME.length) {
                 throw ParseException("wrong format length", 0)
             }
 
-            SimpleDateFormat(DOB_FORMAT_SIMPLEDATETIME).let {
+            SimpleDateFormat(DOB_FORMAT_SIMPLEDATETIME, Locale.getDefault()).let {
                 it.isLenient = false
                 it.timeZone = TimeZone.getTimeZone("UTC")
                 it.parse(this)

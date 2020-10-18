@@ -121,7 +121,8 @@ class PatientTests {
         val wrong = setOf("", " ", "sad_345", "11", "Johh5", "3453453453543 5 345435 345345",
             "123456789012345", "ABCDFGHJKLQWE5RT")
         val good = setOf("testName", "John Smith", "Someone", "Alice", "Bob", "ABC", "JKL",
-            "Zulo", "***ThisIsValid...", "\"SomeRealLongNameWillHaveFourCharWordAlwa\"")
+            "Zulo", "Alice Bob Eden", "SomeRealLongNameWillHaveFourCharWordAlwa", "Jake O'Henry",
+            "Sir Name-ham Namer")
         assertValidityOverSet(wrong, Patient::name, areAllValuesValid = false)
         assertValidityOverSet(good, Patient::name, areAllValuesValid = true)
     }

@@ -326,6 +326,7 @@
     <string name="patient_error_age_or_dob_missing">Missing age or date of birth</string>
     <string name="patient_error_name_must_be_characters">Name must be characters</string>
     <string name="patient_error_gestational_age_missing">Missing</string>
+    <string name="patient_error_gestation_for_no_preg">Can\'t have gestational age when not pregnant</string>
     <string name="patient_error_gestation_greater_than_n_weeks">Over %1$d weeks</string>
     <string name="patient_error_gestation_greater_than_n_months">Over %1$d months</string>
     <string name="patient_error_gestation_must_be_not_zero">Can\'t be 0</string>
