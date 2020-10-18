@@ -7,16 +7,26 @@ import android.util.Log
 import androidx.multidex.MultiDexApplication
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.wonderkiln.blurkit.BlurKit
+import dagger.android.AndroidInjector
+import dagger.android.DispatchingAndroidInjector
+import dagger.android.HasAndroidInjector
+import javax.inject.Inject
 
 /**
  * Allow access to Dagger single instance of Component
  * Source: https://github.com/codepath/android_guides/wiki/Dependency-Injection-with-Dagger-2#instantiating-the-component
  */
 @Suppress("EmptyFunctionBlock")
-class MyApp : MultiDexApplication() {
+class MyApp : MultiDexApplication(), HasAndroidInjector {
+    @Inject
+    lateinit var activityInjector: DispatchingAndroidInjector<Activity>
+
     val appComponent: AppComponent by lazy {
         DaggerAppComponent.builder()
-            .appModule(AppModule(this)).dataModule(DataModule()).build()
+            .appModule(AppModule(this))
+            .dataModule(DataModule())
+            .viewModelModule(ViewModelModule())
+            .build()
     }
     var isDisableBlurKit = false
 
@@ -48,12 +58,7 @@ class MyApp : MultiDexApplication() {
             override fun onActivityResumed(activity: Activity) {}
             override fun onActivityPaused(activity: Activity) {}
             override fun onActivityStopped(activity: Activity) {}
-            override fun onActivitySaveInstanceState(
-                activity: Activity,
-                bundle: Bundle?
-            ) {
-            }
-
+            override fun onActivitySaveInstanceState(activity: Activity, bundle: Bundle?) {}
             override fun onActivityDestroyed(activity: Activity) {}
         })
 
@@ -67,4 +72,7 @@ class MyApp : MultiDexApplication() {
             isDisableBlurKit = true
         }
     }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun androidInjector(): AndroidInjector<Any> = activityInjector as AndroidInjector<Any>
 }

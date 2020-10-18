@@ -20,6 +20,7 @@ import com.cradle.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesAct
 import com.cradle.neptune.viewmodel.HealthFacilityViewModel
 import com.cradle.neptune.viewmodel.PatientReadingViewModel
 import dagger.Component
+import dagger.android.AndroidInjectionModule
 import javax.inject.Singleton
 
 /**
@@ -27,7 +28,11 @@ import javax.inject.Singleton
  * source: https://github.com/codepath/android_guides/wiki/Dependency-Injection-with-Dagger-2#instantiating-the-component
  */
 @Singleton
-@Component(modules = [AppModule::class, DataModule::class])
+@Component(modules = [
+    AndroidInjectionModule::class,
+    AppModule::class,
+    DataModule::class,
+    ViewModelModule::class])
 interface AppComponent {
     fun inject(activity: ReadingActivity?)
     fun inject(fragment: BaseFragment?)
