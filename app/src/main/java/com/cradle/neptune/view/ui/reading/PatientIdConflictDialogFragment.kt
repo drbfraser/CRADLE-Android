@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.observe
 import androidx.navigation.findNavController
 import com.cradle.neptune.R
 import com.cradle.neptune.binding.Converter
@@ -21,7 +22,13 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.android.support.AndroidSupportInjection
 import javax.inject.Inject
 
-class PatientIdInUseDialogFragment : DialogFragment() {
+/**
+ * The Dialog that shows when attempting to use a patient ID that is already being used, either
+ * on the user's local database or on the server. The dialog handles switching over to adding
+ * a new reading for that patient, and it will also handle downloads in the case where the
+ * patient was found on the server.
+ */
+class PatientIdConflictDialogFragment : DialogFragment() {
     @Inject
     lateinit var sharedPreferences: SharedPreferences
 
@@ -101,12 +108,10 @@ class PatientIdInUseDialogFragment : DialogFragment() {
                         finish()
                     }
                 } else {
-                    // todo: download
-                    Toast.makeText(requireContext(), "TODO: Download patient", Toast.LENGTH_SHORT)
-                        .show()
-                    (requireActivity() as ReadingActivity)
-                        .findNavController(R.id.reading_nav_host)
-                        .navigate(R.id.action_patientInfoFragment_to_symptomsFragment)
+                    (requireActivity() as ReadingActivity).downloadPatientAndReadingsFromServer(
+                        patient.id
+                    )
+                    dismissAllowingStateLoss()
                 }
             }
             .setNegativeButton(android.R.string.cancel) { _, _ ->
@@ -120,7 +125,7 @@ class PatientIdInUseDialogFragment : DialogFragment() {
         private const val EXTRA_IS_PATIENT_LOCAL = "is_patient_local_only"
 
         fun makeInstance(isPatientLocal: Boolean, patient: Patient) =
-            PatientIdInUseDialogFragment().apply {
+            PatientIdConflictDialogFragment().apply {
                 arguments = Bundle().apply {
                     putSerializable(EXTRA_PATIENT, patient)
                     putBoolean(EXTRA_IS_PATIENT_LOCAL, isPatientLocal)

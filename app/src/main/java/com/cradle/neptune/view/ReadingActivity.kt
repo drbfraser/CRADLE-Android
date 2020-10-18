@@ -29,7 +29,7 @@ import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.databinding.ActivityPlaceholderBinding
 import com.cradle.neptune.utilitiles.dismissKeyboard
 import com.cradle.neptune.view.ui.reading.BaseFragment
-import com.cradle.neptune.view.ui.reading.PatientIdInUseDialogFragment
+import com.cradle.neptune.view.ui.reading.PatientIdConflictDialogFragment
 import com.cradle.neptune.viewmodel.PatientReadingViewModel
 import com.cradle.neptune.viewmodel.PatientReadingViewModelFactory
 import com.cradle.neptune.viewmodel.ReadingFlowError
@@ -195,7 +195,7 @@ class ReadingActivity : AppCompatActivity() {
                 ReadingFlowError.ERROR_PATIENT_ID_IN_USE_LOCAL -> {
                     check(patient != null)
 
-                    PatientIdInUseDialogFragment.makeInstance(
+                    PatientIdConflictDialogFragment.makeInstance(
                         isPatientLocal = true, patient = patient
                     ).run {
                         show(supportFragmentManager, PATIENT_ID_IN_USE_DIALOG_FRAGMENT_TAG)
@@ -205,7 +205,7 @@ class ReadingActivity : AppCompatActivity() {
                     viewModel.clearBottomNavBarMessage()
                     check(patient != null)
 
-                    PatientIdInUseDialogFragment.makeInstance(
+                    PatientIdConflictDialogFragment.makeInstance(
                         isPatientLocal = false, patient = patient
                     ).run {
                         show(supportFragmentManager, PATIENT_ID_IN_USE_DIALOG_FRAGMENT_TAG)
@@ -286,6 +286,42 @@ class ReadingActivity : AppCompatActivity() {
         LaunchReason.LAUNCH_REASON_EDIT_READING -> R.string.discard_dialog_changes
         LaunchReason.LAUNCH_REASON_RECHECK -> R.string.discard_dialog_rechecking
         else -> error("need a launch reason to be in ReadingActivity")
+    }
+
+    fun downloadPatientAndReadingsFromServer(patientId: String) {
+        Toast.makeText(
+            this,
+            R.string.reading_activity_downloading_patient_toast,
+            Toast.LENGTH_SHORT
+        ).show()
+        val downloadLiveData = viewModel.downloadPatientFromServer(patientId)
+        downloadLiveData.observe(this) {
+            val newPatient = it.getOrElse {
+                viewModel.setInputEnabledState(true)
+                viewModel.clearBottomNavBarMessage()
+                downloadLiveData.removeObservers(this)
+                Toast.makeText(
+                    this,
+                    R.string.reading_activity_downloading_patient_failed_toast,
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@observe
+            }
+
+            Toast.makeText(
+                this,
+                R.string.reading_activity_downloading_patient_successful_toast,
+                Toast.LENGTH_SHORT
+            ).show()
+
+            val newReadingIntent = makeIntentForNewReadingExistingPatient(
+                context = this,
+                patientId = newPatient.id
+            )
+
+            startActivity(newReadingIntent)
+            finish()
+        }
     }
 
     enum class LaunchReason {

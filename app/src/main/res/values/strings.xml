@@ -388,6 +388,10 @@
     <string name="reading_activity_title_recheck_vitals">Recheck vitals</string>
     <string name="reading_activity_subtitle_name_and_id">%1$s, ID %2$s</string>
     <string name="reading_activity_errors_left_toast">There are still errors left to correct!</string>
+    <string name="reading_activity_downloading_patient_id_toast">Downloading</string>
+    <string name="reading_activity_downloading_patient_failed_toast">Downloading failed</string>
+    <string name="reading_activity_downloading_patient_toast">Downloading patient...</string>
+    <string name="reading_activity_downloading_patient_successful_toast">Download successful</string>
 
 
 

@@ -13,6 +13,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import com.cradle.neptune.R
 import com.cradle.neptune.manager.PatientManager
@@ -28,6 +29,7 @@ import com.cradle.neptune.model.Sex
 import com.cradle.neptune.model.SymptomsState
 import com.cradle.neptune.model.UrineTest
 import com.cradle.neptune.model.Verifier
+import com.cradle.neptune.net.NetworkResult
 import com.cradle.neptune.net.Success
 import com.cradle.neptune.utilitiles.LiveDataDynamicModelBuilder
 import com.cradle.neptune.utilitiles.Months
@@ -44,6 +46,7 @@ import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 
 // The index of the gestational age units inside of the string.xml array, R.array.reading_ga_units
 private const val GEST_AGE_UNIT_WEEKS_INDEX = 0
@@ -972,6 +975,35 @@ class PatientReadingViewModel constructor(
                 }
                 R.id.loadingFragment -> return
                 else -> return
+            }
+        }
+    }
+
+    /**
+     * Triggers a download from the server. TODO: Refactor
+     */
+    fun downloadPatientFromServer(patientId: String): LiveData<Result<Patient>> = liveData {
+        withContext(Dispatchers.IO) {
+            when (val result = patientManager.downloadPatientAndReading(patientId)) {
+                is Success -> {
+                    yield()
+
+                    val downloadedPatient = result.value.patient
+                    val associateResult =
+                        patientManager.associatePatientWithUser(downloadedPatient.id)
+                    if (associateResult.failed) {
+                        emit(Result.failure(Throwable()))
+                        return@withContext
+                    }
+
+                    patientManager.add(downloadedPatient)
+                    result.value.readings.let {
+                        it.forEach { reading -> reading.isUploadedToServer = true }
+                        readingManager.addAllReadings(it)
+                    }
+                    emit(Result.success(downloadedPatient))
+                }
+                else -> emit(Result.failure(Throwable()))
             }
         }
     }

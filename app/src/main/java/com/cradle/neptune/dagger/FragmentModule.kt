@@ -1,6 +1,6 @@
 package com.cradle.neptune.dagger
 
-import com.cradle.neptune.view.ui.reading.PatientIdInUseDialogFragment
+import com.cradle.neptune.view.ui.reading.PatientIdConflictDialogFragment
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 
@@ -11,5 +11,5 @@ import dagger.android.ContributesAndroidInjector
 @Module
 abstract class FragmentModule {
     @ContributesAndroidInjector
-    abstract fun contributePatientIdInUseDialogFragment(): PatientIdInUseDialogFragment
+    abstract fun contributePatientIdInUseDialogFragment(): PatientIdConflictDialogFragment
 }
