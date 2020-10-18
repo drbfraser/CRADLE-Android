@@ -49,7 +49,7 @@
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/patient_info_title"
-                            style="@style/ReadingFlowHeader"
+                            style="@style/TextAppearance.Cradle.H2"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
@@ -222,6 +222,7 @@
                             android:enabled="@{viewModel.isInputEnabled}"
                             android:hint="@string/fragment_patient_info_gender_label"
                             android:labelFor="@id/gender_input_auto_complete_text"
+                            android:paddingTop="8dp"
                             android:paddingBottom="0dp"
                             app:helperText=" "
                             app:layout_constraintEnd_toStartOf="@+id/guideline"
@@ -236,8 +237,7 @@
                                 android:layout_height="wrap_content"
                                 android:inputType="none"
                                 android:text="@={Converter.sexToString(context, viewModel.patientSex)}"
-                                bind:setMaterialSpinnerItemsWithArray="@{@stringArray/sex}"
-                                />
+                                bind:setMaterialSpinnerItemsWithArray="@{@stringArray/sex}" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <!-- Enabled:
@@ -250,12 +250,11 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
-                            android:layout_marginTop="8dp"
-                            android:enabled="@{viewModel.isInputEnabled &amp;&amp; ((viewModel.patientSex ?? Sex.MALE) != Sex.MALE)}"
                             android:checked="@={viewModel.patientIsPregnant}"
+                            android:enabled="@{viewModel.isInputEnabled &amp;&amp; ((viewModel.patientSex ?? Sex.MALE) != Sex.MALE)}"
                             android:text="@string/fragment_patient_info_pregnant_checkbox_label"
+                            app:layout_constraintBaseline_toBaselineOf="@+id/gender_input_layout"
                             app:layout_constraintStart_toStartOf="@+id/guideline"
-                            app:layout_constraintTop_toBottomOf="@+id/age_input_layout"
                             bind:uncheckWhen="@{viewModel.patientSex == Sex.MALE}" />
 
                         <com.google.android.material.textfield.TextInputLayout

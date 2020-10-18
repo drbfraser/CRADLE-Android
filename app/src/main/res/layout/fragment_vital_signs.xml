@@ -47,7 +47,7 @@
 
                         <TextView
                             android:id="@+id/cradle_vsa_card_title_textview"
-                            style="@style/ReadingFlowHeader"
+                            style="@style/TextAppearance.Cradle.H2"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="8dp"
@@ -243,7 +243,7 @@
 
                         <TextView
                             android:id="@+id/urine_test_card_text_view"
-                            style="@style/ReadingFlowHeader"
+                            style="@style/TextAppearance.Cradle.H2"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="8dp"
