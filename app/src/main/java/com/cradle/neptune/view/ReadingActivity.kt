@@ -85,7 +85,8 @@ class ReadingActivity : AppCompatActivity() {
         launchReason = intent.getSerializableExtra(EXTRA_LAUNCH_REASON) as LaunchReason
         viewModel.initialize(
             launchReason = launchReason,
-            readingId = intent.getStringExtra(EXTRA_READING_ID)
+            readingId = intent.getStringExtra(EXTRA_READING_ID),
+            patientId = intent.getStringExtra(EXTRA_PATIENT_ID)
         )
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar3)
@@ -192,7 +193,7 @@ class ReadingActivity : AppCompatActivity() {
                     PatientIdInUseDialogFragment.makeInstance(
                         isPatientLocal = true, patient = patient
                     ).run {
-                        show(supportFragmentManager, PATIENT_ID_IN_USE_FRAGMENT_TAG)
+                        show(supportFragmentManager, PATIENT_ID_IN_USE_DIALOG_FRAGMENT_TAG)
                     }
                 }
                 ReadingFlowError.ERROR_PATIENT_ID_IN_USE_ON_SERVER -> {
@@ -202,7 +203,7 @@ class ReadingActivity : AppCompatActivity() {
                     PatientIdInUseDialogFragment.makeInstance(
                         isPatientLocal = false, patient = patient
                     ).run {
-                        show(supportFragmentManager, PATIENT_ID_IN_USE_FRAGMENT_TAG)
+                        show(supportFragmentManager, PATIENT_ID_IN_USE_DIALOG_FRAGMENT_TAG)
                     }
                 }
                 ReadingFlowError.ERROR_INVALID_FIELDS -> {
@@ -290,8 +291,9 @@ class ReadingActivity : AppCompatActivity() {
     companion object {
         private const val EXTRA_LAUNCH_REASON = "enum of why we launched"
         private const val EXTRA_READING_ID = "ID of reading to load"
+        private const val EXTRA_PATIENT_ID = "patient_id"
 
-        private const val PATIENT_ID_IN_USE_FRAGMENT_TAG = "patientIdInuse"
+        private const val PATIENT_ID_IN_USE_DIALOG_FRAGMENT_TAG = "patientIdInUse"
 
         @JvmStatic
         fun makeIntentForNewReading(context: Context?): Intent {
@@ -316,12 +318,28 @@ class ReadingActivity : AppCompatActivity() {
             return intent
         }
 
+        /**
+         * Legacy and should be updated to just pass in a patientId.
+         */
         @JvmStatic
+        @Deprecated(
+            message = "Use the updated intent maker",
+            replaceWith = ReplaceWith("makeIntentForNewReadingExistingPatientUsingPatientId")
+        )
         fun makeIntentForNewReadingExistingPatient(context: Context?, readingID: String?): Intent {
             val intent = Intent(context, ReadingActivity::class.java)
             intent.putExtra(EXTRA_LAUNCH_REASON, LaunchReason.LAUNCH_REASON_EXISTINGNEW)
             intent.putExtra(EXTRA_READING_ID, readingID)
             return intent
         }
+
+        fun makeIntentForNewReadingExistingPatientUsingPatientId(
+            context: Context?,
+            patientId: String
+        ): Intent =
+            Intent(context, ReadingActivity::class.java).apply {
+                putExtra(EXTRA_LAUNCH_REASON, LaunchReason.LAUNCH_REASON_EXISTINGNEW)
+                putExtra(EXTRA_PATIENT_ID, patientId)
+            }
     }
 }

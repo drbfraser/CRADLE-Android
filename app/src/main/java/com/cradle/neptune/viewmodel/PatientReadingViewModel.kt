@@ -98,10 +98,13 @@ class PatientReadingViewModel constructor(
      *
      * We **must** launch this from the main thread in order to guarantee that all the LiveData
      * will use values that are ready after decompose is finished.
+     *
+     * @param patientId The patient ID to use when launching for reason LAUNCH_REASON_EXISTINGNEW
      */
     fun initialize(
         launchReason: ReadingActivity.LaunchReason,
-        readingId: String?
+        readingId: String?,
+        patientId: String? = null
     ) {
         reasonForLaunch = launchReason
         viewModelScope.launch(Dispatchers.Main) {
@@ -118,7 +121,18 @@ class PatientReadingViewModel constructor(
                     return@launch
                 }
 
-                check(!readingId.isNullOrEmpty()) {
+                // TODO: clean up this logic. This logic was taken from the old code, and it's
+                //  unclear why the patient has to be derived from the reading.
+                if (!patientId.isNullOrBlank() &&
+                        reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_EXISTINGNEW) {
+                    val patient = patientManager.getPatientById(patientId)
+                        ?: error("no patient with given id")
+                    decompose(patient)
+                    return@launch
+                }
+
+                // At this point, we expect to be doing something with the patient itself.
+                check(!readingId.isNullOrBlank()) {
                     "was given no readingId despite not creating new reading"
                 }
 
