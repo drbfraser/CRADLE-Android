@@ -90,12 +90,18 @@ class PatientIdInUseDialogFragment : DialogFragment() {
             .setTitle(title)
             .setMessage(message)
             .setPositiveButton(positiveButtonLabel) { _, _ ->
-                // todo: download
                 if (isPatientInPatientsList) {
-                    (requireActivity() as ReadingActivity)
-                        .findNavController(R.id.reading_nav_host)
-                        .navigate(R.id.action_patientInfoFragment_to_symptomsFragment)
+                    // TODO: use Navigation and make a deep link to the patient's profile
+                    val newReadingIntent =
+                        ReadingActivity.makeIntentForNewReadingExistingPatientUsingPatientId(
+                            context = requireContext(), patientId = patient.id
+                        )
+                    (requireActivity() as ReadingActivity).apply {
+                        startActivity(newReadingIntent)
+                        finish()
+                    }
                 } else {
+                    // todo: download
                     Toast.makeText(requireContext(), "TODO: Download patient", Toast.LENGTH_SHORT)
                         .show()
                     (requireActivity() as ReadingActivity)

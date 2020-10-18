@@ -54,6 +54,11 @@ class ReadingActivity : AppCompatActivity() {
         viewModelFactory
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("ReadingActivity", "onDestroy()")
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         // Adapted from https://github.com/android/architecture-components-samples/blob/
         //     7686abc4bba087c8ee02f0ac569093bf304245e6/GithubBrowserSample/app/src/main/java/com/
