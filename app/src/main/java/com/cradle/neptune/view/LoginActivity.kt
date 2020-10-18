@@ -67,7 +67,8 @@ class LoginActivity : AppCompatActivity() {
         val errorText = findViewById<TextView>(R.id.invalidLoginText)
         val loginButton = findViewById<Button>(R.id.loginButton)
 
-        loginButton.setOnClickListener { _: View? ->
+        loginButton.setOnClickListener { _ ->
+            errorText.visibility = View.GONE
             val progressDialog = progressDialog
             passwordET.hideKeyboard()
 
@@ -88,9 +89,12 @@ class LoginActivity : AppCompatActivity() {
                     }
                     is Failure -> {
                         errorText.visibility = View.VISIBLE
+                        errorText.text = getString(R.string.login_error)
                     }
                     is NetworkException -> {
+                        errorText.visibility = View.VISIBLE
                         if (result.cause is SSLHandshakeException) {
+                            errorText.text = getString(R.string.login_error_ssl_handshake_exception)
                             Log.d("LoginActivity", "attempting to run ProviderInstaller")
                             Toast.makeText(
                                 this@LoginActivity,
@@ -101,6 +105,8 @@ class LoginActivity : AppCompatActivity() {
                             // source: https://medium.com/tech-quizlet/
                             // working-with-tls-1-2-on-android-4-4-and-lower-f4f5205629a
                             attemptProviderInstallerUpdate()
+                        } else {
+                            errorText.text = getString(R.string.login_error_general_error)
                         }
                     }
                 }
