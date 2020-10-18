@@ -386,6 +386,7 @@
     <string name="reading_activity_title_create_new_reading">Create new reading</string>
     <string name="reading_activity_title_recheck_vitals">Recheck vitals</string>
     <string name="reading_activity_subtitle_name_and_id">%1$s, ID %2$s</string>
+    <string name="reading_activity_errors_left_toast">There are still errors left to correct!</string>
 
 
 

@@ -863,21 +863,30 @@ class PatientReadingViewModel constructor(
         when (currentDestinationId) {
             R.id.loadingFragment -> return@withContext ReadingFlowError.NO_ERROR to null
             R.id.patientInfoFragment -> {
-                // Disable input while patient ID validation is happening.
+                // Disable input while patient building validation is happening.
                 setInputEnabledState(false)
                 setBottomNavBarMessage(app.getString(R.string.reading_bottom_nav_bar_checking_id))
 
                 val patient = attemptToBuildValidPatient()
                     ?: return@withContext ReadingFlowError.ERROR_INVALID_FIELDS to null
 
+                // We need to make sure the user isn't making a patient with an ID already in use.
+                // Check if a patient with the same ID already exists in their local patients list
+                // in the phone's database.
                 val existingLocalPatient = patientManager.getPatientById(patient.id)
                 if (existingLocalPatient != null) {
+                    // Send bac
                     return@withContext ReadingFlowError.ERROR_PATIENT_ID_IN_USE_LOCAL to
                         existingLocalPatient
                 }
 
+                // Opportunistically check if a patient with the same ID exists on the server. This
+                // only serves to lower the probability that a duplicate ID will be used, as it
+                // obviously doesn't work when the user has no internet.
                 val existingOnServer = patientManager.downloadPatientInfoFromServer(patient.id)
                 if (existingOnServer is Success) {
+                    // Send back the patient to give the user an option to
+                    // download the patient with all of their readings.
                     return@withContext ReadingFlowError.ERROR_PATIENT_ID_IN_USE_ON_SERVER to
                         existingOnServer.value
                 }
@@ -916,9 +925,7 @@ class PatientReadingViewModel constructor(
      * enabled.
      */
     @MainThread
-    fun onDestinationChange(
-        @IdRes currentDestinationId: Int
-    ) {
+    fun onDestinationChange(@IdRes currentDestinationId: Int) {
         updateActionBarAndSubtitle(currentDestinationId)
         setInputEnabledState(true)
         clearBottomNavBarMessage()
@@ -955,9 +962,7 @@ class PatientReadingViewModel constructor(
         }
     }
 
-    private fun updateActionBarAndSubtitle(
-        @IdRes currentDestination: Int
-    ) {
+    private fun updateActionBarAndSubtitle(@IdRes currentDestination: Int) {
         val subtitle = when (currentDestination) {
             R.id.loadingFragment, R.id.patientInfoFragment -> null
             else -> app.getString(

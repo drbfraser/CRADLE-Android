@@ -50,7 +50,7 @@ class ReadingActivity : AppCompatActivity() {
     lateinit var viewModelFactory: PatientReadingViewModelFactory
 
     // ViewModel shared by all Fragments.
-    private val viewModel: PatientReadingViewModel by viewModels() {
+    private val viewModel: PatientReadingViewModel by viewModels {
         viewModelFactory
     }
 
@@ -186,9 +186,6 @@ class ReadingActivity : AppCompatActivity() {
 
             when (error) {
                 ReadingFlowError.NO_ERROR -> onNextButtonClickedWithNoErrors(navController)
-                // TODO: Handle this better. Maybe have another Fragment or some dialog that
-                //  pops up that does the validation. Of course, only show the dialog for the
-                //  network checks if the user has internet.
                 ReadingFlowError.ERROR_PATIENT_ID_IN_USE_LOCAL -> {
                     check(patient != null)
                     val msg = getString(
@@ -226,7 +223,6 @@ class ReadingActivity : AppCompatActivity() {
                         R.string.reading_activity_patient_id_exists_dialog_download_button_server_patient
                     )
 
-                    // There's no good way to shorten lines without losing the context.
                     MaterialAlertDialogBuilder(this@ReadingActivity)
                         .setTitle(title)
                         .setCancelable(false)
@@ -242,9 +238,10 @@ class ReadingActivity : AppCompatActivity() {
                 ReadingFlowError.ERROR_INVALID_FIELDS -> {
                     Toast.makeText(
                         this@ReadingActivity,
-                        "There are still errors left to correct!",
+                        R.string.reading_activity_errors_left_toast,
                         Toast.LENGTH_SHORT
                     ).show()
+                    viewModel.setInputEnabledState(true)
                 }
             }
         }
