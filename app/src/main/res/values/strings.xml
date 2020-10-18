@@ -382,15 +382,15 @@
     <string name="reading_activity_patient_id_exists_dialog_message_server_patient">A patient with the same ID already exists on the server. To add readings, you must add them to your patients list. Would you like to download and use the patient with\n\nID: %1$s\nName: %2$s\nGender: %3$s</string>
     <string name="reading_activity_patient_id_exists_dialog_download_button_server_patient">Download and use</string>
     <string name="reading_activity_patient_id_exists_dialog_use_button_local_patient">Use</string>
-    <string name="reading_activity_title_new_patient">Create new patient</string>
-    <string name="reading_activity_title_editing_reading">Edit un-uploaded reading</string>
-    <string name="reading_activity_title_create_new_reading">Create new reading</string>
-    <string name="reading_activity_title_recheck_vitals">Recheck vitals</string>
-    <string name="reading_activity_subtitle_name_and_id">%1$s, ID %2$s</string>
+    <string name="reading_activity_title_new_patient">Creating new patient</string>
+    <string name="reading_activity_title_editing_reading">Editing un-uploaded reading</string>
+    <string name="reading_activity_title_create_new_reading">Creating new reading</string>
+    <string name="reading_activity_title_recheck_vitals">Rechecking vitals</string>
+    <string name="reading_activity_subtitle_name_and_id">%1$s (ID %2$s)</string>
     <string name="reading_activity_errors_left_toast">There are still errors left to correct!</string>
     <string name="reading_activity_downloading_patient_id_toast">Downloading</string>
     <string name="reading_activity_downloading_patient_failed_toast">Downloading failed</string>
-    <string name="reading_activity_downloading_patient_toast">Downloading patient...</string>
+    <string name="reading_activity_downloading_patient_toast">Downloading patient…</string>
     <string name="reading_activity_downloading_patient_successful_toast">Download successful</string>
 
 

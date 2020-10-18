@@ -40,6 +40,8 @@
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/reading_flow_card_side_margin"
+                        android:layout_marginEnd="@dimen/reading_flow_card_side_margin"
                         android:paddingBottom="8dp">
 
                         <com.google.android.material.textview.MaterialTextView

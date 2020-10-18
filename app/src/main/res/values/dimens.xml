@@ -5,4 +5,5 @@
     <dimen name="text_size_h1">30sp</dimen>
     <dimen name="text_size_h2">19sp</dimen>
     <dimen name="text_size_body1">14sp</dimen>
+    <dimen name="reading_flow_card_side_margin">8dp</dimen>
 </resources>
