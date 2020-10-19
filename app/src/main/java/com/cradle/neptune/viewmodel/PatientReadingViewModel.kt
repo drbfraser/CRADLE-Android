@@ -9,6 +9,7 @@ import androidx.annotation.IdRes
 import androidx.annotation.MainThread
 import androidx.collection.ArrayMap
 import androidx.collection.arrayMapOf
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
@@ -34,6 +35,7 @@ import com.cradle.neptune.utilitiles.LiveDataDynamicModelBuilder
 import com.cradle.neptune.utilitiles.Months
 import com.cradle.neptune.utilitiles.Weeks
 import com.cradle.neptune.view.ReadingActivity
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.lang.IllegalArgumentException
 import java.lang.reflect.InvocationTargetException
 import java.text.DecimalFormat
@@ -56,10 +58,10 @@ private const val GEST_AGE_UNIT_MONTHS_INDEX = 1
  * This should be initialized before the Fragments are created
  */
 @SuppressWarnings("LargeClass")
-class PatientReadingViewModel constructor(
+class PatientReadingViewModel @ViewModelInject constructor(
     private val readingManager: ReadingManager,
     private val patientManager: PatientManager,
-    private val app: Context
+    @ApplicationContext private val app: Context
 ) : ViewModel() {
     private val patientBuilder = LiveDataDynamicModelBuilder()
     private val readingBuilder = LiveDataDynamicModelBuilder()

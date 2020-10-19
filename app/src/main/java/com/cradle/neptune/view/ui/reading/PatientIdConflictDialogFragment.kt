@@ -2,7 +2,6 @@ package com.cradle.neptune.view.ui.reading
 
 import android.app.Dialog
 import android.content.Context
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,10 +13,8 @@ import com.cradle.neptune.binding.Converter
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.view.ReadingActivity
 import com.cradle.neptune.viewmodel.PatientReadingViewModel
-import com.cradle.neptune.viewmodel.PatientReadingViewModelFactory
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import dagger.android.support.AndroidSupportInjection
-import javax.inject.Inject
+import dagger.hilt.android.AndroidEntryPoint
 
 /**
  * The Dialog that shows when attempting to use a patient ID that is already being used, either
@@ -25,19 +22,11 @@ import javax.inject.Inject
  * a new reading for that patient, and it will also handle downloads in the case where the
  * patient was found on the server.
  */
+@AndroidEntryPoint
 class PatientIdConflictDialogFragment : DialogFragment() {
-    @Inject
-    lateinit var sharedPreferences: SharedPreferences
-
-    @Inject
-    lateinit var viewModelFactory: PatientReadingViewModelFactory
-
-    private val viewModel: PatientReadingViewModel by activityViewModels {
-        viewModelFactory
-    }
+    private val viewModel: PatientReadingViewModel by activityViewModels()
 
     override fun onAttach(context: Context) {
-        AndroidSupportInjection.inject(this)
         super.onAttach(context)
         check(context is ReadingActivity)
         check(arguments != null)

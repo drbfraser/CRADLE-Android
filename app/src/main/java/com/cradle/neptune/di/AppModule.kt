@@ -6,7 +6,6 @@ import dagger.hilt.components.SingletonComponent
 
 @InstallIn(SingletonComponent::class)
 @Module(includes = [
-    DataModule::class,
-    ViewModelModule::class
+    DataModule::class
 ])
-interface AppModuleHilt
+interface AppModule

@@ -11,7 +11,7 @@ import com.cradle.neptune.model.HealthFacility
  * manages data for access by UI in a safely manager
  */
 class HealthFacilityViewModel @ViewModelInject constructor(
-    val healthCentreManager: HealthCentreManager
+    private val healthCentreManager: HealthCentreManager
 ) : ViewModel() {
 
     fun getAllFacilities() = healthCentreManager.getLiveList

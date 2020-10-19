@@ -3,9 +3,7 @@ package com.cradle.neptune.view.ui.reading
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.cradle.neptune.viewmodel.PatientReadingViewModel
-import com.cradle.neptune.viewmodel.PatientReadingViewModelFactory
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
 /**
  * Base class for other ReadingFragments
@@ -19,13 +17,7 @@ import javax.inject.Inject
  */
 @AndroidEntryPoint
 abstract class BaseFragment : Fragment() {
-    // Injection is handled by ReadingActivity.
-    @Inject
-    lateinit var viewModelFactory: PatientReadingViewModelFactory
-
     // ViewModel is scoped to the Activity that this Fragment is attached to; therefore, this is
     // shared by all Fragments.
-    protected val viewModel: PatientReadingViewModel by activityViewModels {
-        viewModelFactory
-    }
+    protected val viewModel: PatientReadingViewModel by activityViewModels()
 }

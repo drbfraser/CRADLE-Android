@@ -27,11 +27,9 @@ import com.cradle.neptune.databinding.ActivityPlaceholderBinding
 import com.cradle.neptune.utilitiles.dismissKeyboard
 import com.cradle.neptune.view.ui.reading.PatientIdConflictDialogFragment
 import com.cradle.neptune.viewmodel.PatientReadingViewModel
-import com.cradle.neptune.viewmodel.PatientReadingViewModelFactory
 import com.cradle.neptune.viewmodel.ReadingFlowError
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -44,13 +42,8 @@ class ReadingActivity : AppCompatActivity() {
 
     private var binding: ActivityPlaceholderBinding? = null
 
-    @Inject
-    lateinit var viewModelFactory: PatientReadingViewModelFactory
-
     // ViewModel shared by all Fragments.
-    private val viewModel: PatientReadingViewModel by viewModels {
-        viewModelFactory
-    }
+    private val viewModel: PatientReadingViewModel by viewModels()
 
     override fun onDestroy() {
         super.onDestroy()
