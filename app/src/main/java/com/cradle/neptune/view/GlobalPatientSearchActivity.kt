@@ -14,7 +14,6 @@ import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradle.neptune.R
-import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.ext.hideKeyboard
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
@@ -23,6 +22,7 @@ import com.cradle.neptune.net.RestApi
 import com.cradle.neptune.net.Success
 import com.cradle.neptune.viewmodel.GlobalPatientAdapter
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -35,6 +35,7 @@ import kotlinx.coroutines.withContext
  * BUG: when you click on a patient from the list, go to [GlobalPatientProfileActivity] and save patient locally
  * than coming back to this activity will not update the recyclerview
  */
+@AndroidEntryPoint
 class GlobalPatientSearchActivity : AppCompatActivity() {
 
     @Inject
@@ -54,8 +55,6 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_global_patient_search)
-        // inject:
-        (application as MyApp).appComponent.inject(this)
         MainScope().launch {
             localPatientSet = patientManager.getPatientIdsOnly().toHashSet()
         }

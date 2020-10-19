@@ -1,6 +1,6 @@
-package com.cradle.neptune.dagger
+package com.cradle.neptune.di
 
-import android.app.Application
+import android.content.Context
 import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
 import androidx.room.Room
@@ -12,49 +12,50 @@ import com.cradle.neptune.manager.HealthCentreManager
 import com.cradle.neptune.net.Http
 import dagger.Module
 import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.components.ApplicationComponent
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Singleton
 
 /**
  * Provide the singleton objects for data access
  * Source: https://github.com/codepath/android_guides/wiki/Dependency-Injection-with-Dagger-2#instantiating-the-component
  */
+@InstallIn(ApplicationComponent::class)
 @Module
 class DataModule {
     @Provides
     @Singleton
-    fun provideDatabase(application: Application?): CradleDatabase {
+    fun provideDatabase(@ApplicationContext context: Context): CradleDatabase {
         return Room.databaseBuilder(
-            application!!,
+            context,
             CradleDatabase::class.java,
             "room-readingDB"
         ).build()
     }
 
     @Provides
-    @Singleton
     fun providePatientDao(database: CradleDatabase): PatientDaoAccess =
         database.patientDaoAccess()
 
     @Provides
-    @Singleton
     fun provideReadingDao(database: CradleDatabase): ReadingDaoAccess =
         database.readingDaoAccess()
 
     @Provides
-    @Singleton
     fun provideHealthFacilityDao(database: CradleDatabase): HealthFacilityDaoAccess =
         database.healthFacilityDaoAccess()
 
     @Provides
     @Singleton
-    fun provideHealthCentreService(database: CradleDatabase?): HealthCentreManager {
-        return HealthCentreManager(database!!)
+    fun provideHealthCentreService(database: CradleDatabase): HealthCentreManager {
+        return HealthCentreManager(database)
     }
 
     @Provides
     @Singleton
-    fun providesSharedPreferences(application: Application?): SharedPreferences {
-        return PreferenceManager.getDefaultSharedPreferences(application)
+    fun providesSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
+        return PreferenceManager.getDefaultSharedPreferences(context)
     }
 
     @Provides

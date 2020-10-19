@@ -17,7 +17,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cradle.neptune.R;
-import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.manager.PatientManager;
 import com.cradle.neptune.manager.ReadingManager;
 import com.cradle.neptune.model.Patient;
@@ -37,9 +36,11 @@ import java.util.List;
 import javax.inject.Inject;
 
 
+import dagger.hilt.android.AndroidEntryPoint;
+
 import static com.cradle.neptune.view.DashBoardActivity.READING_ACTIVITY_DONE;
 
-
+@AndroidEntryPoint
 public class PatientProfileActivity extends AppCompatActivity {
 
     static final double WEEKS_IN_MONTH = 4.34524;
@@ -70,7 +71,6 @@ public class PatientProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_patient_profile);
-        ((MyApp) getApplication()).getAppComponent().inject(this);
         initAllFields();
         if (!getLocalPatient()) {
             //not a local patient, might be a child class so we let the child do the init stuff

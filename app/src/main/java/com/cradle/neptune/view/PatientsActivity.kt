@@ -15,13 +15,13 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradle.neptune.R
-import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.viewmodel.PatientsViewAdapter
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+import dagger.hilt.android.AndroidEntryPoint
 import java.util.ArrayList
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers.IO
@@ -30,6 +30,7 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@AndroidEntryPoint
 class PatientsActivity : AppCompatActivity() {
     @Inject
     lateinit var readingManager: ReadingManager
@@ -40,10 +41,6 @@ class PatientsActivity : AppCompatActivity() {
     private lateinit var patientsViewAdapter: PatientsViewAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // inject:
-        (application as MyApp).appComponent.inject(this)
-
-        // setup UI
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_patients)
 

@@ -12,7 +12,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.cradle.neptune.R
-import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.ext.hideKeyboard
 import com.cradle.neptune.manager.LoginManager
 import com.cradle.neptune.net.Failure
@@ -23,6 +22,7 @@ import com.google.android.gms.common.GooglePlayServicesNotAvailableException
 import com.google.android.gms.common.GooglePlayServicesRepairableException
 import com.google.android.gms.security.ProviderInstaller
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import javax.net.ssl.SSLHandshakeException
 import kotlinx.coroutines.Dispatchers
@@ -30,6 +30,7 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
 
     @Inject
@@ -39,10 +40,9 @@ class LoginActivity : AppCompatActivity() {
     lateinit var loginManager: LoginManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        (application as MyApp).appComponent.inject(this)
         // no need to load anything if already logged in.
-        checkSharedPrefForLogin()
         super.onCreate(savedInstanceState)
+        checkSharedPrefForLogin()
         setContentView(R.layout.activity_login)
         setupLogin()
     }

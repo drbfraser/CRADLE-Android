@@ -8,15 +8,16 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager.widget.ViewPager
 import com.cradle.neptune.BuildConfig
 import com.cradle.neptune.R
-import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.utilitiles.Util
 import com.cradle.neptune.view.ui.intro.IntroBaseFragment
 import com.cradle.neptune.view.ui.intro.IntroSectionsPagerAdapter
 import com.cradle.neptune.view.ui.intro.MyIntroFragmentInteractionListener
 import com.cradle.neptune.view.ui.intro.PermissionsFragment.Companion.areAllPermissionsGranted
 import com.cradle.neptune.view.ui.intro.SwipeControlViewPager
+import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class IntroActivity : AppCompatActivity(), MyIntroFragmentInteractionListener {
     @Inject
     lateinit var sharedPreferences: SharedPreferences
@@ -26,8 +27,6 @@ class IntroActivity : AppCompatActivity(), MyIntroFragmentInteractionListener {
     // Reading object shared by all fragments:
     private var lastKnownTab = -1
     override fun onCreate(savedInstanceState: Bundle?) {
-        // inject:
-        (application as MyApp).appComponent.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_intro)
         setupTabs()

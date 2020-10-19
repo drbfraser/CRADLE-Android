@@ -2,8 +2,8 @@ package com.cradle.neptune.view.ui.settings.ui.healthFacility;
 
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -11,31 +11,34 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cradle.neptune.R;
-import com.cradle.neptune.dagger.MyApp;
 import com.cradle.neptune.model.HealthFacility;
 import com.cradle.neptune.viewmodel.HealthFacilitiesAdapter;
 import com.cradle.neptune.viewmodel.HealthFacilityViewModel;
 
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class HealthFacilitiesActivity extends AppCompatActivity {
 
     private SearchView searchView;
     private HealthFacilitiesAdapter healthFacilitiesAdapter;
     private HealthFacilityViewModel healthFacilityViewModel;
 
+    public static Intent makeIntent(Context context) {
+        return new Intent(context, HealthFacilitiesActivity.class);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        healthFacilityViewModel = new ViewModelProvider(this)
+                .get(HealthFacilityViewModel.class);
         setContentView(R.layout.activity_health_facilities);
-
-        ((MyApp) getApplication()).getAppComponent().inject(this);
-
-        //todo figure oout the new way to instantiate it.
-        healthFacilityViewModel = ViewModelProviders.of(this).get(HealthFacilityViewModel.class);
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);

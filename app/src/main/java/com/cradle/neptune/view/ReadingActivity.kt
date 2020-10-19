@@ -16,8 +16,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import androidx.navigation.NavController
@@ -25,20 +23,20 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.navOptions
 import com.cradle.neptune.R
-import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.databinding.ActivityPlaceholderBinding
 import com.cradle.neptune.utilitiles.dismissKeyboard
-import com.cradle.neptune.view.ui.reading.BaseFragment
 import com.cradle.neptune.view.ui.reading.PatientIdConflictDialogFragment
 import com.cradle.neptune.viewmodel.PatientReadingViewModel
 import com.cradle.neptune.viewmodel.PatientReadingViewModelFactory
 import com.cradle.neptune.viewmodel.ReadingFlowError
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 @SuppressWarnings("LargeClass")
+@AndroidEntryPoint
 class ReadingActivity : AppCompatActivity() {
     private lateinit var launchReason: LaunchReason
 
@@ -60,25 +58,6 @@ class ReadingActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Adapted from https://github.com/android/architecture-components-samples/blob/
-        //     7686abc4bba087c8ee02f0ac569093bf304245e6/GithubBrowserSample/app/src/main/java/com/
-        //     android/example/github/di/AppInjector.kt
-        (application as MyApp).appComponent.inject(this)
-        supportFragmentManager.registerFragmentLifecycleCallbacks(
-            object : FragmentManager.FragmentLifecycleCallbacks() {
-                override fun onFragmentCreated(
-                    fm: FragmentManager,
-                    f: Fragment,
-                    savedInstanceState: Bundle?
-                ) {
-                    if (f is BaseFragment) {
-                        (application as MyApp).appComponent.inject(f)
-                    }
-                }
-            },
-            true /* recursive */
-        )
-
         super.onCreate(savedInstanceState)
         // TODO: Use activity_reading when done design
         binding = DataBindingUtil.setContentView(this, R.layout.activity_placeholder)

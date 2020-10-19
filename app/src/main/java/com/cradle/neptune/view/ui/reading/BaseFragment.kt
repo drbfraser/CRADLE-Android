@@ -4,6 +4,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.cradle.neptune.viewmodel.PatientReadingViewModel
 import com.cradle.neptune.viewmodel.PatientReadingViewModelFactory
+import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 /**
@@ -16,6 +17,7 @@ import javax.inject.Inject
  * [MyFragmentInteractionListener] interface to handle interaction events.
  * Use the newInstance() factory method to create an instance of derived fragment.
  */
+@AndroidEntryPoint
 abstract class BaseFragment : Fragment() {
     // Injection is handled by ReadingActivity.
     @Inject

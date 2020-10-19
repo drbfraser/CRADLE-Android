@@ -11,12 +11,12 @@ import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradle.neptune.R
-import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.model.GlobalPatient
 import com.cradle.neptune.net.Success
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter
 import com.cradle.neptune.viewmodel.ReadingRecyclerViewAdapter.OnClickElement
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.reading_card_assesment.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -26,11 +26,11 @@ import kotlinx.coroutines.withContext
 /**
  * This is a child class of [PatientProfileActivity] and uses some functions from the parent class.
  */
+@AndroidEntryPoint
 class GlobalPatientProfileActivity : PatientProfileActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        (application as MyApp).appComponent.inject(this)
         getGlobalPatient()
     }
 

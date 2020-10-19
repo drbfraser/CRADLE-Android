@@ -3,7 +3,6 @@ package com.cradle.neptune.sync
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
-import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.model.Patient
@@ -14,7 +13,10 @@ import com.cradle.neptune.net.Failure
 import com.cradle.neptune.net.NetworkResult
 import com.cradle.neptune.net.RestApi
 import com.cradle.neptune.net.Success
-import javax.inject.Inject
+import dagger.hilt.EntryPoint
+import dagger.hilt.EntryPoints
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.withContext
@@ -31,19 +33,34 @@ class SyncStepperImplementation(
     private val stepperCallback: SyncStepperCallback
 ) : SyncStepper {
 
-    @Inject
-    lateinit var restApi: RestApi
+    private val restApi: RestApi
 
-    @Inject
-    lateinit var patientManager: PatientManager
+    private val patientManager: PatientManager
 
-    @Inject
-    lateinit var readingManager: ReadingManager
+    private val readingManager: ReadingManager
 
-    @Inject
-    lateinit var sharedPreferences: SharedPreferences
+    private val sharedPreferences: SharedPreferences
 
     private lateinit var updateApiData: SyncUpdate
+
+    init {
+        // We have to do this since we're not getting SyncStepperImplementation injected (?)
+        EntryPoints.get(context.applicationContext, SyncStepperInterface::class.java).let {
+            restApi = it.getRestApi()
+            patientManager = it.getPatientManager()
+            readingManager = it.getReadingManager()
+            sharedPreferences = it.getSharedPreferences()
+        }
+    }
+
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface SyncStepperInterface {
+        fun getRestApi(): RestApi
+        fun getPatientManager(): PatientManager
+        fun getReadingManager(): ReadingManager
+        fun getSharedPreferences(): SharedPreferences
+    }
 
     /**
      * These variables keep track of all the upload and download requests made.
@@ -52,10 +69,6 @@ class SyncStepperImplementation(
     private lateinit var downloadRequestStatus: TotalRequestStatus
 
     private val errorHashMap = HashMap<Int?, String?>()
-
-    init {
-        (context.applicationContext as MyApp).appComponent.inject(this)
-    }
 
     companion object {
         const val LAST_SYNC = "lastSyncTime"

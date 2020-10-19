@@ -1,6 +1,6 @@
 package com.cradle.neptune.viewmodel
 
-import android.app.Application
+import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.util.Log
@@ -9,10 +9,10 @@ import androidx.annotation.IdRes
 import androidx.annotation.MainThread
 import androidx.collection.ArrayMap
 import androidx.collection.arrayMapOf
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import com.cradle.neptune.R
@@ -59,8 +59,8 @@ private const val GEST_AGE_UNIT_MONTHS_INDEX = 1
 class PatientReadingViewModel constructor(
     private val readingManager: ReadingManager,
     private val patientManager: PatientManager,
-    private val app: Application
-) : AndroidViewModel(app) {
+    private val app: Context
+) : ViewModel() {
     private val patientBuilder = LiveDataDynamicModelBuilder()
     private val readingBuilder = LiveDataDynamicModelBuilder()
 

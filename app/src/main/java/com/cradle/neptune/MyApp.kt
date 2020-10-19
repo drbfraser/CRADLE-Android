@@ -1,4 +1,4 @@
-package com.cradle.neptune.dagger
+package com.cradle.neptune
 
 import android.app.Activity
 import android.content.pm.ActivityInfo
@@ -7,39 +7,22 @@ import android.util.Log
 import androidx.multidex.MultiDexApplication
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.wonderkiln.blurkit.BlurKit
-import dagger.android.AndroidInjector
-import dagger.android.DispatchingAndroidInjector
-import dagger.android.HasAndroidInjector
-import javax.inject.Inject
+import dagger.hilt.android.HiltAndroidApp
 
 /**
  * Allow access to Dagger single instance of Component
  * Source: https://github.com/codepath/android_guides/wiki/Dependency-Injection-with-Dagger-2#instantiating-the-component
  */
 @Suppress("EmptyFunctionBlock")
-class MyApp : MultiDexApplication(), HasAndroidInjector {
-    @Inject
-    lateinit var activityInjector: DispatchingAndroidInjector<Activity>
-
-    val appComponent: AppComponent by lazy {
-        DaggerAppComponent.builder()
-            .appModule(AppModule(this))
-            .dataModule(DataModule())
-            .viewModelModule(ViewModelModule())
-            .build()
-    }
+@HiltAndroidApp
+class MyApp : MultiDexApplication() {
     var isDisableBlurKit = false
 
     override fun onCreate() {
         super.onCreate()
-        appComponent.inject(this)
         // Initialize the time library:
         // https://github.com/JakeWharton/ThreeTenABP
         AndroidThreeTen.init(this)
-
-        // If a Dagger 2 component does not have any constructor arguments for any of its modules,
-        // then we can use .create() as a shortcut instead:
-        //  mAppComponent = com.codepath.dagger.components.DaggerAppComponent.create();
 
         // Disable rotation
         // source: https://stackoverflow.com/questions/6745797/how-to-set-entire-application-in-portrait-mode-only/9784269#9784269
@@ -72,7 +55,4 @@ class MyApp : MultiDexApplication(), HasAndroidInjector {
             isDisableBlurKit = true
         }
     }
-
-    @Suppress("UNCHECKED_CAST")
-    override fun androidInjector(): AndroidInjector<Any> = activityInjector as AndroidInjector<Any>
 }

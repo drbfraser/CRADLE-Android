@@ -10,7 +10,7 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.cradle.neptune.dagger.MyApp;
+import com.cradle.neptune.MyApp;
 import com.cradle.neptune.ocr.tflite.Classifier;
 import com.cradle.neptune.ocr.tflite.TFLiteObjectDetectionAPIModel;
 import com.cradle.neptune.utilitiles.TFImageUtils;
