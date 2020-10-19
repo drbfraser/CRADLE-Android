@@ -63,6 +63,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
+                            android:enabled="@{viewModel.isInputEnabled}"
                             android:text="@string/fragment_vital_signs_take_picture_button"
                             app:icon="@drawable/ic_baseline_camera_alt_24"
                             app:layout_constraintEnd_toEndOf="parent"
@@ -75,6 +76,7 @@
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
                             android:layout_marginTop="8dp"
+                            android:enabled="@{viewModel.isInputEnabled}"
                             android:hint="@string/fragment_vital_signs_systolic_label"
                             android:paddingBottom="0dp"
                             bind:errorMessage='@{viewModel.errorMap["systolic"]}'
@@ -98,6 +100,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled}"
                             android:hint="@string/fragment_vital_signs_diastolic_label"
                             android:paddingBottom="0dp"
                             bind:errorMessage='@{viewModel.errorMap["diastolic"]}'
@@ -121,6 +124,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled}"
                             android:hint="@string/fragment_vital_signs_heart_rate_label"
                             android:paddingBottom="0dp"
                             bind:errorMessage='@{viewModel.errorMap["heartRate"]}'
@@ -164,6 +168,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled}"
                             android:hint="@string/fragment_vital_signs_respiratory_rate_label"
                             android:paddingBottom="0dp"
                             app:helperText=" "
@@ -187,6 +192,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled}"
                             android:hint="@string/fragment_vital_signs_oxygen_saturation_label"
                             android:paddingBottom="0dp"
                             app:helperText=" "
@@ -210,6 +216,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled}"
                             android:hint="@string/fragment_vital_signs_temperature_label"
                             android:paddingBottom="0dp"
                             app:helperText=" "
@@ -263,6 +270,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
+                            android:enabled="@{viewModel.isInputEnabled}"
                             android:checked="@={viewModel.isUsingUrineTest}"
                             app:layout_constraintBaseline_toBaselineOf="@+id/urine_test_card_text_view"
                             app:layout_constraintStart_toEndOf="@+id/urine_test_card_text_view" />

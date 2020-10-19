@@ -79,6 +79,7 @@ class SymptomsFragment : BaseFragment() {
                             Log.d(TAG, "DEBUG: checkbox $index is checked")
                             viewModel.setSymptomsState(index, isChecked)
                         }
+                        viewModel.isInputEnabled.observe(viewLifecycleOwner) { isEnabled = it }
                     }
                     .also { checkBoxContainer.addView(it) }
             }
