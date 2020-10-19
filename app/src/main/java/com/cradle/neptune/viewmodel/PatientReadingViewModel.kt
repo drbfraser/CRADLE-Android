@@ -9,12 +9,10 @@ import androidx.annotation.IdRes
 import androidx.annotation.MainThread
 import androidx.collection.ArrayMap
 import androidx.collection.arrayMapOf
-import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
@@ -63,8 +61,7 @@ private const val GEST_AGE_UNIT_MONTHS_INDEX = 1
 class PatientReadingViewModel @ViewModelInject constructor(
     private val readingManager: ReadingManager,
     private val patientManager: PatientManager,
-    @ApplicationContext private val app: Context,
-    @Assisted private val state: SavedStateHandle
+    @ApplicationContext private val app: Context
 ) : ViewModel() {
     private val patientBuilder = LiveDataDynamicModelBuilder()
     private val readingBuilder = LiveDataDynamicModelBuilder()
@@ -118,15 +115,13 @@ class PatientReadingViewModel @ViewModelInject constructor(
             isInitializedMutex.lock()
             val startTime = System.currentTimeMillis()
             try {
+                Log.d(TAG, "initialize start")
                 if (_isInitialized.value == true) {
-                    Log.d(TAG, "tried to initialize twice with launchReason $reasonForLaunch")
                     return@launch
                 }
-                Log.d(TAG, "initialize start with launchReason $reasonForLaunch")
 
                 if (reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
                     // _isInitialized will be set to true via the finally branch.
-                    loadFromSavedState()
                     return@launch
                 }
 
@@ -194,7 +189,6 @@ class PatientReadingViewModel @ViewModelInject constructor(
      */
     @GuardedBy("isInitializedMutex")
     private suspend fun decompose(patient: Patient) = withContext(Dispatchers.Main) {
-
         patientBuilder.decompose(patient)
     }
 
@@ -1140,64 +1134,8 @@ class PatientReadingViewModel @ViewModelInject constructor(
         }
     }
 
-    private val allPatientFields: Array<MutableLiveData<*>> = arrayOf(
-        patientName, patientId, patientDob, patientAge, patientGestationalAge, patientSex,
-        patientIsPregnant, patientVillageNumber, patientDrugHistory, patientMedicalHistory
-    )
-
-    @MainThread
-    fun onSaveInstanceState() {
-        state.apply {
-            set(HAS_SAVED_KEY, true)
-            val validPatient = attemptToBuildValidPatient()
-            if (validPatient != null) {
-                set(VALID_PATIENT_KEY, validPatient)
-                Log.d(TAG, "onSaveInstanceState: patient saved")
-            } else {
-                remove<Patient>(VALID_PATIENT_KEY)
-                allPatientFields.forEachIndexed { index, mutableLiveData ->
-                    val currentKey = "patientField-$index"
-                    set(currentKey, mutableLiveData.value)
-                    Log.d(TAG, "onSaveInstanceState: put ${mutableLiveData.value} for $currentKey")
-                }
-                Log.d(TAG, "onSaveInstanceState: patient LiveData values saved")
-            }
-        }
-        Log.d(TAG, "onSaveInstanceState: the keys are ${state.keys()}")
-
-    }
-
-    @MainThread
-    private suspend fun loadFromSavedState() {
-        Log.d(TAG, "loadFromSavedState: the keys are ${state.keys()}")
-
-        if (state.get<Boolean>(HAS_SAVED_KEY) != true) {
-            Log.d(TAG, "loadFromSavedState: no saved state, got ${state.get<Boolean>(HAS_SAVED_KEY)}")
-            return
-        }
-        Log.d(TAG, "loadFromSavedState: loading from saved state")
-
-        state.apply {
-            if (state.contains(VALID_PATIENT_KEY)) {
-                Log.d(TAG, "loadFromSavedState: trying to get patient since it contains the key")
-                val validPatient = state.get<Patient>(VALID_PATIENT_KEY) ?: return@apply
-                decompose(validPatient)
-            } else {
-                allPatientFields.forEachIndexed { index, mutableLiveData ->
-                    val currentKey = "patientField-$index"
-                    if (contains(currentKey)) {
-                        Log.d(TAG, "loadFromSavedState: putting ${get<Any?>(currentKey)} for index $index")
-                        mutableLiveData.value = get(currentKey)
-                    }
-                }
-            }
-        }
-    }
-
     companion object {
         private const val TAG = "PatientReadingViewModel"
-        private const val VALID_PATIENT_KEY = "validPatient"
-        private const val HAS_SAVED_KEY = "hasSaved"
     }
 }
 
