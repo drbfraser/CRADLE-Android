@@ -131,11 +131,16 @@ class PatientReadingViewModel @ViewModelInject constructor(
                         reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_EXISTINGNEW) {
                     val patient = patientManager.getPatientById(patientId)
                         ?: error("no patient with given id")
+                    updateActionBarAndSubtitle(
+                        R.id.loadingFragment,
+                        patient.name, patient.id,
+                        ignoreTitle = true
+                    )
                     decompose(patient)
                     return@launch
                 }
 
-                // At this point, we expect to be doing something with the patient itself.
+                // At this point, we expect to be doing something with a previous reading.
                 check(!readingId.isNullOrBlank()) {
                     "was given no readingId despite not creating new reading"
                 }
@@ -144,6 +149,11 @@ class PatientReadingViewModel @ViewModelInject constructor(
                     ?: error("no reading associated with given id")
                 val patient = patientManager.getPatientById(reading.patientId)
                     ?: error("no patient associated with given reading")
+                updateActionBarAndSubtitle(
+                    R.id.loadingFragment,
+                    patient.name, patient.id,
+                    ignoreTitle = true
+                )
 
                 when (reasonForLaunch) {
                     ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT_READING -> {
@@ -945,7 +955,8 @@ class PatientReadingViewModel @ViewModelInject constructor(
      */
     @MainThread
     fun onDestinationChange(@IdRes currentDestinationId: Int) {
-        updateActionBarAndSubtitle(currentDestinationId)
+
+        updateActionBarAndSubtitle(currentDestinationId, patientName.value, patientId.value)
         clearBottomNavBarMessage()
         if (_isInitialized.value == true) {
             setInputEnabledState(true)
@@ -1012,43 +1023,53 @@ class PatientReadingViewModel @ViewModelInject constructor(
         }
     }
 
-    private fun updateActionBarAndSubtitle(@IdRes currentDestination: Int) {
+    private fun updateActionBarAndSubtitle(
+        @IdRes currentDestination: Int,
+        patientName: String?,
+        patientId: String?,
+        ignoreTitle: Boolean = false
+    ) {
         val subtitle = when (currentDestination) {
-            R.id.loadingFragment, R.id.patientInfoFragment -> null
+            R.id.patientInfoFragment -> null
             else -> {
-                if (patientName.value == null || patientId.value == null) {
+                if (patientName == null || patientId == null) {
                     null
                 } else {
                     app.getString(
                         R.string.reading_activity_subtitle_name_and_id,
-                        patientName.value, patientId.value
+                        patientName, patientId
                     )
                 }
             }
         }
 
-        val title = when (reasonForLaunch) {
-            ReadingActivity.LaunchReason.LAUNCH_REASON_NEW -> {
-                if (currentDestination == R.id.patientInfoFragment ||
+        val (currentTitle, currentSubtitle) = _actionBarTitleAndSubtitle.value ?: Pair("", null)
+
+        val title = if (ignoreTitle) {
+            currentTitle
+        } else {
+            when (reasonForLaunch) {
+                ReadingActivity.LaunchReason.LAUNCH_REASON_NEW -> {
+                    if (currentDestination == R.id.patientInfoFragment ||
                         currentDestination == R.id.loadingFragment) {
-                    app.getString(R.string.reading_activity_title_new_patient)
-                } else {
+                        app.getString(R.string.reading_activity_title_new_patient)
+                    } else {
+                        app.getString(R.string.reading_activity_title_create_new_reading)
+                    }
+                }
+                ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT_READING -> {
+                    app.getString(R.string.reading_activity_title_editing_reading)
+                }
+                ReadingActivity.LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {
                     app.getString(R.string.reading_activity_title_create_new_reading)
                 }
+                ReadingActivity.LaunchReason.LAUNCH_REASON_RECHECK -> {
+                    app.getString(R.string.reading_activity_title_recheck_vitals)
+                }
+                else -> error("need a launch reason to be in ReadingActivity")
             }
-            ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT_READING -> {
-                app.getString(R.string.reading_activity_title_editing_reading)
-            }
-            ReadingActivity.LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {
-                app.getString(R.string.reading_activity_title_create_new_reading)
-            }
-            ReadingActivity.LaunchReason.LAUNCH_REASON_RECHECK -> {
-                app.getString(R.string.reading_activity_title_recheck_vitals)
-            }
-            else -> error("need a launch reason to be in ReadingActivity")
         }
 
-        val (currentTitle, currentSubtitle) = _actionBarTitleAndSubtitle.value ?: Pair("", null)
         if (currentTitle == title && currentSubtitle == subtitle) {
             return
         }
