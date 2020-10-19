@@ -131,11 +131,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
                         reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_EXISTINGNEW) {
                     val patient = patientManager.getPatientById(patientId)
                         ?: error("no patient with given id")
-                    updateActionBarAndSubtitle(
-                        R.id.loadingFragment,
-                        patient.name, patient.id,
-                        ignoreTitle = true
-                    )
+                    updateActionBarSubtitle(patient.name, patient.id)
                     decompose(patient)
                     return@launch
                 }
@@ -149,11 +145,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
                     ?: error("no reading associated with given id")
                 val patient = patientManager.getPatientById(reading.patientId)
                     ?: error("no patient associated with given reading")
-                updateActionBarAndSubtitle(
-                    R.id.loadingFragment,
-                    patient.name, patient.id,
-                    ignoreTitle = true
-                )
+                updateActionBarSubtitle(patient.name, patient.id)
 
                 when (reasonForLaunch) {
                     ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT_READING -> {
@@ -673,132 +665,6 @@ class PatientReadingViewModel @ViewModelInject constructor(
             as MutableLiveData<MutableList<String>?>
 
     /**
-     * Required to guard against modifications to [_errorMap], since changing the [_errorMap] is not
-     * done on **the** (singular) main thread.
-     */
-    private val errorMapMutex = Mutex()
-    /**
-     * A map of KProperty.name to error messages. If an error message is null, that means the field
-     * is valid. The values are set from the function [testValueForValidityAndSetErrorMapAsync]]
-     *
-     * Modifications to the _errorMap value must be done when [errorMapMutex] is held.
-     *
-     * @see errorMap
-     * @see [testValueForValidityAndSetErrorMapAsync]
-     */
-    @GuardedBy("errorMapMutex")
-    private val _errorMap = MediatorLiveData<ArrayMap<String, String?>>().apply {
-        value = arrayMapOf()
-        addSource(patientId) {
-            testValueForValidityAndSetErrorMapAsync(
-                value = it, propertyToCheck = Patient::id, verifier = Patient.Companion
-            )
-        }
-        addSource(patientName) {
-            testValueForValidityAndSetErrorMapAsync(
-                value = it, propertyToCheck = Patient::name, verifier = Patient.Companion
-            )
-        }
-        addSource(patientVillageNumber) {
-            testValueForValidityAndSetErrorMapAsync(
-                value = it, propertyToCheck = Patient::villageNumber, verifier = Patient.Companion
-            )
-        }
-        addSource(patientDob) {
-            if (_isUsingDateOfBirth.value == false) {
-                // The date of birth and age will use the same key for the error map.
-                // Prefer errors that come from the age if using age.
-                return@addSource
-            }
-            testValueForValidityAndSetErrorMapAsync(
-                value = it, propertyToCheck = Patient::dob,
-                verifier = Patient.Companion, propertyForErrorMapKey = Patient::age
-            )
-        }
-        addSource(patientAge) {
-            if (_isUsingDateOfBirth.value == true) {
-                // The date of birth and age will use the same key for the error map.
-                // Prefer errors that come from the date of birth if using date of birth.
-                return@addSource
-            }
-            testValueForValidityAndSetErrorMapAsync(
-                value = it, propertyToCheck = Patient::age, verifier = Patient.Companion
-            )
-        }
-        addSource(patientGestationalAge) {
-            testValueForValidityAndSetErrorMapAsync(
-                value = it, propertyToCheck = Patient::gestationalAge, verifier = Patient.Companion
-            )
-        }
-        addSource(patientSex) {
-            testValueForValidityAndSetErrorMapAsync(
-                value = it, propertyToCheck = Patient::sex, verifier = Patient.Companion
-            )
-        }
-
-        // Errors from Readings
-        addSource(bloodPressureSystolicInput) {
-            testValueForValidityAndSetErrorMapAsync(
-                value = it, propertyToCheck = BloodPressure::systolic,
-                verifier = BloodPressure.Companion
-            )
-        }
-        addSource(bloodPressureDiastolicInput) {
-            testValueForValidityAndSetErrorMapAsync(
-                value = it, propertyToCheck = BloodPressure::diastolic,
-                verifier = BloodPressure.Companion
-            )
-        }
-        addSource(bloodPressureHeartRateInput) {
-            testValueForValidityAndSetErrorMapAsync(
-                value = it, propertyToCheck = BloodPressure::heartRate,
-                verifier = BloodPressure.Companion
-            )
-        }
-
-        val urineTestLiveDataMap = arrayMapOf(
-            UrineTest::leukocytes to urineTestLeukocytesInput,
-            UrineTest::nitrites to urineTestNitritesInput,
-            UrineTest::glucose to urineTestGlucoseInput,
-            UrineTest::protein to urineTestProteinInput,
-            UrineTest::blood to urineTestBloodInput
-        )
-        for ((property, liveData) in urineTestLiveDataMap) {
-            addSource(liveData) {
-                if (isUsingUrineTest.value == false) return@addSource
-
-                testValueForValidityAndSetErrorMapAsync(
-                    value = it, propertyToCheck = property, verifier = UrineTest.FromJson
-                )
-            }
-        }
-        addSource(isUsingUrineTest) {
-            // Clear all urine test errors if it is disabled.
-            if (it != false) return@addSource
-            viewModelScope.launch(Dispatchers.Default) {
-                errorMapMutex.lock()
-                val currentErrorMap = value ?: return@launch
-                for ((property, _) in urineTestLiveDataMap) {
-                    currentErrorMap.remove(property.name)
-                }
-                withContext(Dispatchers.Main) { value = currentErrorMap }
-                errorMapMutex.unlock()
-            }
-        }
-    }
-    /**
-     * Immutable LiveData variant of [_errorMap] so that Fragments can only observe this and not
-     * modify. The values are set from the function [testValueForValidityAndSetErrorMapAsync]
-     *
-     * Observed by Data Binding.
-     *
-     * @see _errorMap
-     * @see testValueForValidityAndSetErrorMapAsync
-     * @see com.cradle.neptune.binding.ReadingBindingAdapters.setError
-     */
-    val errorMap: LiveData<ArrayMap<String, String?>> = _errorMap
-
-    /**
      * Describes the age input state. If the value inside is true, that means that age is derived
      * from date of birth, and the user has to clear the date of birth before adding new input.
      * If the value inside is false, they can add an approximate age, or overwrite that with a
@@ -877,16 +743,16 @@ class PatientReadingViewModel @ViewModelInject constructor(
     val bottomNavBarMessage: LiveData<String>
         get() = _bottomNavBarMessage
 
-    private val _actionBarTitleAndSubtitle = MutableLiveData<Pair<String, String?>>("" to null)
-    val actionBarTitleAndSubtitle: LiveData<Pair<String, String?>>
-        get() = _actionBarTitleAndSubtitle
+    private val _actionBarSubtitle = MutableLiveData<String?>(null)
+    val actionBarSubtitle: LiveData<String?>
+        get() = _actionBarSubtitle
 
     /**
      * Handles next button clicking by validating the current Fragment inputs.
      * Will be run on the main thread to ensure the values are consistent.
      */
     @MainThread
-    suspend fun onNextButtonClicked(
+    suspend fun validateCurrentDestinationForNextButton(
         @IdRes currentDestinationId: Int
     ): Pair<ReadingFlowError, Patient?> = withContext(Dispatchers.Main) {
         when (currentDestinationId) {
@@ -924,7 +790,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
             }
             R.id.symptomsFragment -> return@withContext ReadingFlowError.NO_ERROR to null
             R.id.vitalSignsFragment -> {
-                return@withContext if (isVitalSignsFragmentInputValid()) {
+                return@withContext if (verifyVitalSignsFragment()) {
                     ReadingFlowError.NO_ERROR to null
                 } else {
                     ReadingFlowError.ERROR_INVALID_FIELDS to null
@@ -955,8 +821,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
      */
     @MainThread
     fun onDestinationChange(@IdRes currentDestinationId: Int) {
-
-        updateActionBarAndSubtitle(currentDestinationId, patientName.value, patientId.value)
+        updateActionBarSubtitle(patientName.value, patientId.value)
         clearBottomNavBarMessage()
         if (_isInitialized.value == true) {
             setInputEnabledState(true)
@@ -983,10 +848,10 @@ class PatientReadingViewModel @ViewModelInject constructor(
                         TAG, "next button uses symptomsFragment criteria: valid BloodPressure, " +
                             "and valid urine test if using urine test"
                     )
-                    value = isVitalSignsFragmentInputValid()
-                    addSource(bloodPressure) { value = isVitalSignsFragmentInputValid() }
-                    addSource(isUsingUrineTest) { value = isVitalSignsFragmentInputValid() }
-                    addSource(urineTest) { value = isVitalSignsFragmentInputValid() }
+                    launchVitalSignsFragmentVerifyJob()
+                    addSource(bloodPressure) { launchVitalSignsFragmentVerifyJob() }
+                    addSource(isUsingUrineTest) { launchVitalSignsFragmentVerifyJob() }
+                    addSource(urineTest) { launchVitalSignsFragmentVerifyJob() }
                 }
                 R.id.loadingFragment -> return
                 else -> return
@@ -1001,12 +866,15 @@ class PatientReadingViewModel @ViewModelInject constructor(
         withContext(Dispatchers.IO) {
             when (val result = patientManager.downloadPatientAndReading(patientId)) {
                 is Success -> {
+                    // Safe to cancel here since we only downloaded patients + readings
+                    // After this point, we shouldn't have cancellation points because we want the
+                    // resulting operations to be atomic.
                     yield()
 
                     val downloadedPatient = result.value.patient
                     val associateResult =
                         patientManager.associatePatientWithUser(downloadedPatient.id)
-                    if (associateResult.failed) {
+                    if (associateResult !is Success) {
                         emit(Result.failure(Throwable()))
                         return@withContext
                     }
@@ -1023,58 +891,29 @@ class PatientReadingViewModel @ViewModelInject constructor(
         }
     }
 
-    private fun updateActionBarAndSubtitle(
-        @IdRes currentDestination: Int,
-        patientName: String?,
-        patientId: String?,
-        ignoreTitle: Boolean = false
-    ) {
-        val subtitle = when (currentDestination) {
-            R.id.patientInfoFragment -> null
-            else -> {
-                if (patientName == null || patientId == null) {
-                    null
-                } else {
-                    app.getString(
-                        R.string.reading_activity_subtitle_name_and_id,
-                        patientName, patientId
-                    )
-                }
-            }
-        }
-
-        val (currentTitle, currentSubtitle) = _actionBarTitleAndSubtitle.value ?: Pair("", null)
-
-        val title = if (ignoreTitle) {
-            currentTitle
+    private fun updateActionBarSubtitle(patientName: String?, patientId: String?) {
+        val subtitle = if (patientName == null || patientId == null) {
+            null
         } else {
-            when (reasonForLaunch) {
-                ReadingActivity.LaunchReason.LAUNCH_REASON_NEW -> {
-                    if (currentDestination == R.id.patientInfoFragment ||
-                        currentDestination == R.id.loadingFragment) {
-                        app.getString(R.string.reading_activity_title_new_patient)
-                    } else {
-                        app.getString(R.string.reading_activity_title_create_new_reading)
-                    }
-                }
-                ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT_READING -> {
-                    app.getString(R.string.reading_activity_title_editing_reading)
-                }
-                ReadingActivity.LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {
-                    app.getString(R.string.reading_activity_title_create_new_reading)
-                }
-                ReadingActivity.LaunchReason.LAUNCH_REASON_RECHECK -> {
-                    app.getString(R.string.reading_activity_title_recheck_vitals)
-                }
-                else -> error("need a launch reason to be in ReadingActivity")
-            }
+            app.getString(
+                    R.string.reading_activity_subtitle_name_and_id,
+                    patientName, patientId
+                )
         }
-
-        if (currentTitle == title && currentSubtitle == subtitle) {
+        val currentSubtitle: String? = _actionBarSubtitle.value
+        if (currentSubtitle == subtitle) {
             return
         }
+        _actionBarSubtitle.value = subtitle
+    }
 
-        _actionBarTitleAndSubtitle.value = title to subtitle
+    private var vitalSignsFragmentVerifyJob: Job? = null
+
+    private fun launchVitalSignsFragmentVerifyJob() {
+        vitalSignsFragmentVerifyJob?.cancel()
+        vitalSignsFragmentVerifyJob = viewModelScope.launch {
+            _isNextButtonEnabled.value = verifyVitalSignsFragment()
+        }
     }
 
     /**
@@ -1084,11 +923,13 @@ class PatientReadingViewModel @ViewModelInject constructor(
      * Urine tests are optional, but if the reading is going to be using a urine test,
      * then it must be a valid urine test.
      */
-    private fun isVitalSignsFragmentInputValid(): Boolean {
+    private suspend fun verifyVitalSignsFragment(): Boolean = withContext(Dispatchers.Default) {
         val bloodPressureValid = bloodPressure.value?.isValidInstance(app) ?: false
-        if (!bloodPressureValid) return false
+        if (!bloodPressureValid) return@withContext false
 
-        return if (isUsingUrineTest.value != false) {
+        yield()
+
+        return@withContext if (isUsingUrineTest.value != false) {
             urineTest.value?.isValidInstance(app) ?: false
         } else {
             true
@@ -1096,69 +937,223 @@ class PatientReadingViewModel @ViewModelInject constructor(
     }
 
     /**
-     * Asynchronously tests the validity of the [value] for the [propertyToCheck] that belongs to
-     * the class that [verifier] verifies. If not valid, an error message will be added to the
-     * [_errorMap], which is map of error messages for a property that uses the name of
-     * [propertyForErrorMapKey] for the key. If valid, the error message for the property will be
-     * removed (so getting the error returns null).
+     * Sets the errorMessageManager. Must be initialized here below all the LiveData in order for it
+     * to add the LiveData above as its sources to listen to for errors.
+     */
+    private val errorMessageManager = ErrorMessageManager()
+
+    /**
+     * Immutable LiveData variant of [ErrorMessageManager.errorMap] so that Fragments can only
+     * observe this and not modify (and they just have to type less words)
      *
-     * By default, [propertyForErrorMapKey] is just [propertyToCheck], but this can be overridden
-     * for cases where we might want to share a single error key-value pair between two properties,
-     * like date of birth and age since they use the same EditText to display the errors.
+     * Observed by Data Binding.
      *
-     * The error messages are observed via the immutable LiveData [errorMap] in the XML layout files
-     * under the errorMessage attribute, and they update in real time.
-     *
-     * @see _errorMap
-     * @see errorMap
+     * @see ErrorMessageManager
      * @see com.cradle.neptune.binding.ReadingBindingAdapters.setError
      */
-    private fun testValueForValidityAndSetErrorMapAsync(
-        value: Any?,
-        propertyToCheck: KProperty<*>,
-        verifier: Verifier<*>,
-        propertyForErrorMapKey: KProperty<*> = propertyToCheck,
-        currentValuesMap: Map<String, Any?>? = null
-    ) {
-        viewModelScope.launch(Dispatchers.Default) {
-            // Selects the map to use for all the other fields on the form. The validity of a
-            // property might depend on other properties being there, e.g. a null date of birth is
-            // acceptable if there is an estimated age.
-            val currentValuesMapToUse = currentValuesMap
-                ?: when (verifier) {
-                    is Patient.Companion -> {
-                        patientBuilder.publicMap
+    val errorMap: LiveData<ArrayMap<String, String?>> = errorMessageManager.errorMap
+
+    /**
+     * An inner class that manages the [errorMap] which contain error messages that are instantly
+     * shown to the user as they type invalid input.
+     */
+    private inner class ErrorMessageManager {
+        /**
+         * Required to guard against modifications to [errorMap], since changing the [errorMap] is
+         * not done on **the** (singular) main thread.
+         */
+        private val errorMapMutex = Mutex()
+
+        /**
+         * A map of KProperty.name to error messages. If an error message is null, that means the
+         * field is valid. The values are set from the function
+         * [testValueForValidityAndSetErrorMapAsync]
+         *
+         * Modifications to the [errorMap] value must be done when [errorMapMutex] is held.
+         *
+         * @see [testValueForValidityAndSetErrorMapAsync]
+         */
+        @GuardedBy("errorMapMutex")
+        val errorMap = MediatorLiveData<ArrayMap<String, String?>>()
+
+        init {
+            // The reason we can't do this in Data Binding itself with some update callback function
+            // is that Data Binding doesn't support KProperty references like Patient::id.
+            errorMap.apply {
+                value = arrayMapOf()
+                addSource(patientId) {
+                    testValueForValidityAndSetErrorMapAsync(
+                        value = it, propertyToCheck = Patient::id, verifier = Patient.Companion
+                    )
+                }
+                addSource(patientName) {
+                    testValueForValidityAndSetErrorMapAsync(
+                        value = it, propertyToCheck = Patient::name, verifier = Patient.Companion
+                    )
+                }
+                addSource(patientVillageNumber) {
+                    testValueForValidityAndSetErrorMapAsync(
+                        value = it,
+                        propertyToCheck = Patient::villageNumber,
+                        verifier = Patient.Companion
+                    )
+                }
+                addSource(patientDob) {
+                    if (_isUsingDateOfBirth.value == false) {
+                        // The date of birth and age will use the same key for the error map.
+                        // Prefer errors that come from the age if using age.
+                        return@addSource
                     }
-                    is Reading.Companion -> {
-                        readingBuilder.publicMap
+                    testValueForValidityAndSetErrorMapAsync(
+                        value = it, propertyToCheck = Patient::dob,
+                        verifier = Patient.Companion, propertyForErrorMapKey = Patient::age
+                    )
+                }
+                addSource(patientAge) {
+                    if (_isUsingDateOfBirth.value == true) {
+                        // The date of birth and age will use the same key for the error map.
+                        // Prefer errors that come from the date of birth if using date of birth.
+                        return@addSource
                     }
-                    else -> {
-                        null
-                    }
+                    testValueForValidityAndSetErrorMapAsync(
+                        value = it, propertyToCheck = Patient::age, verifier = Patient.Companion
+                    )
+                }
+                addSource(patientGestationalAge) {
+                    testValueForValidityAndSetErrorMapAsync(
+                        value = it,
+                        propertyToCheck = Patient::gestationalAge,
+                        verifier = Patient.Companion
+                    )
+                }
+                addSource(patientSex) {
+                    testValueForValidityAndSetErrorMapAsync(
+                        value = it, propertyToCheck = Patient::sex, verifier = Patient.Companion
+                    )
                 }
 
-            val (isValid, errorMessage) = verifier.isValueValid(
-                property = propertyToCheck, value = value, context = app,
-                instance = null, currentValues = currentValuesMapToUse
-            )
+                // Errors from Readings
+                addSource(bloodPressureSystolicInput) {
+                    testValueForValidityAndSetErrorMapAsync(
+                        value = it, propertyToCheck = BloodPressure::systolic,
+                        verifier = BloodPressure.Companion
+                    )
+                }
+                addSource(bloodPressureDiastolicInput) {
+                    testValueForValidityAndSetErrorMapAsync(
+                        value = it, propertyToCheck = BloodPressure::diastolic,
+                        verifier = BloodPressure.Companion
+                    )
+                }
+                addSource(bloodPressureHeartRateInput) {
+                    testValueForValidityAndSetErrorMapAsync(
+                        value = it, propertyToCheck = BloodPressure::heartRate,
+                        verifier = BloodPressure.Companion
+                    )
+                }
 
-            val errorMessageForMap = if (!isValid) errorMessage else null
+                val urineTestLiveDataMap = arrayMapOf(
+                    UrineTest::leukocytes to urineTestLeukocytesInput,
+                    UrineTest::nitrites to urineTestNitritesInput,
+                    UrineTest::glucose to urineTestGlucoseInput,
+                    UrineTest::protein to urineTestProteinInput,
+                    UrineTest::blood to urineTestBloodInput
+                )
+                for ((property, liveData) in urineTestLiveDataMap) {
+                    addSource(liveData) {
+                        if (isUsingUrineTest.value == false) return@addSource
 
-            // Don't notify observers if the error message is the exact same message.
-            errorMapMutex.lock()
-            try {
-                val currentMap = _errorMap.value ?: arrayMapOf()
-                if (currentMap[propertyForErrorMapKey.name] != errorMessageForMap) {
-                    if (isValid) {
-                        currentMap.remove(propertyForErrorMapKey.name)
-                    } else {
-                        currentMap[propertyForErrorMapKey.name] = errorMessageForMap
+                        testValueForValidityAndSetErrorMapAsync(
+                            value = it, propertyToCheck = property, verifier = UrineTest.FromJson
+                        )
+                    }
+                }
+                addSource(isUsingUrineTest) {
+                    // Clear all urine test errors if it is disabled.
+                    if (it != false) return@addSource
+                    viewModelScope.launch(Dispatchers.Default) {
+                        errorMapMutex.lock()
+                        try {
+                            val currentErrorMap = value ?: return@launch
+                            for ((property, _) in urineTestLiveDataMap) {
+                                currentErrorMap.remove(property.name)
+                            }
+                            withContext(Dispatchers.Main) { value = currentErrorMap }
+                        } finally {
+                            errorMapMutex.unlock()
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * Asynchronously tests the validity of the [value] for the [propertyToCheck] that belongs
+         * to the class that [verifier] verifies. If not valid, an error message will be added to
+         * the [errorMap], which is map of error messages for a property that uses the name of
+         * [propertyForErrorMapKey] for the key. If valid, the error message for the property will
+         * be removed (so getting the error returns null).
+         *
+         * By default, [propertyForErrorMapKey] is just [propertyToCheck], but this can be
+         * overridden for cases where we might want to share a single error key-value pair between
+         * two properties, like date of birth and age since they use the same EditText to display
+         * the errors.
+         *
+         * The error messages are observed via the immutable LiveData [errorMap] in the XML layout
+         * files under the errorMessage attribute, and they update in real time.
+         *
+         * @see errorMap
+         * @see errorMap
+         * @see com.cradle.neptune.binding.ReadingBindingAdapters.setError
+         */
+        private fun testValueForValidityAndSetErrorMapAsync(
+            value: Any?,
+            propertyToCheck: KProperty<*>,
+            verifier: Verifier<*>,
+            propertyForErrorMapKey: KProperty<*> = propertyToCheck,
+            currentValuesMap: Map<String, Any?>? = null
+        ) {
+            viewModelScope.launch(Dispatchers.Default) {
+                // Selects the map to use for all the other fields on the form. The validity of a
+                // property might depend on other properties being there, e.g. a null date of birth is
+                // acceptable if there is an estimated age.
+                val currentValuesMapToUse = currentValuesMap
+                    ?: when (verifier) {
+                        is Patient.Companion -> {
+                            patientBuilder.publicMap
+                        }
+                        is Reading.Companion -> {
+                            readingBuilder.publicMap
+                        }
+                        else -> {
+                            null
+                        }
                     }
 
-                    withContext(Dispatchers.Main) { _errorMap.value = currentMap }
+                val (isValid, errorMessage) = verifier.isValueValid(
+                    property = propertyToCheck, value = value, context = app,
+                    instance = null, currentValues = currentValuesMapToUse
+                )
+
+                val errorMessageForMap = if (!isValid) errorMessage else null
+
+                errorMapMutex.lock()
+                try {
+                    val currentMap = errorMap.value ?: arrayMapOf()
+
+                    // Don't notify observers if the error message is the exact same message.
+                    if (currentMap[propertyForErrorMapKey.name] != errorMessageForMap) {
+                        if (isValid) {
+                            currentMap.remove(propertyForErrorMapKey.name)
+                        } else {
+                            currentMap[propertyForErrorMapKey.name] = errorMessageForMap
+                        }
+
+                        withContext(Dispatchers.Main) { errorMap.value = currentMap }
+                    }
+                } finally {
+                    errorMapMutex.unlock()
                 }
-            } finally {
-                errorMapMutex.unlock()
             }
         }
     }
@@ -1168,6 +1163,10 @@ class PatientReadingViewModel @ViewModelInject constructor(
     }
 }
 
+/**
+ * Describes errors that occur when the next button is pressed. The ReadingActivity must validate
+ * against these errors before moving on to the next destination.
+ */
 enum class ReadingFlowError {
     /**
      * When there are no errors with the current Fragment, this is returned to allow navigation to
@@ -1182,16 +1181,22 @@ enum class ReadingFlowError {
     ERROR_PATIENT_ID_IN_USE_LOCAL,
 
     /**
-     * This error occurs when there is a patient from the server whose ID is the same as the one
-     * being created. This error can only come up when the user has internet; it does not solve the
-     * conflict issue at all, just lowers the probability of it happening.
+     * This error occurs when there is a patient not in the user's local patients list but from the
+     * server whose ID is the same as the one being created. This error can only come up when the
+     * user has internet.
+     *
+     * It does not solve the conflict issue fully; it just lowers the probability of it happening.
+     * Even if we have internet, someone could have created a new patient with the same ID after
+     * this error is checked.
      */
     ERROR_PATIENT_ID_IN_USE_ON_SERVER,
 
     /**
      * This error occurs when there is am error in one of the fields for the current Fragment.
-     * This should rarely happen, since the Next button tries to make it so that it is enabled if
-     * and only if there are no errors in any of the fields.
+     * This should rarely happen, since the Next button tries to make it so that it is disabled if
+     * if there are errors in any of the fields. However, we need to check against it to prevent
+     * the user from inserting invalid Patients / Readings into their database and trying to upload
+     * that to the server.
      */
     ERROR_INVALID_FIELDS
 }

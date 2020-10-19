@@ -57,9 +57,14 @@ class ReadingActivity : AppCompatActivity() {
         binding?.viewModel = viewModel
         binding?.lifecycleOwner = this
 
+        val host: NavHostFragment = supportFragmentManager
+            .findFragmentById(R.id.reading_nav_host) as NavHostFragment? ?: return
+        val navController = host.navController
+
         check(intent.hasExtra(EXTRA_LAUNCH_REASON))
 
         launchReason = intent.getSerializableExtra(EXTRA_LAUNCH_REASON) as LaunchReason
+        navController.currentDestination?.id?.let { updateActionBarTitle(it, launchReason) }
         viewModel.initialize(
             launchReason = launchReason,
             readingId = intent.getStringExtra(EXTRA_READING_ID),
@@ -68,10 +73,6 @@ class ReadingActivity : AppCompatActivity() {
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar3)
         setSupportActionBar(toolbar)
-
-        val host: NavHostFragment = supportFragmentManager
-            .findFragmentById(R.id.reading_nav_host) as NavHostFragment? ?: return
-        val navController = host.navController
 
         // TODO: remove this when done
         // adapted from https://github.com/googlecodelabs/android-navigation
@@ -83,6 +84,7 @@ class ReadingActivity : AppCompatActivity() {
             }
             Log.d("ReadingActivity", "Navigated to $dest")
 
+            updateActionBarTitle(destination.id, launchReason)
             viewModel.onDestinationChange(destination.id)
 
             val bottomNavBar = findViewById<ConstraintLayout>(R.id.nav_button_bottom_layout)
@@ -111,44 +113,43 @@ class ReadingActivity : AppCompatActivity() {
             }
         }
 
-        viewModel.actionBarTitleAndSubtitle.observe(this@ReadingActivity) { titlePair ->
-            supportActionBar?.apply {
-                title = titlePair.first
-                subtitle = titlePair.second
-            }
+        viewModel.actionBarSubtitle.observe(this@ReadingActivity) {
+            supportActionBar?.apply { subtitle = it }
         }
 
-        viewModel.isInitialized.observe(this) { isInitialized ->
-            if (!isInitialized) {
-                Log.d("ReadingActivity", "not initialized")
-                viewModel.setInputEnabledState(false)
-                return@observe
-            }
-            viewModel.isInitialized.removeObservers(this)
-
-            if (navController.currentDestination?.id == R.id.loadingFragment) {
-                val actionId = when (getStartDestinationId()) {
-                    R.id.patientInfoFragment -> R.id.action_loadingFragment_to_patientInfoFragment
-                    R.id.symptomsFragment -> R.id.action_loadingFragment_to_symptomsFragment
-                    else -> error("unsupported navigation action right now")
+        if (viewModel.isInitialized.value != true) {
+            viewModel.isInitialized.observe(this) { isInitialized ->
+                if (!isInitialized) {
+                    Log.d("ReadingActivity", "not initialized")
+                    viewModel.setInputEnabledState(false)
+                    return@observe
                 }
-                // force fading animations to appear
-                val navOptions = navOptions {
-                    anim {
-                        enter = R.anim.fade_in
-                        exit = R.anim.fade_out
-                        popEnter = R.anim.fade_in
-                        popExit = R.anim.fade_out
+                viewModel.isInitialized.removeObservers(this)
+
+                if (navController.currentDestination?.id == R.id.loadingFragment) {
+                    val actionId = when (getStartDestinationId()) {
+                        R.id.patientInfoFragment -> R.id.action_loadingFragment_to_patientInfoFragment
+                        R.id.symptomsFragment -> R.id.action_loadingFragment_to_symptomsFragment
+                        else -> error("unsupported navigation action right now")
                     }
+                    // force fading animations to appear
+                    val navOptions = navOptions {
+                        anim {
+                            enter = R.anim.fade_in
+                            exit = R.anim.fade_out
+                            popEnter = R.anim.fade_in
+                            popExit = R.anim.fade_out
+                        }
+                    }
+                    navController.navigate(actionId, null, navOptions)
+                } else {
+                    // Trigger a destination change in case we are starting up after a system-initiated
+                    // process death.
+                    navController.popBackStack(getStartDestinationId(), false)
                 }
-                navController.navigate(actionId, null, navOptions)
-            } else {
-                // Trigger a destination change in case we are starting up after a system-initiated
-                // process death.
-                navController.popBackStack(getStartDestinationId(), false)
-            }
 
-            viewModel.setInputEnabledState(true)
+                viewModel.setInputEnabledState(true)
+            }
         }
 
         findViewById<Button>(R.id.reading_next_button).setOnClickListener {
@@ -159,17 +160,47 @@ class ReadingActivity : AppCompatActivity() {
         findViewById<Button>(R.id.reading_back_button).setOnClickListener { onBackButtonPressed() }
     }
 
+    private fun updateActionBarTitle(
+        @IdRes currentDestination: Int,
+        reasonForLaunch: LaunchReason
+    ) {
+        val title = when (reasonForLaunch) {
+            LaunchReason.LAUNCH_REASON_NEW -> {
+                if (currentDestination == R.id.patientInfoFragment ||
+                        currentDestination == R.id.loadingFragment) {
+                    getString(R.string.reading_activity_title_new_patient)
+                } else {
+                    getString(R.string.reading_activity_title_create_new_reading)
+                }
+            }
+            LaunchReason.LAUNCH_REASON_EDIT_READING -> {
+                getString(R.string.reading_activity_title_editing_reading)
+            }
+            LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {
+                getString(R.string.reading_activity_title_create_new_reading)
+            }
+            LaunchReason.LAUNCH_REASON_RECHECK -> {
+                getString(R.string.reading_activity_title_recheck_vitals)
+            }
+            else -> error("need a launch reason to be in ReadingActivity")
+        }
+        supportActionBar?.title = title
+    }
+
     private fun onNextButtonClicked(button: View) {
         button.dismissKeyboard()
         val navController = findNavController(R.id.reading_nav_host)
 
         nextButtonJob?.cancel()
         nextButtonJob = lifecycleScope.launch {
-            val (error, patient) = viewModel.onNextButtonClicked(
+            viewModel.setInputEnabledState(false)
+            val (error, patient) = viewModel.validateCurrentDestinationForNextButton(
                 navController.currentDestination?.id ?: return@launch
             )
             viewModel.clearBottomNavBarMessage()
 
+            // See the comments on these enums for descriptions of where these errors occur
+            // (CTRL + Q on them).
             when (error) {
                 ReadingFlowError.NO_ERROR -> onNextButtonClickedWithNoErrors(navController)
                 ReadingFlowError.ERROR_PATIENT_ID_IN_USE_LOCAL -> {
@@ -177,9 +208,8 @@ class ReadingActivity : AppCompatActivity() {
 
                     PatientIdConflictDialogFragment.makeInstance(
                         isPatientLocal = true, patient = patient
-                    ).run {
-                        show(supportFragmentManager, PATIENT_ID_IN_USE_DIALOG_FRAGMENT_TAG)
-                    }
+                    ).show(supportFragmentManager, PATIENT_ID_IN_USE_DIALOG_FRAGMENT_TAG)
+                    viewModel.setInputEnabledState(true)
                 }
                 ReadingFlowError.ERROR_PATIENT_ID_IN_USE_ON_SERVER -> {
                     viewModel.clearBottomNavBarMessage()
@@ -187,9 +217,8 @@ class ReadingActivity : AppCompatActivity() {
 
                     PatientIdConflictDialogFragment.makeInstance(
                         isPatientLocal = false, patient = patient
-                    ).run {
-                        show(supportFragmentManager, PATIENT_ID_IN_USE_DIALOG_FRAGMENT_TAG)
-                    }
+                    ).show(supportFragmentManager, PATIENT_ID_IN_USE_DIALOG_FRAGMENT_TAG)
+                    viewModel.setInputEnabledState(true)
                 }
                 ReadingFlowError.ERROR_INVALID_FIELDS -> {
                     Toast.makeText(
@@ -214,6 +243,7 @@ class ReadingActivity : AppCompatActivity() {
             }
             R.id.vitalSignsFragment -> {
                 Toast.makeText(this, "TODO: not supported yet", Toast.LENGTH_SHORT).show()
+                viewModel.setInputEnabledState(true)
             }
         }
     }
@@ -237,7 +267,8 @@ class ReadingActivity : AppCompatActivity() {
 
     private fun launchDiscardChangesDialogIfNeeded() {
         MaterialAlertDialogBuilder(this)
-            .setTitle(getDiscardTitleId())
+            .setTitle(R.string.discard_dialog_title)
+            .setMessage(getDiscardDialogMessageId())
             .setNegativeButton(android.R.string.cancel) { _, _ -> /* noop */ }
             .setPositiveButton(R.string.discard_dialog_discard) { _, _ ->
                 findNavController(R.id.reading_nav_host).popBackStack(R.id.loadingFragment, true)
@@ -259,10 +290,16 @@ class ReadingActivity : AppCompatActivity() {
     }
 
     @StringRes
-    private fun getDiscardTitleId(): Int = when (launchReason) {
-        LaunchReason.LAUNCH_REASON_NEW, LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {
-            R.string.discard_dialog_new_reading
+    private fun getDiscardDialogMessageId(): Int = when (launchReason) {
+        LaunchReason.LAUNCH_REASON_NEW -> {
+            val currentDest = findNavController(R.id.reading_nav_host).currentDestination?.id
+            if (currentDest == R.id.patientInfoFragment) {
+                R.string.discard_dialog_new_patient
+            } else {
+                R.string.discard_dialog_new_patient_and_reading
+            }
         }
+        LaunchReason.LAUNCH_REASON_EXISTINGNEW -> R.string.discard_dialog_new_reading
         LaunchReason.LAUNCH_REASON_EDIT_READING -> R.string.discard_dialog_changes
         LaunchReason.LAUNCH_REASON_RECHECK -> R.string.discard_dialog_rechecking
         else -> error("need a launch reason to be in ReadingActivity")

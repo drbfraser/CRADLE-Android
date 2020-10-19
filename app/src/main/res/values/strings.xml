@@ -120,11 +120,9 @@
     <string name="discard_dialog_new_reading">Discard this new reading?</string>
     <string name="discard_dialog_rechecking">Discard this rechecking reading?</string>
     <string name="discard_dialog_changes">Discard your changes?</string>
-    <string name="missing_info_title">Missing Information</string>
-    <string name="missing_info_body">Some required fields from PATIENT or CONFIRM VITALS tabs are missing. Please enter this data before saving.</string>
-    <string name="invalid_data">Invalid Data</string>
-    <string name="invalid_data_message">Valid ranges\n\nAge limit: 0–150 years\nHeart rate: 30–300 bpm\nsystolic and diastolic: 10-300 bpm\npregnancy max: 15 months</string>
-
+    <string name="discard_dialog_new_patient">Discard this new patient?</string>
+    <string name="discard_dialog_new_patient_and_reading">Discard this new patient and reading?</string>
+    <string name="discard_dialog_title">Discard?</string>
 
     <!-- SMS Text Message Referral -->
 
@@ -394,14 +392,11 @@
     <string name="reading_activity_downloading_patient_toast">Downloading patient…</string>
     <string name="reading_activity_downloading_patient_successful_toast">Download successful</string>
 
-
-
     <string name="login_activity_device_is_outdated_dialog_title">Device is out of date</string>
     <string name="login_activity_device_is_outdated_dialog_message">Your device is unable to connect to the servers securely. Since Google Play services are unavailable on your device, we\'re unable to try to upgrade your device\'s security provider. Please ensure that your device supports TLS 1.2 or higher.</string>
     <string name="login_activity_security_provider_toast">Attempting to upgrade default security provider…</string>
     <string name="login_error_ssl_handshake_exception">Error: SSLHandshakeException</string>
     <string name="login_error_general_error">Failed to connect to server</string>
-
 
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>

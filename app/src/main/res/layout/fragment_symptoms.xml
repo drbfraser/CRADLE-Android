@@ -40,8 +40,7 @@
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/reading_flow_card_side_margin"
-                        android:layout_marginEnd="@dimen/reading_flow_card_side_margin"
+                        android:layout_margin="@dimen/reading_flow_card_margin"
                         android:paddingBottom="8dp">
 
                         <com.google.android.material.textview.MaterialTextView
@@ -49,7 +48,6 @@
                             style="@style/TextAppearance.Cradle.H2"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_margin="4dp"
                             android:text="@string/symptoms"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />

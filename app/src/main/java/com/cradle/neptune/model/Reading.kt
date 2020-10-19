@@ -128,7 +128,7 @@ data class Reading(
         property: KProperty<*>,
         value: Any?,
         context: Context
-    ): Pair<Boolean, String> = isValueForPropertyValid(property, value, context)
+    ): Pair<Boolean, String> = isValueValid(property, value, context)
 
     /**
      * Converts this [Reading] object into a [JSONObject].

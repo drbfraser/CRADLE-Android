@@ -42,8 +42,7 @@
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/reading_flow_card_side_margin"
-                        android:layout_marginEnd="@dimen/reading_flow_card_side_margin"
+                        android:layout_margin="@dimen/reading_flow_card_margin"
                         android:paddingBottom="8dp">
 
 
@@ -52,7 +51,6 @@
                             style="@style/TextAppearance.Cradle.H2"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_margin="8dp"
                             android:text="@string/fragment_vital_signs_cradle_vsa_fields_card_header"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
@@ -159,8 +157,7 @@
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/reading_flow_card_side_margin"
-                        android:layout_marginEnd="@dimen/reading_flow_card_side_margin"
+                        android:layout_margin="@dimen/reading_flow_card_margin"
                         android:paddingBottom="8dp">
 
                         <com.google.android.material.textfield.TextInputLayout
@@ -251,8 +248,7 @@
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/reading_flow_card_side_margin"
-                        android:layout_marginEnd="@dimen/reading_flow_card_side_margin"
+                        android:layout_margin="@dimen/reading_flow_card_margin"
                         android:paddingBottom="8dp">
 
                         <TextView
@@ -260,7 +256,6 @@
                             style="@style/TextAppearance.Cradle.H2"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_margin="8dp"
                             android:text="@string/urine_test_card_header"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />

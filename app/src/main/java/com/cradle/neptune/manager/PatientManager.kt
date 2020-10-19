@@ -15,11 +15,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 /**
- * manager to interact with the [Patient] table
- *Added [suspend] function so that there is compile time error when inserting on DB through
- * main thread rather than run time error
+ * Manager to interact with the [Patient] table in the database.
  */
-@Suppress("RedundantSuspendModifier")
 class PatientManager @Inject constructor(
     private val daoAccess: PatientDaoAccess,
     private val restApi: RestApi
@@ -47,7 +44,7 @@ class PatientManager @Inject constructor(
     /**
      * delete all the patients
      */
-    suspend fun deleteAll() = daoAccess.deleteAllPatients()
+    suspend fun deleteAll() = withContext(IO) { daoAccess.deleteAllPatients() }
 
     /**
      * get all the patients
