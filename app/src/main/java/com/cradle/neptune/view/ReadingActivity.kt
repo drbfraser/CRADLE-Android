@@ -50,6 +50,11 @@ class ReadingActivity : AppCompatActivity() {
         Log.d("ReadingActivity", "onDestroy()")
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        viewModel.onSaveInstanceState()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // TODO: Use activity_reading when done design
