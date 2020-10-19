@@ -946,8 +946,10 @@ class PatientReadingViewModel @ViewModelInject constructor(
     @MainThread
     fun onDestinationChange(@IdRes currentDestinationId: Int) {
         updateActionBarAndSubtitle(currentDestinationId)
-        setInputEnabledState(true)
         clearBottomNavBarMessage()
+        if (_isInitialized.value == true) {
+            setInputEnabledState(true)
+        }
 
         // Clear out any sources to be safe.
         arrayOf(isPatientValid, bloodPressure, isUsingUrineTest, urineTest)
@@ -1013,10 +1015,16 @@ class PatientReadingViewModel @ViewModelInject constructor(
     private fun updateActionBarAndSubtitle(@IdRes currentDestination: Int) {
         val subtitle = when (currentDestination) {
             R.id.loadingFragment, R.id.patientInfoFragment -> null
-            else -> app.getString(
-                R.string.reading_activity_subtitle_name_and_id,
-                patientName.value, patientId.value
-            )
+            else -> {
+                if (patientName.value == null || patientId.value == null) {
+                    null
+                } else {
+                    app.getString(
+                        R.string.reading_activity_subtitle_name_and_id,
+                        patientName.value, patientId.value
+                    )
+                }
+            }
         }
 
         val title = when (reasonForLaunch) {

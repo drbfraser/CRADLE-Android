@@ -118,8 +118,10 @@ class ReadingActivity : AppCompatActivity() {
             }
         }
 
-        viewModel.isInitialized.observe(this) {
-            if (!it) {
+        viewModel.isInitialized.observe(this) { isInitialized ->
+            if (!isInitialized) {
+                Log.d("ReadingActivity", "not initialized")
+                viewModel.setInputEnabledState(false)
                 return@observe
             }
             viewModel.isInitialized.removeObservers(this)
@@ -140,7 +142,13 @@ class ReadingActivity : AppCompatActivity() {
                     }
                 }
                 navController.navigate(actionId, null, navOptions)
+            } else {
+                // Trigger a destination change in case we are starting up after a system-initiated
+                // process death.
+                navController.popBackStack(getStartDestinationId(), false)
             }
+
+            viewModel.setInputEnabledState(true)
         }
 
         findViewById<Button>(R.id.reading_next_button).setOnClickListener {
