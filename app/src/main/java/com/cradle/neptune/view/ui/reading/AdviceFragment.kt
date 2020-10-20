@@ -4,11 +4,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.view.size
 import androidx.databinding.DataBindingComponent
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import com.cradle.neptune.R
 import com.cradle.neptune.binding.FragmentDataBindingComponent
@@ -16,8 +19,11 @@ import com.cradle.neptune.databinding.FragmentAdviceBinding
 import com.cradle.neptune.databinding.ListPreviousReadingsItemBinding
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.RetestGroup
+import com.cradle.neptune.utilitiles.dismissKeyboard
 import com.cradle.neptune.view.ReadingActivity
+import com.cradle.neptune.viewmodel.ReadingFlowSaveResult
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class AdviceFragment : BaseFragment() {
@@ -56,6 +62,38 @@ class AdviceFragment : BaseFragment() {
             setupCurrentReadingSummaryLayout(view, it.first, it.second)
             setupPreviousRetestGroupLayout(view, it.first, it.second)
         }
+
+        // Required for updates to come to these MediatorLiveData.
+        viewModel.isFlaggedForFollowUp.observe(viewLifecycleOwner) {}
+        viewModel.dateRecheckVitalsNeeded.observe(viewLifecycleOwner) {}
+
+        view.findViewById<Button>(R.id.save_reading_button).setOnClickListener {
+            it.dismissKeyboard()
+            viewModel.setInputEnabledState(false)
+
+            lifecycleScope.launch {
+                when (viewModel.save()) {
+                    ReadingFlowSaveResult.SAVE_SUCCESSFUL -> {
+                        Toast.makeText(
+                            view.context,
+                            "This is when we would save and close",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        activity?.finish()
+                    }
+                    ReadingFlowSaveResult.REFERRAL_REQUIRED -> {
+                        launchReferralDialog()
+                    }
+                    ReadingFlowSaveResult.ERROR -> {
+                        Toast.makeText(view.context, "Failed to save", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun launchReferralDialog() {
+        ReferralDialogFragment().show(parentFragmentManager, "referral_dialog")
     }
 
     private fun setupCurrentReadingSummaryLayout(

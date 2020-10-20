@@ -256,16 +256,29 @@ class PatientReadingViewModel @ViewModelInject constructor(
                     logTime("setUpSymptomsLiveData") { setUpSymptomsLiveData() }
                 },
                 viewModelScope.launch {
-                    logTime("setupGestationAgeLiveData") { setupGestationAgeLiveData() }
-                },
-                viewModelScope.launch {
                     logTime("setupBloodPressureLiveData") { setupBloodPressureLiveData() }
                 },
                 viewModelScope.launch {
                     logTime("setupUrineTestAndSourcesLiveData") { setupUrineTestAndSourcesLiveData() }
                 },
                 viewModelScope.launch {
-                    logTime("setupIsPatientValidLiveData") { setupIsPatientValidLiveData() }
+                    logTime("setupGestationAgeLiveData") {
+                        if (reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
+                            setupGestationAgeLiveData()
+                        }
+                    }
+                },
+                viewModelScope.launch {
+                    logTime("setupIsPatientValidLiveData") {
+                        // Only check if the patient is valid if we are creating a new patient.
+                        // TODO: Handle the case where we are editing patient info only.
+                        if (reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
+                            setupIsPatientValidLiveData()
+                        } else {
+                            // Force this to be true so that we can build.
+                            isPatientValid.value = true
+                        }
+                    }
                 }
             )
         }
@@ -667,7 +680,8 @@ class PatientReadingViewModel @ViewModelInject constructor(
         get() = readingBuilder.get<List<String>?>(Reading::previousReadingIds)
             as MutableLiveData<MutableList<String>?>
 
-    val metadata = ReadingMetadata()
+    val metadata: MutableLiveData<ReadingMetadata> =
+        readingBuilder.get(Reading::metadata, ReadingMetadata())
 
     /**
      * Describes the age input state. If the value inside is true, that means that age is derived
@@ -814,11 +828,10 @@ class PatientReadingViewModel @ViewModelInject constructor(
         // proper values after pressing SAVE READING.
         readingBuilder.apply {
             set(Reading::patientId, patientId.value)
-            if (dateTimeTaken.value == null) {
-                dateTimeTaken.value = ZonedDateTime.now().toEpochSecond()
-            }
-
             // These will only populate the fields with null if there's nothing in there already.
+            // dateTimeTaken will be updated when the save button is pressed.
+            // Update date time taken if null. This may be nonnull if we're editing a reading.
+            get(Reading::dateTimeTaken, defaultValue = ZonedDateTime.now().toEpochSecond())
             get(Reading::referral, defaultValue = null)
             get(Reading::followUp, defaultValue = null)
         }
@@ -828,7 +841,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
 
         _currentValidReading.value = validReading
 
-        // This will populate all advice fields.
+        // This will populate all advice fields. It will return false if it fails.
         if (!adviceManager.populateAllAdviceFields(validReading)) {
             return false
         }
@@ -1029,9 +1042,9 @@ class PatientReadingViewModel @ViewModelInject constructor(
     val currentValidPatientAndRetestGroup: LiveData<Pair<Reading, RetestGroup>?>
         get() = adviceManager.currentValidReadingAndRetestGroup
 
-    val adviceRecheckButtonId = MutableLiveData<Int>(R.id.dont_recheck_vitals_radio_button)
-    val adviceFollowUpButtonId = MutableLiveData<Int>(R.id.no_follow_up_needed_radio_button)
-    val adviceReferralButtonId = MutableLiveData<Int>(R.id.no_referral_radio_button)
+    val adviceRecheckButtonId = MutableLiveData<Int>()
+    val adviceFollowUpButtonId = MutableLiveData<Int>()
+    val adviceReferralButtonId = MutableLiveData<Int>()
 
     val adviceText: LiveData<String> = adviceManager.adviceText
     val recommendedAdvice: LiveData<RecommendedAdvice>
@@ -1069,6 +1082,42 @@ class PatientReadingViewModel @ViewModelInject constructor(
                 }
             }
         }
+
+    /**
+     * Saves the patient (if creating a new patient) and saves the reading.
+     *
+     * @return a [ReadingFlowSaveResult]
+     */
+    @MainThread
+    suspend fun save(): ReadingFlowSaveResult {
+        return withContext(Dispatchers.Default) {
+            // Only add patient if we're creating a new patient.
+            // If we're just creating a reason, users will not be able to edit patient info.
+            if (reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
+                withContext(Dispatchers.Main) {
+                    patientLastEdited.value = ZonedDateTime.now().toEpochSecond()
+                }
+
+                val patient = attemptToBuildValidPatient()
+                    ?: return@withContext ReadingFlowSaveResult.ERROR
+                yield()
+                withContext(Dispatchers.IO) { patientManager.add(patient) }
+            }
+
+            if (adviceReferralButtonId.value == R.id.send_referral_radio_button) {
+                // Don't save the reading yet; we need the AdviceFragment to launch a referral
+                // dialog.
+                return@withContext ReadingFlowSaveResult.REFERRAL_REQUIRED
+            }
+
+            val validReading = attemptToBuildValidReading()
+                ?: return@withContext ReadingFlowSaveResult.ERROR
+
+            withContext(Dispatchers.IO) { readingManager.addReading(validReading) }
+
+            return@withContext ReadingFlowSaveResult.SAVE_SUCCESSFUL
+        }
+    }
 
     /**
      * Describes the current recommended advice. The RadioButtons will indicate which option is
@@ -1116,8 +1165,8 @@ class PatientReadingViewModel @ViewModelInject constructor(
                 val retestGroup = readingManager.getRetestGroup(reading)
 
                 // Set the radio buttons.
-                val needDefaultForRecheckVitals = metadata.dateLastSaved == null
-                val retestAdvice = if (needDefaultForRecheckVitals) {
+                val needDefaultForRecheckVitals = metadata.value?.dateLastSaved == null
+                val retestAdvice: RetestAdvice = if (needDefaultForRecheckVitals) {
                     retestGroup.getRetestAdvice()
                 } else {
                     val recheckVitalsDate = dateRecheckVitalsNeeded.value
@@ -1421,6 +1470,8 @@ class PatientReadingViewModel @ViewModelInject constructor(
                 Log.d(TAG, "DEBUG: isPatientValid is ${attemptToBuildValidPatient() != null}")
                 Log.d(TAG, "DEBUG: isNextButtonEnabled is ${_isNextButtonEnabled.value}")
                 Log.d(TAG, "DEBUG: _isInputEnabled is ${_isInputEnabled.value}")
+                Log.d(TAG, "DEBUG: dateRecheckVitals is ${dateRecheckVitalsNeeded.value}")
+                Log.d(TAG, "DEBUG: isFlaggedForFollowup is ${isFlaggedForFollowUp.value}")
                 @Suppress("MagicNumber")
                 delay(5000L)
             }
@@ -1469,4 +1520,10 @@ enum class ReadingFlowError {
      * that to the server.
      */
     ERROR_INVALID_FIELDS
+}
+
+enum class ReadingFlowSaveResult {
+    SAVE_SUCCESSFUL,
+    REFERRAL_REQUIRED,
+    ERROR
 }
