@@ -1,6 +1,7 @@
 package com.cradle.neptune.model
 
 import android.content.Context
+import androidx.annotation.StringRes
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -21,6 +22,7 @@ import com.cradle.neptune.ext.stringField
 import com.cradle.neptune.ext.union
 import java.io.Serializable
 import java.util.UUID
+import kotlin.reflect.KProperty
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -34,10 +36,10 @@ const val SHOCK_HIGH = 1.7
 const val SHOCK_MEDIUM = 0.9
 
 const val MAX_SYSTOLIC = 300
-const val MIN_SYSTOLIC = 10
-const val MAX_DIASTOLIC = 300
-const val MIN_DIASTOLIC = 10
-const val MAX_HEART_RATE = 200
+const val MIN_SYSTOLIC = 50
+const val MAX_DIASTOLIC = 200
+const val MIN_DIASTOLIC = 30
+const val MAX_HEART_RATE = 250
 const val MIN_HEART_RATE = 30
 
 private const val SECONDS_IN_MIN = 60
@@ -139,7 +141,35 @@ data class Reading(
         put(ReadingField.PREVIOUS_READING_IDS, previousReadingIds.joinToString(","))
     }
 
-    companion object : Unmarshal<Reading, JSONObject> {
+    companion object : Unmarshal<Reading, JSONObject>, Verifier<Reading> {
+        @Suppress("NestedBlockDepth")
+        override fun isValueValid(
+            property: KProperty<*>,
+            value: Any?,
+            context: Context,
+            instance: Reading?,
+            currentValues: Map<String, Any?>?
+        ): Pair<Boolean, String> = when (property) {
+            Reading::patientId -> {
+                // Safe to call without instance or currentValues, as id doesn't depend on anything
+                // else.
+                Patient.isValueValid(Patient::id, value, context, null, null)
+            }
+            Reading::bloodPressure -> with(value as? BloodPressure) {
+                return if (this == null) {
+                    Pair(true, "")
+                } else {
+                    // Derive errors from BloodPressure from its implementation.
+                    return with(getAllMembersWithInvalidValues(context)) {
+                        val isValid = isEmpty()
+                        Pair(isValid, this.joinToString(separator = ",") { it.second })
+                    }
+                }
+            }
+            Reading::urineTest -> Pair(true, "")
+            else -> Pair(true, "")
+        }
+
         /**
          * Constructs a [Reading] object form a [JSONObject].
          *
@@ -204,7 +234,7 @@ data class BloodPressure(
     val systolic: Int,
     val diastolic: Int,
     val heartRate: Int
-) : Serializable, Marshal<JSONObject> {
+) : Serializable, Marshal<JSONObject>, Verifiable<BloodPressure> {
     /**
      * The shock index for this blood pressure result.
      */
@@ -236,10 +266,6 @@ data class BloodPressure(
             else -> ReadingAnalysis.GREEN
         }
 
-    /**
-     * True if this blood pressure reading is valid (i.e., all fields are
-     * within bounds).
-     */
     val isValid: Boolean
         get() = systolic in MIN_SYSTOLIC..MAX_SYSTOLIC &&
             diastolic in MIN_DIASTOLIC..MAX_DIASTOLIC &&
@@ -254,7 +280,64 @@ data class BloodPressure(
         put(BloodPressureField.HEART_RATE, heartRate)
     }
 
-    companion object : Unmarshal<BloodPressure, JSONObject> {
+    companion object : Unmarshal<BloodPressure, JSONObject>, Verifier<BloodPressure> {
+        override fun isValueValid(
+            property: KProperty<*>,
+            value: Any?,
+            context: Context,
+            instance: BloodPressure?,
+            currentValues: Map<String, Any?>?
+        ): Pair<Boolean, String> = with(value as? Int) {
+            // Normally, we would use a `when (property)` statement here.
+            // We do a `with(value as? Int)` here because we assume that all the properties that we
+            // want to check in this class are of type Int, and they're all verified in the exact
+            // same way up to the boundaries used. So we assume that the [value] passed here is an
+            // Int for one of systolic, diastolic, or heartRate.
+            // If that's not the case, the cast will fail, and `this` will be null.
+            if (this == null) {
+                when (property) {
+                    BloodPressure::systolic -> {
+                        return@with Pair(
+                            false, context.getString(R.string.blood_pressure_error_missing_systolic)
+                        )
+                    }
+                    BloodPressure::diastolic -> {
+                        return@with Pair(
+                            false, context.getString(R.string.blood_pressure_error_missing_diastolic)
+                        )
+                    }
+                    BloodPressure::heartRate -> {
+                        return@with Pair(
+                            false, context.getString(R.string.blood_pressure_error_missing_heart_rate)
+                        )
+                    }
+                    else -> return Pair(true, "")
+                }
+            }
+            val (lowerBound, upperBound, @StringRes resId) = when (property) {
+                BloodPressure::systolic -> Triple(
+                    MIN_SYSTOLIC, MAX_SYSTOLIC,
+                    R.string.blood_pressure_error_systolic_out_of_bounds
+                )
+                BloodPressure::diastolic -> Triple(
+                    MIN_DIASTOLIC, MAX_DIASTOLIC,
+                    R.string.blood_pressure_error_diastolic_out_of_bounds
+                )
+                BloodPressure::heartRate -> Triple(
+                    MIN_HEART_RATE, MAX_HEART_RATE,
+                    R.string.blood_pressure_error_heart_rate_out_of_bounds
+                )
+                // not a verifiable property; true by default.
+                else -> {
+                    return@with Pair(true, "")
+                }
+            }
+            return if (lowerBound <= this && this <= upperBound) {
+                Pair(true, "")
+            } else {
+                Pair(false, context.getString(resId, lowerBound, upperBound))
+            }
+        }
         /**
          * Constructs a [BloodPressure] object from a [JSONObject].
          *
@@ -267,6 +350,12 @@ data class BloodPressure(
             return BloodPressure(systolic, diastolic, heartRate)
         }
     }
+
+    override fun isValueForPropertyValid(
+        property: KProperty<*>,
+        value: Any?,
+        context: Context
+    ): Pair<Boolean, String> = isValueValid(property, value, context)
 }
 
 /**

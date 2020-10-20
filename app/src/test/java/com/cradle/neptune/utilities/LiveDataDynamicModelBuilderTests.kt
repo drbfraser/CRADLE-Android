@@ -100,11 +100,22 @@ class LiveDataDynamicModelBuilderTests {
     }
 
     @Test
-    fun liveDataDynamicModelBuilder_ifMissingField_returnNull() {
+    fun liveDataDynamicModelBuilder_ifMissingField_throwException() {
         // Should do the exact same things as dynamicModelBuilder
         assertThrows(java.lang.IllegalArgumentException::class.java) {
             with(LiveDataDynamicModelBuilder()) {
                 set(Person::name, "Maya")
+                build<Person>()
+            }
+        }
+    }
+
+    @Test
+    fun liveDataDynamicModelBuilder_ifNullInNonNullField_throwException() {
+        // Should do the exact same things as dynamicModelBuilder
+        assertThrows(java.lang.IllegalArgumentException::class.java) {
+            with(LiveDataDynamicModelBuilder()) {
+                set(Person::name, null)
                 build<Person>()
             }
         }
