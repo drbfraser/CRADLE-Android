@@ -1396,6 +1396,19 @@ class PatientReadingViewModel @ViewModelInject constructor(
         }
     }
 
+    init {
+        viewModelScope.launch(Dispatchers.Main) {
+            while (isActive) {
+                Log.d(TAG, "DEBUG: errorMap is ${errorMap.value}")
+                Log.d(TAG, "DEBUG: isPatientValid is ${attemptToBuildValidPatient() != null}")
+                Log.d(TAG, "DEBUG: isNextButtonEnabled is ${_isNextButtonEnabled.value}")
+                Log.d(TAG, "DEBUG: _isInputEnabled is ${_isInputEnabled.value}")
+                @Suppress("MagicNumber")
+                delay(5000L)
+            }
+        }
+    }
+
     companion object {
         private const val TAG = "PatientReadingViewModel"
         private const val DEFAULT_RECHECK_INTERVAL_IN_MIN = 15L

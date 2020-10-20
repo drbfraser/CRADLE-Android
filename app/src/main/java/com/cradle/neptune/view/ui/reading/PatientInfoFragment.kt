@@ -28,6 +28,7 @@ import java.util.TimeZone
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 private const val TAG = "PatientInfoFragment"
@@ -97,7 +98,7 @@ class PatientInfoFragment : BaseFragment() {
         debugPeriodicPrintJob?.cancel()
         debugPeriodicPrintJob = lifecycleScope.launch(Dispatchers.Main) {
             val autoTextView = genderMenuTextView
-            while (true) {
+            while (isActive) {
                 // TODO: Remove me.
                 Log.d(TAG, "DEBUG: patientAge is ${viewModel.patientAge.value}, " +
                     "dob is ${viewModel.patientDob.value}")

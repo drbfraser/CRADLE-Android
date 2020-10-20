@@ -16,6 +16,7 @@ import com.cradle.neptune.binding.FragmentDataBindingComponent
 import com.cradle.neptune.databinding.FragmentVitalSignsBinding
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 private const val TAG = "VitalSignsFragment"
@@ -64,7 +65,7 @@ class VitalSignsFragment : BaseFragment() {
 
         debugPeriodicPrintJob?.cancel()
         debugPeriodicPrintJob = lifecycleScope.launch {
-            while (true) {
+            while (isActive) {
                 Log.d(TAG, "DEBUG: BloodPressure is: ${viewModel.bloodPressure.value}")
                 @Suppress("MagicNumber")
                 (delay(4000L))

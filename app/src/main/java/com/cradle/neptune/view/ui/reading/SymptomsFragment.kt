@@ -16,6 +16,7 @@ import com.cradle.neptune.binding.FragmentDataBindingComponent
 import com.cradle.neptune.databinding.FragmentSymptomsBinding
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 private const val TAG = "SymptomsFragment"
@@ -103,7 +104,7 @@ class SymptomsFragment : BaseFragment() {
 
         debugPeriodicPrintJob?.cancel()
         debugPeriodicPrintJob = lifecycleScope.launch {
-            while (true) {
+            while (isActive) {
                 Log.d(TAG, "DEBUG: symptoms are: ${viewModel.symptoms.value}")
                 Log.d(TAG, "DEBUG: symptoms state is: ${viewModel.symptomsState.value}")
                 @Suppress("MagicNumber")
