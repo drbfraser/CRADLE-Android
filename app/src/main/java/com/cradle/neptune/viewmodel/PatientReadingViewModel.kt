@@ -48,9 +48,12 @@ import java.util.concurrent.TimeUnit
 import kotlin.reflect.KProperty
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import org.threeten.bp.ZonedDateTime
@@ -118,8 +121,8 @@ class PatientReadingViewModel @ViewModelInject constructor(
     ) {
         reasonForLaunch = launchReason
         viewModelScope.launch(Dispatchers.Main) {
-            isInitializedMutex.lock()
             val startTime = System.currentTimeMillis()
+            isInitializedMutex.lock()
             try {
                 Log.d(TAG, "initialize start")
                 if (_isInitialized.value == true) {
@@ -805,7 +808,6 @@ class PatientReadingViewModel @ViewModelInject constructor(
         if (!verifyVitalSignsFragment()) {
             return false
         }
-
         yield()
 
         // Add data for now in order to get it to build. This needs to be set with the
@@ -879,46 +881,60 @@ class PatientReadingViewModel @ViewModelInject constructor(
         _bottomNavBarMessage.apply { if (value?.isEmpty() != true) value = "" }
     }
 
+    private val isNextButtonEnabledMutex = Mutex()
+
     /**
      * Updates the criteria that's needed to be satisfied in order for the next button to be
      * enabled.
      */
     @MainThread
     fun onDestinationChange(@IdRes currentDestinationId: Int) {
+        Log.d(TAG, "onDestinationChange")
         updateActionBarSubtitle(patientName.value, patientId.value)
         clearBottomNavBarMessage()
         if (_isInitialized.value == true) {
             setInputEnabledState(true)
         }
 
-        // Clear out any sources to be safe.
-        arrayOf(isPatientValid, bloodPressure, isUsingUrineTest, urineTest)
-            .forEach { _isNextButtonEnabled.removeSource(it) }
+        viewModelScope.launch(Dispatchers.Main) {
+            isNextButtonEnabledMutex.withLock {
+                vitalSignsFragmentVerifyJob?.cancel()
 
-        _isNextButtonEnabled.apply {
-            when (currentDestinationId) {
-                R.id.patientInfoFragment -> {
-                    Log.d(
-                        TAG,
-                        "next button uses patientInfoFragment criteria: patient must be valid"
-                    )
-                    addSource(isPatientValid) { _isNextButtonEnabled.value = it }
+                // Clear out any sources to be safe.
+                arrayOf(isPatientValid, bloodPressure, isUsingUrineTest, urineTest)
+                    .forEach { _isNextButtonEnabled.removeSource(it) }
+
+                _isNextButtonEnabled.apply {
+                    when (currentDestinationId) {
+                        R.id.patientInfoFragment -> {
+                            Log.d(
+                                TAG,
+                                "next button uses patientInfoFragment criteria: patient must be valid"
+                            )
+                            addSource(isPatientValid) {
+                                viewModelScope.launch {
+                                    isNextButtonEnabledMutex.withLock { value = it }
+                                }
+                            }
+                        }
+                        R.id.symptomsFragment -> {
+                            value = true
+                        }
+                        R.id.vitalSignsFragment -> {
+                            Log.d(
+                                TAG,
+                                "next button uses vitalSignsFragment criteria: valid BloodPressure, " +
+                                    "and valid urine test if using urine test"
+                            )
+                            launchVitalSignsFragmentVerifyJob()
+                            addSource(bloodPressure) { launchVitalSignsFragmentVerifyJob() }
+                            addSource(isUsingUrineTest) { launchVitalSignsFragmentVerifyJob() }
+                            addSource(urineTest) { launchVitalSignsFragmentVerifyJob() }
+                        }
+                        R.id.loadingFragment -> return@launch
+                        else -> return@launch
+                    }
                 }
-                R.id.symptomsFragment -> {
-                    value = true
-                }
-                R.id.vitalSignsFragment -> {
-                    Log.d(
-                        TAG, "next button uses symptomsFragment criteria: valid BloodPressure, " +
-                            "and valid urine test if using urine test"
-                    )
-                    launchVitalSignsFragmentVerifyJob()
-                    addSource(bloodPressure) { launchVitalSignsFragmentVerifyJob() }
-                    addSource(isUsingUrineTest) { launchVitalSignsFragmentVerifyJob() }
-                    addSource(urineTest) { launchVitalSignsFragmentVerifyJob() }
-                }
-                R.id.loadingFragment -> return
-                else -> return
             }
         }
     }
@@ -976,7 +992,13 @@ class PatientReadingViewModel @ViewModelInject constructor(
     private fun launchVitalSignsFragmentVerifyJob() {
         vitalSignsFragmentVerifyJob?.cancel()
         vitalSignsFragmentVerifyJob = viewModelScope.launch {
-            _isNextButtonEnabled.value = verifyVitalSignsFragment()
+            isNextButtonEnabledMutex.withLock {
+                val newValue = verifyVitalSignsFragment()
+                yield()
+                _isNextButtonEnabled.value = newValue.also {
+                    Log.d(TAG, "vital signs fragment job: next button Enabled? $it")
+                }
+            }
         }
     }
 
@@ -1312,15 +1334,12 @@ class PatientReadingViewModel @ViewModelInject constructor(
                     // Clear all urine test errors if it is disabled.
                     if (it != false) return@addSource
                     viewModelScope.launch(Dispatchers.Default) {
-                        errorMapMutex.lock()
-                        try {
+                        errorMapMutex.withLock {
                             val currentErrorMap = value ?: return@launch
                             for ((property, _) in urineTestLiveDataMap) {
                                 currentErrorMap.remove(property.name)
                             }
                             withContext(Dispatchers.Main) { value = currentErrorMap }
-                        } finally {
-                            errorMapMutex.unlock()
                         }
                     }
                 }
@@ -1377,8 +1396,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
 
                 val errorMessageForMap = if (!isValid) errorMessage else null
 
-                errorMapMutex.lock()
-                try {
+                errorMapMutex.withLock {
                     val currentMap = errorMap.value ?: arrayMapOf()
 
                     // Don't notify observers if the error message is the exact same message.
@@ -1391,8 +1409,6 @@ class PatientReadingViewModel @ViewModelInject constructor(
 
                         withContext(Dispatchers.Main) { errorMap.value = currentMap }
                     }
-                } finally {
-                    errorMapMutex.unlock()
                 }
             }
         }
