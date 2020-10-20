@@ -2,6 +2,8 @@ package com.cradle.neptune.viewmodel;
 
 import android.graphics.Color;
 
+import androidx.annotation.DrawableRes;
+
 import com.cradle.neptune.R;
 import com.cradle.neptune.model.ReadingAnalysis;
 import com.cradle.neptune.utilitiles.Util;
@@ -11,7 +13,7 @@ import com.cradle.neptune.utilitiles.Util;
  */
 public class ReadingAnalysisViewSupport {
 
-    public static int getColorCircleImageId(ReadingAnalysis analysis) {
+    public static @DrawableRes int getColorCircleImageId(ReadingAnalysis analysis) {
         switch (analysis) {
             case NONE:
                 return 0;
@@ -30,7 +32,7 @@ public class ReadingAnalysisViewSupport {
         }
     }
 
-    public static int getArrowImageId(ReadingAnalysis analysis) {
+    public static @DrawableRes int getArrowImageId(ReadingAnalysis analysis) {
         if (analysis.isUp()) {
             return R.drawable.arrow_up;
         }

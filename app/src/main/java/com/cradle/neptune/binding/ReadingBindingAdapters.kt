@@ -1,16 +1,22 @@
 package com.cradle.neptune.binding
 
+import android.annotation.SuppressLint
 import android.os.Build
 import android.text.InputFilter
 import android.text.InputType
 import android.util.Log
+import android.view.View
 import android.widget.AutoCompleteTextView
 import android.widget.CheckBox
+import android.widget.ImageView
+import android.widget.RadioButton
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import androidx.databinding.BindingAdapter
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
 import com.cradle.neptune.R
+import com.cradle.neptune.model.ReadingAnalysis
+import com.cradle.neptune.viewmodel.ReadingAnalysisViewSupport
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 
@@ -172,5 +178,61 @@ class ReadingBindingAdapters {
             newArray
         )
         view.setAdapter(adapter)
+    }
+
+    @BindingAdapter("bind:setTrafficLightDrawable")
+    fun setTrafficLightDrawable(view: ImageView, analysis: ReadingAnalysis) {
+        view.apply {
+            val drawableResId = ReadingAnalysisViewSupport.getColorCircleImageId(analysis).also {
+                if (it == 0) {
+                    visibility = View.INVISIBLE
+                    return@apply
+                }
+            }
+            visibility = View.VISIBLE
+
+            val drawable = ResourcesCompat.getDrawable(resources, drawableResId, context.theme)
+
+            setImageDrawable(drawable)
+        }
+    }
+
+    @BindingAdapter("bind:setArrowDrawable")
+    fun setArrowDrawable(view: ImageView, analysis: ReadingAnalysis) {
+        view.apply {
+            val drawableResId = ReadingAnalysisViewSupport.getArrowImageId(analysis).also {
+                if (it == 0) {
+                    visibility = View.INVISIBLE
+                    return@apply
+                }
+            }
+            visibility = View.VISIBLE
+
+            val drawable = ResourcesCompat.getDrawable(resources, drawableResId, context.theme)
+
+            setImageDrawable(drawable)
+        }
+    }
+
+    @BindingAdapter("bind:addRecommendedToEndWhen")
+    fun addRecommendedToEndWhen(
+        radioButton: RadioButton,
+        oldCondition: Boolean?,
+        newCondition: Boolean?
+    ) {
+        // TODO: Make this RTL compatible.
+        val context = radioButton.context
+        val recommendedSuffix = " " + context.getString(R.string.recommended_radio_button_suffix)
+        if (oldCondition == newCondition) return
+        if (newCondition != true) {
+            if (radioButton.text.endsWith(recommendedSuffix)) {
+                radioButton.text = radioButton.text.dropLast(recommendedSuffix.length)
+            }
+        } else {
+            if (!radioButton.text.endsWith(recommendedSuffix)) {
+                @SuppressLint("SetTextI18n")
+                radioButton.text = radioButton.text.toString() + recommendedSuffix
+            }
+        }
     }
 }

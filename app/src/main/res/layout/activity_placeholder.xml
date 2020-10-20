@@ -63,12 +63,14 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="10dp"
                 android:enabled="@{viewModel.isInputEnabled}"
+                android:visibility="invisible"
                 android:text="@string/back"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/reading_next_button"
                 app:layout_constraintHorizontal_chainStyle="spread_inside"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                tools:visibility="visible"/>
 
             <TextView
                 android:id="@+id/bottom_nav_bar_message_text_view"

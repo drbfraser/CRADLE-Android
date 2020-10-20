@@ -65,10 +65,23 @@
             app:exitAnim="@anim/fragment_fade_exit"
             app:popEnterAnim="@anim/fragment_close_enter"
             app:popExitAnim="@anim/fragment_close_exit" />
+        <action
+            android:id="@+id/action_vitalSignsFragment_to_adviceFragment"
+            app:destination="@id/adviceFragment"
+            app:enterAnim="@anim/slide_in_from_right"
+            app:exitAnim="@anim/slide_out_to_left"
+            app:popEnterAnim="@anim/slide_in_from_left"
+            app:popExitAnim="@anim/slide_out_to_right" />
     </fragment>
     <fragment
         android:id="@+id/cameraFragment"
         android:name="com.cradle.neptune.view.ui.reading.CameraFragment"
         android:label="fragment_camera"
         tools:layout="@layout/fragment_camera" />
+
+    <fragment
+        android:id="@+id/adviceFragment"
+        android:name="com.cradle.neptune.view.ui.reading.AdviceFragment"
+        android:label="AdviceFragment"
+        tools:layout="@layout/fragment_advice"/>
 </navigation>

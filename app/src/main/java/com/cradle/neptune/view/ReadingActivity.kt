@@ -88,15 +88,28 @@ class ReadingActivity : AppCompatActivity() {
             viewModel.onDestinationChange(destination.id)
 
             val bottomNavBar = findViewById<ConstraintLayout>(R.id.nav_button_bottom_layout)
-            if (destination.id == R.id.cameraFragment) {
-                supportActionBar?.apply {
-                    if (isShowing) {
-                        hide()
+
+            val backButton = bottomNavBar?.getViewById(R.id.reading_back_button) as? Button
+            backButton?.visibility =
+                if (destination.id != getStartDestinationId() &&
+                        destination.id != R.id.loadingFragment) {
+                    View.VISIBLE
+                } else {
+                    View.INVISIBLE
+                }
+
+            val nextButton = bottomNavBar?.getViewById(R.id.reading_next_button) as? Button
+            if (destination.id == R.id.cameraFragment || destination.id == R.id.adviceFragment) {
+                if (destination.id == R.id.cameraFragment) {
+                    supportActionBar?.apply {
+                        if (isShowing) {
+                            hide()
+                        }
                     }
                 }
-                (bottomNavBar?.getViewById(R.id.reading_next_button) as? Button)?.apply {
-                    if (visibility != View.GONE) {
-                        visibility = View.GONE
+                nextButton?.apply {
+                    if (visibility != View.INVISIBLE) {
+                        visibility = View.INVISIBLE
                     }
                 }
             } else {
@@ -105,7 +118,7 @@ class ReadingActivity : AppCompatActivity() {
                         show()
                     }
                 }
-                (bottomNavBar?.getViewById(R.id.reading_next_button) as? Button)?.apply {
+                nextButton?.apply {
                     if (visibility != View.VISIBLE) {
                         visibility = View.VISIBLE
                     }
@@ -242,8 +255,7 @@ class ReadingActivity : AppCompatActivity() {
                 navController.navigate(R.id.action_symptomsFragment_to_vitalSignsFragment)
             }
             R.id.vitalSignsFragment -> {
-                Toast.makeText(this, "TODO: not supported yet", Toast.LENGTH_SHORT).show()
-                viewModel.setInputEnabledState(true)
+                navController.navigate(R.id.action_vitalSignsFragment_to_adviceFragment)
             }
         }
     }

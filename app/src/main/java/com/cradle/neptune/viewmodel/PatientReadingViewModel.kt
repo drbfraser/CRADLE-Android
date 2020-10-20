@@ -25,7 +25,10 @@ import com.cradle.neptune.model.GestationalAgeMonths
 import com.cradle.neptune.model.GestationalAgeWeeks
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
+import com.cradle.neptune.model.ReadingMetadata
 import com.cradle.neptune.model.Referral
+import com.cradle.neptune.model.RetestAdvice
+import com.cradle.neptune.model.RetestGroup
 import com.cradle.neptune.model.Sex
 import com.cradle.neptune.model.SymptomsState
 import com.cradle.neptune.model.UrineTest
@@ -40,6 +43,8 @@ import java.lang.IllegalArgumentException
 import java.lang.reflect.InvocationTargetException
 import java.text.DecimalFormat
 import java.util.Locale
+import java.util.UUID
+import java.util.concurrent.TimeUnit
 import kotlin.reflect.KProperty
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -48,6 +53,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
+import org.threeten.bp.ZonedDateTime
 
 // The index of the gestational age units inside of the string.xml array, R.array.reading_ga_units
 private const val GEST_AGE_UNIT_WEEKS_INDEX = 0
@@ -615,7 +621,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
 
     /* Reading Info */
     val readingId: MutableLiveData<String>
-        get() = readingBuilder.get(Reading::id, "")
+        get() = readingBuilder.get(Reading::id, UUID.randomUUID().toString())
 
     val dateTimeTaken: MutableLiveData<Long?>
         get() = readingBuilder.get<Long?>(Reading::dateTimeTaken)
@@ -653,16 +659,12 @@ class PatientReadingViewModel @ViewModelInject constructor(
         }
     }
 
-    val dateRecheckVitalsNeeded: MutableLiveData<Long?>
-        get() = readingBuilder.get<Long?>(Reading::dateRecheckVitalsNeeded)
-
-    val isFlaggedForFollowUp: MutableLiveData<Boolean?>
-        get() = readingBuilder.get<Boolean?>(Reading::isFlaggedForFollowUp)
-
     @Suppress("UNCHECKED_CAST")
     val previousReadingIds: MutableLiveData<MutableList<String>?>
         get() = readingBuilder.get<List<String>?>(Reading::previousReadingIds)
             as MutableLiveData<MutableList<String>?>
+
+    val metadata = ReadingMetadata()
 
     /**
      * Describes the age input state. If the value inside is true, that means that age is derived
@@ -789,15 +791,75 @@ class PatientReadingViewModel @ViewModelInject constructor(
                 return@withContext ReadingFlowError.NO_ERROR to null
             }
             R.id.symptomsFragment -> return@withContext ReadingFlowError.NO_ERROR to null
-            R.id.vitalSignsFragment -> {
-                return@withContext if (verifyVitalSignsFragment()) {
-                    ReadingFlowError.NO_ERROR to null
-                } else {
-                    ReadingFlowError.ERROR_INVALID_FIELDS to null
-                }
+            R.id.vitalSignsFragment -> return@withContext if (validateVitalSignsAndBuildReading()) {
+                ReadingFlowError.NO_ERROR to null
+            } else {
+                ReadingFlowError.ERROR_INVALID_FIELDS to null
             }
             else -> return@withContext ReadingFlowError.NO_ERROR to null
         }
+    }
+
+    @MainThread
+    private suspend fun validateVitalSignsAndBuildReading(): Boolean {
+        if (!verifyVitalSignsFragment()) {
+            return false
+        }
+
+        yield()
+
+        // Add data for now in order to get it to build. This needs to be set with the
+        // proper values after pressing SAVE READING.
+        readingBuilder.apply {
+            set(Reading::patientId, patientId.value)
+            set(Reading::dateTimeTaken, ZonedDateTime.now().toEpochSecond())
+
+            // These will only populate the fields with null if there's nothing in there already.
+            get(Reading::referral, defaultValue = null)
+            get(Reading::followUp, defaultValue = null)
+        }
+
+        val validReading = withContext(Dispatchers.Default) { attemptToBuildValidReading() }
+            ?: return false
+
+        _currentValidReading.value = validReading
+
+        // This will populate all advice fields.
+        if (!adviceManager.populateAllAdviceFields(validReading)) {
+            return false
+        }
+
+        return true
+    }
+
+    private fun attemptToBuildValidReading(): Reading? {
+        if (!readingBuilder.isConstructable<Reading>()) {
+            Log.d(TAG, "attemptToBuildValidReading: reading not constructable, " +
+                "missing ${readingBuilder.missingParameters(Reading::class)}")
+            return null
+        }
+
+        val reading = try {
+            readingBuilder.build<Reading>()
+        } catch (e: IllegalArgumentException) {
+            Log.d(TAG, "attemptToBuildValidReading: " +
+                "reading failed to build, exception ${e.cause?.message ?: e.message}")
+            return null
+        } catch (e: InvocationTargetException) {
+            Log.d(TAG, "attemptToBuildValidReading: " +
+                "reading failed to build, exception ${e.cause?.message ?: e.message}")
+            return null
+        }
+
+        if (!reading.isValidInstance(app)) {
+            Log.d(TAG, "attemptToBuildValidReading: " +
+                "reading is invalid, " +
+                "errors: ${reading.getAllMembersWithInvalidValues(app)}")
+            return null
+        }
+
+        Log.d(TAG, "attemptToBuildValidReading: built a valid reading")
+        return reading
     }
 
     @MainThread
@@ -933,6 +995,182 @@ class PatientReadingViewModel @ViewModelInject constructor(
             urineTest.value?.isValidInstance(app) ?: false
         } else {
             true
+        }
+    }
+
+    private val adviceManager = AdviceManager()
+
+    private val _currentValidReading = MutableLiveData<Reading?>(null)
+
+    val currentValidPatientAndRetestGroup: LiveData<Pair<Reading, RetestGroup>?>
+        get() = adviceManager.currentValidReadingAndRetestGroup
+
+    val adviceRecheckButtonId = MutableLiveData<Int>(R.id.dont_recheck_vitals_radio_button)
+    val adviceFollowUpButtonId = MutableLiveData<Int>(R.id.no_follow_up_needed_radio_button)
+    val adviceReferralButtonId = MutableLiveData<Int>(R.id.no_referral_radio_button)
+
+    val adviceText: LiveData<String> = adviceManager.adviceText
+    val recommendedAdvice: LiveData<RecommendedAdvice>
+        get() = adviceManager.currentRecommendedAdvice
+
+    val dateRecheckVitalsNeeded: MediatorLiveData<Long?> =
+        readingBuilder.get(Reading::dateRecheckVitalsNeeded, null).apply {
+            addSource(adviceRecheckButtonId) {
+                value = when (it) {
+                    R.id.recheck_vitals_after_15_min_radio_button -> {
+                        ZonedDateTime.now().toEpochSecond() +
+                            TimeUnit.MINUTES.toSeconds(DEFAULT_RECHECK_INTERVAL_IN_MIN)
+                    }
+                    R.id.recheck_vitals_after_radio_button -> {
+                        ZonedDateTime.now().toEpochSecond()
+                    }
+                    R.id.dont_recheck_vitals_radio_button -> {
+                        // Remove date if none selected.
+                        null
+                    }
+                    else -> {
+                        value
+                    }
+                }
+            }
+        }
+
+    val isFlaggedForFollowUp: MediatorLiveData<Boolean?> =
+        readingBuilder.get<Boolean?>(Reading::isFlaggedForFollowUp, defaultValue = false).apply {
+            addSource(adviceFollowUpButtonId) {
+                value = when (it) {
+                    R.id.follow_up_needed_radio_button -> true
+                    R.id.no_follow_up_needed_radio_button -> false
+                    else -> value
+                }
+            }
+        }
+
+    /**
+     * Describes the current recommended advice. The RadioButtons will indicate which option is
+     * recommended.
+     */
+    data class RecommendedAdvice(
+        val retestAdvice: RetestAdvice,
+        val isFollowupNeeded: Boolean,
+        val isReferralRecommended: Boolean
+    )
+
+    /**
+     * Manages the advice shown in the AdviceFragment.
+     */
+    private inner class AdviceManager {
+        val currentValidReadingAndRetestGroup = MutableLiveData<Pair<Reading, RetestGroup>?>(null)
+
+        val adviceText = MutableLiveData<String>("")
+
+        val currentRecommendedAdvice = MutableLiveData<RecommendedAdvice>()
+
+        init {
+            // Put some placeholder in there so we don't deal with nulls.
+            currentRecommendedAdvice.value = RecommendedAdvice(
+                RetestAdvice.NOT_NEEDED,
+                isFollowupNeeded = false,
+                isReferralRecommended = false
+            )
+        }
+
+        /**
+         * Submits a reading for advice. Expected to be run when the next button is pressed to go
+         * to the AdviceFragment. This will set the default radio button selections.
+         *
+         * @return Whether advice calculation was successful
+         */
+        suspend fun populateAllAdviceFields(reading: Reading): Boolean =
+            withContext(Dispatchers.Default) {
+                // Only build retest groups for valid readings.
+                if (!reading.isValidInstance(app)) {
+                    withContext(Dispatchers.Main) { currentValidReadingAndRetestGroup.value = null }
+                    return@withContext false
+                }
+
+                val retestGroup = readingManager.getRetestGroup(reading)
+
+                // Set the radio buttons.
+                val needDefaultForRecheckVitals = metadata.dateLastSaved == null
+                val retestAdvice = if (needDefaultForRecheckVitals) {
+                    retestGroup.getRetestAdvice()
+                } else {
+                    val recheckVitalsDate = dateRecheckVitalsNeeded.value
+                    val isVitalRecheckRequired = recheckVitalsDate != null
+                    val isVitalRecheckRequiredNow = isVitalRecheckRequired &&
+                        (recheckVitalsDate!! - ZonedDateTime.now().toEpochSecond() <= 0)
+
+                    when {
+                        isVitalRecheckRequiredNow -> RetestAdvice.RIGHT_NOW
+                        isVitalRecheckRequired -> RetestAdvice.IN_15_MIN
+                        else -> RetestAdvice.NOT_NEEDED
+                    }
+                }
+
+                val needDefaultForFollowup = dateTimeTaken.value == null
+                val isFollowupRecommended = if (needDefaultForFollowup) {
+                    retestGroup.mostRecentReadingAnalysis.isRed
+                } else {
+                    isFlaggedForFollowUp.value ?: false
+                }
+
+                val isReferralRecommended =
+                    retestGroup.mostRecentReadingAnalysis.isReferralRecommended
+
+                val currentRecommendedAdvice = RecommendedAdvice(
+                    retestAdvice = retestAdvice,
+                    isFollowupNeeded = isFollowupRecommended,
+                    isReferralRecommended = isReferralRecommended
+                )
+
+                updateLiveData(reading, retestGroup, currentRecommendedAdvice)
+
+                return@withContext true
+            }
+
+        /**
+         * Updates both the LiveData in here and the MutableLiveData in the ViewModel.
+         */
+        private suspend fun updateLiveData(
+            reading: Reading,
+            retestGroup: RetestGroup,
+            recommendedAdvice: RecommendedAdvice
+        ) = withContext(Dispatchers.Main) {
+            // Update so that the AdviceFragment can inflate using Data Binding.
+            currentValidReadingAndRetestGroup.value = reading to retestGroup
+
+            currentRecommendedAdvice.value = recommendedAdvice
+
+            val newAdvice = when {
+                retestGroup.isRetestRecommendedNow ->
+                    app.getString(R.string.brief_advice_retest_now)
+                retestGroup.isRetestRecommendedIn15Min ->
+                    app.getString(R.string.brief_advice_retest_after15)
+                else ->
+                    retestGroup.mostRecentReadingAnalysis.getBriefAdviceText(app)
+            }
+            adviceText.value = newAdvice
+
+            recommendedAdvice.run {
+                adviceRecheckButtonId.value = when (retestAdvice) {
+                    RetestAdvice.NOT_NEEDED -> R.id.dont_recheck_vitals_radio_button
+                    RetestAdvice.RIGHT_NOW -> R.id.recheck_vitals_after_radio_button
+                    RetestAdvice.IN_15_MIN -> R.id.recheck_vitals_after_15_min_radio_button
+                }
+
+                adviceFollowUpButtonId.value = if (isFollowupNeeded) {
+                    R.id.follow_up_needed_radio_button
+                } else {
+                    R.id.no_follow_up_needed_radio_button
+                }
+
+                adviceReferralButtonId.value = if (isReferralRecommended) {
+                    R.id.send_referral_radio_button
+                } else {
+                    R.id.no_referral_radio_button
+                }
+            }
         }
     }
 
@@ -1160,6 +1398,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
 
     companion object {
         private const val TAG = "PatientReadingViewModel"
+        private const val DEFAULT_RECHECK_INTERVAL_IN_MIN = 15L
     }
 }
 

@@ -6,4 +6,6 @@
     <dimen name="text_size_h2">19sp</dimen>
     <dimen name="text_size_body1">14sp</dimen>
     <dimen name="reading_flow_card_margin">12dp</dimen>
+    <dimen name="reading_flow_previous_reading_item_margin">8dp</dimen>
+    <dimen name="reading_flow_previous_reading_item_padding">8dp</dimen>
 </resources>
