@@ -812,7 +812,9 @@ class PatientReadingViewModel @ViewModelInject constructor(
         // proper values after pressing SAVE READING.
         readingBuilder.apply {
             set(Reading::patientId, patientId.value)
-            set(Reading::dateTimeTaken, ZonedDateTime.now().toEpochSecond())
+            if (dateTimeTaken.value == null) {
+                dateTimeTaken.value = ZonedDateTime.now().toEpochSecond()
+            }
 
             // These will only populate the fields with null if there's nothing in there already.
             get(Reading::referral, defaultValue = null)
