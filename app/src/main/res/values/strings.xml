@@ -406,6 +406,20 @@
     <string name="list_previous_readings_item_blood_pressure_label">Blood pressure</string>
     <string name="recommended_radio_button_suffix">(recommended)</string>
     <string name="reading_activity_warning_app_killed_by_system">Warning: The app was killed by the Android system, so unsaved changes have been lost</string>
+    <string name="fragment_advice_save_reading_button">Save reading</string>
+    <string name="fragment_advice_save_new_patient_and_reading_button">Save patient and reading</string>
+    <string name="fragment_advice_save_edits_button">Save changes to reading</string>
+    <string name="fragment_advice_recheck_radio_button_dont_recheck">Don\'t recheck vitals</string>
+    <string name="fragment_advice_recheck_radio_button_recheck_immediately">Recheck vitals immediately after saving</string>
+    <string name="fragment_advice_recheck_radio_button_recheck_15_mins">Recheck vitals 15 minutes after saving</string>
+    <string name="fragment_advice_follow_up_label">Follow up</string>
+    <string name="fragment_advice_follow_up_radio_button_no_followup">No follow up needed</string>
+    <string name="fragment_advice_follow_up_radio_button_another_day">Follow up needed for another day</string>
+    <string name="fragment_advice_referral_header">Referral</string>
+    <string name="fragment_advice_referral_radio_button_no_referral">Save without referral</string>
+    <string name="fragment_advice_referral_radio_button_save_with_referral">Save with referral (requires internet or SMS)</string>
+    <string name="fragment_advice_previous_readings_for_this_patient">Previous readings for this patient</string>
+    <string name="fragment_advice_recheck_label">Reminders after saving this reading</string>
 
 
     <plurals name="unuploaded_reading_signout_message">

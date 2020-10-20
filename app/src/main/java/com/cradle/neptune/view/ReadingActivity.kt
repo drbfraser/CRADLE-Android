@@ -180,6 +180,8 @@ class ReadingActivity : AppCompatActivity() {
         findViewById<Button>(R.id.reading_back_button).setOnClickListener { onBackButtonPressed() }
     }
 
+    public fun getLaunchReason() = intent.getSerializableExtra(EXTRA_LAUNCH_REASON) as LaunchReason
+
     private fun updateActionBarTitle(
         @IdRes currentDestination: Int,
         reasonForLaunch: LaunchReason

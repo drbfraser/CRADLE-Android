@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.databinding.InverseMethod
 import com.cradle.neptune.R
 import com.cradle.neptune.model.Sex
+import com.cradle.neptune.view.ReadingActivity
 import java.lang.NumberFormatException
 
 object Converter {
@@ -44,4 +45,18 @@ object Converter {
         if (list?.isNotEmpty() == true) list[0] else ""
 
     @JvmStatic fun stringToSingleElementList(string: String): List<String>? = listOf(string)
+
+    @JvmStatic fun launchReasonToSaveButtonString(
+        context: Context,
+        launchReason: ReadingActivity.LaunchReason
+    ) = context.run {
+        when (launchReason) {
+            ReadingActivity.LaunchReason.LAUNCH_REASON_NEW ->
+                getString(R.string.fragment_advice_save_new_patient_and_reading_button)
+            ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT_READING ->
+                getString(R.string.fragment_advice_save_edits_button)
+            else ->
+                getString(R.string.fragment_advice_save_reading_button)
+        }
+    }
 }

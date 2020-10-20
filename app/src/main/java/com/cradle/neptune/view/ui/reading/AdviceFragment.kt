@@ -16,6 +16,7 @@ import com.cradle.neptune.databinding.FragmentAdviceBinding
 import com.cradle.neptune.databinding.ListPreviousReadingsItemBinding
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.RetestGroup
+import com.cradle.neptune.view.ReadingActivity
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -42,8 +43,11 @@ class AdviceFragment : BaseFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding?.lifecycleOwner = viewLifecycleOwner
-        binding?.viewModel = viewModel
+        binding?.apply {
+            lifecycleOwner = viewLifecycleOwner
+            viewModel = this@AdviceFragment.viewModel
+            launchReason = (activity as? ReadingActivity)?.getLaunchReason()
+        }
         super.onViewCreated(view, savedInstanceState)
 
         viewModel.currentValidPatientAndRetestGroup.observe(viewLifecycleOwner) {
