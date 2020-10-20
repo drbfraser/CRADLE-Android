@@ -405,6 +405,7 @@
     <string name="list_previous_readings_item_heart_rate_label">Heart rate</string>
     <string name="list_previous_readings_item_blood_pressure_label">Blood pressure</string>
     <string name="recommended_radio_button_suffix">(recommended)</string>
+    <string name="reading_activity_warning_app_killed_by_system">Warning: The app was killed by the Android system, so unsaved changes have been lost</string>
 
 
     <plurals name="unuploaded_reading_signout_message">
