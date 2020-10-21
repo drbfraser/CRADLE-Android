@@ -1090,8 +1090,14 @@ class PatientReadingViewModel @ViewModelInject constructor(
      * @return a [ReadingFlowSaveResult]
      */
     @MainThread
-    suspend fun save(): ReadingFlowSaveResult {
+    suspend fun save(isSendingReferral: Boolean = false): ReadingFlowSaveResult {
         return withContext(Dispatchers.Default) {
+            if (adviceReferralButtonId.value == R.id.send_referral_radio_button) {
+                // Don't save the reading / patient yet; we need the AdviceFragment to launch a
+                // referral dialog. TODO: Handle isSendingReferral
+                return@withContext ReadingFlowSaveResult.REFERRAL_REQUIRED
+            }
+
             // Only add patient if we're creating a new patient.
             // If we're just creating a reason, users will not be able to edit patient info.
             if (reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
@@ -1104,11 +1110,8 @@ class PatientReadingViewModel @ViewModelInject constructor(
                 yield()
                 withContext(Dispatchers.IO) { patientManager.add(patient) }
             }
-
-            if (adviceReferralButtonId.value == R.id.send_referral_radio_button) {
-                // Don't save the reading yet; we need the AdviceFragment to launch a referral
-                // dialog.
-                return@withContext ReadingFlowSaveResult.REFERRAL_REQUIRED
+            if (reasonForLaunch != ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT_READING) {
+                dateTimeTaken.value = ZonedDateTime.now().toEpochSecond()
             }
 
             val validReading = attemptToBuildValidReading()
