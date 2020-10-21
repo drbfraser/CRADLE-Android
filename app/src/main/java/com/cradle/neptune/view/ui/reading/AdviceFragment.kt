@@ -76,7 +76,7 @@ class AdviceFragment : BaseFragment() {
                     ReadingFlowSaveResult.SAVE_SUCCESSFUL -> {
                         Toast.makeText(
                             view.context,
-                            "This is when we would save and close",
+                            "Patient / reading saved successfully",
                             Toast.LENGTH_LONG
                         ).show()
                         activity?.finish()
@@ -84,7 +84,7 @@ class AdviceFragment : BaseFragment() {
                     ReadingFlowSaveResult.REFERRAL_REQUIRED -> {
                         launchReferralDialog()
                     }
-                    ReadingFlowSaveResult.ERROR -> {
+                    else -> {
                         Toast.makeText(view.context, "Failed to save", Toast.LENGTH_LONG).show()
                     }
                 }

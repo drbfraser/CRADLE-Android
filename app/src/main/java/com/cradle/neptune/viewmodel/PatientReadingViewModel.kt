@@ -143,8 +143,6 @@ class PatientReadingViewModel @ViewModelInject constructor(
                     return@launch
                 }
 
-                // TODO: clean up this logic. This logic was taken from the old code, and it's
-                //  unclear why the patient has to be derived from the reading.
                 if (!patientId.isNullOrBlank() &&
                         reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_EXISTINGNEW) {
                     val patient = patientManager.getPatientById(patientId)
@@ -200,7 +198,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
 
                 // Make sure we don't retrigger observers if this is run twice for some reason.
                 if (_isInitialized.value != true) {
-                    initializeLiveData()
+                    liveDataInitializationManager.initializeLiveData()
                     _isInitialized.value = true
                 } else {
                     Log.w(TAG, "attempted to run initialize twice!")
@@ -252,332 +250,345 @@ class PatientReadingViewModel @ViewModelInject constructor(
         }
     }
 
-    /**
-     * Initializes the various LiveData properties of this ViewModel. This **must** be run after
-     * decomposing patients and readings, or else the values the functions will use will be
-     * inconsistent.
-     */
-    @GuardedBy("isInitializedMutex")
-    private suspend fun initializeLiveData() {
-        if (_isInitialized.value == true) return
-
-        if (patientIsPregnant.value == null) {
-            patientIsPregnant.value = false
-        }
-
-        _isUsingDateOfBirth.value = patientDob.value != null
-
-        logTime("initializeLiveData") {
-            joinAll(
-                viewModelScope.launch {
-                    logTime("setUpSymptomsLiveData") { setUpSymptomsLiveData() }
-                },
-                viewModelScope.launch {
-                    logTime("setupBloodPressureLiveData") { setupBloodPressureLiveData() }
-                },
-                viewModelScope.launch {
-                    logTime("setupUrineTestAndSourcesLiveData") { setupUrineTestAndSourcesLiveData() }
-                },
-                viewModelScope.launch {
-                    logTime("setupGestationAgeLiveData") {
-                        if (reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
-                            setupGestationAgeLiveData()
-                        }
-                    }
-                },
-                viewModelScope.launch {
-                    logTime("setupIsPatientValidLiveData") {
-                        // Only check if the patient is valid if we are creating a new patient.
-                        // TODO: Handle the case where we are editing patient info only.
-                        if (reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
-                            setupIsPatientValidLiveData()
-                        } else {
-                            // Force this to be true so that we can build.
-                            isPatientValid.value = true
-                        }
-                    }
-                }
-            )
-        }
-    }
-
-    /**
-     * There's a really ugly edge case where tapping the Pregnant checkbox and inputting a village
-     * number at the same time can result in the next button being active. Likely caused by the
-     * coroutine for the valid patient before winning over the coroutine for the invalid patient.
-     * Normally this doesn't happen since the user can only type in one field at a time, but the
-     * CheckBox is a special case, since users can interact with it as they are typing.
-     *
-     * So, we cancel the previous job to ensure the coroutine in [setupIsPatientValidLiveData] can
-     * launch with the most recent [patientBuilder] values.
-     */
-    private var isPatientValidJob: Job? = null
-    /**
-     * Setup the [isPatientValid] LiveData that will attempt to construct a valid patient
-     * using the current patient data.
-     */
-    @GuardedBy("isInitializedMutex")
-    private fun setupIsPatientValidLiveData() {
-        isPatientValid.apply {
-            // When any of these change, attempt to construct a valid patient and post whether
-            // or not it succeeded. This is used to determine whether the Next button is enabled.
-            arrayOf(
-                patientName, patientId, patientDob, patientAge, patientGestationalAge, patientSex,
-                patientIsPregnant, patientVillageNumber
-            ).forEach { liveData ->
-                addSource(liveData) {
-                    if (_isInitialized.value != true) return@addSource
-
-                    isPatientValidJob?.cancel() ?: Log.d(TAG, "no job to cancel")
-                    isPatientValidJob = viewModelScope.launch(Dispatchers.Default) {
-                        Log.d(TAG, "attempting to construct patient for validation")
-                        attemptToBuildValidPatient().let { patient ->
-                            yield()
-                            // Post the value immediately: requires main thread to do so.
-                            setValueOnMainThread(patient != null)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     private inline fun logTime(functionName: String, block: () -> Unit) {
         val startTime = System.currentTimeMillis()
         block.invoke()
         Log.d(TAG, "$functionName took ${System.currentTimeMillis() - startTime} ms")
     }
 
-    @GuardedBy("isInitializedMutex")
-    private suspend fun setupBloodPressureLiveData() = withContext(Dispatchers.Main) {
-        // Populate the text fields using the current blood pressure data that was decomposed.
-        bloodPressure.value?.let {
-            bloodPressureSystolicInput.value = it.systolic
-            bloodPressureDiastolicInput.value = it.diastolic
-            bloodPressureHeartRateInput.value = it.heartRate
-        }
-
-        bloodPressure.apply {
-            addSource(bloodPressureSystolicInput) { systolic ->
-                maybeConstructBloodPressure(
-                    systolic,
-                    bloodPressureDiastolicInput.value,
-                    bloodPressureHeartRateInput.value
-                )
-            }
-            addSource(bloodPressureDiastolicInput) { diastolic ->
-                maybeConstructBloodPressure(
-                    bloodPressureSystolicInput.value,
-                    diastolic,
-                    bloodPressureHeartRateInput.value
-                )
-            }
-            addSource(bloodPressureHeartRateInput) { heartRate ->
-                maybeConstructBloodPressure(
-                    bloodPressureSystolicInput.value,
-                    bloodPressureDiastolicInput.value,
-                    heartRate
-                )
-            }
-        }
-    }
+    private val liveDataInitializationManager = LiveDataInitializationManager()
 
     /**
-     * Constructs and sets the [bloodPressure] LiveData value only when all values are present.
-     * Note: This isn't going to necessarily be held by [isInitializedMutex], since the Observer set
-     * by [MediatorLiveData.addSource] code runs at any time.
+     * Handles the initialization of all LiveData.
      */
-    private fun maybeConstructBloodPressure(systolic: Int?, diastolic: Int?, heartRate: Int?) {
-        if (systolic == null || diastolic == null || heartRate == null) return
-        bloodPressure.value = BloodPressure(systolic, diastolic, heartRate)
-    }
+    private inner class LiveDataInitializationManager {
+        /**
+         * Initializes the various LiveData properties of this ViewModel. This **must** be run after
+         * decomposing patients and readings, or else the values the functions will use will be
+         * inconsistent.
+         */
+        @GuardedBy("isInitializedMutex")
+        suspend fun initializeLiveData() {
+            if (_isInitialized.value == true) return
 
-    @GuardedBy("isInitializedMutex")
-    private suspend fun setUpSymptomsLiveData() = withContext(Dispatchers.Main) {
-        if (_isInitialized.value == true) return@withContext
+            if (patientIsPregnant.value == null) {
+                patientIsPregnant.value = false
+            }
 
-        // Put an initial SymptomsState in _symptomsState based on the decomposed data.
-        val currentSymptoms = symptoms.value ?: emptyList()
-        SymptomsState(
-            currentSymptoms,
-            getEnglishResources().getStringArray(R.array.reading_symptoms)
-        ).let {
-            _symptomsState.value = it
-            otherSymptomsInput.value = it.otherSymptoms
+            _isUsingDateOfBirth.value = patientDob.value != null
+
+            logTime("initializeLiveData") {
+                joinAll(
+                    viewModelScope.launch {
+                        logTime("setUpSymptomsLiveData") { setUpSymptomsLiveData() }
+                    },
+                    viewModelScope.launch {
+                        logTime("setupBloodPressureLiveData") {
+                            setupBloodPressureLiveData()
+                        }
+                    },
+                    viewModelScope.launch {
+                        logTime("setupUrineTestAndSourcesLiveData") {
+                            setupUrineTestAndSourcesLiveData()
+                        }
+                    },
+                    viewModelScope.launch {
+                        logTime("setupGestationAgeLiveData") {
+                            if (reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
+                                setupGestationAgeLiveData()
+                            }
+                        }
+                    },
+                    viewModelScope.launch {
+                        logTime("setupIsPatientValidLiveData") {
+                            // Only check if the patient is valid if we are creating a new patient.
+                            // TODO: Handle the case where we are editing patient info only.
+                            if (reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
+                                setupIsPatientValidLiveData()
+                            } else {
+                                // Force this to be true so that we can build.
+                                isPatientValid.value = true
+                            }
+                        }
+                    }
+                )
+            }
         }
 
-        _symptomsState.apply {
-            addSource(otherSymptomsInput) { otherSymptomsString ->
-                val currentSymptomsState = value ?: return@addSource
-                if (currentSymptomsState.otherSymptoms != otherSymptomsString) {
-                    currentSymptomsState.setOtherSymptoms(otherSymptomsString)
-                    value = currentSymptomsState
+        /**
+         * There's a really ugly edge case where tapping the Pregnant checkbox and inputting a
+         * village number at the same time can result in the next button being active. Likely caused
+         * by the coroutine for the valid patient before winning over the coroutine for the invalid
+         * patient. Normally this doesn't happen since the user can only type in one field at a
+         * time, but the CheckBox is a special case, since users can interact with it as they are
+         * typing.
+         *
+         * So, we cancel the previous job to ensure the coroutine in [setupIsPatientValidLiveData]
+         * can launch with the most recent [patientBuilder] values.
+         */
+        private var isPatientValidJob: Job? = null
+
+        /**
+         * Setup the [isPatientValid] LiveData that will attempt to construct a valid patient
+         * using the current patient data.
+         */
+        @GuardedBy("isInitializedMutex")
+        private fun setupIsPatientValidLiveData() {
+            isPatientValid.apply {
+                // When any of these change, attempt to construct a valid patient and post whether
+                // or not it succeeded. This is used to determine whether the Next button is enabled.
+                arrayOf(
+                    patientName, patientId, patientDob, patientAge, patientGestationalAge,
+                    patientSex, patientIsPregnant, patientVillageNumber
+                ).forEach { liveData ->
+                    addSource(liveData) {
+                        if (_isInitialized.value != true) return@addSource
+
+                        isPatientValidJob?.cancel() ?: Log.d(TAG, "no job to cancel")
+                        isPatientValidJob = viewModelScope.launch(Dispatchers.Default) {
+                            Log.d(TAG, "attempting to construct patient for validation")
+                            attemptToBuildValidPatient().let { patient ->
+                                yield()
+                                // Post the value immediately: requires main thread to do so.
+                                setValueOnMainThread(patient != null)
+                            }
+                        }
+                    }
                 }
             }
         }
 
-        symptoms.apply {
-            addSource(_symptomsState) { symptomsState ->
-                // Store only English symptoms.
-                val defaultEnglishSymptoms =
-                    getEnglishResources().getStringArray(R.array.reading_symptoms)
-                value = symptomsState.buildSymptomsList(defaultEnglishSymptoms)
+        @GuardedBy("isInitializedMutex")
+        private suspend fun setupBloodPressureLiveData() = withContext(Dispatchers.Main) {
+            // Populate the text fields using the current blood pressure data that was decomposed.
+            bloodPressure.value?.let {
+                bloodPressureSystolicInput.value = it.systolic
+                bloodPressureDiastolicInput.value = it.diastolic
+                bloodPressureHeartRateInput.value = it.heartRate
             }
-        }
-    }
 
-    @GuardedBy("isInitializedMutex")
-    private suspend fun setupGestationAgeLiveData() = withContext(Dispatchers.Main) {
-        if (_isInitialized.value == true) return@withContext
-
-        // Populate the gestational age input field / EditText.
-        patientGestationalAgeInput.apply {
-            value = if (patientIsPregnant.value != true) {
-                // If not pregnant, make the input blank. Note: If this is the empty string, then
-                // an error will be triggered when the Pregnant CheckBox is ticked for the first
-                // time.
-                null
-            } else {
-                when (val gestationalAge = patientGestationalAge.value) {
-                    is GestationalAgeMonths -> {
-                        // We don't want to show an excessive amount of decimal places.
-                        DecimalFormat("#.####").format(gestationalAge.age.asMonths())
-                    }
-                    is GestationalAgeWeeks -> {
-                        // This also makes the default units in weeks.
-                        gestationalAge.age.weeks.toString()
-                    }
-                    else -> {
-                        // If it's missing, default to nothing.
-                        ""
-                    }
+            bloodPressure.apply {
+                addSource(bloodPressureSystolicInput) { systolic ->
+                    maybeConstructBloodPressure(
+                        systolic,
+                        bloodPressureDiastolicInput.value,
+                        bloodPressureHeartRateInput.value
+                    )
+                }
+                addSource(bloodPressureDiastolicInput) { diastolic ->
+                    maybeConstructBloodPressure(
+                        bloodPressureSystolicInput.value,
+                        diastolic,
+                        bloodPressureHeartRateInput.value
+                    )
+                }
+                addSource(bloodPressureHeartRateInput) { heartRate ->
+                    maybeConstructBloodPressure(
+                        bloodPressureSystolicInput.value,
+                        bloodPressureDiastolicInput.value,
+                        heartRate
+                    )
                 }
             }
         }
 
-        // Populate the gestational age units input field.
-        patientGestationalAgeUnits.apply {
-            value = if (patientGestationalAge.value is GestationalAgeMonths) {
-                monthsUnitString
-            } else {
-                // This also makes the default units in weeks.
-                weeksUnitString
+        /**
+         * Constructs and sets the [bloodPressure] LiveData value only when all values are present.
+         * Note: This isn't going to necessarily be held by [isInitializedMutex], since the Observer set
+         * by [MediatorLiveData.addSource] code runs at any time.
+         */
+        private fun maybeConstructBloodPressure(systolic: Int?, diastolic: Int?, heartRate: Int?) {
+            if (systolic == null || diastolic == null || heartRate == null) return
+            bloodPressure.value = BloodPressure(systolic, diastolic, heartRate)
+        }
+
+        @GuardedBy("isInitializedMutex")
+        private suspend fun setUpSymptomsLiveData() = withContext(Dispatchers.Main) {
+            if (_isInitialized.value == true) return@withContext
+
+            // Put an initial SymptomsState in _symptomsState based on the decomposed data.
+            val currentSymptoms = symptoms.value ?: emptyList()
+            SymptomsState(
+                currentSymptoms,
+                getEnglishResources().getStringArray(R.array.reading_symptoms)
+            ).let {
+                _symptomsState.value = it
+                otherSymptomsInput.value = it.otherSymptoms
+            }
+
+            _symptomsState.apply {
+                addSource(otherSymptomsInput) { otherSymptomsString ->
+                    val currentSymptomsState = value ?: return@addSource
+                    if (currentSymptomsState.otherSymptoms != otherSymptomsString) {
+                        currentSymptomsState.setOtherSymptoms(otherSymptomsString)
+                        value = currentSymptomsState
+                    }
+                }
+            }
+
+            symptoms.apply {
+                addSource(_symptomsState) { symptomsState ->
+                    // Store only English symptoms.
+                    val defaultEnglishSymptoms =
+                        getEnglishResources().getStringArray(R.array.reading_symptoms)
+                    value = symptomsState.buildSymptomsList(defaultEnglishSymptoms)
+                }
             }
         }
 
-        // Listen for changes from the input fields for gestational age
-        patientGestationalAge.apply {
-            addSource(patientGestationalAgeUnits) {
-                // If we received an update to the units used, convert the GestationalAge object
-                // into the right type.
-                Log.d(TAG, "DEBUG: patientGestationalAge: units source: $it")
-                it ?: return@addSource
+        @GuardedBy("isInitializedMutex")
+        private suspend fun setupGestationAgeLiveData() = withContext(Dispatchers.Main) {
+            if (_isInitialized.value == true) return@withContext
 
-                if (it == monthsUnitString && value is GestationalAgeWeeks) {
-                    Log.d(TAG, "DEBUG: patientGestationalAge units source: converting to Months")
-
-                    value = GestationalAgeMonths((value as GestationalAge).timestamp)
-                    // Zero out the input when changing units.
-                    patientGestationalAgeInput.value = "0"
-                } else if (it == weeksUnitString && value is GestationalAgeMonths) {
-                    Log.d(TAG, "DEBUG: patientGestationalAge units source: converting to Weeks")
-
-                    value = GestationalAgeWeeks((value as GestationalAge).timestamp)
-                    // Zero out the input when changing units.
-                    patientGestationalAgeInput.value = "0"
+            // Populate the gestational age input field / EditText.
+            patientGestationalAgeInput.apply {
+                value = if (patientIsPregnant.value != true) {
+                    // If not pregnant, make the input blank. Note: If this is the empty string, then
+                    // an error will be triggered when the Pregnant CheckBox is ticked for the first
+                    // time.
+                    null
                 } else {
-                    Log.d(TAG, "DEBUG: patientGestationalAge units source: didn't do anything")
+                    when (val gestationalAge = patientGestationalAge.value) {
+                        is GestationalAgeMonths -> {
+                            // We don't want to show an excessive amount of decimal places.
+                            DecimalFormat("#.####").format(gestationalAge.age.asMonths())
+                        }
+                        is GestationalAgeWeeks -> {
+                            // This also makes the default units in weeks.
+                            gestationalAge.age.weeks.toString()
+                        }
+                        else -> {
+                            // If it's missing, default to nothing.
+                            ""
+                        }
+                    }
                 }
             }
-            addSource(patientGestationalAgeInput) {
-                // If the user typed something in, create a new GestationalAge object with the
-                // specified values.
-                Log.d(TAG, "DEBUG: patientGestationalAge input source: $it")
-                if (it.isNullOrBlank()) {
-                    value = null
-                    return@addSource
-                }
 
-                val currentUnitsString = patientGestationalAgeUnits.value
-                value = if (currentUnitsString == monthsUnitString) {
-                    val userInput: Double = it.toDoubleOrNull() ?: 0.0
-                    GestationalAgeMonths(Months(userInput))
+            // Populate the gestational age units input field.
+            patientGestationalAgeUnits.apply {
+                value = if (patientGestationalAge.value is GestationalAgeMonths) {
+                    monthsUnitString
                 } else {
-                    val userInput: Long = it.toLongOrNull() ?: 0L
-                    GestationalAgeWeeks(Weeks(userInput))
+                    // This also makes the default units in weeks.
+                    weeksUnitString
                 }
             }
-            addSource(patientIsPregnant) { isPregnant ->
-                if (isPregnant == false) {
-                    value = null
+
+            // Listen for changes from the input fields for gestational age
+            patientGestationalAge.apply {
+                addSource(patientGestationalAgeUnits) {
+                    // If we received an update to the units used, convert the GestationalAge object
+                    // into the right type.
+                    Log.d(TAG, "DEBUG: patientGestationalAge: units source: $it")
+                    it ?: return@addSource
+
+                    if (it == monthsUnitString && value is GestationalAgeWeeks) {
+                        Log.d(TAG, "DEBUG: patientGestationalAge units source: converting to Months")
+
+                        value = GestationalAgeMonths((value as GestationalAge).timestamp)
+                        // Zero out the input when changing units.
+                        patientGestationalAgeInput.value = "0"
+                    } else if (it == weeksUnitString && value is GestationalAgeMonths) {
+                        Log.d(TAG, "DEBUG: patientGestationalAge units source: converting to Weeks")
+
+                        value = GestationalAgeWeeks((value as GestationalAge).timestamp)
+                        // Zero out the input when changing units.
+                        patientGestationalAgeInput.value = "0"
+                    } else {
+                        Log.d(TAG, "DEBUG: patientGestationalAge units source: didn't do anything")
+                    }
                 }
-            }
-        }
-    }
-
-    @GuardedBy("isInitializedMutex")
-    private suspend fun setupUrineTestAndSourcesLiveData() = withContext(Dispatchers.Main) {
-        if (_isInitialized.value == true) return@withContext
-
-        val currentUrineTest = urineTest.value
-
-        // Set the initial urine test checkbox state
-        isUsingUrineTest.value =
-            if (reasonForLaunch != ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT_READING) {
-                // Ensure urine test enabled by default for new readings like the frontend.
-                true
-            } else {
-                // Otherwise, derive urine test usage state from the present urine test.
-                currentUrineTest != null
-            }
-
-        val liveDataMap = mapOf(
-            UrineTest::leukocytes to urineTestLeukocytesInput,
-            UrineTest::nitrites to urineTestNitritesInput,
-            UrineTest::glucose to urineTestGlucoseInput,
-            UrineTest::protein to urineTestProteinInput,
-            UrineTest::blood to urineTestBloodInput
-        )
-        for ((property, inputLiveData) in liveDataMap) {
-            if (currentUrineTest != null) {
-                inputLiveData.value = property.getter.call(currentUrineTest)
-            }
-
-            urineTest.apply {
-                addSource(inputLiveData) {
-                    if (isUsingUrineTest.value == false && urineTest.value != null) {
+                addSource(patientGestationalAgeInput) {
+                    // If the user typed something in, create a new GestationalAge object with the
+                    // specified values.
+                    Log.d(TAG, "DEBUG: patientGestationalAge input source: $it")
+                    if (it.isNullOrBlank()) {
                         value = null
                         return@addSource
                     }
-                    val leukocytes = urineTestLeukocytesInput.value.apply {
-                        if (isNullOrBlank()) return@addSource
-                    }
-                    val nitrites = urineTestNitritesInput.value.apply {
-                        if (isNullOrBlank()) return@addSource
-                    }
-                    val glucose = urineTestGlucoseInput.value.apply {
-                        if (isNullOrBlank()) return@addSource
-                    }
-                    val protein = urineTestProteinInput.value.apply {
-                        if (isNullOrBlank()) return@addSource
-                    }
-                    val blood = urineTestBloodInput.value.apply {
-                        if (isNullOrBlank()) return@addSource
-                    }
-                    val newUrineTest = UrineTest(
-                        leukocytes = leukocytes!!, nitrites = nitrites!!, glucose = glucose!!,
-                        protein = protein!!, blood = blood!!
-                    )
 
-                    if (value != newUrineTest) {
-                        value = newUrineTest
+                    val currentUnitsString = patientGestationalAgeUnits.value
+                    value = if (currentUnitsString == monthsUnitString) {
+                        val userInput: Double = it.toDoubleOrNull() ?: 0.0
+                        GestationalAgeMonths(Months(userInput))
+                    } else {
+                        val userInput: Long = it.toLongOrNull() ?: 0L
+                        GestationalAgeWeeks(Weeks(userInput))
+                    }
+                }
+                addSource(patientIsPregnant) { isPregnant ->
+                    if (isPregnant == false) {
+                        value = null
                     }
                 }
             }
         }
-        urineTest.addSource(isUsingUrineTest) {
-            if (it == false && urineTest.value != null) {
-                urineTest.value = null
+
+        @GuardedBy("isInitializedMutex")
+        private suspend fun setupUrineTestAndSourcesLiveData() = withContext(Dispatchers.Main) {
+            if (_isInitialized.value == true) return@withContext
+
+            val currentUrineTest = urineTest.value
+
+            // Set the initial urine test checkbox state
+            isUsingUrineTest.value =
+                if (reasonForLaunch != ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT_READING) {
+                    // Ensure urine test enabled by default for new readings like the frontend.
+                    true
+                } else {
+                    // Otherwise, derive urine test usage state from the present urine test.
+                    currentUrineTest != null
+                }
+
+            val liveDataMap = mapOf(
+                UrineTest::leukocytes to urineTestLeukocytesInput,
+                UrineTest::nitrites to urineTestNitritesInput,
+                UrineTest::glucose to urineTestGlucoseInput,
+                UrineTest::protein to urineTestProteinInput,
+                UrineTest::blood to urineTestBloodInput
+            )
+            for ((property, inputLiveData) in liveDataMap) {
+                if (currentUrineTest != null) {
+                    inputLiveData.value = property.getter.call(currentUrineTest)
+                }
+
+                urineTest.apply {
+                    addSource(inputLiveData) {
+                        if (isUsingUrineTest.value == false && urineTest.value != null) {
+                            value = null
+                            return@addSource
+                        }
+                        val leukocytes = urineTestLeukocytesInput.value.apply {
+                            if (isNullOrBlank()) return@addSource
+                        }
+                        val nitrites = urineTestNitritesInput.value.apply {
+                            if (isNullOrBlank()) return@addSource
+                        }
+                        val glucose = urineTestGlucoseInput.value.apply {
+                            if (isNullOrBlank()) return@addSource
+                        }
+                        val protein = urineTestProteinInput.value.apply {
+                            if (isNullOrBlank()) return@addSource
+                        }
+                        val blood = urineTestBloodInput.value.apply {
+                            if (isNullOrBlank()) return@addSource
+                        }
+                        val newUrineTest = UrineTest(
+                            leukocytes = leukocytes!!, nitrites = nitrites!!, glucose = glucose!!,
+                            protein = protein!!, blood = blood!!
+                        )
+
+                        if (value != newUrineTest) {
+                            value = newUrineTest
+                        }
+                    }
+                }
+            }
+            urineTest.addSource(isUsingUrineTest) {
+                if (it == false && urineTest.value != null) {
+                    urineTest.value = null
+                }
             }
         }
     }
@@ -653,7 +664,8 @@ class PatientReadingViewModel @ViewModelInject constructor(
         readingBuilder.get(Reading::referral, defaultValue = null)
 
     /* Reading Info */
-    val readingId: MutableLiveData<String> = readingBuilder.get(Reading::id, UUID.randomUUID().toString())
+    val readingId: MutableLiveData<String> =
+        readingBuilder.get(Reading::id, UUID.randomUUID().toString())
 
     val dateTimeTaken: MutableLiveData<Long?> = readingBuilder.get<Long?>(Reading::dateTimeTaken)
 
@@ -840,7 +852,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
         // Add data for now in order to get it to build. This needs to be set with the
         // proper values after pressing SAVE READING.
         readingBuilder.apply {
-            set(Reading::patientId, patientId.value)
+            set(Reading::patientId, originalPatient?.id ?: patientId.value)
             // These will only populate the fields with null if there's nothing in there already.
             // dateTimeTaken will be updated when the save button is pressed.
             // Update date time taken if null. This may be nonnull if we're editing a reading.
@@ -940,7 +952,8 @@ class PatientReadingViewModel @ViewModelInject constructor(
                         R.id.patientInfoFragment -> {
                             Log.d(
                                 TAG,
-                                "next button uses patientInfoFragment criteria: patient must be valid"
+                                "next button uses patientInfoFragment criteria: " +
+                                    "patient must be valid"
                             )
                             addSource(isPatientValid) {
                                 viewModelScope.launch {
@@ -1106,7 +1119,8 @@ class PatientReadingViewModel @ViewModelInject constructor(
 
     /**
      * Tries to construct a valid patient and a valid reading from the values contains in
-     * [patientBuilder] and [readingBuilder].
+     * [patientBuilder] and [readingBuilder]. This is meant to be used in order to construct a
+     * patient and reading for saving.
      *
      * Will return a null pair if reading is invalid, or we are expected to save a new patient but
      * the built patient is invalid.
@@ -1146,6 +1160,11 @@ class PatientReadingViewModel @ViewModelInject constructor(
             }
         }
 
+    private val isSavingMutex = Mutex()
+    private val _isSaving = MutableLiveData<Boolean>(false)
+    val isSaving: LiveData<Boolean>
+        get() = _isSaving
+
     /**
      * Saves the current patient and reading with a referral, with the type of referral as given by
      * [referralOption].
@@ -1178,104 +1197,139 @@ class PatientReadingViewModel @ViewModelInject constructor(
             }
         }
 
-        if (referralOption == ReferralOption.NONE) {
-            return@withContext ReadingFlowSaveResult.REFERRAL_REQUIRED to null
-        }
+        isSavingMutex.withLock {
+            // Prevent saving from being run while it's already running. We have to do this since
+            // the save button launches a coroutine.
+            if (_isSaving.value == true) {
+                return@withContext ReadingFlowSaveResult.ERROR to null
+            }
+            _isSaving.setValueOnMainThread(true)
 
-        // If this returns null, then something is invalid.
-        val (patientFromBuilder, readingFromBuilder) = constructValidPatientAndReadingFromBuilders()
-            ?: return@withContext ReadingFlowSaveResult.ERROR to null
-        yield()
+            if (referralOption == ReferralOption.NONE) {
+                _isSaving.setValueOnMainThread(false)
+                return@withContext ReadingFlowSaveResult.REFERRAL_REQUIRED to null
+            }
 
-        // If original patient is null, then that implies that we should save the patient.
-        check(originalPatient != null || shouldSavePatient())
-
-        // Choose a patient to use.
-        // We want to use the originalPatient if available.
-        // If it's not available, then shouldSavePatient() is true, so we must be creating a new
-        // patient, and so patientFromBuilder should not be null.
-        val patient = originalPatient ?: patientFromBuilder ?: error("unreachable state")
-
-        // Add the referral to the reading from the builder.
-        readingFromBuilder.referral =
-            Referral(
-                comment = referralComment, healthFacilityName = healthFacilityName,
-                dateReferred = readingFromBuilder.dateTimeTaken, patientId = patient.id,
-                readingId = readingFromBuilder.id, sharedPreferences = sharedPreferences
-            )
-        yield()
-
-        when (referralOption) {
-            ReferralOption.WEB -> {
-                // Upload patient and reading to the server.
-                val result = referralUploadManager.uploadReferralViaWeb(patient, readingFromBuilder)
-                if (result is Success) {
-                    // Save the patient and reading in local database after marking them as being
-                    // uploaded. Note: If patient already exists on server, then
-                    // patientFromServer == patient.
-                    val patientFromServer = result.value.patient
-                    val readingFromServer = result.value.readings[0].apply {
-                        isUploadedToServer = true
+            // If this returns null, then something is invalid.
+            val (patientFromBuilder, readingFromBuilder) =
+                constructValidPatientAndReadingFromBuilders()
+                    ?: run {
+                        _isSaving.setValueOnMainThread(false)
+                        return@withContext ReadingFlowSaveResult.ERROR to null
                     }
+            yield()
 
-                    patientManager.addPatientWithReading(patientFromServer, readingFromServer)
+            // If original patient is null, then that implies that we should save the patient.
+            check(originalPatient != null || shouldSavePatient())
 
-                    // Dialog should finish the Activity.
-                    return@withContext ReadingFlowSaveResult.SAVE_SUCCESSFUL to null
-                } else {
-                    return@withContext ReadingFlowSaveResult.ERROR_UPLOADING_REFERRAL to null
+            // Choose a patient to use.
+            // We want to use the originalPatient if available.
+            // If it's not available, then shouldSavePatient() is true, so we must be creating a new
+            // patient, and so patientFromBuilder should not be null.
+            val patient = originalPatient ?: patientFromBuilder ?: error("unreachable state")
+
+            // Embed the referral to the reading from the builder.
+            readingFromBuilder.referral =
+                Referral(
+                    comment = referralComment, healthFacilityName = healthFacilityName,
+                    dateReferred = readingFromBuilder.dateTimeTaken, patientId = patient.id,
+                    readingId = readingFromBuilder.id, sharedPreferences = sharedPreferences
+                )
+            yield()
+
+            // Handle the referral based on the type.
+            when (referralOption) {
+                ReferralOption.WEB -> {
+                    // Upload patient and reading to the server, with the referral embedded in
+                    // the reading.
+                    val result =
+                        referralUploadManager.uploadReferralViaWeb(patient, readingFromBuilder)
+                    if (result is Success) {
+                        // Save the patient and reading in local database after marking them as
+                        // being uploaded. Note: If patient already exists on server, then
+                        // patientFromServer == patient.
+                        val patientFromServer = result.value.patient
+                        val readingFromServer = result.value.readings[0].apply {
+                            isUploadedToServer = true
+                        }
+
+                        patientManager.addPatientWithReading(patientFromServer, readingFromServer)
+
+                        // Dialog should finish the Activity.
+                        // Don't set isSaving to false to ensure this can't be run again.
+                        return@withContext ReadingFlowSaveResult.SAVE_SUCCESSFUL to null
+                    } else {
+                        _isSaving.setValueOnMainThread(false)
+                        return@withContext ReadingFlowSaveResult.ERROR_UPLOADING_REFERRAL to null
+                    }
                 }
-            }
-            ReferralOption.SMS -> {
-                // If we're just sending by SMS, we first store it locally in the database and then
-                // have the DialogFragment that calls this to launch an SMS intent.
-                // We don't mark the reading as uploaded to the server, as we can't know
-                // for sure that the reading has been uploaded. When the VHT goes to
-                // sync this will be resolved, either by overwriting this reading with
-                // the one from the server (if it made it successfully) or by uploading
-                // it through the sync process (if it failed to make it to the server).
-                handleStoringPatientReadingFromBuilders(patientFromBuilder, readingFromBuilder)
+                ReferralOption.SMS -> {
+                    // If we're just sending by SMS, we first store it locally in the database and
+                    // then have the DialogFragment that calls this to launch an SMS intent.
+                    // We don't mark the reading as uploaded to the server, as we can't know
+                    // for sure that the reading has been uploaded. When the VHT goes to
+                    // sync this will be resolved, either by overwriting this reading with
+                    // the one from the server (if it made it successfully) or by uploading
+                    // it through the sync process (if it failed to make it to the server).
+                    handleStoringPatientReadingFromBuilders(patientFromBuilder, readingFromBuilder)
 
-                // Pass a PatientAndReadings object for the SMS message
-                return@withContext ReadingFlowSaveResult.SAVE_SUCCESSFUL to
-                    PatientAndReadings(patient, listOf(readingFromBuilder))
+                    // Pass a PatientAndReadings object for the SMS message.
+                    // Don't set isSaving to false to ensure this can't be run again.
+                    return@withContext ReadingFlowSaveResult.SAVE_SUCCESSFUL to
+                        PatientAndReadings(patient, listOf(readingFromBuilder))
+                }
+                else -> error("unreachable")
             }
-            else -> error("unreachable")
         }
     }
 
     /**
+     * When the save button in the AdviceFragment is clicked, this is run/
      * Saves the patient (if creating a new patient) and saves the reading to the database.
      * If sending a referral, then we need to handle that elsewhere.
      *
      * @return a [ReadingFlowSaveResult]
      */
     @MainThread
-    suspend fun save(
-        referralOption: ReferralOption = ReferralOption.NONE
-    ): ReadingFlowSaveResult = withContext(Dispatchers.Default) {
+    suspend fun save(): ReadingFlowSaveResult = withContext(Dispatchers.Default) {
         // Don't save if we are uninitialized for some reason.
         isInitializedMutex.withLock {
-            if (_isInitialized.value == false) return@withContext ReadingFlowSaveResult.ERROR
-        }
-
-        // If user selected referral, handle that
-        if (adviceReferralButtonId.value == R.id.send_referral_radio_button) {
-            // Don't save the reading / patient yet; we need the AdviceFragment to launch a
-            // referral dialog. TODO: Handle isSendingReferral
-            if (referralOption == ReferralOption.NONE) {
-                return@withContext ReadingFlowSaveResult.REFERRAL_REQUIRED
+            if (_isInitialized.value == false) {
+                return@withContext ReadingFlowSaveResult.ERROR
             }
         }
-        yield()
 
-        val (patient, reading) = constructValidPatientAndReadingFromBuilders()
-            ?: return@withContext ReadingFlowSaveResult.ERROR
-        yield()
+        isSavingMutex.withLock {
+            // Prevent saving from being run while it's already running. We have to do this since
+            // the save button launches a coroutine.
+            if (_isSaving.value == true) {
+                return@withContext ReadingFlowSaveResult.ERROR
+            }
 
-        handleStoringPatientReadingFromBuilders(patient, reading)
+            // If user selected to send a referral, handle that. When the AdviceFragment sees
+            // REFERRAL_REQUIRED, it launches a referral dialog.
+            if (adviceReferralButtonId.value == R.id.send_referral_radio_button) {
+                // Don't save the reading / patient yet; we need the AdviceFragment to launch a
+                // referral dialog.
+                return@withContext ReadingFlowSaveResult.REFERRAL_REQUIRED
+            }
 
-        return@withContext ReadingFlowSaveResult.SAVE_SUCCESSFUL
+            // Otherwise, we're in the main saving path.
+            _isSaving.setValueOnMainThread(true)
+            yield()
+
+            val (patient, reading) = constructValidPatientAndReadingFromBuilders()
+                ?: run {
+                    _isSaving.setValueOnMainThread(false)
+                    return@withContext ReadingFlowSaveResult.ERROR
+                }
+            yield()
+
+            handleStoringPatientReadingFromBuilders(patient, reading)
+
+            // Don't set isSaving to false to ensure this can't be run again.
+            return@withContext ReadingFlowSaveResult.SAVE_SUCCESSFUL
+        }
     }
 
     private suspend fun handleStoringPatientReadingFromBuilders(
