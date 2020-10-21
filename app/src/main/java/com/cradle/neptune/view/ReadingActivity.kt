@@ -24,7 +24,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.navOptions
 import com.cradle.neptune.R
 import com.cradle.neptune.databinding.ActivityPlaceholderBinding
-import com.cradle.neptune.utilitiles.dismissKeyboard
+import com.cradle.neptune.ext.hideKeyboard
 import com.cradle.neptune.view.ui.reading.PatientIdConflictDialogFragment
 import com.cradle.neptune.viewmodel.PatientReadingViewModel
 import com.cradle.neptune.viewmodel.ReadingFlowError
@@ -210,7 +210,7 @@ class ReadingActivity : AppCompatActivity() {
     }
 
     private fun onNextButtonClicked(button: View) {
-        button.dismissKeyboard()
+        button.hideKeyboard()
         val navController = findNavController(R.id.reading_nav_host)
 
         nextButtonJob?.cancel()
@@ -270,7 +270,7 @@ class ReadingActivity : AppCompatActivity() {
     }
 
     private fun onBackButtonPressed() {
-        findViewById<Button>(R.id.reading_back_button)?.dismissKeyboard()
+        findViewById<Button>(R.id.reading_back_button)?.hideKeyboard()
 
         val navController = findNavController(R.id.reading_nav_host)
 

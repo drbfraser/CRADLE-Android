@@ -17,9 +17,9 @@ import com.cradle.neptune.R
 import com.cradle.neptune.binding.FragmentDataBindingComponent
 import com.cradle.neptune.databinding.FragmentAdviceBinding
 import com.cradle.neptune.databinding.ListPreviousReadingsItemBinding
+import com.cradle.neptune.ext.hideKeyboard
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.RetestGroup
-import com.cradle.neptune.utilitiles.dismissKeyboard
 import com.cradle.neptune.view.ReadingActivity
 import com.cradle.neptune.viewmodel.ReadingFlowSaveResult
 import dagger.hilt.android.AndroidEntryPoint
@@ -68,7 +68,7 @@ class AdviceFragment : BaseFragment() {
         viewModel.dateRecheckVitalsNeeded.observe(viewLifecycleOwner) {}
 
         view.findViewById<Button>(R.id.save_reading_button).setOnClickListener {
-            it.dismissKeyboard()
+            it.hideKeyboard()
             viewModel.setInputEnabledState(false)
 
             lifecycleScope.launch {

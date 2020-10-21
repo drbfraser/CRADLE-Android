@@ -13,8 +13,8 @@ import androidx.lifecycle.observe
 import com.cradle.neptune.R
 import com.cradle.neptune.binding.FragmentDataBindingComponent
 import com.cradle.neptune.databinding.FragmentPatientInfoBinding
+import com.cradle.neptune.ext.hideKeyboard
 import com.cradle.neptune.model.Patient
-import com.cradle.neptune.utilitiles.dismissKeyboard
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputEditText
@@ -198,7 +198,7 @@ class PatientInfoFragment : BaseFragment() {
     private fun setupAndObserveGenderList(view: View) {
         val genderTextLayout = view.findViewById<TextInputLayout>(R.id.gender_input_layout)
         genderMenuTextView = (genderTextLayout.editText as? AutoCompleteTextView?)?.apply {
-            setOnClickListener { it.dismissKeyboard() }
+            setOnClickListener { it.hideKeyboard() }
         }
     }
 
@@ -207,7 +207,7 @@ class PatientInfoFragment : BaseFragment() {
             R.id.gestational_age_units_layout
         )
         gestAgeMenuTextView = (gestAgeUnitsTextLayout.editText as? AutoCompleteTextView?)?.apply {
-            setOnClickListener { it.dismissKeyboard() }
+            setOnClickListener { it.hideKeyboard() }
         }
     }
 

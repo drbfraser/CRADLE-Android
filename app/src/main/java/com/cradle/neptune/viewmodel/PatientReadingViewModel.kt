@@ -17,6 +17,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import com.cradle.neptune.R
+import com.cradle.neptune.ext.setValueOnMainThread
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.model.BloodPressure
@@ -320,7 +321,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
                         attemptToBuildValidPatient().let { patient ->
                             yield()
                             // Post the value immediately: requires main thread to do so.
-                            withContext(Dispatchers.Main) { value = patient != null }
+                            setValueOnMainThread(patient != null)
                         }
                     }
                 }
@@ -1101,9 +1102,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
             // Only add patient if we're creating a new patient.
             // If we're just creating a reason, users will not be able to edit patient info.
             if (reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
-                withContext(Dispatchers.Main) {
-                    patientLastEdited.value = ZonedDateTime.now().toEpochSecond()
-                }
+                patientLastEdited.setValueOnMainThread(ZonedDateTime.now().toEpochSecond())
 
                 val patient = attemptToBuildValidPatient()
                     ?: return@withContext ReadingFlowSaveResult.ERROR
@@ -1111,7 +1110,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
                 withContext(Dispatchers.IO) { patientManager.add(patient) }
             }
             if (reasonForLaunch != ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT_READING) {
-                dateTimeTaken.value = ZonedDateTime.now().toEpochSecond()
+                dateTimeTaken.setValueOnMainThread(ZonedDateTime.now().toEpochSecond())
             }
 
             val validReading = attemptToBuildValidReading()
@@ -1162,7 +1161,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
             withContext(Dispatchers.Default) {
                 // Only build retest groups for valid readings.
                 if (!reading.isValidInstance(app)) {
-                    withContext(Dispatchers.Main) { currentValidReadingAndRetestGroup.value = null }
+                    currentValidReadingAndRetestGroup.setValueOnMainThread(null)
                     return@withContext false
                 }
 
@@ -1392,7 +1391,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
                             for ((property, _) in urineTestLiveDataMap) {
                                 currentErrorMap.remove(property.name)
                             }
-                            withContext(Dispatchers.Main) { value = currentErrorMap }
+                            setValueOnMainThread(currentErrorMap)
                         }
                     }
                 }
@@ -1460,7 +1459,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
                             currentMap[propertyForErrorMapKey.name] = errorMessageForMap
                         }
 
-                        withContext(Dispatchers.Main) { errorMap.value = currentMap }
+                        errorMap.setValueOnMainThread(currentMap)
                     }
                 }
             }
