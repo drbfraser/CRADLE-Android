@@ -1,5 +1,6 @@
 package com.cradle.neptune.view.ui.reading
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -37,6 +38,8 @@ class AdviceFragment : BaseFragment() {
 
     private var savingDialog: AlertDialog? = null
 
+    private var launchReason: ReadingActivity.LaunchReason? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -50,6 +53,11 @@ class AdviceFragment : BaseFragment() {
             dataBindingComponent
         )
         return binding?.root
+    }
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        launchReason = (activity as? ReadingActivity)?.getLaunchReason()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -89,28 +97,68 @@ class AdviceFragment : BaseFragment() {
             viewModel.setInputEnabledState(false)
 
             lifecycleScope.launch {
-                when (viewModel.save()) {
+                when (val saveResult = viewModel.save()) {
                     ReadingFlowSaveResult.SAVE_SUCCESSFUL -> {
-                        Toast.makeText(
-                            view.context,
-                            "Patient / reading saved successfully",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        showStatusToast(view.context, saveResult)
                         activity?.finish()
                     }
                     ReadingFlowSaveResult.REFERRAL_REQUIRED -> {
                         launchReferralDialog()
                     }
                     else -> {
-                        Toast.makeText(view.context, "Failed to save", Toast.LENGTH_LONG).show()
+                        showStatusToast(view.context, saveResult)
+                        viewModel.setInputEnabledState(true)
                     }
                 }
             }
         }
     }
 
+    private fun showStatusToast(context: Context, saveResult: ReadingFlowSaveResult) {
+        Toast.makeText(
+            context,
+            getToastStatusMessage(context, saveResult),
+            Toast.LENGTH_LONG
+        ).show()
+    }
+
+    private fun getToastStatusMessage(context: Context, result: ReadingFlowSaveResult): String {
+        launchReason ?: return context.getString(R.string.fragment_advice_toast_error)
+
+        return when (result) {
+            ReadingFlowSaveResult.SAVE_SUCCESSFUL -> {
+                when (launchReason) {
+                    ReadingActivity.LaunchReason.LAUNCH_REASON_NEW ->
+                        context.getString(R.string.fragment_advice_toast_success_new_patient)
+                    ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT_READING ->
+                        context.getString(R.string.fragment_advice_toast_success_edit_reading)
+                    else ->
+                        context.getString(R.string.fragment_advice_toast_success_new_reading)
+                }
+            }
+            ReadingFlowSaveResult.ERROR -> {
+                when (launchReason) {
+                    ReadingActivity.LaunchReason.LAUNCH_REASON_NEW ->
+                        context.getString(R.string.fragment_advice_toast_error_new_patient)
+                    ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT_READING ->
+                        context.getString(R.string.fragment_advice_toast_error_edit_reading)
+                    else ->
+                        context.getString(R.string.fragment_advice_toast_error_new_reading)
+                }
+            }
+            ReadingFlowSaveResult.REFERRAL_REQUIRED -> {
+                error("no toast should be showing up for this result; just the dialog appears")
+            }
+            ReadingFlowSaveResult.ERROR_UPLOADING_REFERRAL -> {
+                error("unreachable, because the normal save path shouldn't be uploading referrals")
+            }
+        }
+    }
+
     private fun launchReferralDialog() {
-        ReferralDialogFragment().show(parentFragmentManager, "referral_dialog")
+        val launchReason = launchReason ?: return
+        ReferralDialogFragment.makeInstance(launchReason)
+            .show(parentFragmentManager, "referral_dialog")
     }
 
     private fun setupCurrentReadingSummaryLayout(

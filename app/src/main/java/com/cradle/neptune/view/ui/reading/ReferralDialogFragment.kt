@@ -52,14 +52,23 @@ class ReferralDialogFragment : DialogFragment() {
     /** ViewModel to store input */
     private val referralDialogViewModel: ReferralDialogViewModel by viewModels()
 
+    private lateinit var launchReason: ReadingActivity.LaunchReason
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         check(context is ReadingActivity)
+        check(arguments != null)
+        check(
+            arguments?.getSerializable(ARG_LAUNCH_REASON) as? ReadingActivity.LaunchReason != null
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = true
+
+        launchReason = arguments?.getSerializable(ARG_LAUNCH_REASON)
+            as? ReadingActivity.LaunchReason ?: error("unreachable")
     }
 
     override fun onCreateView(
@@ -124,17 +133,14 @@ class ReferralDialogFragment : DialogFragment() {
 
             when (smsSendResult) {
                 ReadingFlowSaveResult.SAVE_SUCCESSFUL -> {
+                    showStatusToast(view.context, smsSendResult, ReferralOption.SMS)
                     launchSmsIntentAndFinish(
                         selectedHealthCentreName,
                         patientAndReadings ?: error("unreachable")
                     )
                 }
                 else -> {
-                    Toast.makeText(
-                        view.context,
-                        "Error saving patient and reading",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    showStatusToast(view.context, smsSendResult, ReferralOption.SMS)
                 }
             }
         } finally {
@@ -148,11 +154,6 @@ class ReferralDialogFragment : DialogFragment() {
     ) {
         activity?.run {
             val smsIntent = makeSmsIntent(selectedHealthCentreName, patientAndReadings)
-            Toast.makeText(
-                this,
-                "Patient / reading has been saved successfully.",
-                Toast.LENGTH_LONG
-            ).show()
             startActivity(smsIntent)
             finish()
         }
@@ -194,38 +195,89 @@ class ReferralDialogFragment : DialogFragment() {
             val selectedHealthCentreName =
                 referralDialogViewModel.healthCentreToUse.value ?: return
 
-            val (smsSendResult, patientAndReadings) = viewModel.saveWithReferral(
+            val (smsSendResult, _) = viewModel.saveWithReferral(
                 ReferralOption.WEB, comment, selectedHealthCentreName
             )
 
             when (smsSendResult) {
                 ReadingFlowSaveResult.SAVE_SUCCESSFUL -> {
                     // Nothing left for us to do.
-                    Toast.makeText(
-                        view.context,
-                        "Patient / reading has been saved, and the referral has been sent.",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    showStatusToast(view.context, smsSendResult, ReferralOption.WEB)
                     activity?.finish()
                 }
                 ReadingFlowSaveResult.ERROR_UPLOADING_REFERRAL -> {
-                    Toast.makeText(
-                        view.context,
-                        "Error uploading referral",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    showStatusToast(view.context, smsSendResult, ReferralOption.WEB)
                 }
                 else -> {
-                    Toast.makeText(
-                        view.context,
-                        "Error saving patient and reading",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    showStatusToast(view.context, smsSendResult, ReferralOption.WEB)
                 }
             }
         } finally {
             referralDialogViewModel.isSending.value = false
         }
+    }
+
+    private fun showStatusToast(
+        context: Context,
+        result: ReadingFlowSaveResult,
+        referralOption: ReferralOption
+    ) {
+        Toast.makeText(
+            context,
+            getToastMessageForStatus(context, result, referralOption),
+            Toast.LENGTH_LONG
+        ).show()
+    }
+
+    private fun getToastMessageForStatus(
+        context: Context,
+        result: ReadingFlowSaveResult,
+        referralOption: ReferralOption
+    ) = when (referralOption) {
+        ReferralOption.WEB -> when (result) {
+            ReadingFlowSaveResult.SAVE_SUCCESSFUL -> {
+                if (launchReason == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
+                    context.getString(R.string.dialog_referral_toast_web_success_new_patient)
+                } else {
+                    context.getString(R.string.dialog_referral_toast_web_success_new_reading_only)
+                }
+            }
+            ReadingFlowSaveResult.ERROR_UPLOADING_REFERRAL -> {
+                if (launchReason == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
+                    context.getString(
+                        R.string.dialog_referral_toast_error_uploading_referral_reading_and_patient
+                    )
+                } else {
+                    context.getString(
+                        R.string.dialog_referral_toast_error_uploading_referral_reading
+                    )
+                }
+            }
+            else -> {
+                if (launchReason == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
+                    context.getString(R.string.dialog_referral_toast_error_saving_patient_reading)
+                } else {
+                    context.getString(R.string.dialog_referral_toast_error_saving_reading)
+                }
+            }
+        }
+        ReferralOption.SMS -> when (result) {
+            ReadingFlowSaveResult.SAVE_SUCCESSFUL -> {
+                if (launchReason == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
+                    context.getString(R.string.dialog_referral_toast_sms_success_new_patient)
+                } else {
+                    context.getString(R.string.dialog_referral_toast_sms_success_new_reading_only)
+                }
+            }
+            else -> {
+                if (launchReason == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
+                    context.getString(R.string.dialog_referral_toast_error_saving_patient_reading)
+                } else {
+                    context.getString(R.string.dialog_referral_toast_error_saving_reading)
+                }
+            }
+        }
+        ReferralOption.NONE -> error("unreachable")
     }
 
     override fun onStart() {
@@ -252,5 +304,14 @@ class ReferralDialogFragment : DialogFragment() {
 
     companion object {
         private const val TAG = "ReferralDialogFragment"
+        private const val ARG_LAUNCH_REASON = "LAUNCH_REASON"
+
+        fun makeInstance(launchReason: ReadingActivity.LaunchReason) =
+            ReferralDialogFragment().apply {
+                arguments = Bundle().apply {
+                    // Have it pass the launch reason so that we don't run into lateinit problems
+                    putSerializable(ARG_LAUNCH_REASON, launchReason)
+                }
+            }
     }
 }

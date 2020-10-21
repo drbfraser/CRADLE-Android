@@ -429,7 +429,22 @@
     <string name="activity_patient_profile_delete_reading_dialog_delete_button">Delete</string>
     <string name="health_centre_label">Health centre</string>
     <string name="referral_dialog_open_health_centre_settings_button_content_description">Open health centre settings</string>
-    <string name="fragment_advice_saving_dialog_title">Saving...</string>
+    <string name="fragment_advice_saving_dialog_title">Saving…</string>
+    <string name="dialog_referral_toast_sms_success_new_patient">New patient and reading have been saved locally. Please send the referral SMS manually.</string>
+    <string name="dialog_referral_toast_sms_success_new_reading_only">Reading has been saved locally. Please send the referral SMS manually.</string>
+    <string name="dialog_referral_toast_error_saving_patient_reading">An error occurred when trying to save the new patient and reading. Please recheck the fields.</string>
+    <string name="dialog_referral_toast_error_saving_reading">An error occurred when trying to save the reading. Please recheck the fields.</string>
+    <string name="dialog_referral_toast_error_uploading_referral_reading">An error occurred when uploading the reading and referral to the server.</string>
+    <string name="dialog_referral_toast_error_uploading_referral_reading_and_patient">An error occurred when uploading the new patient, reading, and referral to the server.</string>
+    <string name="dialog_referral_toast_web_success_new_patient">The new patient, reading, and referral have been uploaded to the server.</string>
+    <string name="dialog_referral_toast_web_success_new_reading_only">The reading and the referral have been uploaded to the server.</string>
+    <string name="fragment_advice_toast_error">Error occurred when trying to save</string>
+    <string name="fragment_advice_toast_success_new_patient">Successfully saved new patient and reading</string>
+    <string name="fragment_advice_toast_success_edit_reading">Your changes to the reading were saved</string>
+    <string name="fragment_advice_toast_success_new_reading">Reading saved successfully</string>
+    <string name="fragment_advice_toast_error_new_patient">Error occurred when trying to save new reading and patient. Please recheck the fields.</string>
+    <string name="fragment_advice_toast_error_edit_reading">Error occurred when trying to save edits to this reading. Please recheck the fields.</string>
+    <string name="fragment_advice_toast_error_new_reading">Error occurred when trying to save this new reading. Please recheck the fields.</string>
 
 
     <plurals name="unuploaded_reading_signout_message">

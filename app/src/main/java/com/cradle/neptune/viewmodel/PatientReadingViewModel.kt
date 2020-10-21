@@ -87,7 +87,8 @@ class PatientReadingViewModel @ViewModelInject constructor(
     private val weeksUnitString = app.resources
         .getStringArray(R.array.reading_ga_units)[GEST_AGE_UNIT_WEEKS_INDEX]
 
-    private lateinit var reasonForLaunch: ReadingActivity.LaunchReason
+    lateinit var reasonForLaunch: ReadingActivity.LaunchReason
+        private set
 
     private val isInitializedMutex = Mutex(locked = false)
 
