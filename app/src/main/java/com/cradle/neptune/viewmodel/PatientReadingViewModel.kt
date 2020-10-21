@@ -1195,8 +1195,8 @@ class PatientReadingViewModel @ViewModelInject constructor(
          * Otherwise, it will return a Pair of a nullable Patient and a non-null Reading. The Patient
          * is null if it wasn't built.
          */
-        private suspend fun constructValidPatientAndReadingFromBuilders(): Pair<Patient?, Reading>? =
-            withContext(Dispatchers.Default) {
+        private suspend fun constructValidPatientAndReadingFromBuilders():
+            Pair<Patient?, Reading>? = withContext(Dispatchers.Default) {
                 val patientAsync = async {
                     return@async if (shouldSavePatient()) {
                         patientLastEdited.setValueOnMainThread(ZonedDateTime.now().toEpochSecond())
@@ -1207,11 +1207,6 @@ class PatientReadingViewModel @ViewModelInject constructor(
                 }
 
                 val readingAsync = async {
-                    if (reasonForLaunch != ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT_READING) {
-                        // Update the reading's time taken if we're not editing a previous reading.
-                        dateTimeTaken.setValueOnMainThread(ZonedDateTime.now().toEpochSecond())
-                    }
-
                     // Try to construct a reading for saving. It should be valid, as these validated
                     // properties should have been enforced in the previous fragments
                     // (VitalSignsFragment). We get null if it's not valid.
