@@ -55,6 +55,11 @@ class AdviceFragment : BaseFragment() {
         return binding?.root
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        savingDialog?.dismiss()
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         launchReason = (activity as? ReadingActivity)?.getLaunchReason()
