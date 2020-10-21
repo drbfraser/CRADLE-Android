@@ -49,6 +49,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.reflect.KProperty
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.joinAll
@@ -907,11 +908,14 @@ class PatientReadingViewModel @ViewModelInject constructor(
         Log.d(TAG, "onDestinationChange")
         updateActionBarSubtitle(patientName.value, patientId.value)
         clearBottomNavBarMessage()
-        if (_isInitialized.value == true) {
-            setInputEnabledState(true)
-        }
 
         viewModelScope.launch(Dispatchers.Main) {
+            isInitializedMutex.withLock {
+                if (_isInitialized.value == true) {
+                    setInputEnabledState(true)
+                }
+            }
+
             isNextButtonEnabledMutex.withLock {
                 vitalSignsFragmentVerifyJob?.cancel()
 
@@ -1087,40 +1091,67 @@ class PatientReadingViewModel @ViewModelInject constructor(
 
     /**
      * Saves the patient (if creating a new patient) and saves the reading.
+     * This writes them to the database.
+     * If sending a referral, then we need to handle that elsewhere.
      *
      * @return a [ReadingFlowSaveResult]
      */
     @MainThread
-    suspend fun save(isSendingReferral: Boolean = false): ReadingFlowSaveResult {
-        return withContext(Dispatchers.Default) {
+    suspend fun save(isSendingReferral: Boolean = false): ReadingFlowSaveResult =
+        withContext(Dispatchers.Default) {
+            // Don't save if we are uninitialized for some reason.
+            isInitializedMutex.withLock {
+                if (_isInitialized.value == false) return@withContext ReadingFlowSaveResult.ERROR
+            }
+
             if (adviceReferralButtonId.value == R.id.send_referral_radio_button) {
                 // Don't save the reading / patient yet; we need the AdviceFragment to launch a
                 // referral dialog. TODO: Handle isSendingReferral
                 return@withContext ReadingFlowSaveResult.REFERRAL_REQUIRED
             }
+            yield()
 
             // Only add patient if we're creating a new patient.
-            // If we're just creating a reason, users will not be able to edit patient info.
-            if (reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
-                patientLastEdited.setValueOnMainThread(ZonedDateTime.now().toEpochSecond())
+            // If we're just creating a reading, users will not be able to edit patient info.
+            val shouldSavePatient =
+                reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW
 
-                val patient = attemptToBuildValidPatient()
-                    ?: return@withContext ReadingFlowSaveResult.ERROR
-                yield()
-                withContext(Dispatchers.IO) { patientManager.add(patient) }
+            val patientAsync = async {
+                return@async if (shouldSavePatient) {
+                    patientLastEdited.setValueOnMainThread(ZonedDateTime.now().toEpochSecond())
+                    attemptToBuildValidPatient()
+                } else {
+                    null
+                }
             }
-            if (reasonForLaunch != ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT_READING) {
-                dateTimeTaken.setValueOnMainThread(ZonedDateTime.now().toEpochSecond())
+
+            val readingAsync = async {
+                if (reasonForLaunch != ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT_READING) {
+                    // Update the reading's time taken if we're not editing a previous reading.
+                    dateTimeTaken.setValueOnMainThread(ZonedDateTime.now().toEpochSecond())
+                }
+
+                // Try to construct a reading for saving. It should be valid, as these validated
+                // properties should have been enforced in the previous fragments
+                // (VitalSignsFragment). We get null if it's not valid.
+                return@async attemptToBuildValidReading()
             }
 
-            val validReading = attemptToBuildValidReading()
-                ?: return@withContext ReadingFlowSaveResult.ERROR
+            val (patient, reading) = patientAsync.await() to readingAsync.await()
+            if (reading == null ||
+                    (shouldSavePatient && patient == null)) {
+                return@withContext ReadingFlowSaveResult.ERROR
+            }
+            yield()
 
-            withContext(Dispatchers.IO) { readingManager.addReading(validReading) }
-
+            if (shouldSavePatient && patient != null) {
+                // Insertion needs to be atomic.
+                patientManager.addPatientWithReading(patient, reading)
+            } else {
+                readingManager.addReading(reading)
+            }
             return@withContext ReadingFlowSaveResult.SAVE_SUCCESSFUL
         }
-    }
 
     /**
      * Describes the current recommended advice. The RadioButtons will indicate which option is
