@@ -131,6 +131,7 @@ class ReadingActivity : AppCompatActivity() {
         }
 
         if (viewModel.isInitialized.value != true) {
+            viewModel.setInputEnabledState(false)
             viewModel.isInitialized.observe(this) { isInitialized ->
                 if (!isInitialized) {
                     Log.d("ReadingActivity", "not initialized")

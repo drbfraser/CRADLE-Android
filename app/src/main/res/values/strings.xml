@@ -429,6 +429,7 @@
     <string name="activity_patient_profile_delete_reading_dialog_delete_button">Delete</string>
     <string name="health_centre_label">Health centre</string>
     <string name="referral_dialog_open_health_centre_settings_button_content_description">Open health centre settings</string>
+    <string name="fragment_advice_saving_dialog_title">Saving...</string>
 
 
     <plurals name="unuploaded_reading_signout_message">
