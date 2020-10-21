@@ -1,23 +1,17 @@
 package com.cradle.neptune.view.ui.reading
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.databinding.DataBindingComponent
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import androidx.navigation.Navigation
 import com.cradle.neptune.R
 import com.cradle.neptune.binding.FragmentDataBindingComponent
 import com.cradle.neptune.databinding.FragmentVitalSignsBinding
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 
 private const val TAG = "VitalSignsFragment"
 
@@ -25,7 +19,6 @@ private const val TAG = "VitalSignsFragment"
  * Allow user to input vital signs, including OCR for data from the photo.
  */
 class VitalSignsFragment : BaseFragment() {
-    private var debugPeriodicPrintJob: Job? = null
 
     private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent()
 
@@ -62,15 +55,6 @@ class VitalSignsFragment : BaseFragment() {
         // Required to observe for source updates to come to these LiveData.
         viewModel.bloodPressure.observe(viewLifecycleOwner) {}
         viewModel.urineTest.observe(viewLifecycleOwner) {}
-
-        debugPeriodicPrintJob?.cancel()
-        debugPeriodicPrintJob = lifecycleScope.launch {
-            while (isActive) {
-                Log.d(TAG, "DEBUG: BloodPressure is: ${viewModel.bloodPressure.value}")
-                @Suppress("MagicNumber")
-                (delay(4000L))
-            }
-        }
     }
 
     companion object {
@@ -84,9 +68,5 @@ class VitalSignsFragment : BaseFragment() {
         private const val OCR_DEBUG_IDS_SCALED_IDX = 0
         private const val OCR_DEBUG_IDS_RAW_IDX = 1
         private const val OCR_DEBUG_IDS_TEXT_IDX = 2
-
-        fun newInstance(): VitalSignsFragment {
-            return VitalSignsFragment()
-        }
     }
 }

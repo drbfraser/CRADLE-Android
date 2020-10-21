@@ -1,7 +1,6 @@
 package com.cradle.neptune.view.ui.reading
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,15 +8,10 @@ import android.widget.CheckBox
 import android.widget.LinearLayout
 import androidx.databinding.DataBindingComponent
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import com.cradle.neptune.R
 import com.cradle.neptune.binding.FragmentDataBindingComponent
 import com.cradle.neptune.databinding.FragmentSymptomsBinding
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 
 private const val TAG = "SymptomsFragment"
 
@@ -25,7 +19,6 @@ private const val TAG = "SymptomsFragment"
  * Gather information about the patient.
  */
 class SymptomsFragment : BaseFragment() {
-    private var debugPeriodicPrintJob: Job? = null
 
     private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent()
 
@@ -77,7 +70,6 @@ class SymptomsFragment : BaseFragment() {
                         isChecked = viewModel.symptomsState.value?.isSymptomIndexChecked(index)
                             ?: false
                         setOnCheckedChangeListener { _, isChecked ->
-                            Log.d(TAG, "DEBUG: checkbox $index is checked")
                             viewModel.setSymptomsState(index, isChecked)
                         }
                         viewModel.isInputEnabled.observe(viewLifecycleOwner) { isEnabled = it }
@@ -101,15 +93,5 @@ class SymptomsFragment : BaseFragment() {
 
         // Need to observe so that the MediatorLiveData gets updated.
         viewModel.symptoms.observe(viewLifecycleOwner) {}
-
-        debugPeriodicPrintJob?.cancel()
-        debugPeriodicPrintJob = lifecycleScope.launch {
-            while (isActive) {
-                Log.d(TAG, "DEBUG: symptoms are: ${viewModel.symptoms.value}")
-                Log.d(TAG, "DEBUG: symptoms state is: ${viewModel.symptomsState.value}")
-                @Suppress("MagicNumber")
-                delay(4000L)
-            }
-        }
     }
 }

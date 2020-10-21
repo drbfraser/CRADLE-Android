@@ -25,10 +25,6 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 private const val TAG = "PatientInfoFragment"
@@ -57,16 +53,9 @@ class PatientInfoFragment : BaseFragment() {
 
     private var binding: FragmentPatientInfoBinding? = null
 
-    // TODO: remove me
-    private var debugPeriodicPrintJob: Job? = null
-
     override fun onDestroy() {
         super.onDestroy()
         binding = null
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
     }
 
     override fun onCreateView(
@@ -94,42 +83,6 @@ class PatientInfoFragment : BaseFragment() {
             launch { setupAndObserveGenderList(view) }
             launch { setupGestationalAge(view) }
         }
-
-        debugPeriodicPrintJob?.cancel()
-        debugPeriodicPrintJob = lifecycleScope.launch(Dispatchers.Main) {
-            val autoTextView = genderMenuTextView
-            while (isActive) {
-                // TODO: Remove me.
-                Log.d(TAG, "DEBUG: patientAge is ${viewModel.patientAge.value}, " +
-                    "dob is ${viewModel.patientDob.value}")
-                Log.d(TAG, "DEBUG: gender editText has selection: ${autoTextView?.listSelection}")
-                Log.d(TAG, "DEBUG: gender editText has text: ${autoTextView?.text}; gender is " +
-                    "actually ${viewModel.patientSex.value}")
-                Log.d(TAG, "DEBUG: is using dob: ${viewModel.isUsingDateOfBirth.value}")
-
-                Log.d(TAG, "DEBUG: gestAge is ${viewModel.patientGestationalAge.value} " +
-                    "with units ${viewModel.patientGestationalAgeUnits.value} " +
-                    "and text input ${viewModel.patientGestationalAgeInput.value}")
-
-                Log.d(TAG, "DEBUG: drug history: ${viewModel.patientDrugHistory.value}, " +
-                    "medical history: ${viewModel.patientMedicalHistory.value}")
-
-                Log.d(TAG, "DEBUG: bloodPressureHeartRateInput: " +
-                    "hasObservers ${viewModel.bloodPressureHeartRateInput.hasObservers()}, " +
-                    "hasActiveObservers: ${viewModel.bloodPressureHeartRateInput.hasActiveObservers()}")
-
-                Log.d(TAG, "DEBUG: patientId: " +
-                    "hasObservers ${viewModel.patientId.hasObservers()}, " +
-                    "hasActiveObservers: ${viewModel.patientId.hasActiveObservers()}")
-
-                Log.d(TAG, "DEBUG: UrineTest right now is ${viewModel.urineTest.value}")
-
-                Log.d(TAG, "DEBUG: error map is ${viewModel.errorMap.value}")
-
-                @Suppress("MagicNumber")
-                delay(6000L)
-            }
-        }
     }
 
     private fun setupAndObserveAgeInfo(view: View) {
@@ -150,8 +103,6 @@ class PatientInfoFragment : BaseFragment() {
                         timeZone = TimeZone.getTimeZone(DATE_PICKER_TIME_ZONE)
                         format(Date(it))
                     }
-                Log.d(TAG, "DEBUG: DOB received from picker: ${viewModel.patientDob.value}, " +
-                    "based on timestamp $it")
             }
         }
         ageInputLayout.apply {
@@ -237,8 +188,5 @@ class PatientInfoFragment : BaseFragment() {
         private const val DATE_PICKER_DEFAULT_YEAR = 2000
         private const val DATE_PICKER_YEAR_LOWER_BOUND = 1900
         private const val DATE_PICKER_TIME_ZONE = "UTC"
-
-        private const val EDIT_TEXT_AGE_INPUT_STATE_TAG = 0
-        private const val EDIT_TEXT_DOB_STATE_TAG = 1
     }
 }

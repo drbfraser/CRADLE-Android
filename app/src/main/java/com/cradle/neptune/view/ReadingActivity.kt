@@ -33,6 +33,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
+private const val TAG = "ReadingActivity"
+
 @SuppressWarnings("LargeClass")
 @AndroidEntryPoint
 class ReadingActivity : AppCompatActivity() {
@@ -47,7 +49,7 @@ class ReadingActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d("ReadingActivity", "onDestroy()")
+        Log.d(TAG, "onDestroy()")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,7 +84,7 @@ class ReadingActivity : AppCompatActivity() {
             } catch (e: Resources.NotFoundException) {
                 destination.id.toString()
             }
-            Log.d("ReadingActivity", "Navigated to $dest")
+            Log.d(TAG, "Navigated to $dest")
 
             updateActionBarTitle(destination.id, launchReason)
             viewModel.onDestinationChange(destination.id)
@@ -134,7 +136,7 @@ class ReadingActivity : AppCompatActivity() {
             viewModel.setInputEnabledState(false)
             viewModel.isInitialized.observe(this) { isInitialized ->
                 if (!isInitialized) {
-                    Log.d("ReadingActivity", "not initialized")
+                    Log.d(TAG, "not initialized")
                     viewModel.setInputEnabledState(false)
                     return@observe
                 }
@@ -161,6 +163,7 @@ class ReadingActivity : AppCompatActivity() {
                     // system-initiated process death.
                     // TODO: Implement some sort of auto-save system that works in general and lets
                     //  users exit the reading flow without a dialog to confirm discarding.
+                    Log.w(TAG, "ReadingActivity started up after being killed by the OS")
                     navController.popBackStack(getStartDestinationId(), false)
                     Toast.makeText(
                         this,

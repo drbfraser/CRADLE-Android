@@ -17,6 +17,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
+import com.cradle.neptune.BuildConfig
 import com.cradle.neptune.R
 import com.cradle.neptune.ext.setValueOnMainThread
 import com.cradle.neptune.manager.PatientManager
@@ -53,8 +54,6 @@ import kotlin.reflect.KProperty
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -66,6 +65,8 @@ import org.threeten.bp.ZonedDateTime
 // The index of the gestational age units inside of the string.xml array, R.array.reading_ga_units
 private const val GEST_AGE_UNIT_WEEKS_INDEX = 0
 private const val GEST_AGE_UNIT_MONTHS_INDEX = 1
+
+private val DEBUG = BuildConfig.DEBUG
 
 /**
  * The ViewModel that is used in [ReadingActivity] and its
@@ -261,7 +262,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
 
     private inline fun logTime(functionName: String, block: () -> Unit) {
         val startTime = System.currentTimeMillis()
-        block.invoke()
+        block()
         Log.d(TAG, "$functionName took ${System.currentTimeMillis() - startTime} ms")
     }
 
@@ -353,9 +354,9 @@ class PatientReadingViewModel @ViewModelInject constructor(
                     addSource(liveData) {
                         if (_isInitialized.value != true) return@addSource
 
-                        isPatientValidJob?.cancel() ?: Log.d(TAG, "no job to cancel")
+                        isPatientValidJob?.cancel()
+                            ?: Log.d(TAG, "isPatientValidJob: no job to cancel")
                         isPatientValidJob = viewModelScope.launch(Dispatchers.Default) {
-                            Log.d(TAG, "attempting to construct patient for validation")
                             attemptToBuildValidPatient().let { patient ->
                                 yield()
                                 // Post the value immediately: requires main thread to do so.
@@ -489,18 +490,13 @@ class PatientReadingViewModel @ViewModelInject constructor(
                 addSource(patientGestationalAgeUnits) {
                     // If we received an update to the units used, convert the GestationalAge object
                     // into the right type.
-                    Log.d(TAG, "DEBUG: patientGestationalAge: units source: $it")
                     it ?: return@addSource
 
                     if (it == monthsUnitString && value is GestationalAgeWeeks) {
-                        Log.d(TAG, "DEBUG: patientGestationalAge units source: converting to Months")
-
                         value = GestationalAgeMonths((value as GestationalAge).timestamp)
                         // Zero out the input when changing units.
                         patientGestationalAgeInput.value = "0"
                     } else if (it == weeksUnitString && value is GestationalAgeMonths) {
-                        Log.d(TAG, "DEBUG: patientGestationalAge units source: converting to Weeks")
-
                         value = GestationalAgeWeeks((value as GestationalAge).timestamp)
                         // Zero out the input when changing units.
                         patientGestationalAgeInput.value = "0"
@@ -511,7 +507,6 @@ class PatientReadingViewModel @ViewModelInject constructor(
                 addSource(patientGestationalAgeInput) {
                     // If the user typed something in, create a new GestationalAge object with the
                     // specified values.
-                    Log.d(TAG, "DEBUG: patientGestationalAge input source: $it")
                     if (it.isNullOrBlank()) {
                         value = null
                         return@addSource
@@ -917,7 +912,6 @@ class PatientReadingViewModel @ViewModelInject constructor(
          */
         @MainThread
         fun onDestinationChange(@IdRes currentDestinationId: Int) {
-            Log.d(TAG, "onDestinationChange")
             updateActionBarSubtitle(patientName.value, patientId.value)
             navigationManager.clearBottomNavBarMessage()
 
@@ -950,6 +944,10 @@ class PatientReadingViewModel @ViewModelInject constructor(
                                 }
                             }
                             R.id.symptomsFragment -> {
+                                Log.d(
+                                    TAG,
+                                    "next button uses symptomsFragment criteria: no criteria"
+                                )
                                 value = true
                             }
                             R.id.vitalSignsFragment -> {
@@ -984,9 +982,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
                 isNextButtonEnabledMutex.withLock {
                     val newValue = verifyVitalSignsFragment()
                     yield()
-                    isNextButtonEnabled.value = newValue.also {
-                        Log.d(TAG, "vital signs fragment job: next button Enabled? $it")
-                    }
+                    isNextButtonEnabled.value = newValue
                 }
             }
         }
@@ -1026,33 +1022,37 @@ class PatientReadingViewModel @ViewModelInject constructor(
     /**
      * @return a non-null valid Patient if and only if the Patient that can be constructed with the
      * values in [patientBuilder] is valid.
+     *
+     * Restrict the logging to debug builds only, as this code is run every time a required patient
+     * info field changes.
      */
     private fun attemptToBuildValidPatient(): Patient? {
         if (!patientBuilder.isConstructable<Patient>()) {
-            Log.d(TAG, "attemptToBuildValidPatient: patient not constructable")
+            if (DEBUG) Log.d(TAG, "attemptToBuildValidPatient: patient not constructable, " +
+                "missing ${patientBuilder.missingParameters(Patient::class)}")
             return null
         }
 
         val patient = try {
             patientBuilder.build<Patient>()
         } catch (e: IllegalArgumentException) {
-            Log.d(TAG, "attemptToBuildValidPatient: " +
+            if (DEBUG) Log.d(TAG, "attemptToBuildValidPatient: " +
                 "patient failed to build, exception ${e.cause?.message ?: e.message}")
             return null
         } catch (e: InvocationTargetException) {
-            Log.d(TAG, "attemptToBuildValidPatient: " +
+            if (DEBUG) Log.d(TAG, "attemptToBuildValidPatient: " +
                 "patient failed to build, exception ${e.cause?.message ?: e.message}")
             return null
         }
 
         if (!patient.isValidInstance(app)) {
-            Log.d(TAG, "attemptToBuildValidPatient: " +
+            if (DEBUG) Log.d(TAG, "attemptToBuildValidPatient: " +
                 "patient is invalid, " +
                 "errors: ${patient.getAllMembersWithInvalidValues(app)}")
             return null
         }
 
-        Log.d(TAG, "attemptToBuildValidPatient: built a valid patient")
+        if (DEBUG) Log.d(TAG, "attemptToBuildValidPatient: built a valid patient")
         return patient
     }
 
@@ -1808,21 +1808,6 @@ class PatientReadingViewModel @ViewModelInject constructor(
                         errorMap.setValueOnMainThread(currentMap)
                     }
                 }
-            }
-        }
-    }
-
-    init {
-        viewModelScope.launch(Dispatchers.Main) {
-            while (isActive) {
-                Log.d(TAG, "DEBUG: errorMap is ${errorMap.value}")
-                Log.d(TAG, "DEBUG: isPatientValid is ${attemptToBuildValidPatient() != null}")
-                Log.d(TAG, "DEBUG: isNextButtonEnabled is ${isNextButtonEnabled.value}")
-                Log.d(TAG, "DEBUG: _isInputEnabled is ${isInputEnabled.value}")
-                Log.d(TAG, "DEBUG: dateRecheckVitals is ${dateRecheckVitalsNeeded.value}")
-                Log.d(TAG, "DEBUG: isFlaggedForFollowup is ${isFlaggedForFollowUp.value}")
-                @Suppress("MagicNumber")
-                delay(5000L)
             }
         }
     }
