@@ -1,5 +1,6 @@
 package com.cradle.neptune.model
 
+import android.content.SharedPreferences
 import com.cradle.neptune.ext.Field
 import com.cradle.neptune.ext.booleanField
 import com.cradle.neptune.ext.longField
@@ -7,6 +8,7 @@ import com.cradle.neptune.ext.optIntField
 import com.cradle.neptune.ext.optStringField
 import com.cradle.neptune.ext.put
 import com.cradle.neptune.ext.stringField
+import com.cradle.neptune.manager.LoginManager
 import java.io.Serializable
 import org.json.JSONException
 import org.json.JSONObject
@@ -42,13 +44,14 @@ data class Referral(
         healthFacilityName: String,
         dateReferred: Long,
         patientId: String,
-        readingId: String
+        readingId: String,
+        sharedPreferences: SharedPreferences
     ) : this(
         comment = comment,
         healthFacilityName = healthFacilityName,
         dateReferred = dateReferred,
         id = null,
-        userId = null,
+        userId = sharedPreferences.getString(LoginManager.USER_ID_KEY, null)?.toIntOrNull(),
         patientId = patientId,
         readingId = readingId,
         isAssessed = false
