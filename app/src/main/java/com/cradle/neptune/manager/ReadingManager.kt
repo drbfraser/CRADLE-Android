@@ -7,9 +7,8 @@ import com.cradle.neptune.net.NetworkResult
 import com.cradle.neptune.net.RestApi
 import com.cradle.neptune.net.Success
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
@@ -30,7 +29,7 @@ import kotlinx.coroutines.withContext
  */
 @Suppress("RedundantSuspendModifier")
 class ReadingManager @Inject constructor(
-    private val daoAccess: ReadingDaoAccess,
+    private val readingDao: ReadingDaoAccess,
     private val restApi: RestApi
 ) {
 
@@ -40,21 +39,15 @@ class ReadingManager @Inject constructor(
      * todo once all the class using this api is converted to kotlin, we can move coroutine out
      * of this class and make this a [suspend] function
      */
-    fun addReading(reading: Reading) {
-        GlobalScope.launch {
-            daoAccess.insertReading(reading)
-        }
-    }
+    suspend fun addReading(reading: Reading) = withContext(IO) { readingDao.insert(reading) }
 
     /**
      * Get all the readings.
      * todo once all the class using this api is converted to kotlin, we can move coroutine out
      * of this class and make this a [suspend] function
      */
-    fun addAllReadings(readings: List<Reading>) {
-        GlobalScope.launch {
-            daoAccess.insertAll(readings)
-        }
+    suspend fun addAllReadings(readings: List<Reading>) = withContext(IO) {
+        readingDao.insertAll(readings)
     }
 
     /**
@@ -63,38 +56,27 @@ class ReadingManager @Inject constructor(
      * of this class and make this a [suspend] function
      * @param reading the reading to update
      */
-    fun updateReading(reading: Reading) = GlobalScope.launch { daoAccess.update(reading) }
+    suspend fun updateReading(reading: Reading) = withContext(IO) { readingDao.update(reading) }
 
     /**
      * Returns a list of all readings (and their associated patients) in the
      * database.
      */
-    suspend fun getAllReadings(): List<Reading> = withContext(IO) {
-        daoAccess.allReadingEntities
-    }
+    suspend fun getAllReadings(): List<Reading> = withContext(IO) { readingDao.allReadingEntities }
 
     /**
      * Returns the reading (and its associated patient) with a given [id] from
      * the database. Returns `null` if unable to find such a reading.
      */
     suspend fun getReadingById(id: String): Reading? = withContext(IO) {
-        daoAccess.getReadingById(id)
-    }
-
-    /**
-     * TODO: once all the java classes calling this method are turned into Kotlin,
-     * remove this function and call the corressponding method.
-     * This is only for legacy java code still calling this function.
-     */
-    fun getReadingByIdBlocking(id: String): Reading? {
-        return runBlocking { withContext(IO) { getReadingById(id) } }
+        readingDao.getReadingById(id)
     }
 
     /**
      * Returns all readings associated with a specific patient [id].
      */
-    suspend fun getReadingsByPatientId(id: String): List<Reading> {
-        return daoAccess.getAllReadingByPatientId(id)
+    suspend fun getReadingsByPatientId(id: String): List<Reading> = withContext(IO) {
+        readingDao.getAllReadingByPatientId(id)
     }
 
     /**
@@ -102,7 +84,9 @@ class ReadingManager @Inject constructor(
      * remove this function and call the corressponding method.
      * This is only for legacy java code still calling this function.
      */
-    @Deprecated("Please avoid using this function in Kotlin files.")
+    @Deprecated("Please avoid using this function in Kotlin files.",
+        replaceWith = ReplaceWith("getReadingsByPatientId")
+    )
     fun getReadingByPatientIdBlocking(id: String) = runBlocking {
         withContext(IO) { getReadingsByPatientId(id) }
     }
@@ -110,41 +94,32 @@ class ReadingManager @Inject constructor(
     /**
      * Returns all readings which have not been uploaded to the server yet.
      */
-    suspend fun getUnUploadedReadings(): List<Reading> {
-        return daoAccess.allUnUploadedReading
+    suspend fun getUnUploadedReadings(): List<Reading> = withContext(IO) {
+        readingDao.allUnUploadedReading
     }
 
     /**
      * get unUploaded readings for patients who already exists in the server
      */
-    suspend fun getUnUploadedReadingsForServerPatients(): List<Reading> {
-        return daoAccess.allUnUploadedReadingsForTrackedPatients
+    suspend fun getUnUploadedReadingsForServerPatients(): List<Reading> = withContext(IO) {
+        readingDao.allUnUploadedReadingsForTrackedPatients
     }
-
-    /**
-     * TODO: once all the java classes calling this method are turned into Kotlin,
-     * remove this function and call the corressponding method.
-     * This is only for legacy java code still calling this function.
-     */
-    @Deprecated("Please avoid using this function in Kotlin files.")
-    fun getUnUploadedReadingsBlocking() =
-        runBlocking { withContext(IO) { getUnUploadedReadings() } }
 
     /**
      * Constructs a [RetestGroup] for a given [reading].
      */
-    suspend fun getRetestGroup(reading: Reading): RetestGroup {
+    suspend fun getRetestGroup(reading: Reading): RetestGroup = withContext(Default) {
         val readings = mutableListOf<Reading>()
         readings.addAll(reading.previousReadingIds.mapNotNull { getReadingById(it) })
         readings.add(reading)
-        return RetestGroup(readings)
+        return@withContext RetestGroup(readings)
     }
 
     /**
      * Deletes the reading with a specific [id] from the database.
      */
-    suspend fun deleteReadingById(id: String) {
-        return daoAccess.delete(getReadingById(id))
+    suspend fun deleteReadingById(id: String) = withContext(IO) {
+        readingDao.delete(getReadingById(id))
     }
 
     /**
@@ -152,22 +127,24 @@ class ReadingManager @Inject constructor(
      * remove this function and call the corressponding method.
      * This is only for legacy java code still calling this function.
      */
-    @Deprecated("Please avoid using this function in Kotlin files.")
+    @Deprecated(
+        "Please avoid using this function in Kotlin files.",
+        replaceWith = ReplaceWith("deleteReadingById")
+    )
     fun deleteReadingByIdBlocking(id: String) =
         runBlocking { withContext(IO) { deleteReadingById(id) } }
 
     /**
      * Get the newest reading of a patient
      */
-    suspend fun getNewestReadingByPatientId(id: String): Reading? =
-        daoAccess.getNewestReadingByPatientId(id)
+    suspend fun getNewestReadingByPatientId(id: String): Reading? = withContext(IO) {
+        readingDao.getNewestReadingByPatientId(id)
+    }
 
     /**
      * Deletes all readings from the database.
      */
-    suspend fun deleteAllData() {
-        daoAccess.deleteAllReading()
-    }
+    suspend fun deleteAllData() = withContext(IO) { readingDao.deleteAllReading() }
 
     /**
      * upload new reading to the server and mark it uploaded based on the result.
@@ -179,7 +156,7 @@ class ReadingManager @Inject constructor(
             when (result) {
                 is Success -> {
                     reading.isUploadedToServer = true
-                    daoAccess.update(reading)
+                    readingDao.update(reading)
                 }
             }
             result.map { Unit }

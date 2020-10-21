@@ -30,7 +30,7 @@ interface ReadingDaoAccess {
      * @param reading The entity to insert into the database.
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertReading(reading: Reading)
+    fun insert(reading: Reading)
 
     /**
      * Inserts each reading in the supplied list into the database.

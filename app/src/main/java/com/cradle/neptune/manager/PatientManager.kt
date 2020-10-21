@@ -1,8 +1,11 @@
 package com.cradle.neptune.manager
 
+import com.cradle.neptune.database.CradleDatabase
 import com.cradle.neptune.database.PatientDaoAccess
+import com.cradle.neptune.database.ReadingDaoAccess
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.PatientAndReadings
+import com.cradle.neptune.model.Reading
 import com.cradle.neptune.net.NetworkResult
 import com.cradle.neptune.net.RestApi
 import com.cradle.neptune.net.Success
@@ -18,53 +21,68 @@ import kotlinx.coroutines.withContext
  * Manager to interact with the [Patient] table in the database.
  */
 class PatientManager @Inject constructor(
-    private val daoAccess: PatientDaoAccess,
+    private val database: CradleDatabase,
+    private val patientDao: PatientDaoAccess,
+    private val readingDao: ReadingDaoAccess,
     private val restApi: RestApi
 ) {
 
     /**
      * add a single patient
      */
-    fun add(patient: Patient) = GlobalScope.launch { daoAccess.insert(patient) }
+    suspend fun add(patient: Patient) = withContext(IO) { patientDao.insert(patient) }
 
     /**
      * add all patients
      */
-    fun addAll(patients: ArrayList<Patient>) = GlobalScope.launch { daoAccess.insertAll(patients) }
+    suspend fun addAll(patients: ArrayList<Patient>) = GlobalScope.launch {
+        patientDao.insertAll(patients)
+    }
+
+    /**
+     * Adds a patient and its reading in a single transaction. The [reading] should be for the
+     * given [patient].
+     */
+    suspend fun addPatientWithReading(patient: Patient, reading: Reading) = withContext(IO) {
+        database.runInTransaction {
+            patientDao.insert(patient)
+            readingDao.insert(reading)
+        }
+    }
 
     /**
      * delete a patient by id
      */
     suspend fun delete(id: String) {
         withContext(IO) {
-            getPatientById(id)?.let { daoAccess.delete(it) }
+            getPatientById(id)?.let { patientDao.delete(it) }
         }
     }
 
     /**
      * delete all the patients
      */
-    suspend fun deleteAll() = withContext(IO) { daoAccess.deleteAllPatients() }
+    suspend fun deleteAll() = withContext(IO) { patientDao.deleteAllPatients() }
 
     /**
      * get all the patients
      */
     suspend fun getAllPatients(): List<Patient> = withContext(IO) {
-        daoAccess.allPatients
+        patientDao.allPatients
     }
 
     /**
      * get a list of patient ids for all patients.
      */
     suspend fun getPatientIdsOnly(): List<String> = withContext(IO) {
-        daoAccess.patientIdsList
+        patientDao.patientIdsList
     }
 
     /**
      * get individual patient by id if exists
      */
     suspend fun getPatientById(id: String): Patient? = withContext(IO) {
-        daoAccess.getPatientById(id)
+        patientDao.getPatientById(id)
     }
 
     /**
@@ -72,7 +90,9 @@ class PatientManager @Inject constructor(
      * remove this function and call the corressponding method.
      * This is only for legacy java code still calling this function.
      */
-    @Deprecated("Please avoid using this function in Kotlin files.")
+    @Deprecated("Please avoid using this function in Kotlin files.",
+        replaceWith = ReplaceWith("getPatientById")
+    )
     fun getPatientByIdBlocking(id: String): Patient? = runBlocking {
         withContext(IO) { getPatientById(id) }
     }
@@ -81,13 +101,13 @@ class PatientManager @Inject constructor(
      * returns all the  patients which dont exists on server and their readings
      */
     suspend fun getUnUploadedPatients(): List<PatientAndReadings> =
-        withContext(IO) { daoAccess.unUploadedPatientAndReadings }
+        withContext(IO) { patientDao.unUploadedPatientAndReadings }
 
     /**
      * get edited Patients that also exists on the server
      */
     suspend fun getEditedPatients(timeStamp: Long): List<Patient> =
-        withContext(IO) { daoAccess.getEditedPatients(timeStamp) }
+        withContext(IO) { patientDao.getEditedPatients(timeStamp) }
 
     /**
      * Uploads a patient and associated readings to the server.
