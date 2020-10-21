@@ -1420,6 +1420,8 @@ class PatientReadingViewModel @ViewModelInject constructor(
     val adviceFollowUpButtonId = MutableLiveData<Int>()
     val adviceReferralButtonId = MutableLiveData<Int>()
 
+    fun isSendingReferral() = adviceReferralButtonId.value == R.id.send_referral_radio_button
+
     val adviceText: LiveData<String> = adviceManager.adviceText
     val recommendedAdvice: LiveData<RecommendedAdvice>
         get() = adviceManager.currentRecommendedAdvice

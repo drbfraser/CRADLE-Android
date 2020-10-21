@@ -55,11 +55,6 @@ class AdviceFragment : BaseFragment() {
         return binding?.root
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        savingDialog?.dismiss()
-    }
-
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         launchReason = (activity as? ReadingActivity)?.getLaunchReason()
@@ -81,6 +76,13 @@ class AdviceFragment : BaseFragment() {
         }
 
         viewModel.isSaving.observe(viewLifecycleOwner) { isSaving ->
+            if (viewModel.isSendingReferral()) {
+                // Don't show the dialog if sending a referral. The user might be trying to send a
+                // referral via web without internet; what happens in that case is that the entire
+                // screen flashes for a split second. Not good for people with seizures!
+                return@observe
+            }
+
             if (isSaving) {
                 savingDialog = activity?.let {
                     MaterialAlertDialogBuilder(it)
