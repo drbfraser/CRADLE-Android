@@ -147,7 +147,9 @@ class AdviceFragment : BaseFragment() {
             return
         }
 
-        for (i in 0 until retestGroup.size) {
+        // The previous readings are sorted in ascending order of the date taken. Iterate through
+        // it backwards so that the more recent ones are more closer to the top.
+        for (i in (0 until retestGroup.size).reversed()) {
             val reading = retestGroup.readings[i]
             // Skip the most recent reading
             if (reading.id != currentReading.id && reading != currentReading) {
