@@ -169,11 +169,14 @@ class PatientReadingViewModel @ViewModelInject constructor(
                     ReadingActivity.LaunchReason.LAUNCH_REASON_RECHECK -> {
                         decompose(patient)
 
-                        // Add the old reading to the previous list of the new reading.
-                        val previousIds = previousReadingIds.value ?: ArrayList()
+                        // If we are rechecking vitals, then readingId is the ID of the previous
+                        // reading. We derive the previous reading IDs from the previous reading,
+                        // and add the previous reading onto it. Note: The most recent reading
+                        // will be at the end.
+                        val previousIds = reading.previousReadingIds.toMutableList()
                         with(previousIds) {
                             add(reading.id)
-                            previousReadingIds.postValue(this)
+                            previousReadingIds.value = this
                         }
                     }
                     else -> {
@@ -675,10 +678,8 @@ class PatientReadingViewModel @ViewModelInject constructor(
         }
     }
 
-    @Suppress("UNCHECKED_CAST")
-    val previousReadingIds: MutableLiveData<MutableList<String>?>
-        get() = readingBuilder.get<List<String>?>(Reading::previousReadingIds)
-            as MutableLiveData<MutableList<String>?>
+    private val previousReadingIds: MutableLiveData<List<String>>
+        get() = readingBuilder.get<List<String>>(Reading::previousReadingIds, emptyList())
 
     val metadata: MutableLiveData<ReadingMetadata> =
         readingBuilder.get(Reading::metadata, ReadingMetadata())

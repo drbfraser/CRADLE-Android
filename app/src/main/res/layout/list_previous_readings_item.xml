@@ -99,7 +99,7 @@
                 style="@style/TextAppearance.Cradle.Body1"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="@{@string/list_reading_item_blood_pressure_display(reading.bloodPressure.diastolic, reading.bloodPressure.systolic)}"
+                android:text="@{@string/list_reading_item_blood_pressure_display_systolic_diastolic(reading.bloodPressure.systolic, reading.bloodPressure.diastolic)}"
                 app:layout_constraintStart_toStartOf="@+id/reading_bp_label"
                 app:layout_constraintTop_toBottomOf="@+id/reading_bp_label"
                 tools:text="Systolic: 114, Diastolic: 58" />

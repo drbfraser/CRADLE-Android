@@ -102,6 +102,8 @@ class AdviceFragment : BaseFragment() {
         retestGroup: RetestGroup
     ) {
         check(retestGroup.size >= 1)
+        check(retestGroup.readings.last().id == currentReading.id)
+
         val currentReadingLayout =
             view.findViewById<LinearLayout>(R.id.current_reading_summary_linear_layout) ?: return
         if (currentReadingLayout.size != 0) {
@@ -115,7 +117,7 @@ class AdviceFragment : BaseFragment() {
             false /* attachToParent */,
             dataBindingComponent
         )
-        binding.reading = currentReading
+        binding.reading = retestGroup.readings.last()
         binding.analysis = retestGroup.mostRecentReadingAnalysis
         currentReadingLayout.addView(binding.root)
     }

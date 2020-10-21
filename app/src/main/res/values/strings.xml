@@ -400,7 +400,7 @@
     <string name="fragment_advice_advice_card_header">Advice for this reading</string>
     <string name="fragment_advice_save_options_header">Options for saving</string>
 
-    <string name="list_reading_item_blood_pressure_display">Systolic: <xliff:g id="bloodPressure" example="115">%1$d</xliff:g>, Diastolic: <xliff:g id="bloodPressure" example="115">%2$d</xliff:g></string>
+    <string name="list_reading_item_blood_pressure_display_systolic_diastolic">Systolic: <xliff:g id="bloodPressure" example="115">%1$d</xliff:g>, Diastolic: <xliff:g id="bloodPressure" example="115">%2$d</xliff:g></string>
     <string name="list_reading_item_heart_rate_display"><xliff:g id="heartRate" example="75">%1$d</xliff:g> BPM</string>
     <string name="list_previous_readings_item_heart_rate_label">Heart rate</string>
     <string name="list_previous_readings_item_blood_pressure_label">Blood pressure</string>
