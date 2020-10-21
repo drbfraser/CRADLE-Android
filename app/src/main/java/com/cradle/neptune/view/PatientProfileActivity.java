@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 import javax.inject.Inject;
 
@@ -146,10 +147,10 @@ public class PatientProfileActivity extends AppCompatActivity {
             patientZone.setText(patient.getZone());
         }
         if (patient.isPregnant()) {
-            pregnant.setText("Yes");
+            pregnant.setText(R.string.yes);
             setupGestationalInfo(patient);
         } else {
-            pregnant.setText("No");
+            pregnant.setText(R.string.no);
             pregnancyInfoLayout.setVisibility(View.GONE);
         }
 
@@ -189,9 +190,9 @@ public class PatientProfileActivity extends AppCompatActivity {
                     }
                 }
                 if (val < 0) {
-                    gestationalAge.setText("N/A");
+                    gestationalAge.setText(R.string.not_available_n_slash_a);
                 } else {
-                    gestationalAge.setText(String.format("%.2f", val));
+                    gestationalAge.setText(String.format(Locale.getDefault(), "%.2f", val));
                 }
             }
         });
@@ -217,9 +218,12 @@ public class PatientProfileActivity extends AppCompatActivity {
         }
 
 
-        LineDataSet sBPDataSet = new LineDataSet(sBPs, "Systolic BP");
-        LineDataSet dBPDataSet = new LineDataSet(dBPs, "Diastolic BP");
-        LineDataSet bPMDataSet = new LineDataSet(bPMs, "Heart Rate BPM");
+        LineDataSet sBPDataSet = new LineDataSet(sBPs,
+                getString(R.string.activity_patient_profile_chart_systolic_label));
+        LineDataSet dBPDataSet = new LineDataSet(dBPs,
+                getString(R.string.activity_patient_profile_chart_diastolic_label));
+        LineDataSet bPMDataSet = new LineDataSet(bPMs,
+                getString(R.string.activity_patient_profile_chart_heart_rate_label));
 
         sBPDataSet.setColor(getResources().getColor(R.color.purple));
         sBPDataSet.setCircleColor(getResources().getColor(R.color.purple));
@@ -248,7 +252,9 @@ public class PatientProfileActivity extends AppCompatActivity {
         lineChart.getXAxis().setDrawAxisLine(true);
         lineChart.setData(lineData);
         lineChart.getXAxis().setEnabled(false);
-        lineChart.getDescription().setText("Cardiovascular Data from last " + patientReadings.size() + " readings");
+        lineChart.getDescription().setText(
+                getString(R.string.activity_patient_profile_line_chart_description,
+                        patientReadings.size()));
         lineChart.invalidate();
 
     }
@@ -313,12 +319,14 @@ public class PatientProfileActivity extends AppCompatActivity {
      */
     private void askToDeleteReading(String readingId) {
         AlertDialog.Builder dialog = new AlertDialog.Builder(this)
-                .setMessage("Delete reading?")
+                .setMessage(R.string.activity_patient_profile_delete_reading_dialog_title)
                 .setIcon(android.R.drawable.ic_dialog_alert)
-                .setPositiveButton(android.R.string.yes, (dialog1, whichButton) -> {
-                    readingManager.deleteReadingByIdBlocking(readingId);
-                    updateUi();
-                })
+                .setPositiveButton(
+                        R.string.activity_patient_profile_delete_reading_dialog_delete_button,
+                        (dialog1, whichButton) -> {
+                            readingManager.deleteReadingByIdBlocking(readingId);
+                            updateUi();
+                        })
                 .setNegativeButton(android.R.string.no, null);
         dialog.show();
     }

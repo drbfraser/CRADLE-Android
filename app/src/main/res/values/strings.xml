@@ -420,6 +420,13 @@
     <string name="fragment_advice_referral_radio_button_save_with_referral">Save with referral (requires internet or SMS)</string>
     <string name="fragment_advice_previous_readings_for_this_patient">Previous readings for this patient</string>
     <string name="fragment_advice_recheck_label">Reminders after saving this reading</string>
+    <string name="activity_patient_profile_line_chart_description">Cardiovascular data from last %1$d readings</string>
+    <string name="activity_patient_profile_chart_systolic_label">Systolic BP</string>
+    <string name="activity_patient_profile_chart_diastolic_label">Diastolic BP</string>
+    <string name="activity_patient_profile_chart_heart_rate_label">Heart Rate BPM</string>
+    <string name="yes">Yes</string>
+    <string name="activity_patient_profile_delete_reading_dialog_title">Delete reading?</string>
+    <string name="activity_patient_profile_delete_reading_dialog_delete_button">Delete</string>
 
 
     <plurals name="unuploaded_reading_signout_message">
