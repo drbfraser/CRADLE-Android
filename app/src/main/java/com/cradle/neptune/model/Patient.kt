@@ -14,12 +14,12 @@ import com.cradle.neptune.ext.map
 import com.cradle.neptune.ext.mapField
 import com.cradle.neptune.ext.optArrayField
 import com.cradle.neptune.ext.optBooleanField
-import com.cradle.neptune.ext.optIntField
 import com.cradle.neptune.ext.optLongField
 import com.cradle.neptune.ext.optStringField
 import com.cradle.neptune.ext.put
 import com.cradle.neptune.ext.stringField
 import com.cradle.neptune.ext.union
+import com.cradle.neptune.utilitiles.DateUtil
 import com.cradle.neptune.utilitiles.Months
 import com.cradle.neptune.utilitiles.Seconds
 import com.cradle.neptune.utilitiles.UnixTimestamp
@@ -88,8 +88,16 @@ data class Patient(
 
         put(PatientField.ID, id)
         put(PatientField.NAME, name)
-        put(PatientField.DOB, dob)
-        put(PatientField.AGE, age)
+
+        // TODO: Remove this workaround when isExactDob is available in the API. The server no
+        //  longer accepts age. See CRDL-197, MOB-176
+        val currentAge = age
+        if (dob != null) {
+            put(PatientField.DOB, dob)
+        } else if (currentAge != null) {
+            put(PatientField.DOB, DateUtil.getDateStringFromAge(currentAge.toLong()))
+        }
+
         put(PatientField.SEX, sex.name)
         put(PatientField.IS_PREGNANT, isPregnant)
         put(PatientField.ZONE, zone)
@@ -325,7 +333,6 @@ data class Patient(
             id = data.optStringField(PatientField.ID) ?: ""
             name = data.optStringField(PatientField.NAME) ?: ""
             dob = data.optStringField(PatientField.DOB)
-            age = data.optIntField(PatientField.AGE)
             gestationalAge = maybeUnmarshal(GestationalAge, data)
             sex = data.mapField(PatientField.SEX, Sex::valueOf)
             isPregnant = data.optBooleanField(PatientField.IS_PREGNANT)

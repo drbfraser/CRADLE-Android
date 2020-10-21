@@ -57,8 +57,8 @@ class PatientTests {
         val patient = Patient(
             "5414842504",
             "AB",
+            "1989-10-24",
             null,
-            32,
             GestationalAgeWeeks(28),
             Sex.FEMALE,
             true,

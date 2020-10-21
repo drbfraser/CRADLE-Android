@@ -52,6 +52,15 @@ public class DateUtil {
         return dateFromUnix.format(formatter);
     }
 
+    public static String getDateStringFromAge(long age) {
+        ZonedDateTime dateFromAge = ZonedDateTime.now().minusYears(age);
+        if (dateFromAge == null) {
+            return "";
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        return dateFromAge.format(formatter);
+    }
+
     public static String getFullDateFromUnix(Long date) {
         if (date == null) {
             return "";
