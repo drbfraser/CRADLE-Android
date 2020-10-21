@@ -21,7 +21,7 @@ import com.cradle.neptune.R
 import com.cradle.neptune.ext.setValueOnMainThread
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
-import com.cradle.neptune.manager.ReferralUploadManger
+import com.cradle.neptune.manager.ReferralUploadManager
 import com.cradle.neptune.model.BloodPressure
 import com.cradle.neptune.model.GestationalAge
 import com.cradle.neptune.model.GestationalAgeMonths
@@ -68,14 +68,22 @@ private const val GEST_AGE_UNIT_WEEKS_INDEX = 0
 private const val GEST_AGE_UNIT_MONTHS_INDEX = 1
 
 /**
- * The ViewModel that is used in [ReadingActivity] and its [BaseFragment]s.
+ * The ViewModel that is used in [ReadingActivity] and its
+ * [com.cradle.neptune.view.ui.reading.BaseFragment]s
+ *
  * This should be initialized before the Fragments are created
+ *
+ * @see PatientReadingViewModel.LiveDataInitializationManager
+ * @see PatientReadingViewModel.NavigationManager
+ * @see PatientReadingViewModel.ErrorMessageManager
+ * @see PatientReadingViewModel.SaveManager
+ * @see PatientReadingViewModel.AdviceManager
  */
 @SuppressWarnings("LargeClass")
 class PatientReadingViewModel @ViewModelInject constructor(
     private val readingManager: ReadingManager,
     private val patientManager: PatientManager,
-    private val referralUploadManager: ReferralUploadManger,
+    private val referralUploadManager: ReferralUploadManager,
     private val sharedPreferences: SharedPreferences,
     @ApplicationContext private val app: Context
 ) : ViewModel() {
@@ -732,13 +740,296 @@ class PatientReadingViewModel @ViewModelInject constructor(
 
     private val isPatientValid = MediatorLiveData<Boolean>()
 
+    private val navigationManager = NavigationManager()
+
+    val isNextButtonEnabled: LiveData<Boolean> = navigationManager.isNextButtonEnabled
+
+    val isInputEnabled: LiveData<Boolean>
+        get() = navigationManager.isInputEnabled
+
     /**
-     * @return a non-null Patient if and only if the Patient that can be constructed with the
+     * What message to show for the message in the nav bar. If the message is nonempty, a
+     * ProgressBar is also shown.
+     */
+    val bottomNavBarMessage: LiveData<String>
+        get() = navigationManager.bottomNavBarMessage
+
+    private val _actionBarSubtitle = MutableLiveData<String?>(null)
+    val actionBarSubtitle: LiveData<String?>
+        get() = _actionBarSubtitle
+
+    fun clearBottomNavBarMessage() {
+        navigationManager.clearBottomNavBarMessage()
+    }
+
+    fun setInputEnabledState(isEnabled: Boolean) {
+        navigationManager.setInputEnabledState(isEnabled)
+    }
+
+    /**
+     * The [NavigationManager] handles the navigation in the Activity / Fragments.
+     *
+     * It manages the following:
+     *
+     * - The bottom navigation bar messages
+     * - The Next button state, including when it is enabled and updating the
+     *   criteria for when it is active based on the current destination
+     * - Changes to the destination
+     * - Validation when trying to press the Next button. For example, when
+     *   trying to move on from the PatientInfoFragment, it will try to build
+     *   a patient. When trying to move on from the VitalSignsFragment, it will
+     *   try to build a reading.
+     * - Getting the [adviceManager] to build advice for the AdviceFragment when
+     *   trying to move to the AdviceFragment.
+     *
+     */
+    private inner class NavigationManager {
+
+        /**
+         * Whether the next button is enabled.
+         *
+         * @see onDestinationChange
+         */
+        val isNextButtonEnabled = MediatorLiveData<Boolean>()
+
+        val bottomNavBarMessage = MutableLiveData("")
+
+        /**
+         * Whether the form input fields are enabled or disabled.
+         */
+        val isInputEnabled = MutableLiveData(true)
+
+        /**
+         * Handles next button clicking by validating the current Fragment inputs.
+         * Will be run on the main thread to ensure the values are consistent.
+         */
+        @MainThread
+        suspend fun validateCurrentDestinationForNextButton(
+            @IdRes currentDestinationId: Int
+        ): Pair<ReadingFlowError, Patient?> = withContext(Dispatchers.Main) {
+            when (currentDestinationId) {
+                R.id.loadingFragment -> return@withContext ReadingFlowError.NO_ERROR to null
+                R.id.patientInfoFragment -> {
+                    // Disable input while patient building validation is happening.
+                    setInputEnabledState(false)
+                    setBottomNavBarMessage(app.getString(R.string.reading_bottom_nav_bar_checking_id))
+
+                    val patient = attemptToBuildValidPatient()
+                        ?: return@withContext ReadingFlowError.ERROR_INVALID_FIELDS to null
+
+                    // We need to make sure the user isn't making a patient with an ID already in use.
+                    // Check if a patient with the same ID already exists in their local patients list
+                    // in the phone's database.
+                    val existingLocalPatient = patientManager.getPatientById(patient.id)
+                    if (existingLocalPatient != null) {
+                        // Send bac
+                        return@withContext ReadingFlowError.ERROR_PATIENT_ID_IN_USE_LOCAL to
+                            existingLocalPatient
+                    }
+
+                    // Opportunistically check if a patient with the same ID exists on the server.
+                    // This only serves to lower the probability that a duplicate ID will be used,
+                    // as it obviously doesn't work when the user has no internet.
+                    val existingOnServer = patientManager.downloadPatientInfoFromServer(patient.id)
+                    if (existingOnServer is Success) {
+                        // Send back the patient to give the user an option to
+                        // download the patient with all of their readings.
+                        return@withContext ReadingFlowError.ERROR_PATIENT_ID_IN_USE_ON_SERVER to
+                            existingOnServer.value
+                    }
+
+                    return@withContext ReadingFlowError.NO_ERROR to null
+                }
+                R.id.symptomsFragment -> {
+                    // The symptoms fragment has no blockers.
+                    return@withContext ReadingFlowError.NO_ERROR to null
+                }
+                R.id.vitalSignsFragment -> {
+                    return@withContext if (validateVitalSignsAndBuildReading()) {
+                        ReadingFlowError.NO_ERROR to null
+                    } else {
+                        ReadingFlowError.ERROR_INVALID_FIELDS to null
+                    }
+                }
+                else -> {
+                    return@withContext ReadingFlowError.NO_ERROR to null
+                }
+            }
+        }
+
+        /**
+         * Validates the input on the VitalSignsFragment (basically tries to build a valid Reading),
+         * and if valid, will get [adviceManager] to calculate the advice for the reading.
+         *
+         * @return true if a reading was build and advice was calculated, false if a reading could
+         * not be built.
+         */
+        private suspend fun validateVitalSignsAndBuildReading(): Boolean {
+            if (!verifyVitalSignsFragment()) {
+                return false
+            }
+            yield()
+
+            // Add data for now in order to get it to build. This needs to be set with the
+            // proper values after pressing SAVE READING.
+            readingBuilder.apply {
+                set(Reading::patientId, originalPatient?.id ?: patientId.value)
+                // These will only populate the fields with null if there's nothing in there already.
+                // dateTimeTaken will be updated when the save button is pressed.
+                // Update date time taken if null. This may be nonnull if we're editing a reading.
+                if (dateTimeTaken.value == null) {
+                    dateTimeTaken.value = ZonedDateTime.now().toEpochSecond()
+                }
+                get(Reading::referral, defaultValue = null)
+                get(Reading::followUp, defaultValue = null)
+            }
+
+            val validReading = withContext(Dispatchers.Default) { attemptToBuildValidReading() }
+                ?: return false
+
+            // This will populate all advice fields. It will return false if it fails.
+            if (!adviceManager.populateAllAdviceFields(validReading)) {
+                return false
+            }
+
+            return true
+        }
+
+        fun setInputEnabledState(isEnabled: Boolean) {
+            isInputEnabled.apply { if (value != isEnabled) value = isEnabled }
+        }
+
+        @MainThread
+        fun setBottomNavBarMessage(message: String) {
+            bottomNavBarMessage.apply { if (value != message) value = message }
+        }
+
+        @MainThread
+        fun clearBottomNavBarMessage() {
+            bottomNavBarMessage.apply { if (value?.isEmpty() != true) value = "" }
+        }
+
+        private val isNextButtonEnabledMutex = Mutex()
+
+        /**
+         * Updates the criteria that's needed to be satisfied in order for the next button to be
+         * enabled.
+         */
+        @MainThread
+        fun onDestinationChange(@IdRes currentDestinationId: Int) {
+            Log.d(TAG, "onDestinationChange")
+            updateActionBarSubtitle(patientName.value, patientId.value)
+            navigationManager.clearBottomNavBarMessage()
+
+            viewModelScope.launch(Dispatchers.Main) {
+                isInitializedMutex.withLock {
+                    if (_isInitialized.value == true) {
+                        navigationManager.setInputEnabledState(true)
+                    }
+                }
+
+                isNextButtonEnabledMutex.withLock {
+                    vitalSignsFragmentVerifyJob?.cancel()
+
+                    // Clear out any sources to be safe.
+                    arrayOf(isPatientValid, bloodPressure, isUsingUrineTest, urineTest)
+                        .forEach { isNextButtonEnabled.removeSource(it) }
+
+                    isNextButtonEnabled.apply {
+                        when (currentDestinationId) {
+                            R.id.patientInfoFragment -> {
+                                Log.d(
+                                    TAG,
+                                    "next button uses patientInfoFragment criteria: " +
+                                        "patient must be valid"
+                                )
+                                addSource(isPatientValid) {
+                                    viewModelScope.launch {
+                                        isNextButtonEnabledMutex.withLock { value = it }
+                                    }
+                                }
+                            }
+                            R.id.symptomsFragment -> {
+                                value = true
+                            }
+                            R.id.vitalSignsFragment -> {
+                                Log.d(
+                                    TAG,
+                                    "next button uses vitalSignsFragment criteria: " +
+                                        "valid BloodPressure, " +
+                                        "and valid urine test if using urine test"
+                                )
+                                launchVitalSignsFragmentVerifyJob()
+                                addSource(bloodPressure) { launchVitalSignsFragmentVerifyJob() }
+                                addSource(isUsingUrineTest) { launchVitalSignsFragmentVerifyJob() }
+                                addSource(urineTest) { launchVitalSignsFragmentVerifyJob() }
+                            }
+                            R.id.loadingFragment -> return@launch
+                            else -> return@launch
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * Ensures only one VitalSignsFragment Job is running so that old inputs don't override
+         * new inputs.
+         */
+        private var vitalSignsFragmentVerifyJob: Job? = null
+
+        private fun launchVitalSignsFragmentVerifyJob() {
+            vitalSignsFragmentVerifyJob?.cancel()
+            vitalSignsFragmentVerifyJob = viewModelScope.launch {
+                isNextButtonEnabledMutex.withLock {
+                    val newValue = verifyVitalSignsFragment()
+                    yield()
+                    isNextButtonEnabled.value = newValue.also {
+                        Log.d(TAG, "vital signs fragment job: next button Enabled? $it")
+                    }
+                }
+            }
+        }
+
+        /**
+         * Determines if the blood pressure and urine tests right now are valid.
+         * Blood pressure is mandatory, so if it is null, it's not valid.
+         *
+         * Urine tests are optional, but if the reading is going to be using a urine test,
+         * then it must be a valid urine test.
+         */
+        private suspend fun verifyVitalSignsFragment(): Boolean = withContext(Dispatchers.Default) {
+            val bloodPressureValid = bloodPressure.value?.isValidInstance(app) ?: false
+            if (!bloodPressureValid) return@withContext false
+
+            yield()
+
+            return@withContext if (isUsingUrineTest.value != false) {
+                urineTest.value?.isValidInstance(app) ?: false
+            } else {
+                true
+            }
+        }
+    }
+
+    /**
+     * Handles next button clicking by validating the current Fragment inputs.
+     * Will be run on the main thread to ensure the values are consistent.
+     *
+     * @see NavigationManager.validateCurrentDestinationForNextButton
+     */
+    suspend fun validateCurrentDestinationForNextButton(
+        @IdRes currentDestinationId: Int
+    ): Pair<ReadingFlowError, Patient?> =
+        navigationManager.validateCurrentDestinationForNextButton(currentDestinationId)
+
+    /**
+     * @return a non-null valid Patient if and only if the Patient that can be constructed with the
      * values in [patientBuilder] is valid.
      */
     private fun attemptToBuildValidPatient(): Patient? {
         if (!patientBuilder.isConstructable<Patient>()) {
-            Log.d(TAG, "patient not constructable")
+            Log.d(TAG, "attemptToBuildValidPatient: patient not constructable")
             return null
         }
 
@@ -766,117 +1057,9 @@ class PatientReadingViewModel @ViewModelInject constructor(
     }
 
     /**
-     * Whether the next button is enabled.
-     *
-     * @see onDestinationChange
+     * @return a non-null, valid [Reading] if and only if the Patient that can be constructed with
+     * the values in [readingBuilder] is valid.
      */
-    private val _isNextButtonEnabled = MediatorLiveData<Boolean>()
-    val isNextButtonEnabled: LiveData<Boolean> = _isNextButtonEnabled
-
-    /**
-     * Whether the form input fields are enabled or disabled.
-     */
-    private val _isInputEnabled = MutableLiveData(true)
-    val isInputEnabled: LiveData<Boolean>
-        get() = _isInputEnabled
-
-    /**
-     * What message to show for the message in the nav bar. If the message is nonempty, a
-     * ProgressBar is also shown.
-     */
-    private val _bottomNavBarMessage = MutableLiveData("")
-    val bottomNavBarMessage: LiveData<String>
-        get() = _bottomNavBarMessage
-
-    private val _actionBarSubtitle = MutableLiveData<String?>(null)
-    val actionBarSubtitle: LiveData<String?>
-        get() = _actionBarSubtitle
-
-    /**
-     * Handles next button clicking by validating the current Fragment inputs.
-     * Will be run on the main thread to ensure the values are consistent.
-     */
-    @MainThread
-    suspend fun validateCurrentDestinationForNextButton(
-        @IdRes currentDestinationId: Int
-    ): Pair<ReadingFlowError, Patient?> = withContext(Dispatchers.Main) {
-        when (currentDestinationId) {
-            R.id.loadingFragment -> return@withContext ReadingFlowError.NO_ERROR to null
-            R.id.patientInfoFragment -> {
-                // Disable input while patient building validation is happening.
-                setInputEnabledState(false)
-                setBottomNavBarMessage(app.getString(R.string.reading_bottom_nav_bar_checking_id))
-
-                val patient = attemptToBuildValidPatient()
-                    ?: return@withContext ReadingFlowError.ERROR_INVALID_FIELDS to null
-
-                // We need to make sure the user isn't making a patient with an ID already in use.
-                // Check if a patient with the same ID already exists in their local patients list
-                // in the phone's database.
-                val existingLocalPatient = patientManager.getPatientById(patient.id)
-                if (existingLocalPatient != null) {
-                    // Send bac
-                    return@withContext ReadingFlowError.ERROR_PATIENT_ID_IN_USE_LOCAL to
-                        existingLocalPatient
-                }
-
-                // Opportunistically check if a patient with the same ID exists on the server. This
-                // only serves to lower the probability that a duplicate ID will be used, as it
-                // obviously doesn't work when the user has no internet.
-                val existingOnServer = patientManager.downloadPatientInfoFromServer(patient.id)
-                if (existingOnServer is Success) {
-                    // Send back the patient to give the user an option to
-                    // download the patient with all of their readings.
-                    return@withContext ReadingFlowError.ERROR_PATIENT_ID_IN_USE_ON_SERVER to
-                        existingOnServer.value
-                }
-
-                return@withContext ReadingFlowError.NO_ERROR to null
-            }
-            R.id.symptomsFragment -> return@withContext ReadingFlowError.NO_ERROR to null
-            R.id.vitalSignsFragment -> return@withContext if (validateVitalSignsAndBuildReading()) {
-                ReadingFlowError.NO_ERROR to null
-            } else {
-                ReadingFlowError.ERROR_INVALID_FIELDS to null
-            }
-            else -> return@withContext ReadingFlowError.NO_ERROR to null
-        }
-    }
-
-    @MainThread
-    private suspend fun validateVitalSignsAndBuildReading(): Boolean {
-        if (!verifyVitalSignsFragment()) {
-            return false
-        }
-        yield()
-
-        // Add data for now in order to get it to build. This needs to be set with the
-        // proper values after pressing SAVE READING.
-        readingBuilder.apply {
-            set(Reading::patientId, originalPatient?.id ?: patientId.value)
-            // These will only populate the fields with null if there's nothing in there already.
-            // dateTimeTaken will be updated when the save button is pressed.
-            // Update date time taken if null. This may be nonnull if we're editing a reading.
-            if (dateTimeTaken.value == null) {
-                dateTimeTaken.value = ZonedDateTime.now().toEpochSecond()
-            }
-            get(Reading::referral, defaultValue = null)
-            get(Reading::followUp, defaultValue = null)
-        }
-
-        val validReading = withContext(Dispatchers.Default) { attemptToBuildValidReading() }
-            ?: return false
-
-        _currentValidReading.value = validReading
-
-        // This will populate all advice fields. It will return false if it fails.
-        if (!adviceManager.populateAllAdviceFields(validReading)) {
-            return false
-        }
-
-        return true
-    }
-
     private fun attemptToBuildValidReading(): Reading? {
         if (!readingBuilder.isConstructable<Reading>()) {
             Log.d(TAG, "attemptToBuildValidReading: reading not constructable, " +
@@ -907,85 +1090,19 @@ class PatientReadingViewModel @ViewModelInject constructor(
         return reading
     }
 
-    @MainThread
-    fun setInputEnabledState(isEnabled: Boolean) {
-        _isInputEnabled.apply { if (value != isEnabled) value = isEnabled }
-    }
-
-    @MainThread
-    private fun setBottomNavBarMessage(message: String) {
-        _bottomNavBarMessage.apply { if (value != message) value = message }
-    }
-
-    @MainThread
-    fun clearBottomNavBarMessage() {
-        _bottomNavBarMessage.apply { if (value?.isEmpty() != true) value = "" }
-    }
-
-    private val isNextButtonEnabledMutex = Mutex()
-
     /**
      * Updates the criteria that's needed to be satisfied in order for the next button to be
-     * enabled.
+     * enabled. This is here so that the Fragments don't have to access navigationManager.
+     *
+     * @see NavigationManager.onDestinationChange
      */
     @MainThread
     fun onDestinationChange(@IdRes currentDestinationId: Int) {
-        Log.d(TAG, "onDestinationChange")
-        updateActionBarSubtitle(patientName.value, patientId.value)
-        clearBottomNavBarMessage()
-
-        viewModelScope.launch(Dispatchers.Main) {
-            isInitializedMutex.withLock {
-                if (_isInitialized.value == true) {
-                    setInputEnabledState(true)
-                }
-            }
-
-            isNextButtonEnabledMutex.withLock {
-                vitalSignsFragmentVerifyJob?.cancel()
-
-                // Clear out any sources to be safe.
-                arrayOf(isPatientValid, bloodPressure, isUsingUrineTest, urineTest)
-                    .forEach { _isNextButtonEnabled.removeSource(it) }
-
-                _isNextButtonEnabled.apply {
-                    when (currentDestinationId) {
-                        R.id.patientInfoFragment -> {
-                            Log.d(
-                                TAG,
-                                "next button uses patientInfoFragment criteria: " +
-                                    "patient must be valid"
-                            )
-                            addSource(isPatientValid) {
-                                viewModelScope.launch {
-                                    isNextButtonEnabledMutex.withLock { value = it }
-                                }
-                            }
-                        }
-                        R.id.symptomsFragment -> {
-                            value = true
-                        }
-                        R.id.vitalSignsFragment -> {
-                            Log.d(
-                                TAG,
-                                "next button uses vitalSignsFragment criteria: valid BloodPressure, " +
-                                    "and valid urine test if using urine test"
-                            )
-                            launchVitalSignsFragmentVerifyJob()
-                            addSource(bloodPressure) { launchVitalSignsFragmentVerifyJob() }
-                            addSource(isUsingUrineTest) { launchVitalSignsFragmentVerifyJob() }
-                            addSource(urineTest) { launchVitalSignsFragmentVerifyJob() }
-                        }
-                        R.id.loadingFragment -> return@launch
-                        else -> return@launch
-                    }
-                }
-            }
-        }
+        navigationManager.onDestinationChange(currentDestinationId)
     }
 
     /**
-     * Triggers a download from the server. TODO: Refactor
+     * Triggers a download from the server when there is a patient ID conflict.
      */
     fun downloadPatientFromServer(patientId: String): LiveData<Result<Patient>> = liveData {
         withContext(Dispatchers.IO) {
@@ -1032,44 +1149,274 @@ class PatientReadingViewModel @ViewModelInject constructor(
         _actionBarSubtitle.value = subtitle
     }
 
-    private var vitalSignsFragmentVerifyJob: Job? = null
+    private fun shouldSavePatient() =
+        reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW
 
-    private fun launchVitalSignsFragmentVerifyJob() {
-        vitalSignsFragmentVerifyJob?.cancel()
-        vitalSignsFragmentVerifyJob = viewModelScope.launch {
-            isNextButtonEnabledMutex.withLock {
-                val newValue = verifyVitalSignsFragment()
-                yield()
-                _isNextButtonEnabled.value = newValue.also {
-                    Log.d(TAG, "vital signs fragment job: next button Enabled? $it")
+    /** Save manager fields */
+
+    private val saveManager = SaveManager()
+
+    val isSaving: LiveData<Boolean>
+        get() = saveManager.isSaving
+
+    /**
+     * This is here so that the Fragments don't have to access [saveManager].
+     *
+     * @see [SaveManager.saveWithReferral]
+     */
+    suspend fun saveWithReferral(
+        referralOption: ReferralOption,
+        referralComment: String,
+        healthFacilityName: String
+    ): Pair<ReadingFlowSaveResult, PatientAndReadings?> =
+        saveManager.saveWithReferral(referralOption, referralComment, healthFacilityName)
+
+    /**
+     * This is here so that the Fragments don't have to access [saveManager].
+     *
+     * @see [SaveManager.save]
+     */
+    suspend fun save(): ReadingFlowSaveResult = saveManager.save()
+
+    /**
+     * Manages the saving of the patient / reading, including sending referrals to the server or
+     * giving information for the Fragment to construct an SMS message.
+     */
+    private inner class SaveManager {
+
+        /**
+         * Tries to construct a valid patient and a valid reading from the values contains in
+         * [patientBuilder] and [readingBuilder]. This is meant to be used in order to construct a
+         * patient and reading for saving.
+         *
+         * Will return a null pair if reading is invalid, or we are expected to save a new patient but
+         * the built patient is invalid.
+         *
+         * Otherwise, it will return a Pair of a nullable Patient and a non-null Reading. The Patient
+         * is null if it wasn't built.
+         */
+        private suspend fun constructValidPatientAndReadingFromBuilders(): Pair<Patient?, Reading>? =
+            withContext(Dispatchers.Default) {
+                val patientAsync = async {
+                    return@async if (shouldSavePatient()) {
+                        patientLastEdited.setValueOnMainThread(ZonedDateTime.now().toEpochSecond())
+                        attemptToBuildValidPatient()
+                    } else {
+                        null
+                    }
                 }
+
+                val readingAsync = async {
+                    if (reasonForLaunch != ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT_READING) {
+                        // Update the reading's time taken if we're not editing a previous reading.
+                        dateTimeTaken.setValueOnMainThread(ZonedDateTime.now().toEpochSecond())
+                    }
+
+                    // Try to construct a reading for saving. It should be valid, as these validated
+                    // properties should have been enforced in the previous fragments
+                    // (VitalSignsFragment). We get null if it's not valid.
+                    return@async attemptToBuildValidReading()
+                }
+
+                val reading = readingAsync.await() ?: return@withContext null
+                val patient = patientAsync.await()
+                return@withContext if (shouldSavePatient() && patient == null) {
+                    null
+                } else {
+                    patient to reading
+                }
+            }
+
+        private val isSavingMutex = Mutex()
+        val isSaving = MutableLiveData<Boolean>(false)
+
+        /**
+         * Saves the current patient and reading with a referral, with the type of referral as
+         * given by [referralOption].
+         *
+         * If [referralOption] is [ReferralOption.SMS], the patient and reading will be saved to the
+         * local database first with the referral in the reading, and then a success with a non-null
+         * PatientAndReadings is returned. The referral dialog can then use the PatientAndReadings
+         * object to construct an SMS body.
+         *
+         * If [referralOption] is [ReferralOption.WEB], the patient and reading will be sent to the
+         * server first with the referral in the reading, then the patient and reading are saved in
+         * the local database, and then a success with a null PatientAndReadings is returned. The
+         * referral dialog should then finish.
+         *
+         * If an error occurs, like [ReadingFlowSaveResult.ERROR_UPLOADING_REFERRAL] is returned,
+         * then the PatientAndReadings will be null.
+         *
+         * @return A Pair of the save result and a PatientAndReadings object. The PairAndReadings
+         * object is non-null iff referralOption is for SMS and it was successful.
+         */
+        suspend fun saveWithReferral(
+            referralOption: ReferralOption,
+            referralComment: String,
+            healthFacilityName: String
+        ): Pair<ReadingFlowSaveResult, PatientAndReadings?> = withContext(Dispatchers.Default) {
+            // Don't save if we are uninitialized for some reason.
+            isInitializedMutex.withLock {
+                if (_isInitialized.value == false) {
+                    return@withContext ReadingFlowSaveResult.ERROR to null
+                }
+            }
+
+            isSavingMutex.withLock {
+                // Prevent saving from being run while it's already running. We have to do this
+                // since the save button launches a coroutine.
+                if (isSaving.value == true) {
+                    return@withContext ReadingFlowSaveResult.ERROR to null
+                }
+                isSaving.setValueOnMainThread(true)
+
+                if (referralOption == ReferralOption.NONE) {
+                    isSaving.setValueOnMainThread(false)
+                    return@withContext ReadingFlowSaveResult.REFERRAL_REQUIRED to null
+                }
+
+                // If this returns null, then something is invalid.
+                val (patientFromBuilder, readingFromBuilder) =
+                    constructValidPatientAndReadingFromBuilders()
+                        ?: run {
+                            isSaving.setValueOnMainThread(false)
+                            return@withContext ReadingFlowSaveResult.ERROR to null
+                        }
+                yield()
+
+                // If original patient is null, then that implies that we should save the patient.
+                check(originalPatient != null || shouldSavePatient())
+
+                // Choose a patient to use.
+                // We want to use the originalPatient if available.
+                // If it's not available, then shouldSavePatient() is true, so we must be
+                // creating a new patient, and so patientFromBuilder should not be null.
+                val patient = originalPatient ?: patientFromBuilder ?: error("unreachable state")
+
+                // Embed the referral to the reading from the builder.
+                readingFromBuilder.referral =
+                    Referral(
+                        comment = referralComment, healthFacilityName = healthFacilityName,
+                        dateReferred = readingFromBuilder.dateTimeTaken, patientId = patient.id,
+                        readingId = readingFromBuilder.id, sharedPreferences = sharedPreferences
+                    )
+                yield()
+
+                // Handle the referral based on the type.
+                when (referralOption) {
+                    ReferralOption.WEB -> {
+                        // Upload patient and reading to the server, with the referral embedded in
+                        // the reading.
+                        val result =
+                            referralUploadManager.uploadReferralViaWeb(patient, readingFromBuilder)
+                        if (result is Success) {
+                            // Save the patient and reading in local database after marking them as
+                            // being uploaded. Note: If patient already exists on server, then
+                            // patientFromServer == patient.
+                            val patientFromServer = result.value.patient
+                            val readingFromServer = result.value.readings[0].apply {
+                                isUploadedToServer = true
+                            }
+
+                            patientManager.addPatientWithReading(patientFromServer, readingFromServer)
+
+                            // Dialog should finish the Activity.
+                            // Don't set isSaving to false to ensure this can't be run again.
+                            return@withContext ReadingFlowSaveResult.SAVE_SUCCESSFUL to null
+                        } else {
+                            isSaving.setValueOnMainThread(false)
+                            return@withContext ReadingFlowSaveResult.ERROR_UPLOADING_REFERRAL to null
+                        }
+                    }
+                    ReferralOption.SMS -> {
+                        // If we're just sending by SMS, we first store it locally in the database
+                        // and then have the DialogFragment that calls this to launch an SMS intent.
+                        // We don't mark the reading as uploaded to the server, as we can't know
+                        // for sure that the reading has been uploaded. When the VHT goes to
+                        // sync this will be resolved, either by overwriting this reading with
+                        // the one from the server (if it made it successfully) or by uploading
+                        // it through the sync process (if it failed to make it to the server).
+                        handleStoringPatientReadingFromBuilders(patientFromBuilder, readingFromBuilder)
+
+                        // Pass a PatientAndReadings object for the SMS message.
+                        // Don't set isSaving to false to ensure this can't be run again.
+                        return@withContext ReadingFlowSaveResult.SAVE_SUCCESSFUL to
+                            PatientAndReadings(patient, listOf(readingFromBuilder))
+                    }
+                    else -> error("unreachable")
+                }
+            }
+        }
+
+        /**
+         * When the save button in the AdviceFragment is clicked, this is run/
+         * Saves the patient (if creating a new patient) and saves the reading to the database.
+         * If sending a referral, then we need to handle that elsewhere.
+         *
+         * @return a [ReadingFlowSaveResult]
+         */
+        suspend fun save(): ReadingFlowSaveResult = withContext(Dispatchers.Default) {
+            // Don't save if we are uninitialized for some reason.
+            isInitializedMutex.withLock {
+                if (_isInitialized.value == false) {
+                    return@withContext ReadingFlowSaveResult.ERROR
+                }
+            }
+
+            isSavingMutex.withLock {
+                // Prevent saving from being run while it's already running. We have to do
+                // this since the save button launches a coroutine.
+                if (isSaving.value == true) {
+                    return@withContext ReadingFlowSaveResult.ERROR
+                }
+
+                // If user selected to send a referral, handle that. When the AdviceFragment sees
+                // REFERRAL_REQUIRED, it launches a referral dialog.
+                if (adviceReferralButtonId.value == R.id.send_referral_radio_button) {
+                    // Don't save the reading / patient yet; we need the AdviceFragment to launch a
+                    // referral dialog.
+                    return@withContext ReadingFlowSaveResult.REFERRAL_REQUIRED
+                }
+
+                // Otherwise, we're in the main saving path.
+                isSaving.setValueOnMainThread(true)
+                yield()
+
+                val (patient, reading) = constructValidPatientAndReadingFromBuilders()
+                    ?: run {
+                        isSaving.setValueOnMainThread(false)
+                        return@withContext ReadingFlowSaveResult.ERROR
+                    }
+                yield()
+
+                handleStoringPatientReadingFromBuilders(patient, reading)
+
+                // Don't set isSaving to false to ensure this can't be run again.
+                return@withContext ReadingFlowSaveResult.SAVE_SUCCESSFUL
+            }
+        }
+
+        /**
+         * Will always save the reading to the database.
+         * The patient is saved to the database only if [shouldSavePatient] is true and the
+         * patient from the builder is non-null.
+         */
+        private suspend fun handleStoringPatientReadingFromBuilders(
+            patientFromBuilder: Patient?,
+            readingFromBuilder: Reading
+        ) {
+            if (shouldSavePatient() && patientFromBuilder != null) {
+                // Insertion needs to be atomic.
+                patientManager.addPatientWithReading(patientFromBuilder, readingFromBuilder)
+            } else {
+                readingManager.addReading(readingFromBuilder)
             }
         }
     }
 
-    /**
-     * Determines if the blood pressure and urine tests right now are valid.
-     * Blood pressure is mandatory, so if it is null, it's not valid.
-     *
-     * Urine tests are optional, but if the reading is going to be using a urine test,
-     * then it must be a valid urine test.
-     */
-    private suspend fun verifyVitalSignsFragment(): Boolean = withContext(Dispatchers.Default) {
-        val bloodPressureValid = bloodPressure.value?.isValidInstance(app) ?: false
-        if (!bloodPressureValid) return@withContext false
-
-        yield()
-
-        return@withContext if (isUsingUrineTest.value != false) {
-            urineTest.value?.isValidInstance(app) ?: false
-        } else {
-            true
-        }
-    }
+    /** Advice fields */
 
     private val adviceManager = AdviceManager()
-
-    private val _currentValidReading = MutableLiveData<Reading?>(null)
 
     val currentValidPatientAndRetestGroup: LiveData<Pair<Reading, RetestGroup>?>
         get() = adviceManager.currentValidReadingAndRetestGroup
@@ -1088,7 +1435,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
                 value = when (it) {
                     R.id.recheck_vitals_after_15_min_radio_button -> {
                         ZonedDateTime.now().toEpochSecond() +
-                            TimeUnit.MINUTES.toSeconds(DEFAULT_RECHECK_INTERVAL_IN_MIN)
+                            TimeUnit.MINUTES.toSeconds(DEFAULT_VITALS_RECHECK_INTERVAL_IN_MIN)
                     }
                     R.id.recheck_vitals_after_radio_button -> {
                         ZonedDateTime.now().toEpochSecond()
@@ -1115,239 +1462,11 @@ class PatientReadingViewModel @ViewModelInject constructor(
             }
         }
 
-    private fun shouldSavePatient() =
-        reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW
-
-    /**
-     * Tries to construct a valid patient and a valid reading from the values contains in
-     * [patientBuilder] and [readingBuilder]. This is meant to be used in order to construct a
-     * patient and reading for saving.
-     *
-     * Will return a null pair if reading is invalid, or we are expected to save a new patient but
-     * the built patient is invalid.
-     *
-     * Otherwise, it will return a Pair of a nullable Patient and a non-null Reading. The Patient
-     * is null if it wasn't built.
-     */
-    private suspend fun constructValidPatientAndReadingFromBuilders(): Pair<Patient?, Reading>? =
-        withContext(Dispatchers.Default) {
-            val patientAsync = async {
-                return@async if (shouldSavePatient()) {
-                    patientLastEdited.setValueOnMainThread(ZonedDateTime.now().toEpochSecond())
-                    attemptToBuildValidPatient()
-                } else {
-                    null
-                }
-            }
-
-            val readingAsync = async {
-                if (reasonForLaunch != ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT_READING) {
-                    // Update the reading's time taken if we're not editing a previous reading.
-                    dateTimeTaken.setValueOnMainThread(ZonedDateTime.now().toEpochSecond())
-                }
-
-                // Try to construct a reading for saving. It should be valid, as these validated
-                // properties should have been enforced in the previous fragments
-                // (VitalSignsFragment). We get null if it's not valid.
-                return@async attemptToBuildValidReading()
-            }
-
-            val reading = readingAsync.await() ?: return@withContext null
-            val patient = patientAsync.await()
-            return@withContext if (shouldSavePatient() && patient == null) {
-                null
-            } else {
-                patient to reading
-            }
-        }
-
-    private val isSavingMutex = Mutex()
-    private val _isSaving = MutableLiveData<Boolean>(false)
-    val isSaving: LiveData<Boolean>
-        get() = _isSaving
-
-    /**
-     * Saves the current patient and reading with a referral, with the type of referral as given by
-     * [referralOption].
-     *
-     * If [referralOption] is [ReferralOption.SMS], the patient and reading will be saved to the
-     * local database first with the referral in the reading, and then a success with a non-null
-     * PatientAndReadings is returned. The referral dialog can then use the PatientAndReadings
-     * object to construct an SMS body.
-     *
-     * If [referralOption] is [ReferralOption.WEB], the patient and reading will be sent to the
-     * server first with the referral in the reading, then the patient and reading are saved in the
-     * local database, and then a success with a null PatientAndReadings is returned. The referral
-     * dialog should then finish.
-     *
-     * If an error occurs, like [ReadingFlowSaveResult.ERROR_UPLOADING_REFERRAL] is returned, then
-     * the PatientAndReadings will be null.
-     *
-     * @return A Pair of the save result and a PatientAndReadings object. The PairAndReadings object
-     * is non-null iff referralOption is for SMS and it was successful.
-     */
-    suspend fun saveWithReferral(
-        referralOption: ReferralOption,
-        referralComment: String,
-        healthFacilityName: String
-    ): Pair<ReadingFlowSaveResult, PatientAndReadings?> = withContext(Dispatchers.Default) {
-        // Don't save if we are uninitialized for some reason.
-        isInitializedMutex.withLock {
-            if (_isInitialized.value == false) {
-                return@withContext ReadingFlowSaveResult.ERROR to null
-            }
-        }
-
-        isSavingMutex.withLock {
-            // Prevent saving from being run while it's already running. We have to do this since
-            // the save button launches a coroutine.
-            if (_isSaving.value == true) {
-                return@withContext ReadingFlowSaveResult.ERROR to null
-            }
-            _isSaving.setValueOnMainThread(true)
-
-            if (referralOption == ReferralOption.NONE) {
-                _isSaving.setValueOnMainThread(false)
-                return@withContext ReadingFlowSaveResult.REFERRAL_REQUIRED to null
-            }
-
-            // If this returns null, then something is invalid.
-            val (patientFromBuilder, readingFromBuilder) =
-                constructValidPatientAndReadingFromBuilders()
-                    ?: run {
-                        _isSaving.setValueOnMainThread(false)
-                        return@withContext ReadingFlowSaveResult.ERROR to null
-                    }
-            yield()
-
-            // If original patient is null, then that implies that we should save the patient.
-            check(originalPatient != null || shouldSavePatient())
-
-            // Choose a patient to use.
-            // We want to use the originalPatient if available.
-            // If it's not available, then shouldSavePatient() is true, so we must be creating a new
-            // patient, and so patientFromBuilder should not be null.
-            val patient = originalPatient ?: patientFromBuilder ?: error("unreachable state")
-
-            // Embed the referral to the reading from the builder.
-            readingFromBuilder.referral =
-                Referral(
-                    comment = referralComment, healthFacilityName = healthFacilityName,
-                    dateReferred = readingFromBuilder.dateTimeTaken, patientId = patient.id,
-                    readingId = readingFromBuilder.id, sharedPreferences = sharedPreferences
-                )
-            yield()
-
-            // Handle the referral based on the type.
-            when (referralOption) {
-                ReferralOption.WEB -> {
-                    // Upload patient and reading to the server, with the referral embedded in
-                    // the reading.
-                    val result =
-                        referralUploadManager.uploadReferralViaWeb(patient, readingFromBuilder)
-                    if (result is Success) {
-                        // Save the patient and reading in local database after marking them as
-                        // being uploaded. Note: If patient already exists on server, then
-                        // patientFromServer == patient.
-                        val patientFromServer = result.value.patient
-                        val readingFromServer = result.value.readings[0].apply {
-                            isUploadedToServer = true
-                        }
-
-                        patientManager.addPatientWithReading(patientFromServer, readingFromServer)
-
-                        // Dialog should finish the Activity.
-                        // Don't set isSaving to false to ensure this can't be run again.
-                        return@withContext ReadingFlowSaveResult.SAVE_SUCCESSFUL to null
-                    } else {
-                        _isSaving.setValueOnMainThread(false)
-                        return@withContext ReadingFlowSaveResult.ERROR_UPLOADING_REFERRAL to null
-                    }
-                }
-                ReferralOption.SMS -> {
-                    // If we're just sending by SMS, we first store it locally in the database and
-                    // then have the DialogFragment that calls this to launch an SMS intent.
-                    // We don't mark the reading as uploaded to the server, as we can't know
-                    // for sure that the reading has been uploaded. When the VHT goes to
-                    // sync this will be resolved, either by overwriting this reading with
-                    // the one from the server (if it made it successfully) or by uploading
-                    // it through the sync process (if it failed to make it to the server).
-                    handleStoringPatientReadingFromBuilders(patientFromBuilder, readingFromBuilder)
-
-                    // Pass a PatientAndReadings object for the SMS message.
-                    // Don't set isSaving to false to ensure this can't be run again.
-                    return@withContext ReadingFlowSaveResult.SAVE_SUCCESSFUL to
-                        PatientAndReadings(patient, listOf(readingFromBuilder))
-                }
-                else -> error("unreachable")
-            }
-        }
-    }
-
-    /**
-     * When the save button in the AdviceFragment is clicked, this is run/
-     * Saves the patient (if creating a new patient) and saves the reading to the database.
-     * If sending a referral, then we need to handle that elsewhere.
-     *
-     * @return a [ReadingFlowSaveResult]
-     */
-    @MainThread
-    suspend fun save(): ReadingFlowSaveResult = withContext(Dispatchers.Default) {
-        // Don't save if we are uninitialized for some reason.
-        isInitializedMutex.withLock {
-            if (_isInitialized.value == false) {
-                return@withContext ReadingFlowSaveResult.ERROR
-            }
-        }
-
-        isSavingMutex.withLock {
-            // Prevent saving from being run while it's already running. We have to do this since
-            // the save button launches a coroutine.
-            if (_isSaving.value == true) {
-                return@withContext ReadingFlowSaveResult.ERROR
-            }
-
-            // If user selected to send a referral, handle that. When the AdviceFragment sees
-            // REFERRAL_REQUIRED, it launches a referral dialog.
-            if (adviceReferralButtonId.value == R.id.send_referral_radio_button) {
-                // Don't save the reading / patient yet; we need the AdviceFragment to launch a
-                // referral dialog.
-                return@withContext ReadingFlowSaveResult.REFERRAL_REQUIRED
-            }
-
-            // Otherwise, we're in the main saving path.
-            _isSaving.setValueOnMainThread(true)
-            yield()
-
-            val (patient, reading) = constructValidPatientAndReadingFromBuilders()
-                ?: run {
-                    _isSaving.setValueOnMainThread(false)
-                    return@withContext ReadingFlowSaveResult.ERROR
-                }
-            yield()
-
-            handleStoringPatientReadingFromBuilders(patient, reading)
-
-            // Don't set isSaving to false to ensure this can't be run again.
-            return@withContext ReadingFlowSaveResult.SAVE_SUCCESSFUL
-        }
-    }
-
-    private suspend fun handleStoringPatientReadingFromBuilders(
-        patientFromBuilder: Patient?,
-        readingFromBuilder: Reading
-    ) {
-        if (shouldSavePatient() && patientFromBuilder != null) {
-            // Insertion needs to be atomic.
-            patientManager.addPatientWithReading(patientFromBuilder, readingFromBuilder)
-        } else {
-            readingManager.addReading(readingFromBuilder)
-        }
-    }
-
     /**
      * Describes the current recommended advice. The RadioButtons will indicate which option is
      * recommended.
+     *
+     * @see com.cradle.neptune.binding.ReadingBindingAdapters.addRecommendedToEndWhen
      */
     data class RecommendedAdvice(
         val retestAdvice: RetestAdvice,
@@ -1423,15 +1542,17 @@ class PatientReadingViewModel @ViewModelInject constructor(
                     isReferralRecommended = isReferralRecommended
                 )
 
-                updateLiveData(reading, retestGroup, currentRecommendedAdvice)
+                updateAdviceLiveData(reading, retestGroup, currentRecommendedAdvice)
 
                 return@withContext true
             }
 
         /**
+         * Updates LiveData related to advice.
+         *
          * Updates both the LiveData in here and the MutableLiveData in the ViewModel.
          */
-        private suspend fun updateLiveData(
+        private suspend fun updateAdviceLiveData(
             reading: Reading,
             retestGroup: RetestGroup,
             recommendedAdvice: RecommendedAdvice
@@ -1486,13 +1607,15 @@ class PatientReadingViewModel @ViewModelInject constructor(
      * Observed by Data Binding.
      *
      * @see ErrorMessageManager
+     * @see ErrorMessageManager.errorMap
      * @see com.cradle.neptune.binding.ReadingBindingAdapters.setError
      */
     val errorMap: LiveData<ArrayMap<String, String?>> = errorMessageManager.errorMap
 
     /**
      * An inner class that manages the [errorMap] which contain error messages that are instantly
-     * shown to the user as they type invalid input.
+     * shown to the user as they type invalid input. It calculates the error messages on a
+     * background thread ([Dispatchers.Default]), and then it modifies the [errorMap] accordingly.
      */
     private inner class ErrorMessageManager {
         /**
@@ -1637,7 +1760,6 @@ class PatientReadingViewModel @ViewModelInject constructor(
          * files under the errorMessage attribute, and they update in real time.
          *
          * @see errorMap
-         * @see errorMap
          * @see com.cradle.neptune.binding.ReadingBindingAdapters.setError
          */
         private fun testValueForValidityAndSetErrorMapAsync(
@@ -1649,8 +1771,8 @@ class PatientReadingViewModel @ViewModelInject constructor(
         ) {
             viewModelScope.launch(Dispatchers.Default) {
                 // Selects the map to use for all the other fields on the form. The validity of a
-                // property might depend on other properties being there, e.g. a null date of birth is
-                // acceptable if there is an estimated age.
+                // property might depend on other properties being there, e.g. a null date of birth
+                // is acceptable if there is an estimated age.
                 val currentValuesMapToUse = currentValuesMap
                     ?: when (verifier) {
                         is Patient.Companion -> {
@@ -1664,6 +1786,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
                         }
                     }
 
+                // Get the actual validity status and any error message.
                 val (isValid, errorMessage) = verifier.isValueValid(
                     property = propertyToCheck, value = value, context = app,
                     instance = null, currentValues = currentValuesMapToUse
@@ -1671,6 +1794,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
 
                 val errorMessageForMap = if (!isValid) errorMessage else null
 
+                // Many coroutines can be running.
                 errorMapMutex.withLock {
                     val currentMap = errorMap.value ?: arrayMapOf()
 
@@ -1681,7 +1805,6 @@ class PatientReadingViewModel @ViewModelInject constructor(
                         } else {
                             currentMap[propertyForErrorMapKey.name] = errorMessageForMap
                         }
-
                         errorMap.setValueOnMainThread(currentMap)
                     }
                 }
@@ -1694,8 +1817,8 @@ class PatientReadingViewModel @ViewModelInject constructor(
             while (isActive) {
                 Log.d(TAG, "DEBUG: errorMap is ${errorMap.value}")
                 Log.d(TAG, "DEBUG: isPatientValid is ${attemptToBuildValidPatient() != null}")
-                Log.d(TAG, "DEBUG: isNextButtonEnabled is ${_isNextButtonEnabled.value}")
-                Log.d(TAG, "DEBUG: _isInputEnabled is ${_isInputEnabled.value}")
+                Log.d(TAG, "DEBUG: isNextButtonEnabled is ${isNextButtonEnabled.value}")
+                Log.d(TAG, "DEBUG: _isInputEnabled is ${isInputEnabled.value}")
                 Log.d(TAG, "DEBUG: dateRecheckVitals is ${dateRecheckVitalsNeeded.value}")
                 Log.d(TAG, "DEBUG: isFlaggedForFollowup is ${isFlaggedForFollowUp.value}")
                 @Suppress("MagicNumber")
@@ -1706,7 +1829,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
 
     companion object {
         private const val TAG = "PatientReadingViewModel"
-        private const val DEFAULT_RECHECK_INTERVAL_IN_MIN = 15L
+        private const val DEFAULT_VITALS_RECHECK_INTERVAL_IN_MIN = 15L
     }
 }
 

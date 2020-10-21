@@ -15,7 +15,7 @@ private const val HTTP_NOT_FOUND = 404
 /**
  * Manages uploading referrals via HTTP.
  */
-class ReferralUploadManger @Inject constructor(private val restApi: RestApi) {
+class ReferralUploadManager @Inject constructor(private val restApi: RestApi) {
 
     /**
      * Attempts to upload a referral to the server.
