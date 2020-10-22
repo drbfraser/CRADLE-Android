@@ -111,14 +111,15 @@
     <string name="brief_advice_green">Continue normal care.</string>
     <string name="brief_advice_yellow_up">Monitor for preeclampsia. Transfer to health centre within 24h.</string>
     <string name="brief_advice_yellow_down">Common but assess for infection, bleeding, anaemia, and dehydration.</string>
+    <!-- TODO: Stop assuming the patient is a mother. These advice strings were seen for male patients, whcih is a bug -->
     <string name="brief_advice_red_up">Urgent action needed. Transfer to health centre within 4h. Monitor baby.</string>
     <string name="brief_advice_red_down">Urgent action needed. Get help and assess mother. Immediately transfer to health centre within 1h.</string>
 
-    <!-- Confirm dialog -->
+    <!-- Reading flow: Discard dialog -->
     <string name="discard_dialog_discard">Discard</string>
     <string name="discard_dialog_cancel">Cancel</string>
-    <string name="discard_dialog_new_reading">Discard this new reading?</string>
-    <string name="discard_dialog_rechecking">Discard this rechecking reading?</string>
+    <string name="discard_dialog_new_reading">Discard new reading?</string>
+    <string name="discard_dialog_rechecking">Discard vitals recheck?</string>
     <string name="discard_dialog_changes">Discard your changes?</string>
     <string name="discard_dialog_new_patient">Discard this new patient?</string>
     <string name="discard_dialog_new_patient_and_reading">Discard this new patient and reading?</string>
@@ -377,9 +378,9 @@
     <string name="activity_reading_next_button">Next</string>
     <string name="reading_bottom_nav_bar_checking_id">Checking patient ID…</string>
     <string name="reading_activity_patient_id_exists_dialog_title_local_patient">Use existing patient?</string>
-    <string name="reading_activity_patient_id_exists_dialog_message_local_patient">A patient with the same ID already exists in your patients list. Would you like to use the patient with\n\nID: %1$s\nName: %2$s\nGender: %3$s</string>
+    <string name="reading_activity_patient_id_exists_dialog_message_local_patient">A patient with the same ID already exists in your patients list. Would you like to use the patient with\n\nID: %1$s\nName: %2$s\nGender: %3$s\n\nThis will discard the information you've entered here.</string>
     <string name="reading_activity_patient_id_exists_dialog_title_server_patient">Patient ID already exists on server</string>
-    <string name="reading_activity_patient_id_exists_dialog_message_server_patient">A patient with the same ID already exists on the server. To add readings, you must add them to your patients list. Would you like to download and use the patient with\n\nID: %1$s\nName: %2$s\nGender: %3$s</string>
+    <string name="reading_activity_patient_id_exists_dialog_message_server_patient">A patient with the same ID already exists on the server. To add readings for this patient ID, you must add the existing patient to your patients list. Would you like to download and use the patient with\n\nID: %1$s\nName: %2$s\nGender: %3$s\n\nDownloading will discard the information you've entered here.</string>
     <string name="reading_activity_patient_id_exists_dialog_download_button_server_patient">Download and use</string>
     <string name="reading_activity_patient_id_exists_dialog_use_button_local_patient">Use</string>
     <string name="reading_activity_title_new_patient">Creating new patient</string>
