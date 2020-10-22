@@ -195,7 +195,10 @@ class ReadingManager @Inject constructor(
             val result = restApi.getReading(id)
             when (result) {
                 is Success -> {
-                    addReading(result.value)
+                    val reading = result.value.apply {
+                        isUploadedToServer = true
+                    }
+                    addReading(reading)
                 }
             }
             result.map { Unit }
