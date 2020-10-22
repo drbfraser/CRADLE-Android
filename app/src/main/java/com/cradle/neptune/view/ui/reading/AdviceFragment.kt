@@ -18,7 +18,7 @@ import androidx.lifecycle.observe
 import com.cradle.neptune.R
 import com.cradle.neptune.binding.FragmentDataBindingComponent
 import com.cradle.neptune.databinding.FragmentAdviceBinding
-import com.cradle.neptune.databinding.ListPreviousReadingsItemBinding
+import com.cradle.neptune.databinding.ListReadingsCardItemBinding
 import com.cradle.neptune.ext.hideKeyboard
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.RetestGroup
@@ -182,9 +182,9 @@ class AdviceFragment : BaseFragment() {
             currentReadingLayout.removeAllViews()
         }
 
-        val binding = DataBindingUtil.inflate<ListPreviousReadingsItemBinding>(
+        val binding = DataBindingUtil.inflate<ListReadingsCardItemBinding>(
             LayoutInflater.from(view.context) /* inflater */,
-            R.layout.list_previous_readings_item /* layoutId */,
+            R.layout.list_readings_card_item /* layoutId */,
             currentReadingLayout /* parent layout */,
             false /* attachToParent */,
             dataBindingComponent
@@ -226,9 +226,9 @@ class AdviceFragment : BaseFragment() {
             // Skip the most recent reading
             if (reading.id != currentReading.id && reading != currentReading) {
                 val analysis = retestGroup.analyses[i]
-                val binding = DataBindingUtil.inflate<ListPreviousReadingsItemBinding>(
+                val binding = DataBindingUtil.inflate<ListReadingsCardItemBinding>(
                     LayoutInflater.from(view.context) /* inflater */,
-                    R.layout.list_previous_readings_item /* layoutId */,
+                    R.layout.list_readings_card_item /* layoutId */,
                     previousReadingsLayout /* parent layout */,
                     false /* attachToParent */,
                     dataBindingComponent

@@ -378,9 +378,9 @@
     <string name="activity_reading_next_button">Next</string>
     <string name="reading_bottom_nav_bar_checking_id">Checking patient ID…</string>
     <string name="reading_activity_patient_id_exists_dialog_title_local_patient">Use existing patient?</string>
-    <string name="reading_activity_patient_id_exists_dialog_message_local_patient">A patient with the same ID already exists in your patients list. Would you like to use the patient with\n\nID: %1$s\nName: %2$s\nGender: %3$s\n\nThis will discard the information you've entered here.</string>
+    <string name="reading_activity_patient_id_exists_dialog_message_local_patient">A patient with the same ID already exists in your patients list. Would you like to use the patient with\n\nID: %1$s\nName: %2$s\nGender: %3$s\n\nThis will discard the information you\'ve entered here.</string>
     <string name="reading_activity_patient_id_exists_dialog_title_server_patient">Patient ID already exists on server</string>
-    <string name="reading_activity_patient_id_exists_dialog_message_server_patient">A patient with the same ID already exists on the server. To add readings for this patient ID, you must add the existing patient to your patients list. Would you like to download and use the patient with\n\nID: %1$s\nName: %2$s\nGender: %3$s\n\nDownloading will discard the information you've entered here.</string>
+    <string name="reading_activity_patient_id_exists_dialog_message_server_patient">A patient with the same ID already exists on the server. To add readings for this patient ID, you must add the existing patient to your patients list. Would you like to download and use the patient with\n\nID: %1$s\nName: %2$s\nGender: %3$s\n\nDownloading will discard the information you\'ve entered here.</string>
     <string name="reading_activity_patient_id_exists_dialog_download_button_server_patient">Download and use</string>
     <string name="reading_activity_patient_id_exists_dialog_use_button_local_patient">Use</string>
     <string name="reading_activity_title_new_patient">Creating new patient</string>

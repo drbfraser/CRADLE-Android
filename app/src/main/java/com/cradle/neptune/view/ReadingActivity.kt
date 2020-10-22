@@ -23,7 +23,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.navOptions
 import com.cradle.neptune.R
-import com.cradle.neptune.databinding.ActivityPlaceholderBinding
+import com.cradle.neptune.databinding.ActivityReadingBinding
 import com.cradle.neptune.ext.hideKeyboard
 import com.cradle.neptune.view.ui.reading.PatientIdConflictDialogFragment
 import com.cradle.neptune.viewmodel.PatientReadingViewModel
@@ -42,7 +42,7 @@ class ReadingActivity : AppCompatActivity() {
 
     private var nextButtonJob: Job? = null
 
-    private var binding: ActivityPlaceholderBinding? = null
+    private var binding: ActivityReadingBinding? = null
 
     // ViewModel shared by all Fragments.
     private val viewModel: PatientReadingViewModel by viewModels()
@@ -55,7 +55,7 @@ class ReadingActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // TODO: Use activity_reading when done design
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_placeholder)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_reading)
         binding?.viewModel = viewModel
         binding?.lifecycleOwner = this
 

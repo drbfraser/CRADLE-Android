@@ -7,13 +7,6 @@ import dagger.hilt.android.AndroidEntryPoint
 
 /**
  * Base class for other ReadingFragments
- * - Observer
- * - Shared access to Reading object
- *
- *
- * Activities that contain fragments derived from this class  must implement the
- * [MyFragmentInteractionListener] interface to handle interaction events.
- * Use the newInstance() factory method to create an instance of derived fragment.
  */
 @AndroidEntryPoint
 abstract class BaseFragment : Fragment() {
