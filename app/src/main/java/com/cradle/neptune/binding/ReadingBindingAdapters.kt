@@ -163,7 +163,7 @@ class ReadingBindingAdapters {
     }
 
     @BindingAdapter("bind:setMaterialSpinnerItemsWithArray")
-    fun onSpinnerItemsChanged(
+    fun setMaterialSpinnerItemsWithArray(
         view: AutoCompleteTextView,
         oldArray: Array<String>?,
         newArray: Array<String>?

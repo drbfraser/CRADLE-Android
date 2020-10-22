@@ -262,4 +262,10 @@ interface HealthFacilityDaoAccess {
      */
     @get:Query("SELECT * FROM HealthFacility")
     val allFacilitiesLiveData: LiveData<List<HealthFacility>>
+
+    /**
+     * All health facilities which the user has selected to be visible.
+     */
+    @get:Query("SELECT * FROM HealthFacility WHERE isUserSelected = 1")
+    val allUserSelectedHealthFacilitiesLiveData: LiveData<List<HealthFacility>>
 }

@@ -1,6 +1,7 @@
 package com.cradle.neptune.viewmodel
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.util.Log
@@ -20,11 +21,13 @@ import com.cradle.neptune.R
 import com.cradle.neptune.ext.setValueOnMainThread
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
+import com.cradle.neptune.manager.ReferralUploadManger
 import com.cradle.neptune.model.BloodPressure
 import com.cradle.neptune.model.GestationalAge
 import com.cradle.neptune.model.GestationalAgeMonths
 import com.cradle.neptune.model.GestationalAgeWeeks
 import com.cradle.neptune.model.Patient
+import com.cradle.neptune.model.PatientAndReadings
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.ReadingMetadata
 import com.cradle.neptune.model.Referral
@@ -72,6 +75,8 @@ private const val GEST_AGE_UNIT_MONTHS_INDEX = 1
 class PatientReadingViewModel @ViewModelInject constructor(
     private val readingManager: ReadingManager,
     private val patientManager: PatientManager,
+    private val referralUploadManager: ReferralUploadManger,
+    private val sharedPreferences: SharedPreferences,
     @ApplicationContext private val app: Context
 ) : ViewModel() {
     private val patientBuilder = LiveDataDynamicModelBuilder()
@@ -105,6 +110,8 @@ class PatientReadingViewModel @ViewModelInject constructor(
      * meant to modify this in any circumstance.
      */
     val isInitialized: LiveData<Boolean> = _isInitialized
+
+    private var originalPatient: Patient? = null
 
     /**
      * If not creating a new patient, the patient and reading requested will be asynchronously
@@ -142,6 +149,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
                         reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_EXISTINGNEW) {
                     val patient = patientManager.getPatientById(patientId)
                         ?: error("no patient with given id")
+                    originalPatient = patient
                     updateActionBarSubtitle(patient.name, patient.id)
                     decompose(patient)
                     return@launch
@@ -156,6 +164,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
                     ?: error("no reading associated with given id")
                 val patient = patientManager.getPatientById(reading.patientId)
                     ?: error("no patient associated with given reading")
+                originalPatient = patient
                 updateActionBarSubtitle(patient.name, patient.id)
 
                 when (reasonForLaunch) {
@@ -186,6 +195,9 @@ class PatientReadingViewModel @ViewModelInject constructor(
                     }
                 }
             } finally {
+                // originalPatient is null implies that we should save the patient.
+                check(originalPatient != null || shouldSavePatient())
+
                 // Make sure we don't retrigger observers if this is run twice for some reason.
                 if (_isInitialized.value != true) {
                     initializeLiveData()
@@ -637,15 +649,13 @@ class PatientReadingViewModel @ViewModelInject constructor(
     val urineTestBloodInput = MutableLiveData<String>()
 
     /* Referral Info */
-    val referral: MutableLiveData<Referral?>
-        get() = readingBuilder.get<Referral?>(Reading::referral)
+    private val referral: MutableLiveData<Referral?> =
+        readingBuilder.get(Reading::referral, defaultValue = null)
 
     /* Reading Info */
-    val readingId: MutableLiveData<String>
-        get() = readingBuilder.get(Reading::id, UUID.randomUUID().toString())
+    val readingId: MutableLiveData<String> = readingBuilder.get(Reading::id, UUID.randomUUID().toString())
 
-    val dateTimeTaken: MutableLiveData<Long?>
-        get() = readingBuilder.get<Long?>(Reading::dateTimeTaken)
+    val dateTimeTaken: MutableLiveData<Long?> = readingBuilder.get<Long?>(Reading::dateTimeTaken)
 
     val symptoms: MediatorLiveData<List<String>> =
         readingBuilder.get<List<String>>(Reading::symptoms)
@@ -834,7 +844,9 @@ class PatientReadingViewModel @ViewModelInject constructor(
             // These will only populate the fields with null if there's nothing in there already.
             // dateTimeTaken will be updated when the save button is pressed.
             // Update date time taken if null. This may be nonnull if we're editing a reading.
-            get(Reading::dateTimeTaken, defaultValue = ZonedDateTime.now().toEpochSecond())
+            if (dateTimeTaken.value == null) {
+                dateTimeTaken.value = ZonedDateTime.now().toEpochSecond()
+            }
             get(Reading::referral, defaultValue = null)
             get(Reading::followUp, defaultValue = null)
         }
@@ -1089,35 +1101,23 @@ class PatientReadingViewModel @ViewModelInject constructor(
             }
         }
 
+    private fun shouldSavePatient() =
+        reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW
+
     /**
-     * Saves the patient (if creating a new patient) and saves the reading.
-     * This writes them to the database.
-     * If sending a referral, then we need to handle that elsewhere.
+     * Tries to construct a valid patient and a valid reading from the values contains in
+     * [patientBuilder] and [readingBuilder].
      *
-     * @return a [ReadingFlowSaveResult]
+     * Will return a null pair if reading is invalid, or we are expected to save a new patient but
+     * the built patient is invalid.
+     *
+     * Otherwise, it will return a Pair of a nullable Patient and a non-null Reading. The Patient
+     * is null if it wasn't built.
      */
-    @MainThread
-    suspend fun save(isSendingReferral: Boolean = false): ReadingFlowSaveResult =
+    private suspend fun constructValidPatientAndReadingFromBuilders(): Pair<Patient?, Reading>? =
         withContext(Dispatchers.Default) {
-            // Don't save if we are uninitialized for some reason.
-            isInitializedMutex.withLock {
-                if (_isInitialized.value == false) return@withContext ReadingFlowSaveResult.ERROR
-            }
-
-            if (adviceReferralButtonId.value == R.id.send_referral_radio_button) {
-                // Don't save the reading / patient yet; we need the AdviceFragment to launch a
-                // referral dialog. TODO: Handle isSendingReferral
-                return@withContext ReadingFlowSaveResult.REFERRAL_REQUIRED
-            }
-            yield()
-
-            // Only add patient if we're creating a new patient.
-            // If we're just creating a reading, users will not be able to edit patient info.
-            val shouldSavePatient =
-                reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW
-
             val patientAsync = async {
-                return@async if (shouldSavePatient) {
+                return@async if (shouldSavePatient()) {
                     patientLastEdited.setValueOnMainThread(ZonedDateTime.now().toEpochSecond())
                     attemptToBuildValidPatient()
                 } else {
@@ -1137,21 +1137,158 @@ class PatientReadingViewModel @ViewModelInject constructor(
                 return@async attemptToBuildValidReading()
             }
 
-            val (patient, reading) = patientAsync.await() to readingAsync.await()
-            if (reading == null ||
-                    (shouldSavePatient && patient == null)) {
-                return@withContext ReadingFlowSaveResult.ERROR
-            }
-            yield()
-
-            if (shouldSavePatient && patient != null) {
-                // Insertion needs to be atomic.
-                patientManager.addPatientWithReading(patient, reading)
+            val reading = readingAsync.await() ?: return@withContext null
+            val patient = patientAsync.await()
+            return@withContext if (shouldSavePatient() && patient == null) {
+                null
             } else {
-                readingManager.addReading(reading)
+                patient to reading
             }
-            return@withContext ReadingFlowSaveResult.SAVE_SUCCESSFUL
         }
+
+    /**
+     * Saves the current patient and reading with a referral, with the type of referral as given by
+     * [referralOption].
+     *
+     * If [referralOption] is [ReferralOption.SMS], the patient and reading will be saved to the
+     * local database first with the referral in the reading, and then a success with a non-null
+     * PatientAndReadings is returned. The referral dialog can then use the PatientAndReadings
+     * object to construct an SMS body.
+     *
+     * If [referralOption] is [ReferralOption.WEB], the patient and reading will be sent to the
+     * server first with the referral in the reading, then the patient and reading are saved in the
+     * local database, and then a success with a null PatientAndReadings is returned. The referral
+     * dialog should then finish.
+     *
+     * If an error occurs, like [ReadingFlowSaveResult.ERROR_UPLOADING_REFERRAL] is returned, then
+     * the PatientAndReadings will be null.
+     *
+     * @return A Pair of the save result and a PatientAndReadings object. The PairAndReadings object
+     * is non-null iff referralOption is for SMS and it was successful.
+     */
+    suspend fun saveWithReferral(
+        referralOption: ReferralOption,
+        referralComment: String,
+        healthFacilityName: String
+    ): Pair<ReadingFlowSaveResult, PatientAndReadings?> = withContext(Dispatchers.Default) {
+        // Don't save if we are uninitialized for some reason.
+        isInitializedMutex.withLock {
+            if (_isInitialized.value == false) {
+                return@withContext ReadingFlowSaveResult.ERROR to null
+            }
+        }
+
+        if (referralOption == ReferralOption.NONE) {
+            return@withContext ReadingFlowSaveResult.REFERRAL_REQUIRED to null
+        }
+
+        // If this returns null, then something is invalid.
+        val (patientFromBuilder, readingFromBuilder) = constructValidPatientAndReadingFromBuilders()
+            ?: return@withContext ReadingFlowSaveResult.ERROR to null
+        yield()
+
+        // If original patient is null, then that implies that we should save the patient.
+        check(originalPatient != null || shouldSavePatient())
+
+        // Choose a patient to use.
+        // We want to use the originalPatient if available.
+        // If it's not available, then shouldSavePatient() is true, so we must be creating a new
+        // patient, and so patientFromBuilder should not be null.
+        val patient = originalPatient ?: patientFromBuilder ?: error("unreachable state")
+
+        // Add the referral to the reading from the builder.
+        readingFromBuilder.referral =
+            Referral(
+                comment = referralComment, healthFacilityName = healthFacilityName,
+                dateReferred = readingFromBuilder.dateTimeTaken, patientId = patient.id,
+                readingId = readingFromBuilder.id, sharedPreferences = sharedPreferences
+            )
+        yield()
+
+        when (referralOption) {
+            ReferralOption.WEB -> {
+                // Upload patient and reading to the server.
+                val result = referralUploadManager.uploadReferralViaWeb(patient, readingFromBuilder)
+                if (result is Success) {
+                    // Save the patient and reading in local database after marking them as being
+                    // uploaded. Note: If patient already exists on server, then
+                    // patientFromServer == patient.
+                    val patientFromServer = result.value.patient
+                    val readingFromServer = result.value.readings[0].apply {
+                        isUploadedToServer = true
+                    }
+
+                    patientManager.addPatientWithReading(patientFromServer, readingFromServer)
+
+                    // Dialog should finish the Activity.
+                    return@withContext ReadingFlowSaveResult.SAVE_SUCCESSFUL to null
+                } else {
+                    return@withContext ReadingFlowSaveResult.ERROR_UPLOADING_REFERRAL to null
+                }
+            }
+            ReferralOption.SMS -> {
+                // If we're just sending by SMS, we first store it locally in the database and then
+                // have the DialogFragment that calls this to launch an SMS intent.
+                // We don't mark the reading as uploaded to the server, as we can't know
+                // for sure that the reading has been uploaded. When the VHT goes to
+                // sync this will be resolved, either by overwriting this reading with
+                // the one from the server (if it made it successfully) or by uploading
+                // it through the sync process (if it failed to make it to the server).
+                handleStoringPatientReadingFromBuilders(patientFromBuilder, readingFromBuilder)
+
+                // Pass a PatientAndReadings object for the SMS message
+                return@withContext ReadingFlowSaveResult.SAVE_SUCCESSFUL to
+                    PatientAndReadings(patient, listOf(readingFromBuilder))
+            }
+            else -> error("unreachable")
+        }
+    }
+
+    /**
+     * Saves the patient (if creating a new patient) and saves the reading to the database.
+     * If sending a referral, then we need to handle that elsewhere.
+     *
+     * @return a [ReadingFlowSaveResult]
+     */
+    @MainThread
+    suspend fun save(
+        referralOption: ReferralOption = ReferralOption.NONE
+    ): ReadingFlowSaveResult = withContext(Dispatchers.Default) {
+        // Don't save if we are uninitialized for some reason.
+        isInitializedMutex.withLock {
+            if (_isInitialized.value == false) return@withContext ReadingFlowSaveResult.ERROR
+        }
+
+        // If user selected referral, handle that
+        if (adviceReferralButtonId.value == R.id.send_referral_radio_button) {
+            // Don't save the reading / patient yet; we need the AdviceFragment to launch a
+            // referral dialog. TODO: Handle isSendingReferral
+            if (referralOption == ReferralOption.NONE) {
+                return@withContext ReadingFlowSaveResult.REFERRAL_REQUIRED
+            }
+        }
+        yield()
+
+        val (patient, reading) = constructValidPatientAndReadingFromBuilders()
+            ?: return@withContext ReadingFlowSaveResult.ERROR
+        yield()
+
+        handleStoringPatientReadingFromBuilders(patient, reading)
+
+        return@withContext ReadingFlowSaveResult.SAVE_SUCCESSFUL
+    }
+
+    private suspend fun handleStoringPatientReadingFromBuilders(
+        patientFromBuilder: Patient?,
+        readingFromBuilder: Reading
+    ) {
+        if (shouldSavePatient() && patientFromBuilder != null) {
+            // Insertion needs to be atomic.
+            patientManager.addPatientWithReading(patientFromBuilder, readingFromBuilder)
+        } else {
+            readingManager.addReading(readingFromBuilder)
+        }
+    }
 
     /**
      * Describes the current recommended advice. The RadioButtons will indicate which option is
@@ -1518,6 +1655,10 @@ class PatientReadingViewModel @ViewModelInject constructor(
     }
 }
 
+enum class ReferralOption {
+    NONE, SMS, WEB
+}
+
 /**
  * Describes errors that occur when the next button is pressed. The ReadingActivity must validate
  * against these errors before moving on to the next destination.
@@ -1557,7 +1698,28 @@ enum class ReadingFlowError {
 }
 
 enum class ReadingFlowSaveResult {
+    /**
+     * Indicates when saving the referral to the local database was successful.
+     *
+     * - In the case of sending a referral by SMS, this means that the Intent to send an SMS should
+     *   be launched, because the patient and reading are valid and stored in the local database.
+     * - In the case of sending a referral by web, this means that it was uploaded to the server and
+     *   saved to the local database.
+     */
     SAVE_SUCCESSFUL,
+
+    /**
+     * Indicates when a referral dialog is required.
+     */
     REFERRAL_REQUIRED,
+
+    /**
+     * Indicates an error when trying to upload a referral via web
+     */
+    ERROR_UPLOADING_REFERRAL,
+
+    /**
+     * Indicates an error with constructing a valid patient / reading.
+     */
     ERROR
 }

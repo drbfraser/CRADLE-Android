@@ -28,14 +28,15 @@ class ReferralUploadManger @Inject constructor(private val restApi: RestApi) {
      * @param patient the patient being referred
      * @param reading the reading containing the referral
      * @throws IllegalArgumentException if [reading] does not contain a referral
-     * @return result of the network request
+     * @return result of the network request. [patient] is returned back if [patient] already exists
+     * on the server.
      */
     suspend fun uploadReferralViaWeb(
         patient: Patient,
         reading: Reading
     ): NetworkResult<PatientAndReadings> {
         if (reading.referral == null) {
-            throw IllegalArgumentException("reading must contain a nested referral")
+            error("reading must contain a nested referral")
         }
 
         // First check to see if the patient exists. We don't have an explicit
