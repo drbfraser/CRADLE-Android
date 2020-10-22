@@ -90,6 +90,7 @@ class ReferralDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding?.viewModel = referralDialogViewModel
+        binding?.launchReason = launchReason
         binding?.lifecycleOwner = viewLifecycleOwner
         super.onViewCreated(view, savedInstanceState)
 
@@ -118,6 +119,10 @@ class ReferralDialogFragment : DialogFragment() {
 
                 lifecycleScope.launch { handleWebReferralSend(view) }
             }
+        }
+
+        if (viewModel.isInitialized.value != true) {
+            dismiss()
         }
     }
 
