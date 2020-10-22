@@ -235,7 +235,6 @@ class ReadingActivity : AppCompatActivity() {
                     PatientIdConflictDialogFragment.makeInstance(
                         isPatientLocal = true, patient = patient
                     ).show(supportFragmentManager, PATIENT_ID_IN_USE_DIALOG_FRAGMENT_TAG)
-                    viewModel.setInputEnabledState(true)
                 }
                 ReadingFlowError.ERROR_PATIENT_ID_IN_USE_ON_SERVER -> {
                     viewModel.clearBottomNavBarMessage()
@@ -244,7 +243,6 @@ class ReadingActivity : AppCompatActivity() {
                     PatientIdConflictDialogFragment.makeInstance(
                         isPatientLocal = false, patient = patient
                     ).show(supportFragmentManager, PATIENT_ID_IN_USE_DIALOG_FRAGMENT_TAG)
-                    viewModel.setInputEnabledState(true)
                 }
                 ReadingFlowError.ERROR_INVALID_FIELDS -> {
                     Toast.makeText(
