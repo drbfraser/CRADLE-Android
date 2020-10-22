@@ -331,9 +331,8 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="textLongMessage|textMultiLine|textNoSuggestions"
-                                android:maxLines="4"
-                                android:scrollbarStyle="outsideOverlay"
-                                android:scrollbars="vertical"
+                                android:minLines="2"
+                                android:singleLine="false"
                                 android:text="@={Converter.singleElementListToString(viewModel.patientDrugHistory)}"
                                 android:verticalScrollbarPosition="right"
                                 tools:text="Drug history sample" />
@@ -353,13 +352,12 @@
                             app:layout_constraintTop_toBottomOf="@+id/drug_history_layout">
 
                             <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/dmedical_history_text"
+                                android:id="@+id/medical_history_text"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="textLongMessage|textMultiLine|textNoSuggestions"
-                                android:maxLines="4"
-                                android:scrollbarStyle="outsideOverlay"
-                                android:scrollbars="vertical"
+                                android:minLines="2"
+                                android:singleLine="false"
                                 android:text="@={Converter.singleElementListToString(viewModel.patientMedicalHistory)}"
                                 android:verticalScrollbarPosition="right"
                                 tools:text="Medical history sample" />

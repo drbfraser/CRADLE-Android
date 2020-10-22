@@ -35,106 +35,119 @@
 
         </com.google.android.material.appbar.AppBarLayout>
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="16dp">
+            android:layout_height="wrap_content">
 
-            <TextView
-                android:id="@+id/textView4"
-                android:layout_width="wrap_content"
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                style="@style/ReadingFlowTheme"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Sending a referral will save the patient and reading. Select a health centre to send a referral to."
-                android:textAppearance="@style/TextAppearance.Cradle.Body1"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                android:padding="16dp">
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/health_centre_input_layout"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_margin="4dp"
-                android:hint="@string/health_centre_label"
-                android:labelFor="@id/health_centre_auto_complete_text"
-                app:layout_constraintEnd_toStartOf="@+id/open_health_centre_settings_button"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView4">
-
-                <AutoCompleteTextView
-                    android:id="@+id/health_centre_auto_complete_text"
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/textView4"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:inputType="none"
-                    android:text="@={viewModel.healthCentreToUse}"
-                    bind:setMaterialSpinnerItemsWithArray="@{viewModel.selectedHealthCentresAsStrings}" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:text="@string/referral_dialog_explanation_text"
+                    android:textAppearance="@style/TextAppearance.Cradle.Body1"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-            <ImageButton
-                android:id="@+id/open_health_centre_settings_button"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/referral_dialog_open_health_centre_settings_button_content_description"
-                android:scaleType="fitCenter"
-                app:layout_constraintBottom_toBottomOf="@+id/health_centre_input_layout"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/health_centre_input_layout"
-                bind:srcCompat="@drawable/ic_baseline_settings_24" />
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/health_centre_input_layout"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:hint="@string/health_centre_label"
+                    android:labelFor="@id/health_centre_auto_complete_text"
+                    app:layout_constraintEnd_toStartOf="@+id/open_health_centre_settings_button"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textView4">
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/comments_input_layout"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_margin="4dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="16dp"
-                android:hint="@string/referral_dialog_comments_optional"
-                android:paddingBottom="0dp"
-                app:layout_constraintBottom_toTopOf="@+id/send_sms_button"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/health_centre_input_layout"
-                app:layout_constraintVertical_bias="0.0">
+                    <AutoCompleteTextView
+                        android:id="@+id/health_centre_auto_complete_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="none"
+                        android:text="@={viewModel.healthCentreToUse}"
+                        bind:setMaterialSpinnerItemsWithArray="@{viewModel.selectedHealthCentresAsStrings}" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/comments_text"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="top"
-                    android:inputType="textLongMessage|textMultiLine"
-                    android:maxLines="12"
-                    android:scrollbarStyle="outsideOverlay"
+                <ImageButton
+                    android:id="@+id/open_health_centre_settings_button"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/referral_dialog_open_health_centre_settings_button_content_description"
+                    android:scaleType="fitCenter"
+                    app:layout_constraintBottom_toBottomOf="@+id/health_centre_input_layout"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/health_centre_input_layout"
+                    bind:srcCompat="@drawable/ic_baseline_settings_24" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/comments_input_layout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="16dp"
+                    android:hint="@string/referral_dialog_comments_label"
+                    android:overScrollMode="always"
+                    android:paddingBottom="0dp"
+                    android:scrollbarStyle="insideInset"
                     android:scrollbars="vertical"
-                    android:text="@={viewModel.comments}"
-                    android:textAlignment="viewStart"
-                    android:verticalScrollbarPosition="right"
-                    tools:text="Referral comments" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    app:layout_constraintBottom_toTopOf="@+id/send_sms_button"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/health_centre_input_layout"
+                    app:layout_constraintVertical_bias="0.0">
 
-            <Button
-                android:id="@+id/send_web_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:layout_marginBottom="8dp"
-                android:enabled="@{viewModel.areSendButtonsEnabled &amp;&amp; !viewModel.isSending}"
-                android:text="@string/referral_dialog_button_send_web"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/comments_text"
+                        style="@style/ReadingFlowTheme"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="top"
+                        android:inputType="textLongMessage|textMultiLine"
+                        android:maxLines="4"
+                        android:minLines="4"
+                        android:overScrollMode="always"
+                        android:scrollbarStyle="insideInset"
+                        android:scrollbars="vertical"
+                        android:singleLine="false"
+                        android:text="@={viewModel.comments}"
+                        android:verticalScrollbarPosition="right"
+                        tools:text="Referral comments" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-            <Button
-                android:id="@+id/send_sms_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:enabled="@{viewModel.areSendButtonsEnabled &amp;&amp; !viewModel.isSending}"
-                android:text="@string/referral_dialog_button_send_sms"
-                app:layout_constraintBaseline_toBaselineOf="@+id/send_web_button"
-                app:layout_constraintEnd_toStartOf="@+id/send_web_button" />
+                <Button
+                    android:id="@+id/send_web_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:enabled="@{viewModel.areSendButtonsEnabled &amp;&amp; !viewModel.isSending}"
+                    android:text="@string/referral_dialog_button_send_web"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                <Button
+                    android:id="@+id/send_sms_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:enabled="@{viewModel.areSendButtonsEnabled &amp;&amp; !viewModel.isSending}"
+                    android:text="@string/referral_dialog_button_send_sms"
+                    app:layout_constraintBaseline_toBaselineOf="@+id/send_web_button"
+                    app:layout_constraintEnd_toStartOf="@+id/send_web_button" />
 
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </ScrollView>
     </LinearLayout>
 
 </layout>

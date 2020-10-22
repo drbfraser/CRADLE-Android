@@ -284,10 +284,6 @@ class ReferralDialogFragment : DialogFragment() {
         super.onStart()
         dialog?.apply {
             // Make the dialog close to full screen.
-            window?.setLayout(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
             setStyle(STYLE_NORMAL, R.style.AppTheme_FullScreenDialog)
         }
     }
