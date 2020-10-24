@@ -453,9 +453,9 @@ class PatientReadingViewModel @ViewModelInject constructor(
             // Populate the gestational age input field / EditText.
             patientGestationalAgeInput.apply {
                 value = if (patientIsPregnant.value != true) {
-                    // If not pregnant, make the input blank. Note: If this is the empty string, then
-                    // an error will be triggered when the Pregnant CheckBox is ticked for the first
-                    // time.
+                    // If not pregnant, make the input blank. Note: If this is the empty string,
+                    // then an error will be triggered when the Pregnant CheckBox is ticked for the
+                    // first time.
                     null
                 } else {
                     when (val gestationalAge = patientGestationalAge.value) {
@@ -603,76 +603,77 @@ class PatientReadingViewModel @ViewModelInject constructor(
             .run { app.createConfigurationContext(this).resources }
 
     /* Patient Info */
+
+    /** Used in two-way Data Binding with PatientInfoFragment */
     val patientId: MutableLiveData<String>
         get() = patientBuilder.get<String>(Patient::id)
 
+    /** Used in two-way Data Binding with PatientInfoFragment */
     val patientName: MutableLiveData<String>
         get() = patientBuilder.get<String>(Patient::name)
 
+    /** Used in two-way Data Binding with PatientInfoFragment */
     val patientDob: MutableLiveData<String?>
         get() = patientBuilder.get<String?>(Patient::dob)
 
+    /**
+     * Used in two-way Data Binding with PatientInfoFragment
+     * TODO: Remove age from the patient and don't pick this up from the builder.
+     *  We should be using isExactDob available in the API.
+     */
     val patientAge: MutableLiveData<Int?>
         get() = patientBuilder.get<Int?>(Patient::age)
 
+    /**
+     * Implicitly used in two-way Data Binding with PatientInfoFragment.
+     * This listens to [patientGestationalAgeInput] and [patientGestationalAgeUnits].
+     *
+     * @see LiveDataInitializationManager.setupGestationAgeLiveData
+     */
     val patientGestationalAge: MediatorLiveData<GestationalAge?> =
         patientBuilder.get<GestationalAge?>(Patient::gestationalAge)
 
     /**
+     * Used in two-way Data Binding with PatientInfoFragment
      * Input that is taken directly from the form as a String.
+     * Can hold either an integer or a Double (for months input).
      */
     val patientGestationalAgeInput: MutableLiveData<String> = MediatorLiveData<String>()
 
+    /** Used in two-way Data Binding with PatientInfoFragment */
     val patientGestationalAgeUnits: MutableLiveData<String> = MediatorLiveData<String>()
 
+    /**
+     * Used in two-way Data Binding with PatientInfoFragment
+     * @see com.cradle.neptune.binding.Converter.sexToString
+     */
     val patientSex: MutableLiveData<Sex?>
         get() = patientBuilder.get<Sex?>(Patient::sex)
 
+    /** Used in two-way Data Binding with PatientInfoFragment */
     val patientIsPregnant: MutableLiveData<Boolean?>
         get() = patientBuilder.get<Boolean?>(Patient::isPregnant)
 
+    /** Used in two-way Data Binding with PatientInfoFragment */
     val patientZone: MutableLiveData<String?>
         get() = patientBuilder.get<String?>(Patient::zone)
 
+    /** Used in two-way Data Binding with PatientInfoFragment */
     val patientVillageNumber: MutableLiveData<String?>
         get() = patientBuilder.get<String?>(Patient::villageNumber)
 
+    /** Used in two-way Data Binding with PatientInfoFragment */
     val patientDrugHistory: MutableLiveData<List<String>> =
         patientBuilder.get<List<String>>(Patient::drugHistoryList, defaultValue = emptyList())
 
+    /** Used in two-way Data Binding with PatientInfoFragment */
     val patientMedicalHistory: MutableLiveData<List<String>> =
         patientBuilder.get<List<String>>(Patient::medicalHistoryList, defaultValue = emptyList())
 
     val patientLastEdited: MutableLiveData<Long?>
         get() = patientBuilder.get<Long?>(Patient::lastEdited)
 
-    /* Blood Pressure Info */
-    val bloodPressure: MediatorLiveData<BloodPressure?> =
-        readingBuilder.get<BloodPressure?>(Reading::bloodPressure)
-
-    val bloodPressureSystolicInput = MutableLiveData<Int?>()
-    val bloodPressureDiastolicInput = MutableLiveData<Int?>()
-    val bloodPressureHeartRateInput = MutableLiveData<Int?>()
-
-    /* Urine Test Info */
-    val urineTest: MediatorLiveData<UrineTest?> = readingBuilder.get<UrineTest?>(Reading::urineTest)
-    val isUsingUrineTest = MutableLiveData<Boolean>()
-    val urineTestLeukocytesInput = MutableLiveData<String>()
-    val urineTestNitritesInput = MutableLiveData<String>()
-    val urineTestGlucoseInput = MutableLiveData<String>()
-    val urineTestProteinInput = MutableLiveData<String>()
-    val urineTestBloodInput = MutableLiveData<String>()
-
-    /* Referral Info */
-    private val referral: MutableLiveData<Referral?> =
-        readingBuilder.get(Reading::referral, defaultValue = null)
-
-    /* Reading Info */
-    val readingId: MutableLiveData<String> =
-        readingBuilder.get(Reading::id, UUID.randomUUID().toString())
-
-    val dateTimeTaken: MutableLiveData<Long?> = readingBuilder.get<Long?>(Reading::dateTimeTaken)
-
+    /** Used in SymptomsFragment */
     val symptoms: MediatorLiveData<List<String>> =
         readingBuilder.get<List<String>>(Reading::symptoms)
 
@@ -681,12 +682,13 @@ class PatientReadingViewModel @ViewModelInject constructor(
      * array, R.array.reading_symptoms, except the last checkbox represents the other symptoms.
      * This will be changed directly by the CheckBoxes via [setSymptomsState]
      *
-     * @see setUpSymptomsLiveData
+     * @see LiveDataInitializationManager.setUpSymptomsLiveData
      */
     private val _symptomsState = MediatorLiveData<SymptomsState>()
     val symptomsState: LiveData<SymptomsState> = _symptomsState
 
     /**
+     * Used in two-way Data Binding with SymptomsFragment
      * The user's arbitrary text input for the "Other symptoms" field is tracked here.
      */
     val otherSymptomsInput = MutableLiveData("")
@@ -705,6 +707,53 @@ class PatientReadingViewModel @ViewModelInject constructor(
             _symptomsState.value = currentSymptomsState
         }
     }
+
+    /**
+     * Implicitly in two-way Data Binding with VitalSignsFragment
+     * Has [bloodPressureSystolicInput], [bloodPressureDiastolicInput], and
+     * [bloodPressureHeartRateInput] as sources.
+     *
+     * @see LiveDataInitializationManager.setupBloodPressureLiveData
+     */
+    val bloodPressure: MediatorLiveData<BloodPressure?> =
+        readingBuilder.get<BloodPressure?>(Reading::bloodPressure)
+
+    /** Used in two-way Data Binding with VitalSignsFragment */
+    val bloodPressureSystolicInput = MutableLiveData<Int?>()
+    /** Used in two-way Data Binding with VitalSignsFragment */
+    val bloodPressureDiastolicInput = MutableLiveData<Int?>()
+    /** Used in two-way Data Binding with VitalSignsFragment */
+    val bloodPressureHeartRateInput = MutableLiveData<Int?>()
+
+    /**
+     * Implicitly in two-way Data Binding with VitalSignsFragment
+     * Has all of the below as sources.
+     *
+     * @see LiveDataInitializationManager.setupUrineTestAndSourcesLiveData
+     */
+    val urineTest: MediatorLiveData<UrineTest?> = readingBuilder.get<UrineTest?>(Reading::urineTest)
+    /** Used in two-way Data Binding with VitalSignsFragment */
+    val isUsingUrineTest = MutableLiveData<Boolean>()
+    /** Used in two-way Data Binding with VitalSignsFragment */
+    val urineTestLeukocytesInput = MutableLiveData<String>()
+    /** Used in two-way Data Binding with VitalSignsFragment */
+    val urineTestNitritesInput = MutableLiveData<String>()
+    /** Used in two-way Data Binding with VitalSignsFragment */
+    val urineTestGlucoseInput = MutableLiveData<String>()
+    /** Used in two-way Data Binding with VitalSignsFragment */
+    val urineTestProteinInput = MutableLiveData<String>()
+    /** Used in two-way Data Binding with VitalSignsFragment */
+    val urineTestBloodInput = MutableLiveData<String>()
+
+    /* Referral Info */
+    private val referral: MutableLiveData<Referral?> =
+        readingBuilder.get(Reading::referral, defaultValue = null)
+
+    /* Reading Info */
+    val readingId: MutableLiveData<String> =
+        readingBuilder.get(Reading::id, UUID.randomUUID().toString())
+
+    val dateTimeTaken: MutableLiveData<Long?> = readingBuilder.get<Long?>(Reading::dateTimeTaken)
 
     private val previousReadingIds: MutableLiveData<List<String>>
         get() = readingBuilder.get<List<String>>(Reading::previousReadingIds, emptyList())
