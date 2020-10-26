@@ -8,6 +8,8 @@ import android.view.ViewGroup
 import android.widget.AutoCompleteTextView
 import androidx.databinding.DataBindingComponent
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import com.cradle.neptune.R
@@ -15,6 +17,8 @@ import com.cradle.neptune.binding.FragmentDataBindingComponent
 import com.cradle.neptune.databinding.FragmentPatientInfoBinding
 import com.cradle.neptune.ext.hideKeyboard
 import com.cradle.neptune.model.Patient
+import com.cradle.neptune.view.ReadingActivity
+import com.cradle.neptune.viewmodel.PatientReadingViewModel
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputEditText
@@ -43,11 +47,12 @@ private const val FRAGMENT_TAG_DATE_PICKER = "DatePicker"
  * or updating a reading.
  */
 @Suppress("LargeClass")
-class PatientInfoFragment : BaseFragment() {
-
-    private var genderMenuTextView: AutoCompleteTextView? = null
-
-    private var gestAgeMenuTextView: AutoCompleteTextView? = null
+class PatientInfoFragment : Fragment() {
+    /**
+     * ViewModel is scoped to the [ReadingActivity] that this Fragment is attached to; therefore,
+     * this is shared by all Fragments.
+     */
+    private val viewModel: PatientReadingViewModel by activityViewModels()
 
     private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent()
 
@@ -148,7 +153,7 @@ class PatientInfoFragment : BaseFragment() {
 
     private fun setupAndObserveGenderList(view: View) {
         val genderTextLayout = view.findViewById<TextInputLayout>(R.id.gender_input_layout)
-        genderMenuTextView = (genderTextLayout.editText as? AutoCompleteTextView?)?.apply {
+        (genderTextLayout.editText as? AutoCompleteTextView?)?.apply {
             setOnClickListener { it.hideKeyboard() }
         }
     }
@@ -157,7 +162,7 @@ class PatientInfoFragment : BaseFragment() {
         val gestAgeUnitsTextLayout = view.findViewById<TextInputLayout>(
             R.id.gestational_age_units_layout
         )
-        gestAgeMenuTextView = (gestAgeUnitsTextLayout.editText as? AutoCompleteTextView?)?.apply {
+        (gestAgeUnitsTextLayout.editText as? AutoCompleteTextView?)?.apply {
             setOnClickListener { it.hideKeyboard() }
         }
     }

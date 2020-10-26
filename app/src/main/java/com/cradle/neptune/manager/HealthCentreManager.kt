@@ -6,7 +6,6 @@ import com.cradle.neptune.model.HealthFacility
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 /**
@@ -30,14 +29,6 @@ class HealthCentreManager(private val database: CradleDatabase) {
     suspend fun getAllSelectedByUser() = withContext(Dispatchers.IO) {
         dao.allUserSelectedHealthFacilities
     }
-
-    /**
-     * TODO: once all the java classes calling this method are turned into Kotlin,
-     * remove this function and call the corressponding method.
-     * This is only for legacy java code still calling this function.
-     */
-    @Deprecated("Please avoid using this function in Kotlin files.")
-    fun getAllSelectedByUserBlocking() = runBlocking { getAllSelectedByUser() }
 
     /**
      * add a single health facility

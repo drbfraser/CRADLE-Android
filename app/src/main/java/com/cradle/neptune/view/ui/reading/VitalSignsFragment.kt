@@ -7,18 +7,27 @@ import android.view.ViewGroup
 import android.widget.Button
 import androidx.databinding.DataBindingComponent
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.observe
 import androidx.navigation.Navigation
 import com.cradle.neptune.R
 import com.cradle.neptune.binding.FragmentDataBindingComponent
 import com.cradle.neptune.databinding.FragmentVitalSignsBinding
+import com.cradle.neptune.view.ReadingActivity
+import com.cradle.neptune.viewmodel.PatientReadingViewModel
 
 private const val TAG = "VitalSignsFragment"
 
 /**
  * Allow user to input vital signs, including OCR for data from the photo.
  */
-class VitalSignsFragment : BaseFragment() {
+class VitalSignsFragment : Fragment() {
+    /**
+     * ViewModel is scoped to the [ReadingActivity] that this Fragment is attached to; therefore,
+     * this is shared by all Fragments.
+     */
+    private val viewModel: PatientReadingViewModel by activityViewModels()
 
     private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent()
 

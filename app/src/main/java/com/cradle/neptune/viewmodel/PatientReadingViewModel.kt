@@ -1,5 +1,6 @@
 package com.cradle.neptune.viewmodel
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.Configuration
@@ -69,10 +70,25 @@ private const val GEST_AGE_UNIT_MONTHS_INDEX = 1
 private val DEBUG = BuildConfig.DEBUG
 
 /**
- * The ViewModel that is used in [ReadingActivity] and its
- * [com.cradle.neptune.view.ui.reading.BaseFragment]s
+ * The ViewModel that is used in [ReadingActivity] and its Fragments to hold intermediate data
+ * entered into the forms (helps persist it across configuration changes). It also handles the logic
+ * involved in saving [Patient]s and [Reading]s, some navigation-related logic (such as determining
+ * when the next button is enabled), error message generation, calculating the advice to show in the
+ * AdviceFragment, etc. All the Fragments are able to access this ViewModel, as this ViewModel is
+ * scoped to ReadingActivity.
  *
- * This should be initialized before the Fragments are created
+ * LiveData and Data Binding (with two-way Data Binding for the various text fields, checkboxes,
+ * radio buttons, spinners) are used to reduce the amount of manual code that deals with loading
+ * data from the model into the UI and vice versa, though the ViewModel contains some setup code
+ * that deals with the fact that LiveData doesn't work as well when we want to do two-way Data
+ * Binding on non-primitive types like UrineTest and BloodPressure. This setup code is located in
+ * the inner class [LiveDataInitializationManager].
+ *
+ * The ViewModel has been split into managers to make it clear what functions are used for which
+ * purpose (e.g., the functions and variables in the SaveManager deal with saving the reading to the
+ * local database and also deals with sending referrals).
+ *
+ * The ViewModel should be initialized before the Fragments are created.
  *
  * @see PatientReadingViewModel.LiveDataInitializationManager
  * @see PatientReadingViewModel.NavigationManager
@@ -80,6 +96,7 @@ private val DEBUG = BuildConfig.DEBUG
  * @see PatientReadingViewModel.SaveManager
  * @see PatientReadingViewModel.AdviceManager
  */
+
 @SuppressWarnings("LargeClass")
 class PatientReadingViewModel @ViewModelInject constructor(
     private val readingManager: ReadingManager,
@@ -777,6 +794,9 @@ class PatientReadingViewModel @ViewModelInject constructor(
     @MainThread
     fun setUsingDateOfBirth(useDateOfBirth: Boolean) {
         if (!useDateOfBirth) {
+            // Lint is acting like patientDob's data type is is non-null, but it is nullable.
+            // TODO: Do not clear out date of birth and just use today when we implement isExactDob
+            @SuppressLint("NullSafeMutableLiveData")
             patientDob.value = null
         }
         _isUsingDateOfBirth.value = useDateOfBirth
@@ -1195,6 +1215,9 @@ class PatientReadingViewModel @ViewModelInject constructor(
         if (currentSubtitle == subtitle) {
             return
         }
+        // Lint is acting like _actionBarSubtitle holds a non-null type, but _actionBarSubtitle
+        // holds a nullable String (because a null action bar title means there will be no subtitle)
+        @SuppressLint("NullSafeMutableLiveData")
         _actionBarSubtitle.value = subtitle
     }
 

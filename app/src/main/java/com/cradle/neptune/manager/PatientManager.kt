@@ -9,12 +9,10 @@ import com.cradle.neptune.model.Reading
 import com.cradle.neptune.net.NetworkResult
 import com.cradle.neptune.net.RestApi
 import com.cradle.neptune.net.Success
+import java.lang.IllegalArgumentException
 import java.util.ArrayList
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 /**
@@ -35,15 +33,23 @@ class PatientManager @Inject constructor(
     /**
      * add all patients
      */
-    suspend fun addAll(patients: ArrayList<Patient>) = GlobalScope.launch {
+    suspend fun addAll(patients: ArrayList<Patient>) = withContext(IO) {
         patientDao.insertAll(patients)
     }
 
     /**
      * Adds a patient and its reading in a single transaction. The [reading] should be for the
      * given [patient].
+     *
+     * @throws IllegalArgumentException if the [reading] given has a different patient ID from the
+     * given [patient]'s ID
      */
     suspend fun addPatientWithReading(patient: Patient, reading: Reading) = withContext(IO) {
+        if (patient.id != reading.patientId) {
+            throw IllegalArgumentException(
+                "reading's patient ID doesn't match with given patient's ID"
+            )
+        }
         database.runInTransaction {
             patientDao.insert(patient)
             readingDao.insert(reading)
@@ -83,18 +89,6 @@ class PatientManager @Inject constructor(
      */
     suspend fun getPatientById(id: String): Patient? = withContext(IO) {
         patientDao.getPatientById(id)
-    }
-
-    /**
-     * TODO: once all the java classes calling this method are turned into Kotlin,
-     * remove this function and call the corressponding method.
-     * This is only for legacy java code still calling this function.
-     */
-    @Deprecated("Please avoid using this function in Kotlin files.",
-        replaceWith = ReplaceWith("getPatientById")
-    )
-    fun getPatientByIdBlocking(id: String): Patient? = runBlocking {
-        withContext(IO) { getPatientById(id) }
     }
 
     /**

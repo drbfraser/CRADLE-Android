@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 import com.cradle.neptune.R;
 import com.cradle.neptune.ocr.CradleOverlay;
@@ -39,7 +40,7 @@ import java.util.Date;
  * Take a photo of a CRADLE VSA device after a currentReading has been taken.
  * REQUIRES: Add permissions for camera and disk access inside app.
  */
-public class CameraFragment extends BaseFragment {
+public class CameraFragment extends Fragment {
     private static final String TAG = CameraFragment.class.getSimpleName();
 
     private static final int FOCUS_PERIOD_ms = 1000;

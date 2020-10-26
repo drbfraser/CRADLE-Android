@@ -13,6 +13,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.view.size
 import androidx.databinding.DataBindingComponent
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import com.cradle.neptune.R
@@ -23,13 +25,19 @@ import com.cradle.neptune.ext.hideKeyboard
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.RetestGroup
 import com.cradle.neptune.view.ReadingActivity
+import com.cradle.neptune.viewmodel.PatientReadingViewModel
 import com.cradle.neptune.viewmodel.ReadingFlowSaveResult
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class AdviceFragment : BaseFragment() {
+class AdviceFragment : Fragment() {
+    /**
+     * ViewModel is scoped to the [ReadingActivity] that this Fragment is attached to; therefore,
+     * this is shared by all Fragments.
+     */
+    private val viewModel: PatientReadingViewModel by activityViewModels()
 
     private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent()
 
