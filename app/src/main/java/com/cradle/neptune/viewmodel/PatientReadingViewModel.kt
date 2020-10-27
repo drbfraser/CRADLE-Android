@@ -1197,7 +1197,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
                     }
                     emit(Result.success(downloadedPatient))
                 }
-                else -> emit(Result.failure(Throwable()))
+                else -> emit(Result.failure<Patient>(Throwable()))
             }
         }
     }
