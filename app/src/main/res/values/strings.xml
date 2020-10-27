@@ -336,6 +336,7 @@
     <string name="blood_pressure_error_missing_systolic">Missing systolic blood pressure</string>
     <string name="blood_pressure_error_missing_diastolic">Missing diastolic blood pressure</string>
     <string name="blood_pressure_error_missing_heart_rate">Missing heart rate</string>
+    <string name="error_must_be_between_n_and_m">Must be between %1$d and %2$d</string>
     <string name="fragment_patient_info_dob_helper">Enter approximate age, or use date of birth via icon</string>
     <string name="age_date_picker_title">Select date of birth</string>
     <string name="age_input_suffix_approximate_years_old">years old (approximate)</string>

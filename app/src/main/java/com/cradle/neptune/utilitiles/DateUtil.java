@@ -52,6 +52,11 @@ public class DateUtil {
         return dateFromUnix.format(formatter);
     }
 
+    /**
+     * @param age Age in years
+     * @return A date for the given age with the same month and day as today for the given age, in
+     * yyyy-mm-dd format.
+     */
     public static String getDateStringFromAge(long age) {
         ZonedDateTime dateFromAge = ZonedDateTime.now().minusYears(age);
         if (dateFromAge == null) {

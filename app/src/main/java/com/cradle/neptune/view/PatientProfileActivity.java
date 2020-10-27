@@ -136,9 +136,6 @@ public class PatientProfileActivity extends AppCompatActivity {
         if (!Util.stringNullOrEmpty(patient.getDob())) {
             patientDOB.setText(patient.getDob());
         }
-        if (!Util.stringNullOrEmpty(patient.getAge() + "")) {
-            patientAge.setText(patient.getAge() + "");
-        }
         patientSex.setText(patient.getSex().toString());
         if (!Util.stringNullOrEmpty(patient.getVillageNumber())) {
             villageNo.setText(patient.getVillageNumber());

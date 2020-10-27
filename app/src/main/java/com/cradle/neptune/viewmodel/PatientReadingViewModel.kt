@@ -648,8 +648,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
      * TODO: Remove age from the patient and don't pick this up from the builder.
      *  We should be using isExactDob available in the API.
      */
-    val patientAge: MutableLiveData<Int?>
-        get() = patientBuilder.get<Int?>(Patient::age)
+    val patientAge = MutableLiveData<Int?>(null)
 
     /**
      * Implicitly used in two-way Data Binding with PatientInfoFragment.
@@ -1770,27 +1769,9 @@ class PatientReadingViewModel @ViewModelInject constructor(
                     )
                 }
                 addSource(patientDob) {
-                    if (_isUsingDateOfBirth.value == false) {
-                        // The date of birth and age will use the same key for the error map.
-                        // Prefer errors that come from the age if using age.
-                        return@addSource
-                    }
                     testValueForValidityAndSetErrorMapAsync(
                         value = it,
                         propertyToCheck = Patient::dob,
-                        verifier = Patient.Companion,
-                        propertyForErrorMapKey = Patient::age
-                    )
-                }
-                addSource(patientAge) {
-                    if (_isUsingDateOfBirth.value == true) {
-                        // The date of birth and age will use the same key for the error map.
-                        // Prefer errors that come from the date of birth if using date of birth.
-                        return@addSource
-                    }
-                    testValueForValidityAndSetErrorMapAsync(
-                        value = it,
-                        propertyToCheck = Patient::age,
                         verifier = Patient.Companion
                     )
                 }

@@ -3,7 +3,6 @@ package com.cradle.neptune.di
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
-import androidx.room.Room
 import com.cradle.neptune.database.CradleDatabase
 import com.cradle.neptune.database.HealthFacilityDaoAccess
 import com.cradle.neptune.database.PatientDaoAccess

@@ -8,17 +8,20 @@ class ReadingTests {
     fun unmarshal_isTheInverseOf_marshal() {
         val unixTime: Long = 1595645893
         val reading = Reading(
-            "1234-abcd-5678-ef00", "5414842504", unixTime,
-            BloodPressure(110, 70, 65),
-            UrineTest("+", "++", "-", "-", "-"),
-            listOf("headache", "blurred vision", "pain"),
-            null,
-            null,
-            unixTime,
-            true,
-            listOf("1", "2", "3"),
-            ReadingMetadata(),
-            false
+            id = "1234-abcd-5678-ef00", "5414842504", unixTime,
+            bloodPressure = BloodPressure(110, 70, 65),
+            respiratoryRate = 50,
+            oxygenSaturation = 65,
+            temperature = 34,
+            urineTest = UrineTest("+", "++", "-", "-", "-"),
+            symptoms = listOf("headache", "blurred vision", "pain"),
+            referral = null,
+            followUp = null,
+            dateRecheckVitalsNeeded = unixTime,
+            isFlaggedForFollowUp = true,
+            previousReadingIds = listOf("1", "2", "3"),
+            metadata = ReadingMetadata(),
+            isUploadedToServer = false
         )
 
         val json = reading.marshal()

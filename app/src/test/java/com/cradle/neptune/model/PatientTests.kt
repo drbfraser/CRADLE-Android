@@ -55,17 +55,18 @@ class PatientTests {
     @Test
     fun unmarshal_isTheInverseOf_marshal() {
         val patient = Patient(
-            "5414842504",
-            "AB",
-            "1989-10-24",
-            null,
-            GestationalAgeWeeks(28),
-            Sex.FEMALE,
-            true,
-            null,
-            null,
-            emptyList(),
-            emptyList()
+            id = "5414842504",
+            name = "AB",
+            dob = "1989-10-24",
+            isExactDob = true,
+            gestationalAge = GestationalAgeWeeks(28),
+            sex = Sex.FEMALE,
+            isPregnant = true,
+            zone = "9945",
+            villageNumber = "2342",
+            householdNumber = "345345",
+            drugHistoryList = listOf("aab"),
+            medicalHistoryList = emptyList()
         )
 
         val json = patient.marshal()
@@ -95,7 +96,6 @@ class PatientTests {
             id = patientId,
             name = "AB",
             dob = null,
-            age = 32,
             sex = Sex.FEMALE,
             isPregnant = false
         )
@@ -139,11 +139,10 @@ class PatientTests {
             id = "3453455",
             name = "AB",
             dob = null,
-            age = null,
             sex = Sex.FEMALE,
             isPregnant = false
         )
-        // Since this patient doesn't have an age, we expect null / empty to be invalid.
+        // We expect null / empty date of birth to be invalid.
         assertValidityOverSet(
             BLANK_AND_NULL_STRINGS, Patient::dob,
             areAllValuesValid = false, patientInstance = patientWithoutAge
@@ -176,36 +175,6 @@ class PatientTests {
         assertValidityOverSet(
             good, Patient::dob, areAllValuesValid = true, patientInstance = patientWithoutAge
         )
-
-        val patientWithAge = Patient(
-            id = "3453455",
-            name = "AB",
-            dob = null,
-            age = 30,
-            sex = Sex.FEMALE,
-            isPregnant = false
-        )
-        // Since this patient has an age, we expect null / blank / empty to be valid.
-        assertValidityOverSet(
-            wrongFormat , Patient::dob,
-            areAllValuesValid = false, patientInstance = patientWithAge
-        )
-        assertValidityOverSet(
-            badAgeButGoodFormat , Patient::dob,
-            areAllValuesValid = false, patientInstance = patientWithAge
-        )
-        assertValidityOverSet(
-            good union BLANK_AND_NULL_STRINGS, Patient::dob,
-            areAllValuesValid = true, patientInstance = patientWithAge
-        )
-
-        // If we don't have any instance to compare it to, we assume it's bad.
-        assertThrows(IllegalArgumentException::class.java) {
-            assertValidityOverSet(
-                BLANK_AND_NULL_STRINGS, Patient::dob,
-                areAllValuesValid = false, patientInstance = null
-            )
-        }
     }
 
     @Test
@@ -217,94 +186,41 @@ class PatientTests {
         )
         val good = setOf("2004-05-22", "1995-04-08", "1995-05-01")
 
-        // If the patient already has some age, then all blank / null values are valid.
-        assertValidityOverSet(
-            BLANK_AND_NULL_STRINGS, Patient::dob,
-            areAllValuesValid = true, patientInstance = null,
-            dependentPropertiesMap = mapOf(Patient::age to 50)
-        )
-        verify(exactly = 0) { mockContext.getString(any()) }
-        verify(exactly = 0) { mockContext.getString(any(), *anyVararg()) }
-
         assertValidityOverSet(
             good, Patient::dob,
-            areAllValuesValid = true, patientInstance = null,
-            dependentPropertiesMap = mapOf(Patient::age to 50)
+            areAllValuesValid = true, patientInstance = null
         )
         verify(exactly = 0) { mockContext.getString(any()) }
         verify(exactly = 0) { mockContext.getString(any(), *anyVararg()) }
 
         assertValidityOverSet(
             wrong, Patient::dob,
-            areAllValuesValid = false, patientInstance = null,
-            dependentPropertiesMap = mapOf(Patient::age to 50)
+            areAllValuesValid = false, patientInstance = null
         )
         verify(exactly = wrong.size) { mockContext.getString(any(), *anyVararg()) }
     }
 
     @Test
-    fun verify_patientAge_withPatientInstance() {
-        val wrong = -100..14 union 66..100
-        val good = (15..65).toSet()
-
-        val patientWithoutDob = Patient(
-            id = "3453455",
-            name = "AB",
-            dob = null,
-            age = null,
-            sex = Sex.FEMALE,
-            isPregnant = false
-        )
-        // Since this patient doesn't have a dob, we expect null age to be invalid.
-        assertValidityOverSet(
-            wrong union setOf<Int?>(null), Patient::age,
-            areAllValuesValid = false, patientInstance = patientWithoutDob
-        )
-        assertValidityOverSet(
-            good, Patient::age,
-            areAllValuesValid = true, patientInstance = patientWithoutDob
-        )
-
-        val patientWithDob = Patient(
-            id = "3453455",
-            name = "AB",
-            dob = "1990-05-05",
-            age = null,
-            sex = Sex.FEMALE,
-            isPregnant = false
-        )
-        assertValidityOverSet(
-            wrong, Patient::age,
-            areAllValuesValid = false, patientInstance = patientWithDob
-        )
-        // Since this patient has dob, we expect null age to be valid.
-        assertValidityOverSet(
-            good union setOf<Int?>(null), Patient::age,
-            areAllValuesValid = true, patientInstance = patientWithDob
-        )
-    }
-
-    @Test
     fun verify_gestationalAgeWeeks_withPatientInstance() {
         val patientFemalePregnant = Patient(
-            id = "3453455", name = "TEST", dob = null,
-            age = null, sex = Sex.FEMALE, isPregnant = true
+            id = "3453455", name = "TEST", dob = "1989-10-10",
+            isExactDob = true, sex = Sex.FEMALE, isPregnant = true
         )
         val patientOtherPregnant = Patient(
-            id = "3453455", name = "TEST", dob = null,
-            age = null, sex = Sex.OTHER, isPregnant = true
+            id = "3453455", name = "TEST", dob = "1989-10-10",
+            isExactDob = true, sex = Sex.OTHER, isPregnant = true
         )
         val patientFemaleNotPregnant = Patient(
-            id = "3453455", name = "TEST", dob = null,
-            age = null, sex = Sex.FEMALE, isPregnant = false
+            id = "3453455", name = "TEST", dob = "1989-10-10",
+            isExactDob = true, sex = Sex.FEMALE, isPregnant = false
         )
         val patientOtherNotPregnant = Patient(
-            id = "3453455", name = "TEST", dob = null,
-            age = null, sex = Sex.OTHER, isPregnant = false
+            id = "3453455", name = "TEST", dob = "1989-10-10",
+            isExactDob = true, sex = Sex.OTHER, isPregnant = false
         )
         val patientMale = Patient(
-            id = "3453455", name = "TEST", dob = null,
-            age = null, sex = Sex.MALE, isPregnant = false
+            id = "3453455", name = "TEST", dob = "1989-10-10",
+            isExactDob = true, sex = Sex.MALE, isPregnant = false
         )
 
         // Testing missing gestational age and age of 0
