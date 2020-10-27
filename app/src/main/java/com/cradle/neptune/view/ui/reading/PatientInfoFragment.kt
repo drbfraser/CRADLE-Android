@@ -112,7 +112,7 @@ class PatientInfoFragment : Fragment() {
         }
         ageInputLayout.apply {
             setStartIconOnClickListener {
-                if (viewModel.isUsingDateOfBirth.value == true) {
+                if (viewModel.patientIsExactDob.value == true) {
                     // Clear icon is shown: handle clear icon actions
                     viewModel.setUsingDateOfBirth(useDateOfBirth = false)
                 } else {
@@ -125,7 +125,7 @@ class PatientInfoFragment : Fragment() {
         }
 
         viewModel.patientDob.observe(viewLifecycleOwner) {
-            if (viewModel.isUsingDateOfBirth.value == false) {
+            if (viewModel.patientIsExactDob.value != true) {
                 Log.d(TAG, "DEBUG: patientDob observe(): exiting since isUsingDateOfBirth false")
                 return@observe
             }

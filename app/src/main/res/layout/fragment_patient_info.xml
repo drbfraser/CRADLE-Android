@@ -201,7 +201,7 @@
                             app:startIconDrawable="@drawable/ic_baseline_calendar_today_24"
                             app:suffixText="@string/age_input_suffix_approximate_years_old"
                             bind:errorMessage='@{viewModel.errorMap["dob"]}'
-                            bind:isUsingDateOfBirth="@{viewModel.isUsingDateOfBirth}">
+                            bind:isUsingDateOfBirth="@{viewModel.patientIsExactDob}">
                             <!-- Note: The age and date of birth share the same error message map key,
                                  i.e., "age". -->
 

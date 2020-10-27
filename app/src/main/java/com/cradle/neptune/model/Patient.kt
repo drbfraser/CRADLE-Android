@@ -356,6 +356,7 @@ data class Patient(
          *
          * @throws ParseException if date is invalid, or not in the specified form.
          */
+        @JvmStatic
         fun calculateAgeFromDateString(dateString: String): Int = with(dateString) {
             if (dateString.length != DOB_FORMAT_SIMPLEDATETIME.length) {
                 throw ParseException("wrong format length", 0)

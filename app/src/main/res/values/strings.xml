@@ -451,6 +451,9 @@
     <string name="referral_dialog_explanation_text_new_patient">Sending a referral will save the new patient and reading to your device. If you send the referral via the web, the referral along with the patient and reading will all be uploaded to the server.</string>
     <string name="referral_dialog_explanation_text_new_reading">Sending a referral will save the reading to your device. If you send the referral via the web, the referral along with the reading will be uploaded to the server.</string>
     <string name="referral_dialog_select_health_centre">Select one of your health centres to send the referral to.</string>
+    <string name="patient_profile_age_label">Age</string>
+    <string name="patient_profile_age_about_n_years_old">About %1$d years old</string>
+    <string name="patient_profile_age_n_years_old">%1$d years old</string>
 
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>

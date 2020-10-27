@@ -40,6 +40,7 @@ import com.cradle.neptune.model.SymptomsState
 import com.cradle.neptune.model.UrineTest
 import com.cradle.neptune.model.Verifier
 import com.cradle.neptune.net.Success
+import com.cradle.neptune.utilitiles.DateUtil
 import com.cradle.neptune.utilitiles.LiveDataDynamicModelBuilder
 import com.cradle.neptune.utilitiles.Months
 import com.cradle.neptune.utilitiles.Weeks
@@ -303,10 +304,11 @@ class PatientReadingViewModel @ViewModelInject constructor(
                 patientIsPregnant.value = false
             }
 
-            _isUsingDateOfBirth.value = patientDob.value != null
-
             logTime("initializeLiveData") {
                 joinAll(
+                    viewModelScope.launch {
+                        setUpAgeLiveData()
+                    },
                     viewModelScope.launch {
                         logTime("setUpSymptomsLiveData") { setUpSymptomsLiveData() }
                     },
@@ -340,6 +342,22 @@ class PatientReadingViewModel @ViewModelInject constructor(
                         }
                     }
                 )
+            }
+        }
+
+        private fun setUpAgeLiveData() {
+            patientDob.apply {
+                addSource(patientAge) {
+                    // If we're using exact age, do not attempt to construct from approximate age
+                    // input
+                    if (it == null || _patientIsExactDob.value == true) return@addSource
+
+                    // Otherwise, make a date of birth that corresponds to the age entered.
+                    val newDateString = DateUtil.getDateStringFromAge(it.toLong())
+                    if (value != newDateString) {
+                        value = newDateString
+                    }
+                }
             }
         }
 
@@ -640,13 +658,10 @@ class PatientReadingViewModel @ViewModelInject constructor(
         get() = patientBuilder.get<String>(Patient::name)
 
     /** Used in two-way Data Binding with PatientInfoFragment */
-    val patientDob: MutableLiveData<String?>
-        get() = patientBuilder.get<String?>(Patient::dob)
+    val patientDob: MediatorLiveData<String?> = patientBuilder.get<String?>(Patient::dob)
 
     /**
      * Used in two-way Data Binding with PatientInfoFragment
-     * TODO: Remove age from the patient and don't pick this up from the builder.
-     *  We should be using isExactDob available in the API.
      */
     val patientAge = MutableLiveData<Int?>(null)
 
@@ -793,8 +808,9 @@ class PatientReadingViewModel @ViewModelInject constructor(
      * If the value inside is false, they can add an approximate age, or overwrite that with a
      * date of birth via a date picker.
      */
-    private val _isUsingDateOfBirth = MutableLiveData<Boolean>()
-    val isUsingDateOfBirth: LiveData<Boolean> = _isUsingDateOfBirth
+    private val _patientIsExactDob: MediatorLiveData<Boolean?> =
+        patientBuilder.get(Patient::isExactDob, defaultValue = false)
+    val patientIsExactDob: LiveData<Boolean?> = _patientIsExactDob
 
     /**
      * Sets the new age input state. If called with [useDateOfBirth] false, then the date of birth
@@ -804,11 +820,11 @@ class PatientReadingViewModel @ViewModelInject constructor(
     fun setUsingDateOfBirth(useDateOfBirth: Boolean) {
         if (!useDateOfBirth) {
             // Lint is acting like patientDob's data type is is non-null, but it is nullable.
-            // TODO: Do not clear out date of birth and just use today when we implement isExactDob
             @SuppressLint("NullSafeMutableLiveData")
             patientDob.value = null
+            patientAge.value = null
         }
-        _isUsingDateOfBirth.value = useDateOfBirth
+        _patientIsExactDob.value = useDateOfBirth
     }
 
     private val isPatientValid = MediatorLiveData<Boolean>()
@@ -1525,9 +1541,9 @@ class PatientReadingViewModel @ViewModelInject constructor(
     val currentValidPatientAndRetestGroup: LiveData<Pair<Reading, RetestGroup>?>
         get() = adviceManager.currentValidReadingAndRetestGroup
 
-    val adviceRecheckButtonId = MutableLiveData<Int>()
-    val adviceFollowUpButtonId = MutableLiveData<Int>()
-    val adviceReferralButtonId = MutableLiveData<Int>()
+    val adviceRecheckButtonId = MutableLiveData<Int?>()
+    val adviceFollowUpButtonId = MutableLiveData<Int?>()
+    val adviceReferralButtonId = MutableLiveData<Int?>()
 
     fun isSendingReferral() = adviceReferralButtonId.value == R.id.send_referral_radio_button
 
