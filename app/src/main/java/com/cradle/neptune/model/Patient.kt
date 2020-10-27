@@ -23,6 +23,8 @@ import com.cradle.neptune.utilitiles.Months
 import com.cradle.neptune.utilitiles.Seconds
 import com.cradle.neptune.utilitiles.UnixTimestamp
 import com.cradle.neptune.utilitiles.Weeks
+import org.json.JSONException
+import org.json.JSONObject
 import java.io.Serializable
 import java.lang.IllegalArgumentException
 import java.text.ParseException
@@ -32,8 +34,6 @@ import java.util.Locale
 import java.util.TimeZone
 import kotlin.math.round
 import kotlin.reflect.KProperty
-import org.json.JSONException
-import org.json.JSONObject
 
 // TODO: Figure out which of these fields must be optional and which are never
 //  used at all.
@@ -63,7 +63,8 @@ import org.json.JSONObject
 @Entity
 data class Patient(
     @PrimaryKey
-    @ColumnInfo var id: String = "",
+    @ColumnInfo
+    var id: String = "",
     @ColumnInfo var name: String = "",
     @ColumnInfo var dob: String? = null,
     @ColumnInfo var age: Int? = null,
@@ -204,9 +205,9 @@ data class Patient(
             Patient::dob -> with(value as String?) {
                 if (this == null || isBlank()) {
                     val dependentProperties = setupDependentPropertiesMap(
-                            instance,
-                            currentValues,
-                            Patient::age
+                        instance,
+                        currentValues,
+                        Patient::age
                     )
 
                     // If both age and dob are missing, it's invalid.
@@ -221,7 +222,8 @@ data class Patient(
                     calculateAgeFromDateString(this)
                 } catch (e: ParseException) {
                     return@with Pair(
-                        false, context.getString(
+                        false,
+                        context.getString(
                             R.string.patient_error_dob_format,
                             DOB_FORMAT_SIMPLEDATETIME
                         )
@@ -278,11 +280,12 @@ data class Patient(
                 val dependentProperties = setupDependentPropertiesMap(
                     instance,
                     currentValues,
-                    Patient::sex, Patient::isPregnant
+                    Patient::sex,
+                    Patient::isPregnant
                 )
                 if (dependentProperties[Patient::sex.name] == Sex.MALE ||
-                    dependentProperties[Patient::isPregnant.name] == false) {
-
+                    dependentProperties[Patient::isPregnant.name] == false
+                ) {
                     return if (this == null) {
                         Pair(true, "")
                     } else {
@@ -292,7 +295,8 @@ data class Patient(
                 }
                 if (this == null) {
                     return Pair(
-                        false, context.getString(R.string.patient_error_gestational_age_missing)
+                        false,
+                        context.getString(R.string.patient_error_gestational_age_missing)
                     )
                 }
                 // to see where the logic is derived from, run
@@ -339,13 +343,15 @@ data class Patient(
                 // TODO: make village number an Int, not a String
                 if (this.isNullOrBlank()) {
                     return Pair(
-                        false, context.getString(R.string.patient_error_village_number_missing)
+                        false,
+                        context.getString(R.string.patient_error_village_number_missing)
                     )
                 }
 
                 if (!isDigitsOnly()) {
                     return Pair(
-                        false, context.getString(R.string.patient_error_village_number_not_number)
+                        false,
+                        context.getString(R.string.patient_error_village_number_not_number)
                     )
                 }
 

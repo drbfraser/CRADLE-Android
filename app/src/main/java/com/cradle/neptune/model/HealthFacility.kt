@@ -6,8 +6,8 @@ import androidx.room.PrimaryKey
 import com.cradle.neptune.ext.Field
 import com.cradle.neptune.ext.put
 import com.cradle.neptune.ext.stringField
-import java.util.UUID
 import org.json.JSONObject
+import java.util.UUID
 
 /**
  * A health facility database entity.

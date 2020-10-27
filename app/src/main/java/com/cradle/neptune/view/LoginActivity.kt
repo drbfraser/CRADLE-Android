@@ -23,12 +23,12 @@ import com.google.android.gms.common.GooglePlayServicesRepairableException
 import com.google.android.gms.security.ProviderInstaller
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
-import javax.net.ssl.SSLHandshakeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.net.ssl.SSLHandshakeException
 
 @AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
@@ -123,7 +123,8 @@ class LoginActivity : AppCompatActivity() {
             ProviderInstaller.installIfNeeded(this@LoginActivity)
         } catch (e: GooglePlayServicesRepairableException) {
             GoogleApiAvailability.getInstance().showErrorNotification(
-                this@LoginActivity, e.connectionStatusCode
+                this@LoginActivity,
+                e.connectionStatusCode
             )
         } catch (e: GooglePlayServicesNotAvailableException) {
             MaterialAlertDialogBuilder(this@LoginActivity)

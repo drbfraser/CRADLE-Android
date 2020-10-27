@@ -52,19 +52,22 @@ class IntroActivity : AppCompatActivity(), MyIntroFragmentInteractionListener {
         mPager = findViewById(R.id.view_pager)
         mPager.apply {
             adapter = mPagerAdapter
-            addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
-                override fun onPageSelected(i: Int) {
-                    callOnMyBeingHiddenForCurrentTab()
-                    val nextFragment = mPagerAdapter!!.getItem(i) as IntroBaseFragment
-                    nextFragment.onMyBeingDisplayed()
-                    lastKnownTab = i
-                }
+            addOnPageChangeListener(
+                object : ViewPager.OnPageChangeListener {
+                    override fun onPageSelected(i: Int) {
+                        callOnMyBeingHiddenForCurrentTab()
+                        val nextFragment = mPagerAdapter!!.getItem(i) as IntroBaseFragment
+                        nextFragment.onMyBeingDisplayed()
+                        lastKnownTab = i
+                    }
 
-                @SuppressWarnings("EmptyFunctionBlock")
-                override fun onPageScrollStateChanged(i: Int) {}
-                @SuppressWarnings("EmptyFunctionBlock")
-                override fun onPageScrolled(i: Int, v: Float, i1: Int) {}
-            })
+                    @SuppressWarnings("EmptyFunctionBlock")
+                    override fun onPageScrollStateChanged(i: Int) {}
+
+                    @SuppressWarnings("EmptyFunctionBlock")
+                    override fun onPageScrolled(i: Int, v: Float, i1: Int) {}
+                }
+            )
             // set tab to start on
             // jump through other tabs to ensure change listener is called on first display.
             currentItem = mPagerAdapter!!.count
@@ -86,25 +89,28 @@ class IntroActivity : AppCompatActivity(), MyIntroFragmentInteractionListener {
      */
     private fun setupBottomBar() {
         // Attach the page change listener to update when tab switches page
-        mPager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
-            // This method will be invoked when a new page becomes selected.
-            override fun onPageSelected(position: Int) {
-                updateBottomBar()
+        mPager.addOnPageChangeListener(
+            object : ViewPager.OnPageChangeListener {
+
+// This method will be invoked when a new page becomes selected.
+                override fun onPageSelected(position: Int) {
+                    updateBottomBar()
+                }
+
+// This method will be invoked when the current page is scrolled
+                @SuppressWarnings("EmptyFunctionBlock")
+                override fun onPageScrolled(
+                    position: Int,
+                    positionOffset: Float,
+                    positionOffsetPixels: Int
+                ) {}
+
+// Called when the scroll state changes:
+// SCROLL_STATE_IDLE, SCROLL_STATE_DRAGGING, SCROLL_STATE_SETTLING
+                @SuppressWarnings("EmptyFunctionBlock")
+                override fun onPageScrollStateChanged(state: Int) {}
             }
-
-            // This method will be invoked when the current page is scrolled
-            @SuppressWarnings("EmptyFunctionBlock")
-            override fun onPageScrolled(
-                position: Int,
-                positionOffset: Float,
-                positionOffsetPixels: Int
-            ) {}
-
-            // Called when the scroll state changes:
-            // SCROLL_STATE_IDLE, SCROLL_STATE_DRAGGING, SCROLL_STATE_SETTLING
-            @SuppressWarnings("EmptyFunctionBlock")
-            override fun onPageScrollStateChanged(state: Int) {}
-        })
+        )
 
         // Clicks
         findViewById<View>(R.id.ivPrevious).setOnClickListener { onClickPrevious() }

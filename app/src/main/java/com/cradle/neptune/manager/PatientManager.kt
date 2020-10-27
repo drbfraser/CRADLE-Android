@@ -9,11 +9,11 @@ import com.cradle.neptune.model.Reading
 import com.cradle.neptune.net.NetworkResult
 import com.cradle.neptune.net.RestApi
 import com.cradle.neptune.net.Success
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.withContext
 import java.lang.IllegalArgumentException
 import java.util.ArrayList
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.withContext
 
 /**
  * Manager to interact with the [Patient] table in the database.

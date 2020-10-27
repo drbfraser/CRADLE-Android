@@ -5,10 +5,10 @@ import com.cradle.neptune.R
 import com.cradle.neptune.ext.Field
 import com.cradle.neptune.ext.put
 import com.cradle.neptune.ext.stringField
-import java.io.Serializable
-import kotlin.reflect.KProperty
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.Serializable
+import kotlin.reflect.KProperty
 
 /**
  * Holds information about a urine test.

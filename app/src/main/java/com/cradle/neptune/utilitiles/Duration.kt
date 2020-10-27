@@ -4,6 +4,7 @@ private const val SECONDS_PER_MINUTE = 60
 private const val MINUTES_PER_HOUR = 60
 private const val HOURS_PER_DAY = 24
 private const val DAYS_PER_WEEK = 7
+
 private const val DAYS_PER_MONTH = 30 // on average
 
 private const val SECONDS_PER_WEEK =

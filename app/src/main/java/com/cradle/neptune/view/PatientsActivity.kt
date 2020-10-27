@@ -22,13 +22,13 @@ import com.cradle.neptune.model.Reading
 import com.cradle.neptune.viewmodel.PatientsViewAdapter
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.ArrayList
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.ArrayList
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class PatientsActivity : AppCompatActivity() {
@@ -88,20 +88,22 @@ class PatientsActivity : AppCompatActivity() {
         searchView.maxWidth = Int.MAX_VALUE
 
         // listening to search query text change
-        searchView.setOnQueryTextListener(object :
+        searchView.setOnQueryTextListener(
+            object :
                 SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String): Boolean {
-                    // filter recycler view when query submitted
+// filter recycler view when query submitted
                     patientsViewAdapter.filter.filter(query)
                     return false
                 }
 
                 override fun onQueryTextChange(query: String): Boolean {
-                    // filter recycler view when text is changed
+// filter recycler view when text is changed
                     patientsViewAdapter.filter.filter(query)
                     return false
                 }
-            })
+            }
+        )
         return true
     }
 

@@ -21,11 +21,11 @@ import com.cradle.neptune.view.IntroActivity
 import com.cradle.neptune.view.LoginActivity
 import com.cradle.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class SettingsActivity : AppCompatActivity() {
@@ -193,10 +193,11 @@ class AdvancedSettingsFragment : PreferenceFragmentCompat() {
 
         findPreference(R.string.key_server_port)
             ?.useDynamicSummary { v ->
-                if (v.isNullOrEmpty())
+                if (v.isNullOrEmpty()) {
                     getString(R.string.default_settings)
-                else
+                } else {
                     v
+                }
             }
             ?.withValidator(::validatePort)
     }

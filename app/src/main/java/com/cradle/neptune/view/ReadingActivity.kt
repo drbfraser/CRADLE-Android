@@ -94,7 +94,8 @@ class ReadingActivity : AppCompatActivity() {
             val backButton = bottomNavBar?.getViewById(R.id.reading_back_button) as? Button
             backButton?.visibility =
                 if (destination.id != getStartDestinationId() &&
-                        destination.id != R.id.loadingFragment) {
+                    destination.id != R.id.loadingFragment
+                ) {
                     View.VISIBLE
                 } else {
                     View.INVISIBLE
@@ -193,7 +194,8 @@ class ReadingActivity : AppCompatActivity() {
         val title = when (reasonForLaunch) {
             LaunchReason.LAUNCH_REASON_NEW -> {
                 if (currentDestination == R.id.patientInfoFragment ||
-                        currentDestination == R.id.loadingFragment) {
+                    currentDestination == R.id.loadingFragment
+                ) {
                     getString(R.string.reading_activity_title_new_patient)
                 } else {
                     getString(R.string.reading_activity_title_create_new_reading)
@@ -233,7 +235,8 @@ class ReadingActivity : AppCompatActivity() {
                     check(patient != null)
 
                     PatientIdConflictDialogFragment.makeInstance(
-                        isPatientLocal = true, patient = patient
+                        isPatientLocal = true,
+                        patient = patient
                     ).show(supportFragmentManager, PATIENT_ID_IN_USE_DIALOG_FRAGMENT_TAG)
                 }
                 ReadingFlowError.ERROR_PATIENT_ID_IN_USE_ON_SERVER -> {
@@ -241,7 +244,8 @@ class ReadingActivity : AppCompatActivity() {
                     check(patient != null)
 
                     PatientIdConflictDialogFragment.makeInstance(
-                        isPatientLocal = false, patient = patient
+                        isPatientLocal = false,
+                        patient = patient
                     ).show(supportFragmentManager, PATIENT_ID_IN_USE_DIALOG_FRAGMENT_TAG)
                 }
                 ReadingFlowError.ERROR_INVALID_FIELDS -> {

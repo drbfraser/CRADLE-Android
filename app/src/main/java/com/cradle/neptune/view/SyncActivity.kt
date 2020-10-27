@@ -12,9 +12,9 @@ import com.cradle.neptune.sync.SyncStepperCallback
 import com.cradle.neptune.sync.SyncStepperImplementation
 import com.cradle.neptune.sync.TotalRequestStatus
 import dagger.hilt.android.AndroidEntryPoint
-import kotlin.math.roundToInt
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 @AndroidEntryPoint
 class SyncActivity :
@@ -52,7 +52,6 @@ class SyncActivity :
             syncText.text = getString(R.string.sync_activity_sync_progress_text)
             progressBar.visibility = View.VISIBLE
             MainScope().launch {
-
                 SyncStepperImplementation(
                     this@SyncActivity,
                     this@SyncActivity

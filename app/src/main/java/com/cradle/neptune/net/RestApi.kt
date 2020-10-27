@@ -11,11 +11,11 @@ import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.PatientAndReadings
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.SyncUpdate
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
+import javax.inject.Inject
 
 /**
  * Provides type-safe methods for interacting with the CRADLE server API.

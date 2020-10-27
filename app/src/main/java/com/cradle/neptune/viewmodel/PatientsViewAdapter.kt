@@ -74,8 +74,8 @@ class PatientsViewAdapter(
                     for (pair in patientList) {
                         if (pair.first.id.contains(charString) ||
                             pair.first.name.toLowerCase(Locale.ROOT).contains(
-                                    charString.toLowerCase(Locale.ROOT)
-                                )
+                                charString.toLowerCase(Locale.ROOT)
+                            )
                         ) {
                             filteredList.add(pair)
                         }

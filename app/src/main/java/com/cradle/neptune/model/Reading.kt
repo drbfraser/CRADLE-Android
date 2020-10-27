@@ -20,13 +20,13 @@ import com.cradle.neptune.ext.put
 import com.cradle.neptune.ext.putStringArray
 import com.cradle.neptune.ext.stringField
 import com.cradle.neptune.ext.union
-import java.io.Serializable
-import java.util.UUID
-import kotlin.reflect.KProperty
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import org.threeten.bp.ZonedDateTime
+import java.io.Serializable
+import java.util.UUID
+import kotlin.reflect.KProperty
 
 const val RED_SYSTOLIC = 160
 const val RED_DIASTOLIC = 110
@@ -68,7 +68,8 @@ private const val SECONDS_IN_MIN = 60
 @Entity
 data class Reading(
     @PrimaryKey
-    @ColumnInfo(name = "readingId") var id: String = UUID.randomUUID().toString(),
+    @ColumnInfo(name = "readingId")
+    var id: String = UUID.randomUUID().toString(),
     @ColumnInfo var patientId: String,
     @ColumnInfo var dateTimeTaken: Long,
     @ColumnInfo var bloodPressure: BloodPressure,
@@ -299,17 +300,20 @@ data class BloodPressure(
                 when (property) {
                     BloodPressure::systolic -> {
                         return@with Pair(
-                            false, context.getString(R.string.blood_pressure_error_missing_systolic)
+                            false,
+                            context.getString(R.string.blood_pressure_error_missing_systolic)
                         )
                     }
                     BloodPressure::diastolic -> {
                         return@with Pair(
-                            false, context.getString(R.string.blood_pressure_error_missing_diastolic)
+                            false,
+                            context.getString(R.string.blood_pressure_error_missing_diastolic)
                         )
                     }
                     BloodPressure::heartRate -> {
                         return@with Pair(
-                            false, context.getString(R.string.blood_pressure_error_missing_heart_rate)
+                            false,
+                            context.getString(R.string.blood_pressure_error_missing_heart_rate)
                         )
                     }
                     else -> return Pair(true, "")
@@ -317,15 +321,18 @@ data class BloodPressure(
             }
             val (lowerBound, upperBound, @StringRes resId) = when (property) {
                 BloodPressure::systolic -> Triple(
-                    MIN_SYSTOLIC, MAX_SYSTOLIC,
+                    MIN_SYSTOLIC,
+                    MAX_SYSTOLIC,
                     R.string.blood_pressure_error_systolic_out_of_bounds
                 )
                 BloodPressure::diastolic -> Triple(
-                    MIN_DIASTOLIC, MAX_DIASTOLIC,
+                    MIN_DIASTOLIC,
+                    MAX_DIASTOLIC,
                     R.string.blood_pressure_error_diastolic_out_of_bounds
                 )
                 BloodPressure::heartRate -> Triple(
-                    MIN_HEART_RATE, MAX_HEART_RATE,
+                    MIN_HEART_RATE,
+                    MAX_HEART_RATE,
                     R.string.blood_pressure_error_heart_rate_out_of_bounds
                 )
                 // not a verifiable property; true by default.
