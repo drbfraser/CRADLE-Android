@@ -2,7 +2,6 @@ package com.cradle.neptune.model
 
 import android.content.Context
 import androidx.lifecycle.LiveData
-import java.lang.IllegalArgumentException
 import java.lang.reflect.InvocationTargetException
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.IllegalCallableAccessException

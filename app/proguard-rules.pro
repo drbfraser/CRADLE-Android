@@ -12,10 +12,23 @@
 #   public *;
 #}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# https://stackoverflow.com/a/39388953
+# -dontobfuscate
+# -optimizations !code/allocation/variable
+
+# Preserve the line number information for debugging stack traces.
+-keepattributes SourceFile,LineNumberTable
 
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-printusage usage.txt
+
+#-keep class com.cradle.neptune.** { *; }
+#-keepclassmembers class com.cradle.neptune.** { *; }
+
+-keep class kotlin.Metadata { *; }
+-keepclassmembers class kotlin.Metadata { *; }
+-keep @kotlin.Metadata class *
+-keepclasseswithmembers @kotlin.Metadata class * { *; }

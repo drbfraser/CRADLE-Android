@@ -5,7 +5,6 @@ import androidx.annotation.UiThread
 import androidx.annotation.WorkerThread
 import androidx.collection.arrayMapOf
 import androidx.lifecycle.MediatorLiveData
-import java.lang.IllegalArgumentException
 import java.lang.reflect.InvocationTargetException
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
