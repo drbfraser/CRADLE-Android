@@ -15,7 +15,7 @@ import com.cradle.neptune.model.Reading
 @Database(
     entities = [Reading::class, Patient::class, HealthFacility::class],
     version = 1,
-    exportSchema = false
+    exportSchema = true
 )
 @TypeConverters(DatabaseTypeConverters::class)
 abstract class CradleDatabase : RoomDatabase() {

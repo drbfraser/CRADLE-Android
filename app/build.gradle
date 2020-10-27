@@ -46,6 +46,13 @@ android {
         renderscriptSupportModeEnabled true
 
         signingConfig signingConfigs.release
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                // Export the Room database schema for use in testing
+                arguments += ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
+        }
     }
     buildTypes {
         release {
