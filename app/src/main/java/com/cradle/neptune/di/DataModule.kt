@@ -26,25 +26,19 @@ import javax.inject.Singleton
 class DataModule {
     @Provides
     @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): CradleDatabase {
-        return Room.databaseBuilder(
-            context,
-            CradleDatabase::class.java,
-            "room-readingDB"
-        ).build()
-    }
+    fun provideDatabase(@ApplicationContext context: Context) = CradleDatabase.getInstance(context)
 
     @Provides
     fun providePatientDao(database: CradleDatabase): PatientDaoAccess =
-        database.patientDaoAccess()
+        database.patientDao()
 
     @Provides
     fun provideReadingDao(database: CradleDatabase): ReadingDaoAccess =
-        database.readingDaoAccess()
+        database.readingDao()
 
     @Provides
     fun provideHealthFacilityDao(database: CradleDatabase): HealthFacilityDaoAccess =
-        database.healthFacilityDaoAccess()
+        database.healthFacility()
 
     @Provides
     @Singleton
