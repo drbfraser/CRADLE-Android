@@ -91,13 +91,12 @@ class IntroActivity : AppCompatActivity(), MyIntroFragmentInteractionListener {
         // Attach the page change listener to update when tab switches page
         mPager.addOnPageChangeListener(
             object : ViewPager.OnPageChangeListener {
-
-// This method will be invoked when a new page becomes selected.
+                // This method will be invoked when a new page becomes selected.
                 override fun onPageSelected(position: Int) {
                     updateBottomBar()
                 }
 
-// This method will be invoked when the current page is scrolled
+                // This method will be invoked when the current page is scrolled
                 @SuppressWarnings("EmptyFunctionBlock")
                 override fun onPageScrolled(
                     position: Int,
@@ -105,8 +104,8 @@ class IntroActivity : AppCompatActivity(), MyIntroFragmentInteractionListener {
                     positionOffsetPixels: Int
                 ) {}
 
-// Called when the scroll state changes:
-// SCROLL_STATE_IDLE, SCROLL_STATE_DRAGGING, SCROLL_STATE_SETTLING
+                // Called when the scroll state changes:
+                // SCROLL_STATE_IDLE, SCROLL_STATE_DRAGGING, SCROLL_STATE_SETTLING
                 @SuppressWarnings("EmptyFunctionBlock")
                 override fun onPageScrollStateChanged(state: Int) {}
             }

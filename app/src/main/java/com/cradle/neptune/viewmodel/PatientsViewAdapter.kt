@@ -69,15 +69,15 @@ class PatientsViewAdapter(
                 filteredList = if (charString.isEmpty()) {
                     patientList
                 } else {
-                    val filteredList: MutableList<Pair<Patient, Reading?>> =
-                        ArrayList()
-                    for (pair in patientList) {
-                        if (pair.first.id.contains(charString) ||
-                            pair.first.name.toLowerCase(Locale.ROOT).contains(
+                    val filteredList: MutableList<Pair<Patient, Reading?>> = ArrayList()
+                    for ((patient, reading) in patientList) {
+                        val isMatch = patient.id.contains(charString) ||
+                            patient.name.toLowerCase(Locale.ROOT).contains(
                                 charString.toLowerCase(Locale.ROOT)
                             )
-                        ) {
-                            filteredList.add(pair)
+
+                        if (isMatch) {
+                            filteredList.add(patient to reading)
                         }
                     }
                     filteredList

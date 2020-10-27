@@ -33,7 +33,7 @@ class MyApp : MultiDexApplication() {
                     activity: Activity,
                     savedInstanceState: Bundle?
                 ) {
-// new activity created; force its orientation to portrait
+                    // new activity created; force its orientation to portrait
                     activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
                 }
 

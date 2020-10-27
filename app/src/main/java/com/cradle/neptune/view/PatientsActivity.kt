@@ -63,7 +63,7 @@ class PatientsActivity : AppCompatActivity() {
     private fun setupGlobalPatientSearchButton() {
         val globalSearchButton =
             findViewById<ExtendedFloatingActionButton>(R.id.globalPatientSearch)
-        globalSearchButton.setOnClickListener { v: View? ->
+        globalSearchButton.setOnClickListener {
             startActivity(
                 Intent(
                     this@PatientsActivity,
@@ -92,13 +92,13 @@ class PatientsActivity : AppCompatActivity() {
             object :
                 SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String): Boolean {
-// filter recycler view when query submitted
+                    // filter recycler view when query submitted
                     patientsViewAdapter.filter.filter(query)
                     return false
                 }
 
                 override fun onQueryTextChange(query: String): Boolean {
-// filter recycler view when text is changed
+                    // filter recycler view when text is changed
                     patientsViewAdapter.filter.filter(query)
                     return false
                 }

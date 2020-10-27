@@ -150,10 +150,8 @@ class PermissionsFragment : IntroBaseFragment() {
         @JvmStatic
         fun areAllPermissionsGranted(context: Context): Boolean {
             for (permission in requiredPermissions) {
-                if (ContextCompat.checkSelfPermission(
-                    context,
-                    permission
-                ) != PackageManager.PERMISSION_GRANTED
+                if (ContextCompat.checkSelfPermission(context, permission) !=
+                    PackageManager.PERMISSION_GRANTED
                 ) {
                     return false
                 }
