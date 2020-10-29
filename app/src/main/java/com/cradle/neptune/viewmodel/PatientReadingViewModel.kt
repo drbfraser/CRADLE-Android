@@ -45,6 +45,7 @@ import com.cradle.neptune.utilitiles.LiveDataDynamicModelBuilder
 import com.cradle.neptune.utilitiles.Months
 import com.cradle.neptune.utilitiles.Weeks
 import com.cradle.neptune.view.ReadingActivity
+import com.cradle.neptune.viewmodel.PatientReadingViewModel.LiveDataInitializationManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -56,7 +57,6 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import org.threeten.bp.ZonedDateTime
-import java.lang.IllegalArgumentException
 import java.lang.reflect.InvocationTargetException
 import java.text.DecimalFormat
 import java.util.Locale
@@ -700,6 +700,10 @@ class PatientReadingViewModel @ViewModelInject constructor(
         get() = patientBuilder.get<String?>(Patient::zone)
 
     /** Used in two-way Data Binding with PatientInfoFragment */
+    val patientHouseholdNumber: MutableLiveData<String?>
+        get() = patientBuilder.get<String?>(Patient::householdNumber)
+
+    /** Used in two-way Data Binding with PatientInfoFragment */
     val patientVillageNumber: MutableLiveData<String?>
         get() = patientBuilder.get<String?>(Patient::villageNumber)
 
@@ -765,6 +769,16 @@ class PatientReadingViewModel @ViewModelInject constructor(
     val bloodPressureDiastolicInput = MutableLiveData<Int?>()
     /** Used in two-way Data Binding with VitalSignsFragment */
     val bloodPressureHeartRateInput = MutableLiveData<Int?>()
+
+    /** Used in two-way Data Binding with VitalSignsFragment */
+    val respiratoryRate: MutableLiveData<Int?> =
+        readingBuilder.get<Int?>(Reading::respiratoryRate)
+    /** Used in two-way Data Binding with VitalSignsFragment */
+    val oxygenSaturation: MutableLiveData<Int?> =
+        readingBuilder.get<Int?>(Reading::oxygenSaturation)
+    /** Used in two-way Data Binding with VitalSignsFragment */
+    val temperature: MutableLiveData<Int?> =
+        readingBuilder.get<Int?>(Reading::temperature)
 
     /**
      * Implicitly in two-way Data Binding with VitalSignsFragment
@@ -1020,8 +1034,15 @@ class PatientReadingViewModel @ViewModelInject constructor(
                     vitalSignsFragmentVerifyJob?.cancel()
 
                     // Clear out any sources to be safe.
-                    arrayOf(isPatientValid, bloodPressure, isUsingUrineTest, urineTest)
-                        .forEach { isNextButtonEnabled.removeSource(it) }
+                    arrayOf(
+                        isPatientValid,
+                        bloodPressure,
+                        respiratoryRate,
+                        oxygenSaturation,
+                        temperature,
+                        isUsingUrineTest,
+                        urineTest
+                    ).forEach { isNextButtonEnabled.removeSource(it) }
 
                     isNextButtonEnabled.apply {
                         when (currentDestinationId) {
@@ -1049,10 +1070,14 @@ class PatientReadingViewModel @ViewModelInject constructor(
                                     TAG,
                                     "next button uses vitalSignsFragment criteria: " +
                                         "valid BloodPressure, " +
+                                        "valid respiratoryRate, oxygenSaturation, temperature, " +
                                         "and valid urine test if using urine test"
                                 )
                                 launchVitalSignsFragmentVerifyJob()
                                 addSource(bloodPressure) { launchVitalSignsFragmentVerifyJob() }
+                                addSource(respiratoryRate) { launchVitalSignsFragmentVerifyJob() }
+                                addSource(oxygenSaturation) { launchVitalSignsFragmentVerifyJob() }
+                                addSource(temperature) { launchVitalSignsFragmentVerifyJob() }
                                 addSource(isUsingUrineTest) { launchVitalSignsFragmentVerifyJob() }
                                 addSource(urineTest) { launchVitalSignsFragmentVerifyJob() }
                             }
@@ -1091,7 +1116,19 @@ class PatientReadingViewModel @ViewModelInject constructor(
         private suspend fun verifyVitalSignsFragment(): Boolean = withContext(Dispatchers.Default) {
             val bloodPressureValid = bloodPressure.value?.isValidInstance(app) ?: false
             if (!bloodPressureValid) return@withContext false
+            yield()
 
+            val extraVitalSignsMap = arrayMapOf(
+                Reading::respiratoryRate to respiratoryRate,
+                Reading::oxygenSaturation to oxygenSaturation,
+                Reading::temperature to temperature
+            )
+            for ((property, liveData) in extraVitalSignsMap) {
+                val (isValid, _) = Reading.isValueValid(property, liveData.value, app)
+                if (!isValid) {
+                    return@withContext false
+                }
+            }
             yield()
 
             return@withContext if (isUsingUrineTest.value != false) {
@@ -1826,6 +1863,27 @@ class PatientReadingViewModel @ViewModelInject constructor(
                         value = it,
                         propertyToCheck = BloodPressure::heartRate,
                         verifier = BloodPressure.Companion
+                    )
+                }
+                addSource(respiratoryRate) {
+                    testValueForValidityAndSetErrorMapAsync(
+                        value = it,
+                        propertyToCheck = Reading::respiratoryRate,
+                        verifier = Reading.Companion
+                    )
+                }
+                addSource(oxygenSaturation) {
+                    testValueForValidityAndSetErrorMapAsync(
+                        value = it,
+                        propertyToCheck = Reading::oxygenSaturation,
+                        verifier = Reading.Companion
+                    )
+                }
+                addSource(temperature) {
+                    testValueForValidityAndSetErrorMapAsync(
+                        value = it,
+                        propertyToCheck = Reading::temperature,
+                        verifier = Reading.Companion
                     )
                 }
 

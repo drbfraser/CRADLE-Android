@@ -347,6 +347,7 @@
     <string name="field_required">*Required</string>
     <string name="fragment_patient_info_age_label">Age*</string>
     <string name="fragment_patient_info_village_number_label">Village number*</string>
+    <string name="fragment_patient_info_household_number_label">Household number</string>
     <string name="fragment_patient_info_gender_label">Gender*</string>
     <string name="fragment_patient_info_pregnant_checkbox_label">Pregnant</string>
     <string name="fragment_patient_info_gestational_age_units_label">Gestational age units</string>
