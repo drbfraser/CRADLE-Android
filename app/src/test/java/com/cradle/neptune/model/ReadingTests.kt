@@ -1,22 +1,49 @@
 package com.cradle.neptune.model
 
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
+import java.util.UUID
 
 class ReadingTests {
     @Test
     fun unmarshal_isTheInverseOf_marshal() {
         val unixTime: Long = 1595645893
+        val patientId = "5414842504"
+        val readingId = UUID.randomUUID().toString()
+        val referralForReading = Referral(
+            comment = "This is a comment",
+            healthFacilityName = "H2230",
+            dateReferred = 1595645675L,
+            patientId = patientId,
+            readingId = readingId,
+            id = 345,
+            userId = 2,
+            isAssessed = true
+        )
+        val assessmentForReading = Assessment(
+            id = 4535,
+            dateAssessed = 1595745946L,
+            healthCareWorkerId = 2,
+            readingId = readingId,
+            diagnosis = "This is a detailed diagnosis.",
+            treatment = "This is a treatment",
+            medicationPrescribed = "These are medications prescripted.",
+            specialInvestigations = "This is a special investiation",
+            followupNeeded = true, followupInstructions = "These are things to do"
+        )
+
         val reading = Reading(
-            id = "1234-abcd-5678-ef00", "5414842504", unixTime,
+            id = readingId,
+            patientId = patientId,
+            dateTimeTaken = unixTime,
             bloodPressure = BloodPressure(110, 70, 65),
-            respiratoryRate = 50,
-            oxygenSaturation = 65,
+            respiratoryRate = 40,
+            oxygenSaturation = 85,
             temperature = 34,
-            urineTest = UrineTest("+", "++", "-", "-", "-"),
+            urineTest = UrineTest("+", "++", "-", "NAD", "NAD"),
             symptoms = listOf("headache", "blurred vision", "pain"),
-            referral = null,
-            followUp = null,
+            referral = referralForReading,
+            followUp = assessmentForReading,
             dateRecheckVitalsNeeded = unixTime,
             isFlaggedForFollowUp = true,
             previousReadingIds = listOf("1", "2", "3"),
