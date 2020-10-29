@@ -2,7 +2,6 @@ package com.cradle.neptune.view
 
 import android.app.AlertDialog
 import android.app.ProgressDialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -129,9 +128,10 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
 
         // get patient set so we can compare for our patients
 
-        globalPatientList.forEach {
-            if (localPatientSet.contains(it.id)) {
-                it.isMyPatient = true
+        globalPatientList.forEachIndexed { index, globalPatient ->
+            globalPatient.index = index
+            if (localPatientSet.contains(globalPatient.id)) {
+                globalPatient.isMyPatient = true
             }
         }
 
@@ -143,8 +143,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
 
         // adding onclick for adapter
         globalPatientAdapter.addPatientClickObserver(
-            object :
-                GlobalPatientAdapter.OnGlobalPatientClickListener {
+            object : GlobalPatientAdapter.OnGlobalPatientClickListener {
                 override fun onCardClick(patient: GlobalPatient) {
                     startActivityForPatient(patient, localPatientSet.contains(patient.id))
                 }
@@ -162,14 +161,10 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
                         AlertDialog.Builder(this@GlobalPatientSearchActivity)
                             .setTitle(R.string.global_patient_search_add_patient_dialog_title)
                             .setMessage(R.string.global_patient_search_add_patient_dialog_message)
-                            .setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int ->
-                                fetchInformationForThisPatient(
-                                    patient,
-                                    globalPatientList,
-                                    globalPatientAdapter
-                                )
+                            .setPositiveButton(android.R.string.ok) { _, _ ->
+                                fetchInformationForThisPatient(patient, globalPatientAdapter)
                             }
-                            .setNegativeButton(android.R.string.no) { _: DialogInterface, _: Int -> }
+                            .setNegativeButton(android.R.string.no) { _, _ -> }
                             .setIcon(R.drawable.ic_sync)
                     alertDialog.show()
                 }
@@ -192,9 +187,10 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
                 }
             }
         } else {
-            val intent =
-                Intent(this@GlobalPatientSearchActivity, GlobalPatientProfileActivity::class.java)
-            intent.putExtra("globalPatient", patient)
+            val intent = GlobalPatientProfileActivity.makeIntent(
+                this@GlobalPatientSearchActivity,
+                patient
+            )
             startActivity(intent)
         }
     }
@@ -204,7 +200,6 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
      */
     private fun fetchInformationForThisPatient(
         patient: GlobalPatient,
-        globalPatientList: List<GlobalPatient>,
         globalPatientAdapter: GlobalPatientAdapter
     ) {
         val progressDialog = getProgressDialog(
@@ -212,17 +207,13 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         )
         progressDialog.show()
         MainScope().launch {
-            when (val result = patientManager.downloadAssociateAndSavePatient(patient.id)) {
+            when (patientManager.downloadAssociateAndSavePatient(patient.id)) {
                 is Success -> {
                     localPatientSet.add(patient.id)
-                    // todo make the O^n better, maybe globalPatientList can be a map?
-                    for (it in globalPatientList) {
-                        if (it.id == patient.id) {
-                            it.isMyPatient = true
-                            break
-                        }
+                    patient.isMyPatient = true
+                    globalPatientAdapter.run {
+                        patient.index?.let { notifyItemChanged(it) } ?: notifyDataSetChanged()
                     }
-                    globalPatientAdapter.notifyDataSetChanged()
                 }
                 else -> {
                     Toast.makeText(
