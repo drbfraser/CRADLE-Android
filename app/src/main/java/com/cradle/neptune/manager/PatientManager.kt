@@ -39,8 +39,8 @@ class PatientManager @Inject constructor(
     }
 
     /**
-     * Adds a patient and its reading in a single transaction. The [reading] should be for the
-     * given [patient].
+     * Adds a patient and its reading to the database in a single transaction.
+     * The [reading] should be for the given [patient].
      *
      * @throws IllegalArgumentException if the [reading] given has a different patient ID from the
      * given [patient]'s ID
@@ -68,8 +68,8 @@ class PatientManager @Inject constructor(
     }
 
     /**
-     * Adds a patient and its readings in a single transaction. The [readings] should be for the
-     * given [patient].
+     * Adds a patient and its readings to the local databse in a single transaction.
+     * The [readings] should be for the given [patient].
      *
      * @throws IllegalArgumentException if any of the [readings] have a different patient ID from
      * the given [patient]'s ID
@@ -261,13 +261,9 @@ class PatientManager @Inject constructor(
             return@withContext associateResult.cast<PatientAndReadings>()
         }
 
-        database.runInTransaction {
-            patientDao.insert(downloadedPatient)
-            downloadResult.value.readings.forEach {
-                it.isUploadedToServer = true
-                readingDao.insert(it)
-            }
-        }
+        // Otherwise, association was successful, so add to the database
+        val downloadedReadings = downloadResult.value.readings
+        addPatientWithReadings(downloadedPatient, downloadedReadings, areReadingsFromServer = true)
 
         return@withContext downloadResult
     }
