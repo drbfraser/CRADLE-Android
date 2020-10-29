@@ -32,9 +32,9 @@ import com.cradle.neptune.viewmodel.ReadingFlowSaveResult
 import com.cradle.neptune.viewmodel.ReferralDialogViewModel
 import com.cradle.neptune.viewmodel.ReferralOption
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.UUID
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import java.util.UUID
 
 /**
  * src: https://medium.com/alexander-schaefer/
@@ -105,7 +105,8 @@ class ReferralDialogFragment : DialogFragment() {
 
         view.findViewById<Button>(R.id.send_sms_button).setOnClickListener {
             if (referralDialogViewModel.isSelectedHealthCentreValid() &&
-                    referralDialogViewModel.isSending.value != true) {
+                referralDialogViewModel.isSending.value != true
+            ) {
                 referralDialogViewModel.isSending.value = true
 
                 lifecycleScope.launch { handleSmsReferralSend(view) }
@@ -114,7 +115,8 @@ class ReferralDialogFragment : DialogFragment() {
 
         view.findViewById<Button>(R.id.send_web_button).setOnClickListener {
             if (referralDialogViewModel.isSelectedHealthCentreValid() &&
-                    referralDialogViewModel.isSending.value != true) {
+                referralDialogViewModel.isSending.value != true
+            ) {
                 referralDialogViewModel.isSending.value = true
 
                 lifecycleScope.launch { handleWebReferralSend(view) }
@@ -133,7 +135,9 @@ class ReferralDialogFragment : DialogFragment() {
                 referralDialogViewModel.healthCentreToUse.value ?: return
 
             val (smsSendResult, patientAndReadings) = viewModel.saveWithReferral(
-                ReferralOption.SMS, comment, selectedHealthCentreName
+                ReferralOption.SMS,
+                comment,
+                selectedHealthCentreName
             )
 
             when (smsSendResult) {
@@ -201,7 +205,9 @@ class ReferralDialogFragment : DialogFragment() {
                 referralDialogViewModel.healthCentreToUse.value ?: return
 
             val (smsSendResult, _) = viewModel.saveWithReferral(
-                ReferralOption.WEB, comment, selectedHealthCentreName
+                ReferralOption.WEB,
+                comment,
+                selectedHealthCentreName
             )
 
             when (smsSendResult) {

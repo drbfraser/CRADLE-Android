@@ -6,11 +6,11 @@ import com.cradle.neptune.model.RetestGroup
 import com.cradle.neptune.net.NetworkResult
 import com.cradle.neptune.net.RestApi
 import com.cradle.neptune.net.Success
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 /**
  * Service for interfacing with readings stored in the database.
@@ -84,7 +84,8 @@ class ReadingManager @Inject constructor(
      * remove this function and call the corressponding method.
      * This is only for legacy java code still calling this function.
      */
-    @Deprecated("Please avoid using this function in Kotlin files.",
+    @Deprecated(
+        "Please avoid using this function in Kotlin files.",
         replaceWith = ReplaceWith("getReadingsByPatientId")
     )
     fun getReadingByPatientIdBlocking(id: String) = runBlocking {

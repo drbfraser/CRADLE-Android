@@ -22,13 +22,13 @@ import com.cradle.neptune.model.Reading
 import com.cradle.neptune.viewmodel.PatientsViewAdapter
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.ArrayList
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.ArrayList
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class PatientsActivity : AppCompatActivity() {
@@ -63,7 +63,7 @@ class PatientsActivity : AppCompatActivity() {
     private fun setupGlobalPatientSearchButton() {
         val globalSearchButton =
             findViewById<ExtendedFloatingActionButton>(R.id.globalPatientSearch)
-        globalSearchButton.setOnClickListener { v: View? ->
+        globalSearchButton.setOnClickListener {
             startActivity(
                 Intent(
                     this@PatientsActivity,
@@ -88,7 +88,8 @@ class PatientsActivity : AppCompatActivity() {
         searchView.maxWidth = Int.MAX_VALUE
 
         // listening to search query text change
-        searchView.setOnQueryTextListener(object :
+        searchView.setOnQueryTextListener(
+            object :
                 SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String): Boolean {
                     // filter recycler view when query submitted
@@ -101,7 +102,8 @@ class PatientsActivity : AppCompatActivity() {
                     patientsViewAdapter.filter.filter(query)
                     return false
                 }
-            })
+            }
+        )
         return true
     }
 

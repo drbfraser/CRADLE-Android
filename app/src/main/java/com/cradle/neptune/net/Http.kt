@@ -5,7 +5,6 @@ import com.cradle.neptune.model.Marshal
 import java.lang.Exception
 import java.net.HttpURLConnection
 import java.net.URL
-import java.util.concurrent.TimeUnit
 
 /**
  * HTTP network driver.
@@ -36,13 +35,12 @@ open class Http {
      * @return the result of the network request
      * @throws java.net.MalformedURLException if [url] is malformed
      */
-    @Suppress("MagicNumber")
     open fun request(
         method: Method,
         url: String,
         headers: Map<String, String>,
         body: ByteArray?,
-        timeout: Int = TimeUnit.SECONDS.toMillis(30).toInt()
+        timeout: Int = DEFAULT_TIMEOUT_MILLIS
     ): NetworkResult<ByteArray> =
         with(URL(url).openConnection() as HttpURLConnection) {
             connectTimeout = timeout
@@ -126,4 +124,8 @@ open class Http {
     ): NetworkResult<Json>
         where Body : Marshal<Json> =
         jsonRequest(method, url, headers, body?.marshal())
+
+    companion object {
+        private const val DEFAULT_TIMEOUT_MILLIS = 30 * 1000
+    }
 }

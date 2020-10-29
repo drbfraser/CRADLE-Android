@@ -9,7 +9,8 @@ import java.lang.NumberFormatException
 
 object Converter {
     @InverseMethod("stringToInt")
-    @JvmStatic fun intToString(value: Int?): String? {
+    @JvmStatic
+    fun intToString(value: Int?): String? {
         return value?.toString()
     }
 
@@ -22,7 +23,8 @@ object Converter {
     }
 
     @InverseMethod("stringToSex")
-    @JvmStatic fun sexToString(context: Context, value: Sex?): String? = when (value) {
+    @JvmStatic
+    fun sexToString(context: Context, value: Sex?): String? = when (value) {
         Sex.MALE -> context.resources.getStringArray(R.array.sex)[0]
         Sex.FEMALE -> context.resources.getStringArray(R.array.sex)[1]
         Sex.OTHER -> context.resources.getStringArray(R.array.sex)[2]
@@ -41,7 +43,8 @@ object Converter {
      * of Strings.
      */
     @InverseMethod("stringToSingleElementList")
-    @JvmStatic fun singleElementListToString(list: List<String>?): String =
+    @JvmStatic
+    fun singleElementListToString(list: List<String>?): String =
         if (list?.isNotEmpty() == true) list[0] else ""
 
     @JvmStatic fun stringToSingleElementList(string: String): List<String>? = listOf(string)

@@ -74,7 +74,8 @@ class ReadingBindingAdapters {
     ) {
         Log.d(TAG, "onAgeStateChanged(): old,new = $oldIsUsingDateOfBirth, $newIsUsingDateOfBirth")
         if (oldIsUsingDateOfBirth == newIsUsingDateOfBirth ||
-            newIsUsingDateOfBirth == null) {
+            newIsUsingDateOfBirth == null
+        ) {
             return
         }
 
@@ -92,11 +93,15 @@ class ReadingBindingAdapters {
 
                 startIconDrawable = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     ResourcesCompat.getDrawable(
-                        resources, R.drawable.ic_baseline_clear_24, context.theme
+                        resources,
+                        R.drawable.ic_baseline_clear_24,
+                        context.theme
                     )
                 } else {
                     VectorDrawableCompat.create(
-                        resources, R.drawable.ic_baseline_clear_24, context.theme
+                        resources,
+                        R.drawable.ic_baseline_clear_24,
+                        context.theme
                     )
                 }
             }
@@ -111,11 +116,15 @@ class ReadingBindingAdapters {
                 suffixText = context.getString(R.string.age_input_suffix_approximate_years_old)
                 startIconDrawable = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     ResourcesCompat.getDrawable(
-                        resources, R.drawable.ic_baseline_calendar_today_24, context.theme
+                        resources,
+                        R.drawable.ic_baseline_calendar_today_24,
+                        context.theme
                     )
                 } else {
                     VectorDrawableCompat.create(
-                        resources, R.drawable.ic_baseline_calendar_today_24, context.theme
+                        resources,
+                        R.drawable.ic_baseline_calendar_today_24,
+                        context.theme
                     )
                 }
             }

@@ -1,25 +1,3 @@
-autoCorrect: true
-failFast: false
-
-test-pattern: # Configure exclusions for test sources
-  active: true
-  patterns: # Test file regexesx
-    - '.*/test/.*'
-    - '.*Test.kt'
-    - '.*Spec.kt'
-  exclude-rule-sets:
-    - 'comments'
-  exclude-rules:
-    - 'NamingRules'
-    - 'WildcardImport'
-    - 'MagicNumber'
-    - 'MaxLineLength'
-    - 'LateinitUsage'
-    - 'StringLiteralDuplication'
-    - 'SpreadOperator'
-    - 'TooManyFunctions'
-    - 'ForEachOnRange'
-    - 'FunctionMaxLength'
 
 build:
   maxIssues: 0
@@ -64,6 +42,9 @@ comments:
     searchInInnerInterface: true
   UndocumentedPublicFunction:
     active: false
+  UndocumentedPublicProperty:
+    active: false
+  excludes: ['.*/test/.*', '.*Test.kt', '.*Spec.kt']
 
 complexity:
   active: true
@@ -150,7 +131,6 @@ exceptions:
   active: true
   ExceptionRaisedInUnexpectedLocation:
     active: false
-    methodNames: 'toString,hashCode,equals,finalize'
   InstanceOfCheckForException:
     active: false
   NotImplementedDeclaration:
@@ -169,7 +149,6 @@ exceptions:
     active: false
   ThrowingExceptionsWithoutMessageOrCause:
     active: false
-    exceptions: 'IllegalArgumentException,IllegalStateException,IOException'
   ThrowingNewInstanceOfSameException:
     active: false
   TooGenericExceptionCaught:
@@ -303,7 +282,6 @@ naming:
     enumEntryPattern: '^[A-Z][_a-zA-Z0-9]*'
   ForbiddenClassName:
     active: false
-    forbiddenName: ''
   FunctionMaxLength:
     active: false
     maximumFunctionNameLength: 30
@@ -380,8 +358,6 @@ potential-bugs:
     active: false
   LateinitUsage:
     active: false
-    excludeAnnotatedProperties: ""
-    ignoreOnClassesPattern: ""
   UnconditionalJumpStatementInLoop:
     active: false
   UnreachableCode:
@@ -397,11 +373,14 @@ potential-bugs:
 
 style:
   active: true
+  UseIfInsteadOfWhen:
+    active: false
   CollapsibleIfStatements:
     active: false
   DataClassContainsFunctions:
     active: false
-    conversionFunctionPrefix: 'to'
+  DataClassShouldBeImmutable:
+    active: false
   EqualsNullCall:
     active: false
   ExplicitItLambdaParameter:
@@ -411,22 +390,20 @@ style:
     includeLineWrapping: false
   ForbiddenComment:
     active: false
-    values: 'TODO:,FIXME:,STOPSHIP:'
   ForbiddenImport:
     active: false
-    imports: ''
   ForbiddenVoid:
     active: false
   FunctionOnlyReturningConstant:
     active: false
     ignoreOverridableFunction: true
-    excludedFunctions: 'describeContents'
+    excludedFunctions: "describeContents"
   LoopWithTooManyJumpStatements:
     active: false
     maxJumpCount: 1
   MagicNumber:
     active: true
-    ignoreNumbers: '-1,0,1,2'
+    ignoreNumbers: ["-1","0","1","2"]
     ignoreHashCodeFunction: true
     ignorePropertyDeclaration: false
     ignoreConstantDeclaration: true
@@ -481,7 +458,7 @@ style:
     active: false
   UnnecessaryAbstractClass:
     active: false
-    excludeAnnotatedClasses: "dagger.Module"
+    excludeAnnotatedClasses: ["dagger.Module"]
   UnnecessaryApply:
     active: false
   UnnecessaryInheritance:
@@ -499,11 +476,14 @@ style:
     allowedNames: "(_|ignored|expected|serialVersionUID)"
   UseDataClass:
     active: false
-    excludeAnnotatedClasses: ""
   UtilityClassWithPublicConstructor:
     active: false
   VarCouldBeVal:
     active: false
   WildcardImport:
     active: true
-    excludeImports: 'java.util.*,kotlinx.android.synthetic.*'
+    excludeImports: ["java.util.*", "kotlinx.android.synthetic.*"]
+  UnderscoresInNumericLiterals:
+    active: false
+  ClassOrdering:
+    active: false

@@ -20,13 +20,13 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.ArrayList
-import java.util.Collections
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.ArrayList
+import java.util.Collections
+import javax.inject.Inject
 
 @Suppress("LargeClass")
 @AndroidEntryPoint

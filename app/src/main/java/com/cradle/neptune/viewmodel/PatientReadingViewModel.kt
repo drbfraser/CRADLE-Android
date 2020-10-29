@@ -45,13 +45,6 @@ import com.cradle.neptune.utilitiles.Months
 import com.cradle.neptune.utilitiles.Weeks
 import com.cradle.neptune.view.ReadingActivity
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.lang.IllegalArgumentException
-import java.lang.reflect.InvocationTargetException
-import java.text.DecimalFormat
-import java.util.Locale
-import java.util.UUID
-import java.util.concurrent.TimeUnit
-import kotlin.reflect.KProperty
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -62,6 +55,13 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import org.threeten.bp.ZonedDateTime
+import java.lang.IllegalArgumentException
+import java.lang.reflect.InvocationTargetException
+import java.text.DecimalFormat
+import java.util.Locale
+import java.util.UUID
+import java.util.concurrent.TimeUnit
+import kotlin.reflect.KProperty
 
 // The index of the gestational age units inside of the string.xml array, R.array.reading_ga_units
 private const val GEST_AGE_UNIT_WEEKS_INDEX = 0
@@ -171,7 +171,8 @@ class PatientReadingViewModel @ViewModelInject constructor(
                 }
 
                 if (!patientId.isNullOrBlank() &&
-                        reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_EXISTINGNEW) {
+                    reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_EXISTINGNEW
+                ) {
                     val patient = patientManager.getPatientById(patientId)
                         ?: error("no patient with given id")
                     originalPatient = patient
@@ -365,8 +366,14 @@ class PatientReadingViewModel @ViewModelInject constructor(
                 // When any of these change, attempt to construct a valid patient and post whether
                 // or not it succeeded. This is used to determine whether the Next button is enabled.
                 arrayOf(
-                    patientName, patientId, patientDob, patientAge, patientGestationalAge,
-                    patientSex, patientIsPregnant, patientVillageNumber
+                    patientName,
+                    patientId,
+                    patientDob,
+                    patientAge,
+                    patientGestationalAge,
+                    patientSex,
+                    patientIsPregnant,
+                    patientVillageNumber
                 ).forEach { liveData ->
                     addSource(liveData) {
                         if (_isInitialized.value != true) return@addSource
@@ -596,8 +603,11 @@ class PatientReadingViewModel @ViewModelInject constructor(
                             if (isNullOrBlank()) return@addSource
                         }
                         val newUrineTest = UrineTest(
-                            leukocytes = leukocytes!!, nitrites = nitrites!!, glucose = glucose!!,
-                            protein = protein!!, blood = blood!!
+                            leukocytes = leukocytes!!,
+                            nitrites = nitrites!!,
+                            glucose = glucose!!,
+                            protein = protein!!,
+                            blood = blood!!
                         )
 
                         if (value != newUrineTest) {
@@ -1097,27 +1107,39 @@ class PatientReadingViewModel @ViewModelInject constructor(
      */
     private fun attemptToBuildValidPatient(): Patient? {
         if (!patientBuilder.isConstructable<Patient>()) {
-            if (DEBUG) Log.d(TAG, "attemptToBuildValidPatient: patient not constructable, " +
-                "missing ${patientBuilder.missingParameters(Patient::class)}")
+            if (DEBUG) Log.d(
+                TAG,
+                "attemptToBuildValidPatient: patient not constructable, " +
+                    "missing ${patientBuilder.missingParameters(Patient::class)}"
+            )
             return null
         }
 
         val patient = try {
             patientBuilder.build<Patient>()
         } catch (e: IllegalArgumentException) {
-            if (DEBUG) Log.d(TAG, "attemptToBuildValidPatient: " +
-                "patient failed to build, exception ${e.cause?.message ?: e.message}")
+            if (DEBUG) Log.d(
+                TAG,
+                "attemptToBuildValidPatient: " +
+                    "patient failed to build, exception ${e.cause?.message ?: e.message}"
+            )
             return null
         } catch (e: InvocationTargetException) {
-            if (DEBUG) Log.d(TAG, "attemptToBuildValidPatient: " +
-                "patient failed to build, exception ${e.cause?.message ?: e.message}")
+            if (DEBUG) Log.d(
+                TAG,
+                "attemptToBuildValidPatient: " +
+                    "patient failed to build, exception ${e.cause?.message ?: e.message}"
+            )
             return null
         }
 
         if (!patient.isValidInstance(app)) {
-            if (DEBUG) Log.d(TAG, "attemptToBuildValidPatient: " +
-                "patient is invalid, " +
-                "errors: ${patient.getAllMembersWithInvalidValues(app)}")
+            if (DEBUG) Log.d(
+                TAG,
+                "attemptToBuildValidPatient: " +
+                    "patient is invalid, " +
+                    "errors: ${patient.getAllMembersWithInvalidValues(app)}"
+            )
             return null
         }
 
@@ -1131,27 +1153,39 @@ class PatientReadingViewModel @ViewModelInject constructor(
      */
     private fun attemptToBuildValidReading(): Reading? {
         if (!readingBuilder.isConstructable<Reading>()) {
-            Log.d(TAG, "attemptToBuildValidReading: reading not constructable, " +
-                "missing ${readingBuilder.missingParameters(Reading::class)}")
+            Log.d(
+                TAG,
+                "attemptToBuildValidReading: reading not constructable, " +
+                    "missing ${readingBuilder.missingParameters(Reading::class)}"
+            )
             return null
         }
 
         val reading = try {
             readingBuilder.build<Reading>()
         } catch (e: IllegalArgumentException) {
-            Log.d(TAG, "attemptToBuildValidReading: " +
-                "reading failed to build, exception ${e.cause?.message ?: e.message}")
+            Log.d(
+                TAG,
+                "attemptToBuildValidReading: " +
+                    "reading failed to build, exception ${e.cause?.message ?: e.message}"
+            )
             return null
         } catch (e: InvocationTargetException) {
-            Log.d(TAG, "attemptToBuildValidReading: " +
-                "reading failed to build, exception ${e.cause?.message ?: e.message}")
+            Log.d(
+                TAG,
+                "attemptToBuildValidReading: " +
+                    "reading failed to build, exception ${e.cause?.message ?: e.message}"
+            )
             return null
         }
 
         if (!reading.isValidInstance(app)) {
-            Log.d(TAG, "attemptToBuildValidReading: " +
-                "reading is invalid, " +
-                "errors: ${reading.getAllMembersWithInvalidValues(app)}")
+            Log.d(
+                TAG,
+                "attemptToBuildValidReading: " +
+                    "reading is invalid, " +
+                    "errors: ${reading.getAllMembersWithInvalidValues(app)}"
+            )
             return null
         }
 
@@ -1197,7 +1231,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
                     }
                     emit(Result.success(downloadedPatient))
                 }
-                else -> emit(Result.failure(Throwable()))
+                else -> emit(Result.failure<Patient>(Throwable()))
             }
         }
     }
@@ -1207,9 +1241,10 @@ class PatientReadingViewModel @ViewModelInject constructor(
             null
         } else {
             app.getString(
-                    R.string.reading_activity_subtitle_name_and_id,
-                    patientName, patientId
-                )
+                R.string.reading_activity_subtitle_name_and_id,
+                patientName,
+                patientId
+            )
         }
         val currentSubtitle: String? = _actionBarSubtitle.value
         if (currentSubtitle == subtitle) {
@@ -1363,9 +1398,12 @@ class PatientReadingViewModel @ViewModelInject constructor(
                 // Embed the referral to the reading from the builder.
                 readingFromBuilder.referral =
                     Referral(
-                        comment = referralComment, healthFacilityName = healthFacilityName,
-                        dateReferred = readingFromBuilder.dateTimeTaken, patientId = patient.id,
-                        readingId = readingFromBuilder.id, sharedPreferences = sharedPreferences
+                        comment = referralComment,
+                        healthFacilityName = healthFacilityName,
+                        dateReferred = readingFromBuilder.dateTimeTaken,
+                        patientId = patient.id,
+                        readingId = readingFromBuilder.id,
+                        sharedPreferences = sharedPreferences
                     )
                 yield()
 
@@ -1712,12 +1750,16 @@ class PatientReadingViewModel @ViewModelInject constructor(
                 value = arrayMapOf()
                 addSource(patientId) {
                     testValueForValidityAndSetErrorMapAsync(
-                        value = it, propertyToCheck = Patient::id, verifier = Patient.Companion
+                        value = it,
+                        propertyToCheck = Patient::id,
+                        verifier = Patient.Companion
                     )
                 }
                 addSource(patientName) {
                     testValueForValidityAndSetErrorMapAsync(
-                        value = it, propertyToCheck = Patient::name, verifier = Patient.Companion
+                        value = it,
+                        propertyToCheck = Patient::name,
+                        verifier = Patient.Companion
                     )
                 }
                 addSource(patientVillageNumber) {
@@ -1734,8 +1776,10 @@ class PatientReadingViewModel @ViewModelInject constructor(
                         return@addSource
                     }
                     testValueForValidityAndSetErrorMapAsync(
-                        value = it, propertyToCheck = Patient::dob,
-                        verifier = Patient.Companion, propertyForErrorMapKey = Patient::age
+                        value = it,
+                        propertyToCheck = Patient::dob,
+                        verifier = Patient.Companion,
+                        propertyForErrorMapKey = Patient::age
                     )
                 }
                 addSource(patientAge) {
@@ -1745,7 +1789,9 @@ class PatientReadingViewModel @ViewModelInject constructor(
                         return@addSource
                     }
                     testValueForValidityAndSetErrorMapAsync(
-                        value = it, propertyToCheck = Patient::age, verifier = Patient.Companion
+                        value = it,
+                        propertyToCheck = Patient::age,
+                        verifier = Patient.Companion
                     )
                 }
                 addSource(patientGestationalAge) {
@@ -1757,26 +1803,31 @@ class PatientReadingViewModel @ViewModelInject constructor(
                 }
                 addSource(patientSex) {
                     testValueForValidityAndSetErrorMapAsync(
-                        value = it, propertyToCheck = Patient::sex, verifier = Patient.Companion
+                        value = it,
+                        propertyToCheck = Patient::sex,
+                        verifier = Patient.Companion
                     )
                 }
 
                 // Errors from Readings
                 addSource(bloodPressureSystolicInput) {
                     testValueForValidityAndSetErrorMapAsync(
-                        value = it, propertyToCheck = BloodPressure::systolic,
+                        value = it,
+                        propertyToCheck = BloodPressure::systolic,
                         verifier = BloodPressure.Companion
                     )
                 }
                 addSource(bloodPressureDiastolicInput) {
                     testValueForValidityAndSetErrorMapAsync(
-                        value = it, propertyToCheck = BloodPressure::diastolic,
+                        value = it,
+                        propertyToCheck = BloodPressure::diastolic,
                         verifier = BloodPressure.Companion
                     )
                 }
                 addSource(bloodPressureHeartRateInput) {
                     testValueForValidityAndSetErrorMapAsync(
-                        value = it, propertyToCheck = BloodPressure::heartRate,
+                        value = it,
+                        propertyToCheck = BloodPressure::heartRate,
                         verifier = BloodPressure.Companion
                     )
                 }
@@ -1793,7 +1844,9 @@ class PatientReadingViewModel @ViewModelInject constructor(
                         if (isUsingUrineTest.value == false) return@addSource
 
                         testValueForValidityAndSetErrorMapAsync(
-                            value = it, propertyToCheck = property, verifier = UrineTest.FromJson
+                            value = it,
+                            propertyToCheck = property,
+                            verifier = UrineTest.FromJson
                         )
                     }
                 }
@@ -1857,8 +1910,11 @@ class PatientReadingViewModel @ViewModelInject constructor(
 
                 // Get the actual validity status and any error message.
                 val (isValid, errorMessage) = verifier.isValueValid(
-                    property = propertyToCheck, value = value, context = app,
-                    instance = null, currentValues = currentValuesMapToUse
+                    property = propertyToCheck,
+                    value = value,
+                    context = app,
+                    instance = null,
+                    currentValues = currentValuesMapToUse
                 )
 
                 val errorMessageForMap = if (!isValid) errorMessage else null

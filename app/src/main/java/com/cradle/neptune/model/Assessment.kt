@@ -8,8 +8,8 @@ import com.cradle.neptune.ext.optIntField
 import com.cradle.neptune.ext.optStringField
 import com.cradle.neptune.ext.put
 import com.cradle.neptune.ext.stringField
-import java.io.Serializable
 import org.json.JSONObject
+import java.io.Serializable
 
 /**
  * Data about an assessment made by a health care worker for a reading.

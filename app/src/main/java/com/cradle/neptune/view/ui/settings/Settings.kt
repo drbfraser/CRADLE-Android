@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.MenuItem
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceFragmentCompat
 import com.cradle.neptune.R
 import com.cradle.neptune.manager.HealthCentreManager
@@ -21,11 +22,11 @@ import com.cradle.neptune.view.IntroActivity
 import com.cradle.neptune.view.LoginActivity
 import com.cradle.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class SettingsActivity : AppCompatActivity() {
@@ -93,7 +94,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         // Summary for this preference is not generated through shared
         // preferences so we have to update it manually here.
         findPreference(R.string.key_health_centres_settings_button)?.apply {
-            GlobalScope.launch(Dispatchers.IO) {
+            lifecycleScope.launch(Dispatchers.IO) {
                 val hcCount = healthCentreManager.getAllSelectedByUser().size
                 // need to update UI by main thread
                 withContext(Dispatchers.Main) {
@@ -125,7 +126,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         findPreference(R.string.key_sign_out)
             ?.withOnClickListener {
-                GlobalScope.launch(Dispatchers.IO) {
+                lifecycleScope.launch(Dispatchers.IO) {
                     val unUploadedReadings = readingManager.getUnUploadedReadings()
                     val description = if (unUploadedReadings.isEmpty()) {
                         getString(R.string.normal_signout_message)
@@ -164,19 +165,25 @@ class SettingsFragment : PreferenceFragmentCompat() {
     //  to start the activity is fine here as we don't want UI code in the
     //  manager class.
     private fun onSignOut() {
-        with(sharedPreferences.edit()) {
-            remove(LoginManager.EMAIL_KEY)
-            remove(LoginManager.TOKEN_KEY)
-            remove(LoginManager.USER_ID_KEY)
-            remove(SyncStepperImplementation.LAST_SYNC)
-            remove(IntroActivity.LAST_VERSION_TO_COMPLETE_WIZARD)
-            apply()
+        lifecycleScope.launch(Dispatchers.Main) {
+            with(sharedPreferences.edit()) {
+                remove(LoginManager.EMAIL_KEY)
+                remove(LoginManager.TOKEN_KEY)
+                remove(LoginManager.USER_ID_KEY)
+                remove(SyncStepperImplementation.LAST_SYNC)
+                remove(IntroActivity.LAST_VERSION_TO_COMPLETE_WIZARD)
+                apply()
+            }
+
+            joinAll(
+                launch(Dispatchers.IO) { readingManager.deleteAllData() },
+                launch(Dispatchers.IO) { healthCentreManager.deleteAll() },
+                launch(Dispatchers.IO) { patientManager.deleteAll() }
+            )
+
+            startActivity(Intent(activity, LoginActivity::class.java))
+            requireActivity().finishAffinity()
         }
-        GlobalScope.launch(Dispatchers.IO) { readingManager.deleteAllData() }
-        GlobalScope.launch(Dispatchers.IO) { healthCentreManager.deleteAll() }
-        GlobalScope.launch(Dispatchers.IO) { patientManager.deleteAll() }
-        startActivity(Intent(activity, LoginActivity::class.java))
-        requireActivity().finishAffinity()
     }
 }
 
@@ -193,10 +200,11 @@ class AdvancedSettingsFragment : PreferenceFragmentCompat() {
 
         findPreference(R.string.key_server_port)
             ?.useDynamicSummary { v ->
-                if (v.isNullOrEmpty())
+                if (v.isNullOrEmpty()) {
                     getString(R.string.default_settings)
-                else
+                } else {
                     v
+                }
             }
             ?.withValidator(::validatePort)
     }

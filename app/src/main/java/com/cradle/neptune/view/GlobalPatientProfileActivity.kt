@@ -150,27 +150,29 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
      */
     override fun setupReadingsRecyclerView() {
         val listAdapter = ReadingRecyclerViewAdapter(patientReadings)
-        listAdapter.setOnClickElementListener(object : OnClickElement {
-            override fun onClick(readingId: String) {
-                Snackbar.make(
-                    view,
-                    R.string.global_patient_profile_you_must_add_to_list_before_editing,
-                    Snackbar.LENGTH_LONG
-                ).show()
-            }
+        listAdapter.setOnClickElementListener(
+            object : OnClickElement {
+                override fun onClick(readingId: String) {
+                    Snackbar.make(
+                        view,
+                        R.string.global_patient_profile_you_must_add_to_list_before_editing,
+                        Snackbar.LENGTH_LONG
+                    ).show()
+                }
 
-            override fun onLongClick(readingId: String): Boolean {
-                return true
-            }
+                override fun onLongClick(readingId: String): Boolean {
+                    return true
+                }
 
-            override fun onClickRecheckReading(readingId: String) {
-                Snackbar.make(
-                    view,
-                    R.string.global_patient_profile_you_must_add_to_list_before_reading,
-                    Snackbar.LENGTH_LONG
-                ).show()
+                override fun onClickRecheckReading(readingId: String) {
+                    Snackbar.make(
+                        view,
+                        R.string.global_patient_profile_you_must_add_to_list_before_reading,
+                        Snackbar.LENGTH_LONG
+                    ).show()
+                }
             }
-        })
+        )
 
         val layoutManager: RecyclerView.LayoutManager = LinearLayoutManager(this)
         readingRecyclerview.layoutManager = layoutManager

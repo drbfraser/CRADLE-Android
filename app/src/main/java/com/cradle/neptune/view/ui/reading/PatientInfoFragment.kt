@@ -23,13 +23,13 @@ import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import kotlinx.coroutines.launch
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
-import kotlinx.coroutines.launch
 
 private const val TAG = "PatientInfoFragment"
 
@@ -144,7 +144,8 @@ class PatientInfoFragment : Fragment() {
                         null
                     }
                     suffixText = ageEditText.context.getString(
-                        R.string.years_old_with_date_of_birth_in_parens, it
+                        R.string.years_old_with_date_of_birth_in_parens,
+                        it
                     )
                 }
             }

@@ -69,11 +69,12 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
             new AlertDialog.Builder(HealthFacilitiesActivity.this)
                     .setTitle(healthFacility.getName()).setMessage(msg)
                     .setCancelable(true).setPositiveButton("YES", (dialogInterface, i) -> {
-                healthFacility.setUserSelected(!healthFacility.isUserSelected());
-                healthFacilityViewModel.updateFacility(healthFacility);
-
-            }).setNegativeButton("NO", (dialogInterface, i) -> {
-            }).create().show();
+                        healthFacility.setUserSelected(!healthFacility.isUserSelected());
+                        healthFacilityViewModel.updateFacility(healthFacility);
+                    })
+                    .setNegativeButton("NO", (dialogInterface, i) -> {})
+                    .create()
+                    .show();
         });
     }
 

@@ -110,7 +110,6 @@ class PermissionsFragment : IntroBaseFragment() {
         permissions: Array<String>,
         grantResults: IntArray
     ) {
-
         // It seems that the requestCode is not intact from our call.
         // So... ignore it!
         var allGranted = true
@@ -151,10 +150,8 @@ class PermissionsFragment : IntroBaseFragment() {
         @JvmStatic
         fun areAllPermissionsGranted(context: Context): Boolean {
             for (permission in requiredPermissions) {
-                if (ContextCompat.checkSelfPermission(
-                        context,
-                        permission
-                    ) != PackageManager.PERMISSION_GRANTED
+                if (ContextCompat.checkSelfPermission(context, permission) !=
+                    PackageManager.PERMISSION_GRANTED
                 ) {
                     return false
                 }

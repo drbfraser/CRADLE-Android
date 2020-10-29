@@ -4,8 +4,6 @@ import androidx.lifecycle.LiveData
 import com.cradle.neptune.database.CradleDatabase
 import com.cradle.neptune.model.HealthFacility
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
@@ -33,18 +31,19 @@ class HealthCentreManager(private val database: CradleDatabase) {
     /**
      * add a single health facility
      */
-    fun add(facility: HealthFacility) = GlobalScope.launch(Dispatchers.IO) { dao.insert(facility) }
+    suspend fun add(facility: HealthFacility) = withContext(Dispatchers.IO) { dao.insert(facility) }
 
     /**
      * Add all the health facilities
      */
-    fun addAll(facilities: List<HealthFacility>) =
-        GlobalScope.launch(Dispatchers.IO) { dao.insertAll(facilities) }
+    suspend fun addAll(facilities: List<HealthFacility>) = withContext(Dispatchers.IO) {
+        dao.insertAll(facilities)
+    }
 
     /**
      * update a single Health Facility
      */
-    fun update(facility: HealthFacility) = GlobalScope.launch { dao.update(facility) }
+    suspend fun update(facility: HealthFacility) = withContext(Dispatchers.IO) { dao.update(facility) }
 
     /**
      * returns a live list of the facilities

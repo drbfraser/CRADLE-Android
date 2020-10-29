@@ -9,9 +9,9 @@ import com.cradle.neptune.ext.optStringField
 import com.cradle.neptune.ext.put
 import com.cradle.neptune.ext.stringField
 import com.cradle.neptune.manager.LoginManager
-import java.io.Serializable
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.Serializable
 
 /**
  * Holds information about a referral.

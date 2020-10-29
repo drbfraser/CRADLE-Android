@@ -111,7 +111,6 @@ class SyncStepperImplementation(
         lastSyncTime: Long,
         context: Context
     ) = withContext(IO) {
-
         // get the brand new patients to upload
         val newPatientsToUpload: ArrayList<PatientAndReadings> =
             patientManager.getUnUploadedPatients() as ArrayList<PatientAndReadings>
@@ -163,7 +162,6 @@ class SyncStepperImplementation(
             val result = restApi.postPatient(it)
             when (result) {
                 is Success -> {
-
                     it.patient.base = it.patient.lastEdited
                     patientManager.add(it.patient)
                     result.value.readings.forEach { reading ->
@@ -296,7 +294,6 @@ class SyncStepperImplementation(
      */
     @Synchronized
     private suspend fun checkIfAllDataIsDownloaded(result: NetworkResult<*>, context: Context) {
-
         when (result) {
             is Success -> {
                 downloadRequestStatus.numUploaded++

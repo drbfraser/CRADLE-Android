@@ -243,11 +243,11 @@ fun setupDependentPropertiesMap(
             this
         }
     } ?: if (instance == null) {
-            throw IllegalArgumentException("null instance requires non-null dependentPropertiesMap")
-        } else {
-            // Since there is an instance, create a new map just containing the values taken from
-            // that instance. This is so that we don't have to repeat code in the Verifier.
-            // Verifier just uses mapName[ClassName::PropertyName.name] syntax to obtain a
-            // dependency
-            dependentProperties.map { it.name to it.getter.call(instance) }.toMap()
-        }
+        throw IllegalArgumentException("null instance requires non-null dependentPropertiesMap")
+    } else {
+        // Since there is an instance, create a new map just containing the values taken from
+        // that instance. This is so that we don't have to repeat code in the Verifier.
+        // Verifier just uses mapName[ClassName::PropertyName.name] syntax to obtain a
+        // dependency
+        dependentProperties.map { it.name to it.getter.call(instance) }.toMap()
+    }

@@ -12,5 +12,5 @@ interface MyIntroFragmentInteractionListener {
     fun advanceToNextPage()
 
     // Set NEXT button being enabled/disabled
-    fun setNextButtonEnabled(b: Boolean)
+    fun setNextButtonEnabled(isEnabled: Boolean)
 }

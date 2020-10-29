@@ -23,11 +23,11 @@ import com.cradle.neptune.net.Success
 import com.cradle.neptune.viewmodel.GlobalPatientAdapter
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 /**
  * Todo this activity is pretty dirty with all the network calls. Once we have a NetworkManager
@@ -71,19 +71,22 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
     private fun setupGlobalPatientSearch() {
         searchView = findViewById(R.id.globalPatientSearchView)
 
-        searchView.setOnQueryTextListener(object : OnQueryTextListener {
+        searchView.setOnQueryTextListener(
+            object : OnQueryTextListener {
 
-            override fun onQueryTextChange(newText: String): Boolean {
-                return false
-            }
-
-            override fun onQueryTextSubmit(query: String): Boolean {
-                if (query == "")
+                override fun onQueryTextChange(newText: String): Boolean {
                     return false
-                searchServerForThePatients(query.trim())
-                return true
+                }
+
+                override fun onQueryTextSubmit(query: String): Boolean {
+                    if (query == "") {
+                        return false
+                    }
+                    searchServerForThePatients(query.trim())
+                    return true
+                }
             }
-        })
+        )
     }
 
     /**
@@ -139,10 +142,10 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         globalPatientAdapter.notifyDataSetChanged()
 
         // adding onclick for adapter
-        globalPatientAdapter.addPatientClickObserver(object :
+        globalPatientAdapter.addPatientClickObserver(
+            object :
                 GlobalPatientAdapter.OnGlobalPatientClickListener {
                 override fun onCardClick(patient: GlobalPatient) {
-
                     startActivityForPatient(patient, localPatientSet.contains(patient.id))
                 }
 
@@ -170,7 +173,8 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
                             .setIcon(R.drawable.ic_sync)
                     alertDialog.show()
                 }
-            })
+            }
+        )
     }
 
     /**
