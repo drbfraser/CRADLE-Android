@@ -1,4 +1,4 @@
-package com.cradle.neptune.dagger
+package com.cradle.neptune
 
 import android.app.Activity
 import android.content.pm.ActivityInfo
@@ -7,29 +7,22 @@ import android.util.Log
 import androidx.multidex.MultiDexApplication
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.wonderkiln.blurkit.BlurKit
+import dagger.hilt.android.HiltAndroidApp
 
 /**
  * Allow access to Dagger single instance of Component
  * Source: https://github.com/codepath/android_guides/wiki/Dependency-Injection-with-Dagger-2#instantiating-the-component
  */
 @Suppress("EmptyFunctionBlock")
+@HiltAndroidApp
 class MyApp : MultiDexApplication() {
-    val appComponent: AppComponent by lazy {
-        DaggerAppComponent.builder()
-            .appModule(AppModule(this)).dataModule(DataModule()).build()
-    }
     var isDisableBlurKit = false
 
     override fun onCreate() {
         super.onCreate()
-        appComponent.inject(this)
         // Initialize the time library:
         // https://github.com/JakeWharton/ThreeTenABP
         AndroidThreeTen.init(this)
-
-        // If a Dagger 2 component does not have any constructor arguments for any of its modules,
-        // then we can use .create() as a shortcut instead:
-        //  mAppComponent = com.codepath.dagger.components.DaggerAppComponent.create();
 
         // Disable rotation
         // source: https://stackoverflow.com/questions/6745797/how-to-set-entire-application-in-portrait-mode-only/9784269#9784269
@@ -48,12 +41,7 @@ class MyApp : MultiDexApplication() {
             override fun onActivityResumed(activity: Activity) {}
             override fun onActivityPaused(activity: Activity) {}
             override fun onActivityStopped(activity: Activity) {}
-            override fun onActivitySaveInstanceState(
-                activity: Activity,
-                bundle: Bundle?
-            ) {
-            }
-
+            override fun onActivitySaveInstanceState(activity: Activity, bundle: Bundle?) {}
             override fun onActivityDestroyed(activity: Activity) {}
         })
 

@@ -1,8 +1,10 @@
 package com.cradle.neptune.model
 
+import android.annotation.SuppressLint
 import android.content.Context
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -160,6 +162,31 @@ class VerifiableTests {
             simpleNumber.isPropertyValid(PositiveRationalNumber::numerator, mockContext)
         }
     }
+
+    @Test
+    fun isPropertyValid_dependentProperties() {
+        // it's fine to be missing gestational age when not pregnant
+        val missingGestAgeNotPregnant = PregnancyRecord(
+            isPregnant = false, gestationalAgeWeeks = null
+        )
+        assert(missingGestAgeNotPregnant.getAllMembersWithInvalidValues(mockContext).isEmpty())
+
+        // it's not fine to be missing gestational age if pregnant
+        val missingGestButPregnant = PregnancyRecord(
+            isPregnant = true, gestationalAgeWeeks = null
+        )
+        assertEquals(1, missingGestButPregnant.getAllMembersWithInvalidValues(mockContext).size)
+        // check the the only invalid property is the gestational age
+        val (isValid, _) = missingGestButPregnant.isPropertyValid(
+            PregnancyRecord::gestationalAgeWeeks, mockContext
+        )
+        assert(!isValid)
+
+        val pregnant = PregnancyRecord(
+            isPregnant = true, gestationalAgeWeeks = 5
+        )
+        assert(pregnant.getAllMembersWithInvalidValues(mockContext).isEmpty())
+    }
 }
 
 internal data class SimpleNumber(
@@ -177,7 +204,8 @@ internal data class SimpleNumber(
 internal data class PositiveRationalNumber(
     val numerator: Int,
     val denominator: Int
-): Verifiable<SimpleNumber> {
+): Verifiable<PositiveRationalNumber> {
+
     override fun isValueForPropertyValid(
         property: KProperty<*>,
         value: Any?,
@@ -198,22 +226,107 @@ internal data class PositiveRationalNumber(
             // The validity depends on the members that are already set. It doesn't always have to
             // be just independent checks.
             if (property == PositiveRationalNumber::denominator) {
-                val typedValue = value as Int
-                if (typedValue == 0) {
-                    return Pair(false, "Denominator cannot be 0")
-                } else if (typedValue.sign != instance?.numerator?.sign) {
-                    return Pair(false, "Denominator makes the rational number negative")
+                with(value as? Int) {
+                    this ?: return Pair(false, "non-null type is null, so it's a failed cast")
+
+                    // Declare that validity of numerator depends on denominator's value.
+                    val currentProperties = setupDependentPropertiesMap(
+                        instance, currentValues,
+                        PositiveRationalNumber::numerator
+                    )
+
+                    val numerator = currentProperties[PositiveRationalNumber::numerator.name]
+                        as Int?
+                    if (this == 0) {
+                        return Pair(false, "Denominator cannot be 0")
+                    } else if (this.sign != numerator?.sign) {
+                        return Pair(false, "Denominator makes the rational number negative")
+                    }
                 }
             }
             else if (property == PositiveRationalNumber::numerator) {
-                val typedValue = value as Int
-                if (typedValue == 0) {
-                    return Pair(false, "Numerator cannot be 0, because it's not positive")
-                } else if (typedValue.sign != instance?.denominator?.sign) {
-                    return Pair(false, "Numerator makes the rational number negative")
+                with(value as? Int) {
+                    // Numerator is of type non-null Int; we expect successful cast
+                    this ?: return Pair(false, "non-null type is null, so it's a failed cast")
+
+                    // Declare that validity of numerator depends on denominator's value.
+                    val currentProperties = setupDependentPropertiesMap(
+                        instance, currentValues,
+                        PositiveRationalNumber::denominator
+                    )
+
+                    val denominator = currentProperties[PositiveRationalNumber::denominator.name]
+                        as Int?
+
+                    if (this == 0) {
+                        return Pair(false, "Numerator cannot be 0, because it's not positive")
+                    } else if (this.sign != denominator?.sign) {
+                        return Pair(false, "Numerator makes the rational number negative")
+                    }
                 }
             }
             return Pair(true, "")
+        }
+    }
+}
+
+data class PregnancyRecord(
+    val isPregnant: Boolean,
+    val gestationalAgeWeeks: Int? = null
+): Verifiable<PregnancyRecord> {
+
+    override fun isValueForPropertyValid(
+        property: KProperty<*>,
+        value: Any?,
+        context: Context
+    ): Pair<Boolean, String> = isValueValid(property, value, context, this)
+
+    companion object : Verifier<PregnancyRecord> {
+        override fun isValueValid(
+            property: KProperty<*>,
+            value: Any?,
+            context: Context,
+            instance: PregnancyRecord?,
+            currentValues: Map<String, Any?>?
+        ): Pair<Boolean, String> {
+            return when (property) {
+                PregnancyRecord::isPregnant -> {
+                    // We don't need to call setupDependentPropertiesMap if a property's validity
+                    // doesn't rely on other values.
+                    true to ""
+                }
+                PregnancyRecord::gestationalAgeWeeks -> with(value as Int?) {
+                    // If we need to access to the values of other properties, we use
+                    // setupDependentPropertiesMap to get them. This function will make sure that
+                    //
+                    // * If this is called from a PregnancyRecord object, it will use itself as the
+                    //   source of values,
+                    // * Otherwise it will use the currentValues map when available, and this map
+                    //   can be supplied by other objects so that they don't have to create a
+                    //   PregnancyRecord just to verify.
+                    //
+                    // This vararg parameter lets us declare the properties that this  verification
+                    // path will use. In this case, we can obviously see that the verification of
+                    // [gestationalAgeWeeks] depends on [isPregnant].
+                    val currentProperties = setupDependentPropertiesMap(
+                        instance, currentValues,
+                        PregnancyRecord::isPregnant
+                    )
+                    if (this == null) {
+                        return if (
+                            currentProperties[PregnancyRecord::isPregnant.name] == false
+                        ) {
+                            true to ""
+                        } else {
+                            false to "Missing gestational age despite being pregnant"
+                        }
+                    }
+                    true to ""
+                }
+                else -> {
+                    true to ""
+                }
+            }
         }
     }
 }
@@ -272,6 +385,12 @@ internal data class TestClass(
                 }
                 return Pair(true, "")
             }
+            TestClass::privateValue -> (value as? Int)?.let { privateValue ->
+                privateValue
+
+                return if (privateValue >= 50) Pair(true, "") else Pair(false, "less than 50")
+            } ?: false to "privateValue is a non-null type but it's null, so the cast failed"
+
             else -> Pair(true, "")
         }
     }

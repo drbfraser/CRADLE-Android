@@ -12,7 +12,7 @@ class ReadingTests {
             BloodPressure(110, 70, 65),
             UrineTest("+", "++", "-", "-", "-"),
             listOf("headache", "blurred vision", "pain"),
-            Referral("a comment", "HC0000", 5, "123", "abc"),
+            null,
             null,
             unixTime,
             true,

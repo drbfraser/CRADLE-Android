@@ -7,7 +7,6 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import com.cradle.neptune.R
-import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.ReadingAnalysis
@@ -20,6 +19,7 @@ import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
+import dagger.hilt.android.AndroidEntryPoint
 import java.util.ArrayList
 import java.util.Collections
 import javax.inject.Inject
@@ -29,6 +29,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Suppress("LargeClass")
+@AndroidEntryPoint
 class StatsActivity : AppCompatActivity() {
     @Inject
     lateinit var readingManager: ReadingManager
@@ -37,7 +38,6 @@ class StatsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_stats)
-        (application as MyApp).appComponent.inject(this)
 
         MainScope().launch {
             readings = withContext(Dispatchers.IO) { readingManager.getAllReadings() }

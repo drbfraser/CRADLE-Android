@@ -1,9 +1,12 @@
 package com.cradle.neptune.utilitiles
 
+import androidx.annotation.MainThread
 import androidx.annotation.UiThread
 import androidx.annotation.WorkerThread
-import androidx.lifecycle.MutableLiveData
+import androidx.collection.arrayMapOf
+import androidx.lifecycle.MediatorLiveData
 import java.lang.IllegalArgumentException
+import java.lang.reflect.InvocationTargetException
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KProperty
@@ -70,6 +73,10 @@ class DynamicConstructor<T : Any>(k: KClass<T>, private val map: Map<String, Any
      *
      * @throws IllegalArgumentException if any of the required parameters are
      * missing or are of the wrong type
+     * @throws InvocationTargetException if trying to build an object of type
+     * [T] that uses default values for constructor parameters, but missing
+     * values for them. DynamicModelBuilder doesn't support using default
+     * values set by a class; all the parameters must be explicitly given.
      *
      * @see dynamic
      */
@@ -101,52 +108,56 @@ class LiveDataDynamicModelBuilder : DynamicModelBuilder() {
     @Suppress("UNCHECKED_CAST")
     override val stringMap
         get() = map.mapValues {
-            (it.value as MutableLiveData<Any?>?)?.value
+            (it.value as MediatorLiveData<Any?>?)?.value
         }.toMap()
 
     /**
-     * Return the current [MutableLiveData] for a given parameter name. If it doesn't exist, a
-     * [MutableLiveData] object with null in it is set. Prefer [getWithType] using
-     * KProperty (Class::propertyName) notation to get typed [MutableLiveData] from the start.
+     * Return the current [MediatorLiveData] for a given parameter name. If it doesn't exist, a
+     * [MediatorLiveData] object with null in it is set. Prefer [getWithType] using
+     * KProperty (Class::propertyName) notation to get typed [MediatorLiveData] from the start.
      */
-    override fun get(key: String) = map[key] as? MutableLiveData<*>
-        ?: MutableLiveData(null).apply { map[key] = this }
+    override fun get(key: String) = map[key] as? MediatorLiveData<*>
+        ?: MediatorLiveData<Any?>().apply { map[key] = this }
 
     /**
-     * Prefer using get<T> to get typed [MutableLiveData] from the start.
+     * Prefer using get<T> to get typed [MediatorLiveData] from the start.
      */
-    override fun get(key: KProperty<*>) = map[key.name] as? MutableLiveData<*>
-        ?: MutableLiveData(null).apply { map[key.name] = this }
+    override fun get(key: KProperty<*>) = map[key.name] as? MediatorLiveData<*>
+        ?: MediatorLiveData<Any?>().apply { map[key.name] = this }
 
     /**
-     * @return The typed [MutableLiveData] for the value of a given parameter name.
+     * @return The typed [MediatorLiveData] for the value of a given parameter name.
      * @param key The [KProperty] we use as a key
      */
     @JvmName("getWithType")
     @Suppress("UNCHECKED_CAST")
-    fun <T : Any?> get(key: KProperty<T>) = map[key.name] as? MutableLiveData<T>
-        ?: MutableLiveData<T>(null).apply { map[key.name] = this }
+    fun <T : Any?> get(key: KProperty<T>) = map[key.name] as? MediatorLiveData<T>
+        ?: MediatorLiveData<T>().apply { map[key.name] = this }
 
     /**
-     * @return The typed [MutableLiveData] for the value of a given parameter name.
+     * @return The typed [MediatorLiveData] for the value of a given parameter name.
      * @param key The [KProperty] we use as a key
-     * @param defaultValue The default value if the [MutableLiveData] for the given property hasn't
+     * @param defaultValue The default value if the [MediatorLiveData] for the given property hasn't
      * been initialized.
      */
     @Suppress("UNCHECKED_CAST")
-    fun <T : Any?> get(key: KProperty<T>, defaultValue: T) = map[key.name] as? MutableLiveData<T>
-        ?: MutableLiveData<T>(defaultValue).apply { map[key.name] = this }
+    @MainThread
+    fun <T : Any?> get(key: KProperty<T>, defaultValue: T) = map[key.name] as? MediatorLiveData<T>
+        ?: MediatorLiveData<T>().apply {
+            this.value = defaultValue
+            map[key.name] = this
+        }
 
     /**
-     * Sets the new [value] for a given parameter name into the MutableLiveData backed by this model
-     * builder using [MutableLiveData.setValue].
+     * Sets the new [value] for a given parameter name into the MediatorLiveData backed by this model
+     * builder using [MediatorLiveData.setValue].
      */
     @UiThread
     override fun set(key: String, value: Any?): LiveDataDynamicModelBuilder {
         @Suppress("UNCHECKED_CAST")
-        with(map[key] as MutableLiveData<Any?>?) {
+        with(map[key] as MediatorLiveData<Any?>?) {
             if (this == null) {
-                map[key] = MutableLiveData(value)
+                map[key] = MediatorLiveData<Any?>().apply { setValue(value) }
             } else {
                 setValue(value)
             }
@@ -155,16 +166,16 @@ class LiveDataDynamicModelBuilder : DynamicModelBuilder() {
     }
 
     /**
-     * Posts the new [value] for a given parameter name into the MutableLiveData backed by this
-     * model builder using [MutableLiveData.postValue]. This is meant for worker threads, since
-     * [MutableLiveData.setValue] is only usable on the main thread.
+     * Posts the new [value] for a given parameter name into the MediatorLiveData backed by this
+     * model builder using [MediatorLiveData.postValue]. This is meant for worker threads, since
+     * [MediatorLiveData.setValue] is only usable on the main thread.
      */
     @WorkerThread
     fun setWorkerThread(key: String, value: Any?): LiveDataDynamicModelBuilder {
         @Suppress("UNCHECKED_CAST")
-        with(map[key] as MutableLiveData<Any?>?) {
+        with(map[key] as MediatorLiveData<Any?>?) {
             if (this == null) {
-                map[key] = MutableLiveData(value)
+                map[key] = MediatorLiveData<Any?>().apply { postValue(value) }
             } else {
                 postValue(value)
             }
@@ -173,16 +184,16 @@ class LiveDataDynamicModelBuilder : DynamicModelBuilder() {
     }
 
     /**
-     * Posts the new [value] for a given parameter name into the MutableLiveData backed by this
-     * model builder using [MutableLiveData.postValue]. This is meant for worker threads, since
-     * [MutableLiveData.setValue] is only usable on the main thread.
+     * Posts the new [value] for a given parameter name into the MediatorLiveData backed by this
+     * model builder using [MediatorLiveData.postValue]. This is meant for worker threads, since
+     * [MediatorLiveData.setValue] is only usable on the main thread.
      */
-    @UiThread
+    @MainThread
     override fun set(key: KProperty<*>, value: Any?): LiveDataDynamicModelBuilder {
         @Suppress("UNCHECKED_CAST")
-        with(map[key.name] as MutableLiveData<Any?>?) {
+        with(map[key.name] as MediatorLiveData<Any?>?) {
             if (this == null) {
-                map[key.name] = MutableLiveData(value)
+                map[key.name] = MediatorLiveData<Any?>().apply { setValue(value) }
             } else {
                 setValue(value)
             }
@@ -191,16 +202,16 @@ class LiveDataDynamicModelBuilder : DynamicModelBuilder() {
     }
 
     /**
-     * Posts the new [value] into the MutableLiveData backed by this model builder using
-     * [MutableLiveData.postValue]. This is meant for worker threads, since
-     * [MutableLiveData.setValue] is only usable on the main thread.
+     * Posts the new [value] into the MediatorLiveData backed by this model builder using
+     * [MediatorLiveData.postValue]. This is meant for worker threads, since
+     * [MediatorLiveData.setValue] is only usable on the main thread.
      */
     @WorkerThread
     fun setWorkerThread(key: KProperty<*>, value: Any?): LiveDataDynamicModelBuilder {
         @Suppress("UNCHECKED_CAST")
-        with(map[key.name] as MutableLiveData<Any?>?) {
+        with(map[key.name] as MediatorLiveData<Any?>?) {
             if (this == null) {
-                map[key.name] = MutableLiveData(value)
+                map[key.name] = MediatorLiveData<Any?>().apply { postValue(value) }
             } else {
                 postValue(value)
             }
@@ -208,17 +219,23 @@ class LiveDataDynamicModelBuilder : DynamicModelBuilder() {
         return this
     }
 
-    override fun <T : Any> decompose(k: KClass<T>, obj: T) =
-        super.decompose(k, obj) as LiveDataDynamicModelBuilder
+    @MainThread
+    override fun <T : Any> decompose(k: KClass<T>, obj: T): LiveDataDynamicModelBuilder {
+        for (property in k.memberProperties) {
+            set(property, property.get(obj))
+        }
+        return this
+    }
 
     /**
      * Decomposes the member properties of [obj] adding them to this builder's internal map as
-     * [MutableLiveData] entities. Note that the original [decompose] doesn't return a
+     * [MediatorLiveData] entities. Note that the original [decompose] doesn't return a
      * [LiveDataDynamicModelBuilder] by default, so this is a workaround if needing to use
      * [decompose] in a builder fashion.
      *
      * @return this object, as a [LiveDataDynamicModelBuilder]
      */
+    @MainThread
     inline fun <reified T : Any> decomposeToLiveData(obj: T) = decompose(T::class, obj)
 }
 
@@ -228,7 +245,10 @@ class LiveDataDynamicModelBuilder : DynamicModelBuilder() {
  * an object.
  */
 open class DynamicModelBuilder {
-    protected val map: MutableMap<String, Any?> = mutableMapOf()
+    protected val map: MutableMap<String, Any?> = arrayMapOf()
+
+    val publicMap: Map<String, Any?>
+        get() = map
 
     protected open val stringMap get() = map.toMap()
 
@@ -285,6 +305,7 @@ open class DynamicModelBuilder {
      *
      * @return this object
      */
+    @MainThread
     inline fun <reified T : Any> decompose(obj: T) = decompose(T::class, obj)
 
     /**
@@ -317,6 +338,10 @@ open class DynamicModelBuilder {
      *
      * @throws IllegalArgumentException if any of the required parameters are
      * missing
+     * @throws InvocationTargetException if trying to build an object of type
+     * [T] that uses default values for constructor parameters, but missing
+     * values for them. DynamicModelBuilder doesn't support using default
+     * values set by a class; all the parameters must be explicitly given.
      */
     fun <T : Any> build(k: KClass<T>): T = constructor(k).getValue()
 
@@ -326,6 +351,10 @@ open class DynamicModelBuilder {
      *
      * @throws IllegalArgumentException if any of the required parameters are
      * missing
+     * @throws InvocationTargetException if trying to build an object of type
+     * [T] that uses default values for constructor parameters, but missing
+     * values for them. DynamicModelBuilder doesn't support using default
+     * values set by a class; all the parameters must be explicitly given.
      */
     inline fun <reified T : Any> build(): T = build(T::class)
 

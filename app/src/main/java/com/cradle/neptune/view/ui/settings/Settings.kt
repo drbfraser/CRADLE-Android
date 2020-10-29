@@ -10,7 +10,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.PreferenceFragmentCompat
 import com.cradle.neptune.R
-import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.manager.HealthCentreManager
 import com.cradle.neptune.manager.LoginManager
 import com.cradle.neptune.manager.PatientManager
@@ -21,12 +20,14 @@ import com.cradle.neptune.utilitiles.validatePort
 import com.cradle.neptune.view.IntroActivity
 import com.cradle.neptune.view.LoginActivity
 import com.cradle.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity
+import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@AndroidEntryPoint
 class SettingsActivity : AppCompatActivity() {
     companion object {
         fun makeLaunchIntent(context: Context) = Intent(context, SettingsActivity::class.java)
@@ -71,6 +72,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 }
 
+@AndroidEntryPoint
 class SettingsFragment : PreferenceFragmentCompat() {
 
     @Inject
@@ -106,10 +108,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        (activity?.application as MyApp)
-            .appComponent
-            .inject(this)
-
         setPreferencesFromResource(R.xml.preferences, rootKey)
 
         findPreference(R.string.key_health_centres_settings_button)
@@ -182,13 +180,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 }
 
+@AndroidEntryPoint
 class AdvancedSettingsFragment : PreferenceFragmentCompat() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        (activity?.application as MyApp)
-            .appComponent
-            .inject(this)
-
         Log.v(this::class.simpleName, "Loading advanced settings from resource")
         setPreferencesFromResource(R.xml.advanced_preferences, rootKey)
 

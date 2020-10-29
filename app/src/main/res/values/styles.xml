@@ -29,9 +29,30 @@
         <item name="fontFamily">@font/ibm_plex_sans_regular</item>
     </style>
 
-    <style name="AppTheme.NoActionBar">
+    <style name="AppTheme.NoActionBar" parent="AppTheme">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+    </style>
+
+    <!-- Source: https://medium.com/alexander-schaefer/implementing-the-new-material-design-full-screen-dialog-for-android-e9dcc712cb38 -->
+    <style name="AppTheme.FullScreenDialog" parent="Theme.MaterialComponents.Light.Dialog">
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:actionMenuTextColor">@color/white</item>
+        <item name="actionMenuTextColor">@style/PreferenceThemeOverlay</item>
+    </style>
+
+    <!-- Theme for reading flow. -->
+    <style name="ReadingFlowTheme" parent="AppTheme.NoActionBar">
+        <item name="textInputStyle">@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox</item>
+    </style>
+
+    <style name="ReadingFlowHeader" parent="TextAppearance.MaterialComponents.Subtitle1" />
+
+    <style name="FormTextInputStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <!-- <item name="android:paddingBottom">@dimen/material_edit_text_bottom_padding</item> -->
     </style>
 
     <style name="LargeTitle" parent="AppTheme">

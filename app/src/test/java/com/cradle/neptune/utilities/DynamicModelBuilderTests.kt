@@ -4,6 +4,7 @@ import com.cradle.neptune.utilitiles.DynamicModelBuilder
 import com.cradle.neptune.utilitiles.dynamic
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
+import java.lang.reflect.InvocationTargetException
 
 class DynamicModelBuilderTests {
 
@@ -95,9 +96,24 @@ class DynamicModelBuilderTests {
     fun dynamicModelBuilder_ifMissingField_returnNull() {
         assertThrows(java.lang.IllegalArgumentException::class.java) {
             with(DynamicModelBuilder()) {
-                set(Person::name, "Maya")
+                set(Person::name, null)
                 build<Person>()
             }
+        }
+    }
+
+    @Test
+    fun dynamicModelBuilder_ifMissingFieldForDefaults_returnNull() {
+        // Using a person that has defaults results in a different exception.
+        assertThrows(InvocationTargetException::class.java) {
+            with(DynamicModelBuilder()) {
+                set(PersonWithDefaults::name, null)
+                build<PersonWithDefaults>()
+            }
+        }
+
+        assertThrows(InvocationTargetException::class.java) {
+            DynamicModelBuilder().build<PersonWithDefaults>()
         }
     }
 }
@@ -105,6 +121,8 @@ class DynamicModelBuilderTests {
 /* Classes for Testing */
 
 data class Person(val name: String, val age: Int, val email: String?)
+
+data class PersonWithDefaults(val name: String = "", val age: Int = 0, val email: String)
 
 data class Course(val name: String, val units: Int = 3)
 

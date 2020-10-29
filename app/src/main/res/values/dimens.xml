@@ -1,6 +1,11 @@
 <resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="material_edit_text_bottom_padding">8dp</dimen>
     <!-- Original style guide specifies 26 pt, 16pt, 12pt; need to scale down a bit -->
     <dimen name="text_size_h1">30sp</dimen>
     <dimen name="text_size_h2">19sp</dimen>
     <dimen name="text_size_body1">14sp</dimen>
+    <dimen name="reading_flow_card_margin">12dp</dimen>
+    <dimen name="reading_flow_previous_reading_item_margin">8dp</dimen>
+    <dimen name="reading_flow_previous_reading_item_padding">8dp</dimen>
 </resources>

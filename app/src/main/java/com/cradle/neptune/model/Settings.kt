@@ -3,6 +3,7 @@ package com.cradle.neptune.model
 import android.content.Context
 import android.content.SharedPreferences
 import com.cradle.neptune.R
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 // Implementation note: this class and all it's properties are marked `open`
@@ -13,7 +14,7 @@ import javax.inject.Inject
  */
 open class Settings @Inject constructor(
     val sharedPreferences: SharedPreferences,
-    val context: Context
+    @ApplicationContext val context: Context
 ) {
 
     /* Network */

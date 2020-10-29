@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">CRADLE</string>
     <string name="action_settings">Settings</string>
 
@@ -44,6 +44,14 @@
         <item>Bleeding</item>
         <item>Feverish</item>
         <item>Unwell</item>
+        <item>Cough</item>
+        <item>Shortness of breath</item>
+        <item>Sore throat</item>
+        <item>Muscle ache</item>
+        <item>Fatigue</item>
+        <item>Loss of sense</item>
+        <item>Loss of taste</item>
+        <item>Loss of smell</item>
     </string-array>
 
     <string-array name="reading_ga_units">
@@ -56,7 +64,15 @@
     <string-array name="sex">
         <item>Male</item>
         <item>Female</item>
-        <item>Intersex</item>
+        <item>Other</item>
+    </string-array>
+
+    <!-- Same order as presented on frontend -->
+    <string-array name="urine_test_symbols" translatable="false">
+        <item>NAD</item>
+        <item>+</item>
+        <item>++</item>
+        <item>+++</item>
     </string-array>
 
     <!-- Reading Descriptions -->
@@ -95,20 +111,19 @@
     <string name="brief_advice_green">Continue normal care.</string>
     <string name="brief_advice_yellow_up">Monitor for preeclampsia. Transfer to health centre within 24h.</string>
     <string name="brief_advice_yellow_down">Common but assess for infection, bleeding, anaemia, and dehydration.</string>
+    <!-- TODO: Stop assuming the patient is a mother. These advice strings were seen for male patients, whcih is a bug -->
     <string name="brief_advice_red_up">Urgent action needed. Transfer to health centre within 4h. Monitor baby.</string>
     <string name="brief_advice_red_down">Urgent action needed. Get help and assess mother. Immediately transfer to health centre within 1h.</string>
 
-    <!-- Confirm dialog -->
+    <!-- Reading flow: Discard dialog -->
     <string name="discard_dialog_discard">Discard</string>
     <string name="discard_dialog_cancel">Cancel</string>
-    <string name="discard_dialog_new_reading">Discard this new reading?</string>
-    <string name="discard_dialog_rechecking">Discard this rechecking reading?</string>
+    <string name="discard_dialog_new_reading">Discard new reading?</string>
+    <string name="discard_dialog_rechecking">Discard vitals recheck?</string>
     <string name="discard_dialog_changes">Discard your changes?</string>
-    <string name="missing_info_title">Missing Information</string>
-    <string name="missing_info_body">Some required fields from PATIENT or CONFIRM VITALS tabs are missing. Please enter this data before saving.</string>
-    <string name="invalid_data">Invalid Data</string>
-    <string name="invalid_data_message">Valid ranges\n\nAge limit: 0–150 years\nHeart rate: 30–300 bpm\nsystolic and diastolic: 10-300 bpm\npregnancy max: 15 months</string>
-
+    <string name="discard_dialog_new_patient">Discard this new patient?</string>
+    <string name="discard_dialog_new_patient_and_reading">Discard this new patient and reading?</string>
+    <string name="discard_dialog_title">Discard?</string>
 
     <!-- SMS Text Message Referral -->
 
@@ -289,7 +304,8 @@
     <string name="reading_card_pending_no_assessment_urine_test_result_colon">Urine Test Result:</string>
     <string name="reading_card_pending_no_assessment_symptoms_colon">Symptoms:</string>
     <string name="referral_dialog_title_which_health_centre">Which health centre?</string>
-    <string name="referral_dialog_comments_optional">Comments (optional)</string>
+    <string name="referral_dialog_comments_label">Comments (optional)</string>
+    <string name="optional_edit_text_hint">(optional)</string>
     <string name="referral_dialog_sending_a_referral_saves_the_reading">Sending a referral saves the reading</string>
     <string name="referral_dialog_uploading_referral_message">Uploading referral</string>
     <string name="referral_dialog_success_toast">Successfully uploaded referral</string>
@@ -299,18 +315,20 @@
     <string name="urine_test_layout_blood">Blood</string>
     <string name="urine_test_layout_glucose">Glucose</string>
     <string name="urine_test_layout_table_header_result">Result</string>
+    <string name="household_number">Household number</string>
     <string name="patient_error_id_missing">Missing patient ID</string>
     <string name="patient_error_id_must_be_number">ID must be a number</string>
     <string name="patient_error_id_too_long_max_n_digits">ID is too long; max is %1$d digits.</string>
-    <string name="patient_error_name_missing">Missing initials / name</string>
+    <string name="patient_error_name_missing">Missing name</string>
     <string name="patient_error_dob_missing">Missing date of birth</string>
     <string name="patient_error_dob_format">Wrong date of birth format (need %1$s)</string>
     <string name="patient_error_age_between_n_and_m">Age must be between %1$d and %2$d</string>
     <string name="patient_error_age_or_dob_missing">Missing age or date of birth</string>
-    <string name="patient_error_name_must_be_characters">Initials / name must be characters</string>
-    <string name="patient_error_gestational_age_missing">Gestational age is missing despite pregnancy</string>
-    <string name="patient_error_gestation_greater_than_n_weeks">Gestation is greater than %1$d weeks</string>
-    <string name="patient_error_gestation_greater_than_n_months">Gestation is greater than %1$d months</string>
+    <string name="patient_error_name_must_be_characters">Name must be characters</string>
+    <string name="patient_error_gestational_age_missing">Missing</string>
+    <string name="patient_error_gestation_for_no_preg">Can\'t have gestational age when not pregnant</string>
+    <string name="patient_error_gestation_greater_than_n_weeks">Over %1$d weeks</string>
+    <string name="patient_error_gestation_greater_than_n_months">Over %1$d months</string>
     <string name="patient_error_gestation_must_be_not_zero">Can\'t be 0</string>
     <string name="blood_pressure_error_systolic_out_of_bounds">Systolic blood pressure needs to be %1$d and %2$d</string>
     <string name="blood_pressure_error_diastolic_out_of_bounds">Diastolic blood pressure needs to be %1$d - %2$d</string>
@@ -318,13 +336,120 @@
     <string name="blood_pressure_error_missing_systolic">Missing systolic blood pressure</string>
     <string name="blood_pressure_error_missing_diastolic">Missing diastolic blood pressure</string>
     <string name="blood_pressure_error_missing_heart_rate">Missing heart rate</string>
+    <string name="fragment_patient_info_dob_helper">Enter approximate age, or use date of birth via icon</string>
+    <string name="age_date_picker_title">Select date of birth</string>
+    <string name="age_input_suffix_approximate_years_old">years old (approximate)</string>
+    <string name="age_input_calculated_age">(%1$d years old)</string>
+    <string name="years_old_with_date_of_birth_in_parens">years old (<xliff:g id="date" example="1995-05-05">%1$s</xliff:g>)</string>
+    <string name="dob_helper_using_age_from_date_of_birth">Using age from given date of birth</string>
+    <string name="fragment_patient_info_name_label">Name*</string>
+    <string name="field_required">*Required</string>
+    <string name="fragment_patient_info_age_label">Age*</string>
+    <string name="fragment_patient_info_village_number_label">Village number*</string>
+    <string name="fragment_patient_info_gender_label">Gender*</string>
+    <string name="fragment_patient_info_pregnant_checkbox_label">Pregnant</string>
+    <string name="fragment_patient_info_gestational_age_units_label">Gestational age units</string>
+    <string name="fragment_patient_info_gestational_age_label">Gestational age</string>
+    <string name="patient_error_sex_missing">Missing gender</string>
+    <string name="fragment_patient_info_id_label">ID*</string>
+    <string name="fragment_patient_info_medical_history_label">Medical history</string>
+    <string name="fragment_patient_info_drug_history_label">Drug history</string>
+    <string name="edit_text_unavailable_hint">(unavailable)</string>
+    <string name="fragment_patient_info_title">Demographics</string>
+    <string name="fragment_symptoms_other_symptoms_label">Other symptoms</string>
+    <string name="back">Back</string>
+    <string name="urine_test_error_blood_missing">Missing blood test</string>
+    <string name="urine_test_error_glucose_missing">Missing glucose</string>
+    <string name="urine_test_error_leukocytes_missing">Missing leukocytes</string>
+    <string name="urine_test_error_nitrites_missing">Missing nitrites</string>
+    <string name="urine_test_error_invalid_value">Invalid urine test value</string>
+    <string name="urine_test_card_header">Urine test</string>
+    <string name="urine_test_error_protein_missing">Protein missing</string>
+    <string name="patient_error_village_number_missing">Missing village number</string>
+    <string name="patient_error_village_number_not_number">Must be a number</string>
+    <string name="fragment_vital_signs_take_picture_button">Take picture of CRADLE VSA</string>
+    <string name="fragment_vital_signs_systolic_label">Systolic*</string>
+    <string name="fragment_vital_signs_diastolic_label">Diastolic*</string>
+    <string name="fragment_vital_signs_heart_rate_label">Heart rate*</string>
+    <string name="fragment_vital_signs_respiratory_rate_label">Respiratory rate</string>
+    <string name="fragment_vital_signs_temperature_label">Temperature</string>
+    <string name="fragment_vital_signs_oxygen_saturation_label">Oxygen saturation</string>
+    <string name="fragment_vital_signs_cradle_vsa_fields_card_header">Cradle VSA Readings</string>
+    <string name="activity_reading_next_button">Next</string>
+    <string name="reading_bottom_nav_bar_checking_id">Checking patient ID…</string>
+    <string name="reading_activity_patient_id_exists_dialog_title_local_patient">Use existing patient?</string>
+    <string name="reading_activity_patient_id_exists_dialog_message_local_patient">A patient with the same ID already exists in your patients list. Would you like to use the patient with\n\nID: %1$s\nName: %2$s\nGender: %3$s\n\nThis will discard the information you\'ve entered here.</string>
+    <string name="reading_activity_patient_id_exists_dialog_title_server_patient">Patient ID already exists on server</string>
+    <string name="reading_activity_patient_id_exists_dialog_message_server_patient">A patient with the same ID already exists on the server. To add readings for this patient ID, you must add the existing patient to your patients list. Would you like to download and use the patient with\n\nID: %1$s\nName: %2$s\nGender: %3$s\n\nDownloading will discard the information you\'ve entered here.</string>
+    <string name="reading_activity_patient_id_exists_dialog_download_button_server_patient">Download and use</string>
+    <string name="reading_activity_patient_id_exists_dialog_use_button_local_patient">Use</string>
+    <string name="reading_activity_title_new_patient">Creating new patient</string>
+    <string name="reading_activity_title_editing_reading">Editing un-uploaded reading</string>
+    <string name="reading_activity_title_create_new_reading">Creating new reading</string>
+    <string name="reading_activity_title_recheck_vitals">Rechecking vitals</string>
+    <string name="reading_activity_subtitle_name_and_id">%1$s (ID %2$s)</string>
+    <string name="reading_activity_errors_left_toast">There are still errors left to correct!</string>
+    <string name="reading_activity_downloading_patient_id_toast">Downloading</string>
+    <string name="reading_activity_downloading_patient_failed_toast">Downloading failed</string>
+    <string name="reading_activity_downloading_patient_toast">Downloading patient…</string>
+    <string name="reading_activity_downloading_patient_successful_toast">Download successful</string>
 
     <string name="login_activity_device_is_outdated_dialog_title">Device is out of date</string>
     <string name="login_activity_device_is_outdated_dialog_message">Your device is unable to connect to the servers securely. Since Google Play services are unavailable on your device, we\'re unable to try to upgrade your device\'s security provider. Please ensure that your device supports TLS 1.2 or higher.</string>
     <string name="login_activity_security_provider_toast">Attempting to upgrade default security provider…</string>
     <string name="login_error_ssl_handshake_exception">Error: SSLHandshakeException</string>
     <string name="login_error_general_error">Failed to connect to server</string>
+    <string name="fragment_advice_advice_card_header">Advice for this reading</string>
+    <string name="fragment_advice_save_options_header">Options for saving</string>
 
+    <string name="list_reading_item_blood_pressure_display_systolic_diastolic">Systolic: <xliff:g id="bloodPressure" example="115">%1$d</xliff:g>, Diastolic: <xliff:g id="bloodPressure" example="115">%2$d</xliff:g></string>
+    <string name="list_reading_item_heart_rate_display"><xliff:g id="heartRate" example="75">%1$d</xliff:g> BPM</string>
+    <string name="list_previous_readings_item_heart_rate_label">Heart rate</string>
+    <string name="list_previous_readings_item_blood_pressure_label">Blood pressure</string>
+    <string name="recommended_radio_button_suffix">(recommended)</string>
+    <string name="reading_activity_warning_app_killed_by_system">Warning: The app was killed by the Android system, so unsaved changes have been lost</string>
+    <string name="fragment_advice_save_reading_button">Save reading</string>
+    <string name="fragment_advice_save_new_patient_and_reading_button">Save patient and reading</string>
+    <string name="fragment_advice_save_edits_button">Save changes to reading</string>
+    <string name="fragment_advice_recheck_radio_button_dont_recheck">Don\'t recheck vitals</string>
+    <string name="fragment_advice_recheck_radio_button_recheck_immediately">Recheck vitals immediately after saving</string>
+    <string name="fragment_advice_recheck_radio_button_recheck_15_mins">Recheck vitals 15 minutes after saving</string>
+    <string name="fragment_advice_follow_up_label">Follow up</string>
+    <string name="fragment_advice_follow_up_radio_button_no_followup">No follow up needed</string>
+    <string name="fragment_advice_follow_up_radio_button_another_day">Follow up needed for another day</string>
+    <string name="fragment_advice_referral_header">Referral</string>
+    <string name="fragment_advice_referral_radio_button_no_referral">Save without referral</string>
+    <string name="fragment_advice_referral_radio_button_save_with_referral">Save with referral (requires internet or SMS)</string>
+    <string name="fragment_advice_previous_readings_for_this_patient">Previous readings for this patient</string>
+    <string name="fragment_advice_recheck_label">Reminders after saving this reading</string>
+    <string name="activity_patient_profile_line_chart_description">Cardiovascular data from last %1$d readings</string>
+    <string name="activity_patient_profile_chart_systolic_label">Systolic BP</string>
+    <string name="activity_patient_profile_chart_diastolic_label">Diastolic BP</string>
+    <string name="activity_patient_profile_chart_heart_rate_label">Heart Rate BPM</string>
+    <string name="yes">Yes</string>
+    <string name="activity_patient_profile_delete_reading_dialog_title">Delete reading?</string>
+    <string name="activity_patient_profile_delete_reading_dialog_delete_button">Delete</string>
+    <string name="health_centre_label">Health centre</string>
+    <string name="referral_dialog_open_health_centre_settings_button_content_description">Open health centre settings</string>
+    <string name="fragment_advice_saving_dialog_title">Saving…</string>
+    <string name="dialog_referral_toast_sms_success_new_patient">New patient and reading have been saved locally. Please send the referral SMS manually.</string>
+    <string name="dialog_referral_toast_sms_success_new_reading_only">Reading has been saved locally. Please send the referral SMS manually.</string>
+    <string name="dialog_referral_toast_error_saving_patient_reading">An error occurred when trying to save the new patient and reading. Please recheck the fields.</string>
+    <string name="dialog_referral_toast_error_saving_reading">An error occurred when trying to save the reading. Please recheck the fields.</string>
+    <string name="dialog_referral_toast_error_uploading_referral_reading">An error occurred when uploading the reading and referral to the server.</string>
+    <string name="dialog_referral_toast_error_uploading_referral_reading_and_patient">An error occurred when uploading the new patient, reading, and referral to the server.</string>
+    <string name="dialog_referral_toast_web_success_new_patient">The new patient, reading, and referral have been uploaded to the server.</string>
+    <string name="dialog_referral_toast_web_success_new_reading_only">The reading and the referral have been uploaded to the server.</string>
+    <string name="fragment_advice_toast_error">Error occurred when trying to save</string>
+    <string name="fragment_advice_toast_success_new_patient">Successfully saved new patient and reading</string>
+    <string name="fragment_advice_toast_success_edit_reading">Your changes to the reading were saved</string>
+    <string name="fragment_advice_toast_success_new_reading">Reading saved successfully</string>
+    <string name="fragment_advice_toast_error_new_patient">Error occurred when trying to save new reading and patient. Please recheck the fields.</string>
+    <string name="fragment_advice_toast_error_edit_reading">Error occurred when trying to save edits to this reading. Please recheck the fields.</string>
+    <string name="fragment_advice_toast_error_new_reading">Error occurred when trying to save this new reading. Please recheck the fields.</string>
+    <string name="referral_dialog_explanation_text_new_patient">Sending a referral will save the new patient and reading to your device. If you send the referral via the web, the referral along with the patient and reading will all be uploaded to the server.</string>
+    <string name="referral_dialog_explanation_text_new_reading">Sending a referral will save the reading to your device. If you send the referral via the web, the referral along with the reading will be uploaded to the server.</string>
+    <string name="referral_dialog_select_health_centre">Select one of your health centres to send the referral to.</string>
 
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>

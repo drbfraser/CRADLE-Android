@@ -121,7 +121,8 @@ class PatientTests {
         val wrong = setOf("", " ", "sad_345", "11", "Johh5", "3453453453543 5 345435 345345",
             "123456789012345", "ABCDFGHJKLQWE5RT")
         val good = setOf("testName", "John Smith", "Someone", "Alice", "Bob", "ABC", "JKL",
-            "Zulo", "***ThisIsValid...", "\"SomeRealLongNameWillHaveFourCharWordAlwa\"")
+            "Zulo", "Alice Bob Eden", "SomeRealLongNameWillHaveFourCharWordAlwa", "Jake O'Henry",
+            "Sir Name-ham Namer")
         assertValidityOverSet(wrong, Patient::name, areAllValuesValid = false)
         assertValidityOverSet(good, Patient::name, areAllValuesValid = true)
     }
@@ -522,18 +523,19 @@ class PatientTests {
         areAllValuesValid: Boolean, patientInstance: Patient? = null,
         dependentPropertiesMap: Map<KProperty<*>, Any?>? = null
     ) {
-        set.forEach{
+        set.forEach{ setElement ->
             val pair = Patient.Companion.isValueValid(
-                property, it, mockContext, patientInstance, dependentPropertiesMap
+                property, setElement, mockContext, patientInstance,
+                dependentPropertiesMap?.mapKeys { it.key.name }?.toMap()
             )
             if (areAllValuesValid) {
                 assert(pair.first) {
-                    "expected $it to be an valid ${property.name};" +
+                    "expected $setElement to be an valid ${property.name};" +
                         " but got mocked error message \"${pair.second}\""
                 }
             } else {
                 assert(!pair.first) {
-                    "expected $it to be an invalid ${property.name};" +
+                    "expected $setElement to be an invalid ${property.name};" +
                         " but it was accepted as valid"
                 }
             }

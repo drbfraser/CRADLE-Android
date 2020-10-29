@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:bind="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <import type="com.cradle.neptune.binding.Converter" />
+        <import type="com.cradle.neptune.model.RetestAdvice" />
+        <import type="com.cradle.neptune.view.ReadingActivity.LaunchReason"/>
+
+        <variable
+            name="viewModel"
+            type="com.cradle.neptune.viewmodel.PatientReadingViewModel" />
+
+        <variable
+            name="launchReason"
+            type="com.cradle.neptune.view.ReadingActivity.LaunchReason" />
+    </data>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentBottom="true"
+            android:fitsSystemWindows="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="16dp"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardElevation="3dp">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/reading_flow_card_margin">
+
+                        <TextView
+                            android:id="@+id/advice_card_header_text_view"
+                            style="@style/TextAppearance.Cradle.H2"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/fragment_advice_advice_card_header"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.5"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <LinearLayout
+                            android:id="@+id/current_reading_summary_linear_layout"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            app:layout_constraintBottom_toTopOf="@+id/advice_text_view"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.5"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/advice_card_header_text_view" />
+
+                        <TextView
+                            android:id="@+id/advice_text_view"
+                            style="@style/TextAppearance.Cradle.Body1"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="@{viewModel.adviceText}"
+                            app:layout_constraintBottom_toTopOf="@+id/previous_readings_text_view"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.5"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/current_reading_summary_linear_layout"
+                            tools:text="Advice message. Retest the patient immediately to confirm the reading. Also, there are some cards you can't see here." />
+
+                        <TextView
+                            android:id="@+id/previous_readings_text_view"
+                            style="@style/TextAppearance.Cradle.Body1"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="@string/fragment_advice_previous_readings_for_this_patient"
+                            android:textStyle="bold"
+                            app:layout_constraintBottom_toTopOf="@+id/previous_readings_linear_layout"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.5"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/advice_text_view" />
+
+                        <LinearLayout
+                            android:id="@+id/previous_readings_linear_layout"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/previous_readings_text_view"
+                            tools:layout_editor_absoluteX="82dp">
+
+
+                        </LinearLayout>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="16dp"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardElevation="3dp">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/reading_flow_card_margin">
+
+                        <TextView
+                            android:id="@+id/saving_card_header_text_view"
+                            style="@style/TextAppearance.Cradle.H2"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/fragment_advice_save_options_header"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.5"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/reminders_text_view"
+                            style="@style/TextAppearance.Cradle.Body1"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="@string/fragment_advice_recheck_label"
+                            android:textStyle="bold"
+                            app:layout_constraintBottom_toTopOf="@+id/recheck_vitals_radio_group"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.5"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/saving_card_header_text_view" />
+
+                        <RadioGroup
+                            android:id="@+id/recheck_vitals_radio_group"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:checkedButton="@={viewModel.adviceRecheckButtonId}"
+                            app:layout_constraintBottom_toTopOf="@+id/follow_up_text_view"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.5"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/reminders_text_view">
+
+                            <RadioButton
+                                android:id="@+id/dont_recheck_vitals_radio_button"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:enabled="@{viewModel.isInputEnabled}"
+                                android:text="@string/fragment_advice_recheck_radio_button_dont_recheck"
+                                bind:addRecommendedToEndWhen="@{viewModel.recommendedAdvice.retestAdvice == RetestAdvice.NOT_NEEDED}" />
+
+                            <RadioButton
+                                android:id="@+id/recheck_vitals_after_radio_button"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:enabled="@{viewModel.isInputEnabled}"
+                                android:text="@string/fragment_advice_recheck_radio_button_recheck_immediately"
+                                bind:addRecommendedToEndWhen="@{viewModel.recommendedAdvice.retestAdvice == RetestAdvice.RIGHT_NOW}" />
+
+                            <RadioButton
+                                android:id="@+id/recheck_vitals_after_15_min_radio_button"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:enabled="@{viewModel.isInputEnabled}"
+                                android:text="@string/fragment_advice_recheck_radio_button_recheck_15_mins"
+                                bind:addRecommendedToEndWhen="@{viewModel.recommendedAdvice.retestAdvice == RetestAdvice.IN_15_MIN}" />
+                        </RadioGroup>
+
+                        <TextView
+                            android:id="@+id/follow_up_text_view"
+                            style="@style/TextAppearance.Cradle.Body1"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="@string/fragment_advice_follow_up_label"
+                            android:textStyle="bold"
+                            app:layout_constraintBottom_toTopOf="@+id/follow_up_radio_group"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.5"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/recheck_vitals_radio_group" />
+
+                        <RadioGroup
+                            android:id="@+id/follow_up_radio_group"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:checkedButton="@={viewModel.adviceFollowUpButtonId}"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.5"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/follow_up_text_view">
+
+                            <RadioButton
+                                android:id="@+id/no_follow_up_needed_radio_button"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:enabled="@{viewModel.isInputEnabled}"
+                                android:text="@string/fragment_advice_follow_up_radio_button_no_followup"
+                                bind:addRecommendedToEndWhen="@{viewModel.recommendedAdvice.followupNeeded == false}" />
+
+                            <RadioButton
+                                android:id="@+id/follow_up_needed_radio_button"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:enabled="@{viewModel.isInputEnabled}"
+                                android:text="@string/fragment_advice_follow_up_radio_button_another_day"
+                                bind:addRecommendedToEndWhen="@{viewModel.recommendedAdvice.followupNeeded == true}" />
+                        </RadioGroup>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="16dp"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardElevation="3dp">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/reading_flow_card_margin">
+
+                        <TextView
+                            android:id="@+id/referral_header_text_view"
+                            style="@style/TextAppearance.Cradle.H2"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/fragment_advice_referral_header"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.5"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <RadioGroup
+                            android:id="@+id/referral_radio_group"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:checkedButton="@={viewModel.adviceReferralButtonId}"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.5"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/referral_header_text_view">
+
+                            <RadioButton
+                                android:id="@+id/no_referral_radio_button"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:enabled="@{viewModel.isInputEnabled}"
+                                android:text="@string/fragment_advice_referral_radio_button_no_referral"
+                                bind:addRecommendedToEndWhen="@{viewModel.recommendedAdvice.referralRecommended == false}" />
+
+                            <RadioButton
+                                android:id="@+id/send_referral_radio_button"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:enabled="@{viewModel.isInputEnabled}"
+                                android:text="@string/fragment_advice_referral_radio_button_save_with_referral"
+                                bind:addRecommendedToEndWhen="@{viewModel.recommendedAdvice.referralRecommended == true}" />
+                        </RadioGroup>
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="16dp"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardElevation="3dp">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/reading_flow_card_margin">
+
+                        <Button
+                            android:id="@+id/save_reading_button"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:enabled="@{viewModel.isInputEnabled}"
+                            android:text="@{Converter.launchReasonToSaveButtonString(context, launchReason ?? LaunchReason.LAUNCH_REASON_EXISTINGNEW)}"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            tools:text="@string/fragment_advice_save_reading_button" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+        </ScrollView>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

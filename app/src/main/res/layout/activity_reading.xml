@@ -1,104 +1,125 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/coordinatorLayout"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    xmlns:bind="http://schemas.android.com/apk/res-auto">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="?attr/colorPrimary"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:popupTheme="@style/AppTheme.PopupOverlay"
-        app:titleTextColor="@color/white" />
-        <!--app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />-->
-        <!--app:layout_scrollFlags="scroll|enterAlways|snap" />-->
+    <data>
+        <import type="com.cradle.neptune.binding.Converter" />
+        <import type="android.view.View" />
 
+        <variable
+            name="viewModel"
+            type="com.cradle.neptune.viewmodel.PatientReadingViewModel" />
+    </data>
 
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tabs"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="?attr/colorPrimary"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar"
-        app:tabIndicatorColor="@color/colorPrimaryLight"
-        app:tabTextColor="@color/white" />
+    <LinearLayout
+        android:id="@+id/container_placeholder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
+        android:orientation="vertical">
 
-
-        <!-- Hold Fragments -->
-    <androidx.viewpager.widget.ViewPager
-        android:id="@+id/view_pager"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        app:layout_constraintBottom_toTopOf="@+id/constraintLayout"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tabs">
-
-
-    </androidx.viewpager.widget.ViewPager>
-
-    <!-- Wizzard Nav Bar -->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:gravity="bottom"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <ImageView
-            android:id="@+id/ivPrevious"
-            android:layout_width="wrap_content"
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appbar"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/baseline_chevron_left_black_18" />
+            android:layout_gravity="top"
+            android:fitsSystemWindows="true">
 
-        <ImageView
-            android:id="@+id/ivNext"
-            android:layout_width="wrap_content"
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/toolbar3"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+                app:navigationContentDescription="Discard reading"
+                app:navigationIcon="@drawable/ic_baseline_clear_24" />
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/reading_nav_host"
+            android:name="androidx.navigation.fragment.NavHostFragment"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            app:defaultNavHost="true"
+            app:navGraph="@navigation/nav_reading_flow" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/nav_button_bottom_layout"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingRight="8dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/baseline_chevron_right_black_18" />
+            android:layout_gravity="bottom"
+            android:animateLayoutChanges="true"
+            android:background="@drawable/nav_bottom_layout_border">
 
-        <TextView
-            android:id="@+id/txtNext"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:text="@string/next"
-            app:layout_constraintBottom_toBottomOf="@+id/ivNext"
-            app:layout_constraintEnd_toStartOf="@+id/ivNext"
-            app:layout_constraintTop_toTopOf="@+id/ivNext"
-            app:layout_constraintVertical_bias="0.5" />
+            <Button
+                android:id="@+id/reading_back_button"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:enabled="@{viewModel.isInputEnabled}"
+                android:visibility="invisible"
+                android:text="@string/back"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/reading_next_button"
+                app:layout_constraintHorizontal_chainStyle="spread_inside"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:visibility="visible"/>
 
-        <TextView
-            android:id="@+id/txtDone"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:paddingEnd="40dp"
-            android:text="@string/save"
-            app:layout_constraintBottom_toBottomOf="@+id/ivNext"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/ivNext"
-            app:layout_constraintVertical_bias="0.5" />
+            <TextView
+                android:id="@+id/bottom_nav_bar_message_text_view"
+                style="@style/TextAppearance.Cradle.Body1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:maxLines="1"
+                android:text="@{viewModel.bottomNavBarMessage}"
+                android:textAlignment="center"
+                android:visibility="@{viewModel.bottomNavBarMessage.length() != 0 ? View.VISIBLE : View.GONE}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/reading_next_button"
+                app:layout_constraintStart_toEndOf="@+id/reading_back_button"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.26999998"
+                tools:text="Checking patient ID..."
+                tools:visibility="visible" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <ProgressBar
+                android:id="@+id/bottom_nav_bar_message_progress_bar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                android:indeterminate="true"
+                android:visibility="@{viewModel.bottomNavBarMessage.length() != 0 ? View.VISIBLE : View.GONE}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@+id/bottom_nav_bar_message_text_view"
+                app:layout_constraintStart_toStartOf="@+id/bottom_nav_bar_message_text_view"
+                app:layout_constraintTop_toBottomOf="@+id/bottom_nav_bar_message_text_view"
+                app:layout_constraintVertical_bias="0.0" />
 
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <Button
+                android:id="@+id/reading_next_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginBottom="10dp"
+                android:enabled="@{(viewModel.isNextButtonEnabled ?? false) &amp;&amp; viewModel.isInputEnabled}"
+                android:text="@string/activity_reading_next_button"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toEndOf="@+id/reading_back_button"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
+</layout>

@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:bind="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <import type="com.cradle.neptune.binding.Converter" />
+
+        <variable
+            name="viewModel"
+            type="com.cradle.neptune.viewmodel.PatientReadingViewModel" />
+    </data>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentBottom="true"
+            android:fitsSystemWindows="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="16dp"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardElevation="3dp">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/reading_flow_card_margin"
+                        android:paddingBottom="8dp">
+
+
+                        <TextView
+                            android:id="@+id/cradle_vsa_card_title_textview"
+                            style="@style/TextAppearance.Cradle.H2"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:text="@string/fragment_vital_signs_cradle_vsa_fields_card_header"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <Button
+                            android:id="@+id/cradle_vsa_take_photo_button"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:enabled="@{viewModel.isInputEnabled}"
+                            android:text="@string/fragment_vital_signs_take_picture_button"
+                            app:icon="@drawable/ic_baseline_camera_alt_24"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/cradle_vsa_card_title_textview" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/systolic_input"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="4dp"
+                            android:layout_marginTop="8dp"
+                            android:enabled="@{viewModel.isInputEnabled}"
+                            android:hint="@string/fragment_vital_signs_systolic_label"
+                            android:paddingBottom="0dp"
+                            bind:errorMessage='@{viewModel.errorMap["systolic"]}'
+                            app:helperText=" "
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/cradle_vsa_take_photo_button"
+                            app:suffixText="mm/Hg">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/systolic_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="number"
+                                android:text="@={Converter.intToString(viewModel.bloodPressureSystolicInput)}"
+                                tools:text="100" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/diastolic_input"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled}"
+                            android:hint="@string/fragment_vital_signs_diastolic_label"
+                            android:paddingBottom="0dp"
+                            bind:errorMessage='@{viewModel.errorMap["diastolic"]}'
+                            app:helperText=" "
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/systolic_input"
+                            app:suffixText="mm/Hg">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/diastolic_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="number"
+                                android:text="@={Converter.intToString(viewModel.bloodPressureDiastolicInput)}"
+                                tools:text="100" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/heart_rate_layout"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled}"
+                            android:hint="@string/fragment_vital_signs_heart_rate_label"
+                            android:paddingBottom="0dp"
+                            bind:errorMessage='@{viewModel.errorMap["heartRate"]}'
+                            app:helperText=" "
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/diastolic_input"
+                            app:suffixText="beats per minute">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/heart_rate_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="number"
+                                android:text="@={Converter.intToString(viewModel.bloodPressureHeartRateInput)}"
+                                tools:text="100" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="16dp"
+                    android:visibility="gone"
+                    app:cardElevation="3dp">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/reading_flow_card_margin"
+                        android:paddingBottom="8dp">
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/respiratory_rate_input"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled}"
+                            android:hint="@string/fragment_vital_signs_respiratory_rate_label"
+                            android:paddingBottom="0dp"
+                            app:helperText=" "
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:suffixText="breaths per minute">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/respiratory_rate_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="number"
+                                android:maxLines="4"
+                                android:verticalScrollbarPosition="right"
+                                tools:text="100" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/oxygen_saturation_layout"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled}"
+                            android:hint="@string/fragment_vital_signs_oxygen_saturation_label"
+                            android:paddingBottom="0dp"
+                            app:helperText=" "
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/respiratory_rate_input"
+                            app:suffixText="%">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/oxygen_saturation_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="number"
+                                android:maxLines="4"
+                                android:verticalScrollbarPosition="right"
+                                tools:text="100" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/temperature_layout"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled}"
+                            android:hint="@string/fragment_vital_signs_temperature_label"
+                            android:paddingBottom="0dp"
+                            app:helperText=" "
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/oxygen_saturation_layout"
+                            app:suffixText="\u00B0C">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/temperature_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="number"
+                                android:maxLines="4"
+                                android:verticalScrollbarPosition="right"
+                                tools:text="100" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="16dp"
+                    app:cardElevation="3dp">
+
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/reading_flow_card_margin"
+                        android:paddingBottom="8dp">
+
+                        <TextView
+                            android:id="@+id/urine_test_card_text_view"
+                            style="@style/TextAppearance.Cradle.H2"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:text="@string/urine_test_card_header"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <CheckBox
+                            android:id="@+id/urine_test_check_box"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:enabled="@{viewModel.isInputEnabled}"
+                            android:checked="@={viewModel.isUsingUrineTest}"
+                            app:layout_constraintBaseline_toBaselineOf="@+id/urine_test_card_text_view"
+                            app:layout_constraintStart_toEndOf="@+id/urine_test_card_text_view" />
+
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/health_centre_input_layout"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled &amp;&amp; viewModel.isUsingUrineTest}"
+                            android:hint="@string/urine_test_layout_leukocytes"
+                            android:labelFor="@id/health_centre_auto_complete_text"
+                            app:helperText=" "
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/urine_test_check_box"
+                            bind:addMandatoryStarToLabelWhen="@{viewModel.isUsingUrineTest}"
+                            bind:errorMessage='@{viewModel.errorMap["leukocytes"]}'>
+
+                            <AutoCompleteTextView
+                                android:id="@+id/health_centre_auto_complete_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none"
+                                android:text="@={viewModel.urineTestLeukocytesInput}"
+                                bind:makeTextEmptyWhen="@{!viewModel.isUsingUrineTest}"
+                                bind:setMaterialSpinnerItemsWithArray="@{@stringArray/urine_test_symbols}" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/nitrites_input_layout"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled &amp;&amp; viewModel.isUsingUrineTest}"
+                            android:hint="@string/urine_test_layout_nitrites"
+                            android:labelFor="@id/nitrites_auto_complete_text"
+                            app:helperText=" "
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/health_centre_input_layout"
+                            bind:addMandatoryStarToLabelWhen="@{viewModel.isUsingUrineTest}"
+                            bind:errorMessage='@{viewModel.errorMap["nitrites"]}'>
+
+                            <AutoCompleteTextView
+                                android:id="@+id/nitrites_auto_complete_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none"
+                                android:text="@={viewModel.urineTestNitritesInput}"
+                                bind:makeTextEmptyWhen="@{!viewModel.isUsingUrineTest}"
+                                bind:setMaterialSpinnerItemsWithArray="@{@stringArray/urine_test_symbols}" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/glucose_input_layout"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled &amp;&amp; viewModel.isUsingUrineTest}"
+                            android:hint="@string/urine_test_layout_glucose"
+                            android:labelFor="@id/glucose_auto_complete_text"
+                            app:helperText=" "
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/nitrites_input_layout"
+                            bind:addMandatoryStarToLabelWhen="@{viewModel.isUsingUrineTest}"
+                            bind:errorMessage='@{viewModel.errorMap["glucose"]}'>
+
+                            <AutoCompleteTextView
+                                android:id="@+id/glucose_auto_complete_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none"
+                                android:text="@={viewModel.urineTestGlucoseInput}"
+                                bind:makeTextEmptyWhen="@{!viewModel.isUsingUrineTest}"
+                                bind:setMaterialSpinnerItemsWithArray="@{@stringArray/urine_test_symbols}" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/protein_input_layout"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled &amp;&amp; viewModel.isUsingUrineTest}"
+                            android:hint="@string/urine_test_layout_protein"
+                            android:labelFor="@id/protein_auto_complete_text"
+                            app:helperText=" "
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/glucose_input_layout"
+                            bind:addMandatoryStarToLabelWhen="@{viewModel.isUsingUrineTest}"
+                            bind:errorMessage='@{viewModel.errorMap["protein"]}'>
+
+                            <AutoCompleteTextView
+                                android:id="@+id/protein_auto_complete_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none"
+                                android:text="@={viewModel.urineTestProteinInput}"
+                                bind:makeTextEmptyWhen="@{!viewModel.isUsingUrineTest}"
+                                bind:setMaterialSpinnerItemsWithArray="@{@stringArray/urine_test_symbols}" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/blood_input_layout"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled &amp;&amp; viewModel.isUsingUrineTest}"
+                            android:hint="@string/urine_test_layout_blood"
+                            android:labelFor="@id/blood_auto_complete_text"
+                            app:helperText=" "
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/protein_input_layout"
+                            bind:addMandatoryStarToLabelWhen="@{viewModel.isUsingUrineTest}"
+                            bind:errorMessage='@{viewModel.errorMap["blood"]}'>
+
+                            <AutoCompleteTextView
+                                android:id="@+id/blood_auto_complete_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none"
+                                android:text="@={viewModel.urineTestBloodInput}"
+                                bind:makeTextEmptyWhen="@{!viewModel.isUsingUrineTest}"
+                                bind:setMaterialSpinnerItemsWithArray="@{@stringArray/urine_test_symbols}" />
+                        </com.google.android.material.textfield.TextInputLayout>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+        </ScrollView>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

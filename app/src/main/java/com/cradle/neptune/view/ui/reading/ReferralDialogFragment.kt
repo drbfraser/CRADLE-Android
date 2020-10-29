@@ -1,301 +1,318 @@
 package com.cradle.neptune.view.ui.reading
 
 import android.app.Dialog
-import android.app.ProgressDialog
+import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
-import android.util.Log
+import android.provider.Telephony
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.Spinner
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageButton
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.Toolbar
+import androidx.databinding.DataBindingComponent
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.cradle.neptune.R
-import com.cradle.neptune.dagger.MyApp
-import com.cradle.neptune.manager.HealthCentreManager
-import com.cradle.neptune.manager.PatientManager
-import com.cradle.neptune.manager.ReadingManager
-import com.cradle.neptune.manager.ReferralUploadManger
-import com.cradle.neptune.model.HealthFacility
-import com.cradle.neptune.model.Patient
+import com.cradle.neptune.binding.FragmentDataBindingComponent
+import com.cradle.neptune.databinding.ReferralDialogBinding
 import com.cradle.neptune.model.PatientAndReadings
-import com.cradle.neptune.model.Reading
-import com.cradle.neptune.model.Referral
-import com.cradle.neptune.net.Success
-import com.cradle.neptune.utilitiles.UnixTimestamp
-import com.cradle.neptune.view.ui.settings.SettingsActivity
+import com.cradle.neptune.view.ReadingActivity
+import com.cradle.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity
 import com.cradle.neptune.viewmodel.PatientReadingViewModel
+import com.cradle.neptune.viewmodel.ReadingFlowSaveResult
+import com.cradle.neptune.viewmodel.ReferralDialogViewModel
+import com.cradle.neptune.viewmodel.ReferralOption
+import dagger.hilt.android.AndroidEntryPoint
 import java.util.UUID
-import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
+/**
+ * src: https://medium.com/alexander-schaefer/
+ *      implementing-the-new-material-design-full-screen-dialog-for-android-e9dcc712cb38
+ */
+@AndroidEntryPoint
 @Suppress("LargeClass")
-class ReferralDialogFragment(private val viewModel: PatientReadingViewModel) : DialogFragment() {
+class ReferralDialogFragment : DialogFragment() {
+    private val viewModel: PatientReadingViewModel by activityViewModels()
 
-    companion object {
-        fun makeInstance(viewModel: PatientReadingViewModel): ReferralDialogFragment {
-            return ReferralDialogFragment(viewModel)
-        }
+    private var binding: ReferralDialogBinding? = null
+
+    private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent()
+
+    /** ViewModel to store input */
+    private val referralDialogViewModel: ReferralDialogViewModel by viewModels()
+
+    private lateinit var launchReason: ReadingActivity.LaunchReason
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        check(context is ReadingActivity)
+        check(arguments != null)
+        check(
+            arguments?.getSerializable(ARG_LAUNCH_REASON) as? ReadingActivity.LaunchReason != null
+        )
     }
-
-    /**
-     * Called after a reading has been successfully uploaded via either web or SMS.
-     */
-    var onSuccessfulUpload: () -> Unit = { }
-
-    @Inject
-    lateinit var patientManager: PatientManager
-
-    @Inject
-    lateinit var readingManager: ReadingManager
-
-    @Inject
-    lateinit var healthCentreManager: HealthCentreManager
-
-    @Inject
-    lateinit var referralUploadManger: ReferralUploadManger
-
-    private lateinit var dialogView: View
-    private lateinit var alertDialog: AlertDialog
-
-    private val commentBox: EditText?
-        get() = alertDialog.findViewById(R.id.referralCommentEditBox)
-
-    private val healthFacilitySpinner: Spinner?
-        get() = alertDialog.findViewById(R.id.spinnerHealthCentre)
-
-    private val settingsButton: ImageView?
-        get() = alertDialog.findViewById(R.id.ivSettings)
-
-    private var selectedHealthFacility: HealthFacility? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        (activity?.application as MyApp).appComponent.inject(this)
         super.onCreate(savedInstanceState)
         retainInstance = true
+
+        launchReason = arguments?.getSerializable(ARG_LAUNCH_REASON)
+            as? ReadingActivity.LaunchReason ?: error("unreachable")
     }
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val inflater = requireActivity().layoutInflater
-        dialogView = inflater.inflate(R.layout.referral_dialog, null)
-        alertDialog = AlertDialog.Builder(requireActivity())
-            .setView(dialogView)
-            .setTitle(getString(R.string.referral_dialog_title))
-            .setPositiveButton(getString(R.string.referral_dialog_button_send_sms), null)
-            .setNegativeButton(getString(R.string.referral_dialog_button_send_web), null)
-            .setNeutralButton(getString(android.R.string.cancel)) { _, _ -> dialog?.cancel() }
-            .create()
-
-        // Override the default behaviour of the "Send SMS" and "Send Web"
-        // buttons. Normally, they would close the dialog regardless of what
-        // the listener does, but we don't want that. Instead we only want to
-        // close the dialog once the referral has been successfully sent.
-        alertDialog.setOnShowListener {
-            alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener listener@{
-                if (selectedHealthFacility == null) {
-                    displayNoHealthFacilityDialog()
-                    return@listener
-                }
-
-                MainScope().launch {
-                    sendReferralViaWeb()
-                }
-            }
-
-            alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener listener@{
-                if (selectedHealthFacility == null) {
-                    displayNoHealthFacilityDialog()
-                    return@listener
-                }
-
-                sendReferralViaSMS()
-            }
-        }
-
-        alertDialog.show()
-
-        // Setup UI components
-        setupHealthFacilitySpinner()
-        settingsButton?.setOnClickListener {
-            val intent = SettingsActivity.makeLaunchIntent(requireActivity())
-            activity?.startActivity(intent)
-        }
-
-        return alertDialog
-    }
-
-    /**
-     * Pulls health facilities from the database and uses them to populate the
-     * health facility spinner in this dialog.
-     */
-    private fun setupHealthFacilitySpinner() {
-        MainScope().launch {
-            val availableHealthFacilities = withContext(Dispatchers.IO) {
-                healthCentreManager.getAllSelectedByUser()
-            }
-            val spinnerOptions = availableHealthFacilities.map(HealthFacility::name)
-            val adapter = ArrayAdapter<String>(
-                requireActivity(),
-                android.R.layout.simple_dropdown_item_1line,
-                spinnerOptions
-            )
-            healthFacilitySpinner?.adapter = adapter
-
-            healthFacilitySpinner?.onItemSelectedListener =
-                object : AdapterView.OnItemSelectedListener {
-                    override fun onNothingSelected(parent: AdapterView<*>?) {
-                        selectedHealthFacility = null
-                    }
-
-                    override fun onItemSelected(
-                        parent: AdapterView<*>?,
-                        view: View?,
-                        position: Int,
-                        id: Long
-                    ) {
-                        if (healthFacilitySpinner?.selectedItemPosition?.let { it >= 0 } == true) {
-                            selectedHealthFacility = availableHealthFacilities[position]
-                        }
-                    }
-                }
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        // in case user went and updated the selected HFs
-        setupHealthFacilitySpinner()
-    }
-
-    /**
-     * Displays a dialog telling the user to select a health facility.
-     */
-    private fun displayNoHealthFacilityDialog() {
-        AlertDialog.Builder(requireActivity())
-            .setTitle(getString(R.string.no_health_facility_dialog_title))
-            .setMessage(getString(R.string.no_health_facility_dialog_message))
-            .setPositiveButton(getString(android.R.string.ok), null)
-            .show()
-    }
-
-    /**
-     * Constructs the patient and reading from the view models passed to this
-     * fragment along with a new referral.
-     *
-     * @throws IllegalStateException if no health facility has been selected
-     * @return the patient and reading constructed from the view models, the
-     *  referral is nested within the resultant reading
-     */
-    private fun constructModels(): Pair<Patient, Reading> {
-        val healthFacilityName = selectedHealthFacility?.name
-            ?: throw IllegalStateException("no health facility selected")
-
-        val (patient, reading) = viewModel.constructModels()
-        reading.referral = Referral(
-            commentBox?.text?.toString(),
-            healthFacilityName,
-            UnixTimestamp.now,
-            patient.id,
-            reading.id
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        isCancelable = false
+        val dataBinding = DataBindingUtil.inflate<ReferralDialogBinding>(
+            inflater,
+            R.layout.referral_dialog,
+            container,
+            false,
+            dataBindingComponent
         )
-
-        return patient to reading
+        binding = dataBinding
+        return dataBinding.root
     }
 
-    /**
-     * Constructs and sends the referral via HTTP.
-     *
-     * Closes this dialog upon successful upload. If the upload failed, then the
-     * dialog is not closed as the user may wish to instead send the referral
-     * via SMS.
-     */
-    private suspend fun sendReferralViaWeb() {
-        @Suppress("DEPRECATION")
-        val progressDialog = ProgressDialog(alertDialog.context).apply {
-            setMessage(getString(R.string.referral_dialog_uploading_referral_message))
-            setCancelable(false)
-        }
-        progressDialog.show()
-        val (patient, reading) = constructModels()
-        val result = referralUploadManger.uploadReferralViaWeb(patient, reading)
-        progressDialog.cancel()
-        when (result) {
-            is Success -> {
-                Toast.makeText(
-                    context,
-                    R.string.referral_dialog_success_toast,
-                    Toast.LENGTH_SHORT
-                ).show()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        binding?.viewModel = referralDialogViewModel
+        binding?.launchReason = launchReason
+        binding?.lifecycleOwner = viewLifecycleOwner
+        super.onViewCreated(view, savedInstanceState)
 
-                // Save the patient and reading after marking them as being
-                // uploaded. We save them here instead of delegating this task
-                // to the calling activity because we need to process the models
-                // before they are saved. If we were to leave it to the activity
-                // it would need to reconstruct the models from the view model
-                // instead of being able to used the result of the network call.
-                patientManager.add(result.value.patient)
-                readingManager.addReading(
-                    result.value.readings[0].apply {
-                        isUploadedToServer = true
-                    }
-                )
-                dismiss()
-                onSuccessfulUpload()
+        view.findViewById<Toolbar>(R.id.referral_toolbar).apply {
+            setNavigationOnClickListener { dismiss() }
+            title = getString(R.string.referral_dialog_title)
+        }
+
+        view.findViewById<ImageButton>(R.id.open_health_centre_settings_button).setOnClickListener {
+            activity?.apply { startActivity(HealthFacilitiesActivity.makeIntent(this)) }
+        }
+
+        view.findViewById<Button>(R.id.send_sms_button).setOnClickListener {
+            if (referralDialogViewModel.isSelectedHealthCentreValid() &&
+                    referralDialogViewModel.isSending.value != true) {
+                referralDialogViewModel.isSending.value = true
+
+                lifecycleScope.launch { handleSmsReferralSend(view) }
             }
-            else -> {
-                Toast.makeText(context, result.getErrorMessage(requireContext()), Toast.LENGTH_LONG)
-                    .show()
+        }
+
+        view.findViewById<Button>(R.id.send_web_button).setOnClickListener {
+            if (referralDialogViewModel.isSelectedHealthCentreValid() &&
+                    referralDialogViewModel.isSending.value != true) {
+                referralDialogViewModel.isSending.value = true
+
+                lifecycleScope.launch { handleWebReferralSend(view) }
             }
+        }
+
+        if (viewModel.isInitialized.value != true) {
+            dismiss()
         }
     }
 
-    /**
-     * Constructs and sends the referral via SMS.
-     *
-     * Unconditionally closes this dialog after opening the device's SMS
-     * application. This doesn't imply that the referral made it to the server
-     * but it's almost impossible to ensure that so this is the best we can do.
-     */
-    private fun sendReferralViaSMS() {
-        if (selectedHealthFacility == null) {
-            throw IllegalStateException("no health facility selected")
+    private suspend fun handleSmsReferralSend(view: View) {
+        try {
+            val comment = referralDialogViewModel.comments.value ?: ""
+            val selectedHealthCentreName =
+                referralDialogViewModel.healthCentreToUse.value ?: return
+
+            val (smsSendResult, patientAndReadings) = viewModel.saveWithReferral(
+                ReferralOption.SMS, comment, selectedHealthCentreName
+            )
+
+            when (smsSendResult) {
+                ReadingFlowSaveResult.SAVE_SUCCESSFUL -> {
+                    showStatusToast(view.context, smsSendResult, ReferralOption.SMS)
+                    launchSmsIntentAndFinish(
+                        selectedHealthCentreName,
+                        patientAndReadings ?: error("unreachable")
+                    )
+                }
+                else -> {
+                    showStatusToast(view.context, smsSendResult, ReferralOption.SMS)
+                }
+            }
+        } finally {
+            referralDialogViewModel.isSending.value = false
         }
+    }
 
-        val (patient, reading) = constructModels()
+    private fun launchSmsIntentAndFinish(
+        selectedHealthCentreName: String,
+        patientAndReadings: PatientAndReadings
+    ) {
+        activity?.run {
+            val smsIntent = makeSmsIntent(selectedHealthCentreName, patientAndReadings)
+            startActivity(smsIntent)
+            finish()
+        }
+    }
 
-        val data = PatientAndReadings(patient, listOf(reading))
+    private fun makeSmsIntent(
+        selectedHealthCentreName: String,
+        patientAndReadings: PatientAndReadings
+    ): Intent {
+        val selectedHealthFacility =
+            referralDialogViewModel.getHealthCentreFromHealthCentreName(
+                selectedHealthCentreName
+            )
         val id = UUID.randomUUID().toString()
         val json = with(JSONObject()) {
             put("referralId", id)
-            put("patient", data.marshal())
+            put("patient", patientAndReadings.marshal())
         }
-
-        Log.i(this::class.simpleName, "Sending referral via text message")
-        val phoneNumber = selectedHealthFacility!!.phoneNumber
+        val phoneNumber = selectedHealthFacility.phoneNumber
         val uri = Uri.parse("smsto:$phoneNumber")
-        val intent = Intent(Intent.ACTION_SENDTO, uri).apply {
-            putExtra("sms_body", json.toString())
-        }
-        startActivity(intent)
 
-        Log.i(this::class.simpleName, "Saving patient and reading")
-        patientManager.add(patient)
-        // We don't mark the reading as uploaded to the server as we can't know
-        // for sure that the reading has been uploaded. When the VHT goes to
-        // sync this will be resolved, either by overwriting this reading with
-        // the one from the server (if it made it successfully) or by uploading
-        // it through the sync process (if it failed to make it to the server).
-        readingManager.addReading(reading)
-        dismiss()
-        onSuccessfulUpload()
+        return Intent(Intent.ACTION_SENDTO, uri).apply {
+            putExtra("address", phoneNumber)
+            putExtra("sms_body", json.toString())
+
+            // Use default SMS app if supported
+            // https://stackoverflow.com/a/24804601
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                Telephony.Sms.getDefaultSmsPackage(context)?.let {
+                    setPackage(it)
+                }
+            }
+        }
+    }
+
+    private suspend fun handleWebReferralSend(view: View) {
+        try {
+            val comment = referralDialogViewModel.comments.value ?: ""
+            val selectedHealthCentreName =
+                referralDialogViewModel.healthCentreToUse.value ?: return
+
+            val (smsSendResult, _) = viewModel.saveWithReferral(
+                ReferralOption.WEB, comment, selectedHealthCentreName
+            )
+
+            when (smsSendResult) {
+                ReadingFlowSaveResult.SAVE_SUCCESSFUL -> {
+                    // Nothing left for us to do.
+                    showStatusToast(view.context, smsSendResult, ReferralOption.WEB)
+                    activity?.finish()
+                }
+                ReadingFlowSaveResult.ERROR_UPLOADING_REFERRAL -> {
+                    showStatusToast(view.context, smsSendResult, ReferralOption.WEB)
+                }
+                else -> {
+                    showStatusToast(view.context, smsSendResult, ReferralOption.WEB)
+                }
+            }
+        } finally {
+            referralDialogViewModel.isSending.value = false
+        }
+    }
+
+    private fun showStatusToast(
+        context: Context,
+        result: ReadingFlowSaveResult,
+        referralOption: ReferralOption
+    ) {
+        Toast.makeText(
+            context,
+            getToastMessageForStatus(context, result, referralOption),
+            Toast.LENGTH_LONG
+        ).show()
+    }
+
+    private fun getToastMessageForStatus(
+        context: Context,
+        result: ReadingFlowSaveResult,
+        referralOption: ReferralOption
+    ) = when (referralOption) {
+        ReferralOption.WEB -> when (result) {
+            ReadingFlowSaveResult.SAVE_SUCCESSFUL -> {
+                if (launchReason == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
+                    context.getString(R.string.dialog_referral_toast_web_success_new_patient)
+                } else {
+                    context.getString(R.string.dialog_referral_toast_web_success_new_reading_only)
+                }
+            }
+            ReadingFlowSaveResult.ERROR_UPLOADING_REFERRAL -> {
+                if (launchReason == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
+                    context.getString(
+                        R.string.dialog_referral_toast_error_uploading_referral_reading_and_patient
+                    )
+                } else {
+                    context.getString(
+                        R.string.dialog_referral_toast_error_uploading_referral_reading
+                    )
+                }
+            }
+            else -> {
+                if (launchReason == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
+                    context.getString(R.string.dialog_referral_toast_error_saving_patient_reading)
+                } else {
+                    context.getString(R.string.dialog_referral_toast_error_saving_reading)
+                }
+            }
+        }
+        ReferralOption.SMS -> when (result) {
+            ReadingFlowSaveResult.SAVE_SUCCESSFUL -> {
+                if (launchReason == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
+                    context.getString(R.string.dialog_referral_toast_sms_success_new_patient)
+                } else {
+                    context.getString(R.string.dialog_referral_toast_sms_success_new_reading_only)
+                }
+            }
+            else -> {
+                if (launchReason == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
+                    context.getString(R.string.dialog_referral_toast_error_saving_patient_reading)
+                } else {
+                    context.getString(R.string.dialog_referral_toast_error_saving_reading)
+                }
+            }
+        }
+        ReferralOption.NONE -> error("unreachable")
+    }
+
+    override fun onStart() {
+        super.onStart()
+        dialog?.apply {
+            // Make the dialog close to full screen.
+            setStyle(STYLE_NORMAL, R.style.AppTheme_FullScreenDialog)
+        }
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        viewModel.setInputEnabledState(true)
+    }
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        viewModel.setInputEnabledState(false)
+        return super.onCreateDialog(savedInstanceState)
+    }
+
+    companion object {
+        private const val TAG = "ReferralDialogFragment"
+        private const val ARG_LAUNCH_REASON = "LAUNCH_REASON"
+
+        fun makeInstance(launchReason: ReadingActivity.LaunchReason) =
+            ReferralDialogFragment().apply {
+                arguments = Bundle().apply {
+                    // Have it pass the launch reason so that we don't run into lateinit problems
+                    putSerializable(ARG_LAUNCH_REASON, launchReason)
+                }
+            }
     }
 }

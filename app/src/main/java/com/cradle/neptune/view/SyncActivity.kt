@@ -8,14 +8,15 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.cradle.neptune.R
-import com.cradle.neptune.dagger.MyApp
 import com.cradle.neptune.sync.SyncStepperCallback
 import com.cradle.neptune.sync.SyncStepperImplementation
 import com.cradle.neptune.sync.TotalRequestStatus
+import dagger.hilt.android.AndroidEntryPoint
 import kotlin.math.roundToInt
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class SyncActivity :
     AppCompatActivity(),
     SyncStepperCallback {
@@ -34,7 +35,6 @@ class SyncActivity :
     private lateinit var progressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        (application as MyApp).appComponent.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sync)
 

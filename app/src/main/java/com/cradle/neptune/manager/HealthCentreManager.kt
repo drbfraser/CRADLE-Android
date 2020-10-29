@@ -6,7 +6,7 @@ import com.cradle.neptune.model.HealthFacility
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 /**
  *  * manager to interact with the [HealthFacility] table
@@ -21,20 +21,14 @@ class HealthCentreManager(private val database: CradleDatabase) {
     /**
      * get a [HealthFacility] by id
      */
-    suspend fun getById(id: String) = dao.getHealthFacilityById(id)
+    suspend fun getById(id: String) = withContext(Dispatchers.IO) { dao.getHealthFacilityById(id) }
 
     /**
      * get all the [HealthFacility] selected by the current user.
      */
-    suspend fun getAllSelectedByUser() = dao.allUserSelectedHealthFacilities
-
-    /**
-     * TODO: once all the java classes calling this method are turned into Kotlin,
-     * remove this function and call the corressponding method.
-     * This is only for legacy java code still calling this function.
-     */
-    @Deprecated("Please avoid using this function in Kotlin files.")
-    fun getAllSelectedByUserBlocking() = runBlocking { getAllSelectedByUser() }
+    suspend fun getAllSelectedByUser() = withContext(Dispatchers.IO) {
+        dao.allUserSelectedHealthFacilities
+    }
 
     /**
      * add a single health facility
@@ -58,7 +52,13 @@ class HealthCentreManager(private val database: CradleDatabase) {
     val getLiveList: LiveData<List<HealthFacility>> = dao.allFacilitiesLiveData
 
     /**
+     * Returns a list of all user-selected health centres as LiveData.
+     */
+    val getLiveListSelected: LiveData<List<HealthFacility>> =
+        dao.allUserSelectedHealthFacilitiesLiveData
+
+    /**
      * delete all [HealthFacility] from the DB
      */
-    suspend fun deleteAll() = dao.deleteAll()
+    suspend fun deleteAll() = withContext(Dispatchers.IO) { dao.deleteAll() }
 }

@@ -1,6 +1,5 @@
 package com.cradle.neptune.model
 
-import android.annotation.SuppressLint
 import android.content.Context
 import androidx.core.text.isDigitsOnly
 import androidx.room.ColumnInfo
@@ -29,6 +28,7 @@ import java.lang.IllegalArgumentException
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 import java.util.TimeZone
 import kotlin.math.round
 import kotlin.reflect.KProperty
@@ -113,14 +113,14 @@ data class Patient(
         property: KProperty<*>,
         value: Any?,
         context: Context
-    ): Pair<Boolean, String> = isValueValid(property, value, context, patientInstance = this)
+    ): Pair<Boolean, String> = isValueValid(property, value, context, instance = this)
 
     @Suppress("LargeClass")
-    companion object : Unmarshal<Patient, JSONObject> {
+    companion object : Unmarshal<Patient, JSONObject>, Verifier<Patient> {
         private const val ID_MAX_LENGTH = 14
         const val AGE_LOWER_BOUND = 15
         const val AGE_UPPER_BOUND = 65
-        private const val DOB_FORMAT_SIMPLEDATETIME = "yyyy-MM-dd"
+        const val DOB_FORMAT_SIMPLEDATETIME = "yyyy-MM-dd"
         private const val GESTATIONAL_AGE_WEEKS_MAX = 43
         @Suppress("ObjectPropertyNaming")
         private val GESTATIONAL_AGE_MONTHS_MAX = round(
@@ -129,24 +129,41 @@ data class Patient(
         ).toInt()
 
         /**
+         * This is currently how input validation is handled on frontend.
+         *
+         *     const isPatientInitialsValid = (myString: any) => {
+         *         return /^[a-zA-Z'\- ]*$/.test(myString);
+         *     };
+         *
+         */
+        @Suppress("ObjectPropertyNaming")
+        private val VALID_NAME_MATCHER = Regex("[A-Za-z'\\- ]+")
+
+        /**
          * Validates the patient's info
          * ref:
          * - cradle-platform/client/src/pages/newReading/demographic/validation/index.tsx
          * - cradle-platform/server/validation/patients.py
          *
-         * @param patientInstance For dependent properties, check against this Patient's values.
-         * Can be null if checking to see if a value would be valid when a patient isn't created
-         * yet.
-         * @param dependentPropertiesMap: For checking properties that depend on other properties
-         * for validity, supply a map of values of the dependent properties.
+         * Determines if the [value] for property [property] is valid. If valid, the [Pair] returned
+         * will have a Boolean value of true in the first component. Otherwise, false will be in the
+         * first component and an error message will be present ([context] is required to get a
+         * localized error message).
+         *
+         * @param instance An instance of the object to take current values from for properties that
+         * check other properties for validity. Optional, but don't specify both a non-null
+         * [instance] and a [currentValues] map.
+         * @param currentValues A Map of KProperty.name to their values to describe current values for
+         * properties that check other properties for validity. Optional only if not passing in an
+         * instance. (The values in here take precedence if you do.)
          */
         @Suppress("ReturnCount", "SimpleDateFormat", "NestedBlockDepth")
-        fun isValueValid(
+        override fun isValueValid(
             property: KProperty<*>,
             value: Any?,
             context: Context,
-            patientInstance: Patient? = null,
-            dependentPropertiesMap: Map<KProperty<*>, Any?>? = null
+            instance: Patient?,
+            currentValues: Map<String, Any?>?
         ): Pair<Boolean, String> = when (property) {
             // doesn't depend on other properties
             Patient::id -> with(value as String) {
@@ -171,20 +188,14 @@ data class Patient(
 
             // doesn't depend on other properties
             Patient::name -> with(value as String) {
-                // This is currently how input validation is handled on frontend.
-                // The frontend uses:
-                //     if (hasNumber(value) || value.length === 0) {
-                //       patientError.patientInitialError = true;
-                //     }
                 if (isBlank()) {
                     return Pair(false, context.getString(R.string.patient_error_name_missing))
                 }
-                this.toCharArray().forEach {
-                    if (it.isDigit()) {
-                        return Pair(
-                            false, context.getString(R.string.patient_error_name_must_be_characters)
-                        )
-                    }
+                if (!VALID_NAME_MATCHER.matches(this)) {
+                    return Pair(
+                        false,
+                        context.getString(R.string.patient_error_name_must_be_characters)
+                    )
                 }
                 return Pair(true, "")
             }
@@ -192,14 +203,14 @@ data class Patient(
             // validity of dob depends on age
             Patient::dob -> with(value as String?) {
                 if (this == null || isBlank()) {
-                    val dependentProperties = setupDependentPropertiesMapForInstance(
-                        patientInstance,
-                        dependentPropertiesMap,
-                        Patient::age
+                    val dependentProperties = setupDependentPropertiesMap(
+                            instance,
+                            currentValues,
+                            Patient::age
                     )
 
                     // If both age and dob are missing, it's invalid.
-                    return if (dependentProperties[Patient::age] as Int? == null) {
+                    return if (dependentProperties[Patient::age.name] as Int? == null) {
                         Pair(false, context.getString(R.string.patient_error_age_or_dob_missing))
                     } else {
                         Pair(true, "")
@@ -233,14 +244,14 @@ data class Patient(
             // validity of age depends on dob
             Patient::age -> with(value as Int?) {
                 if (this == null) {
-                    val dependentProperties = setupDependentPropertiesMapForInstance(
-                        patientInstance,
-                        dependentPropertiesMap,
+                    val dependentProperties = setupDependentPropertiesMap(
+                        instance,
+                        currentValues,
                         Patient::dob
                     )
 
                     // If both age and dob are missing, it's invalid.
-                    return if (dependentProperties[Patient::dob] == null) {
+                    return if (dependentProperties[Patient::dob.name] == null) {
                         Pair(false, context.getString(R.string.patient_error_age_or_dob_missing))
                     } else {
                         Pair(true, "")
@@ -263,16 +274,21 @@ data class Patient(
             // Validity of gestational age depends on gender and pregnancy; we are requiring both to
             // be more robust about it. Note: If gender is not male or is not pregnant, this is
             // still validated.
-            Patient::gestationalAge -> with(value as GestationalAge?) {
-                val dependentProperties = setupDependentPropertiesMapForInstance(
-                    patientInstance,
-                    dependentPropertiesMap,
+            Patient::gestationalAge -> with(value as? GestationalAge?) {
+                val dependentProperties = setupDependentPropertiesMap(
+                    instance,
+                    currentValues,
                     Patient::sex, Patient::isPregnant
                 )
-                if (dependentProperties[Patient::sex] == Sex.MALE ||
-                    dependentProperties[Patient::isPregnant] == false
-                ) {
-                    return Pair(true, "")
+                if (dependentProperties[Patient::sex.name] == Sex.MALE ||
+                    dependentProperties[Patient::isPregnant.name] == false) {
+
+                    return if (this == null) {
+                        Pair(true, "")
+                    } else {
+                        // Can't have gestational age if we're not pregnant.
+                        Pair(false, context.getString(R.string.patient_error_gestation_for_no_preg))
+                    }
                 }
                 if (this == null) {
                     return Pair(
@@ -309,6 +325,31 @@ data class Patient(
                     }
                 }
                 return Pair(true, "")
+            }
+
+            Patient::sex -> with(value as? Sex?) {
+                if (this != null) {
+                    Pair(true, "")
+                } else {
+                    Pair(false, context.getString(R.string.patient_error_sex_missing))
+                }
+            }
+
+            Patient::villageNumber -> with(value as? String?) {
+                // TODO: make village number an Int, not a String
+                if (this.isNullOrBlank()) {
+                    return Pair(
+                        false, context.getString(R.string.patient_error_village_number_missing)
+                    )
+                }
+
+                if (!isDigitsOnly()) {
+                    return Pair(
+                        false, context.getString(R.string.patient_error_village_number_not_number)
+                    )
+                }
+
+                return true to ""
             }
 
             // Default to true for all other fields / stuff that isn't implemented.
@@ -354,13 +395,12 @@ data class Patient(
          *
          * @throws ParseException if date is invalid, or not in the specified form.
          */
-        @SuppressLint("SimpleDateFormat")
         fun calculateAgeFromDateString(dateString: String): Int = with(dateString) {
             if (dateString.length != DOB_FORMAT_SIMPLEDATETIME.length) {
                 throw ParseException("wrong format length", 0)
             }
 
-            SimpleDateFormat(DOB_FORMAT_SIMPLEDATETIME).let {
+            SimpleDateFormat(DOB_FORMAT_SIMPLEDATETIME, Locale.getDefault()).let {
                 it.isLenient = false
                 it.timeZone = TimeZone.getTimeZone("UTC")
                 it.parse(this)
@@ -444,8 +484,9 @@ enum class Sex {
  *
  * @see GestationalAgeWeeks
  * @see GestationalAgeMonths
+ * @property timestamp The UNIX timestamp (in seconds)
  */
-sealed class GestationalAge(val value: Long) : Marshal<JSONObject>, Serializable {
+sealed class GestationalAge(val timestamp: Long) : Marshal<JSONObject>, Serializable {
     /**
      * The age in weeks and days.
      *
@@ -481,7 +522,7 @@ sealed class GestationalAge(val value: Long) : Marshal<JSONObject>, Serializable
 
     /**
      * True if `this` and [other] are an instance of the same class and have the
-     * same [value].
+     * same [timestamp].
      *
      * This means that a gestational age in weeks is never equal to a
      * gestational age in months even if they represent the same amount of time.
@@ -494,13 +535,13 @@ sealed class GestationalAge(val value: Long) : Marshal<JSONObject>, Serializable
         return when (other) {
             is GestationalAgeWeeks ->
                 if (this is GestationalAgeWeeks) {
-                    this.value == other.value
+                    this.timestamp == other.timestamp
                 } else {
                     false
                 }
             is GestationalAgeMonths ->
                 if (this is GestationalAgeMonths) {
-                    this.value == other.value
+                    this.timestamp == other.timestamp
                 } else {
                     false
                 }
@@ -509,13 +550,13 @@ sealed class GestationalAge(val value: Long) : Marshal<JSONObject>, Serializable
     }
 
     override fun hashCode(): Int {
-        var result = value.hashCode()
+        var result = timestamp.hashCode()
         result = 31 * result + age.hashCode()
         return result
     }
 
     override fun toString(): String {
-        return "GestationalAge($age, value=$value)"
+        return "GestationalAge($age, value=$timestamp)"
     }
 }
 
@@ -525,7 +566,7 @@ sealed class GestationalAge(val value: Long) : Marshal<JSONObject>, Serializable
 class GestationalAgeWeeks(timestamp: Long) : GestationalAge(timestamp), Serializable {
     override val age: WeeksAndDays
         get() {
-            val seconds = Seconds(UnixTimestamp.now - value)
+            val seconds = Seconds(UnixTimestamp.now - timestamp)
             return WeeksAndDays.weeks(Weeks(seconds).value)
         }
 
@@ -533,12 +574,12 @@ class GestationalAgeWeeks(timestamp: Long) : GestationalAge(timestamp), Serializ
 
     override fun marshal(): JSONObject = with(JSONObject()) {
         // For legacy interop we store the value as a string instead of an int.
-        put(PatientField.GESTATIONAL_AGE_VALUE, value.toString())
+        put(PatientField.GESTATIONAL_AGE_VALUE, timestamp.toString())
         put(PatientField.GESTATIONAL_AGE_UNIT, UNIT_VALUE_WEEKS)
     }
 
     override fun toString(): String {
-        return "GestationalAgeWeeks($age, value=$value)"
+        return "GestationalAgeWeeks($age, value=$timestamp)"
     }
 }
 
@@ -557,7 +598,7 @@ class GestationalAgeMonths(timestamp: Long) : GestationalAge(timestamp), Seriali
      *
      * TODO: Fix this when the fragments are rearchitected/redesigned
      */
-    var inputMonths: Months? = null
+    private var inputMonths: Months? = null
 
     constructor(duration: Months) : this(UnixTimestamp.ago(duration)) {
         inputMonths = duration
@@ -565,18 +606,18 @@ class GestationalAgeMonths(timestamp: Long) : GestationalAge(timestamp), Seriali
 
     override val age: WeeksAndDays
         get() {
-            val seconds = Seconds(UnixTimestamp.now - value)
-            return WeeksAndDays.months(Months(seconds).value.toLong())
+            val seconds = Seconds(UnixTimestamp.now - timestamp)
+            return WeeksAndDays.months(Months(seconds).value)
         }
 
     override fun marshal(): JSONObject = with(JSONObject()) {
         // For legacy interop we store the value as a string instead of an int.
-        put(PatientField.GESTATIONAL_AGE_VALUE, value.toString())
+        put(PatientField.GESTATIONAL_AGE_VALUE, timestamp.toString())
         put(PatientField.GESTATIONAL_AGE_UNIT, UNIT_VALUE_MONTHS)
     }
 
     override fun toString(): String {
-        return "GestationalAgeMonths($age, value=$value)"
+        return "GestationalAgeMonths($age, value=$timestamp)"
     }
 }
 
@@ -599,17 +640,22 @@ data class WeeksAndDays(val weeks: Long, val days: Long) : Serializable {
     companion object {
         const val DAYS_PER_MONTH = 30
         const val DAYS_PER_WEEK = 7
+        const val SECONDS_PER_DAY = 60 * 60 * 24
+        const val SECONDS_PER_WEEK = SECONDS_PER_DAY * DAYS_PER_WEEK
         // Get as close as possible to the result of 30/7, a repeating decimal. However, due to the
         // finiteness of Doubles, anything past 4.2857142857142857 is ignored.
         private const val WEEKS_PER_MONTH = 4.2857142857142857
 
         fun weeks(weeks: Long) = WeeksAndDays(weeks, 0)
 
-        fun months(months: Long): WeeksAndDays {
+        fun months(months: Double): WeeksAndDays {
             val days = DAYS_PER_MONTH * months
-            return WeeksAndDays(days / DAYS_PER_WEEK, days % DAYS_PER_WEEK)
+            return WeeksAndDays((days / DAYS_PER_WEEK).toLong(), days.toLong() % DAYS_PER_WEEK)
         }
     }
+
+    override fun toString(): String = "WeeksAndDays(weeks=$weeks, days=$days, " +
+        "asWeeks()=${asWeeks()}, asMonths()=${asMonths()})"
 }
 
 /**

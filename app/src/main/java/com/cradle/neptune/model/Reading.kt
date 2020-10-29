@@ -85,7 +85,7 @@ data class Reading(
 
     @ColumnInfo var metadata: ReadingMetadata = ReadingMetadata(),
     @ColumnInfo var isUploadedToServer: Boolean = false
-) : Serializable, Marshal<JSONObject> {
+) : Serializable, Marshal<JSONObject>, Verifiable<Reading> {
 
     /**
      * True if this reading has a referral attached to it.
@@ -123,6 +123,12 @@ data class Reading(
      * True if this reading has an associated referral attached to it.
      */
     val hasReferral get() = referral != null
+
+    override fun isValueForPropertyValid(
+        property: KProperty<*>,
+        value: Any?,
+        context: Context
+    ): Pair<Boolean, String> = isValueValid(property, value, context)
 
     /**
      * Converts this [Reading] object into a [JSONObject].
@@ -265,11 +271,6 @@ data class BloodPressure(
             // All good
             else -> ReadingAnalysis.GREEN
         }
-
-    val isValid: Boolean
-        get() = systolic in MIN_SYSTOLIC..MAX_SYSTOLIC &&
-            diastolic in MIN_DIASTOLIC..MAX_DIASTOLIC &&
-            heartRate in MIN_HEART_RATE..MAX_HEART_RATE
 
     /**
      * Marshals this object to JSON.
