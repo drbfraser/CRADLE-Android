@@ -16,7 +16,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import com.cradle.neptune.BuildConfig
 import com.cradle.neptune.R
@@ -39,11 +38,13 @@ import com.cradle.neptune.model.Sex
 import com.cradle.neptune.model.SymptomsState
 import com.cradle.neptune.model.UrineTest
 import com.cradle.neptune.model.Verifier
+import com.cradle.neptune.net.NetworkResult
 import com.cradle.neptune.net.Success
 import com.cradle.neptune.utilitiles.LiveDataDynamicModelBuilder
 import com.cradle.neptune.utilitiles.Months
 import com.cradle.neptune.utilitiles.Weeks
 import com.cradle.neptune.view.ReadingActivity
+import com.cradle.neptune.viewmodel.PatientReadingViewModel.LiveDataInitializationManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -55,7 +56,6 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import org.threeten.bp.ZonedDateTime
-import java.lang.IllegalArgumentException
 import java.lang.reflect.InvocationTargetException
 import java.text.DecimalFormat
 import java.util.Locale
@@ -1207,34 +1207,9 @@ class PatientReadingViewModel @ViewModelInject constructor(
     /**
      * Triggers a download from the server when there is a patient ID conflict.
      */
-    fun downloadPatientFromServer(patientId: String): LiveData<Result<Patient>> = liveData {
-        withContext(Dispatchers.IO) {
-            when (val result = patientManager.downloadPatientAndReading(patientId)) {
-                is Success -> {
-                    // Safe to cancel here since we only downloaded patients + readings
-                    // After this point, we shouldn't have cancellation points because we want the
-                    // resulting operations to be atomic.
-                    yield()
-
-                    val downloadedPatient = result.value.patient
-                    val associateResult =
-                        patientManager.associatePatientWithUser(downloadedPatient.id)
-                    if (associateResult !is Success) {
-                        emit(Result.failure(Throwable()))
-                        return@withContext
-                    }
-
-                    patientManager.add(downloadedPatient)
-                    result.value.readings.let {
-                        it.forEach { reading -> reading.isUploadedToServer = true }
-                        readingManager.addAllReadings(it)
-                    }
-                    emit(Result.success(downloadedPatient))
-                }
-                else -> emit(Result.failure<Patient>(Throwable()))
-            }
-        }
-    }
+    suspend fun downloadAssociateAndSavePatient(
+        patientId: String
+    ): NetworkResult<PatientAndReadings> = patientManager.downloadAssociateAndSavePatient(patientId)
 
     private fun updateActionBarSubtitle(patientName: String?, patientId: String?) {
         val subtitle = if (patientName == null || patientId == null) {
@@ -1415,15 +1390,18 @@ class PatientReadingViewModel @ViewModelInject constructor(
                         val result =
                             referralUploadManager.uploadReferralViaWeb(patient, readingFromBuilder)
                         if (result is Success) {
-                            // Save the patient and reading in local database after marking them as
-                            // being uploaded. Note: If patient already exists on server, then
+                            // Save the patient and reading in local database
+                            // Note: If patient already exists on server, then
                             // patientFromServer == patient.
                             val patientFromServer = result.value.patient
-                            val readingFromServer = result.value.readings[0].apply {
-                                isUploadedToServer = true
-                            }
+                            val readingFromServer = result.value.readings[0]
+                            check(readingFromBuilder.id == readingFromServer.id)
 
-                            patientManager.addPatientWithReading(patientFromServer, readingFromServer)
+                            patientManager.addPatientWithReading(
+                                patientFromServer,
+                                readingFromServer,
+                                isReadingFromServer = true
+                            )
 
                             // Dialog should finish the Activity.
                             // Don't set isSaving to false to ensure this can't be run again.
@@ -1512,7 +1490,11 @@ class PatientReadingViewModel @ViewModelInject constructor(
         ) {
             if (shouldSavePatient() && patientFromBuilder != null) {
                 // Insertion needs to be atomic.
-                patientManager.addPatientWithReading(patientFromBuilder, readingFromBuilder)
+                patientManager.addPatientWithReading(
+                    patientFromBuilder,
+                    readingFromBuilder,
+                    isReadingFromServer = false
+                )
             } else {
                 readingManager.addReading(readingFromBuilder)
             }

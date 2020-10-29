@@ -212,11 +212,8 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         )
         progressDialog.show()
         MainScope().launch {
-            when (val result = patientManager.associatePatientAndDownload(patient.id)) {
+            when (val result = patientManager.downloadAssociateAndSavePatient(patient.id)) {
                 is Success -> {
-                    val patientAndReadings = result.value
-                    patientManager.add(patientAndReadings.patient)
-                    readingManager.addAllReadings(patientAndReadings.readings)
                     localPatientSet.add(patient.id)
                     // todo make the O^n better, maybe globalPatientList can be a map?
                     for (it in globalPatientList) {
