@@ -13,6 +13,7 @@ import com.cradle.neptune.ext.map
 import com.cradle.neptune.ext.optArrayField
 import com.cradle.neptune.ext.optBooleanField
 import com.cradle.neptune.ext.optDoubleField
+import com.cradle.neptune.ext.optIntField
 import com.cradle.neptune.ext.optLongField
 import com.cradle.neptune.ext.optObjectField
 import com.cradle.neptune.ext.optStringField
@@ -51,13 +52,16 @@ private const val SECONDS_IN_MIN = 60
  * will be generated for this field.
  * @property patientId The identifier for the patient this reading is
  * associated with.
- * @property dateTimeTaken unix time at which this reading was taken.
+ * @property dateTimeTaken Unix time at which this reading was taken.
  * @property bloodPressure The result of a blood pressure test.
+ * @property respiratoryRate The respiratory rate in breaths per minute.
+ * @property oxygenSaturation The oxygen saturation as a percent.
+ * @property temperature The temperature in degrees Celsius.
  * @property urineTest The result of a urine test.
  * @property symptoms A list of symptoms that the patient has at the time this
  * reading was taken.
  * @property referral An optional referral associated with this reading.
- * @property dateRecheckVitalsNeeded unix time at which this patient's vitals
+ * @property dateRecheckVitalsNeeded Unix time at which this patient's vitals
  * should be rechecked (if applicable).
  * @property isFlaggedForFollowUp Whether this patient requires a followup.
  * @property previousReadingIds A list of previous readings associated with
@@ -73,6 +77,9 @@ data class Reading(
     @ColumnInfo var patientId: String,
     @ColumnInfo var dateTimeTaken: Long,
     @ColumnInfo var bloodPressure: BloodPressure,
+    @ColumnInfo var respiratoryRate: Int? = null,
+    @ColumnInfo var oxygenSaturation: Int? = null,
+    @ColumnInfo var temperature: Int? = null,
     @ColumnInfo var urineTest: UrineTest?,
     @ColumnInfo var symptoms: List<String>,
 
@@ -144,11 +151,21 @@ data class Reading(
         putStringArray(ReadingField.SYMPTOMS, symptoms)
         put(ReadingField.REFERRAL, referral)
         put(ReadingField.FOLLOWUP, followUp)
+        put(ReadingField.RESPIRATORY_RATE, respiratoryRate)
+        put(ReadingField.OXYGEN_SATURATION, oxygenSaturation)
+        put(ReadingField.TEMPERATURE, temperature)
         put(ReadingField.URINE_TEST, urineTest)
         put(ReadingField.PREVIOUS_READING_IDS, previousReadingIds.joinToString(","))
     }
 
     companion object : Unmarshal<Reading, JSONObject>, Verifier<Reading> {
+        private const val RESPIRATORY_RATE_MIN = 0
+        private const val RESPIRATORY_RATE_MAX = 120
+        private const val OXYGEN_SATURATION_MIN = 0
+        private const val OXYGEN_SATURATION_MAX = 100
+        private const val TEMPERATURE_MIN = 34
+        private const val TEMPERATURE_MAX = 45
+
         @Suppress("NestedBlockDepth")
         override fun isValueValid(
             property: KProperty<*>,
@@ -173,6 +190,35 @@ data class Reading(
                     }
                 }
             }
+            Reading::respiratoryRate, Reading::oxygenSaturation, Reading::temperature ->
+                with(value as? Int?) {
+                    return if (this == null) {
+                        // Optional, so we allow null to pass as valid.
+                        Pair(true, "")
+                    } else {
+                        val (min, max) = when (property) {
+                            Reading::respiratoryRate -> {
+                                RESPIRATORY_RATE_MIN to RESPIRATORY_RATE_MAX
+                            }
+                            Reading::oxygenSaturation -> {
+                                OXYGEN_SATURATION_MIN to OXYGEN_SATURATION_MAX
+                            }
+                            Reading::temperature -> {
+                                TEMPERATURE_MIN to TEMPERATURE_MAX
+                            }
+                            else -> return@with Pair(false, "")
+                        }
+
+                        if (min <= this && this <= max) {
+                            Pair(true, "")
+                        } else {
+                            Pair(
+                                false,
+                                context.getString(R.string.error_must_be_between_n_and_m, min, max)
+                            )
+                        }
+                    }
+                }
             Reading::urineTest -> Pair(true, "")
             else -> Pair(true, "")
         }
@@ -199,6 +245,10 @@ data class Reading(
 
             followUp = data.optObjectField(ReadingField.FOLLOWUP)
                 ?.let(Assessment.Companion::unmarshal),
+
+            respiratoryRate = data.optIntField(ReadingField.RESPIRATORY_RATE),
+            oxygenSaturation = data.optIntField(ReadingField.OXYGEN_SATURATION),
+            temperature = data.optIntField(ReadingField.TEMPERATURE),
 
             urineTest = data.optObjectField(ReadingField.URINE_TEST)
                 ?.let(UrineTest.FromJson::unmarshal),
@@ -585,6 +635,9 @@ private enum class ReadingField(override val text: String) : Field {
     ID("readingId"),
     PATIENT_ID("patientId"),
     DATE_TIME_TAKEN("dateTimeTaken"),
+    RESPIRATORY_RATE("respiratoryRate"),
+    OXYGEN_SATURATION("oxygenSaturation"),
+    TEMPERATURE("temperature"),
     URINE_TEST("urineTests"),
     SYMPTOMS("symptoms"),
     DATE_RECHECK_VITALS_NEEDED("dateRecheckVitalsNeeded"),

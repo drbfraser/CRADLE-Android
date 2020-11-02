@@ -87,15 +87,15 @@
                     android:text="@string/not_available_n_slash_a"
                     android:textColor="@color/black"
                     android:textSize="14sp"
-                    app:layout_constraintStart_toEndOf="@+id/textView12"
-                    app:layout_constraintTop_toTopOf="@+id/textView12" />
+                    app:layout_constraintBaseline_toBaselineOf="@+id/textView12"
+                    app:layout_constraintStart_toEndOf="@+id/textView12" />
 
                 <TextView
                     android:id="@+id/textView15"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="@string/patient_profile_date_of_birth"
+                    android:text="@string/patient_profile_age_label"
                     android:textColor="@color/black"
                     android:textSize="14sp"
                     android:textStyle="bold"
@@ -103,15 +103,15 @@
                     app:layout_constraintTop_toBottomOf="@+id/textView12" />
 
                 <TextView
-                    android:id="@+id/patientDOB"
+                    android:id="@+id/patientAge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:text="@string/not_available_n_slash_a"
                     android:textColor="@color/black"
                     android:textSize="14sp"
-                    app:layout_constraintStart_toEndOf="@+id/textView15"
-                    app:layout_constraintTop_toTopOf="@+id/textView15" />
+                    app:layout_constraintBaseline_toBaselineOf="@+id/textView15"
+                    app:layout_constraintStart_toEndOf="@+id/textView15" />
 
                 <TextView
                     android:id="@+id/textView17"
@@ -133,8 +133,19 @@
                     android:text="@string/not_available_n_slash_a"
                     android:textColor="@color/black"
                     android:textSize="14sp"
-                    app:layout_constraintStart_toEndOf="@+id/textView17"
-                    app:layout_constraintTop_toTopOf="@+id/textView17" />
+                    app:layout_constraintBaseline_toBaselineOf="@+id/textView17"
+                    app:layout_constraintStart_toEndOf="@+id/textView17" />
+
+                <TextView
+                    android:id="@+id/patientHouseholdNumber"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/not_available_n_slash_a"
+                    android:textColor="@color/black"
+                    android:textSize="14sp"
+                    app:layout_constraintBaseline_toBaselineOf="@+id/textView10"
+                    app:layout_constraintStart_toEndOf="@+id/textView10" />
 
                 <TextView
                     android:id="@+id/textView21"
@@ -153,15 +164,27 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
-                    android:layout_marginBottom="8dp"
                     android:text="@string/zone"
                     android:textColor="@color/black"
                     android:textSize="14sp"
                     android:textStyle="bold"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/patientSex"
-                    app:layout_constraintTop_toTopOf="@+id/patientSex" />
+                    app:layout_constraintBaseline_toBaselineOf="@+id/patientSex"
+                    app:layout_constraintStart_toEndOf="@+id/patientSex" />
 
+
+                <TextView
+                    android:id="@+id/textView10"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:text="@string/household_number"
+                    android:textColor="@color/black"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="@+id/textView17"
+                    app:layout_constraintTop_toBottomOf="@+id/textView17" />
 
                 <TextView
                     android:id="@+id/patientVillage"
@@ -171,8 +194,8 @@
                     android:text="@string/not_available_n_slash_a"
                     android:textColor="@color/black"
                     android:textSize="14sp"
-                    app:layout_constraintStart_toEndOf="@+id/textView21"
-                    app:layout_constraintTop_toTopOf="@+id/textView21" />
+                    app:layout_constraintBaseline_toBaselineOf="@+id/textView21"
+                    app:layout_constraintStart_toEndOf="@+id/textView21" />
 
                 <TextView
                     android:id="@+id/patientZone"
@@ -182,31 +205,8 @@
                     android:text="@string/not_available_n_slash_a"
                     android:textColor="@color/black"
                     android:textSize="14sp"
-                    app:layout_constraintStart_toEndOf="@+id/textView22"
-                    app:layout_constraintTop_toTopOf="@+id/textView22" />
-
-                <TextView
-                    android:id="@+id/textView33"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:text="@string/age"
-                    android:textColor="@color/black"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    app:layout_constraintStart_toEndOf="@+id/patientDOB"
-                    app:layout_constraintTop_toTopOf="@+id/patientDOB" />
-
-                <TextView
-                    android:id="@+id/patientAge"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:text="@string/not_available_n_slash_a"
-                    android:textColor="@color/black"
-                    android:textSize="12sp"
-                    app:layout_constraintStart_toEndOf="@+id/textView33"
-                    app:layout_constraintTop_toTopOf="@+id/textView33" />
+                    app:layout_constraintBaseline_toBaselineOf="@+id/textView22"
+                    app:layout_constraintStart_toEndOf="@+id/textView22" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>

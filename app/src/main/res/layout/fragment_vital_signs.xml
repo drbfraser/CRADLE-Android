@@ -151,7 +151,6 @@
                     android:layout_marginTop="16dp"
                     android:layout_marginEnd="8dp"
                     android:layout_marginBottom="16dp"
-                    android:visibility="gone"
                     app:cardElevation="3dp">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
@@ -168,6 +167,7 @@
                             android:enabled="@{viewModel.isInputEnabled}"
                             android:hint="@string/fragment_vital_signs_respiratory_rate_label"
                             android:paddingBottom="0dp"
+                            bind:errorMessage='@{viewModel.errorMap["respiratoryRate"]}'
                             app:helperText=" "
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
@@ -179,8 +179,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="number"
-                                android:maxLines="4"
-                                android:verticalScrollbarPosition="right"
+                                android:text="@={Converter.intToString(viewModel.respiratoryRate)}"
                                 tools:text="100" />
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -192,6 +191,7 @@
                             android:enabled="@{viewModel.isInputEnabled}"
                             android:hint="@string/fragment_vital_signs_oxygen_saturation_label"
                             android:paddingBottom="0dp"
+                            bind:errorMessage='@{viewModel.errorMap["oxygenSaturation"]}'
                             app:helperText=" "
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
@@ -203,8 +203,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="number"
-                                android:maxLines="4"
-                                android:verticalScrollbarPosition="right"
+                                android:text="@={Converter.intToString(viewModel.oxygenSaturation)}"
                                 tools:text="100" />
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -216,6 +215,7 @@
                             android:enabled="@{viewModel.isInputEnabled}"
                             android:hint="@string/fragment_vital_signs_temperature_label"
                             android:paddingBottom="0dp"
+                            bind:errorMessage='@{viewModel.errorMap["temperature"]}'
                             app:helperText=" "
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
@@ -227,8 +227,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="number"
-                                android:maxLines="4"
-                                android:verticalScrollbarPosition="right"
+                                android:text="@={Converter.intToString(viewModel.temperature)}"
                                 tools:text="100" />
                         </com.google.android.material.textfield.TextInputLayout>
 

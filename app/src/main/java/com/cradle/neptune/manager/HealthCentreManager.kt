@@ -14,7 +14,7 @@ import kotlinx.coroutines.withContext
 @Suppress("RedundantSuspendModifier")
 class HealthCentreManager(private val database: CradleDatabase) {
 
-    private val dao get() = database.healthFacilityDaoAccess()
+    private val dao get() = database.healthFacility()
 
     /**
      * get a [HealthFacility] by id

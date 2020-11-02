@@ -115,16 +115,14 @@
                                 tools:text="12345678901234" />
                         </com.google.android.material.textfield.TextInputLayout>
 
-                        <!-- TODO: add error message -->
                         <com.google.android.material.textfield.TextInputLayout
                             android:id="@+id/household_number_layout"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
-                            android:enabled="false"
-                            android:hint="@string/household_number"
+                            android:enabled="@{viewModel.isInputEnabled}"
+                            android:hint="@string/fragment_patient_info_household_number_label"
                             app:helperText=" "
-                            app:hintAnimationEnabled="false"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintHorizontal_bias="0.5"
                             app:layout_constraintHorizontal_weight="0.5"
@@ -135,8 +133,8 @@
                                 android:id="@+id/household_number_text"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:inputType="number"
-                                android:text="@string/edit_text_unavailable_hint" />
+                                android:text="@={viewModel.patientHouseholdNumber}"
+                                android:inputType="number" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
@@ -200,8 +198,8 @@
                             app:startIconContentDescription="Date picker for date of birth"
                             app:startIconDrawable="@drawable/ic_baseline_calendar_today_24"
                             app:suffixText="@string/age_input_suffix_approximate_years_old"
-                            bind:errorMessage='@{viewModel.errorMap["age"]}'
-                            bind:isUsingDateOfBirth="@{viewModel.isUsingDateOfBirth}">
+                            bind:errorMessage='@{viewModel.errorMap["dob"]}'
+                            bind:isUsingDateOfBirth="@{viewModel.patientIsExactDob}">
                             <!-- Note: The age and date of birth share the same error message map key,
                                  i.e., "age". -->
 

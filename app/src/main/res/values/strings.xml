@@ -336,6 +336,7 @@
     <string name="blood_pressure_error_missing_systolic">Missing systolic blood pressure</string>
     <string name="blood_pressure_error_missing_diastolic">Missing diastolic blood pressure</string>
     <string name="blood_pressure_error_missing_heart_rate">Missing heart rate</string>
+    <string name="error_must_be_between_n_and_m">Must be between %1$d and %2$d</string>
     <string name="fragment_patient_info_dob_helper">Enter approximate age, or use date of birth via icon</string>
     <string name="age_date_picker_title">Select date of birth</string>
     <string name="age_input_suffix_approximate_years_old">years old (approximate)</string>
@@ -346,6 +347,7 @@
     <string name="field_required">*Required</string>
     <string name="fragment_patient_info_age_label">Age*</string>
     <string name="fragment_patient_info_village_number_label">Village number*</string>
+    <string name="fragment_patient_info_household_number_label">Household number</string>
     <string name="fragment_patient_info_gender_label">Gender*</string>
     <string name="fragment_patient_info_pregnant_checkbox_label">Pregnant</string>
     <string name="fragment_patient_info_gestational_age_units_label">Gestational age units</string>
@@ -450,6 +452,9 @@
     <string name="referral_dialog_explanation_text_new_patient">Sending a referral will save the new patient and reading to your device. If you send the referral via the web, the referral along with the patient and reading will all be uploaded to the server.</string>
     <string name="referral_dialog_explanation_text_new_reading">Sending a referral will save the reading to your device. If you send the referral via the web, the referral along with the reading will be uploaded to the server.</string>
     <string name="referral_dialog_select_health_centre">Select one of your health centres to send the referral to.</string>
+    <string name="patient_profile_age_label">Age</string>
+    <string name="patient_profile_age_about_n_years_old">About %1$d years old</string>
+    <string name="patient_profile_age_n_years_old">%1$d years old</string>
 
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>

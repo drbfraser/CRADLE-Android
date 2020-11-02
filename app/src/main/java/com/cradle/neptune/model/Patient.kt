@@ -18,7 +18,6 @@ import com.cradle.neptune.ext.optStringField
 import com.cradle.neptune.ext.put
 import com.cradle.neptune.ext.stringField
 import com.cradle.neptune.ext.union
-import com.cradle.neptune.utilitiles.DateUtil
 import com.cradle.neptune.utilitiles.Months
 import com.cradle.neptune.utilitiles.Seconds
 import com.cradle.neptune.utilitiles.UnixTimestamp
@@ -47,7 +46,7 @@ import kotlin.reflect.KProperty
  * @property id The unique identifier for this patient.
  * @property name This patient's name or initials.
  * @property dob This patient's date of birth (if known).
- * @property age This patient's age; used if [dob] is not known.
+ * @property isExactDob Whether [dob] is exact, or just a date of birth for approximate age.
  * @property gestationalAge The gestational age of this patient if applicable.
  * @property sex This patient's sex.
  * @property isPregnant Whether this patient is pregnant or not.
@@ -58,7 +57,9 @@ import kotlin.reflect.KProperty
  * @property lastEdited Last time patient info was edited
  *
  * TODO: Move drug and medical history to just be Strings, or get the frontend and backend to change
- * this into a list. There's no point in doing things different on Android and the frontend / backend.
+ *  this into a list. There's no point in doing things different on Android and the frontend /
+ *  backend.
+ * TODO: Make [isExactDob] and [dob] not optional. Requires backend work to enforce it.
  */
 @Entity
 data class Patient(
@@ -67,12 +68,13 @@ data class Patient(
     var id: String = "",
     @ColumnInfo var name: String = "",
     @ColumnInfo var dob: String? = null,
-    @ColumnInfo var age: Int? = null,
+    @ColumnInfo var isExactDob: Boolean? = null,
     @ColumnInfo var gestationalAge: GestationalAge? = null,
     @ColumnInfo var sex: Sex = Sex.OTHER,
     @ColumnInfo var isPregnant: Boolean = false,
     @ColumnInfo var zone: String? = null,
     @ColumnInfo var villageNumber: String? = null,
+    @ColumnInfo var householdNumber: String? = null,
     @ColumnInfo var drugHistoryList: List<String> = emptyList(),
     @ColumnInfo var medicalHistoryList: List<String> = emptyList(),
     @ColumnInfo var lastEdited: Long? = null,
@@ -86,23 +88,15 @@ data class Patient(
         if (gestationalAge != null) {
             union(gestationalAge)
         }
-
         put(PatientField.ID, id)
         put(PatientField.NAME, name)
-
-        // TODO: Remove this workaround when isExactDob is available in the API. The server no
-        //  longer accepts age. See CRDL-197, MOB-176
-        val currentAge = age
-        if (dob != null) {
-            put(PatientField.DOB, dob)
-        } else if (currentAge != null) {
-            put(PatientField.DOB, DateUtil.getDateStringFromAge(currentAge.toLong()))
-        }
-
+        put(PatientField.DOB, dob)
+        put(PatientField.IS_EXACT_DOB, isExactDob)
         put(PatientField.SEX, sex.name)
         put(PatientField.IS_PREGNANT, isPregnant)
         put(PatientField.ZONE, zone)
         put(PatientField.VILLAGE_NUMBER, villageNumber)
+        put(PatientField.HOUSEHOLD_NUMBER, householdNumber)
         // server only takes string
         put(PatientField.DRUG_HISTORY, drugHistoryList.joinToString())
         put(PatientField.MEDICAL_HISTORY, medicalHistoryList.joinToString())
@@ -204,18 +198,7 @@ data class Patient(
             // validity of dob depends on age
             Patient::dob -> with(value as String?) {
                 if (this == null || isBlank()) {
-                    val dependentProperties = setupDependentPropertiesMap(
-                        instance,
-                        currentValues,
-                        Patient::age
-                    )
-
-                    // If both age and dob are missing, it's invalid.
-                    return if (dependentProperties[Patient::age.name] as Int? == null) {
-                        Pair(false, context.getString(R.string.patient_error_age_or_dob_missing))
-                    } else {
-                        Pair(true, "")
-                    }
+                    return@with Pair(false, context.getString(R.string.patient_error_age_or_dob_missing))
                 }
 
                 val age = try {
@@ -231,36 +214,6 @@ data class Patient(
                 }
 
                 if (age > AGE_UPPER_BOUND || age < AGE_LOWER_BOUND) {
-                    return Pair(
-                        false,
-                        context.getString(
-                            R.string.patient_error_age_between_n_and_m,
-                            AGE_LOWER_BOUND,
-                            AGE_UPPER_BOUND
-                        )
-                    )
-                }
-                return Pair(true, "")
-            }
-
-            // validity of age depends on dob
-            Patient::age -> with(value as Int?) {
-                if (this == null) {
-                    val dependentProperties = setupDependentPropertiesMap(
-                        instance,
-                        currentValues,
-                        Patient::dob
-                    )
-
-                    // If both age and dob are missing, it's invalid.
-                    return if (dependentProperties[Patient::dob.name] == null) {
-                        Pair(false, context.getString(R.string.patient_error_age_or_dob_missing))
-                    } else {
-                        Pair(true, "")
-                    }
-                }
-
-                if (this > AGE_UPPER_BOUND || this < AGE_LOWER_BOUND) {
                     return Pair(
                         false,
                         context.getString(
@@ -380,11 +333,13 @@ data class Patient(
             id = data.optStringField(PatientField.ID) ?: ""
             name = data.optStringField(PatientField.NAME) ?: ""
             dob = data.optStringField(PatientField.DOB)
+            isExactDob = data.optBooleanField(PatientField.IS_EXACT_DOB)
             gestationalAge = maybeUnmarshal(GestationalAge, data)
             sex = data.mapField(PatientField.SEX, Sex::valueOf)
             isPregnant = data.optBooleanField(PatientField.IS_PREGNANT)
             zone = data.optStringField(PatientField.ZONE)
             villageNumber = data.optStringField(PatientField.VILLAGE_NUMBER)
+            householdNumber = data.optStringField(PatientField.HOUSEHOLD_NUMBER)
             // Server returns a String for drug and medical histories.
             // TODO: see Patient doc comment for the note
             drugHistoryList = data.optStringField(PatientField.DRUG_HISTORY)
@@ -401,6 +356,7 @@ data class Patient(
          *
          * @throws ParseException if date is invalid, or not in the specified form.
          */
+        @JvmStatic
         fun calculateAgeFromDateString(dateString: String): Int = with(dateString) {
             if (dateString.length != DOB_FORMAT_SIMPLEDATETIME.length) {
                 throw ParseException("wrong format length", 0)
@@ -674,6 +630,7 @@ private enum class PatientField(override val text: String) : Field {
     ID("patientId"),
     NAME("patientName"),
     DOB("dob"),
+    IS_EXACT_DOB("isExactDob"),
     AGE("patientAge"),
     GESTATIONAL_AGE_UNIT("gestationalAgeUnit"),
     GESTATIONAL_AGE_VALUE("gestationalTimestamp"),
@@ -681,6 +638,7 @@ private enum class PatientField(override val text: String) : Field {
     IS_PREGNANT("isPregnant"),
     ZONE("zone"),
     VILLAGE_NUMBER("villageNumber"),
+    HOUSEHOLD_NUMBER("householdNumber"),
     DRUG_HISTORY("drugHistory"),
     MEDICAL_HISTORY("medicalHistory"),
     LAST_EDITED("lastEdited"),

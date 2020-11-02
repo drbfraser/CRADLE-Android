@@ -44,13 +44,12 @@ import static com.cradle.neptune.view.DashBoardActivity.READING_ACTIVITY_DONE;
 @AndroidEntryPoint
 public class PatientProfileActivity extends AppCompatActivity {
 
-    static final double WEEKS_IN_MONTH = 4.34524;
     TextView patientID;
     TextView patientName;
-    TextView patientDOB;
     TextView patientAge;
     TextView patientSex;
     TextView villageNo;
+    TextView householdNo;
     TextView patientZone;
     TextView pregnant;
     TextView gestationalAge;
@@ -96,10 +95,10 @@ public class PatientProfileActivity extends AppCompatActivity {
     private void initAllFields() {
         patientID = findViewById(R.id.patientId);
         patientName = findViewById(R.id.patientName);
-        patientDOB = findViewById(R.id.patientDOB);
         patientAge = findViewById(R.id.patientAge);
         patientSex = findViewById(R.id.patientSex);
         villageNo = findViewById(R.id.patientVillage);
+        householdNo = findViewById(R.id.patientHouseholdNumber);
         patientZone = findViewById(R.id.patientZone);
         pregnant = findViewById(R.id.textView20);
         gestationalAge = findViewById(R.id.gestationalAge);
@@ -134,14 +133,25 @@ public class PatientProfileActivity extends AppCompatActivity {
         patientID.setText(patient.getId());
         patientName.setText(patient.getName());
         if (!Util.stringNullOrEmpty(patient.getDob())) {
-            patientDOB.setText(patient.getDob());
-        }
-        if (!Util.stringNullOrEmpty(patient.getAge() + "")) {
-            patientAge.setText(patient.getAge() + "");
+            final int ageFromDob = Patient.calculateAgeFromDateString(patient.getDob());
+
+            final String ageDisplayString;
+            if (patient.isExactDob() == null || !patient.isExactDob()) {
+                ageDisplayString = getString(
+                        R.string.patient_profile_age_about_n_years_old, ageFromDob);
+            } else {
+                ageDisplayString = getString(
+                        R.string.patient_profile_age_n_years_old, ageFromDob);
+            }
+
+            patientAge.setText(ageDisplayString);
         }
         patientSex.setText(patient.getSex().toString());
         if (!Util.stringNullOrEmpty(patient.getVillageNumber())) {
             villageNo.setText(patient.getVillageNumber());
+        }
+        if (!Util.stringNullOrEmpty(patient.getHouseholdNumber())) {
+            householdNo.setText(patient.getHouseholdNumber());
         }
         if (!Util.stringNullOrEmpty(patient.getZone())) {
             patientZone.setText(patient.getZone());
@@ -176,24 +186,21 @@ public class PatientProfileActivity extends AppCompatActivity {
      */
     void setupGestationalInfo(Patient patient) {
         RadioGroup radioGroup = findViewById(R.id.gestationradioGroup);
-        radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup radioGroup, int i) {
-                double val = -1;
-                if (i == R.id.monthradiobutton) {
-                    if (patient.getGestationalAge() != null) {
-                        val = patient.getGestationalAge().getAge().asMonths();
-                    }
-                } else {
-                    if (patient.getGestationalAge() != null) {
-                        val = patient.getGestationalAge().getAge().asWeeks();
-                    }
+        radioGroup.setOnCheckedChangeListener((radioGroup1, index) -> {
+            double val = -1;
+            if (index == R.id.monthradiobutton) {
+                if (patient.getGestationalAge() != null) {
+                    val = patient.getGestationalAge().getAge().asMonths();
                 }
-                if (val < 0) {
-                    gestationalAge.setText(R.string.not_available_n_slash_a);
-                } else {
-                    gestationalAge.setText(String.format(Locale.getDefault(), "%.2f", val));
+            } else {
+                if (patient.getGestationalAge() != null) {
+                    val = patient.getGestationalAge().getAge().asWeeks();
                 }
+            }
+            if (val < 0) {
+                gestationalAge.setText(R.string.not_available_n_slash_a);
+            } else {
+                gestationalAge.setText(String.format(Locale.getDefault(), "%.2f", val));
             }
         });
         radioGroup.check(R.id.monthradiobutton);
