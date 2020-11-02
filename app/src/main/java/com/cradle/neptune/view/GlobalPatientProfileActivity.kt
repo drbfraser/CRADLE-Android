@@ -2,6 +2,7 @@ package com.cradle.neptune.view
 
 import android.app.AlertDialog
 import android.app.ProgressDialog
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
@@ -76,10 +77,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
                 ).show()
                 return@launch
             }
-
-            withContext(Dispatchers.IO) {
-                addThePatientInfoToLocalDb(progressDialog)
-            }
+            addThePatientInfoToLocalDb(progressDialog)
         }
     }
 
@@ -87,10 +85,12 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
      * adds patient info to local db and starts [PatientProfileActivity]
      */
     private suspend fun addThePatientInfoToLocalDb(progressDialog: ProgressDialog) {
-        patientReadings.forEach {
-            readingManager.addReading(it.apply { isUploadedToServer = true })
-        }
-        patientManager.add(currPatient)
+        patientManager.addPatientWithReadings(
+            currPatient,
+            patientReadings,
+            areReadingsFromServer = true
+        )
+
         val intent =
             Intent(this@GlobalPatientProfileActivity, PatientProfileActivity::class.java)
         intent.putExtra("patient", currPatient)
@@ -107,7 +107,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
      */
     private fun getGlobalPatient() {
         val globalPatient =
-            intent.getSerializableExtra("globalPatient") as GlobalPatient
+            intent.getParcelableExtra(EXTRA_GLOBAL_PATIENT) as GlobalPatient
 
         val progressDialog = ProgressDialog(this)
         progressDialog.setCancelable(false)
@@ -178,5 +178,13 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         readingRecyclerview.layoutManager = layoutManager
         readingRecyclerview.isNestedScrollingEnabled = false
         readingRecyclerview.adapter = listAdapter
+    }
+
+    companion object {
+        private const val EXTRA_GLOBAL_PATIENT = "globalPatient"
+
+        fun makeIntent(context: Context, globalPatient: GlobalPatient) =
+            Intent(context, GlobalPatientProfileActivity::class.java)
+                .putExtra(EXTRA_GLOBAL_PATIENT, globalPatient)
     }
 }

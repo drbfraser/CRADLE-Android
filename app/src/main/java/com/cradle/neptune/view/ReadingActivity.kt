@@ -25,11 +25,13 @@ import androidx.navigation.navOptions
 import com.cradle.neptune.R
 import com.cradle.neptune.databinding.ActivityReadingBinding
 import com.cradle.neptune.ext.hideKeyboard
+import com.cradle.neptune.net.Success
 import com.cradle.neptune.view.ui.reading.PatientIdConflictDialogFragment
 import com.cradle.neptune.viewmodel.PatientReadingViewModel
 import com.cradle.neptune.viewmodel.ReadingFlowError
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -338,34 +340,31 @@ class ReadingActivity : AppCompatActivity() {
             R.string.reading_activity_downloading_patient_toast,
             Toast.LENGTH_SHORT
         ).show()
-        val downloadLiveData = viewModel.downloadPatientFromServer(patientId)
-        downloadLiveData.observe(this) {
-            val newPatient = it.getOrElse {
-                // TODO: downloading and associating needs to be refactored into the patient manager
-                viewModel.setInputEnabledState(true)
-                viewModel.clearBottomNavBarMessage()
-                downloadLiveData.removeObservers(this)
-                Toast.makeText(
-                    this,
-                    R.string.reading_activity_downloading_patient_failed_toast,
-                    Toast.LENGTH_SHORT
-                ).show()
-                return@observe
+        lifecycleScope.launch(Dispatchers.Main) {
+            when (val result = viewModel.downloadAssociateAndSavePatient(patientId)) {
+                is Success -> {
+                    Toast.makeText(
+                        this@ReadingActivity,
+                        R.string.reading_activity_downloading_patient_successful_toast,
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    val newReadingIntent = makeIntentForNewReadingExistingPatient(
+                        context = this@ReadingActivity,
+                        patientId = result.value.patient.id
+                    )
+                    startActivity(newReadingIntent)
+                    finish()
+                }
+                else -> {
+                    Toast.makeText(
+                        this@ReadingActivity,
+                        R.string.reading_activity_downloading_patient_failed_toast,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    viewModel.setInputEnabledState(true)
+                }
             }
-
-            Toast.makeText(
-                this,
-                R.string.reading_activity_downloading_patient_successful_toast,
-                Toast.LENGTH_SHORT
-            ).show()
-
-            val newReadingIntent = makeIntentForNewReadingExistingPatient(
-                context = this,
-                patientId = newPatient.id
-            )
-
-            startActivity(newReadingIntent)
-            finish()
         }
     }
 

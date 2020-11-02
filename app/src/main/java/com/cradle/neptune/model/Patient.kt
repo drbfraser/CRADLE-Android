@@ -1,6 +1,7 @@
 package com.cradle.neptune.model
 
 import android.content.Context
+import android.os.Parcelable
 import androidx.core.text.isDigitsOnly
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
@@ -22,10 +23,10 @@ import com.cradle.neptune.utilitiles.Months
 import com.cradle.neptune.utilitiles.Seconds
 import com.cradle.neptune.utilitiles.UnixTimestamp
 import com.cradle.neptune.utilitiles.Weeks
+import kotlinx.android.parcel.Parcelize
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.Serializable
-import java.lang.IllegalArgumentException
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -648,19 +649,24 @@ private enum class PatientField(override val text: String) : Field {
 
 /**
  * data class for patient list we get on a global search
+ *
+ * @property index Index in the global search RecyclerView
  */
+@Parcelize
 data class GlobalPatient(
     val id: String,
     val initials: String,
     val villageNum: String,
-    var isMyPatient: Boolean
-) : Serializable {
+    var isMyPatient: Boolean,
+    var index: Int?
+) : Parcelable {
     companion object : Unmarshal<GlobalPatient, JSONObject> {
         override fun unmarshal(data: JSONObject) = GlobalPatient(
             id = data.stringField(PatientField.ID),
             initials = data.stringField(PatientField.NAME),
             villageNum = data.stringField(PatientField.VILLAGE_NUMBER),
-            isMyPatient = false
+            isMyPatient = false,
+            index = null
         )
     }
 }

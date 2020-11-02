@@ -6,12 +6,13 @@ import com.cradle.neptune.database.ReadingDaoAccess
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.PatientAndReadings
 import com.cradle.neptune.model.Reading
+import com.cradle.neptune.net.Failure
 import com.cradle.neptune.net.NetworkResult
 import com.cradle.neptune.net.RestApi
 import com.cradle.neptune.net.Success
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
-import java.lang.IllegalArgumentException
+import kotlinx.coroutines.yield
 import java.util.ArrayList
 import javax.inject.Inject
 
@@ -38,21 +39,65 @@ class PatientManager @Inject constructor(
     }
 
     /**
-     * Adds a patient and its reading in a single transaction. The [reading] should be for the
-     * given [patient].
+     * Adds a patient and its reading to the database in a single transaction.
+     * The [reading] should be for the given [patient].
      *
      * @throws IllegalArgumentException if the [reading] given has a different patient ID from the
      * given [patient]'s ID
      */
-    suspend fun addPatientWithReading(patient: Patient, reading: Reading) = withContext(IO) {
-        if (patient.id != reading.patientId) {
-            throw IllegalArgumentException(
-                "reading's patient ID doesn't match with given patient's ID"
-            )
+    suspend fun addPatientWithReading(
+        patient: Patient,
+        reading: Reading,
+        isReadingFromServer: Boolean,
+    ) {
+        withContext(IO) {
+            if (patient.id != reading.patientId) {
+                throw IllegalArgumentException(
+                    "reading's patient ID doesn't match with given patient's ID"
+                )
+            }
+
+            database.runInTransaction {
+                patientDao.insert(patient)
+                if (isReadingFromServer) {
+                    reading.isUploadedToServer = true
+                }
+                readingDao.insert(reading)
+            }
         }
-        database.runInTransaction {
-            patientDao.insert(patient)
-            readingDao.insert(reading)
+    }
+
+    /**
+     * Adds a patient and its readings to the local databse in a single transaction.
+     * The [readings] should be for the given [patient].
+     *
+     * @throws IllegalArgumentException if any of the [readings] have a different patient ID from
+     * the given [patient]'s ID
+     */
+    suspend fun addPatientWithReadings(
+        patient: Patient,
+        readings: List<Reading>,
+        areReadingsFromServer: Boolean
+    ) {
+        withContext(IO) {
+            readings.forEach {
+                if (it.patientId != patient.id) {
+                    throw IllegalArgumentException("mismatched ID")
+                }
+            }
+
+            database.runInTransaction {
+                patientDao.insert(patient)
+                if (areReadingsFromServer) {
+                    // Insert them all individually to set isUploadedToServer
+                    readings.forEach {
+                        it.isUploadedToServer = true
+                        readingDao.insert(it)
+                    }
+                } else {
+                    readingDao.insertAll(readings)
+                }
+            }
         }
     }
 
@@ -185,20 +230,41 @@ class PatientManager @Inject constructor(
         restApi.associatePatientToUser(id)
 
     /**
-     * Associates a given patient to the active user and then downloads all
-     * said patient's information. The act of associating a patient to a user
-     * means that the patient will be tracked when syncing with the server.
+     * Downloads patient information and readings for the given [patientId], associates the patient
+     * with the server, then saves the patient and its readings into the local database. The act of
+     * associating a patient to a user means that the patient will be tracked when syncing with the
+     * server.
      *
-     * @param id id of the patient to associate and download
+     * The patient and readings will not be saved in the local database if association fails.
+     *
+     * @param patientId id of the patient to download, associate, and save
+     * @return A [NetworkResult] of type [Success] for the download patient result if the patient
+     * was associated and saved successfully, else a [Failure] or [Exception] if either downloading
+     * or association failed.
      */
-    @Suppress("RemoveExplicitTypeArguments") // fails to compile without type argument
-    suspend fun associatePatientAndDownload(id: String): NetworkResult<PatientAndReadings> =
-        withContext<NetworkResult<PatientAndReadings>>(IO) {
-            val associateResult = associatePatientWithUser(id)
-            if (associateResult.failed) {
-                return@withContext associateResult.cast()
-            }
-
-            downloadPatientAndReading(id)
+    suspend fun downloadAssociateAndSavePatient(
+        patientId: String
+    ): NetworkResult<PatientAndReadings> = withContext(IO) {
+        val downloadResult = downloadPatientAndReading(patientId)
+        if (downloadResult !is Success) {
+            return@withContext downloadResult
         }
+        // Safe to cancel here since we only downloaded patients + readings
+        // After this point, we shouldn't have cancellation points, because we want the
+        // resulting operations to be atomic.
+        yield()
+
+        val downloadedPatient = downloadResult.value.patient
+        val associateResult = associatePatientWithUser(downloadedPatient.id)
+        if (associateResult !is Success) {
+            // If association failed, we shouldn't add the patient and readings to our database.
+            return@withContext associateResult.cast<PatientAndReadings>()
+        }
+
+        // Otherwise, association was successful, so add to the database
+        val downloadedReadings = downloadResult.value.readings
+        addPatientWithReadings(downloadedPatient, downloadedReadings, areReadingsFromServer = true)
+
+        return@withContext downloadResult
+    }
 }
