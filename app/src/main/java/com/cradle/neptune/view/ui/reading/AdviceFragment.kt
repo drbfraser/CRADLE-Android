@@ -16,7 +16,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.observe
 import com.cradle.neptune.R
 import com.cradle.neptune.binding.FragmentDataBindingComponent
 import com.cradle.neptune.databinding.FragmentAdviceBinding
