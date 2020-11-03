@@ -66,7 +66,7 @@
                             app:layout_constraintGuide_percent="0.5" />
 
                         <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/initials_layout"
+                            android:id="@+id/patient_name_layout"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
@@ -81,11 +81,12 @@
                             bind:errorMessage='@{viewModel.errorMap["name"]}'>
 
                             <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/initials_text"
+                                android:id="@+id/patient_name_text"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="textNoSuggestions|textPersonName"
                                 android:maxLength="32"
+                                android:nextFocusDown="@id/patient_id_text"
                                 android:text="@={viewModel.patientName}"
                                 tools:text="ABC" />
                         </com.google.android.material.textfield.TextInputLayout>
@@ -101,7 +102,7 @@
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintHorizontal_bias="0.5"
                             app:layout_constraintHorizontal_weight="0.5"
-                            app:layout_constraintStart_toEndOf="@+id/initials_layout"
+                            app:layout_constraintStart_toEndOf="@+id/patient_name_layout"
                             app:layout_constraintTop_toBottomOf="@+id/patient_info_title"
                             bind:errorMessage='@{viewModel.errorMap["id"]}'>
 
@@ -111,6 +112,8 @@
                                 android:layout_height="wrap_content"
                                 android:inputType="number"
                                 android:maxLength="14"
+                                android:nextFocusUp="@id/patient_name_text"
+                                android:nextFocusDown="@id/zone_text"
                                 android:text="@={viewModel.patientId}"
                                 tools:text="12345678901234" />
                         </com.google.android.material.textfield.TextInputLayout>
@@ -133,8 +136,10 @@
                                 android:id="@+id/household_number_text"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="@={viewModel.patientHouseholdNumber}"
-                                android:inputType="number" />
+                                android:inputType="number"
+                                android:nextFocusUp="@id/zone_text"
+                                android:nextFocusDown="@id/village_text"
+                                android:text="@={viewModel.patientHouseholdNumber}" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
@@ -156,6 +161,8 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="textNoSuggestions"
+                                android:nextFocusUp="@id/patient_id_text"
+                                android:nextFocusDown="@id/household_number_text"
                                 android:text="@={viewModel.patientZone}"
                                 tools:text="my zone" />
                         </com.google.android.material.textfield.TextInputLayout>
@@ -329,7 +336,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="textLongMessage|textMultiLine|textNoSuggestions"
-                                android:minLines="2"
+                                android:minLines="1"
                                 android:singleLine="false"
                                 android:text="@={Converter.singleElementListToString(viewModel.patientDrugHistory)}"
                                 android:verticalScrollbarPosition="right"
@@ -354,7 +361,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="textLongMessage|textMultiLine|textNoSuggestions"
-                                android:minLines="2"
+                                android:minLines="1"
                                 android:singleLine="false"
                                 android:text="@={Converter.singleElementListToString(viewModel.patientMedicalHistory)}"
                                 android:verticalScrollbarPosition="right"
