@@ -1,7 +1,9 @@
 package com.cradle.neptune.manager
 
+import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import com.cradle.neptune.R
 import com.cradle.neptune.net.Failure
 import com.cradle.neptune.net.NetworkException
 import com.cradle.neptune.net.NetworkResult
@@ -9,9 +11,11 @@ import com.cradle.neptune.net.RestApi
 import com.cradle.neptune.net.Success
 import com.cradle.neptune.sync.SyncStepperImplementation
 import com.cradle.neptune.utilitiles.UnixTimestamp
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONException
 import javax.inject.Inject
 
 private const val HTTP_OK = 200
@@ -25,7 +29,8 @@ class LoginManager @Inject constructor(
     private val sharedPreferences: SharedPreferences,
     private val patientManager: PatientManager,
     private val readingManager: ReadingManager,
-    private val healthCentreManager: HealthCentreManager
+    private val healthCentreManager: HealthCentreManager,
+    @ApplicationContext private val context: Context
 ) {
 
     companion object {
@@ -49,12 +54,27 @@ class LoginManager @Inject constructor(
         // If we failed to login, return immediately
         when (val result = restApi.authenticate(email, password)) {
             is Success -> {
-                val token = result.value.getString("token")
-                val userId = result.value.getString("userId")
+                // Fail the login if the token and userId are not in the response for
+                // whatever reason
+                val (token, userId) = try {
+                    result.value.getString("token") to result.value.getString("userId")
+                } catch (e: JSONException) {
+                    return@withContext NetworkException(e)
+                }
+
+                // The name is not as important, so we don't fail the login if there isn't a name
+                // in the response.
+                val name = try {
+                    result.value.getString("firstName")
+                } catch (e: JSONException) {
+                    null
+                }
+
                 with(sharedPreferences.edit()) {
                     putString(TOKEN_KEY, token)
                     putString(USER_ID_KEY, userId)
                     putString(EMAIL_KEY, email)
+                    putString(context.getString(R.string.key_vht_name), name)
                     apply()
                 }
             }
