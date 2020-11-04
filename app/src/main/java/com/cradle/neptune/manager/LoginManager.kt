@@ -52,12 +52,14 @@ class LoginManager @Inject constructor(
         // Send a request to the authentication endpoint to login
         //
         // If we failed to login, return immediately
-        when (val result = restApi.authenticate(email, password)) {
+        val loginResult = restApi.authenticate(email, password)
+        when (loginResult) {
             is Success -> {
                 // Fail the login if the token and userId are not in the response for
                 // whatever reason
                 val (token, userId) = try {
-                    result.value.getString("token") to result.value.getString("userId")
+                    loginResult.value.getString("token") to
+                        loginResult.value.getString("userId")
                 } catch (e: JSONException) {
                     return@withContext NetworkException(e)
                 }
@@ -65,7 +67,7 @@ class LoginManager @Inject constructor(
                 // The name is not as important, so we don't fail the login if there isn't a name
                 // in the response.
                 val name = try {
-                    result.value.getString("firstName")
+                    loginResult.value.getString("firstName")
                 } catch (e: JSONException) {
                     null
                 }
@@ -79,7 +81,7 @@ class LoginManager @Inject constructor(
                 }
             }
 
-            else -> return@withContext result.cast()
+            else -> return@withContext loginResult.cast()
         }
 
         // Once successfully logged in, download the user's patients and health
@@ -117,10 +119,26 @@ class LoginManager @Inject constructor(
                     val facilities = result.value
                     if (facilities.isNotEmpty()) {
                         // Select the first health facility by default
-                        // TODO: We probably don't want to be automatically doing
-                        //  this. It might be better to display a prompt to the
-                        //  user or something.
-                        facilities[0].isUserSelected = true
+
+                        // TODO: Make it so that the health facility the server sends back cannot
+                        //       be removed by the user.
+                        // TODO: Show some dialog to select a health facility if the server didn't
+                        //        send back one.
+                        try {
+                            val healthFacilityNameFromServer =
+                                loginResult.value.getString("healthFacilityName")
+
+                            facilities.find { it.name == healthFacilityNameFromServer }
+                                ?.apply { isUserSelected = true }
+                                ?: run {
+                                    // Select the first one by default if unable to find it.
+                                    facilities[0].isUserSelected = true
+                                }
+                        } catch (e: JSONException) {
+                            // Select the first one by default
+                            facilities[0].isUserSelected = true
+                        }
+
                         healthFacilityManager.addAll(facilities)
                     }
                 }
