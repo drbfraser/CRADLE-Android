@@ -21,10 +21,12 @@
     <PreferenceCategory android:title="Optical Character Recognition">
         <SwitchPreference
             android:defaultValue="@string/settings_default_ocr_enabled"
+            android:enabled="false"
             android:key="setting_ocr_enabled"
             android:title="Enable OCR" />
         <SwitchPreference
             android:defaultValue="@string/settings_default_ocr_show_debug_info"
+            android:enabled="false"
             android:key="setting_ocr_debug_enabled"
             android:title="Show OCR debugging info" />
     </PreferenceCategory>

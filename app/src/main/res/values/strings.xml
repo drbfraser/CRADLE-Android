@@ -455,6 +455,7 @@
     <string name="patient_profile_age_label">Age</string>
     <string name="patient_profile_age_about_n_years_old">About %1$d years old</string>
     <string name="patient_profile_age_n_years_old">%1$d years old</string>
+    <string name="fragment_vital_signs_ocr_not_available_message">OCR is not available; please enter readings manually</string>
 
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>
