@@ -457,6 +457,13 @@
     <string name="patient_profile_age_n_years_old">%1$d years old</string>
     <string name="fragment_vital_signs_ocr_not_available_message">OCR is not available; please enter readings manually</string>
     <string name="dashboard_notice_alpha_build_message">Alpha build — Don\'t use real patient data</string>
+    <string name="preference_advanced_title">Advanced</string>
+    <string name="preference_sign_out_title">Sign out</string>
+    <string name="preference_health_centres_title">Health centres</string>
+    <string name="preference_region_title">Your region</string>
+    <string name="preference_region_summary">The country or region you are working in.</string>
+    <string name="preference_name_title">Your name</string>
+    <string name="preference_name_summary">No name entered</string>
 
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>
