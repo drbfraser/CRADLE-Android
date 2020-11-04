@@ -7,9 +7,10 @@
         <EditTextPreference
             android:defaultValue="@string/preference_name_summary"
             android:key="@string/key_vht_name"
-            android:selectAllOnFocus="true"
+            android:selectAllOnFocus="false"
             android:singleLine="true"
-            android:title="@string/preference_name_title" />
+            android:title="@string/preference_name_title"
+            app:selectable="false" />
         <EditTextPreference
             android:defaultValue="Uganda"
             android:key="@string/key_region"
