@@ -234,7 +234,7 @@
     </plurals>
 
     <string name="normal_signout_message">You will be required to sign in again before using the application.</string>
-    <string name="dashboard_new_reading">New Reading</string>
+    <string name="dashboard_new_patient">New Patient</string>
     <string name="dashboard_sync">Sync</string>
     <string name="dashboard_education">Education</string>
     <string name="dashboard_statistics">Statistics</string>
