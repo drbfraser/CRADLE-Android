@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Types: https://developer.android.com/guide/topics/ui/settings/components-and-attributes -->
 
     <PreferenceCategory android:title="General">
@@ -15,7 +16,8 @@
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:summary="@string/preference_region_summary"
-            android:title="@string/preference_region_title" />
+            android:title="@string/preference_region_title"
+            app:isPreferenceVisible="false" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Referrals">
