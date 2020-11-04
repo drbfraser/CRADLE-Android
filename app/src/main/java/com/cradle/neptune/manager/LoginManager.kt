@@ -29,7 +29,7 @@ class LoginManager @Inject constructor(
     private val sharedPreferences: SharedPreferences,
     private val patientManager: PatientManager,
     private val readingManager: ReadingManager,
-    private val healthCentreManager: HealthCentreManager,
+    private val healthFacilityManager: HealthFacilityManager,
     @ApplicationContext private val context: Context
 ) {
 
@@ -121,7 +121,7 @@ class LoginManager @Inject constructor(
                         //  this. It might be better to display a prompt to the
                         //  user or something.
                         facilities[0].isUserSelected = true
-                        healthCentreManager.addAll(facilities)
+                        healthFacilityManager.addAll(facilities)
                     }
                 }
 

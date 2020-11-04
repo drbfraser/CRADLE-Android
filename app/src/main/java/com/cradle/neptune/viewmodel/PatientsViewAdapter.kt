@@ -47,7 +47,7 @@ class PatientsViewAdapter(
         if (reading?.followUp != null) {
             patientViewHolder.referralImg.setImageResource(R.drawable.ic_check_circle_black_24dp)
             patientViewHolder.referralImg.visibility = View.VISIBLE
-        } else if (reading?.isReferredToHealthCentre == true) {
+        } else if (reading?.isReferredToHealthFacility == true) {
             patientViewHolder.referralImg.setImageResource(R.drawable.ic_pending_referral_black_24dp)
             patientViewHolder.referralImg.visibility = View.VISIBLE
         }

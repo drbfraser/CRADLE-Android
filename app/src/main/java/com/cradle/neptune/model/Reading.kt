@@ -98,7 +98,7 @@ data class Reading(
     /**
      * True if this reading has a referral attached to it.
      */
-    val isReferredToHealthCentre: Boolean get() = referral != null
+    val isReferredToHealthFacility: Boolean get() = referral != null
 
     /**
      * True if this reading notes that a vital recheck is required.

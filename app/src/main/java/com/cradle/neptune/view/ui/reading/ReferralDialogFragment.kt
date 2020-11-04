@@ -99,12 +99,13 @@ class ReferralDialogFragment : DialogFragment() {
             title = getString(R.string.referral_dialog_title)
         }
 
-        view.findViewById<ImageButton>(R.id.open_health_centre_settings_button).setOnClickListener {
-            activity?.apply { startActivity(HealthFacilitiesActivity.makeIntent(this)) }
-        }
+        view.findViewById<ImageButton>(R.id.open_health_facility_settings_button)
+            .setOnClickListener {
+                activity?.apply { startActivity(HealthFacilitiesActivity.makeIntent(this)) }
+            }
 
         view.findViewById<Button>(R.id.send_sms_button).setOnClickListener {
-            if (referralDialogViewModel.isSelectedHealthCentreValid() &&
+            if (referralDialogViewModel.isSelectedHealthFacilityValid() &&
                 referralDialogViewModel.isSending.value != true
             ) {
                 referralDialogViewModel.isSending.value = true
@@ -114,7 +115,7 @@ class ReferralDialogFragment : DialogFragment() {
         }
 
         view.findViewById<Button>(R.id.send_web_button).setOnClickListener {
-            if (referralDialogViewModel.isSelectedHealthCentreValid() &&
+            if (referralDialogViewModel.isSelectedHealthFacilityValid() &&
                 referralDialogViewModel.isSending.value != true
             ) {
                 referralDialogViewModel.isSending.value = true
@@ -131,20 +132,20 @@ class ReferralDialogFragment : DialogFragment() {
     private suspend fun handleSmsReferralSend(view: View) {
         try {
             val comment = referralDialogViewModel.comments.value ?: ""
-            val selectedHealthCentreName =
-                referralDialogViewModel.healthCentreToUse.value ?: return
+            val selectedHealthFacilityName =
+                referralDialogViewModel.healthFacilityToUse.value ?: return
 
             val (smsSendResult, patientAndReadings) = viewModel.saveWithReferral(
                 ReferralOption.SMS,
                 comment,
-                selectedHealthCentreName
+                selectedHealthFacilityName
             )
 
             when (smsSendResult) {
                 ReadingFlowSaveResult.SAVE_SUCCESSFUL -> {
                     showStatusToast(view.context, smsSendResult, ReferralOption.SMS)
                     launchSmsIntentAndFinish(
-                        selectedHealthCentreName,
+                        selectedHealthFacilityName,
                         patientAndReadings ?: error("unreachable")
                     )
                 }
@@ -158,23 +159,23 @@ class ReferralDialogFragment : DialogFragment() {
     }
 
     private fun launchSmsIntentAndFinish(
-        selectedHealthCentreName: String,
+        selectedHealthFacilityName: String,
         patientAndReadings: PatientAndReadings
     ) {
         activity?.run {
-            val smsIntent = makeSmsIntent(selectedHealthCentreName, patientAndReadings)
+            val smsIntent = makeSmsIntent(selectedHealthFacilityName, patientAndReadings)
             startActivity(smsIntent)
             finish()
         }
     }
 
     private fun makeSmsIntent(
-        selectedHealthCentreName: String,
+        selectedHealthFacilityName: String,
         patientAndReadings: PatientAndReadings
     ): Intent {
         val selectedHealthFacility =
-            referralDialogViewModel.getHealthCentreFromHealthCentreName(
-                selectedHealthCentreName
+            referralDialogViewModel.getHealthFacilityFromHealthFacilityName(
+                selectedHealthFacilityName
             )
         val id = UUID.randomUUID().toString()
         val json = with(JSONObject()) {
@@ -201,13 +202,13 @@ class ReferralDialogFragment : DialogFragment() {
     private suspend fun handleWebReferralSend(view: View) {
         try {
             val comment = referralDialogViewModel.comments.value ?: ""
-            val selectedHealthCentreName =
-                referralDialogViewModel.healthCentreToUse.value ?: return
+            val selectedHealthFacilityName =
+                referralDialogViewModel.healthFacilityToUse.value ?: return
 
             val (smsSendResult, _) = viewModel.saveWithReferral(
                 ReferralOption.WEB,
                 comment,
-                selectedHealthCentreName
+                selectedHealthFacilityName
             )
 
             when (smsSendResult) {

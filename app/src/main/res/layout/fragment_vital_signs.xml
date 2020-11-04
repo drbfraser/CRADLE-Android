@@ -281,14 +281,14 @@
 
 
                         <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/health_centre_input_layout"
+                            android:id="@+id/health_facility_input_layout"
                             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
                             android:enabled="@{viewModel.isInputEnabled &amp;&amp; viewModel.isUsingUrineTest}"
                             android:hint="@string/urine_test_layout_leukocytes"
-                            android:labelFor="@id/health_centre_auto_complete_text"
+                            android:labelFor="@id/health_facility_auto_complete_text"
                             app:helperText=" "
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
@@ -297,7 +297,7 @@
                             bind:errorMessage='@{viewModel.errorMap["leukocytes"]}'>
 
                             <AutoCompleteTextView
-                                android:id="@+id/health_centre_auto_complete_text"
+                                android:id="@+id/health_facility_auto_complete_text"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="none"
@@ -318,7 +318,7 @@
                             app:helperText=" "
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/health_centre_input_layout"
+                            app:layout_constraintTop_toBottomOf="@+id/health_facility_input_layout"
                             bind:addMandatoryStarToLabelWhen="@{viewModel.isUsingUrineTest}"
                             bind:errorMessage='@{viewModel.errorMap["nitrites"]}'>
 

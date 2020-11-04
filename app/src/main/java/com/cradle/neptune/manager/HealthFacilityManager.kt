@@ -12,7 +12,7 @@ import kotlinx.coroutines.withContext
  * main thread rather than run time error
  */
 @Suppress("RedundantSuspendModifier")
-class HealthCentreManager(private val database: CradleDatabase) {
+class HealthFacilityManager(private val database: CradleDatabase) {
 
     private val dao get() = database.healthFacility()
 
@@ -51,7 +51,7 @@ class HealthCentreManager(private val database: CradleDatabase) {
     val getLiveList: LiveData<List<HealthFacility>> = dao.allFacilitiesLiveData
 
     /**
-     * Returns a list of all user-selected health centres as LiveData.
+     * Returns a list of all user-selected health facilities as LiveData.
      */
     val getLiveListSelected: LiveData<List<HealthFacility>> =
         dao.allUserSelectedHealthFacilitiesLiveData

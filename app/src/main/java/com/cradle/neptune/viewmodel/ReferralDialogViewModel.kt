@@ -7,23 +7,23 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
-import com.cradle.neptune.manager.HealthCentreManager
+import com.cradle.neptune.manager.HealthFacilityManager
 import com.cradle.neptune.model.HealthFacility
 
 class ReferralDialogViewModel @ViewModelInject constructor(
-    healthCentreManager: HealthCentreManager
+    healthFacilityManager: HealthFacilityManager
 ) : ViewModel() {
-    val healthCentreToUse = MediatorLiveData<String>()
+    val healthFacilityToUse = MediatorLiveData<String>()
     val comments = MutableLiveData<String>("")
 
-    private val selectedHealthCentres: LiveData<List<HealthFacility>> =
-        healthCentreManager.getLiveListSelected
+    private val selectedHealthFacilities: LiveData<List<HealthFacility>> =
+        healthFacilityManager.getLiveListSelected
 
     /**
-     * The health centres that the user has selected in the settings.
+     * The health facilities that the user has selected in the settings.
      */
-    val selectedHealthCentresAsStrings: LiveData<Array<String>> =
-        selectedHealthCentres.map { it.map(HealthFacility::name).toTypedArray() }
+    val selectedHealthFacilitiesAsStrings: LiveData<Array<String>> =
+        selectedHealthFacilities.map { it.map(HealthFacility::name).toTypedArray() }
 
     private val _areSendButtonsEnabled = MediatorLiveData<Boolean>()
     val areSendButtonsEnabled: LiveData<Boolean>
@@ -32,21 +32,21 @@ class ReferralDialogViewModel @ViewModelInject constructor(
     val isSending = MutableLiveData<Boolean>(false)
 
     init {
-        healthCentreToUse.apply {
-            addSource(selectedHealthCentresAsStrings) { userSelectedCentres ->
-                val currentCentreToUse = healthCentreToUse.value
+        healthFacilityToUse.apply {
+            addSource(selectedHealthFacilitiesAsStrings) { userSelectedCentres ->
+                val currentCentreToUse = healthFacilityToUse.value
                 if (currentCentreToUse.isNullOrBlank()) return@addSource
 
                 if (currentCentreToUse !in userSelectedCentres) {
-                    // Clear out the selected health centre if the user removed the current from the
-                    // user's selected health centres.
-                    healthCentreToUse.value = ""
+                    // Clear out the selected health facility if the user removed the current from the
+                    // user's selected health facilities.
+                    healthFacilityToUse.value = ""
                 }
             }
         }
         _areSendButtonsEnabled.apply {
-            addSource(healthCentreToUse) {
-                // Only enabled if they have selected a health centre.
+            addSource(healthFacilityToUse) {
+                // Only enabled if they have selected a health facility.
                 val newEnabledState = !it.isNullOrBlank()
                 if (value != newEnabledState) {
                     value = newEnabledState
@@ -55,21 +55,21 @@ class ReferralDialogViewModel @ViewModelInject constructor(
         }
     }
 
-    fun getHealthCentreFromHealthCentreName(name: String): HealthFacility {
-        val currentSelectedHealthCentres = selectedHealthCentres.value
-        if (currentSelectedHealthCentres.isNullOrEmpty()) error("missing health centres")
+    fun getHealthFacilityFromHealthFacilityName(name: String): HealthFacility {
+        val currentSelectedHealthFacilities = selectedHealthFacilities.value
+        if (currentSelectedHealthFacilities.isNullOrEmpty()) error("missing health facilities")
 
-        return currentSelectedHealthCentres.find { it.name == name }
+        return currentSelectedHealthFacilities.find { it.name == name }
             ?: error("can't find")
     }
 
     @MainThread
-    fun isSelectedHealthCentreValid(): Boolean {
-        val currentCentres = selectedHealthCentresAsStrings.value ?: return false
-        val healthCentreToUse = healthCentreToUse.value
+    fun isSelectedHealthFacilityValid(): Boolean {
+        val currentCentres = selectedHealthFacilitiesAsStrings.value ?: return false
+        val healthFacilityToUse = healthFacilityToUse.value
 
-        return isHealthCentreStringValid(healthCentreToUse) && healthCentreToUse in currentCentres
+        return isHealthCentreStringValid(healthFacilityToUse) && healthFacilityToUse in currentCentres
     }
 
-    private fun isHealthCentreStringValid(healthCentre: String?) = !healthCentre.isNullOrBlank()
+    private fun isHealthCentreStringValid(healthFacility: String?) = !healthFacility.isNullOrBlank()
 }
