@@ -54,13 +54,12 @@ abstract class CradleDatabase : RoomDatabase() {
                 instance ?: buildDatabase(context).also { instance = it }
             }
 
+        // Suppress SpreadOperator, because ALL_MIGRATIONS is only used during migration and only
+        // done on app startup, so the array copy risk is minimal here.
+        @Suppress("SpreadOperator")
         private fun buildDatabase(context: Context) =
             Room.databaseBuilder(context, CradleDatabase::class.java, DATABASE_NAME)
-                .addMigrations(
-                    Migrations.MIGRATION_1_2,
-                    Migrations.MIGRATION_2_3,
-                    Migrations.MIGRATION_3_4
-                )
+                .addMigrations(*Migrations.ALL_MIGRATIONS)
                 .fallbackToDestructiveMigrationOnDowngrade()
                 .build()
     }
@@ -72,6 +71,10 @@ abstract class CradleDatabase : RoomDatabase() {
  */
 @Suppress("MagicNumber", "NestedBlockDepth")
 internal object Migrations {
+    val ALL_MIGRATIONS by lazy {
+        arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+    }
+
     /**
      * Version 2:
      * Add new Reading fields (respiratoryRate, oxygenSaturation, temperature)
