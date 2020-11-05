@@ -36,12 +36,6 @@ class UrlManager @Inject constructor(val settings: Settings) {
         get() = "$base/readings"
 
     /**
-     * Endpoint for retrieving or uploading a patient
-     */
-    val patients: String
-        get() = "$base/patients"
-
-    /**
      * Endpoint for retrieving referral information.
      */
     val referral: String
@@ -57,7 +51,7 @@ class UrlManager @Inject constructor(val settings: Settings) {
      * Endpoint for getting all patients managed by the current user.
      */
     val getAllPatients: String
-        get() = "$base/patients"
+        get() = "$base/mobile/patients"
 
     /**
      * Endpoint for posting a new patient.
