@@ -1,6 +1,7 @@
 package com.cradle.neptune.database
 
 import androidx.room.TypeConverter
+import com.cradle.neptune.ext.toList
 import com.cradle.neptune.model.Assessment
 import com.cradle.neptune.model.BloodPressure
 import com.cradle.neptune.model.GestationalAge
@@ -8,8 +9,7 @@ import com.cradle.neptune.model.ReadingMetadata
 import com.cradle.neptune.model.Referral
 import com.cradle.neptune.model.Sex
 import com.cradle.neptune.model.UrineTest
-import com.google.gson.Gson
-import com.google.gson.JsonArray
+import org.json.JSONArray
 import org.json.JSONObject
 
 /**
@@ -23,7 +23,7 @@ class DatabaseTypeConverters {
 
     @TypeConverter
     fun stringToGestationalAge(string: String?): GestationalAge? =
-        string?.let { GestationalAge.unmarshal(JSONObject(it)) }
+        string?.let { if (it == "null") null else GestationalAge.unmarshal(JSONObject(it)) }
 
     @TypeConverter
     fun stringToSex(string: String): Sex = enumValueOf(string)
@@ -32,55 +32,53 @@ class DatabaseTypeConverters {
     fun sexToString(sex: Sex): String = sex.name
 
     @TypeConverter
-    fun fromStringList(list: List<String>): String {
-        val jsonArray = JsonArray()
-        list.forEach {
-            jsonArray.add(it)
+    fun fromStringList(list: List<String>?): String? {
+        if (list == null) {
+            return null
         }
-        return jsonArray.toString()
+
+        return JSONArray()
+            .apply { list.forEach { put(it) } }
+            .toString()
     }
 
     @TypeConverter
-    fun toStringList(string: String): List<String> =
-        Gson().fromJson(string, mutableListOf<String>().javaClass)
+    fun toStringList(string: String?): List<String>? = string?.let {
+        JSONArray(it).toList(JSONArray::getString)
+    }
 
     @TypeConverter
-    fun toBloodPressure(string: String): BloodPressure =
-        Gson().fromJson(string, BloodPressure::class.java)
+    fun toBloodPressure(string: String): BloodPressure = BloodPressure.unmarshal(JSONObject(string))
 
     @TypeConverter
-    fun fromBloodPressure(bloodPressure: BloodPressure): String =
-        Gson().toJson(bloodPressure)
+    fun fromBloodPressure(bloodPressure: BloodPressure): String = bloodPressure.marshal().toString()
 
     @TypeConverter
-    fun toUrineTest(string: String): UrineTest? =
-        Gson().fromJson(string, UrineTest::class.java)
+    fun toUrineTest(string: String?): UrineTest? =
+        string?.let { if (it == "null") null else UrineTest.unmarshal(JSONObject(it)) }
 
     @TypeConverter
-    fun fromUrineTest(urineTest: UrineTest?): String =
-        Gson().toJson(urineTest)
+    fun fromUrineTest(urineTest: UrineTest?): String? = urineTest?.marshal()?.toString()
 
     @TypeConverter
-    fun toReferral(string: String): Referral? =
-        Gson().fromJson(string, Referral::class.java)
+    fun toReferral(string: String?): Referral? =
+        string?.let { if (it == "null") null else Referral.unmarshal(JSONObject(it)) }
 
     @TypeConverter
-    fun fromReferral(referral: Referral?): String =
-        Gson().toJson(referral)
+    fun fromReferral(referral: Referral?): String? = referral?.marshal()?.toString()
 
     @TypeConverter
-    fun toFollowUp(string: String): Assessment? =
-        Gson().fromJson(string, Assessment::class.java)
+    fun toFollowUp(string: String?): Assessment? =
+        string?.let { if (it == "null") null else Assessment.unmarshal(JSONObject(it)) }
 
     @TypeConverter
-    fun fromFollowUp(followUp: Assessment?): String =
-        Gson().toJson(followUp)
+    fun fromFollowUp(followUp: Assessment?): String? = followUp?.marshal()?.toString()
 
     @TypeConverter
-    fun toReadingMetaData(string: String): ReadingMetadata? =
-        Gson().fromJson(string, ReadingMetadata::class.java)
+    fun toReadingMetadata(string: String?): ReadingMetadata? =
+        string?.let { if (it == "null") null else ReadingMetadata.unmarshal(JSONObject(it)) }
 
     @TypeConverter
-    fun fromReadingMetaData(readingMetadata: ReadingMetadata?): String =
-        Gson().toJson(readingMetadata)
+    fun fromReadingMetaData(readingMetadata: ReadingMetadata?): String? =
+        readingMetadata?.marshal()?.toString()
 }

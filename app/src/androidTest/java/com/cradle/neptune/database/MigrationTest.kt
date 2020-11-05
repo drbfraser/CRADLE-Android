@@ -11,6 +11,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.AndroidJUnit4
 import com.cradle.neptune.database.Migrations.MIGRATION_1_2
 import com.cradle.neptune.database.Migrations.MIGRATION_2_3
+import com.cradle.neptune.database.Migrations.MIGRATION_3_4
 import com.cradle.neptune.model.Assessment
 import com.cradle.neptune.model.BloodPressure
 import com.cradle.neptune.model.GestationalAgeMonths
@@ -91,7 +92,7 @@ class MigrationTests {
             respiratoryRate = null,
             oxygenSaturation = null,
             temperature = null,
-            urineTest = UrineTest("+", "++", "-", "NAD", "NAD"),
+            urineTest = UrineTest("+", "++", "NAD", "NAD", "NAD"),
             symptoms = listOf("headache", "blurred vision", "pain"),
             referral = referralForReading,
             followUp = assessmentForReading,
@@ -112,10 +113,10 @@ class MigrationTests {
             close()
         }
 
-        // Re-open the database with version 3 and provide MIGRATION_1_2 and MIGRATION_2_3 as the
-        // migration processes.
+        // Re-open the database with the latest version, and provide the migration processes.
         helper.runMigrationsAndValidate(
-            TEST_DB, 3, true, MIGRATION_1_2, MIGRATION_2_3
+            TEST_DB, 4, true,
+            MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4
         )
 
         // MigrationTestHelper automatically verifies the schema changes,
@@ -199,10 +200,10 @@ class MigrationTests {
             close()
         }
 
-        // Re-open the database with version 3 and provide MIGRATION_1_2 and MIGRATION_2_3 as the
-        // migration processes.
+        // Re-open the database with the latest version, and provide the migration processes.
         helper.runMigrationsAndValidate(
-            TEST_DB, 3, true, MIGRATION_1_2, MIGRATION_2_3
+            TEST_DB, 4, true,
+            MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4
         )
 
         // MigrationTestHelper automatically verifies the schema changes,
@@ -300,7 +301,7 @@ class MigrationTests {
             ApplicationProvider.getApplicationContext(),
             CradleDatabase::class.java,
             TEST_DB
-        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
+        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build()
         // Close the database and release any stream resources when the test finishes
         helper.closeWhenFinished(database)
         return database
