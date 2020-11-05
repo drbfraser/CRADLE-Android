@@ -1,37 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Types: https://developer.android.com/guide/topics/ui/settings/components-and-attributes -->
 
     <PreferenceCategory android:title="General">
         <EditTextPreference
-            android:defaultValue="No name entered"
+            android:defaultValue="@string/preference_name_summary"
             android:key="@string/key_vht_name"
-            android:selectAllOnFocus="true"
+            android:selectAllOnFocus="false"
             android:singleLine="true"
-            android:title="Your Name" />
+            android:title="@string/preference_name_title"
+            app:selectable="false" />
         <EditTextPreference
             android:defaultValue="Uganda"
             android:key="@string/key_region"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:summary="The country or region you are working in."
-            android:title="Your Region" />
+            android:summary="@string/preference_region_summary"
+            android:title="@string/preference_region_title"
+            app:isPreferenceVisible="false" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Referrals">
         <Preference
-            android:key="@string/key_health_centres_settings_button"
-            android:title="Health centres" />
+            android:key="@string/key_health_facilities_settings_button"
+            android:title="@string/preference_health_facilities_title" />
     </PreferenceCategory>
 
     <PreferenceCategory>
         <Preference
             android:key="@string/key_advanced_settings_settings_button"
-            android:title="Advanced" />
+            android:title="@string/preference_advanced_title" />
 
         <Preference
             android:key="@string/key_sign_out"
             android:summary="@string/normal_signout_message"
-            android:title="Sign Out" />
+            android:title="@string/preference_sign_out_title" />
     </PreferenceCategory>
 </PreferenceScreen>

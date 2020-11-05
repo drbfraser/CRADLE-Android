@@ -8,7 +8,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.lifecycle.ViewModelProvider;
@@ -19,6 +18,7 @@ import com.cradle.neptune.R;
 import com.cradle.neptune.model.HealthFacility;
 import com.cradle.neptune.viewmodel.HealthFacilitiesAdapter;
 import com.cradle.neptune.viewmodel.HealthFacilityViewModel;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -42,7 +42,7 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("My Health Facilities");
+            getSupportActionBar().setTitle(R.string.health_facilities_activity_title);
         }
         setupRecyclerview();
     }
@@ -61,18 +61,27 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
         recyclerView.setAdapter(healthFacilitiesAdapter);
 
         healthFacilitiesAdapter.setAdapterClicker(healthFacility -> {
-            String msg = "Add this facility to your list?";
-
+            final String msg;
+            final String yesText;
             if (healthFacility.isUserSelected()) {
-                msg = "Remove this facility from your list?";
+                msg = getString(
+                        R.string.health_facilities_activity_remove_from_list_dialog_message);
+                yesText = getString(
+                        R.string.health_facilities_activity_remove_from_list_dialog_yes_button);
+            } else {
+                msg = getString(R.string.health_facilities_activity_add_to_list_dialog_message);
+                yesText = getString(
+                        R.string.health_facilities_activity_add_to_list_dialog_yes_button);
             }
-            new AlertDialog.Builder(HealthFacilitiesActivity.this)
-                    .setTitle(healthFacility.getName()).setMessage(msg)
-                    .setCancelable(true).setPositiveButton("YES", (dialogInterface, i) -> {
-                        healthFacility.setUserSelected(!healthFacility.isUserSelected());
-                        healthFacilityViewModel.updateFacility(healthFacility);
+            new MaterialAlertDialogBuilder(HealthFacilitiesActivity.this)
+                    .setTitle(healthFacility.getName())
+                    .setMessage(msg)
+                    .setCancelable(true).setPositiveButton(yesText, (dialogInterface, i) -> {
+                healthFacility.setUserSelected(!healthFacility.isUserSelected());
+                healthFacilityViewModel.updateFacility(healthFacility);
+            })
+                    .setNegativeButton(android.R.string.cancel, (dialogInterface, i) -> {
                     })
-                    .setNegativeButton("NO", (dialogInterface, i) -> {})
                     .create()
                     .show();
         });

@@ -65,7 +65,7 @@ class StatsActivity : AppCompatActivity() {
         val totalReadings = readings.size
         var totalRef = 0
         for (i in 0 until totalReadings) {
-            if (readings[i].isReferredToHealthCentre) {
+            if (readings[i].isReferredToHealthFacility) {
                 totalRef++
             }
         }

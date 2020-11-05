@@ -61,36 +61,36 @@
                     tools:text="@string/referral_dialog_explanation_text_new_reading"/>
 
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/health_centre_input_layout"
+                    android:id="@+id/health_facility_input_layout"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_margin="4dp"
-                    android:hint="@string/health_centre_label"
-                    android:labelFor="@id/health_centre_auto_complete_text"
-                    app:layout_constraintEnd_toStartOf="@+id/open_health_centre_settings_button"
+                    android:hint="@string/health_facility_label"
+                    android:labelFor="@id/health_facility_auto_complete_text"
+                    app:layout_constraintEnd_toStartOf="@+id/open_health_facility_settings_button"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textView5">
 
                     <AutoCompleteTextView
-                        android:id="@+id/health_centre_auto_complete_text"
+                        android:id="@+id/health_facility_auto_complete_text"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="none"
-                        android:text="@={viewModel.healthCentreToUse}"
-                        bind:setMaterialSpinnerItemsWithArray="@{viewModel.selectedHealthCentresAsStrings}" />
+                        android:text="@={viewModel.healthFacilityToUse}"
+                        bind:setMaterialSpinnerItemsWithArray="@{viewModel.selectedHealthFacilitiesAsStrings}" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <ImageButton
-                    android:id="@+id/open_health_centre_settings_button"
+                    android:id="@+id/open_health_facility_settings_button"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/referral_dialog_open_health_centre_settings_button_content_description"
+                    android:contentDescription="@string/referral_dialog_open_health_facility_settings_button_content_description"
                     android:scaleType="fitCenter"
-                    app:layout_constraintBottom_toBottomOf="@+id/health_centre_input_layout"
+                    app:layout_constraintBottom_toBottomOf="@+id/health_facility_input_layout"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@+id/health_centre_input_layout"
+                    app:layout_constraintTop_toTopOf="@+id/health_facility_input_layout"
                     bind:srcCompat="@drawable/ic_baseline_settings_24" />
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -108,7 +108,7 @@
                     app:layout_constraintBottom_toTopOf="@+id/send_sms_button"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/health_centre_input_layout"
+                    app:layout_constraintTop_toBottomOf="@+id/health_facility_input_layout"
                     app:layout_constraintVertical_bias="0.0">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -155,7 +155,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="@string/referral_dialog_select_health_centre"
+                    android:text="@string/referral_dialog_select_health_facility"
                     android:textAppearance="@style/TextAppearance.Cradle.Body1"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textView4" />

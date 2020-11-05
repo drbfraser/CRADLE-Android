@@ -79,8 +79,8 @@
     <string name="reading_recheck_vitals_now">Recheck vitals now</string>
     <string name="reading_recheck_vitals_in_one_minute">Recheck vitals in 1 minute</string>
     <string name="reading_recheck_vitals_in_minutes">Recheck vitals in %1$d minutes</string>
-    <string name="reading_referred_to_health_centre">Referred to %1$s</string>
-    <string name="reading_referred_to_health_centre_unknown">Referred to a health centre</string>
+    <string name="reading_referred_to_health_facility">Referred to %1$s</string>
+    <string name="reading_referred_to_health_facility_unknown">Referred to a health facility</string>
 
     <!-- Readings Details -->
     <string name="reading_name_age_ga">%1$s, %2$s @ %3$s</string>
@@ -109,11 +109,11 @@
     <!--<string name="brief_advice_retest_differ">Readings are different; retest the patient immediately.</string>-->
     <string name="brief_advice_none">Go to Photo tab and take picture of CRADLE VSA. Then go to Vitals tab and confirm data.</string>
     <string name="brief_advice_green">Continue normal care.</string>
-    <string name="brief_advice_yellow_up">Monitor for preeclampsia. Transfer to health centre within 24h.</string>
+    <string name="brief_advice_yellow_up">Monitor for preeclampsia. Transfer to health facility within 24h.</string>
     <string name="brief_advice_yellow_down">Common but assess for infection, bleeding, anaemia, and dehydration.</string>
-    <!-- TODO: Stop assuming the patient is a mother. These advice strings were seen for male patients, whcih is a bug -->
-    <string name="brief_advice_red_up">Urgent action needed. Transfer to health centre within 4h. Monitor baby.</string>
-    <string name="brief_advice_red_down">Urgent action needed. Get help and assess mother. Immediately transfer to health centre within 1h.</string>
+    <!-- TODO: Stop assuming the patient is a mother. These advice strings were seen for male patients, which is a bug -->
+    <string name="brief_advice_red_up">Urgent action needed. Transfer to health facility within 4h. Monitor baby.</string>
+    <string name="brief_advice_red_down">Urgent action needed. Get help and assess mother. Immediately transfer to health facility within 1h.</string>
 
     <!-- Reading flow: Discard dialog -->
     <string name="discard_dialog_discard">Discard</string>
@@ -228,13 +228,13 @@
     <string name="global_patient_profile_fetch_patient_fail">Unable to fetch patient information</string>
     <string name="global_patient_profile_you_must_add_to_list_before_editing">You must add this patient to your patient lists before editing anything</string>
     <string name="global_patient_profile_you_must_add_to_list_before_reading">You must add this patient to your patients list before creating a new reading</string>
-    <plurals name="settings_n_configured_health_centres">
-        <item quantity="one">%1$d configured health centre</item>
-        <item quantity="other">%1$d configured health centres</item>
+    <plurals name="settings_n_configured_health_facilities">
+        <item quantity="one">%1$d configured health facility</item>
+        <item quantity="other">%1$d configured health facilities</item>
     </plurals>
 
     <string name="normal_signout_message">You will be required to sign in again before using the application.</string>
-    <string name="dashboard_new_reading">New Reading</string>
+    <string name="dashboard_new_patient">New Patient</string>
     <string name="dashboard_sync">Sync</string>
     <string name="dashboard_education">Education</string>
     <string name="dashboard_statistics">Statistics</string>
@@ -293,7 +293,7 @@
     <string name="reading_card_assessment_symptoms_colon">Symptoms:</string>
     <string name="reading_card_assessment_urine_test_result">Urine Test Result:</string>
     <string name="reading_card_assessment_made_by">Made by:</string>
-    <string name="reading_card_assessment_health_centre_colon">Health Centre:</string>
+    <string name="reading_card_assessment_health_facility_colon">Health facility:</string>
     <string name="reading_card_assessment_follow_up_colon">Follow up:</string>
     <string name="reading_card_assessment_referred_by_colon">Referred By:</string>
     <string name="reading_card_assessment_special_investigation_colon">Special investigation:</string>
@@ -303,7 +303,7 @@
     <string name="reading_card_pending_no_assessment_no_referral">No Referral</string>
     <string name="reading_card_pending_no_assessment_urine_test_result_colon">Urine Test Result:</string>
     <string name="reading_card_pending_no_assessment_symptoms_colon">Symptoms:</string>
-    <string name="referral_dialog_title_which_health_centre">Which health centre?</string>
+    <string name="referral_dialog_title_which_health_facility">Which health facility?</string>
     <string name="referral_dialog_comments_label">Comments (optional)</string>
     <string name="optional_edit_text_hint">(optional)</string>
     <string name="referral_dialog_sending_a_referral_saves_the_reading">Sending a referral saves the reading</string>
@@ -431,8 +431,8 @@
     <string name="yes">Yes</string>
     <string name="activity_patient_profile_delete_reading_dialog_title">Delete reading?</string>
     <string name="activity_patient_profile_delete_reading_dialog_delete_button">Delete</string>
-    <string name="health_centre_label">Health centre</string>
-    <string name="referral_dialog_open_health_centre_settings_button_content_description">Open health centre settings</string>
+    <string name="health_facility_label">Health facility</string>
+    <string name="referral_dialog_open_health_facility_settings_button_content_description">Open health facility settings</string>
     <string name="fragment_advice_saving_dialog_title">Saving…</string>
     <string name="dialog_referral_toast_sms_success_new_patient">New patient and reading have been saved locally. Please send the referral SMS manually.</string>
     <string name="dialog_referral_toast_sms_success_new_reading_only">Reading has been saved locally. Please send the referral SMS manually.</string>
@@ -451,10 +451,24 @@
     <string name="fragment_advice_toast_error_new_reading">Error occurred when trying to save this new reading. Please recheck the fields.</string>
     <string name="referral_dialog_explanation_text_new_patient">Sending a referral will save the new patient and reading to your device. If you send the referral via the web, the referral along with the patient and reading will all be uploaded to the server.</string>
     <string name="referral_dialog_explanation_text_new_reading">Sending a referral will save the reading to your device. If you send the referral via the web, the referral along with the reading will be uploaded to the server.</string>
-    <string name="referral_dialog_select_health_centre">Select one of your health centres to send the referral to.</string>
+    <string name="referral_dialog_select_health_facility">Select one of your health facilities to send the referral to.</string>
     <string name="patient_profile_age_label">Age</string>
     <string name="patient_profile_age_about_n_years_old">About %1$d years old</string>
     <string name="patient_profile_age_n_years_old">%1$d years old</string>
+    <string name="fragment_vital_signs_ocr_not_available_message">OCR is not available; please enter readings manually</string>
+    <string name="dashboard_notice_alpha_build_message">Alpha build — Don\'t use real patient data</string>
+    <string name="preference_advanced_title">Advanced</string>
+    <string name="preference_sign_out_title">Sign out</string>
+    <string name="preference_health_facilities_title">Health facilities</string>
+    <string name="preference_region_title">Your region</string>
+    <string name="preference_region_summary">The country or region you are working in.</string>
+    <string name="preference_name_title">Your name</string>
+    <string name="preference_name_summary">No name entered</string>
+    <string name="health_facilities_activity_title">My health facilities</string>
+    <string name="health_facilities_activity_add_to_list_dialog_message">Add this facility to your list?</string>
+    <string name="health_facilities_activity_remove_from_list_dialog_message">Remove this facility from your list?</string>
+    <string name="health_facilities_activity_remove_from_list_dialog_yes_button">Remove</string>
+    <string name="health_facilities_activity_add_to_list_dialog_yes_button">Add</string>
 
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>

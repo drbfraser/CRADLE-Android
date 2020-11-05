@@ -17,7 +17,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="false">
         <activity
             android:name=".view.SyncActivity"
             android:theme="@style/AppTheme.NoActionBar" />
@@ -71,10 +71,5 @@
             android:name=".view.ui.settings.SettingsActivity"
             android:label="Settings"
             android:screenOrientation="portrait" />
-
-        <meta-data
-            android:name="preloaded_fonts"
-            android:resource="@array/preloaded_fonts" />
     </application>
-
 </manifest>

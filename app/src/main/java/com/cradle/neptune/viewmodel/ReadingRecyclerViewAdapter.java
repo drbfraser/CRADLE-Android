@@ -126,7 +126,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
                 myViewHolder.retakeVitalButton.setOnClickListener(view -> onClickElementListener.onClickRecheckReading(currReading.getId()));
             }
 
-            if (currReading.isReferredToHealthCentre()) {
+            if (currReading.isReferredToHealthFacility()) {
                 myViewHolder.isreferedTxt.setText(R.string.patient_profile_reading_referral_pending);
             }
             myViewHolder.trafficLight.setImageResource(ReadingAnalysisViewSupport.getColorCircleImageId(analysis));
@@ -136,14 +136,14 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             setVisibilityForImageAndText(v, R.id.imgNotUploaded, R.id.tvNotUploaded, !currReading.isUploadedToServer());
 
             //referral
-            setVisibilityForImageAndText(v, R.id.imgReferred, R.id.txtReferred, currReading.isReferredToHealthCentre());
-            if (currReading.isReferredToHealthCentre()) {
+            setVisibilityForImageAndText(v, R.id.imgReferred, R.id.txtReferred, currReading.isReferredToHealthFacility());
+            if (currReading.isReferredToHealthFacility()) {
                 final String message;
                 if (currReading.getReferral() != null
                         && currReading.getReferral().getHealthFacilityName().length() > 0) {
-                    message = v.getContext().getString(R.string.reading_referred_to_health_centre, currReading.getReferral().getHealthFacilityName());
+                    message = v.getContext().getString(R.string.reading_referred_to_health_facility, currReading.getReferral().getHealthFacilityName());
                 } else {
-                    message = v.getContext().getString(R.string.reading_referred_to_health_centre_unknown);
+                    message = v.getContext().getString(R.string.reading_referred_to_health_facility_unknown);
                 }
 
                 TextView tv = v.findViewById(R.id.txtReferred);

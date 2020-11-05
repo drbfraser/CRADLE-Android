@@ -74,7 +74,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/imgReferred"
                 app:layout_constraintTop_toTopOf="@+id/imgReferred"
-                tools:text="Referred to {{Health Centre}}"
+                tools:text="Referred to {{Health facility}}"
                 tools:visibility="visible" />
 
             <ImageView

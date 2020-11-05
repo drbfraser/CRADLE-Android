@@ -4,7 +4,7 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cradle.neptune.manager.HealthCentreManager
+import com.cradle.neptune.manager.HealthFacilityManager
 import com.cradle.neptune.model.HealthFacility
 import kotlinx.coroutines.launch
 
@@ -13,12 +13,12 @@ import kotlinx.coroutines.launch
  * manages data for access by UI in a safely manager
  */
 class HealthFacilityViewModel @ViewModelInject constructor(
-    private val healthCentreManager: HealthCentreManager
+    private val healthFacilityManager: HealthFacilityManager
 ) : ViewModel() {
 
-    fun getAllFacilities() = healthCentreManager.getLiveList
+    fun getAllFacilities() = healthFacilityManager.getLiveList
 
     fun updateFacility(healthFacility: HealthFacility) {
-        viewModelScope.launch { healthCentreManager.update(healthFacility) }
+        viewModelScope.launch { healthFacilityManager.update(healthFacility) }
     }
 }

@@ -7,7 +7,7 @@ import com.cradle.neptune.database.CradleDatabase
 import com.cradle.neptune.database.HealthFacilityDaoAccess
 import com.cradle.neptune.database.PatientDaoAccess
 import com.cradle.neptune.database.ReadingDaoAccess
-import com.cradle.neptune.manager.HealthCentreManager
+import com.cradle.neptune.manager.HealthFacilityManager
 import com.cradle.neptune.net.Http
 import dagger.Module
 import dagger.Provides
@@ -41,8 +41,8 @@ class DataModule {
 
     @Provides
     @Singleton
-    fun provideHealthCentreService(database: CradleDatabase): HealthCentreManager {
-        return HealthCentreManager(database)
+    fun provideHealthCentreService(database: CradleDatabase): HealthFacilityManager {
+        return HealthFacilityManager(database)
     }
 
     @Provides

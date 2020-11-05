@@ -56,17 +56,28 @@
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
+                        <TextView
+                            android:id="@+id/ocr_not_available_text_view"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="@string/fragment_vital_signs_ocr_not_available_message"
+                            android:textAppearance="@style/TextAppearance.Cradle.Body1"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/cradle_vsa_card_title_textview" />
+
                         <Button
                             android:id="@+id/cradle_vsa_take_photo_button"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:enabled="@{viewModel.isInputEnabled}"
+                            android:enabled="false"
                             android:text="@string/fragment_vital_signs_take_picture_button"
                             app:icon="@drawable/ic_baseline_camera_alt_24"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/cradle_vsa_card_title_textview" />
+                            app:layout_constraintTop_toBottomOf="@+id/ocr_not_available_text_view" />
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:id="@+id/systolic_input"
@@ -140,7 +151,6 @@
                                 android:text="@={Converter.intToString(viewModel.bloodPressureHeartRateInput)}"
                                 tools:text="100" />
                         </com.google.android.material.textfield.TextInputLayout>
-
                     </androidx.constraintlayout.widget.ConstraintLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -271,14 +281,14 @@
 
 
                         <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/health_centre_input_layout"
+                            android:id="@+id/health_facility_input_layout"
                             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_margin="4dp"
                             android:enabled="@{viewModel.isInputEnabled &amp;&amp; viewModel.isUsingUrineTest}"
                             android:hint="@string/urine_test_layout_leukocytes"
-                            android:labelFor="@id/health_centre_auto_complete_text"
+                            android:labelFor="@id/health_facility_auto_complete_text"
                             app:helperText=" "
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
@@ -287,7 +297,7 @@
                             bind:errorMessage='@{viewModel.errorMap["leukocytes"]}'>
 
                             <AutoCompleteTextView
-                                android:id="@+id/health_centre_auto_complete_text"
+                                android:id="@+id/health_facility_auto_complete_text"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="none"
@@ -308,7 +318,7 @@
                             app:helperText=" "
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/health_centre_input_layout"
+                            app:layout_constraintTop_toBottomOf="@+id/health_facility_input_layout"
                             bind:addMandatoryStarToLabelWhen="@{viewModel.isUsingUrineTest}"
                             bind:errorMessage='@{viewModel.errorMap["nitrites"]}'>
 

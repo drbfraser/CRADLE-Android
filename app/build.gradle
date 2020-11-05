@@ -14,7 +14,7 @@ def filename = "keystore.properties"
 def keystoreProperties = new Properties()
 
 // Substitute with template if no configuration exists
-if (!file(filename).exists()) {
+if (!rootProject.file(filename).exists()) {
     filename += ".template"
 }
 keystoreProperties.load(new FileInputStream(rootProject.file(filename)))

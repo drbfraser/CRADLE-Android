@@ -231,7 +231,7 @@ interface HealthFacilityDaoAccess {
     fun delete(healthFacility: HealthFacility)
 
     /**
-     * Deletes all health centres in the database.
+     * Deletes all health facilities in the database.
      */
     @Query("DELETE FROM HealthFacility")
     fun deleteAll()

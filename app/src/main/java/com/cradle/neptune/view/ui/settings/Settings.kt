@@ -11,7 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceFragmentCompat
 import com.cradle.neptune.R
-import com.cradle.neptune.manager.HealthCentreManager
+import com.cradle.neptune.manager.HealthFacilityManager
 import com.cradle.neptune.manager.LoginManager
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
@@ -80,7 +80,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     lateinit var sharedPreferences: SharedPreferences
 
     @Inject
-    lateinit var healthCentreManager: HealthCentreManager
+    lateinit var healthFacilityManager: HealthFacilityManager
 
     @Inject
     lateinit var readingManager: ReadingManager
@@ -93,13 +93,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         // Summary for this preference is not generated through shared
         // preferences so we have to update it manually here.
-        findPreference(R.string.key_health_centres_settings_button)?.apply {
+        findPreference(R.string.key_health_facilities_settings_button)?.apply {
             lifecycleScope.launch(Dispatchers.IO) {
-                val hcCount = healthCentreManager.getAllSelectedByUser().size
+                val hcCount = healthFacilityManager.getAllSelectedByUser().size
                 // need to update UI by main thread
                 withContext(Dispatchers.Main) {
                     summary = resources.getQuantityString(
-                        R.plurals.settings_n_configured_health_centres,
+                        R.plurals.settings_n_configured_health_facilities,
                         hcCount,
                         hcCount
                     )
@@ -111,7 +111,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)
 
-        findPreference(R.string.key_health_centres_settings_button)
+        findPreference(R.string.key_health_facilities_settings_button)
             ?.withLaunchActivityOnClick(this, HealthFacilitiesActivity::class.java)
 
         findPreference(R.string.key_advanced_settings_settings_button)
@@ -177,7 +177,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
             joinAll(
                 launch(Dispatchers.IO) { readingManager.deleteAllData() },
-                launch(Dispatchers.IO) { healthCentreManager.deleteAll() },
+                launch(Dispatchers.IO) { healthFacilityManager.deleteAll() },
                 launch(Dispatchers.IO) { patientManager.deleteAll() }
             )
 
