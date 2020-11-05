@@ -27,7 +27,7 @@ import com.cradle.neptune.utilitiles.DateUtil
  */
 @Database(
     entities = [Reading::class, Patient::class, HealthFacility::class],
-    version = 3,
+    version = 4,
     exportSchema = true
 )
 @TypeConverters(DatabaseTypeConverters::class)
@@ -54,9 +54,12 @@ abstract class CradleDatabase : RoomDatabase() {
                 instance ?: buildDatabase(context).also { instance = it }
             }
 
+        // Suppress SpreadOperator, because ALL_MIGRATIONS is only used during migration and only
+        // done on app startup, so the array copy risk is minimal here.
+        @Suppress("SpreadOperator")
         private fun buildDatabase(context: Context) =
             Room.databaseBuilder(context, CradleDatabase::class.java, DATABASE_NAME)
-                .addMigrations(Migrations.MIGRATION_1_2, Migrations.MIGRATION_2_3)
+                .addMigrations(*Migrations.ALL_MIGRATIONS)
                 .fallbackToDestructiveMigrationOnDowngrade()
                 .build()
     }
@@ -68,6 +71,10 @@ abstract class CradleDatabase : RoomDatabase() {
  */
 @Suppress("MagicNumber", "NestedBlockDepth")
 internal object Migrations {
+    val ALL_MIGRATIONS by lazy {
+        arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+    }
+
     /**
      * Version 2:
      * Add new Reading fields (respiratoryRate, oxygenSaturation, temperature)
@@ -166,6 +173,103 @@ internal object Migrations {
                 execSQL("INSERT INTO new_Patient ($properties) SELECT $properties FROM Patient")
                 execSQL("DROP TABLE Patient")
                 execSQL("ALTER TABLE new_Patient RENAME TO Patient")
+            }
+        }
+    }
+
+    /**
+     * Version 4:
+     * Stop using Gson for DatabaseTypeConverters and switch to the marshalling we use.
+     * Also, switch the UrineTests to use NAD instead of -.
+     *
+     * This means that we have to change all the BloodPressure and UrineTest JSONs to use the field
+     * name, as it was using Gson for serialization before. Using Gson meant that the stored String
+     * in the database used the property names for BloodPressure and UrineTest instead of the
+     * BloodPressureField and UrineTestField names.
+     *
+     * There are other field and property name mismatches that we have to correct here.
+     */
+    val MIGRATION_3_4 = object : Migration(3, 4) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            // For whatever reason, Gson stored null instances in the database as Strings that
+            // just say "null". This takes up space, so we need to manually change those to a null
+            // that SQLite recognizes.
+            //
+            // For the Patient table, some old versions might still be storing "null" String for no
+            // gestational age.
+            database.apply {
+                execSQL("UPDATE Reading SET urineTest = null WHERE urineTest = 'null'")
+                execSQL("UPDATE Reading SET referral = null WHERE referral = 'null'")
+                execSQL("UPDATE Reading SET followUp = null WHERE followUp = 'null'")
+                execSQL("UPDATE Patient SET gestationalAge = null WHERE gestationalAge = 'null'")
+            }
+
+            val dobAgeQuery = SupportSQLiteQueryBuilder.builder("Reading")
+                .columns(arrayOf("readingId", "bloodPressure", "urineTest", "followUp", "referral"))
+                .create()
+            database.query(dobAgeQuery).use { cursor ->
+                while (cursor != null && cursor.moveToNext()) {
+                    val readingId = cursor.getString(
+                        cursor.getColumnIndexOrThrow("readingId")
+                    )
+
+                    val updatedValues = ContentValues().apply {
+                        val bloodPressure = cursor.getString(
+                            cursor.getColumnIndexOrThrow("bloodPressure")
+                        )
+
+                        // Since we're now using the BloodPressure fields to store, we need to
+                        // convert the JSONObjects of the form
+                        // {"diastolic":90,"heartRate":91,"systolic":114} into
+                        // {"bpDiastolic":90,"heartRateBPM":91,"bpSystolic":114}
+                        val newBloodPressure = bloodPressure
+                            .replace("\"diastolic\"", "\"bpDiastolic\"")
+                            .replace("\"systolic\"", "\"bpSystolic\"")
+                            .replace("\"heartRate\"", "\"heartRateBPM\"")
+                        put("bloodPressure", newBloodPressure)
+
+                        // Use the field names
+                        cursor.getStringOrNull(
+                            cursor.getColumnIndexOrThrow("urineTest")
+                        )?.let { urineTestString ->
+                            val newUrineTestString = urineTestString
+                                // Use NAD instead of -
+                                .replace("\"-\"", "\"NAD\"")
+                                .replace("\"leukocytes\"", "\"urineTestLeuc\"")
+                                .replace("\"nitrites\"", "\"urineTestNit\"")
+                                .replace("\"protein\"", "\"urineTestPro\"")
+                                .replace("\"blood\"", "\"urineTestBlood\"")
+                                .replace("\"glucose\"", "\"urineTestGlu\"")
+                            put("urineTest", newUrineTestString)
+                        }
+
+                        cursor.getStringOrNull(
+                            cursor.getColumnIndexOrThrow("followUp")
+                        )?.let { followUpString ->
+                            // Servers uses different names for these fields
+                            val newFollowUpString = followUpString
+                                .replace("\"healthCareWorkerId\"", "\"healthcareWorkerId\"")
+                            put("followUp", newFollowUpString)
+                        }
+
+                        cursor.getStringOrNull(
+                            cursor.getColumnIndexOrThrow("referral")
+                        )?.let { referralString ->
+                            // Servers uses different names for these fields
+                            val newReferralString = referralString
+                                .replace("\"healthFacilityName\"", "\"referralHealthFacilityName\"")
+                            put("referral", newReferralString)
+                        }
+                    }
+
+                    database.update(
+                        "Reading" /* table */,
+                        SQLiteDatabase.CONFLICT_REPLACE /* conflictAlgorithm */,
+                        updatedValues /* values */,
+                        "readingId = ?" /* whereClause */,
+                        arrayOf(readingId) /* whereArgs */
+                    )
+                }
             }
         }
     }

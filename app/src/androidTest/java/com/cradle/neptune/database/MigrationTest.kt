@@ -9,8 +9,6 @@ import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.AndroidJUnit4
-import com.cradle.neptune.database.Migrations.MIGRATION_1_2
-import com.cradle.neptune.database.Migrations.MIGRATION_2_3
 import com.cradle.neptune.model.Assessment
 import com.cradle.neptune.model.BloodPressure
 import com.cradle.neptune.model.GestationalAgeMonths
@@ -91,7 +89,7 @@ class MigrationTests {
             respiratoryRate = null,
             oxygenSaturation = null,
             temperature = null,
-            urineTest = UrineTest("+", "++", "-", "NAD", "NAD"),
+            urineTest = UrineTest("+", "++", "NAD", "NAD", "NAD"),
             symptoms = listOf("headache", "blurred vision", "pain"),
             referral = referralForReading,
             followUp = assessmentForReading,
@@ -112,15 +110,9 @@ class MigrationTests {
             close()
         }
 
-        // Re-open the database with version 3 and provide MIGRATION_1_2 and MIGRATION_2_3 as the
-        // migration processes.
-        helper.runMigrationsAndValidate(
-            TEST_DB, 3, true, MIGRATION_1_2, MIGRATION_2_3
-        )
-
-        // MigrationTestHelper automatically verifies the schema changes,
-        // Validate that the data was migrated properly. This includes checking that all properties
-        // for unaltered columns are unchanged.
+        // Migrate to the latest version. Room handles schema validation, so we must now validate
+        // that the data was migrated properly. This includes checking that all properties for
+        // unaltered columns are unchanged.
         val readingDao = getMigratedRoomDatabase().readingDao()
         readingDao.getReadingById(reading.id)?.let { readingFromMigratedDb ->
             assertEquals(reading, readingFromMigratedDb)
@@ -199,16 +191,9 @@ class MigrationTests {
             close()
         }
 
-        // Re-open the database with version 3 and provide MIGRATION_1_2 and MIGRATION_2_3 as the
-        // migration processes.
-        helper.runMigrationsAndValidate(
-            TEST_DB, 3, true, MIGRATION_1_2, MIGRATION_2_3
-        )
-
-        // MigrationTestHelper automatically verifies the schema changes,
-        // Validate that the data was migrated properly. This includes checking that all unchanged
-        // properties remain, and that the isExactDob is correctly set from the available
-        // information.
+        // Migrate to the latest version. Room handles schema validation, so we must now validate
+        // that the data was migrated properly. This includes checking that all properties for
+        // unaltered columns are unchanged.
         val patientDao = getMigratedRoomDatabase().patientDao()
 
         // Test that the isExactDob is set depending on the nullity of dob and age.
@@ -300,7 +285,7 @@ class MigrationTests {
             ApplicationProvider.getApplicationContext(),
             CradleDatabase::class.java,
             TEST_DB
-        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
+        ).addMigrations(*Migrations.ALL_MIGRATIONS).build()
         // Close the database and release any stream resources when the test finishes
         helper.closeWhenFinished(database)
         return database
