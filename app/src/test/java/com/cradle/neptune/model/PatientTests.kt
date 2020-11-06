@@ -13,7 +13,6 @@ import io.mockk.mockkStatic
 import io.mockk.verify
 import io.mockk.verifyOrder
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -129,9 +128,11 @@ class PatientTests {
 
     @Test
     fun verify_patientDateOfBirth_withPatientInstance() {
-        val wrongFormat = setOf("sad_345", "11", "Johh5", "3453453453543 5 345435 345345",
+        val wrongFormat = setOf(
+            "sad_345", "11", "Johh5", "3453453453543 5 345435 345345",
             "123456789012345", "ABCDFGHJKLQWE5RT", "23-2-2004", "1-20-2004", "1-20-2004",
-            "1995-05-0", "1995-0-0", "1995-0-05", "1995-0-5", "1995-5-5")
+            "1995-99-0", "1995-356-678", "None"
+        )
         val badAgeButGoodFormat = setOf("2015-05-22", "2017-04-08", "2020-05-01", "1900-04-01", "1850-03-01")
         val good = setOf("1980-05-22", "1995-04-08", "1995-05-01")
 
@@ -182,7 +183,7 @@ class PatientTests {
         val wrong = setOf(
             "sad_345", "11", "Johh5", "3453453453543 5 345435 345345",
             "123456789012345", "ABCDFGHJKLQWE5RT", "23-2-2004", "1-20-2004", "1-20-2004",
-            "1995-05-0", "1995-0-0", "1995-0-05", "1995-0-5", "1995-5-5"
+            "1995-05-0", "1995-0-99", "1995-99-05", "1995-55-5", "1995-5-35"
         )
         val good = setOf("2004-05-22", "1995-04-08", "1995-05-01")
 
