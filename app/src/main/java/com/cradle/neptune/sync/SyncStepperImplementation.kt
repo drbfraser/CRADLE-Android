@@ -72,7 +72,7 @@ class SyncStepperImplementation(
 
     companion object {
         const val LAST_SYNC = "lastSyncTime"
-        const val LAST_SYNC_DEFAULT = 0L
+        const val LAST_SYNC_DEFAULT = 1L
     }
 
     /**
