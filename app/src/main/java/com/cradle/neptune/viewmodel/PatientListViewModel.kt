@@ -32,7 +32,7 @@ class PatientListViewModel @ViewModelInject constructor(
             return previousResult
         }
 
-        return Pager(PagingConfig(pageSize = 60, enablePlaceholders = true)) {
+        return Pager(PagingConfig(pageSize = 60, enablePlaceholders = true, maxSize = 200)) {
             if (query.isBlank()) {
                 patientDao.allLocalSearchPatientsByName()
             } else {

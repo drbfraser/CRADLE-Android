@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
@@ -69,20 +70,31 @@ class PatientsActivity : AppCompatActivity() {
         }
         val emptyMessage = findViewById<TextView>(R.id.emptyView)
         val progressBar = findViewById<ProgressBar>(R.id.patients_list_progress_bar)
+        val retryButton = findViewById<Button>(R.id.retry_button)
         localSearchPatientAdapter.addLoadStateListener { loadState ->
             val isLoading = loadState.refresh is LoadState.Loading
-            patientRecyclerview.isVisible = !isLoading
-            progressBar.isVisible = isLoading
+            patientRecyclerview.isVisible = loadState.refresh is LoadState.NotLoading
+            progressBar.isVisible = loadState.refresh is LoadState.Loading
+            retryButton.isVisible = loadState.refresh is LoadState.Error
 
-            // Show message when there are no results. Do not show the empty message if the
-            // user hasn't loaded it first.
-            if (isFirstLoadDone && !isLoading && localSearchPatientAdapter.itemCount == 0) {
+            if (loadState.refresh is LoadState.Error) {
+                emptyMessage.text = getString(R.string.activity_patients_error_loading_patients)
+                emptyMessage.isVisible = true
+            } else if (isFirstLoadDone && !isLoading && localSearchPatientAdapter.itemCount == 0) {
+                // Show message when there are no results. Do not show the empty message if the
+                // user hasn't loaded it first.
                 emptyMessage.text = getString(
-                    if (viewModel.isUsingSearch()) {
-                        R.string.activity_patients_no_results_for_search
-                    } else {
-                        // Here, the user has no patients in the database at all.
-                        R.string.activity_patients_no_patients_message
+                    when {
+                        loadState.refresh is LoadState.Error -> {
+                            R.string.activity_patients_error_loading_patients
+                        }
+                        viewModel.isUsingSearch() -> {
+                            R.string.activity_patients_no_results_for_search
+                        }
+                        else -> {
+                            // Here, the user has no patients in the database at all.
+                            R.string.activity_patients_no_patients_message
+                        }
                     }
                 )
                 emptyMessage.isVisible = true
@@ -92,6 +104,7 @@ class PatientsActivity : AppCompatActivity() {
 
             if (!isLoading) {
                 isFirstLoadDone = true
+            } else {
                 patientRecyclerview.scrollToPosition(0)
             }
         }
