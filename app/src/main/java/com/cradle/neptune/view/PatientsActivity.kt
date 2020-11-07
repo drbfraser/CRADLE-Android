@@ -8,6 +8,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
@@ -33,6 +34,16 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class PatientsActivity : AppCompatActivity() {
     private val viewModel: PatientListViewModel by viewModels()
+
+    private var searchView: SearchView? = null
+
+    private val closeSearchViewCallback: OnBackPressedCallback =
+        object : OnBackPressedCallback(false) {
+            override fun handleOnBackPressed() {
+                isEnabled = false
+                hideSearchView()
+            }
+        }
 
     private var isFirstLoadDone: Boolean = false
 
@@ -68,10 +79,10 @@ class PatientsActivity : AppCompatActivity() {
             if (isFirstLoadDone && !isLoading && localSearchPatientAdapter.itemCount == 0) {
                 emptyMessage.text = getString(
                     if (viewModel.isUsingSearch()) {
-                        R.string.activity_patients_no_search_result
+                        R.string.activity_patients_no_results_for_search
                     } else {
                         // Here, the user has no patients in the database at all.
-                        R.string.empty_text_for_patient
+                        R.string.activity_patients_no_patients_message
                     }
                 )
                 emptyMessage.isVisible = true
@@ -95,6 +106,7 @@ class PatientsActivity : AppCompatActivity() {
 
         setupGlobalPatientSearchButton()
 
+        onBackPressedDispatcher.addCallback(this, closeSearchViewCallback)
         // Trigger all the patients to be loaded with blank query.
         search("")
     }
@@ -134,23 +146,32 @@ class PatientsActivity : AppCompatActivity() {
         // Associate searchable configuration with the SearchView
         val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
         val searchView = menu.findItem(R.id.searchPatients).actionView as SearchView
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(componentName))
-        searchView.maxWidth = Int.MAX_VALUE
+        this.searchView = searchView.apply {
+            setSearchableInfo(searchManager.getSearchableInfo(componentName))
+            queryHint = getString(R.string.activity_patients_search_view_title)
+            maxWidth = Int.MAX_VALUE
+            setOnQueryTextListener(
+                object : SearchView.OnQueryTextListener {
+                    override fun onQueryTextSubmit(query: String): Boolean {
+                        search(query)
+                        return false
+                    }
 
-        // listening to search query text change
-        searchView.setOnQueryTextListener(
-            object : SearchView.OnQueryTextListener {
-                override fun onQueryTextSubmit(query: String): Boolean {
-                    search(query)
-                    return false
+                    override fun onQueryTextChange(query: String): Boolean {
+                        search(query)
+                        return false
+                    }
                 }
-
-                override fun onQueryTextChange(query: String): Boolean {
-                    search(query)
-                    return false
-                }
+            )
+            setOnSearchClickListener {
+                closeSearchViewCallback.isEnabled = true
             }
-        )
+            setOnCloseListener {
+                closeSearchViewCallback.isEnabled = false
+                // Don't want to override default behavior of clearing the query.
+                return@setOnCloseListener false
+            }
+        }
         return true
     }
 
@@ -158,12 +179,40 @@ class PatientsActivity : AppCompatActivity() {
         val id = item.itemId
         return if (id == R.id.searchPatients) {
             true
-        } else super.onOptionsItemSelected(item)
+        } else {
+            super.onOptionsItemSelected(item)
+        }
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        onBackPressed()
-        return true
+        searchView.let {
+            // If the search icon is not showing, the user is searching something,
+            // so we should remove that first.
+            return if (hideSearchView()) {
+                false
+            } else {
+                onBackPressed()
+                true
+            }
+        }
+    }
+
+    /**
+     * @return true if the [searchView] wasn't iconified and had to be hidden,
+     * false otherwise.
+     */
+    private fun hideSearchView(): Boolean {
+        searchView.let {
+            return if (it?.isIconified == false) {
+                // Clear the search query
+                search("")
+                it.isIconified = true
+                it.onActionViewCollapsed()
+                true
+            } else {
+                false
+            }
+        }
     }
 
     companion object {

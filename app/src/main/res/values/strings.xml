@@ -168,7 +168,7 @@
     <string name="logging_in">Logging in</string>
     <string name="login_successful">Login successful!</string>
     <string name="login_error">Invalid email or password.</string>
-    <string name="empty_text_for_patient">You don\'t have any patients right now.\n Go to the dashboard to create a new reading.</string>
+    <string name="activity_patients_no_patients_message">You don\'t have any patients right now.\n Go to the dashboard to create a new patient.</string>
     <string name="pregnant_question">Pregnant?</string>
     <string name="create_new_reading">Create New Reading</string>
     <string name="global_search">Search all patients</string>
@@ -473,7 +473,8 @@
     <string name="patient_list_item_last_reading_from">Last reading from</string>
     <string name="list_item_patient_id_label">ID</string>
     <string name="list_item_patient_village_number_label">Village</string>
-    <string name="activity_patients_no_search_result">No results</string>
+    <string name="activity_patients_no_results_for_search">No results</string>
+    <string name="activity_patients_search_view_title">Search by initials or ID</string>
 
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>
