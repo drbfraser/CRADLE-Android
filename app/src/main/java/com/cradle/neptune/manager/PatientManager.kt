@@ -11,6 +11,7 @@ import com.cradle.neptune.net.NetworkResult
 import com.cradle.neptune.net.RestApi
 import com.cradle.neptune.net.Success
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import java.util.ArrayList
@@ -133,6 +134,14 @@ class PatientManager @Inject constructor(
      * get individual patient by id if exists
      */
     suspend fun getPatientById(id: String): Patient? = withContext(IO) {
+        patientDao.getPatientById(id)
+    }
+
+    @Deprecated(
+        message = "Should be removed when PatientProfileActivity is converted to Kotlin",
+        replaceWith = ReplaceWith("getPatientById")
+    )
+    fun getPatientByIdBlocking(id: String): Patient? = runBlocking(IO) {
         patientDao.getPatientById(id)
     }
 

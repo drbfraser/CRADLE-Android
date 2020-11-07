@@ -2,7 +2,6 @@ package com.cradle.neptune.viewmodel
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.annotation.UiThread
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -10,6 +9,7 @@ import com.cradle.neptune.R
 import com.cradle.neptune.binding.FragmentDataBindingComponent
 import com.cradle.neptune.database.views.LocalSearchPatient
 import com.cradle.neptune.databinding.ListItemPatientBinding
+import com.cradle.neptune.view.PatientProfileActivity
 
 class LocalSearchPatientViewHolder(
     private val binding: ListItemPatientBinding
@@ -17,12 +17,9 @@ class LocalSearchPatientViewHolder(
 
     init {
         itemView.setOnClickListener {
-            binding.localSearchPatient?.id?.let {
-                Toast.makeText(
-                    itemView.context,
-                    "TODO: Open patient profile activity",
-                    Toast.LENGTH_LONG
-                ).show()
+            binding.localSearchPatient?.id?.let { id ->
+                val intent = PatientProfileActivity.makeIntentForPatientId(itemView.context, id)
+                itemView.context.startActivity(intent)
             }
         }
     }
