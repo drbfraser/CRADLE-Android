@@ -150,6 +150,21 @@ interface PatientDaoAccess {
     fun allLocalSearchPatientsByName(): PagingSource<Int, LocalSearchPatient>
 
     /**
+     * Searches the database, using % (with SQLite concatenation, ||) to make sure we search for
+     * the names or IDs where the query is contained inside of them.
+     */
+    @Query(
+        """
+SELECT * FROM LocalSearchPatient
+WHERE
+  name LIKE '%' || :query || '%'
+  OR id LIKE '%' || :query || '%'
+ORDER BY name COLLATE NOCASE ASC
+"""
+    )
+    fun localSearchPatientsByNameOrId(query: String): PagingSource<Int, LocalSearchPatient>
+
+    /**
      * Gets all patients along with their readings.
      */
     @get:Transaction

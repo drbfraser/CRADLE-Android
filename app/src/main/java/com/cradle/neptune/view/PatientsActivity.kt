@@ -4,14 +4,17 @@ import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.RecyclerView
 import com.cradle.neptune.R
@@ -19,9 +22,10 @@ import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.viewmodel.LocalSearchPatientAdapter
 import com.cradle.neptune.viewmodel.PatientListViewModel
-import com.cradle.neptune.viewmodel.PatientsViewAdapter
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -30,6 +34,8 @@ import javax.inject.Inject
 class PatientsActivity : AppCompatActivity() {
     private val viewModel: PatientListViewModel by viewModels()
 
+    private var isFirstLoadDone: Boolean = false
+
     @Inject
     lateinit var readingManager: ReadingManager
 
@@ -37,7 +43,7 @@ class PatientsActivity : AppCompatActivity() {
     lateinit var patientManager: PatientManager
 
     private lateinit var patientRecyclerview: RecyclerView
-    private lateinit var patientsViewAdapter: PatientsViewAdapter
+    private val localSearchPatientAdapter = LocalSearchPatientAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,13 +54,34 @@ class PatientsActivity : AppCompatActivity() {
             addItemDecoration(
                 DividerItemDecoration(this@PatientsActivity, DividerItemDecoration.VERTICAL)
             )
-            val localSearchPatientAdapter = LocalSearchPatientAdapter()
             this.adapter = localSearchPatientAdapter
-            lifecycleScope.launch {
-                viewModel.allPatientsFlow.collectLatest {
-                    Log.d("PatientsActivity", "DEBUG: FLOW")
-                    localSearchPatientAdapter.submitData(it)
-                }
+        }
+        val emptyMessage = findViewById<TextView>(R.id.emptyView)
+        val progressBar = findViewById<ProgressBar>(R.id.patients_list_progress_bar)
+        localSearchPatientAdapter.addLoadStateListener { loadState ->
+            val isLoading = loadState.refresh is LoadState.Loading
+            patientRecyclerview.isVisible = !isLoading
+            progressBar.isVisible = isLoading
+
+            // Show message when there are no results. Do not show the empty message if the
+            // user hasn't loaded it first.
+            if (isFirstLoadDone && !isLoading && localSearchPatientAdapter.itemCount == 0) {
+                emptyMessage.text = getString(
+                    if (viewModel.isUsingSearch()) {
+                        R.string.activity_patients_no_search_result
+                    } else {
+                        // Here, the user has no patients in the database at all.
+                        R.string.empty_text_for_patient
+                    }
+                )
+                emptyMessage.isVisible = true
+            } else {
+                emptyMessage.isVisible = false
+            }
+
+            if (!isLoading) {
+                isFirstLoadDone = true
+                patientRecyclerview.scrollToPosition(0)
             }
         }
 
@@ -67,6 +94,9 @@ class PatientsActivity : AppCompatActivity() {
         }
 
         setupGlobalPatientSearchButton()
+
+        // Trigger all the patients to be loaded with blank query.
+        search("")
     }
 
     private fun setupGlobalPatientSearchButton() {
@@ -79,6 +109,22 @@ class PatientsActivity : AppCompatActivity() {
                     GlobalPatientSearchActivity::class.java
                 )
             )
+        }
+    }
+
+    private var searchJob: Job? = null
+
+    private fun search(query: String) {
+        val queryToUse = query.trim()
+
+        // Adapted from https://developer.android.com/codelabs/android-paging
+        searchJob?.cancel()
+        searchJob = lifecycleScope.launch {
+            // Wait some time for the typing to stop. The delay function is a cancellation point.
+            delay(SEARCH_JOB_DELAY_MILLIS)
+            viewModel.searchPatientsFlow(queryToUse).collectLatest {
+                localSearchPatientAdapter.submitData(it)
+            }
         }
     }
 
@@ -95,14 +141,12 @@ class PatientsActivity : AppCompatActivity() {
         searchView.setOnQueryTextListener(
             object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String): Boolean {
-                    // filter recycler view when query submitted
-                    patientsViewAdapter.filter.filter(query)
+                    search(query)
                     return false
                 }
 
                 override fun onQueryTextChange(query: String): Boolean {
-                    // filter recycler view when text is changed
-                    patientsViewAdapter.filter.filter(query)
+                    search(query)
                     return false
                 }
             }
@@ -123,6 +167,9 @@ class PatientsActivity : AppCompatActivity() {
     }
 
     companion object {
+        /* How long it takes after a user types something for a database query to be made */
+        private const val SEARCH_JOB_DELAY_MILLIS = 650L
+
         fun makeIntent(context: Context?): Intent {
             return Intent(context, PatientsActivity::class.java)
         }
