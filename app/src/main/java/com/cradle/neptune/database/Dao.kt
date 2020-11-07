@@ -1,6 +1,7 @@
 package com.cradle.neptune.database
 
 import androidx.lifecycle.LiveData
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -8,6 +9,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import com.cradle.neptune.database.views.LocalSearchPatient
 import com.cradle.neptune.model.HealthFacility
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.PatientAndReadings
@@ -143,6 +145,9 @@ interface PatientDaoAccess {
      */
     @get:Query("SELECT * FROM Patient")
     val allPatients: List<Patient>
+
+    @Query("SELECT * FROM LocalSearchPatient ORDER BY name COLLATE NOCASE ASC")
+    fun allLocalSearchPatientsByName(): PagingSource<Int, LocalSearchPatient>
 
     /**
      * Gets all patients along with their readings.

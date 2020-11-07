@@ -66,6 +66,15 @@ public class DateUtil {
         return dateFromAge.format(formatter);
     }
 
+    /**
+     * @param timestamp Unix timestamp
+     * @return A date for the given timestamp in yyyy-mm-dd format.
+     */
+    public static String getDateStringFromTimestamp(long timestamp) {
+        ZonedDateTime dateFromTimestamp = getZoneTimeFromLong(timestamp);
+        return dateFromTimestamp.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+    }
+
     public static String getFullDateFromUnix(Long date) {
         if (date == null) {
             return "";

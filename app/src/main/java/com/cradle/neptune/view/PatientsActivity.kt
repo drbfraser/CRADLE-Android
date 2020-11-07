@@ -4,36 +4,35 @@ import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradle.neptune.R
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
-import com.cradle.neptune.model.Patient
-import com.cradle.neptune.model.Reading
+import com.cradle.neptune.viewmodel.LocalSearchPatientAdapter
+import com.cradle.neptune.viewmodel.PatientListViewModel
 import com.cradle.neptune.viewmodel.PatientsViewAdapter
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.Dispatchers.Main
-import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.util.ArrayList
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class PatientsActivity : AppCompatActivity() {
+    private val viewModel: PatientListViewModel by viewModels()
+
     @Inject
     lateinit var readingManager: ReadingManager
+
     @Inject
     lateinit var patientManager: PatientManager
 
@@ -45,16 +44,26 @@ class PatientsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_patients)
 
         patientRecyclerview = findViewById(R.id.patientListRecyclerview)
-        MainScope().launch {
-            setupPatientRecyclerview()
+        patientRecyclerview.apply {
+            addItemDecoration(
+                DividerItemDecoration(this@PatientsActivity, DividerItemDecoration.VERTICAL)
+            )
+            val localSearchPatientAdapter = LocalSearchPatientAdapter()
+            this.adapter = localSearchPatientAdapter
+            lifecycleScope.launch {
+                viewModel.allPatientsFlow.collectLatest {
+                    Log.d("PatientsActivity", "DEBUG: FLOW")
+                    localSearchPatientAdapter.submitData(it)
+                }
+            }
         }
 
-        val toolbar =
-            findViewById<Toolbar>(R.id.toolbar)
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
-        if (supportActionBar != null) {
-            supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-            supportActionBar!!.title = "My Patients"
+
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            title = getString(R.string.activity_patients_title)
         }
 
         setupGlobalPatientSearchButton()
@@ -77,20 +86,14 @@ class PatientsActivity : AppCompatActivity() {
         menuInflater.inflate(R.menu.menu_patients, menu)
 
         // Associate searchable configuration with the SearchView
-        val searchManager =
-            getSystemService(Context.SEARCH_SERVICE) as SearchManager
-        val searchView = menu.findItem(R.id.searchPatients)
-            .actionView as SearchView
-        searchView.setSearchableInfo(
-            searchManager
-                .getSearchableInfo(componentName)
-        )
+        val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
+        val searchView = menu.findItem(R.id.searchPatients).actionView as SearchView
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(componentName))
         searchView.maxWidth = Int.MAX_VALUE
 
         // listening to search query text change
         searchView.setOnQueryTextListener(
-            object :
-                SearchView.OnQueryTextListener {
+            object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String): Boolean {
                     // filter recycler view when query submitted
                     patientsViewAdapter.filter.filter(query)
@@ -117,45 +120,6 @@ class PatientsActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return true
-    }
-
-    private suspend fun setupPatientRecyclerview() = withContext(IO) {
-        val patients: ArrayList<Pair<Patient, Reading?>> = ArrayList()
-        val patientList = patientManager.getAllPatients()
-        for (patient in patientList) {
-            patients.add(
-                Pair(
-                    patient,
-                    readingManager.getNewestReadingByPatientId(patient.id)
-                )
-            )
-        }
-        withContext(Main) {
-            val textView = findViewById<TextView>(R.id.emptyView)
-            if (patients.size == 0) {
-                textView.visibility = View.VISIBLE
-            } else {
-                textView.visibility = View.GONE
-            }
-            patientsViewAdapter = PatientsViewAdapter(patients.toList(), this@PatientsActivity)
-            val layoutManager: RecyclerView.LayoutManager = LinearLayoutManager(this@PatientsActivity)
-            patientRecyclerview.adapter = patientsViewAdapter
-            patientRecyclerview.layoutManager = layoutManager
-            patientRecyclerview.addItemDecoration(
-                DividerItemDecoration(
-                    this@PatientsActivity,
-                    DividerItemDecoration.VERTICAL
-                )
-            )
-            patientsViewAdapter.notifyDataSetChanged()
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        MainScope().launch {
-            setupPatientRecyclerview()
-        }
     }
 
     companion object {

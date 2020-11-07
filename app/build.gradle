@@ -72,7 +72,7 @@ android {
         jvmTarget = "1.8"
     }
     buildFeatures {
-        dataBinding = true
+        dataBinding true
     }
 
     buildToolsVersion = '29.0.3'
@@ -111,6 +111,8 @@ dependencies {
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.11.3"
 
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
+
+    implementation "androidx.paging:paging-runtime-ktx:3.0.0-alpha08"
 
     // Time: Backport of Java 8's interfaces for Android
     // https://github.com/JakeWharton/ThreeTenABP
@@ -161,10 +163,10 @@ dependencies {
 
     implementation 'com.github.barteksc:android-pdf-viewer:2.8.2'
 
-    //room database
-    implementation "androidx.room:room-runtime:2.2.5"
-    kapt "androidx.room:room-compiler:2.2.5"
-    androidTestImplementation "androidx.room:room-testing:2.2.5"
+    def room_version = "2.3.0-alpha03"
+    implementation "androidx.room:room-runtime:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
+    androidTestImplementation "androidx.room:room-testing:$room_version"
 
     implementation 'androidx.core:core-ktx:1.3.2'
     implementation "androidx.activity:activity-ktx:1.1.0"
