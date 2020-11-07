@@ -59,6 +59,11 @@ class AdviceFragment : Fragment() {
             false,
             dataBindingComponent
         )
+        binding?.apply {
+            lifecycleOwner = viewLifecycleOwner
+            viewModel = this@AdviceFragment.viewModel
+            executePendingBindings()
+        }
         return binding?.root
     }
 
@@ -69,9 +74,8 @@ class AdviceFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding?.apply {
-            lifecycleOwner = viewLifecycleOwner
-            viewModel = this@AdviceFragment.viewModel
             launchReason = (activity as? ReadingActivity)?.getLaunchReason()
+            executePendingBindings()
         }
         super.onViewCreated(view, savedInstanceState)
 
@@ -198,6 +202,7 @@ class AdviceFragment : Fragment() {
         )
         binding.reading = retestGroup.readings.last()
         binding.analysis = retestGroup.mostRecentReadingAnalysis
+        binding.executePendingBindings()
         currentReadingLayout.addView(binding.root)
     }
 

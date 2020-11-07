@@ -59,12 +59,15 @@ class SymptomsFragment : Fragment() {
             false,
             dataBindingComponent
         )
+        binding?.apply {
+            lifecycleOwner = viewLifecycleOwner
+            viewModel = this@SymptomsFragment.viewModel
+            executePendingBindings()
+        }
         return binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding?.lifecycleOwner = viewLifecycleOwner
-        binding?.viewModel = viewModel
         super.onViewCreated(view, savedInstanceState)
 
         val checkBoxContainer = view.findViewById<LinearLayout>(R.id.symptoms_checkbox_container)

@@ -45,12 +45,15 @@ class VitalSignsFragment : Fragment() {
             false,
             dataBindingComponent
         )
+        binding?.apply {
+            lifecycleOwner = viewLifecycleOwner
+            viewModel = this@VitalSignsFragment.viewModel
+            executePendingBindings()
+        }
         return binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding?.lifecycleOwner = viewLifecycleOwner
-        binding?.viewModel = viewModel
         super.onViewCreated(view, savedInstanceState)
 
         view.findViewById<Button>(R.id.cradle_vsa_take_photo_button)?.setOnClickListener(

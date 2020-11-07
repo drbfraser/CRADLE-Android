@@ -55,10 +55,12 @@ class ReadingActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // TODO: Use activity_reading when done design
         binding = DataBindingUtil.setContentView(this, R.layout.activity_reading)
-        binding?.viewModel = viewModel
-        binding?.lifecycleOwner = this
+        binding?.apply {
+            viewModel = this@ReadingActivity.viewModel
+            lifecycleOwner = this@ReadingActivity
+            executePendingBindings()
+        }
 
         val host: NavHostFragment = supportFragmentManager
             .findFragmentById(R.id.reading_nav_host) as NavHostFragment? ?: return
