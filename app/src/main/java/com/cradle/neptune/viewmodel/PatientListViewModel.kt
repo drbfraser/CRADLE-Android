@@ -15,7 +15,9 @@ class PatientListViewModel @ViewModelInject constructor(
     private val patientDao: PatientDaoAccess
 ) : ViewModel() {
 
-    private var currentQueryString: String? = null
+    var currentQueryString: String? = null
+        private set
+
     private var currentSearchResult: Flow<PagingData<LocalSearchPatient>>? = null
 
     fun isUsingSearch() = !currentQueryString.isNullOrBlank()

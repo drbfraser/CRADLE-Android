@@ -120,8 +120,25 @@ class PatientsActivity : AppCompatActivity() {
         setupGlobalPatientSearchButton()
 
         onBackPressedDispatcher.addCallback(this, closeSearchViewCallback)
-        // Trigger all the patients to be loaded with blank query.
-        search("")
+
+        // If not restoring, display all patients by using a blank query.
+        // Otherwise, the saved query will be used to search, and the
+        // SearchView will be restored in onCreateOptionsMenu.
+        val savedQuery = savedInstanceState?.getString(EXTRA_CURRENT_QUERY)
+        if (savedQuery == null) {
+            search("")
+        } else {
+            search(savedQuery)
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        if (viewModel.isUsingSearch()) {
+            outState.putString(EXTRA_CURRENT_QUERY, viewModel.currentQueryString)
+        } else {
+            outState.remove(EXTRA_CURRENT_QUERY)
+        }
     }
 
     private fun setupGlobalPatientSearchButton() {
@@ -159,7 +176,28 @@ class PatientsActivity : AppCompatActivity() {
         // Associate searchable configuration with the SearchView
         val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
         val searchView = menu.findItem(R.id.searchPatients).actionView as SearchView
-        this.searchView = searchView.apply {
+        this.searchView = searchView
+
+        searchView.apply {
+            // Load any queries from the saved state. The onCreate function would have loaded the
+            // query string into the ViewModel from the saved instance state.
+            // Do this before setting setOnQueryTextListener
+            viewModel.currentQueryString?.let {
+                if (!viewModel.isUsingSearch()) {
+                    return@let
+                }
+                // Show the SearchView and populate the query.
+                val searchViewMenuItem = menu.findItem(R.id.searchPatients)
+                searchViewMenuItem.expandActionView()
+                isIconified = true
+                onActionViewExpanded()
+                // Populate the query. This won't trigger a search, as this is done before
+                // setOnQueryTextListener.
+                setQuery(viewModel.currentQueryString, false)
+                // Don't open the keyboard automatically
+                clearFocus()
+            }
+
             setSearchableInfo(searchManager.getSearchableInfo(componentName))
             queryHint = getString(R.string.activity_patients_search_view_title)
             maxWidth = Int.MAX_VALUE
@@ -185,6 +223,7 @@ class PatientsActivity : AppCompatActivity() {
                 return@setOnCloseListener false
             }
         }
+
         return true
     }
 
@@ -231,6 +270,7 @@ class PatientsActivity : AppCompatActivity() {
     companion object {
         /* How long it takes after a user types something for a database query to be made */
         private const val SEARCH_JOB_DELAY_MILLIS = 650L
+        private const val EXTRA_CURRENT_QUERY = "current_query"
 
         fun makeIntent(context: Context?): Intent {
             return Intent(context, PatientsActivity::class.java)
