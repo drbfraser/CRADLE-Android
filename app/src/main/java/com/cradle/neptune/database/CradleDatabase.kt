@@ -88,7 +88,7 @@ internal object Migrations {
      * Version 2:
      * Add new Reading fields (respiratoryRate, oxygenSaturation, temperature)
      */
-    val MIGRATION_1_2 = object : Migration(1, 2) {
+    private val MIGRATION_1_2 = object : Migration(1, 2) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.run {
                 execSQL("ALTER TABLE Reading ADD COLUMN respiratoryRate INTEGER")
@@ -104,7 +104,7 @@ internal object Migrations {
      * Removing the age property requires us to migrate the age and dob states to the new isExactDob
      * Boolean.
      */
-    val MIGRATION_2_3 = object : Migration(2, 3) {
+    private val MIGRATION_2_3 = object : Migration(2, 3) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE Patient ADD COLUMN isExactDob INTEGER")
             val dobAgeQuery = SupportSQLiteQueryBuilder.builder("Patient")
@@ -198,7 +198,7 @@ internal object Migrations {
      *
      * There are other field and property name mismatches that we have to correct here.
      */
-    val MIGRATION_3_4 = object : Migration(3, 4) {
+    private val MIGRATION_3_4 = object : Migration(3, 4) {
         override fun migrate(database: SupportSQLiteDatabase) {
             // For whatever reason, Gson stored null instances in the database as Strings that
             // just say "null". This takes up space, so we need to manually change those to a null
