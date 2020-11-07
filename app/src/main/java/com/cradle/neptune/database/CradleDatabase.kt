@@ -12,6 +12,7 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteQueryBuilder
+import com.cradle.neptune.database.views.LocalSearchPatient
 import com.cradle.neptune.model.HealthFacility
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
@@ -27,7 +28,8 @@ import com.cradle.neptune.utilitiles.DateUtil
  */
 @Database(
     entities = [Reading::class, Patient::class, HealthFacility::class],
-    version = 4,
+    views = [LocalSearchPatient::class],
+    version = 5,
     exportSchema = true
 )
 @TypeConverters(DatabaseTypeConverters::class)
@@ -69,10 +71,10 @@ abstract class CradleDatabase : RoomDatabase() {
  * Internal so that tests can access the [Migration] objects.
  * Suppress MagicNumber and NestedBlockDepth due to the migrations.
  */
-@Suppress("MagicNumber", "NestedBlockDepth")
+@Suppress("MagicNumber", "NestedBlockDepth", "ObjectPropertyNaming")
 internal object Migrations {
     val ALL_MIGRATIONS by lazy {
-        arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+        arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
     }
 
     /**
@@ -271,6 +273,30 @@ internal object Migrations {
                     )
                 }
             }
+        }
+    }
+
+    /**
+     * Version 5:
+     * Add LocalSearchPatient view
+     */
+    private val MIGRATION_4_5 = object : Migration(4, 5) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL(
+                """
+CREATE VIEW `LocalSearchPatient` AS SELECT
+  p.name,
+  p.id,
+  p.villageNumber,
+  r.bloodPressure as latestBloodPressure,
+  MAX(r.dateTimeTaken) as latestReadingDate
+FROM
+  Patient as p
+  LEFT JOIN Reading AS r ON p.id = r.patientId
+GROUP BY 
+  r.patientId
+                """.trimIndent()
+            )
         }
     }
 }

@@ -48,10 +48,12 @@ class DatabaseTypeConverters {
     }
 
     @TypeConverter
-    fun toBloodPressure(string: String): BloodPressure = BloodPressure.unmarshal(JSONObject(string))
+    fun toBloodPressure(string: String?): BloodPressure? =
+        string?.let { if (it == "null") null else BloodPressure.unmarshal(JSONObject(string)) }
 
     @TypeConverter
-    fun fromBloodPressure(bloodPressure: BloodPressure): String = bloodPressure.marshal().toString()
+    fun fromBloodPressure(bloodPressure: BloodPressure?): String? =
+        bloodPressure?.marshal()?.toString()
 
     @TypeConverter
     fun toUrineTest(string: String?): UrineTest? =
