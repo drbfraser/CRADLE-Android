@@ -100,9 +100,29 @@ class MigrationTests {
             isUploadedToServer = false
         )
 
+        val patientWithExactDob = Patient(
+            id = patientId,
+            name = "Exact dob",
+            dob = "1989-10-24",
+            isExactDob = true,
+            gestationalAge = GestationalAgeWeeks(Weeks(20L)),
+            sex = Sex.FEMALE,
+            isPregnant = true,
+            zone = null,
+            villageNumber = null,
+            drugHistoryList = emptyList(),
+            medicalHistoryList = emptyList()
+        )
+
         helper.createDatabase(TEST_DB, 1).apply {
             // db has schema version 1. Need to insert some data using SQL queries.
             // Can't use DAO classes; they expect the latest schema.
+            insertFirstVersionPatient(
+                database = this,
+                patient = patientWithExactDob,
+                ageForV1 = null
+            )
+
             insertFirstVersionReading(
                 database = this, reading = reading
             )

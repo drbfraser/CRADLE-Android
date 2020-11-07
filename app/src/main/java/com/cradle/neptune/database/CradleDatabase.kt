@@ -29,7 +29,7 @@ import com.cradle.neptune.utilitiles.DateUtil
 @Database(
     entities = [Reading::class, Patient::class, HealthFacility::class],
     views = [LocalSearchPatient::class],
-    version = 6,
+    version = 7,
     exportSchema = true
 )
 @TypeConverters(DatabaseTypeConverters::class)
@@ -74,7 +74,14 @@ abstract class CradleDatabase : RoomDatabase() {
 @Suppress("MagicNumber", "NestedBlockDepth", "ObjectPropertyNaming")
 internal object Migrations {
     val ALL_MIGRATIONS by lazy {
-        arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+        arrayOf(
+            MIGRATION_1_2,
+            MIGRATION_2_3,
+            MIGRATION_3_4,
+            MIGRATION_4_5,
+            MIGRATION_5_6,
+            MIGRATION_6_7
+        )
     }
 
     /**
@@ -323,6 +330,80 @@ GROUP BY
   r.patientId
                 """.trimIndent()
             )
+        }
+    }
+
+    /**
+     * Version 7:
+     * Add indices for Patient and Reading, set a foreign key in Reading
+     */
+    private val MIGRATION_6_7 = object : Migration(6, 7) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.apply {
+                execSQL("PRAGMA foreign_keys = OFF")
+                beginTransaction()
+                try {
+                    execSQL(
+                        """
+CREATE TABLE IF NOT EXISTS `new_Patient` (
+  `id` TEXT NOT NULL, `name` TEXT NOT NULL, `dob` TEXT, `isExactDob` INTEGER, `gestationalAge` TEXT, 
+  `sex` TEXT NOT NULL, `isPregnant` INTEGER NOT NULL, `zone` TEXT, `villageNumber` TEXT, 
+  `householdNumber` TEXT, `drugHistoryList` TEXT NOT NULL, `medicalHistoryList` TEXT NOT NULL, 
+  `lastEdited` INTEGER, `base` INTEGER, PRIMARY KEY(`id`)
+)
+                        """.trimIndent()
+                    )
+                    execSQL("CREATE UNIQUE INDEX `index_Patient_id` ON `new_Patient` (`id`)")
+                    val patientProperties = "`id`,`name`,`dob`,`isExactDob`,`gestationalAge`," +
+                        "`sex`,`isPregnant`,`zone`,`villageNumber`,`householdNumber`," +
+                        "`drugHistoryList`,`medicalHistoryList`,`lastEdited`,`base`"
+                    execSQL(
+                        "INSERT INTO new_Patient ($patientProperties) " +
+                            "SELECT $patientProperties FROM Patient"
+                    )
+                    execSQL("DROP TABLE Patient")
+                    execSQL("ALTER TABLE new_Patient RENAME TO Patient")
+
+                    execSQL(
+                        """
+CREATE TABLE IF NOT EXISTS `new_Reading` (
+  `readingId` TEXT NOT NULL, `patientId` TEXT NOT NULL, `dateTimeTaken` INTEGER NOT NULL, 
+  `bloodPressure` TEXT NOT NULL, `respiratoryRate` INTEGER, `oxygenSaturation` INTEGER, 
+  `temperature` INTEGER, `urineTest` TEXT, `symptoms` TEXT NOT NULL, `referral` TEXT, 
+  `followUp` TEXT, `dateRecheckVitalsNeeded` INTEGER, `isFlaggedForFollowUp` INTEGER NOT NULL, 
+  `previousReadingIds` TEXT NOT NULL, `metadata` TEXT NOT NULL, 
+  `isUploadedToServer` INTEGER NOT NULL, 
+  PRIMARY KEY(`readingId`), 
+  FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE 
+)
+                        """.trimIndent()
+                    )
+                    execSQL(
+                        "CREATE UNIQUE INDEX IF NOT EXISTS `index_Reading_readingId` " +
+                            "ON `new_Reading` (`readingId`)"
+                    )
+                    execSQL(
+                        "CREATE INDEX IF NOT EXISTS `index_Reading_patientId` " +
+                            "ON `new_Reading` (`patientId`)"
+                    )
+                    val readingProperties = "`readingId`,`patientId`,`dateTimeTaken`," +
+                        "`bloodPressure`,`respiratoryRate`,`oxygenSaturation`," +
+                        "`temperature`,`urineTest`,`symptoms`,`referral`,`followUp`," +
+                        "`dateRecheckVitalsNeeded`,`isFlaggedForFollowUp`," +
+                        "`previousReadingIds`,`metadata`,`isUploadedToServer`"
+                    execSQL(
+                        "INSERT INTO new_Reading ($readingProperties) " +
+                            "SELECT $readingProperties FROM Reading"
+                    )
+                    execSQL("DROP TABLE Reading")
+                    execSQL("ALTER TABLE new_Reading RENAME TO Reading")
+
+                    setTransactionSuccessful()
+                } finally {
+                    endTransaction()
+                    execSQL("PRAGMA foreign_keys = ON")
+                }
+            }
         }
     }
 }

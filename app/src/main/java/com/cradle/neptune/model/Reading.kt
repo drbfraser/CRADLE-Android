@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.annotation.StringRes
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.cradle.neptune.R
 import com.cradle.neptune.ext.Field
@@ -69,7 +71,21 @@ private const val SECONDS_IN_MIN = 60
  * @property metadata Some internal metadata associated with this reading. By
  * default an empty metadata object (with all `null` values) will be used.
  */
-@Entity
+@Entity(
+    indices = [
+        Index(value = ["readingId"], unique = true),
+        Index(value = ["patientId"])
+    ],
+    foreignKeys = [
+        ForeignKey(
+            entity = Patient::class,
+            parentColumns = arrayOf("id"),
+            childColumns = arrayOf("patientId"),
+            onUpdate = ForeignKey.CASCADE,
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
+)
 data class Reading(
     @PrimaryKey
     @ColumnInfo(name = "readingId")
