@@ -29,7 +29,7 @@ import com.cradle.neptune.utilitiles.DateUtil
 @Database(
     entities = [Reading::class, Patient::class, HealthFacility::class],
     views = [LocalSearchPatient::class],
-    version = 5,
+    version = 6,
     exportSchema = true
 )
 @TypeConverters(DatabaseTypeConverters::class)
@@ -74,7 +74,7 @@ abstract class CradleDatabase : RoomDatabase() {
 @Suppress("MagicNumber", "NestedBlockDepth", "ObjectPropertyNaming")
 internal object Migrations {
     val ALL_MIGRATIONS by lazy {
-        arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+        arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
     }
 
     /**
@@ -290,6 +290,32 @@ CREATE VIEW `LocalSearchPatient` AS SELECT
   p.villageNumber,
   r.bloodPressure as latestBloodPressure,
   MAX(r.dateTimeTaken) as latestReadingDate
+FROM
+  Patient as p
+  LEFT JOIN Reading AS r ON p.id = r.patientId
+GROUP BY 
+  r.patientId
+                """.trimIndent()
+            )
+        }
+    }
+
+    /**
+     * Version 6:
+     * Update LocalSearchPatient view to include referrals
+     */
+    private val MIGRATION_5_6 = object : Migration(5, 6) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("DROP VIEW `LocalSearchPatient`")
+            database.execSQL(
+                """
+CREATE VIEW `LocalSearchPatient` AS SELECT
+  p.name,
+  p.id,
+  p.villageNumber,
+  r.bloodPressure as latestBloodPressure,
+  MAX(r.dateTimeTaken) as latestReadingDate,
+  r.referral
 FROM
   Patient as p
   LEFT JOIN Reading AS r ON p.id = r.patientId

@@ -18,10 +18,11 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/list_item_patient_constraint_layout"
+        android:layout_width="match_parent"
+        android:layout_height="154dp"
         android:background="?attr/selectableItemBackground"
         android:clickable="true"
-        android:layout_width="match_parent"
-        android:layout_height="140dp"
+        android:focusable="true"
         android:padding="16dp"
         tools:visibility="visible">
 
@@ -39,6 +40,36 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Hubert Blaine Wolfe­schlegel­stein­hausen­berger­dorff Sr." />
 
+        <!--  @drawable/ic_check_circle_black_24dp @drawable/ic_pending_referral_black_24dp-->
+        <ImageView
+            android:id="@+id/list_item_patient_referral_icon"
+            setSrcCompatBitmap="@{localSearchPatient.referral.assessed ? @drawable/ic_check_circle_black_24dp : @drawable/ic_pending_referral_black_24dp}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="9dp"
+            android:visibility="@{localSearchPatient.referral != null ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toTopOf="@+id/list_item_patient_id_label_text_view"
+            app:layout_constraintEnd_toEndOf="@+id/list_item_patient_id_label_text_view"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/list_item_patient_name_text_view"
+            app:layout_constraintVertical_bias="1.0"
+            tools:srcCompat="@drawable/ic_pending_referral_black_24dp"
+            tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/list_item_patient_referral_status_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:text="@{localSearchPatient.referral.assessed ? @string/list_item_patient_referral_assessed : @string/list_item_patient_referral_pending}"
+            android:textAppearance="@style/TextAppearance.Cradle.Body1"
+            android:visibility="@{localSearchPatient.referral != null ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="@+id/list_item_patient_referral_icon"
+            app:layout_constraintStart_toEndOf="@+id/list_item_patient_referral_icon"
+            app:layout_constraintTop_toTopOf="@+id/list_item_patient_referral_icon"
+            tools:text="Referral pending"
+            tools:visibility="visible" />
+
         <TextView
             android:id="@+id/list_item_patient_id_label_text_view"
             android:layout_width="wrap_content"
@@ -51,12 +82,14 @@
 
         <TextView
             android:id="@+id/list_item_patient_id_text"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
+            android:maxLines="1"
             android:text="@{localSearchPatient.id}"
             android:textAppearance="@style/TextAppearance.Cradle.Body1"
             app:layout_constraintBaseline_toBaselineOf="@+id/list_item_patient_id_label_text_view"
+            app:layout_constraintEnd_toStartOf="@+id/patient_info_guideline"
             app:layout_constraintStart_toEndOf="@+id/list_item_patient_id_label_text_view"
             tools:text="12345678901234" />
 
@@ -72,12 +105,14 @@
 
         <TextView
             android:id="@+id/list_item_patient_village_number_text"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
+            android:maxLines="1"
             android:text="@{localSearchPatient.villageNumber}"
             android:textAppearance="@style/TextAppearance.Cradle.Body1"
             app:layout_constraintBaseline_toBaselineOf="@+id/list_item_patient_village_number_label"
+            app:layout_constraintEnd_toStartOf="@+id/patient_info_guideline"
             app:layout_constraintStart_toEndOf="@+id/list_item_patient_village_number_label"
             tools:text="4000534" />
 
@@ -94,8 +129,8 @@
             android:layout_height="56dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/list_item_patient_name_text_view"
-            tools:srcCompat="@drawable/arrow_up"
-            bind:setArrowDrawable="@{localSearchPatient.latestRetestAnalysis}" />
+            bind:setArrowDrawable="@{localSearchPatient.latestRetestAnalysis}"
+            tools:srcCompat="@drawable/arrow_up" />
 
         <ImageView
             android:id="@+id/patient_traffic_light_image_view"
@@ -104,8 +139,8 @@
             android:layout_marginStart="8dp"
             app:layout_constraintStart_toStartOf="@+id/patient_info_guideline"
             app:layout_constraintTop_toTopOf="@+id/list_item_patient_name_text_view"
-            tools:srcCompat="@drawable/status_green"
-            bind:setTrafficLightDrawable="@{localSearchPatient.latestRetestAnalysis}" />
+            bind:setTrafficLightDrawable="@{localSearchPatient.latestRetestAnalysis}"
+            tools:srcCompat="@drawable/status_green" />
 
         <TextView
             android:id="@+id/last_reading_on_text_view"

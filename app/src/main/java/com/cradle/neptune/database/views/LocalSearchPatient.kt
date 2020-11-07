@@ -3,6 +3,7 @@ package com.cradle.neptune.database.views
 import androidx.room.DatabaseView
 import com.cradle.neptune.model.BloodPressure
 import com.cradle.neptune.model.ReadingAnalysis
+import com.cradle.neptune.model.Referral
 
 /**
  * Represents a patient as seen in the patient's list, using a minimal amount
@@ -16,7 +17,8 @@ SELECT
   p.id,
   p.villageNumber,
   r.bloodPressure as latestBloodPressure,
-  MAX(r.dateTimeTaken) as latestReadingDate
+  MAX(r.dateTimeTaken) as latestReadingDate,
+  r.referral
 FROM
   Patient as p
   LEFT JOIN Reading AS r ON p.id = r.patientId
@@ -29,7 +31,8 @@ data class LocalSearchPatient(
     val id: String,
     val villageNumber: String?,
     val latestBloodPressure: BloodPressure?,
-    val latestReadingDate: Long?
+    val latestReadingDate: Long?,
+    val referral: Referral?
 ) {
     fun getLatestRetestAnalysis(): ReadingAnalysis? = latestBloodPressure?.analysis
 }

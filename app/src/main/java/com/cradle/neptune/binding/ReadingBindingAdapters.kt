@@ -1,6 +1,7 @@
 package com.cradle.neptune.binding
 
 import android.annotation.SuppressLint
+import android.graphics.drawable.Drawable
 import android.os.Build
 import android.text.InputFilter
 import android.text.InputType
@@ -206,6 +207,11 @@ class ReadingBindingAdapters {
             return
         }
         setImageViewFromId(view, ReadingAnalysisViewSupport.getArrowImageId(analysis))
+    }
+
+    @BindingAdapter("setSrcCompatBitmap")
+    fun setSrcCompatBitmap(imageView: ImageView, drawable: Drawable) {
+        imageView.setImageDrawable(drawable)
     }
 
     private fun setImageViewFromId(imageView: ImageView, @DrawableRes idRes: Int) {
