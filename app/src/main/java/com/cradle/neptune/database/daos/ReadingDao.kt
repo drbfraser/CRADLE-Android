@@ -57,8 +57,8 @@ interface ReadingDao {
     /**
      * All of the readings in the database.
      */
-    @get:Query("SELECT * FROM Reading")
-    val allReadingEntities: List<Reading>
+    @Query("SELECT * FROM Reading")
+    fun getAllReadingEntities(): List<Reading>
 
     /**
      * Returns the first reading who's id matches a given pattern.
@@ -82,14 +82,14 @@ interface ReadingDao {
     /**
      * All readings which have not yet been uploaded to the server.
      */
-    @get:Query("SELECT * FROM Reading WHERE isUploadedToServer = 0")
-    val allUnUploadedReading: List<Reading>
+    @Query("SELECT * FROM Reading WHERE isUploadedToServer = 0")
+    fun getAllUnUploadedReadings(): List<Reading>
 
     /**
      * Returns all un-uploaded readings for patients who have previously been
      * synced with the server.
      */
-    @get:Query(
+    @Query(
         """
         SELECT * 
         FROM Reading r 
@@ -97,7 +97,7 @@ interface ReadingDao {
         WHERE p.base is NOT null AND r.isUploadedToServer = 0
     """
     )
-    val allUnUploadedReadingsForTrackedPatients: List<Reading>
+    fun getAllUnUploadedReadingsForTrackedPatients(): List<Reading>
 
     /**
      * get the newest reading of a particular patient

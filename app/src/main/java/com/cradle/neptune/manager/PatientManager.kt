@@ -120,14 +120,14 @@ class PatientManager @Inject constructor(
      * get all the patients
      */
     suspend fun getAllPatients(): List<Patient> = withContext(IO) {
-        patientDao.allPatients
+        patientDao.getAllPatients()
     }
 
     /**
      * get a list of patient ids for all patients.
      */
     suspend fun getPatientIdsOnly(): List<String> = withContext(IO) {
-        patientDao.patientIdsList
+        patientDao.getPatientIdsList()
     }
 
     /**
@@ -149,7 +149,7 @@ class PatientManager @Inject constructor(
      * returns all the  patients which dont exists on server and their readings
      */
     suspend fun getUnUploadedPatients(): List<PatientAndReadings> =
-        withContext(IO) { patientDao.unUploadedPatientAndReadings }
+        withContext(IO) { patientDao.getUnUploadedPatientAndReadings() }
 
     /**
      * get edited Patients that also exists on the server

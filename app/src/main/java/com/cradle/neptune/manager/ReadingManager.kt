@@ -62,7 +62,9 @@ class ReadingManager @Inject constructor(
      * Returns a list of all readings (and their associated patients) in the
      * database.
      */
-    suspend fun getAllReadings(): List<Reading> = withContext(IO) { readingDao.allReadingEntities }
+    suspend fun getAllReadings(): List<Reading> = withContext(IO) {
+        readingDao.getAllReadingEntities()
+    }
 
     /**
      * Returns the reading (and its associated patient) with a given [id] from
@@ -96,14 +98,14 @@ class ReadingManager @Inject constructor(
      * Returns all readings which have not been uploaded to the server yet.
      */
     suspend fun getUnUploadedReadings(): List<Reading> = withContext(IO) {
-        readingDao.allUnUploadedReading
+        readingDao.getAllUnUploadedReadings()
     }
 
     /**
      * get unUploaded readings for patients who already exists in the server
      */
     suspend fun getUnUploadedReadingsForServerPatients(): List<Reading> = withContext(IO) {
-        readingDao.allUnUploadedReadingsForTrackedPatients
+        readingDao.getAllUnUploadedReadingsForTrackedPatients()
     }
 
     /**

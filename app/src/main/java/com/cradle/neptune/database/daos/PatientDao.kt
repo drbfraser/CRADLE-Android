@@ -35,8 +35,8 @@ interface PatientDao {
     /**
      *get list of all the patients
      */
-    @get:Query("SELECT * FROM Patient")
-    val allPatients: List<Patient>
+    @Query("SELECT * FROM Patient")
+    fun getAllPatients(): List<Patient>
 
     @Query(
         "SELECT * FROM LocalSearchPatient " +
@@ -62,13 +62,13 @@ ORDER BY latestReadingDate DESC, name COLLATE NOCASE ASC
     /**
      * Gets all patients along with their readings.
      */
-    @get:Transaction
-    @get:Query("SELECT * FROM Patient")
-    val allPatientsAndReading: List<PatientAndReadings>
+    @Transaction
+    @Query("SELECT * FROM Patient")
+    fun getAllPatientsAndReading(): List<PatientAndReadings>
 
-    @get:Transaction
-    @get:Query("SELECT * FROM Patient WHERE base IS null")
-    val unUploadedPatientAndReadings: List<PatientAndReadings>
+    @Transaction
+    @Query("SELECT * FROM Patient WHERE base IS null")
+    fun getUnUploadedPatientAndReadings(): List<PatientAndReadings>
 
     /**
      * get patients that were edited after a given timestamp and are not brand new patients
@@ -79,8 +79,8 @@ ORDER BY latestReadingDate DESC, name COLLATE NOCASE ASC
     /**
      * get a list of patient Ids
      */
-    @get:Query("SELECT id FROM Patient")
-    val patientIdsList: List<String>
+    @Query("SELECT id FROM Patient")
+    fun getPatientIdsList(): List<String>
 
     /**
      * get a single patient by id if exists

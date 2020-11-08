@@ -61,8 +61,8 @@ interface HealthFacilityDao {
     /**
      * All health facilities stored in the database.
      */
-    @get:Query("SELECT * FROM HealthFacility")
-    val allHealthFacilities: List<HealthFacility>
+    @Query("SELECT * FROM HealthFacility")
+    fun getAllHealthFacilities(): List<HealthFacility>
 
     /**
      * Returns the first health facility from the database who's id matches
@@ -76,18 +76,18 @@ interface HealthFacilityDao {
     /**
      * All health facilities which the user has selected to be visible.
      */
-    @get:Query("SELECT * FROM HealthFacility WHERE isUserSelected = 1")
-    val allUserSelectedHealthFacilities: List<HealthFacility>
+    @Query("SELECT * FROM HealthFacility WHERE isUserSelected = 1")
+    fun getAllUserSelectedHealthFacilities(): List<HealthFacility>
 
     /**
      * Returns a live list of facilities
      */
-    @get:Query("SELECT * FROM HealthFacility")
-    val allFacilitiesLiveData: LiveData<List<HealthFacility>>
+    @Query("SELECT * FROM HealthFacility")
+    fun getAllFacilitiesLiveData(): LiveData<List<HealthFacility>>
 
     /**
      * All health facilities which the user has selected to be visible.
      */
-    @get:Query("SELECT * FROM HealthFacility WHERE isUserSelected = 1")
-    val allUserSelectedHealthFacilitiesLiveData: LiveData<List<HealthFacility>>
+    @Query("SELECT * FROM HealthFacility WHERE isUserSelected = 1")
+    fun getAllUserSelectedHealthFacilitiesLiveData(): LiveData<List<HealthFacility>>
 }

@@ -12,9 +12,9 @@ import kotlinx.coroutines.withContext
  * main thread rather than run time error
  */
 @Suppress("RedundantSuspendModifier")
-class HealthFacilityManager(private val database: CradleDatabase) {
+class HealthFacilityManager(database: CradleDatabase) {
 
-    private val dao get() = database.healthFacility()
+    private val dao = database.healthFacility()
 
     /**
      * get a [HealthFacility] by id
@@ -25,7 +25,7 @@ class HealthFacilityManager(private val database: CradleDatabase) {
      * get all the [HealthFacility] selected by the current user.
      */
     suspend fun getAllSelectedByUser() = withContext(Dispatchers.IO) {
-        dao.allUserSelectedHealthFacilities
+        dao.getAllUserSelectedHealthFacilities()
     }
 
     /**
@@ -48,13 +48,13 @@ class HealthFacilityManager(private val database: CradleDatabase) {
     /**
      * returns a live list of the facilities
      */
-    val getLiveList: LiveData<List<HealthFacility>> = dao.allFacilitiesLiveData
+    val getLiveList: LiveData<List<HealthFacility>> = dao.getAllFacilitiesLiveData()
 
     /**
      * Returns a list of all user-selected health facilities as LiveData.
      */
     val getLiveListSelected: LiveData<List<HealthFacility>> =
-        dao.allUserSelectedHealthFacilitiesLiveData
+        dao.getAllUserSelectedHealthFacilitiesLiveData()
 
     /**
      * delete all [HealthFacility] from the DB
