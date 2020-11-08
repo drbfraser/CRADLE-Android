@@ -36,15 +36,11 @@ class ReadingManager @Inject constructor(
     /**
      * Adds a new reading to the database.
      * @param reading the reading to insert
-     * todo once all the class using this api is converted to kotlin, we can move coroutine out
-     * of this class and make this a [suspend] function
      */
     suspend fun addReading(reading: Reading) = withContext(IO) { readingDao.insert(reading) }
 
     /**
      * Get all the readings.
-     * todo once all the class using this api is converted to kotlin, we can move coroutine out
-     * of this class and make this a [suspend] function
      */
     suspend fun addAllReadings(readings: List<Reading>) = withContext(IO) {
         readingDao.insertAll(readings)
@@ -52,7 +48,6 @@ class ReadingManager @Inject constructor(
 
     /**
      * Updates an existing reading in the database.
-     * todo once all the class using this api is converted to kotlin, we can move coroutine out
      * of this class and make this a [suspend] function
      * @param reading the reading to update
      */
@@ -188,10 +183,10 @@ class ReadingManager @Inject constructor(
             val result = restApi.getAssessment(assessmentId)
             when (result) {
                 is Success -> {
-                    val reading = getReadingById(result.value.readingId)
-                    reading?.followUp = result.value
-                    if (reading != null) {
-                        updateReading(reading)
+                    getReadingById(result.value.readingId)?.apply {
+                        followUp = result.value
+                        referral?.isAssessed = true
+                        updateReading(this)
                     }
                 }
             }
