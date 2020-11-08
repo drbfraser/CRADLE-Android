@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Update
 import com.cradle.neptune.model.Reading
 
@@ -89,6 +90,7 @@ interface ReadingDao {
      * Returns all un-uploaded readings for patients who have previously been
      * synced with the server.
      */
+    @RewriteQueriesToDropUnusedColumns
     @Query(
         """
         SELECT * 
