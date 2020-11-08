@@ -12,6 +12,9 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteQueryBuilder
+import com.cradle.neptune.database.daos.HealthFacilityDao
+import com.cradle.neptune.database.daos.PatientDao
+import com.cradle.neptune.database.daos.ReadingDao
 import com.cradle.neptune.database.views.LocalSearchPatient
 import com.cradle.neptune.model.HealthFacility
 import com.cradle.neptune.model.Patient
@@ -34,9 +37,9 @@ import com.cradle.neptune.utilitiles.DateUtil
 )
 @TypeConverters(DatabaseTypeConverters::class)
 abstract class CradleDatabase : RoomDatabase() {
-    abstract fun readingDao(): ReadingDaoAccess
-    abstract fun patientDao(): PatientDaoAccess
-    abstract fun healthFacility(): HealthFacilityDaoAccess
+    abstract fun readingDao(): ReadingDao
+    abstract fun patientDao(): PatientDao
+    abstract fun healthFacility(): HealthFacilityDao
 
     companion object {
         private const val DATABASE_NAME = "room-readingDB"

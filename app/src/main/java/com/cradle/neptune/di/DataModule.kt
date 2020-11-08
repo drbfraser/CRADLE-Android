@@ -4,9 +4,9 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
 import com.cradle.neptune.database.CradleDatabase
-import com.cradle.neptune.database.HealthFacilityDaoAccess
-import com.cradle.neptune.database.PatientDaoAccess
-import com.cradle.neptune.database.ReadingDaoAccess
+import com.cradle.neptune.database.daos.HealthFacilityDao
+import com.cradle.neptune.database.daos.PatientDao
+import com.cradle.neptune.database.daos.ReadingDao
 import com.cradle.neptune.manager.HealthFacilityManager
 import com.cradle.neptune.net.Http
 import dagger.Module
@@ -28,15 +28,15 @@ class DataModule {
     fun provideDatabase(@ApplicationContext context: Context) = CradleDatabase.getInstance(context)
 
     @Provides
-    fun providePatientDao(database: CradleDatabase): PatientDaoAccess =
+    fun providePatientDao(database: CradleDatabase): PatientDao =
         database.patientDao()
 
     @Provides
-    fun provideReadingDao(database: CradleDatabase): ReadingDaoAccess =
+    fun provideReadingDao(database: CradleDatabase): ReadingDao =
         database.readingDao()
 
     @Provides
-    fun provideHealthFacilityDao(database: CradleDatabase): HealthFacilityDaoAccess =
+    fun provideHealthFacilityDao(database: CradleDatabase): HealthFacilityDao =
         database.healthFacility()
 
     @Provides

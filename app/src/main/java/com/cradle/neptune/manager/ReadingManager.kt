@@ -1,6 +1,6 @@
 package com.cradle.neptune.manager
 
-import com.cradle.neptune.database.ReadingDaoAccess
+import com.cradle.neptune.database.daos.ReadingDao
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.RetestGroup
 import com.cradle.neptune.net.NetworkResult
@@ -29,7 +29,7 @@ import javax.inject.Inject
  */
 @Suppress("RedundantSuspendModifier")
 class ReadingManager @Inject constructor(
-    private val readingDao: ReadingDaoAccess,
+    private val readingDao: ReadingDao,
     private val restApi: RestApi
 ) {
 

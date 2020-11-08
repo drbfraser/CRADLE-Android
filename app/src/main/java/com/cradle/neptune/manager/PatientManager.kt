@@ -1,8 +1,8 @@
 package com.cradle.neptune.manager
 
 import com.cradle.neptune.database.CradleDatabase
-import com.cradle.neptune.database.PatientDaoAccess
-import com.cradle.neptune.database.ReadingDaoAccess
+import com.cradle.neptune.database.daos.PatientDao
+import com.cradle.neptune.database.daos.ReadingDao
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.PatientAndReadings
 import com.cradle.neptune.model.Reading
@@ -22,8 +22,8 @@ import javax.inject.Inject
  */
 class PatientManager @Inject constructor(
     private val database: CradleDatabase,
-    private val patientDao: PatientDaoAccess,
-    private val readingDao: ReadingDaoAccess,
+    private val patientDao: PatientDao,
+    private val readingDao: ReadingDao,
     private val restApi: RestApi
 ) {
 

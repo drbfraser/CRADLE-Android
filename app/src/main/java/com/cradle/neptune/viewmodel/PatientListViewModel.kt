@@ -7,12 +7,12 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.cradle.neptune.database.PatientDaoAccess
+import com.cradle.neptune.database.daos.PatientDao
 import com.cradle.neptune.database.views.LocalSearchPatient
 import kotlinx.coroutines.flow.Flow
 
 class PatientListViewModel @ViewModelInject constructor(
-    private val patientDao: PatientDaoAccess
+    private val patientDao: PatientDao
 ) : ViewModel() {
 
     var currentQueryString: String? = null
