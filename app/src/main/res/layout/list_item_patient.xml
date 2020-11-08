@@ -31,6 +31,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:maxLines="2"
+            android:minLines="2"
             android:text="@{localSearchPatient.name}"
             android:textAppearance="@style/TextAppearance.Cradle.Body1"
             android:textSize="20sp"
@@ -61,6 +62,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
+            android:maxLines="1"
             android:text="@{localSearchPatient.referral.assessed ? @string/list_item_patient_referral_assessed : @string/list_item_patient_referral_pending}"
             android:textAppearance="@style/TextAppearance.Cradle.Body1"
             android:visibility="@{localSearchPatient.referral != null ? View.VISIBLE : View.GONE}"
@@ -121,7 +123,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.65" />
+            app:layout_constraintGuide_percent="0.6
+" />
 
         <ImageView
             android:id="@+id/patient_arrow_image_view"
@@ -129,6 +132,8 @@
             android:layout_height="56dp"
             android:contentDescription='@{localSearchPatient.latestRetestAnalysis != null ? ReadingAnalysisViewSupport.getArrowContentDescription(context, localSearchPatient.latestRetestAnalysis) : ""}'
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/patient_traffic_light_image_view"
             app:layout_constraintTop_toTopOf="@+id/list_item_patient_name_text_view"
             bind:setArrowDrawable="@{localSearchPatient.latestRetestAnalysis}"
             tools:srcCompat="@drawable/arrow_up" />
@@ -139,6 +144,9 @@
             android:layout_height="56dp"
             android:layout_marginStart="8dp"
             android:contentDescription='@{localSearchPatient.latestRetestAnalysis != null ? ReadingAnalysisViewSupport.getColorCircleContentDescription(context, localSearchPatient.latestRetestAnalysis) : ""}'
+            app:layout_constraintEnd_toStartOf="@+id/patient_arrow_image_view"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/patient_info_guideline"
             app:layout_constraintStart_toStartOf="@+id/patient_info_guideline"
             app:layout_constraintTop_toTopOf="@+id/list_item_patient_name_text_view"
             bind:setTrafficLightDrawable="@{localSearchPatient.latestRetestAnalysis}"
@@ -148,6 +156,7 @@
             android:id="@+id/last_reading_on_text_view"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:maxLines="1"
             android:text="@string/patient_list_item_last_reading_from"
             android:textAlignment="center"
             android:textAppearance="@style/TextAppearance.Cradle.Body1"
@@ -160,6 +169,7 @@
             android:id="@+id/last_reading_date_text_view"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:maxLines="1"
             android:text="@{localSearchPatient.latestReadingDate != null ? DateUtil.getDateStringFromTimestamp(localSearchPatient.latestReadingDate) : @string/not_available_n_slash_a}"
             android:textAlignment="center"
             android:textAppearance="@style/TextAppearance.Cradle.Body1"

@@ -470,7 +470,7 @@
     <string name="health_facilities_activity_remove_from_list_dialog_yes_button">Remove</string>
     <string name="health_facilities_activity_add_to_list_dialog_yes_button">Add</string>
     <string name="activity_patients_title">My patients</string>
-    <string name="patient_list_item_last_reading_from">Last reading from</string>
+    <string name="patient_list_item_last_reading_from">Last reading</string>
     <string name="list_item_patient_id_label">ID</string>
     <string name="list_item_patient_village_number_label">Village</string>
     <string name="activity_patients_no_results_for_search">No results</string>
