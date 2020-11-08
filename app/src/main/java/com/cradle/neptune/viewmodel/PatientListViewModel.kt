@@ -36,7 +36,7 @@ class PatientListViewModel @ViewModelInject constructor(
 
         return Pager(PagingConfig(pageSize = 60, enablePlaceholders = true, maxSize = 200)) {
             if (query.isBlank()) {
-                patientDao.allLocalSearchPatientsByName()
+                patientDao.allLocalSearchPatientsByDate()
             } else {
                 patientDao.localSearchPatientsByNameOrId(query)
             }

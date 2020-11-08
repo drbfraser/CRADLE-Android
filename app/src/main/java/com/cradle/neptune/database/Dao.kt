@@ -146,8 +146,11 @@ interface PatientDaoAccess {
     @get:Query("SELECT * FROM Patient")
     val allPatients: List<Patient>
 
-    @Query("SELECT * FROM LocalSearchPatient ORDER BY name COLLATE NOCASE ASC")
-    fun allLocalSearchPatientsByName(): PagingSource<Int, LocalSearchPatient>
+    @Query(
+        "SELECT * FROM LocalSearchPatient " +
+            "ORDER BY latestReadingDate DESC, name COLLATE NOCASE ASC"
+    )
+    fun allLocalSearchPatientsByDate(): PagingSource<Int, LocalSearchPatient>
 
     /**
      * Searches the database, using % (with SQLite concatenation, ||) to make sure we search for
@@ -159,7 +162,7 @@ SELECT * FROM LocalSearchPatient
 WHERE
   name LIKE '%' || :query || '%'
   OR id LIKE '%' || :query || '%'
-ORDER BY name COLLATE NOCASE ASC
+ORDER BY latestReadingDate DESC, name COLLATE NOCASE ASC
 """
     )
     fun localSearchPatientsByNameOrId(query: String): PagingSource<Int, LocalSearchPatient>
