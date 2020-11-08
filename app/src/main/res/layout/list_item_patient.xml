@@ -170,13 +170,14 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:maxLines="1"
-            android:text="@{localSearchPatient.latestReadingDate != null ? DateUtil.getDateStringFromTimestamp(localSearchPatient.latestReadingDate) : @string/not_available_n_slash_a}"
+            android:text="@{localSearchPatient.latestReadingDate != null ? DateUtil.getConciseDateString(localSearchPatient.latestReadingDate, true) : @string/not_available_n_slash_a}"
             android:textAlignment="center"
             android:textAppearance="@style/TextAppearance.Cradle.Body1"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@+id/patient_info_guideline"
             app:layout_constraintTop_toBottomOf="@+id/last_reading_on_text_view"
-            tools:text="2020-04-30" />
+            tools:text="Sep 20 @ 10 PM
+" />
 
         <ProgressBar
             android:id="@+id/progress_bar"
