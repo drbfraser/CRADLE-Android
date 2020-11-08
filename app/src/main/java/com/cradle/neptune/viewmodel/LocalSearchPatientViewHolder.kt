@@ -26,10 +26,8 @@ class LocalSearchPatientViewHolder(
 
     @UiThread
     fun bind(localSearchPatient: LocalSearchPatient?) {
-        localSearchPatient?.let {
-            binding.localSearchPatient = it
-            binding.executePendingBindings()
-        }
+        binding.localSearchPatient = localSearchPatient
+        binding.executePendingBindings()
     }
 
     companion object {

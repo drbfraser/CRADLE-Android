@@ -479,6 +479,13 @@
     <string name="activity_patients_retry_button">Retry</string>
     <string name="list_item_patient_referral_assessed">Referral assessed</string>
     <string name="list_item_patient_referral_pending">Referral pending</string>
+    <string name="status_none">No traffic light</string>
+    <string name="status_green">Green traffic light</string>
+    <string name="status_yellow">Yellow traffic light</string>
+    <string name="status_red">Red traffic light</string>
+    <string name="arrow_up">Up arrow</string>
+    <string name="arrow_down">Down arrow</string>
+    <string name="arrow_blank">No arrow</string>
 
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>

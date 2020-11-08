@@ -12,7 +12,7 @@
             type="com.cradle.neptune.database.views.LocalSearchPatient" />
 
         <import type="com.cradle.neptune.utilitiles.DateUtil" />
-
+        <import type="com.cradle.neptune.viewmodel.ReadingAnalysisViewSupport" />
         <import type="android.view.View" />
     </data>
 
@@ -40,13 +40,13 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Hubert Blaine Wolfe­schlegel­stein­hausen­berger­dorff Sr." />
 
-        <!--  @drawable/ic_check_circle_black_24dp @drawable/ic_pending_referral_black_24dp-->
         <ImageView
             android:id="@+id/list_item_patient_referral_icon"
             setSrcCompatBitmap="@{localSearchPatient.referral.assessed ? @drawable/ic_check_circle_black_24dp : @drawable/ic_pending_referral_black_24dp}"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="9dp"
+            android:layout_marginStart="8dp"
+            android:contentDescription="@{localSearchPatient.referral.assessed ? @string/list_item_patient_referral_assessed : @string/list_item_patient_referral_pending}"
             android:visibility="@{localSearchPatient.referral != null ? View.VISIBLE : View.GONE}"
             app:layout_constraintBottom_toTopOf="@+id/list_item_patient_id_label_text_view"
             app:layout_constraintEnd_toEndOf="@+id/list_item_patient_id_label_text_view"
@@ -127,6 +127,7 @@
             android:id="@+id/patient_arrow_image_view"
             android:layout_width="56dp"
             android:layout_height="56dp"
+            android:contentDescription='@{localSearchPatient.latestRetestAnalysis != null ? ReadingAnalysisViewSupport.getArrowContentDescription(context, localSearchPatient.latestRetestAnalysis) : ""}'
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/list_item_patient_name_text_view"
             bind:setArrowDrawable="@{localSearchPatient.latestRetestAnalysis}"
@@ -137,6 +138,7 @@
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:layout_marginStart="8dp"
+            android:contentDescription='@{localSearchPatient.latestRetestAnalysis != null ? ReadingAnalysisViewSupport.getColorCircleContentDescription(context, localSearchPatient.latestRetestAnalysis) : ""}'
             app:layout_constraintStart_toStartOf="@+id/patient_info_guideline"
             app:layout_constraintTop_toTopOf="@+id/list_item_patient_name_text_view"
             bind:setTrafficLightDrawable="@{localSearchPatient.latestRetestAnalysis}"
