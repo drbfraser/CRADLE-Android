@@ -13,6 +13,7 @@
 
         <import type="com.cradle.neptune.utilitiles.DateUtil" />
         <import type="com.cradle.neptune.viewmodel.ReadingAnalysisViewSupport" />
+        <import type="com.cradle.neptune.utilitiles.Util" />
         <import type="android.view.View" />
     </data>
 
@@ -111,7 +112,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
             android:maxLines="1"
-            android:text="@{localSearchPatient.villageNumber}"
+            android:text='@{!Util.stringNullOrEmpty(localSearchPatient.villageNumber) ? localSearchPatient.villageNumber : @string/not_available_n_slash_a}'
             android:textAppearance="@style/TextAppearance.Cradle.Body1"
             app:layout_constraintBaseline_toBaselineOf="@+id/list_item_patient_village_number_label"
             app:layout_constraintEnd_toStartOf="@+id/patient_info_guideline"
@@ -123,8 +124,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.6
-" />
+            app:layout_constraintGuide_percent="0.6" />
 
         <ImageView
             android:id="@+id/patient_arrow_image_view"
