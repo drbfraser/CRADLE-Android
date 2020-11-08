@@ -126,9 +126,9 @@ class PatientsActivity : AppCompatActivity() {
         // SearchView will be restored in onCreateOptionsMenu.
         val savedQuery = savedInstanceState?.getString(EXTRA_CURRENT_QUERY)
         if (savedQuery == null) {
-            search("")
+            search("", shouldDelay = false)
         } else {
-            search(savedQuery)
+            search(savedQuery, shouldDelay = false)
         }
     }
 
@@ -156,14 +156,17 @@ class PatientsActivity : AppCompatActivity() {
 
     private var searchJob: Job? = null
 
-    private fun search(query: String) {
+    private fun search(query: String, shouldDelay: Boolean) {
         val queryToUse = query.trim()
 
         // Adapted from https://developer.android.com/codelabs/android-paging
         searchJob?.cancel()
         searchJob = lifecycleScope.launch {
-            // Wait some time for the typing to stop. The delay function is a cancellation point.
-            delay(SEARCH_JOB_DELAY_MILLIS)
+            if (shouldDelay) {
+                // Wait some time for the typing to stop. The delay function is a
+                // cancellation point.
+                delay(SEARCH_JOB_DELAY_MILLIS)
+            }
             viewModel.searchPatientsFlow(queryToUse).collectLatest {
                 localSearchPatientAdapter.submitData(it)
             }
@@ -204,12 +207,12 @@ class PatientsActivity : AppCompatActivity() {
             setOnQueryTextListener(
                 object : SearchView.OnQueryTextListener {
                     override fun onQueryTextSubmit(query: String): Boolean {
-                        search(query)
+                        search(query, shouldDelay = false)
                         return false
                     }
 
                     override fun onQueryTextChange(query: String): Boolean {
-                        search(query)
+                        search(query, shouldDelay = true)
                         return false
                     }
                 }
@@ -257,9 +260,10 @@ class PatientsActivity : AppCompatActivity() {
         searchView.let {
             return if (it?.isIconified == false) {
                 // Clear the search query
-                search("")
+                search("", shouldDelay = false)
                 it.isIconified = true
                 it.onActionViewCollapsed()
+                closeSearchViewCallback.isEnabled = false
                 true
             } else {
                 false
