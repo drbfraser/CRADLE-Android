@@ -111,13 +111,22 @@ data class Patient(
         context: Context
     ): Pair<Boolean, String> = isValueValid(property, value, context, instance = this)
 
-    @Suppress("LargeClass")
     companion object : Unmarshal<Patient, JSONObject>, Verifier<Patient> {
-        private const val ID_MAX_LENGTH = 14
+        const val ID_MAX_LENGTH = 14
+
+        // This group of limits are derived from the backend database setup:
+        // https://csil-git1.cs.surrey.sfu.ca/415-cradle/cradle-platform/-/blob/
+        // 851d2dd02a1c7bd96e7aaf15737f801096774d4e/server/models.py#L170-197
+        const val NAME_MAX_LENGTH = 50
+        const val ZONE_MAX_LENGTH = 20
+        const val VILLAGE_NUMBER_MAX_LENGTH = 50
+        const val HOUSEHOLD_NUMBER_MAX_LENGTH = 50
+
         const val AGE_LOWER_BOUND = 15
         const val AGE_UPPER_BOUND = 65
         const val DOB_FORMAT_SIMPLEDATETIME = "yyyy-MM-dd"
         private const val GESTATIONAL_AGE_WEEKS_MAX = 43
+
         @Suppress("ObjectPropertyNaming")
         private val GESTATIONAL_AGE_MONTHS_MAX = round(
             GESTATIONAL_AGE_WEEKS_MAX * WeeksAndDays.DAYS_PER_WEEK /
@@ -191,6 +200,12 @@ data class Patient(
                     return Pair(
                         false,
                         context.getString(R.string.patient_error_name_must_be_characters)
+                    )
+                }
+                if (length > NAME_MAX_LENGTH) {
+                    return false to context.getString(
+                        R.string.error_too_long_over_n_chars,
+                        NAME_MAX_LENGTH
                     )
                 }
                 return Pair(true, "")
@@ -293,8 +308,23 @@ data class Patient(
                 }
             }
 
+            Patient::zone -> with(value as? String?) {
+                if (this == null) {
+                    // Zone is optional
+                    return true to ""
+                }
+
+                if (length > ZONE_MAX_LENGTH) {
+                    return false to context.getString(
+                        R.string.error_too_long_over_n_chars,
+                        ZONE_MAX_LENGTH
+                    )
+                }
+
+                return true to ""
+            }
+
             Patient::villageNumber -> with(value as? String?) {
-                // TODO: make village number an Int, not a String
                 if (this.isNullOrBlank()) {
                     return Pair(
                         false,
@@ -305,7 +335,34 @@ data class Patient(
                 if (!isDigitsOnly()) {
                     return Pair(
                         false,
-                        context.getString(R.string.patient_error_village_number_not_number)
+                        context.getString(R.string.patient_error_must_be_number)
+                    )
+                }
+
+                if (length > VILLAGE_NUMBER_MAX_LENGTH) {
+                    return false to context.getString(
+                        R.string.error_too_long_over_n_chars,
+                        VILLAGE_NUMBER_MAX_LENGTH
+                    )
+                }
+
+                return true to ""
+            }
+
+            Patient::householdNumber -> with(value as? String?) {
+                if (this == null) {
+                    // Household number is optional, so this is valid
+                    return true to ""
+                }
+
+                if (!isDigitsOnly()) {
+                    return false to context.getString(R.string.patient_error_must_be_number)
+                }
+
+                if (length > HOUSEHOLD_NUMBER_MAX_LENGTH) {
+                    return false to context.getString(
+                        R.string.error_too_long_over_n_chars,
+                        HOUSEHOLD_NUMBER_MAX_LENGTH
                     )
                 }
 
@@ -314,7 +371,7 @@ data class Patient(
 
             // Default to true for all other fields / stuff that isn't implemented.
             else -> {
-                Pair(true, "")
+                true to ""
             }
         }
 

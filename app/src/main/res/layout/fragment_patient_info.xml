@@ -9,6 +9,7 @@
         <import type="com.cradle.neptune.binding.Converter" />
         <import type="android.text.InputType" />
         <import type="com.cradle.neptune.model.Sex" />
+        <import type="com.cradle.neptune.model.Patient" />
 
         <variable
             name="viewModel"
@@ -85,7 +86,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="textNoSuggestions|textPersonName"
-                                android:maxLength="32"
+                                android:maxLength="@{Patient.NAME_MAX_LENGTH}"
                                 android:nextFocusDown="@id/patient_id_text"
                                 android:text="@={viewModel.patientName}"
                                 tools:text="ABC" />
@@ -111,7 +112,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="number"
-                                android:maxLength="14"
+                                android:maxLength="@{Patient.ID_MAX_LENGTH}"
                                 android:nextFocusUp="@id/patient_name_text"
                                 android:nextFocusDown="@id/zone_text"
                                 android:text="@={viewModel.patientId}"
@@ -137,6 +138,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="number"
+                                android:maxLength="@{Patient.HOUSEHOLD_NUMBER_MAX_LENGTH}"
                                 android:nextFocusUp="@id/zone_text"
                                 android:nextFocusDown="@id/village_text"
                                 android:text="@={viewModel.patientHouseholdNumber}" />
@@ -161,6 +163,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="textNoSuggestions"
+                                android:maxLength="@{Patient.ZONE_MAX_LENGTH}"
                                 android:nextFocusUp="@id/patient_id_text"
                                 android:nextFocusDown="@id/household_number_text"
                                 android:text="@={viewModel.patientZone}"
@@ -186,6 +189,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="number"
+                                android:maxLength="@{Patient.VILLAGE_NUMBER_MAX_LENGTH}"
                                 android:text="@={viewModel.patientVillageNumber}"
                                 tools:text="my village" />
                         </com.google.android.material.textfield.TextInputLayout>
