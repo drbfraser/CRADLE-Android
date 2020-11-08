@@ -4,18 +4,25 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import com.cradle.neptune.R
+import com.cradle.neptune.model.PatientAndReadings
 import com.cradle.neptune.net.Failure
 import com.cradle.neptune.net.NetworkException
-import com.cradle.neptune.net.NetworkResult
 import com.cradle.neptune.net.RestApi
 import com.cradle.neptune.net.Success
 import com.cradle.neptune.sync.SyncStepperImplementation
 import com.cradle.neptune.utilitiles.UnixTimestamp
+import com.fasterxml.jackson.core.JsonToken
+import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONException
+import org.json.JSONObject
+import java.io.IOException
 import javax.inject.Inject
 
 private const val HTTP_OK = 200
@@ -28,12 +35,12 @@ class LoginManager @Inject constructor(
     private val restApi: RestApi,
     private val sharedPreferences: SharedPreferences,
     private val patientManager: PatientManager,
-    private val readingManager: ReadingManager,
     private val healthFacilityManager: HealthFacilityManager,
     @ApplicationContext private val context: Context
 ) {
 
     companion object {
+        private const val TAG = "LoginManager"
         const val TOKEN_KEY = "token"
         const val EMAIL_KEY = "loginEmail"
         const val USER_ID_KEY = "userId"
@@ -48,7 +55,7 @@ class LoginManager @Inject constructor(
      * @return a [Success] variant if the user was able to login successfully,
      *  otherwise a [Failure] or [NetworkException] will be returned
      */
-    suspend fun login(email: String, password: String) = withContext<NetworkResult<Unit>>(IO) {
+    suspend fun login(email: String, password: String) = withContext(Dispatchers.Default) {
         // Send a request to the authentication endpoint to login
         //
         // If we failed to login, return immediately
@@ -86,34 +93,60 @@ class LoginManager @Inject constructor(
 
         // Once successfully logged in, download the user's patients and health
         // facilities in parallel.
+        // We will use this later as the last synced timestamp.
+        val loginTime = UnixTimestamp.now
 
-        launch(IO) {
-            when (val result = restApi.getAllPatients()) {
-                is Success -> {
-                    // Set the last sync time to now so that we don't try and
-                    // re-download these patients when we go to sync
-                    with(sharedPreferences.edit()) {
-                        putLong(SyncStepperImplementation.LAST_SYNC, UnixTimestamp.now)
-                        apply()
-                    }
+        val patientsJob = launch {
+            val startTime = System.currentTimeMillis()
 
-                    for (patientAndReading in result.value) {
-                        patientManager.add(patientAndReading.patient)
-                        readingManager.addAllReadings(patientAndReading.readings)
-                    }
-                }
+            val mapper = jacksonObjectMapper()
 
-                // FIXME: Currently the login activity doesn't know what to do
-                //  if we fail to download patients. We fail silently here as we
-                //  don't want to abort the login just because we couldn't download
-                //  patients.
-                else -> {
-                    Log.e(this::class.simpleName, "Failed to download patients")
+            val channel = Channel<String>()
+
+            val databaseJob = launch {
+                for (jsonString in channel) {
+                    val patientAndReadings = PatientAndReadings.unmarshal(JSONObject(jsonString))
+                    patientManager.addPatientWithReadings(
+                        patientAndReadings.patient,
+                        patientAndReadings.readings,
+                        areReadingsFromServer = true
+                    )
                 }
             }
+
+            val result = restApi.getAllPatientsStreaming { inputStream ->
+                // Parse JSON strings directly from the HTTPUrlConnection's input stream to avoid
+                // dealing with a ByteArray of an entire JSON array in memory and trying to convert
+                // that into a String.
+                mapper.createParser(inputStream).use { parser ->
+                    if (parser.nextToken() != JsonToken.START_ARRAY) {
+                        throw IOException()
+                    }
+
+                    while (parser.nextToken() != JsonToken.END_ARRAY) {
+                        try {
+                            // TODO: Parse patient and readings directly.
+                            val jsonString = mapper.readTree<ObjectNode>(parser).toString()
+                            channel.send(jsonString)
+                        } catch (e: IOException) {
+                            Log.e(TAG, "failed to parse JSON object", e)
+                            // Propagate exceptions to the Http class so that it can log it
+                            throw e
+                        }
+                    }
+                }
+            }
+            if (result !is Success) {
+                Log.e(TAG, "Failed to download patients")
+            }
+
+            channel.close()
+            databaseJob.join()
+            val endTime = System.currentTimeMillis()
+            Log.d(TAG, "Patient download and insertion took ${endTime - startTime} ms")
         }
 
-        launch(IO) {
+        val healthFacilityJob = launch {
             when (val result = restApi.getAllHealthFacilities()) {
                 is Success -> {
                     val facilities = result.value
@@ -145,9 +178,16 @@ class LoginManager @Inject constructor(
 
                 // FIXME: (See above message)
                 else -> {
-                    Log.e(this::class.simpleName, "Failed to download health facilities")
+                    Log.e(TAG, "Failed to download health facilities")
                 }
             }
+        }
+
+        joinAll(patientsJob, healthFacilityJob)
+
+        with(sharedPreferences.edit()) {
+            putLong(SyncStepperImplementation.LAST_SYNC, loginTime)
+            apply()
         }
 
         Success(Unit, HTTP_OK)

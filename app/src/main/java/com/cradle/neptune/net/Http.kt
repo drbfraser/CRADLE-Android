@@ -2,7 +2,9 @@ package com.cradle.neptune.net
 
 import android.util.Log
 import com.cradle.neptune.model.Marshal
-import java.lang.Exception
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -75,6 +77,61 @@ open class Http {
         }
 
     /**
+     * Performs a generic HTTP request with custom stream handling via [inputStreamHandler]
+     *
+     * @param method the request method
+     * @param url where to send the request
+     * @param headers HTTP headers to include with the request
+     * @param body an optional body to send along with the request
+     * @param timeout the connect and read timeout; defaults to 30 seconds
+     * @param inputStreamHandler how to handle the input stream
+     * @return the result of the network request
+     * @throws java.net.MalformedURLException if [url] is malformed
+     */
+    @Suppress("LongParameterList, NestedBlockDepth")
+    suspend fun requestWithStream(
+        method: Method,
+        url: String,
+        headers: Map<String, String>,
+        body: ByteArray?,
+        timeout: Int = DEFAULT_TIMEOUT_MILLIS,
+        inputStreamHandler: suspend (InputStream) -> Unit
+    ): NetworkResult<Unit> = withContext(Dispatchers.IO) {
+        // We get "Inappropriate blocking method call" warnings from Android Studio, but should be
+        // okay if run in IO Dispatcher.
+        with(URL(url).openConnection() as HttpURLConnection) {
+            connectTimeout = timeout
+            readTimeout = timeout
+            requestMethod = method.toString()
+            headers.forEach { (k, v) -> addRequestProperty(k, v) }
+            doInput = true
+
+            val message = "${method.name} $url"
+            try {
+                if (body != null) {
+                    doOutput = true
+                    outputStream.write(body)
+                }
+
+                @Suppress("MagicNumber")
+                if (responseCode in 200 until 300) {
+                    Log.i("HTTP", "$message - Success $responseCode")
+                    inputStream.use { inputStream -> inputStreamHandler(inputStream) }
+                    Success(Unit, responseCode)
+                } else {
+                    Log.e("HTTP", "$message - Failure $responseCode")
+                    val responseBody = errorStream.readBytes()
+                    errorStream.close()
+                    Failure(responseBody, responseCode)
+                }
+            } catch (ex: Exception) {
+                Log.e("HTTP", "$message - Exception", ex)
+                NetworkException(ex)
+            }
+        }
+    }
+
+    /**
      * Sends a generic HTTP request with a JSON body and expects a JSON
      * response.
      *
@@ -103,6 +160,36 @@ open class Http {
         ).map(Json.Companion::unmarshal)
 
     /**
+     * Sends a generic HTTP request with a JSON body and expects a JSON
+     * response.
+     *
+     * The "Content-Type application/json" header is automatically included
+     * in requests sent using this function.
+     *
+     * @param method the request method
+     * @param url where to send the request
+     * @param headers HTTP headers to include with the request
+     * @param body an optional body to send along with the request
+     * @return the result of the network request
+     * @throws java.net.MalformedURLException if [url] is malformed
+     * @throws org.json.JSONException if the response body is not JSON
+     */
+    suspend fun jsonRequestStream(
+        method: Method,
+        url: String,
+        headers: Map<String, String>,
+        body: Json?,
+        inputStreamHandler: suspend (InputStream) -> Unit
+    ): NetworkResult<Unit> =
+        requestWithStream(
+            method,
+            url,
+            headers + ("Content-Type" to "application/json"),
+            body?.marshal(),
+            inputStreamHandler = inputStreamHandler
+        )
+
+    /**
      * A generalized version of [jsonRequest] which accepts a generic instance
      * for the [body] parameter.
      *
@@ -126,6 +213,6 @@ open class Http {
         jsonRequest(method, url, headers, body?.marshal())
 
     companion object {
-        private const val DEFAULT_TIMEOUT_MILLIS = 30 * 1000
+        private const val DEFAULT_TIMEOUT_MILLIS = 60 * 1000
     }
 }

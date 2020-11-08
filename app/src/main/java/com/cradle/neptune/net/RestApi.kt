@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.InputStream
 import javax.inject.Inject
 
 /**
@@ -88,6 +89,18 @@ class RestApi @Inject constructor(
                 }
             }
         }
+
+    suspend fun getAllPatientsStreaming(
+        inputStreamHandler: suspend (InputStream) -> Unit
+    ): NetworkResult<Unit> = withContext(IO) {
+        http.jsonRequestStream(
+            Http.Method.GET,
+            urlManager.getAllPatients,
+            headers,
+            null,
+            inputStreamHandler = inputStreamHandler
+        )
+    }
 
     /**
      * Requests all information (including associated readings) for the patient
