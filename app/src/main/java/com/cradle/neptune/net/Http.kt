@@ -37,66 +37,57 @@ open class Http {
      * @return the result of the network request
      * @throws java.net.MalformedURLException if [url] is malformed
      */
-    open fun request(
+    @Deprecated(
+        message = """
+Use requestWithStream to avoid storing a ByteArray in memory and to avoid creating extra String
+objects just to create JSONArrays / JSONObjects for unmarshalling. When using requestWithStream, the
+caller is expected to provide code (as the inputStreamHandlerBlock lambda) that directly handles the
+InputStream from the HTTPUrlConnection.
+            """,
+        replaceWith = ReplaceWith(
+            "requestWithStream(method, url, headers, body, timeout, inputStreamHandler)"
+        )
+    )
+    open suspend fun request(
         method: Method,
         url: String,
         headers: Map<String, String>,
         body: ByteArray?,
         timeout: Int = DEFAULT_TIMEOUT_MILLIS
-    ): NetworkResult<ByteArray> =
-        with(URL(url).openConnection() as HttpURLConnection) {
-            connectTimeout = timeout
-            readTimeout = timeout
-            requestMethod = method.toString()
-            headers.forEach { (k, v) -> addRequestProperty(k, v) }
-            doInput = true
-
-            val message = "${method.name} $url"
-            try {
-                if (body != null) {
-                    doOutput = true
-                    outputStream.write(body)
-                }
-
-                @Suppress("MagicNumber")
-                if (responseCode in 200 until 300) {
-                    Log.i("HTTP", "$message - Success $responseCode")
-                    val responseBody = inputStream.readBytes()
-                    inputStream.close()
-                    Success(responseBody, responseCode)
-                } else {
-                    Log.e("HTTP", "$message - Failure $responseCode")
-                    val responseBody = errorStream.readBytes()
-                    errorStream.close()
-                    Failure(responseBody, responseCode)
-                }
-            } catch (ex: Exception) {
-                Log.e("HTTP", "$message - Exception", ex)
-                NetworkException(ex)
-            }
-        }
+    ): NetworkResult<ByteArray> = requestWithStream(
+        method = method,
+        url = url,
+        headers = headers,
+        body = body,
+        timeout = timeout,
+        inputStreamHandler = { inputStream -> inputStream.readBytes() }
+    )
 
     /**
-     * Performs a generic HTTP request with custom stream handling via [inputStreamHandler]
+     * Performs a generic HTTP request with custom [InputStream] handling via
+     * [inputStreamHandler].
+     *
+     * TODO: Handle output streaming
      *
      * @param method the request method
      * @param url where to send the request
      * @param headers HTTP headers to include with the request
      * @param body an optional body to send along with the request
      * @param timeout the connect and read timeout; defaults to 30 seconds
-     * @param inputStreamHandler how to handle the input stream
-     * @return the result of the network request
+     * @param inputStreamHandler A lambda that handles the [InputStream]. If [requestWithStream]
+     * returns a [Success], the value inside of the [Success] will be the return value of
+     * the [inputStreamHandler] lambda.
+     * @return The result of the network request
      * @throws java.net.MalformedURLException if [url] is malformed
      */
-    @Suppress("LongParameterList, NestedBlockDepth")
-    suspend fun requestWithStream(
+    suspend fun <T> requestWithStream(
         method: Method,
         url: String,
         headers: Map<String, String>,
         body: ByteArray?,
         timeout: Int = DEFAULT_TIMEOUT_MILLIS,
-        inputStreamHandler: suspend (InputStream) -> Unit
-    ): NetworkResult<Unit> = withContext(Dispatchers.IO) {
+        inputStreamHandler: suspend (InputStream) -> T
+    ): NetworkResult<T> = withContext(Dispatchers.IO) {
         // We get "Inappropriate blocking method call" warnings from Android Studio, but should be
         // okay if run in IO Dispatcher.
         with(URL(url).openConnection() as HttpURLConnection) {
@@ -116,8 +107,10 @@ open class Http {
                 @Suppress("MagicNumber")
                 if (responseCode in 200 until 300) {
                     Log.i("HTTP", "$message - Success $responseCode")
-                    inputStream.use { inputStream -> inputStreamHandler(inputStream) }
-                    Success(Unit, responseCode)
+                    val returnBody = inputStream.use { inputStream ->
+                        inputStreamHandler(inputStream)
+                    }
+                    Success(returnBody, responseCode)
                 } else {
                     Log.e("HTTP", "$message - Failure $responseCode")
                     val responseBody = errorStream.readBytes()
@@ -142,11 +135,22 @@ open class Http {
      * @param url where to send the request
      * @param headers HTTP headers to include with the request
      * @param body an optional body to send along with the request
-     * @return the result of the network request
+     * @return The result of the network request
      * @throws java.net.MalformedURLException if [url] is malformed
      * @throws org.json.JSONException if the response body is not JSON
      */
-    fun jsonRequest(
+    @Deprecated(
+        message = """
+Use jsonRequestStream to avoid storing a ByteArray in memory and to avoid creating extra String
+objects just to create JSONArrays / JSONObjects for unmarshalling. When using jsonRequestStream, the
+caller is expected to provide code (as the inputStreamHandlerBlock lambda) that directly handles the
+InputStream from the HTTPUrlConnection.
+            """,
+        replaceWith = ReplaceWith(
+            "jsonRequestStream(method, url, headers, body, inputStreamHandler)"
+        )
+    )
+    suspend fun jsonRequest(
         method: Method,
         url: String,
         headers: Map<String, String>,
@@ -161,15 +165,20 @@ open class Http {
 
     /**
      * Sends a generic HTTP request with a JSON body and expects a JSON
-     * response.
+     * response. The JSON response is then parsed by the [inputStreamHandler].
      *
      * The "Content-Type application/json" header is automatically included
      * in requests sent using this function.
+     *
+     * TODO: Handle output streaming
      *
      * @param method the request method
      * @param url where to send the request
      * @param headers HTTP headers to include with the request
      * @param body an optional body to send along with the request
+     * @param inputStreamHandler A lambda that handles the [InputStream]. If [requestWithStream]
+     * returns a [Success], the value inside of the [Success] will be the return value of
+     * the [inputStreamHandler] lambda.
      * @return the result of the network request
      * @throws java.net.MalformedURLException if [url] is malformed
      * @throws org.json.JSONException if the response body is not JSON
@@ -203,16 +212,15 @@ open class Http {
      * @throws java.net.MalformedURLException if [url] is malformed
      * @throws org.json.JSONException if the response body is not JSON
      */
-    fun <Body> jsonRequest(
+    suspend fun <Body> jsonRequest(
         method: Method,
         url: String,
         headers: Map<String, String>,
         body: Body?
     ): NetworkResult<Json>
-        where Body : Marshal<Json> =
-        jsonRequest(method, url, headers, body?.marshal())
+        where Body : Marshal<Json> = jsonRequest(method, url, headers, body?.marshal())
 
     companion object {
-        private const val DEFAULT_TIMEOUT_MILLIS = 60 * 1000
+        const val DEFAULT_TIMEOUT_MILLIS = 60 * 1000
     }
 }
