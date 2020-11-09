@@ -101,20 +101,17 @@ InputStream from the HTTPUrlConnection.
             try {
                 if (body != null) {
                     doOutput = true
-                    outputStream.write(body)
+                    outputStream.use { it.write(body) }
                 }
 
                 @Suppress("MagicNumber")
                 if (responseCode in 200 until 300) {
                     Log.i("HTTP", "$message - Success $responseCode")
-                    val returnBody = inputStream.use { inputStream ->
-                        inputStreamHandler(inputStream)
-                    }
+                    val returnBody = inputStream.use { inputStreamHandler(it) }
                     Success(returnBody, responseCode)
                 } else {
                     Log.e("HTTP", "$message - Failure $responseCode")
-                    val responseBody = errorStream.readBytes()
-                    errorStream.close()
+                    val responseBody = errorStream.use { it.readBytes() }
                     Failure(responseBody, responseCode)
                 }
             } catch (ex: Exception) {
