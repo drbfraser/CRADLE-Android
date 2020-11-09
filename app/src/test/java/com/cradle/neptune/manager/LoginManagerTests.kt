@@ -5,8 +5,8 @@ import android.content.SharedPreferences
 import android.util.Log
 import com.cradle.neptune.R
 import com.cradle.neptune.database.CradleDatabase
-import com.cradle.neptune.database.PatientDaoAccess
-import com.cradle.neptune.database.ReadingDaoAccess
+import com.cradle.neptune.database.daos.PatientDao
+import com.cradle.neptune.database.daos.ReadingDao
 import com.cradle.neptune.ext.map
 import com.cradle.neptune.model.HealthFacility
 import com.cradle.neptune.model.Patient
@@ -224,10 +224,10 @@ internal class LoginManagerTests {
     private val mockDatabase = mockk<CradleDatabase> {
         every { runInTransaction(any()) } answers { arg<Runnable>(0).run() }
     }
-    private val mockPatientDao = mockk<PatientDaoAccess> {
+    private val mockPatientDao = mockk<PatientDao> {
         every { insert(any()) } answers { fakePatientDatabase.add(firstArg()) }
     }
-    private val mockReadingDao = mockk<ReadingDaoAccess> {
+    private val mockReadingDao = mockk<ReadingDao> {
         every { insertAll(any()) } answers {
             val readings = firstArg<List<Reading>>()
             readings.forEach { reading ->
