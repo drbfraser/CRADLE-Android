@@ -3,6 +3,7 @@ package com.cradle.neptune.model
 import android.content.SharedPreferences
 import com.cradle.neptune.ext.Field
 import com.cradle.neptune.ext.booleanField
+import com.cradle.neptune.ext.getIntOrNull
 import com.cradle.neptune.ext.longField
 import com.cradle.neptune.ext.optIntField
 import com.cradle.neptune.ext.optStringField
@@ -36,8 +37,7 @@ data class Referral(
     val patientId: String,
     val readingId: String,
     var isAssessed: Boolean
-) : Serializable,
-    Marshal<JSONObject> {
+) : Marshal<JSONObject>, Serializable {
 
     constructor(
         comment: String?,
@@ -51,7 +51,7 @@ data class Referral(
         healthFacilityName = healthFacilityName,
         dateReferred = dateReferred,
         id = null,
-        userId = sharedPreferences.getString(LoginManager.USER_ID_KEY, null)?.toIntOrNull(),
+        userId = sharedPreferences.getIntOrNull(LoginManager.USER_ID_KEY),
         patientId = patientId,
         readingId = readingId,
         isAssessed = false
