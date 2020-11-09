@@ -80,13 +80,13 @@ InputStream from the HTTPUrlConnection.
      * @return The result of the network request
      * @throws java.net.MalformedURLException if [url] is malformed
      */
-    suspend fun <T> requestWithStream(
+    suspend inline fun <T> requestWithStream(
         method: Method,
         url: String,
         headers: Map<String, String>,
         body: ByteArray?,
         timeout: Int = DEFAULT_TIMEOUT_MILLIS,
-        inputStreamHandler: suspend (InputStream) -> T
+        crossinline inputStreamHandler: suspend (InputStream) -> T
     ): NetworkResult<T> = withContext(Dispatchers.IO) {
         // We get "Inappropriate blocking method call" warnings from Android Studio, but should be
         // okay if run in IO Dispatcher.
@@ -183,12 +183,12 @@ InputStream from the HTTPUrlConnection.
      * @throws java.net.MalformedURLException if [url] is malformed
      * @throws org.json.JSONException if the response body is not JSON
      */
-    suspend fun jsonRequestStream(
+    suspend inline fun jsonRequestStream(
         method: Method,
         url: String,
         headers: Map<String, String>,
         body: Json?,
-        inputStreamHandler: suspend (InputStream) -> Unit
+        crossinline inputStreamHandler: suspend (InputStream) -> Unit
     ): NetworkResult<Unit> =
         requestWithStream(
             method,
