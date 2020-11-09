@@ -66,7 +66,7 @@ class LoginManager @Inject constructor(
                 // whatever reason
                 val (token, userId) = try {
                     loginResult.value.getString("token") to
-                        loginResult.value.getString("userId")
+                        loginResult.value.getInt("userId")
                 } catch (e: JSONException) {
                     return@withContext NetworkException(e)
                 }
@@ -81,7 +81,7 @@ class LoginManager @Inject constructor(
 
                 with(sharedPreferences.edit()) {
                     putString(TOKEN_KEY, token)
-                    putString(USER_ID_KEY, userId)
+                    putInt(USER_ID_KEY, userId)
                     putString(EMAIL_KEY, email)
                     putString(context.getString(R.string.key_vht_name), name)
                     apply()
