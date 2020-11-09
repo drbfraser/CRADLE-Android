@@ -1,5 +1,6 @@
 package com.cradle.neptune.utilities
 
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -7,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -265,7 +265,7 @@ internal class TestPatientAndReadings() {
     lateinit var readings: Array<TestReading>
 }
 
-@JsonDeserialize(using = TestReadingDeserializer::class)
+//@JsonDeserialize(using = TestReadingDeserializer::class)
 internal data class TestReading(
     @JsonProperty(Fields.ID)
     val id: String,
@@ -280,6 +280,22 @@ internal data class TestReading(
     @JsonProperty(Fields.ASSESSMENT) @JsonInclude(JsonInclude.Include.NON_NULL)
     val assessment: TestAssessment?
 ) {
+
+    @JsonCreator(mode = JsonCreator.Mode.DEFAULT)
+    @Suppress("unused")
+    constructor(
+        @JsonProperty(Fields.ID) id: String,
+        @JsonProperty(Fields.PATIENT_ID) patientId: String,
+        @JsonProperty(TestBloodPressure.Fields.SYSTOLIC) bpSystolic: Int,
+        @JsonProperty(TestBloodPressure.Fields.DIASTOLIC) bpDiastolic: Int,
+        @JsonProperty(TestBloodPressure.Fields.HEART_RATE) heartRateBPM: Int,
+        @JsonProperty(Fields.PREVIOUS_IDS) previousIds: List<String>,
+        @JsonProperty(Fields.SOMETHING_OPTIONAL) somethingOptional: Long?,
+        @JsonProperty(Fields.ASSESSMENT) assessment: TestAssessment?
+    ) : this(
+        id, patientId, TestBloodPressure(bpSystolic, bpDiastolic, heartRateBPM), previousIds,
+        somethingOptional, assessment
+    )
 
     object Fields {
         const val ID = "id"
