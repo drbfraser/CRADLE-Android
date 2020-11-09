@@ -17,7 +17,7 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.EntryPoints
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.withContext
 import org.threeten.bp.ZonedDateTime
@@ -78,7 +78,7 @@ class SyncStepperImplementation(
     /**
      * step number 1, get all the newest data from the server. and go to step number 2.
      */
-    override suspend fun stepOneFetchUpdatesFromServer(context: Context) = withContext(IO) {
+    override suspend fun stepOneFetchUpdatesFromServer(context: Context) = withContext(Default) {
         val lastSyncTime = sharedPreferences.getLong(LAST_SYNC, LAST_SYNC_DEFAULT)
         // give a timestamp to provide, again this will be from shared pref eventually
         when (val result = restApi.getUpdates(lastSyncTime)) {
@@ -110,7 +110,7 @@ class SyncStepperImplementation(
     override suspend fun stepTwoSetupUploadingPatientReadings(
         lastSyncTime: Long,
         context: Context
-    ) = withContext(IO) {
+    ) = withContext(Default) {
         // get the brand new patients to upload
         val newPatientsToUpload: ArrayList<PatientAndReadings> =
             patientManager.getUnUploadedPatients() as ArrayList<PatientAndReadings>
@@ -195,7 +195,7 @@ class SyncStepperImplementation(
     /**
      * step 3 -> now we download all the information one by one
      */
-    override suspend fun stepThreeDownloadAllInfo(context: Context) = withContext(IO) {
+    override suspend fun stepThreeDownloadAllInfo(context: Context) = withContext(Default) {
         val totalRequestNum =
             updateApiData.editedPatientsIds.size + updateApiData.newReadingsIds.size +
                 updateApiData.followupIds.size + updateApiData.newPatientsIds.size
@@ -246,7 +246,7 @@ class SyncStepperImplementation(
     /**
      * saved last sync time in the shared pref. let the caller know
      */
-    override suspend fun finish(success: Boolean) = withContext(IO) {
+    override suspend fun finish(success: Boolean) = withContext(Default) {
         if (success) {
             sharedPreferences.edit()
                 .putLong(LAST_SYNC, ZonedDateTime.now().toEpochSecond()).apply()
