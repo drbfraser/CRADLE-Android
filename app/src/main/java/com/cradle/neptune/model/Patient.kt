@@ -420,11 +420,8 @@ data class Patient(
          * @throws ParseException if date is invalid, or not in the specified form.
          */
         @JvmStatic
+        @Throws(ParseException::class)
         fun calculateAgeFromDateString(dateString: String): Int = with(dateString) {
-            if (dateString.length != DOB_FORMAT_SIMPLEDATETIME.length) {
-                throw ParseException("wrong format length", 0)
-            }
-
             SimpleDateFormat(DOB_FORMAT_SIMPLEDATETIME, Locale.getDefault()).let {
                 it.isLenient = false
                 it.timeZone = TimeZone.getTimeZone("UTC")

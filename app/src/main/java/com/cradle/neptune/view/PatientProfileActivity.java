@@ -29,6 +29,7 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -153,18 +154,20 @@ public class PatientProfileActivity extends AppCompatActivity {
         patientID.setText(patient.getId());
         patientName.setText(patient.getName());
         if (!Util.stringNullOrEmpty(patient.getDob())) {
-            final int ageFromDob = Patient.calculateAgeFromDateString(patient.getDob());
+            try {
+                final int ageFromDob = Patient.calculateAgeFromDateString(patient.getDob());
+                final String ageDisplayString;
+                if (patient.isExactDob() == null || !patient.isExactDob()) {
+                    ageDisplayString = getString(
+                            R.string.patient_profile_age_about_n_years_old, ageFromDob);
+                } else {
+                    ageDisplayString = getString(
+                            R.string.patient_profile_age_n_years_old, ageFromDob);
+                }
 
-            final String ageDisplayString;
-            if (patient.isExactDob() == null || !patient.isExactDob()) {
-                ageDisplayString = getString(
-                        R.string.patient_profile_age_about_n_years_old, ageFromDob);
-            } else {
-                ageDisplayString = getString(
-                        R.string.patient_profile_age_n_years_old, ageFromDob);
+                patientAge.setText(ageDisplayString);
+            } catch (ParseException ignored) {
             }
-
-            patientAge.setText(ageDisplayString);
         }
         patientSex.setText(patient.getSex().toString());
         if (!Util.stringNullOrEmpty(patient.getVillageNumber())) {
