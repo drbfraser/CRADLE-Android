@@ -124,7 +124,8 @@ class LoginManager @Inject constructor(
                     patientManager.addPatientWithReadings(
                         patientAndReadings.patient,
                         patientAndReadings.readings,
-                        areReadingsFromServer = true
+                        areReadingsFromServer = true,
+                        isPatientNew = true
                     )
                 }
             }

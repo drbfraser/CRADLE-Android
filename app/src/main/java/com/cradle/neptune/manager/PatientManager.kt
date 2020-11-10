@@ -79,26 +79,26 @@ class PatientManager @Inject constructor(
     suspend fun addPatientWithReadings(
         patient: Patient,
         readings: List<Reading>,
-        areReadingsFromServer: Boolean
+        areReadingsFromServer: Boolean,
+        isPatientNew: Boolean = false
     ) {
         withContext(IO) {
             readings.forEach {
                 if (it.patientId != patient.id) {
                     throw IllegalArgumentException("mismatched ID")
                 }
+                if (areReadingsFromServer) {
+                    it.isUploadedToServer = true
+                }
             }
 
             database.runInTransaction {
-                patientDao.insert(patient)
-                if (areReadingsFromServer) {
-                    // Insert them all individually to set isUploadedToServer
-                    readings.forEach {
-                        it.isUploadedToServer = true
-                        readingDao.insert(it)
-                    }
+                if (isPatientNew) {
+                    patientDao.insert(patient)
                 } else {
-                    readingDao.insertAll(readings)
+                    patientDao.updateOrInsertIfNotExists(patient)
                 }
+                readingDao.insertAll(readings)
             }
         }
     }
