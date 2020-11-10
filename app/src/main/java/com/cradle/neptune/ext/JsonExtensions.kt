@@ -259,10 +259,24 @@ fun <F : Field> JSONObject.optDoubleField(field: F): Double? = try {
 
 /**
  * Returns the boolean value for the specified field.
+ * Also accepts 0 for false and 1 for true.
  *
  * @throws JSONException If no such field exists.
  */
-fun <F : Field> JSONObject.booleanField(field: F): Boolean = getBoolean(field.text)
+fun <F : Field> JSONObject.booleanField(field: F): Boolean {
+    return try {
+        getBoolean(field.text)
+    } catch (exception: JSONException) {
+        // Might be represented as a 1 or 0
+        getInt(field.text).let {
+            when (it) {
+                0 -> false
+                1 -> true
+                else -> throw exception
+            }
+        }
+    }
+}
 
 /**
  * Returns the boolean value for the specified field or `null` if it does not
