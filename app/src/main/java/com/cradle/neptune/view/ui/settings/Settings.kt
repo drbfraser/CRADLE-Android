@@ -6,24 +6,22 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceFragmentCompat
+import com.cradle.neptune.MyApp
 import com.cradle.neptune.R
 import com.cradle.neptune.manager.HealthFacilityManager
 import com.cradle.neptune.manager.LoginManager
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
-import com.cradle.neptune.sync.SyncStepperImplementation
 import com.cradle.neptune.utilitiles.validateHostname
 import com.cradle.neptune.utilitiles.validatePort
-import com.cradle.neptune.view.IntroActivity
 import com.cradle.neptune.view.LoginActivity
 import com.cradle.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -75,6 +73,9 @@ class SettingsActivity : AppCompatActivity() {
 
 @AndroidEntryPoint
 class SettingsFragment : PreferenceFragmentCompat() {
+
+    @Inject
+    lateinit var loginManager: LoginManager
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
@@ -139,11 +140,17 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     }
                     // need to switch the context to main thread since ui is always created on main thread
                     withContext(Dispatchers.Main) {
-                        AlertDialog.Builder(requireActivity())
+                        MaterialAlertDialogBuilder(requireActivity())
                             .setTitle(getString(R.string.sign_out_question))
                             .setMessage(description)
-                            .setPositiveButton(getString(android.R.string.yes)) { _, _ -> onSignOut() }
-                            .setNegativeButton(getString(android.R.string.no), null)
+                            .setPositiveButton(R.string.sign_out_dialog_yes_button) { _, _ ->
+                                LoggingOutDialogFragment().show(
+                                    childFragmentManager,
+                                    TAG_LOG_OUT_DIALOG
+                                )
+                                onSignOut()
+                            }
+                            .setNegativeButton(android.R.string.no, null)
                             .setIcon(R.drawable.ic_sync)
                             .create()
                             .show()
@@ -159,31 +166,17 @@ class SettingsFragment : PreferenceFragmentCompat() {
             ?.useDynamicSummary()
     }
 
-    // TODO: The business logic portion of this method should be moved to
-    //  com.cradle.neptune.manager.LoginManager. By "business logic" I mean
-    //  the stuff that edits shared preferences and the database. The code
-    //  to start the activity is fine here as we don't want UI code in the
-    //  manager class.
     private fun onSignOut() {
-        lifecycleScope.launch(Dispatchers.Main) {
-            with(sharedPreferences.edit()) {
-                remove(LoginManager.EMAIL_KEY)
-                remove(LoginManager.TOKEN_KEY)
-                remove(LoginManager.USER_ID_KEY)
-                remove(SyncStepperImplementation.LAST_SYNC)
-                remove(IntroActivity.LAST_VERSION_TO_COMPLETE_WIZARD)
-                apply()
-            }
-
-            joinAll(
-                launch(Dispatchers.IO) { readingManager.deleteAllData() },
-                launch(Dispatchers.IO) { healthFacilityManager.deleteAll() },
-                launch(Dispatchers.IO) { patientManager.deleteAll() }
-            )
-
+        val scope = (requireActivity().application as MyApp).appCoroutineScope
+        scope.launch(Dispatchers.Main) {
+            loginManager.logout()
             startActivity(Intent(activity, LoginActivity::class.java))
             requireActivity().finishAffinity()
         }
+    }
+
+    companion object {
+        private const val TAG_LOG_OUT_DIALOG = "logging_out_dialog"
     }
 }
 

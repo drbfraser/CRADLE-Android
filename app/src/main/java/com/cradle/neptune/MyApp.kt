@@ -8,6 +8,8 @@ import androidx.multidex.MultiDexApplication
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.wonderkiln.blurkit.BlurKit
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 
 /**
  * Allow access to Dagger single instance of Component
@@ -18,8 +20,14 @@ import dagger.hilt.android.HiltAndroidApp
 class MyApp : MultiDexApplication() {
     var isDisableBlurKit = false
 
+    /**
+     * Meant for coroutines that should outlive the lifetime of Fragments, Activities, etc.
+     */
+    val appCoroutineScope = CoroutineScope(Dispatchers.Main)
+
     override fun onCreate() {
         super.onCreate()
+
         // Initialize the time library:
         // https://github.com/JakeWharton/ThreeTenABP
         AndroidThreeTen.init(this)

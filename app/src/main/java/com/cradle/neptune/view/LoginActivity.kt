@@ -1,6 +1,7 @@
 package com.cradle.neptune.view
 
 import android.app.ProgressDialog
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -10,6 +11,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import com.cradle.neptune.R
 import com.cradle.neptune.ext.hideKeyboard
@@ -42,9 +44,32 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         // no need to load anything if already logged in.
         super.onCreate(savedInstanceState)
+
+        showMessageIfPresent()
+
         checkSharedPrefForLogin()
         setContentView(R.layout.activity_login)
         setupLogin()
+    }
+
+    private fun showMessageIfPresent() {
+        if (!intent.getBooleanExtra(EXTRA_SHOULD_DISPLAY_MESSAGE, false)) {
+            return
+        }
+
+        MaterialAlertDialogBuilder(this).apply {
+            intent.getIntExtra(EXTRA_DISPLAY_MESSAGE_TITLE, 0).let { resId ->
+                if (resId != 0) {
+                    setTitle(resId)
+                }
+            }
+            intent.getIntExtra(EXTRA_DISPLAY_MESSAGE_BODY, 0).let { resId ->
+                if (resId != 0) {
+                    setMessage(resId)
+                }
+            }
+            setPositiveButton(android.R.string.ok) { _, _ -> /* noop */ }
+        }.show()
     }
 
     private fun checkSharedPrefForLogin() {
@@ -143,4 +168,21 @@ class LoginActivity : AppCompatActivity() {
             progressDialog.show()
             return progressDialog
         }
+
+    companion object {
+        private const val EXTRA_SHOULD_DISPLAY_MESSAGE = "display_message_bool"
+        private const val EXTRA_DISPLAY_MESSAGE_TITLE = "display_message_title"
+        private const val EXTRA_DISPLAY_MESSAGE_BODY = "display_message_body"
+
+        fun makeIntent(
+            context: Context,
+            shouldDisplayMessage: Boolean,
+            @StringRes displayMessageTitleRes: Int? = null,
+            @StringRes displayMessageBodyRes: Int? = null
+        ) = Intent(context, LoginActivity::class.java).apply {
+            putExtra(EXTRA_SHOULD_DISPLAY_MESSAGE, shouldDisplayMessage)
+            displayMessageTitleRes?.let { putExtra(EXTRA_DISPLAY_MESSAGE_TITLE, it) }
+            displayMessageBodyRes?.let { putExtra(EXTRA_DISPLAY_MESSAGE_BODY, it) }
+        }
+    }
 }

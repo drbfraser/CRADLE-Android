@@ -14,6 +14,7 @@ import com.cradle.neptune.model.Reading
 import com.cradle.neptune.net.Failure
 import com.cradle.neptune.net.RestApi
 import com.cradle.neptune.net.Success
+import com.cradle.neptune.utilitiles.SharedPreferencesMigration
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -216,13 +217,19 @@ internal class LoginManagerTests {
         }
     }
 
-    private val fakeSharedPreferences = mutableMapOf<String, Any?>()
+    private val fakeSharedPreferencesMap = mutableMapOf<String, Any?>()
     private val fakeHealthFacilityDatabase = mutableListOf<HealthFacility>()
     private val fakePatientDatabase = mutableListOf<Patient>()
     private val fakeReadingDatabase = mutableListOf<Reading>()
 
-    private val mockDatabase = mockk<CradleDatabase> {
+    private val mockCradleDatabase = mockk<CradleDatabase> {
         every { runInTransaction(any()) } answers { arg<Runnable>(0).run() }
+        every { clearAllTables() } answers {
+            fakeHealthFacilityDatabase.clear()
+            fakePatientDatabase.clear()
+            fakeReadingDatabase.clear()
+        }
+        every { close() } returns Unit
     }
     private val mockPatientDao = mockk<PatientDao> {
         every { insert(any()) } answers { fakePatientDatabase.add(firstArg()) }
@@ -258,7 +265,7 @@ internal class LoginManagerTests {
 
     private fun <T> putInFakeSharedPreference(key: String?, value: T?) {
         key ?: return
-        fakeSharedPreferences[key] = value
+        fakeSharedPreferencesMap[key] = value
     }
 
     private val mockSharedPrefs = mockk<SharedPreferences> {
@@ -286,11 +293,15 @@ internal class LoginManagerTests {
 
             every { commit() } returns true
             every { apply() } returns Unit
+            every { clear() } answers {
+                fakeSharedPreferencesMap.clear()
+                this@editor
+            }
         }
     }
 
     private val fakePatientManager = PatientManager(
-        mockDatabase,
+        mockCradleDatabase,
         mockPatientDao,
         mockReadingDao,
         mockRestApi
@@ -316,7 +327,7 @@ internal class LoginManagerTests {
         every { Log.e(any(), any(), any()) } returns 0
         Dispatchers.setMain(testDispatcher)
 
-        fakeSharedPreferences.clear()
+        fakeSharedPreferencesMap.clear()
         fakeHealthFacilityDatabase.clear()
         fakePatientDatabase.clear()
         fakeReadingDatabase.clear()
@@ -328,6 +339,7 @@ internal class LoginManagerTests {
             val loginManager = LoginManager(
                 mockRestApi,
                 mockSharedPrefs,
+                mockCradleDatabase,
                 fakePatientManager,
                 mockHealthManager,
                 mockContext
@@ -337,15 +349,22 @@ internal class LoginManagerTests {
             assert(result is Success) {
                 "expected login to be successful, but it failed, with " +
                     "result $result and\n" +
-                    "shared prefs map $fakeSharedPreferences"
+                    "shared prefs map $fakeSharedPreferencesMap"
             }
 
-            assertEquals(TEST_AUTH_TOKEN, fakeSharedPreferences["token"]) { "bad auth token" }
-            assertEquals(TEST_USER_ID, fakeSharedPreferences["userId"]) { "bad userId" }
+            assertEquals(TEST_AUTH_TOKEN, fakeSharedPreferencesMap["token"]) { "bad auth token" }
+            assertEquals(TEST_USER_ID, fakeSharedPreferencesMap["userId"]) { "bad userId" }
             assertEquals(
                 TEST_FIRST_NAME,
-                fakeSharedPreferences[mockContext.getString(R.string.key_vht_name)]
+                fakeSharedPreferencesMap[mockContext.getString(R.string.key_vht_name)]
             ) { "bad first name" }
+
+            val latestVersion = SharedPreferencesMigration.LATEST_SHARED_PREF_VERSION
+            val versionStored = fakeSharedPreferencesMap[
+                SharedPreferencesMigration.KEY_SHARED_PREFERENCE_VERSION] as? Int
+            assertEquals(latestVersion, versionStored) {
+                "expected shared pref version to be $latestVersion, but got $versionStored"
+            }
 
             val userSelectedHealthFacilities = fakeHealthFacilityDatabase
                 .filter { it.isUserSelected }
@@ -369,6 +388,13 @@ internal class LoginManagerTests {
             assertEquals(2, fakeReadingDatabase.size) { "parsing the readings failed" }
             fakeReadingDatabase[0].run { assertEquals(fakePatientDatabase[0].id, patientId) }
             fakeReadingDatabase[1].run { assertEquals(fakePatientDatabase[1].id, patientId) }
+
+            loginManager.logout()
+
+            assert(fakeSharedPreferencesMap.isEmpty())
+            assert(fakePatientDatabase.isEmpty())
+            assert(fakeReadingDatabase.isEmpty())
+            assert(fakeHealthFacilityDatabase.isEmpty())
         }
     }
 
@@ -378,6 +404,7 @@ internal class LoginManagerTests {
             val loginManager = LoginManager(
                 mockRestApi,
                 mockSharedPrefs,
+                mockCradleDatabase,
                 fakePatientManager,
                 mockHealthManager,
                 mockContext
@@ -386,12 +413,12 @@ internal class LoginManagerTests {
             val result = loginManager.login(TEST_USER_EMAIL, TEST_USER_PASSWORD + "wronglol")
             assert(result is Failure) {
                 "expected a failure, but got result $result and " +
-                    "shared prefs map $fakeSharedPreferences"
+                    "shared prefs map $fakeSharedPreferencesMap"
             }
             val statusCode = (result as Failure).statusCode
             assertEquals(401, statusCode) { "expected 401 status code, but got $statusCode" }
 
-            assertEquals(0, fakeSharedPreferences.keys.size)
+            assertEquals(0, fakeSharedPreferencesMap.keys.size)
             val healthFacilities = fakeHealthFacilityDatabase
             assertEquals(0, healthFacilities.size) { "nothing should be added" }
             assertEquals(0, fakePatientDatabase.size) { "nothing should be added" }
