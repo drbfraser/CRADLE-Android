@@ -7,21 +7,50 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Update
 import com.cradle.neptune.database.views.LocalSearchPatient
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.PatientAndReadings
 
 @Dao
 interface PatientDao {
+    @Transaction
+    fun updateOrInsertIfNotExists(patient: Patient) {
+        if (update(patient) <= 0) {
+            insert(patient)
+        }
+    }
+
+    @Transaction
+    fun updateOrInsertAllIfNotExists(patients: List<Patient>) {
+        if (updateAll(patients) <= 0) {
+            insertAll(patients)
+        }
+    }
 
     /**
-     * inserts a patient into patient table
+     * Inserts [patient] into the Patient table.
+     * DO NOT use this to update a [Patient]; use [update] or [updateOrInsertIfNotExists]
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(patient: Patient)
 
     /**
-     * insert a list of patients into the patient table
+     * @return the number of rows updated
+     */
+    @Update
+    fun update(patient: Patient): Int
+
+    /**
+     * @return the number of rows updated
+     */
+    @Update
+    fun updateAll(patients: List<Patient>): Int
+
+    /**
+     * Insert a list of [Patient]s into the [Patient] table
+     * DO NOT use this to update patients; use [updateAll] or [updateOrInsertAllIfNotExists]
+     * instead.
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(patients: List<Patient>)

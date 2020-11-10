@@ -30,13 +30,14 @@ class PatientManager @Inject constructor(
     /**
      * add a single patient
      */
-    suspend fun add(patient: Patient) = withContext(IO) { patientDao.insert(patient) }
+    suspend fun add(patient: Patient) =
+        withContext(IO) { patientDao.updateOrInsertIfNotExists(patient) }
 
     /**
      * add all patients
      */
     suspend fun addAll(patients: ArrayList<Patient>) = withContext(IO) {
-        patientDao.insertAll(patients)
+        patientDao.updateOrInsertAllIfNotExists(patients)
     }
 
     /**
@@ -59,7 +60,7 @@ class PatientManager @Inject constructor(
             }
 
             database.runInTransaction {
-                patientDao.insert(patient)
+                patientDao.updateOrInsertIfNotExists(patient)
                 if (isReadingFromServer) {
                     reading.isUploadedToServer = true
                 }
@@ -69,7 +70,7 @@ class PatientManager @Inject constructor(
     }
 
     /**
-     * Adds a patient and its readings to the local databse in a single transaction.
+     * Adds a patient and its readings to the local database in a single transaction.
      * The [readings] should be for the given [patient].
      *
      * @throws IllegalArgumentException if any of the [readings] have a different patient ID from
