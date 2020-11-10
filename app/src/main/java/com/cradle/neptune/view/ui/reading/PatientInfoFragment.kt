@@ -74,12 +74,15 @@ class PatientInfoFragment : Fragment() {
             false,
             dataBindingComponent
         )
+        binding?.apply {
+            lifecycleOwner = viewLifecycleOwner
+            viewModel = this@PatientInfoFragment.viewModel
+            executePendingBindings()
+        }
         return binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding?.lifecycleOwner = viewLifecycleOwner
-        binding?.viewModel = viewModel
         super.onViewCreated(view, savedInstanceState)
 
         lifecycleScope.apply {

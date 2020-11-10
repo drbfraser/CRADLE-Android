@@ -1,8 +1,8 @@
 package com.cradle.neptune.manager
 
 import com.cradle.neptune.database.CradleDatabase
-import com.cradle.neptune.database.PatientDaoAccess
-import com.cradle.neptune.database.ReadingDaoAccess
+import com.cradle.neptune.database.daos.PatientDao
+import com.cradle.neptune.database.daos.ReadingDao
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.PatientAndReadings
 import com.cradle.neptune.model.Reading
@@ -11,6 +11,7 @@ import com.cradle.neptune.net.NetworkResult
 import com.cradle.neptune.net.RestApi
 import com.cradle.neptune.net.Success
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import java.util.ArrayList
@@ -21,8 +22,8 @@ import javax.inject.Inject
  */
 class PatientManager @Inject constructor(
     private val database: CradleDatabase,
-    private val patientDao: PatientDaoAccess,
-    private val readingDao: ReadingDaoAccess,
+    private val patientDao: PatientDao,
+    private val readingDao: ReadingDao,
     private val restApi: RestApi
 ) {
 
@@ -119,14 +120,14 @@ class PatientManager @Inject constructor(
      * get all the patients
      */
     suspend fun getAllPatients(): List<Patient> = withContext(IO) {
-        patientDao.allPatients
+        patientDao.getAllPatients()
     }
 
     /**
      * get a list of patient ids for all patients.
      */
     suspend fun getPatientIdsOnly(): List<String> = withContext(IO) {
-        patientDao.patientIdsList
+        patientDao.getPatientIdsList()
     }
 
     /**
@@ -136,11 +137,19 @@ class PatientManager @Inject constructor(
         patientDao.getPatientById(id)
     }
 
+    @Deprecated(
+        message = "Should be removed when PatientProfileActivity is converted to Kotlin",
+        replaceWith = ReplaceWith("getPatientById")
+    )
+    fun getPatientByIdBlocking(id: String): Patient? = runBlocking(IO) {
+        patientDao.getPatientById(id)
+    }
+
     /**
      * returns all the  patients which dont exists on server and their readings
      */
     suspend fun getUnUploadedPatients(): List<PatientAndReadings> =
-        withContext(IO) { patientDao.unUploadedPatientAndReadings }
+        withContext(IO) { patientDao.getUnUploadedPatientAndReadings() }
 
     /**
      * get edited Patients that also exists on the server

@@ -1,6 +1,7 @@
 package com.cradle.neptune.binding
 
 import android.annotation.SuppressLint
+import android.graphics.drawable.Drawable
 import android.os.Build
 import android.text.InputFilter
 import android.text.InputType
@@ -11,6 +12,7 @@ import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.RadioButton
 import android.widget.TextView
+import androidx.annotation.DrawableRes
 import androidx.core.content.res.ResourcesCompat
 import androidx.databinding.BindingAdapter
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
@@ -190,36 +192,37 @@ class ReadingBindingAdapters {
     }
 
     @BindingAdapter("bind:setTrafficLightDrawable")
-    fun setTrafficLightDrawable(view: ImageView, analysis: ReadingAnalysis) {
-        view.apply {
-            val drawableResId = ReadingAnalysisViewSupport.getColorCircleImageId(analysis).also {
-                if (it == 0) {
-                    visibility = View.INVISIBLE
-                    return@apply
-                }
-            }
-            visibility = View.VISIBLE
-
-            val drawable = ResourcesCompat.getDrawable(resources, drawableResId, context.theme)
-
-            setImageDrawable(drawable)
+    fun setTrafficLightDrawable(view: ImageView, analysis: ReadingAnalysis?) {
+        if (analysis == null) {
+            view.visibility = View.INVISIBLE
+            return
         }
+        setImageViewFromId(view, ReadingAnalysisViewSupport.getColorCircleImageId(analysis))
     }
 
     @BindingAdapter("bind:setArrowDrawable")
-    fun setArrowDrawable(view: ImageView, analysis: ReadingAnalysis) {
-        view.apply {
-            val drawableResId = ReadingAnalysisViewSupport.getArrowImageId(analysis).also {
-                if (it == 0) {
-                    visibility = View.INVISIBLE
-                    return@apply
-                }
+    fun setArrowDrawable(view: ImageView, analysis: ReadingAnalysis?) {
+        if (analysis == null) {
+            view.visibility = View.INVISIBLE
+            return
+        }
+        setImageViewFromId(view, ReadingAnalysisViewSupport.getArrowImageId(analysis))
+    }
+
+    @BindingAdapter("setSrcCompatBitmap")
+    fun setSrcCompatBitmap(imageView: ImageView, drawable: Drawable) {
+        imageView.setImageDrawable(drawable)
+    }
+
+    private fun setImageViewFromId(imageView: ImageView, @DrawableRes idRes: Int) {
+        imageView.apply {
+            if (idRes == 0) {
+                visibility = View.INVISIBLE
+            } else {
+                visibility = View.VISIBLE
+                val drawable = ResourcesCompat.getDrawable(resources, idRes, context.theme)
+                setImageDrawable(drawable)
             }
-            visibility = View.VISIBLE
-
-            val drawable = ResourcesCompat.getDrawable(resources, drawableResId, context.theme)
-
-            setImageDrawable(drawable)
         }
     }
 

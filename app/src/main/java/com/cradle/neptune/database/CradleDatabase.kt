@@ -12,6 +12,10 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteQueryBuilder
+import com.cradle.neptune.database.daos.HealthFacilityDao
+import com.cradle.neptune.database.daos.PatientDao
+import com.cradle.neptune.database.daos.ReadingDao
+import com.cradle.neptune.database.views.LocalSearchPatient
 import com.cradle.neptune.model.HealthFacility
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
@@ -27,14 +31,15 @@ import com.cradle.neptune.utilitiles.DateUtil
  */
 @Database(
     entities = [Reading::class, Patient::class, HealthFacility::class],
-    version = 4,
+    views = [LocalSearchPatient::class],
+    version = 7,
     exportSchema = true
 )
 @TypeConverters(DatabaseTypeConverters::class)
 abstract class CradleDatabase : RoomDatabase() {
-    abstract fun readingDao(): ReadingDaoAccess
-    abstract fun patientDao(): PatientDaoAccess
-    abstract fun healthFacility(): HealthFacilityDaoAccess
+    abstract fun readingDao(): ReadingDao
+    abstract fun patientDao(): PatientDao
+    abstract fun healthFacility(): HealthFacilityDao
 
     companion object {
         private const val DATABASE_NAME = "room-readingDB"
@@ -69,17 +74,24 @@ abstract class CradleDatabase : RoomDatabase() {
  * Internal so that tests can access the [Migration] objects.
  * Suppress MagicNumber and NestedBlockDepth due to the migrations.
  */
-@Suppress("MagicNumber", "NestedBlockDepth")
+@Suppress("MagicNumber", "NestedBlockDepth", "ObjectPropertyNaming")
 internal object Migrations {
     val ALL_MIGRATIONS by lazy {
-        arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+        arrayOf(
+            MIGRATION_1_2,
+            MIGRATION_2_3,
+            MIGRATION_3_4,
+            MIGRATION_4_5,
+            MIGRATION_5_6,
+            MIGRATION_6_7
+        )
     }
 
     /**
      * Version 2:
      * Add new Reading fields (respiratoryRate, oxygenSaturation, temperature)
      */
-    val MIGRATION_1_2 = object : Migration(1, 2) {
+    private val MIGRATION_1_2 = object : Migration(1, 2) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.run {
                 execSQL("ALTER TABLE Reading ADD COLUMN respiratoryRate INTEGER")
@@ -95,7 +107,7 @@ internal object Migrations {
      * Removing the age property requires us to migrate the age and dob states to the new isExactDob
      * Boolean.
      */
-    val MIGRATION_2_3 = object : Migration(2, 3) {
+    private val MIGRATION_2_3 = object : Migration(2, 3) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE Patient ADD COLUMN isExactDob INTEGER")
             val dobAgeQuery = SupportSQLiteQueryBuilder.builder("Patient")
@@ -189,7 +201,7 @@ internal object Migrations {
      *
      * There are other field and property name mismatches that we have to correct here.
      */
-    val MIGRATION_3_4 = object : Migration(3, 4) {
+    private val MIGRATION_3_4 = object : Migration(3, 4) {
         override fun migrate(database: SupportSQLiteDatabase) {
             // For whatever reason, Gson stored null instances in the database as Strings that
             // just say "null". This takes up space, so we need to manually change those to a null
@@ -269,6 +281,130 @@ internal object Migrations {
                         "readingId = ?" /* whereClause */,
                         arrayOf(readingId) /* whereArgs */
                     )
+                }
+            }
+        }
+    }
+
+    /**
+     * Version 5:
+     * Add LocalSearchPatient view
+     */
+    private val MIGRATION_4_5 = object : Migration(4, 5) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL(
+                """
+CREATE VIEW `LocalSearchPatient` AS SELECT
+  p.name,
+  p.id,
+  p.villageNumber,
+  r.bloodPressure as latestBloodPressure,
+  MAX(r.dateTimeTaken) as latestReadingDate
+FROM
+  Patient as p
+  LEFT JOIN Reading AS r ON p.id = r.patientId
+GROUP BY 
+  r.patientId
+                """.trimIndent()
+            )
+        }
+    }
+
+    /**
+     * Version 6:
+     * Update LocalSearchPatient view to include referrals
+     */
+    private val MIGRATION_5_6 = object : Migration(5, 6) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("DROP VIEW `LocalSearchPatient`")
+            database.execSQL(
+                """
+CREATE VIEW `LocalSearchPatient` AS SELECT
+  p.name,
+  p.id,
+  p.villageNumber,
+  r.bloodPressure as latestBloodPressure,
+  MAX(r.dateTimeTaken) as latestReadingDate,
+  r.referral
+FROM
+  Patient as p
+  LEFT JOIN Reading AS r ON p.id = r.patientId
+GROUP BY 
+  r.patientId
+                """.trimIndent()
+            )
+        }
+    }
+
+    /**
+     * Version 7:
+     * Add indices for Patient and Reading, set a foreign key in Reading
+     */
+    private val MIGRATION_6_7 = object : Migration(6, 7) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.apply {
+                execSQL("PRAGMA foreign_keys = OFF")
+                beginTransaction()
+                try {
+                    execSQL(
+                        """
+CREATE TABLE IF NOT EXISTS `new_Patient` (
+  `id` TEXT NOT NULL, `name` TEXT NOT NULL, `dob` TEXT, `isExactDob` INTEGER, `gestationalAge` TEXT, 
+  `sex` TEXT NOT NULL, `isPregnant` INTEGER NOT NULL, `zone` TEXT, `villageNumber` TEXT, 
+  `householdNumber` TEXT, `drugHistoryList` TEXT NOT NULL, `medicalHistoryList` TEXT NOT NULL, 
+  `lastEdited` INTEGER, `base` INTEGER, PRIMARY KEY(`id`)
+)
+                        """.trimIndent()
+                    )
+                    execSQL("CREATE UNIQUE INDEX `index_Patient_id` ON `new_Patient` (`id`)")
+                    val patientProperties = "`id`,`name`,`dob`,`isExactDob`,`gestationalAge`," +
+                        "`sex`,`isPregnant`,`zone`,`villageNumber`,`householdNumber`," +
+                        "`drugHistoryList`,`medicalHistoryList`,`lastEdited`,`base`"
+                    execSQL(
+                        "INSERT INTO new_Patient ($patientProperties) " +
+                            "SELECT $patientProperties FROM Patient"
+                    )
+                    execSQL("DROP TABLE Patient")
+                    execSQL("ALTER TABLE new_Patient RENAME TO Patient")
+
+                    execSQL(
+                        """
+CREATE TABLE IF NOT EXISTS `new_Reading` (
+  `readingId` TEXT NOT NULL, `patientId` TEXT NOT NULL, `dateTimeTaken` INTEGER NOT NULL, 
+  `bloodPressure` TEXT NOT NULL, `respiratoryRate` INTEGER, `oxygenSaturation` INTEGER, 
+  `temperature` INTEGER, `urineTest` TEXT, `symptoms` TEXT NOT NULL, `referral` TEXT, 
+  `followUp` TEXT, `dateRecheckVitalsNeeded` INTEGER, `isFlaggedForFollowUp` INTEGER NOT NULL, 
+  `previousReadingIds` TEXT NOT NULL, `metadata` TEXT NOT NULL, 
+  `isUploadedToServer` INTEGER NOT NULL, 
+  PRIMARY KEY(`readingId`), 
+  FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE 
+)
+                        """.trimIndent()
+                    )
+                    execSQL(
+                        "CREATE UNIQUE INDEX IF NOT EXISTS `index_Reading_readingId` " +
+                            "ON `new_Reading` (`readingId`)"
+                    )
+                    execSQL(
+                        "CREATE INDEX IF NOT EXISTS `index_Reading_patientId` " +
+                            "ON `new_Reading` (`patientId`)"
+                    )
+                    val readingProperties = "`readingId`,`patientId`,`dateTimeTaken`," +
+                        "`bloodPressure`,`respiratoryRate`,`oxygenSaturation`," +
+                        "`temperature`,`urineTest`,`symptoms`,`referral`,`followUp`," +
+                        "`dateRecheckVitalsNeeded`,`isFlaggedForFollowUp`," +
+                        "`previousReadingIds`,`metadata`,`isUploadedToServer`"
+                    execSQL(
+                        "INSERT INTO new_Reading ($readingProperties) " +
+                            "SELECT $readingProperties FROM Reading"
+                    )
+                    execSQL("DROP TABLE Reading")
+                    execSQL("ALTER TABLE new_Reading RENAME TO Reading")
+
+                    setTransactionSuccessful()
+                } finally {
+                    endTransaction()
+                    execSQL("PRAGMA foreign_keys = ON")
                 }
             }
         }

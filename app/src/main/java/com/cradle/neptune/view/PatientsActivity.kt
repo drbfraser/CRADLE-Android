@@ -6,58 +6,139 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
+import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradle.neptune.R
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
-import com.cradle.neptune.model.Patient
-import com.cradle.neptune.model.Reading
-import com.cradle.neptune.viewmodel.PatientsViewAdapter
+import com.cradle.neptune.viewmodel.LocalSearchPatientAdapter
+import com.cradle.neptune.viewmodel.PatientListViewModel
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.Dispatchers.Main
-import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.util.ArrayList
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class PatientsActivity : AppCompatActivity() {
+    private val viewModel: PatientListViewModel by viewModels()
+
+    private var searchView: SearchView? = null
+
+    private val closeSearchViewCallback: OnBackPressedCallback =
+        object : OnBackPressedCallback(false) {
+            override fun handleOnBackPressed() {
+                isEnabled = false
+                hideSearchView()
+            }
+        }
+
+    private var isFirstLoadDone: Boolean = false
+
     @Inject
     lateinit var readingManager: ReadingManager
+
     @Inject
     lateinit var patientManager: PatientManager
 
     private lateinit var patientRecyclerview: RecyclerView
-    private lateinit var patientsViewAdapter: PatientsViewAdapter
+    private val localSearchPatientAdapter = LocalSearchPatientAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_patients)
 
         patientRecyclerview = findViewById(R.id.patientListRecyclerview)
-        MainScope().launch {
-            setupPatientRecyclerview()
+        patientRecyclerview.apply {
+            addItemDecoration(
+                DividerItemDecoration(this@PatientsActivity, DividerItemDecoration.VERTICAL)
+            )
+            this.adapter = localSearchPatientAdapter
+        }
+        val emptyMessage = findViewById<TextView>(R.id.emptyView)
+        val progressBar = findViewById<ProgressBar>(R.id.patients_list_progress_bar)
+        val retryButton = findViewById<Button>(R.id.retry_button)
+        localSearchPatientAdapter.addLoadStateListener { loadState ->
+            val isLoading = loadState.refresh is LoadState.Loading
+            patientRecyclerview.isVisible = loadState.refresh is LoadState.NotLoading
+            progressBar.isVisible = loadState.refresh is LoadState.Loading
+            retryButton.isVisible = loadState.refresh is LoadState.Error
+
+            if (loadState.refresh is LoadState.Error) {
+                emptyMessage.text = getString(R.string.activity_patients_error_loading_patients)
+                emptyMessage.isVisible = true
+            } else if (isFirstLoadDone && !isLoading && localSearchPatientAdapter.itemCount == 0) {
+                // Show message when there are no results. Do not show the empty message if the
+                // user hasn't loaded it first.
+                emptyMessage.text = getString(
+                    when {
+                        loadState.refresh is LoadState.Error -> {
+                            R.string.activity_patients_error_loading_patients
+                        }
+                        viewModel.isUsingSearch() -> {
+                            R.string.activity_patients_no_results_for_search
+                        }
+                        else -> {
+                            // Here, the user has no patients in the database at all.
+                            R.string.activity_patients_no_patients_message
+                        }
+                    }
+                )
+                emptyMessage.isVisible = true
+            } else {
+                emptyMessage.isVisible = false
+            }
+
+            if (!isLoading) {
+                isFirstLoadDone = true
+            } else {
+                patientRecyclerview.scrollToPosition(0)
+            }
         }
 
-        val toolbar =
-            findViewById<Toolbar>(R.id.toolbar)
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
-        if (supportActionBar != null) {
-            supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-            supportActionBar!!.title = "My Patients"
+
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            title = getString(R.string.activity_patients_title)
         }
 
         setupGlobalPatientSearchButton()
+
+        onBackPressedDispatcher.addCallback(this, closeSearchViewCallback)
+
+        // If not restoring, display all patients by using a blank query.
+        // Otherwise, the saved query will be used to search, and the
+        // SearchView will be restored in onCreateOptionsMenu.
+        val savedQuery = savedInstanceState?.getString(EXTRA_CURRENT_QUERY)
+        if (savedQuery == null) {
+            search("", shouldDelay = false)
+        } else {
+            search(savedQuery, shouldDelay = false)
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        if (viewModel.isUsingSearch()) {
+            outState.putString(EXTRA_CURRENT_QUERY, viewModel.currentQueryString)
+        } else {
+            outState.remove(EXTRA_CURRENT_QUERY)
+        }
     }
 
     private fun setupGlobalPatientSearchButton() {
@@ -73,37 +154,79 @@ class PatientsActivity : AppCompatActivity() {
         }
     }
 
+    private var searchJob: Job? = null
+
+    private fun search(query: String, shouldDelay: Boolean) {
+        val queryToUse = query.trim()
+
+        // Adapted from https://developer.android.com/codelabs/android-paging
+        searchJob?.cancel()
+        searchJob = lifecycleScope.launch {
+            if (shouldDelay) {
+                // Wait some time for the typing to stop. The delay function is a
+                // cancellation point.
+                delay(SEARCH_JOB_DELAY_MILLIS)
+            }
+            viewModel.searchPatientsFlow(queryToUse).collectLatest {
+                localSearchPatientAdapter.submitData(it)
+            }
+        }
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_patients, menu)
 
         // Associate searchable configuration with the SearchView
-        val searchManager =
-            getSystemService(Context.SEARCH_SERVICE) as SearchManager
-        val searchView = menu.findItem(R.id.searchPatients)
-            .actionView as SearchView
-        searchView.setSearchableInfo(
-            searchManager
-                .getSearchableInfo(componentName)
-        )
-        searchView.maxWidth = Int.MAX_VALUE
+        val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
+        val searchView = menu.findItem(R.id.searchPatients).actionView as SearchView
+        this.searchView = searchView
 
-        // listening to search query text change
-        searchView.setOnQueryTextListener(
-            object :
-                SearchView.OnQueryTextListener {
-                override fun onQueryTextSubmit(query: String): Boolean {
-                    // filter recycler view when query submitted
-                    patientsViewAdapter.filter.filter(query)
-                    return false
+        searchView.apply {
+            // Load any queries from the saved state. The onCreate function would have loaded the
+            // query string into the ViewModel from the saved instance state.
+            // Do this before setting setOnQueryTextListener
+            viewModel.currentQueryString?.let {
+                if (!viewModel.isUsingSearch()) {
+                    return@let
                 }
-
-                override fun onQueryTextChange(query: String): Boolean {
-                    // filter recycler view when text is changed
-                    patientsViewAdapter.filter.filter(query)
-                    return false
-                }
+                // Show the SearchView and populate the query.
+                val searchViewMenuItem = menu.findItem(R.id.searchPatients)
+                searchViewMenuItem.expandActionView()
+                isIconified = true
+                onActionViewExpanded()
+                // Populate the query. This won't trigger a search, as this is done before
+                // setOnQueryTextListener.
+                setQuery(viewModel.currentQueryString, false)
+                // Don't open the keyboard automatically
+                clearFocus()
             }
-        )
+
+            setSearchableInfo(searchManager.getSearchableInfo(componentName))
+            queryHint = getString(R.string.activity_patients_search_view_title)
+            maxWidth = Int.MAX_VALUE
+            setOnQueryTextListener(
+                object : SearchView.OnQueryTextListener {
+                    override fun onQueryTextSubmit(query: String): Boolean {
+                        search(query, shouldDelay = false)
+                        return false
+                    }
+
+                    override fun onQueryTextChange(query: String): Boolean {
+                        search(query, shouldDelay = true)
+                        return false
+                    }
+                }
+            )
+            setOnSearchClickListener {
+                closeSearchViewCallback.isEnabled = true
+            }
+            setOnCloseListener {
+                closeSearchViewCallback.isEnabled = false
+                // Don't want to override default behavior of clearing the query.
+                return@setOnCloseListener false
+            }
+        }
+
         return true
     }
 
@@ -111,54 +234,48 @@ class PatientsActivity : AppCompatActivity() {
         val id = item.itemId
         return if (id == R.id.searchPatients) {
             true
-        } else super.onOptionsItemSelected(item)
+        } else {
+            super.onOptionsItemSelected(item)
+        }
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        onBackPressed()
-        return true
-    }
-
-    private suspend fun setupPatientRecyclerview() = withContext(IO) {
-        val patients: ArrayList<Pair<Patient, Reading?>> = ArrayList()
-        val patientList = patientManager.getAllPatients()
-        for (patient in patientList) {
-            patients.add(
-                Pair(
-                    patient,
-                    readingManager.getNewestReadingByPatientId(patient.id)
-                )
-            )
-        }
-        withContext(Main) {
-            val textView = findViewById<TextView>(R.id.emptyView)
-            if (patients.size == 0) {
-                textView.visibility = View.VISIBLE
+        searchView.let {
+            // If the search icon is not showing, the user is searching something,
+            // so we should remove that first.
+            return if (hideSearchView()) {
+                false
             } else {
-                textView.visibility = View.GONE
+                onBackPressed()
+                true
             }
-            patientsViewAdapter = PatientsViewAdapter(patients.toList(), this@PatientsActivity)
-            val layoutManager: RecyclerView.LayoutManager = LinearLayoutManager(this@PatientsActivity)
-            patientRecyclerview.adapter = patientsViewAdapter
-            patientRecyclerview.layoutManager = layoutManager
-            patientRecyclerview.addItemDecoration(
-                DividerItemDecoration(
-                    this@PatientsActivity,
-                    DividerItemDecoration.VERTICAL
-                )
-            )
-            patientsViewAdapter.notifyDataSetChanged()
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        MainScope().launch {
-            setupPatientRecyclerview()
+    /**
+     * @return true if the [searchView] wasn't iconified and had to be hidden,
+     * false otherwise.
+     */
+    private fun hideSearchView(): Boolean {
+        searchView.let {
+            return if (it?.isIconified == false) {
+                // Clear the search query
+                search("", shouldDelay = false)
+                it.isIconified = true
+                it.onActionViewCollapsed()
+                closeSearchViewCallback.isEnabled = false
+                true
+            } else {
+                false
+            }
         }
     }
 
     companion object {
+        /* How long it takes after a user types something for a database query to be made */
+        private const val SEARCH_JOB_DELAY_MILLIS = 650L
+        private const val EXTRA_CURRENT_QUERY = "current_query"
+
         fun makeIntent(context: Context?): Intent {
             return Intent(context, PatientsActivity::class.java)
         }

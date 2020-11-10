@@ -29,15 +29,21 @@ public class DateUtil {
         return date.format(formatter);
     }
 
-    public static String getConciseDateString(Long unixDate) {
-        ZonedDateTime now = ZonedDateTime.now();
-        ZonedDateTime dateFromUnix = getZoneTimeFromLong(unixDate);
+    /**
+     * @param unixDate           The Unix timestamp to use
+     * @param useYMDOrderForFull If true, the full date will use YYYY-MM-DD format, else
+     *                           it will use MMM d, yyyy format
+     * @return A concise date string.
+     */
+    public static String getConciseDateString(Long unixDate, boolean useYMDOrderForFull) {
+        final ZonedDateTime now = ZonedDateTime.now();
+        final ZonedDateTime dateFromUnix = getZoneTimeFromLong(unixDate);
 
         if (dateFromUnix == null) {
             return "";
         }
 
-        DateTimeFormatter formatter;
+        final DateTimeFormatter formatter;
         if (now.toLocalDate().equals(dateFromUnix.toLocalDate())) {
             // Today: omit the date
             formatter = DateTimeFormatter.ofPattern("h:mm a");
@@ -46,7 +52,11 @@ public class DateUtil {
             formatter = DateTimeFormatter.ofPattern("MMM d '@' h a");
         } else {
             // Full date
-            formatter = DateTimeFormatter.ofPattern("MMM d, yyyy");
+            if (useYMDOrderForFull) {
+                formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            } else {
+                formatter = DateTimeFormatter.ofPattern("MMM d, yyyy");
+            }
         }
 
         return dateFromUnix.format(formatter);
@@ -64,6 +74,15 @@ public class DateUtil {
         }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         return dateFromAge.format(formatter);
+    }
+
+    /**
+     * @param timestamp Unix timestamp
+     * @return A date for the given timestamp in yyyy-mm-dd format.
+     */
+    public static String getDateStringFromTimestamp(long timestamp) {
+        ZonedDateTime dateFromTimestamp = getZoneTimeFromLong(timestamp);
+        return dateFromTimestamp.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
     }
 
     public static String getFullDateFromUnix(Long date) {

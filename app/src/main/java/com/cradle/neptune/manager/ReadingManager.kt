@@ -1,6 +1,6 @@
 package com.cradle.neptune.manager
 
-import com.cradle.neptune.database.ReadingDaoAccess
+import com.cradle.neptune.database.daos.ReadingDao
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.model.RetestGroup
 import com.cradle.neptune.net.NetworkResult
@@ -29,22 +29,18 @@ import javax.inject.Inject
  */
 @Suppress("RedundantSuspendModifier")
 class ReadingManager @Inject constructor(
-    private val readingDao: ReadingDaoAccess,
+    private val readingDao: ReadingDao,
     private val restApi: RestApi
 ) {
 
     /**
      * Adds a new reading to the database.
      * @param reading the reading to insert
-     * todo once all the class using this api is converted to kotlin, we can move coroutine out
-     * of this class and make this a [suspend] function
      */
     suspend fun addReading(reading: Reading) = withContext(IO) { readingDao.insert(reading) }
 
     /**
      * Get all the readings.
-     * todo once all the class using this api is converted to kotlin, we can move coroutine out
-     * of this class and make this a [suspend] function
      */
     suspend fun addAllReadings(readings: List<Reading>) = withContext(IO) {
         readingDao.insertAll(readings)
@@ -52,7 +48,6 @@ class ReadingManager @Inject constructor(
 
     /**
      * Updates an existing reading in the database.
-     * todo once all the class using this api is converted to kotlin, we can move coroutine out
      * of this class and make this a [suspend] function
      * @param reading the reading to update
      */
@@ -62,7 +57,9 @@ class ReadingManager @Inject constructor(
      * Returns a list of all readings (and their associated patients) in the
      * database.
      */
-    suspend fun getAllReadings(): List<Reading> = withContext(IO) { readingDao.allReadingEntities }
+    suspend fun getAllReadings(): List<Reading> = withContext(IO) {
+        readingDao.getAllReadingEntities()
+    }
 
     /**
      * Returns the reading (and its associated patient) with a given [id] from
@@ -96,14 +93,14 @@ class ReadingManager @Inject constructor(
      * Returns all readings which have not been uploaded to the server yet.
      */
     suspend fun getUnUploadedReadings(): List<Reading> = withContext(IO) {
-        readingDao.allUnUploadedReading
+        readingDao.getAllUnUploadedReadings()
     }
 
     /**
      * get unUploaded readings for patients who already exists in the server
      */
     suspend fun getUnUploadedReadingsForServerPatients(): List<Reading> = withContext(IO) {
-        readingDao.allUnUploadedReadingsForTrackedPatients
+        readingDao.getAllUnUploadedReadingsForTrackedPatients()
     }
 
     /**
@@ -186,10 +183,10 @@ class ReadingManager @Inject constructor(
             val result = restApi.getAssessment(assessmentId)
             when (result) {
                 is Success -> {
-                    val reading = getReadingById(result.value.readingId)
-                    reading?.followUp = result.value
-                    if (reading != null) {
-                        updateReading(reading)
+                    getReadingById(result.value.readingId)?.apply {
+                        followUp = result.value
+                        referral?.isAssessed = true
+                        updateReading(this)
                     }
                 }
             }

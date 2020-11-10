@@ -1,6 +1,7 @@
 package com.cradle.neptune.view;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -36,13 +37,14 @@ import java.util.Locale;
 
 import javax.inject.Inject;
 
-
 import dagger.hilt.android.AndroidEntryPoint;
 
 import static com.cradle.neptune.view.DashBoardActivity.READING_ACTIVITY_DONE;
 
 @AndroidEntryPoint
 public class PatientProfileActivity extends AppCompatActivity {
+    private static final String EXTRA_PATIENT = "patient";
+    private static final String EXTRA_PATIENT_ID = "patientId";
 
     TextView patientID;
     TextView patientName;
@@ -65,6 +67,18 @@ public class PatientProfileActivity extends AppCompatActivity {
     PatientManager patientManager;
     @Inject
     SharedPreferences sharedPreferences;
+
+    public static Intent makeIntentForPatient(Context context, Patient patient) {
+        Intent intent = new Intent(context, PatientProfileActivity.class);
+        intent.putExtra(EXTRA_PATIENT, patient);
+        return intent;
+    }
+
+    public static Intent makeIntentForPatientId(Context context, String patientId) {
+        Intent intent = new Intent(context, PatientProfileActivity.class);
+        intent.putExtra(EXTRA_PATIENT_ID, patientId);
+        return intent;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +121,12 @@ public class PatientProfileActivity extends AppCompatActivity {
     }
 
     boolean getLocalPatient() {
+        if (getIntent().hasExtra(EXTRA_PATIENT_ID)) {
+            final String patientId = getIntent().getStringExtra(EXTRA_PATIENT_ID);
+            currPatient = (Patient) patientManager.getPatientByIdBlocking(patientId);
+            return (currPatient != null);
+        }
+
         currPatient = (Patient) getIntent().getSerializableExtra("patient");
         return (currPatient != null);
     }

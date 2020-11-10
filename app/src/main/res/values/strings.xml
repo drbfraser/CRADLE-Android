@@ -137,7 +137,7 @@
     <string name="block_no">Block</string>
     <string name="zone">Zone</string>
     <string name="id_number">ID number</string>
-    <string name="initials">Initials</string>
+    <string name="name">Name</string>
     <string name="age">Age</string>
     <string name="sex">Sex</string>
     <string name="gestational_age">Gestational Age: </string>
@@ -168,7 +168,7 @@
     <string name="logging_in">Logging in</string>
     <string name="login_successful">Login successful!</string>
     <string name="login_error">Invalid email or password.</string>
-    <string name="empty_text_for_patient">You don\'t have any patients right now.\n Go to the dashboard to create a new reading.</string>
+    <string name="activity_patients_no_patients_message">You don\'t have any patients right now.\n Go to the dashboard to create a new patient.</string>
     <string name="pregnant_question">Pregnant?</string>
     <string name="create_new_reading">Create New Reading</string>
     <string name="global_search">Search all patients</string>
@@ -224,7 +224,7 @@
     <string name="global_patient_profile_dialog_message">This is not reversible</string>
     <string name="global_patient_profile_add_dialog_message">Adding to your patients list</string>
     <string name="global_patient_profile_add_failed">Unable to make user-patient relationship</string>
-    <string name="global_patient_profile_fetch_patient_dialog_message">Fetching the patient...</string>
+    <string name="global_patient_profile_fetch_patient_dialog_message">Fetching the patient…</string>
     <string name="global_patient_profile_fetch_patient_fail">Unable to fetch patient information</string>
     <string name="global_patient_profile_you_must_add_to_list_before_editing">You must add this patient to your patient lists before editing anything</string>
     <string name="global_patient_profile_you_must_add_to_list_before_reading">You must add this patient to your patients list before creating a new reading</string>
@@ -469,6 +469,23 @@
     <string name="health_facilities_activity_remove_from_list_dialog_message">Remove this facility from your list?</string>
     <string name="health_facilities_activity_remove_from_list_dialog_yes_button">Remove</string>
     <string name="health_facilities_activity_add_to_list_dialog_yes_button">Add</string>
+    <string name="activity_patients_title">My patients</string>
+    <string name="patient_list_item_last_reading_from">Last reading</string>
+    <string name="list_item_patient_id_label">ID</string>
+    <string name="list_item_patient_village_number_label">Village</string>
+    <string name="activity_patients_no_results_for_search">No results</string>
+    <string name="activity_patients_search_view_title">Search by name or ID</string>
+    <string name="activity_patients_error_loading_patients">Error occurred when loading patients</string>
+    <string name="activity_patients_retry_button">Retry</string>
+    <string name="list_item_patient_referral_assessed">Referral assessed</string>
+    <string name="list_item_patient_referral_pending">Referral pending</string>
+    <string name="status_none">No traffic light</string>
+    <string name="status_green">Green traffic light</string>
+    <string name="status_yellow">Yellow traffic light</string>
+    <string name="status_red">Red traffic light</string>
+    <string name="arrow_up">Up arrow</string>
+    <string name="arrow_down">Down arrow</string>
+    <string name="arrow_blank">No arrow</string>
     <string name="error_too_long_over_n_chars"><![CDATA[> %1$d characters]]></string>
 
     <plurals name="unuploaded_reading_signout_message">

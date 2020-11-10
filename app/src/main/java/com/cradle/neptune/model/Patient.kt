@@ -6,6 +6,7 @@ import androidx.core.text.isDigitsOnly
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 import com.cradle.neptune.R
@@ -63,7 +64,11 @@ import kotlin.reflect.KProperty
  *  backend.
  * TODO: Make [isExactDob] and [dob] not optional. Requires backend work to enforce it.
  */
-@Entity
+@Entity(
+    indices = [
+        Index(value = ["id"], unique = true)
+    ]
+)
 data class Patient(
     @PrimaryKey @ColumnInfo @JsonProperty("id")
     var id: String = "",

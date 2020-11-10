@@ -54,55 +54,32 @@ class MigrationTests {
      */
     @Test
     fun migrateReadingTableFromVersion1ToLatest() {
-        val unixTime: Long = 1595645893
-        val patientId = "5414842504"
-        val readingId = UUID.randomUUID().toString()
-        val referralForReading = Referral(
-            comment = "This is a comment",
-            healthFacilityName = "H2230",
-            dateReferred = 1595645675L,
-            patientId = patientId,
-            readingId = readingId,
-            id = 345,
-            userId = 2,
-            isAssessed = true
-        )
-        val assessmentForReading = Assessment(
-            id = 4535,
-            dateAssessed = 1595745946L,
-            healthCareWorkerId = 2,
-            readingId = readingId,
-            diagnosis = "This is a detailed diagnosis.",
-            treatment = "This is a treatment",
-            medicationPrescribed = "These are medications prescripted.",
-            specialInvestigations = "This is a special investiation",
-            followupNeeded = true, followupInstructions = "These are things to do"
-        )
+        val patientId = "3453455"
+        val reading = createFirstVersionReading(patientId = patientId)
 
-        // respiratoryRate, oxygenSaturation, temperature are required to be null, because they
-        // weren't present in the v1 schema.
-        val reading = Reading(
-            id = readingId,
-            patientId = patientId,
-            dateTimeTaken = unixTime,
-            bloodPressure = BloodPressure(110, 70, 65),
-            respiratoryRate = null,
-            oxygenSaturation = null,
-            temperature = null,
-            urineTest = UrineTest("+", "++", "NAD", "NAD", "NAD"),
-            symptoms = listOf("headache", "blurred vision", "pain"),
-            referral = referralForReading,
-            followUp = assessmentForReading,
-            dateRecheckVitalsNeeded = unixTime,
-            isFlaggedForFollowUp = true,
-            previousReadingIds = listOf("1", "2", "3"),
-            metadata = ReadingMetadata(),
-            isUploadedToServer = false
+        val patientWithExactDob = Patient(
+            id = patientId,
+            name = "Exact dob",
+            dob = "1989-10-24",
+            isExactDob = true,
+            gestationalAge = GestationalAgeWeeks(Weeks(20L)),
+            sex = Sex.FEMALE,
+            isPregnant = true,
+            zone = null,
+            villageNumber = null,
+            drugHistoryList = emptyList(),
+            medicalHistoryList = emptyList()
         )
 
         helper.createDatabase(TEST_DB, 1).apply {
             // db has schema version 1. Need to insert some data using SQL queries.
             // Can't use DAO classes; they expect the latest schema.
+            insertFirstVersionPatient(
+                database = this,
+                patient = patientWithExactDob,
+                ageForV1 = null
+            )
+
             insertFirstVersionReading(
                 database = this, reading = reading
             )
@@ -178,13 +155,23 @@ class MigrationTests {
             insertFirstVersionPatient(
                 database = this, patient = patientWithExactDob, ageForV1 = null
             )
+            insertFirstVersionReading(
+                database = this, reading = createFirstVersionReading(patientWithExactDob.id)
+            )
 
             insertFirstVersionPatient(
                 database = this, patient = patientWithApproxAgeOf23, ageForV1 = 23
             )
+            insertFirstVersionReading(
+                database = this, reading = createFirstVersionReading(patientWithApproxAgeOf23.id)
+            )
 
             insertFirstVersionPatient(
                 database = this, patient = patientWithBothDobAndAgeOf19, ageForV1 = 19
+            )
+            insertFirstVersionReading(
+                database = this,
+                reading = createFirstVersionReading(patientWithBothDobAndAgeOf19.id)
             )
 
             // Prepare for the next version.
@@ -213,6 +200,53 @@ class MigrationTests {
         patientDao.getPatientById(patientWithBothDobAndAgeOf19.id)?.let { patientFromMigratedDb ->
             assertEquals(patientWithBothDobAndAgeOf19, patientFromMigratedDb)
         } ?: error("no patient")
+    }
+
+    private fun createFirstVersionReading(patientId: String): Reading {
+        val unixTime: Long = 1595645893
+        val readingId = UUID.randomUUID().toString()
+        val referralForReading = Referral(
+            comment = "This is a comment",
+            healthFacilityName = "H2230",
+            dateReferred = 1595645675L,
+            patientId = patientId,
+            readingId = readingId,
+            id = 345,
+            userId = 2,
+            isAssessed = true
+        )
+        val assessmentForReading = Assessment(
+            id = 4535,
+            dateAssessed = 1595745946L,
+            healthCareWorkerId = 2,
+            readingId = readingId,
+            diagnosis = "This is a detailed diagnosis.",
+            treatment = "This is a treatment",
+            medicationPrescribed = "These are medications prescripted.",
+            specialInvestigations = "This is a special investiation",
+            followupNeeded = true, followupInstructions = "These are things to do"
+        )
+
+        // respiratoryRate, oxygenSaturation, temperature are required to be null, because they
+        // weren't present in the v1 schema.
+        return Reading(
+            id = readingId,
+            patientId = patientId,
+            dateTimeTaken = unixTime,
+            bloodPressure = BloodPressure(110, 70, 65),
+            respiratoryRate = null,
+            oxygenSaturation = null,
+            temperature = null,
+            urineTest = UrineTest("+", "++", "NAD", "NAD", "NAD"),
+            symptoms = listOf("headache", "blurred vision", "pain"),
+            referral = referralForReading,
+            followUp = assessmentForReading,
+            dateRecheckVitalsNeeded = unixTime,
+            isFlaggedForFollowUp = true,
+            previousReadingIds = listOf("1", "2", "3"),
+            metadata = ReadingMetadata(),
+            isUploadedToServer = false
+        )
     }
 
     private fun insertFirstVersionReading(

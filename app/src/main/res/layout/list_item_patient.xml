@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:bind="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="localSearchPatient"
+            type="com.cradle.neptune.database.views.LocalSearchPatient" />
+
+        <import type="com.cradle.neptune.utilitiles.DateUtil" />
+        <import type="com.cradle.neptune.viewmodel.ReadingAnalysisViewSupport" />
+        <import type="com.cradle.neptune.utilitiles.Util" />
+        <import type="android.view.View" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/list_item_patient_constraint_layout"
+        android:layout_width="match_parent"
+        android:layout_height="154dp"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="16dp"
+        tools:visibility="visible">
+
+        <TextView
+            android:id="@+id/list_item_patient_name_text_view"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:maxLines="2"
+            android:minLines="2"
+            android:text="@{localSearchPatient.name}"
+            android:textAppearance="@style/TextAppearance.Cradle.Body1"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/patient_info_guideline"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Hubert Blaine Wolfe­schlegel­stein­hausen­berger­dorff Sr." />
+
+        <ImageView
+            android:id="@+id/list_item_patient_referral_icon"
+            setSrcCompatBitmap="@{localSearchPatient.referral.assessed ? @drawable/ic_check_circle_black_24dp : @drawable/ic_pending_referral_black_24dp}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:contentDescription="@{localSearchPatient.referral.assessed ? @string/list_item_patient_referral_assessed : @string/list_item_patient_referral_pending}"
+            android:visibility="@{localSearchPatient.referral != null ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toTopOf="@+id/list_item_patient_id_label_text_view"
+            app:layout_constraintEnd_toEndOf="@+id/list_item_patient_id_label_text_view"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/list_item_patient_name_text_view"
+            app:layout_constraintVertical_bias="1.0"
+            tools:srcCompat="@drawable/ic_pending_referral_black_24dp"
+            tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/list_item_patient_referral_status_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:maxLines="1"
+            android:text="@{localSearchPatient.referral.assessed ? @string/list_item_patient_referral_assessed : @string/list_item_patient_referral_pending}"
+            android:textAppearance="@style/TextAppearance.Cradle.Body1"
+            android:visibility="@{localSearchPatient.referral != null ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="@+id/list_item_patient_referral_icon"
+            app:layout_constraintStart_toEndOf="@+id/list_item_patient_referral_icon"
+            app:layout_constraintTop_toTopOf="@+id/list_item_patient_referral_icon"
+            tools:text="Referral pending"
+            tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/list_item_patient_id_label_text_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/list_item_patient_id_label"
+            android:textAppearance="@style/TextAppearance.Cradle.Body1"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@+id/list_item_patient_village_number_label"
+            app:layout_constraintStart_toStartOf="@+id/list_item_patient_name_text_view" />
+
+        <TextView
+            android:id="@+id/list_item_patient_id_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:maxLines="1"
+            android:text="@{localSearchPatient.id}"
+            android:textAppearance="@style/TextAppearance.Cradle.Body1"
+            app:layout_constraintBaseline_toBaselineOf="@+id/list_item_patient_id_label_text_view"
+            app:layout_constraintEnd_toStartOf="@+id/patient_info_guideline"
+            app:layout_constraintStart_toEndOf="@+id/list_item_patient_id_label_text_view"
+            tools:text="12345678901234" />
+
+        <TextView
+            android:id="@+id/list_item_patient_village_number_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/list_item_patient_village_number_label"
+            android:textAppearance="@style/TextAppearance.Cradle.Body1"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/list_item_patient_id_label_text_view" />
+
+        <TextView
+            android:id="@+id/list_item_patient_village_number_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:maxLines="1"
+            android:text='@{!Util.stringNullOrEmpty(localSearchPatient.villageNumber) ? localSearchPatient.villageNumber : @string/not_available_n_slash_a}'
+            android:textAppearance="@style/TextAppearance.Cradle.Body1"
+            app:layout_constraintBaseline_toBaselineOf="@+id/list_item_patient_village_number_label"
+            app:layout_constraintEnd_toStartOf="@+id/patient_info_guideline"
+            app:layout_constraintStart_toEndOf="@+id/list_item_patient_village_number_label"
+            tools:text="4000534" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/patient_info_guideline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.6" />
+
+        <ImageView
+            android:id="@+id/patient_arrow_image_view"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:contentDescription='@{localSearchPatient.latestRetestAnalysis != null ? ReadingAnalysisViewSupport.getArrowContentDescription(context, localSearchPatient.latestRetestAnalysis) : ""}'
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/patient_traffic_light_image_view"
+            app:layout_constraintTop_toTopOf="@+id/list_item_patient_name_text_view"
+            bind:setArrowDrawable="@{localSearchPatient.latestRetestAnalysis}"
+            tools:srcCompat="@drawable/arrow_up" />
+
+        <ImageView
+            android:id="@+id/patient_traffic_light_image_view"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginStart="8dp"
+            android:contentDescription='@{localSearchPatient.latestRetestAnalysis != null ? ReadingAnalysisViewSupport.getColorCircleContentDescription(context, localSearchPatient.latestRetestAnalysis) : ""}'
+            app:layout_constraintEnd_toStartOf="@+id/patient_arrow_image_view"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/patient_info_guideline"
+            app:layout_constraintStart_toStartOf="@+id/patient_info_guideline"
+            app:layout_constraintTop_toTopOf="@+id/list_item_patient_name_text_view"
+            bind:setTrafficLightDrawable="@{localSearchPatient.latestRetestAnalysis}"
+            tools:srcCompat="@drawable/status_green" />
+
+        <TextView
+            android:id="@+id/last_reading_on_text_view"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:text="@string/patient_list_item_last_reading_from"
+            android:textAlignment="center"
+            android:textAppearance="@style/TextAppearance.Cradle.Body1"
+            android:textStyle="bold"
+            app:layout_constraintBaseline_toBaselineOf="@+id/list_item_patient_id_label_text_view"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/patient_info_guideline" />
+
+        <TextView
+            android:id="@+id/last_reading_date_text_view"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:text="@{localSearchPatient.latestReadingDate != null ? DateUtil.getConciseDateString(localSearchPatient.latestReadingDate, true) : @string/not_available_n_slash_a}"
+            android:textAlignment="center"
+            android:textAppearance="@style/TextAppearance.Cradle.Body1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/patient_info_guideline"
+            app:layout_constraintTop_toBottomOf="@+id/last_reading_on_text_view"
+            tools:text="Sep 20 @ 10 PM
+" />
+
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            android:visibility="@{localSearchPatient == null ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
