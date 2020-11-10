@@ -212,8 +212,14 @@ class LoginManager @Inject constructor(
     }
 
     suspend fun logout(): Unit = withContext(Dispatchers.IO) {
+        val (hostname, port) =
+            sharedPreferences.getString(context.getString(R.string.key_server_hostname), null) to
+                sharedPreferences.getString(context.getString(R.string.key_server_port), null)
+
         sharedPreferences.edit(commit = true) {
             clear()
+            hostname?.let { putString(context.getString(R.string.key_server_hostname), it) }
+            port?.let { putString(context.getString(R.string.key_server_port), it) }
         }
 
         database.run {

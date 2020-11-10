@@ -270,23 +270,26 @@ internal class LoginManagerTests {
 
     private val mockSharedPrefs = mockk<SharedPreferences> {
         every { edit() } returns mockk editor@{
-            every {
-                putString(any(), any())
-            } answers {
+            every { putString(any(), any()) } answers {
                 putInFakeSharedPreference<String?>(firstArg(), secondArg())
                 this@editor
             }
 
-            every {
-                putInt(any(), any())
-            } answers {
+            every { getString(any(), any()) } answers {
+                val stringValue = fakeSharedPreferencesMap[firstArg()] as String?
+                if (stringValue == null && !fakeSharedPreferencesMap.contains(firstArg())) {
+                    secondArg()
+                } else {
+                    stringValue
+                }
+            }
+
+            every { putInt(any(), any()) } answers {
                 putInFakeSharedPreference<Int?>(firstArg(), secondArg())
                 this@editor
             }
 
-            every {
-                putLong(any(), any())
-            } answers {
+            every { putLong(any(), any()) } answers {
                 putInFakeSharedPreference<Long?>(firstArg(), secondArg())
                 this@editor
             }
