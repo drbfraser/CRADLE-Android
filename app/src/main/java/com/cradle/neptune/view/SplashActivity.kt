@@ -1,10 +1,10 @@
 package com.cradle.neptune.view
 
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.postDelayed
-import androidx.preference.PreferenceManager
 import com.cradle.neptune.R
 import com.cradle.neptune.manager.LoginManager
 import com.cradle.neptune.utilitiles.SharedPreferencesMigration
@@ -18,12 +18,18 @@ class SplashActivity : AppCompatActivity() {
     @Inject
     lateinit var loginManager: LoginManager
 
+    @Inject
+    lateinit var sharedPreferences: SharedPreferences
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
+        val isMigrationSuccessful = if (loginManager.isLoggedIn()) {
+            SharedPreferencesMigration(sharedPreferences).migrate()
+        } else {
+            true
+        }
 
-        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
-        val isMigrationSuccessful = SharedPreferencesMigration(sharedPreferences).migrate()
         if (!isMigrationSuccessful) {
             runBlocking {
                 loginManager.logout()

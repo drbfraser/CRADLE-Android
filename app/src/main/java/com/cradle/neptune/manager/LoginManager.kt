@@ -50,6 +50,18 @@ class LoginManager @Inject constructor(
         const val USER_ID_KEY = "userId"
     }
 
+    fun isLoggedIn(): Boolean {
+        sharedPreferences.run {
+            if (!contains(TOKEN_KEY)) {
+                return false
+            }
+            if (!contains(USER_ID_KEY)) {
+                return false
+            }
+        }
+        return true
+    }
+
     /**
      * Performs the complete login sequence required to log a user in and
      * initialize the application for use.
@@ -206,7 +218,6 @@ class LoginManager @Inject constructor(
 
         database.run {
             clearAllTables()
-            close()
         }
     }
 }

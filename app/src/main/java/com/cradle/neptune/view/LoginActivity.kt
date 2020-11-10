@@ -42,12 +42,15 @@ class LoginActivity : AppCompatActivity() {
     lateinit var loginManager: LoginManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // no need to load anything if already logged in.
         super.onCreate(savedInstanceState)
 
         showMessageIfPresent()
 
-        checkSharedPrefForLogin()
+        if (loginManager.isLoggedIn()) {
+            // no need to load anything if already logged in.
+            startIntroActivity()
+        }
+
         setContentView(R.layout.activity_login)
         setupLogin()
     }
@@ -70,13 +73,6 @@ class LoginActivity : AppCompatActivity() {
             }
             setPositiveButton(android.R.string.ok) { _, _ -> /* noop */ }
         }.show()
-    }
-
-    private fun checkSharedPrefForLogin() {
-        val email = sharedPreferences.getString(LoginManager.EMAIL_KEY, null)
-        if (email != null) {
-            startIntroActivity()
-        }
     }
 
     private fun startIntroActivity() {
