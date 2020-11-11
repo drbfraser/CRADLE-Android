@@ -1,5 +1,6 @@
 package com.cradle.neptune.manager
 
+import androidx.room.withTransaction
 import com.cradle.neptune.database.CradleDatabase
 import com.cradle.neptune.database.daos.PatientDao
 import com.cradle.neptune.database.daos.ReadingDao
@@ -29,8 +30,9 @@ class PatientManager @Inject constructor(
     /**
      * add a single patient
      */
-    suspend fun add(patient: Patient) =
-        withContext(IO) { patientDao.updateOrInsertIfNotExists(patient) }
+    suspend fun add(patient: Patient) = withContext(IO) {
+        patientDao.updateOrInsertIfNotExists(patient)
+    }
 
     /**
      * Adds a patient and its reading to the database in a single transaction.
@@ -51,7 +53,7 @@ class PatientManager @Inject constructor(
                 )
             }
 
-            database.runInTransaction {
+            database.withTransaction {
                 patientDao.updateOrInsertIfNotExists(patient)
                 if (isReadingFromServer) {
                     reading.isUploadedToServer = true
@@ -84,7 +86,7 @@ class PatientManager @Inject constructor(
                 }
             }
 
-            database.runInTransaction {
+            database.withTransaction {
                 if (isPatientNew) {
                     patientDao.insert(patient)
                 } else {
