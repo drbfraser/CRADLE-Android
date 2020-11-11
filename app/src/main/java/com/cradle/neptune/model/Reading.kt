@@ -270,6 +270,7 @@ data class Reading(
                 ?.let(UrineTest.FromJson::unmarshal),
 
             previousReadingIds = data.optStringField(ReadingField.PREVIOUS_READING_IDS)
+                ?.ifBlank { null }
                 ?.split(',')
                 ?: emptyList(),
 

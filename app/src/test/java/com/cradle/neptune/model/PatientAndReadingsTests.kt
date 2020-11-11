@@ -34,6 +34,23 @@ class PatientAndReadingsTests {
         val jsonObject = JSONObject(jsonString)
         val patientAndReadingsUnmarshal = PatientAndReadings.unmarshal(jsonObject)
         assertEquals(expected.patient, patientAndReadingsUnmarshal.patient)
+
+        val expectedEmptyList = expected.readings[0].previousReadingIds
+        val unmarshaledEmptyList = patientAndReadingsUnmarshal.readings[0].previousReadingIds
+
+        assert(expectedEmptyList.isEmpty()) {
+            "expected empty but it has ${expectedEmptyList.size} elements." +
+                " Is the element an empty string? ${expectedEmptyList[0] == ""}"
+        }
+        assert(unmarshaledEmptyList.isEmpty()) {
+            "expected empty but  has ${unmarshaledEmptyList.size} elements." +
+                " Is the element an empty string? ${unmarshaledEmptyList[0] == ""}"
+        }
+        assertEquals(
+            expectedEmptyList,
+            unmarshaledEmptyList,
+        ) { "what? they're both empty but they're not equal?" }
+
         assertEquals(expected.readings, patientAndReadingsUnmarshal.readings)
     }
 

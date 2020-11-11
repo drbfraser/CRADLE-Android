@@ -99,7 +99,8 @@ class CommonPatientReadingJsons {
                         followUp = null,
                         referral = null,
                         isFlaggedForFollowUp = false,
-                        urineTest = null
+                        urineTest = null,
+                        previousReadingIds = listOf()
                     )
                 )
             )

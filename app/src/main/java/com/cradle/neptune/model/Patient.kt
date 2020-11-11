@@ -407,9 +407,13 @@ data class Patient(
             // Server returns a String for drug and medical histories.
             // TODO: see Patient doc comment for the note
             drugHistoryList = data.optStringField(PatientField.DRUG_HISTORY)
-                ?.run { if (isBlank()) emptyList() else listOf(this) } ?: emptyList()
+                ?.ifBlank { null }
+                ?.run { listOf(this) }
+                ?: emptyList()
             medicalHistoryList = data.optStringField(PatientField.MEDICAL_HISTORY)
-                ?.run { if (isBlank()) emptyList() else listOf(this) } ?: emptyList()
+                ?.ifBlank { null }
+                ?.run { listOf(this) }
+                ?: emptyList()
             lastEdited = data.optLongField(PatientField.LAST_EDITED)
             base = data.optLongField(PatientField.BASE)
         }
