@@ -25,7 +25,6 @@ import com.cradle.neptune.utilitiles.Months
 import com.cradle.neptune.utilitiles.Seconds
 import com.cradle.neptune.utilitiles.UnixTimestamp
 import com.cradle.neptune.utilitiles.Weeks
-import com.fasterxml.jackson.annotation.JsonProperty
 import kotlinx.android.parcel.Parcelize
 import org.json.JSONException
 import org.json.JSONObject
@@ -71,7 +70,7 @@ import kotlin.reflect.KProperty
     ]
 )
 data class Patient(
-    @PrimaryKey @ColumnInfo @JsonProperty("id")
+    @PrimaryKey @ColumnInfo
     var id: String = "",
     @ColumnInfo var name: String = "",
     @ColumnInfo var dob: String? = null,

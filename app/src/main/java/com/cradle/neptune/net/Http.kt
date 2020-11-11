@@ -106,7 +106,7 @@ InputStream from the HTTPUrlConnection.
                 }
 
                 @Suppress("MagicNumber")
-                if (responseCode in 200 until 300) {
+                if (responseCode in SUCCESS_RANGE) {
                     Log.i("HTTP", "$message - Success $responseCode")
                     val returnBody = inputStream.use { inputStreamHandler(it) }
                     Success(returnBody, responseCode)
@@ -220,5 +220,8 @@ InputStream from the HTTPUrlConnection.
 
     companion object {
         const val DEFAULT_TIMEOUT_MILLIS = 60 * 1000
+
+        // Refer to https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+        val SUCCESS_RANGE = 200 until 300
     }
 }

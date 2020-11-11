@@ -400,7 +400,7 @@
     <string name="login_activity_device_is_outdated_dialog_message">Your device is unable to connect to the servers securely. Since Google Play services are unavailable on your device, we\'re unable to try to upgrade your device\'s security provider. Please ensure that your device supports TLS 1.2 or higher.</string>
     <string name="login_activity_security_provider_toast">Attempting to upgrade default security provider…</string>
     <string name="login_error_ssl_handshake_exception">Error: SSLHandshakeException</string>
-    <string name="login_error_general_error">Failed to connect to server</string>
+    <string name="login_error_general_error_exception_name">Failed to connect to server: Exception %1$s</string>
     <string name="fragment_advice_advice_card_header">Advice for this reading</string>
     <string name="fragment_advice_save_options_header">Options for saving</string>
 
@@ -487,6 +487,7 @@
     <string name="arrow_down">Down arrow</string>
     <string name="arrow_blank">No arrow</string>
     <string name="error_too_long_over_n_chars"><![CDATA[> %1$d characters]]></string>
+    <string name="login_error_with_status_code">Failed to login (%1$d status code from server)</string>
 
     <string name="logout_due_to_error_dialog_title">Logged out</string>
     <string name="logout_due_to_error_dialog_message">You have been logged out due to an error. Please log in again.</string>
