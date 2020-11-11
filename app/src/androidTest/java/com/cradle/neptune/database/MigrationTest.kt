@@ -8,7 +8,6 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.runner.AndroidJUnit4
 import com.cradle.neptune.model.Assessment
 import com.cradle.neptune.model.BloodPressure
 import com.cradle.neptune.model.GestationalAgeMonths
@@ -25,10 +24,8 @@ import com.cradle.neptune.utilitiles.Weeks
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
 import java.util.UUID
 
-@RunWith(AndroidJUnit4::class)
 class MigrationTests {
     private val TEST_DB = "migration-test"
 
