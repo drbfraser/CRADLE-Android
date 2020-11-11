@@ -1,5 +1,6 @@
 package com.cradle.neptune.database
 
+import android.database.sqlite.SQLiteConstraintException
 import android.database.sqlite.SQLiteDatabase
 import androidx.core.content.contentValuesOf
 import androidx.room.Room
@@ -18,10 +19,14 @@ import com.cradle.neptune.model.ReadingMetadata
 import com.cradle.neptune.model.Referral
 import com.cradle.neptune.model.Sex
 import com.cradle.neptune.model.UrineTest
+import com.cradle.neptune.testutils.assertEquals
+import com.cradle.neptune.testutils.assertThrows
 import com.cradle.neptune.utilitiles.DateUtil
 import com.cradle.neptune.utilitiles.Months
 import com.cradle.neptune.utilitiles.Weeks
+import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import java.util.UUID
@@ -37,6 +42,22 @@ class MigrationTests {
         CradleDatabase::class.java.canonicalName,
         FrameworkSQLiteOpenHelperFactory()
     )
+
+    @Before
+    fun before() {
+        getMigratedRoomDatabase().apply {
+            clearAllTables()
+            close()
+        }
+    }
+
+    @After
+    fun after() {
+        getMigratedRoomDatabase().apply {
+            clearAllTables()
+            close()
+        }
+    }
 
     /**
      * Tests migration to the latest database version.
@@ -88,9 +109,14 @@ class MigrationTests {
         // that the data was migrated properly. This includes checking that all properties for
         // unaltered columns are unchanged.
         val readingDao = getMigratedRoomDatabase().readingDao()
+        assertEquals(1, readingDao.getAllReadingEntities().size)
         readingDao.getReadingById(reading.id)?.let { readingFromMigratedDb ->
             assertEquals(reading, readingFromMigratedDb)
-        } ?: error("no reading")
+        } ?: error {
+            "Missing a reading after migration. Expected that the foreign key ON CASCADE DELETE was" +
+                "run inside of Reading. " +
+                "Please make sure the migrations use PRAGMA foreign_keys = OFF"
+        }
     }
 
     /**
@@ -180,6 +206,8 @@ class MigrationTests {
         // unaltered columns are unchanged.
         val patientDao = getMigratedRoomDatabase().patientDao()
 
+        assertEquals(3, patientDao.getPatientIdsList().size)
+
         // Test that the isExactDob is set depending on the nullity of dob and age.
         // patientWithExactDob has a non-null dob, so the dob should be exact.
         patientDao.getPatientById(patientWithExactDob.id)?.let { patientFromMigratedDb ->
@@ -197,6 +225,103 @@ class MigrationTests {
         patientDao.getPatientById(patientWithBothDobAndAgeOf19.id)?.let { patientFromMigratedDb ->
             assertEquals(patientWithBothDobAndAgeOf19, patientFromMigratedDb)
         } ?: error("no patient")
+    }
+
+    /**
+     * Tests migration to the latest database version and make sure the foreign key ON DELETE
+     * CASCADEs in [Reading] are not triggered during migration, and that foreign key checks are
+     * on after migration.
+     */
+    @Test
+    fun migrationTestForeignKeysAfterMigration() {
+        val patientId = "3453455"
+        val reading = createFirstVersionReading(patientId = patientId)
+        val reading2 = createFirstVersionReading(patientId = patientId)
+        val patientWithExactDob = Patient(
+            id = patientId,
+            name = "Exact dob",
+            dob = "1989-10-24",
+            isExactDob = true,
+            gestationalAge = GestationalAgeWeeks(Weeks(20L)),
+            sex = Sex.FEMALE,
+            isPregnant = true,
+            zone = null,
+            villageNumber = null,
+            drugHistory = "",
+            medicalHistory = "abc"
+        )
+
+        helper.createDatabase(TEST_DB, 1).apply {
+            // db has schema version 1. Need to insert some data using SQL queries.
+            // Can't use DAO classes; they expect the latest schema.
+            insertFirstVersionPatient(
+                database = this,
+                patient = patientWithExactDob,
+                ageForV1 = null
+            )
+
+            insertFirstVersionReading(
+                database = this, reading = reading
+            )
+
+            insertFirstVersionReading(
+                database = this, reading = reading2
+            )
+            // Prepare for the next version.
+            close()
+        }
+
+        // Check that the foreign keys ON DELETE CASCADE didn't get triggered by dropping and
+        // recreating the patient table
+        val database = getMigratedRoomDatabase()
+        val patientDao = database.patientDao()
+        assertEquals(1, patientDao.getPatientIdsList().size) {
+            "Mismatch in expected number of patients: got ${patientDao.getPatientIdsList().size}" +
+                " instead of 1"
+        }
+
+        val readingDao = database.readingDao()
+        assertEquals(2, readingDao.getAllReadingEntities().size) {
+            "Mismatch in expected number of patients: got " +
+                "${readingDao.getAllReadingEntities().size}" +
+                " instead of 2"
+        }
+
+        readingDao.getReadingById(reading.id)?.let { readingFromMigratedDb ->
+            assertEquals(reading, readingFromMigratedDb)
+        } ?: error {
+            "Missing a reading after migration. Expected that the foreign key ON CASCADE DELETE was" +
+                "run inside of Reading. " +
+                "Please make sure the migrations use PRAGMA foreign_keys = OFF"
+        }
+        readingDao.getReadingById(reading2.id)?.let { readingFromMigratedDb ->
+            assertEquals(reading2, readingFromMigratedDb)
+        } ?: error {
+            "Missing a reading after migration. Expected that the foreign key ON CASCADE DELETE was" +
+                "run inside of Reading. " +
+                "Please make sure the migrations use PRAGMA foreign_keys = OFF"
+        }
+
+        // Now, try inserting a reading for non-existent patient
+        val readingForNonExistentPatient = createFirstVersionReading(patientId = "NOPE")
+        val sqLiteException = assertThrows<SQLiteConstraintException> {
+            readingDao.insert(readingForNonExistentPatient)
+        }
+        assertEquals(
+            "FOREIGN KEY constraint failed (code 787 SQLITE_CONSTRAINT_FOREIGNKEY)",
+            sqLiteException.message
+        )
+
+        // Now, try deleting a patient and assert that all the readings associated with the
+        // patient are deleted
+        assertEquals(1, patientDao.deleteById(patientId))
+        assertEquals(0, patientDao.getPatientIdsList().size) {
+            "expected no patients in the database"
+        }
+        assertEquals(0, readingDao.getAllReadingEntities().size) {
+            "expected foreign key ON DELETE CASCADE for Readings, but it didn't happen"
+        }
+
     }
 
     private fun createFirstVersionReading(patientId: String): Reading {
