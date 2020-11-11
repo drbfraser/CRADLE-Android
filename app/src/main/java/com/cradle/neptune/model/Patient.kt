@@ -11,6 +11,7 @@ import androidx.room.PrimaryKey
 import androidx.room.Relation
 import com.cradle.neptune.R
 import com.cradle.neptune.ext.Field
+import com.cradle.neptune.ext.longField
 import com.cradle.neptune.ext.map
 import com.cradle.neptune.ext.mapField
 import com.cradle.neptune.ext.optArrayField
@@ -24,7 +25,6 @@ import com.cradle.neptune.utilitiles.Months
 import com.cradle.neptune.utilitiles.Seconds
 import com.cradle.neptune.utilitiles.UnixTimestamp
 import com.cradle.neptune.utilitiles.Weeks
-import com.fasterxml.jackson.annotation.JsonProperty
 import kotlinx.android.parcel.Parcelize
 import org.json.JSONException
 import org.json.JSONObject
@@ -70,7 +70,7 @@ import kotlin.reflect.KProperty
     ]
 )
 data class Patient(
-    @PrimaryKey @ColumnInfo @JsonProperty("id")
+    @PrimaryKey @ColumnInfo
     var id: String = "",
     @ColumnInfo var name: String = "",
     @ColumnInfo var dob: String? = null,
@@ -406,9 +406,13 @@ data class Patient(
             // Server returns a String for drug and medical histories.
             // TODO: see Patient doc comment for the note
             drugHistoryList = data.optStringField(PatientField.DRUG_HISTORY)
-                ?.run { if (isBlank()) emptyList() else listOf(this) } ?: emptyList()
+                ?.ifBlank { null }
+                ?.run { listOf(this) }
+                ?: emptyList()
             medicalHistoryList = data.optStringField(PatientField.MEDICAL_HISTORY)
-                ?.run { if (isBlank()) emptyList() else listOf(this) } ?: emptyList()
+                ?.ifBlank { null }
+                ?.run { listOf(this) }
+                ?: emptyList()
             lastEdited = data.optLongField(PatientField.LAST_EDITED)
             base = data.optLongField(PatientField.BASE)
         }
@@ -533,7 +537,7 @@ sealed class GestationalAge(val timestamp: Long) : Marshal<JSONObject>, Serializ
          */
         override fun unmarshal(data: JSONObject): GestationalAge {
             val units = data.stringField(PatientField.GESTATIONAL_AGE_UNIT)
-            val value = data.stringField(PatientField.GESTATIONAL_AGE_VALUE).toLong()
+            val value = data.longField(PatientField.GESTATIONAL_AGE_VALUE)
             return when (units) {
                 UNIT_VALUE_WEEKS -> GestationalAgeWeeks(value)
                 UNIT_VALUE_MONTHS -> GestationalAgeMonths(value)

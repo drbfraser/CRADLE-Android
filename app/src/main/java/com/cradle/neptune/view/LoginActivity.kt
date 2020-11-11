@@ -13,6 +13,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.cradle.neptune.R
 import com.cradle.neptune.ext.hideKeyboard
 import com.cradle.neptune.manager.LoginManager
@@ -26,9 +27,9 @@ import com.google.android.gms.security.ProviderInstaller
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.net.HttpURLConnection.HTTP_UNAUTHORIZED
 import javax.inject.Inject
 import javax.net.ssl.SSLHandshakeException
 
@@ -93,7 +94,7 @@ class LoginActivity : AppCompatActivity() {
             val progressDialog = progressDialog
             passwordET.hideKeyboard()
 
-            MainScope().launch {
+            lifecycleScope.launch {
                 val email = emailET.text.toString()
                 val password = passwordET.text.toString()
                 val result = loginManager.login(email, password)
@@ -109,8 +110,17 @@ class LoginActivity : AppCompatActivity() {
                         startIntroActivity()
                     }
                     is Failure -> {
-                        errorText.visibility = View.VISIBLE
-                        errorText.text = getString(R.string.login_error)
+                        errorText.apply {
+                            visibility = View.VISIBLE
+                            text = if (result.statusCode == HTTP_UNAUTHORIZED) {
+                                getString(R.string.login_error)
+                            } else {
+                                getString(
+                                    R.string.login_error_with_status_code,
+                                    result.statusCode
+                                )
+                            }
+                        }
                     }
                     is NetworkException -> {
                         errorText.visibility = View.VISIBLE
@@ -127,7 +137,10 @@ class LoginActivity : AppCompatActivity() {
                             // working-with-tls-1-2-on-android-4-4-and-lower-f4f5205629a
                             attemptProviderInstallerUpdate()
                         } else {
-                            errorText.text = getString(R.string.login_error_general_error)
+                            errorText.text = getString(
+                                R.string.login_error_general_error_exception_name,
+                                result.cause.javaClass.simpleName
+                            )
                         }
                     }
                 }

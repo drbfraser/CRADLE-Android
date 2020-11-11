@@ -66,7 +66,8 @@ class RestApi @Inject constructor(
      * is parsed by the [inputStreamHandlerBlock]. It's expected that the
      * [Patient]s and [Reading]s parsed are inserted into the database during
      * parsing so that there are not a lot of [Patient] and [Reading] objects
-     * stuck in memory.
+     * stuck in memory. The [inputStreamHandlerBlock] isn't expected to close
+     * the given [InputStream].
      *
      * Only the patient's managed by this user will be returned in the [InputStream].
      * A patient is considered "managed" if it has an association with the logged-in

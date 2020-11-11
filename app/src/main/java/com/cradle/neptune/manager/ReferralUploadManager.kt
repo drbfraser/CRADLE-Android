@@ -8,9 +8,8 @@ import com.cradle.neptune.net.NetworkException
 import com.cradle.neptune.net.NetworkResult
 import com.cradle.neptune.net.RestApi
 import com.cradle.neptune.net.Success
+import java.net.HttpURLConnection.HTTP_NOT_FOUND
 import javax.inject.Inject
-
-private const val HTTP_NOT_FOUND = 404
 
 /**
  * Manages uploading referrals via HTTP.

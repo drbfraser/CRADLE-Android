@@ -207,12 +207,12 @@ class SyncStepperImplementation(
             val result = patientManager.downloadPatientAndReading(it)
             when (result) {
                 is Success -> {
-                    patientManager.add(result.value.patient)
-                    val readings = result.value.readings
-                    readings.forEach { reading ->
-                        reading.isUploadedToServer = true
-                    }
-                    readingManager.addAllReadings(readings)
+                    patientManager.addPatientWithReadings(
+                        patient = result.value.patient,
+                        readings = result.value.readings,
+                        areReadingsFromServer = true,
+                        isPatientNew = true
+                    )
                 }
             }
             checkIfAllDataIsDownloaded(result, context)

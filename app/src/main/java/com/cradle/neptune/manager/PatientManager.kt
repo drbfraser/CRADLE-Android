@@ -1,5 +1,6 @@
 package com.cradle.neptune.manager
 
+import androidx.room.withTransaction
 import com.cradle.neptune.database.CradleDatabase
 import com.cradle.neptune.database.daos.PatientDao
 import com.cradle.neptune.database.daos.ReadingDao
@@ -14,7 +15,6 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
-import java.util.ArrayList
 import javax.inject.Inject
 
 /**
@@ -30,13 +30,8 @@ class PatientManager @Inject constructor(
     /**
      * add a single patient
      */
-    suspend fun add(patient: Patient) = withContext(IO) { patientDao.insert(patient) }
-
-    /**
-     * add all patients
-     */
-    suspend fun addAll(patients: ArrayList<Patient>) = withContext(IO) {
-        patientDao.insertAll(patients)
+    suspend fun add(patient: Patient) = withContext(IO) {
+        patientDao.updateOrInsertIfNotExists(patient)
     }
 
     /**
@@ -58,8 +53,8 @@ class PatientManager @Inject constructor(
                 )
             }
 
-            database.runInTransaction {
-                patientDao.insert(patient)
+            database.withTransaction {
+                patientDao.updateOrInsertIfNotExists(patient)
                 if (isReadingFromServer) {
                     reading.isUploadedToServer = true
                 }
@@ -69,7 +64,7 @@ class PatientManager @Inject constructor(
     }
 
     /**
-     * Adds a patient and its readings to the local databse in a single transaction.
+     * Adds a patient and its readings to the local database in a single transaction.
      * The [readings] should be for the given [patient].
      *
      * @throws IllegalArgumentException if any of the [readings] have a different patient ID from
@@ -78,26 +73,26 @@ class PatientManager @Inject constructor(
     suspend fun addPatientWithReadings(
         patient: Patient,
         readings: List<Reading>,
-        areReadingsFromServer: Boolean
+        areReadingsFromServer: Boolean,
+        isPatientNew: Boolean = false
     ) {
         withContext(IO) {
             readings.forEach {
                 if (it.patientId != patient.id) {
                     throw IllegalArgumentException("mismatched ID")
                 }
+                if (areReadingsFromServer) {
+                    it.isUploadedToServer = true
+                }
             }
 
-            database.runInTransaction {
-                patientDao.insert(patient)
-                if (areReadingsFromServer) {
-                    // Insert them all individually to set isUploadedToServer
-                    readings.forEach {
-                        it.isUploadedToServer = true
-                        readingDao.insert(it)
-                    }
+            database.withTransaction {
+                if (isPatientNew) {
+                    patientDao.insert(patient)
                 } else {
-                    readingDao.insertAll(readings)
+                    patientDao.updateOrInsertIfNotExists(patient)
                 }
+                readingDao.insertAll(readings)
             }
         }
     }
@@ -107,7 +102,7 @@ class PatientManager @Inject constructor(
      */
     suspend fun delete(id: String) {
         withContext(IO) {
-            getPatientById(id)?.let { patientDao.delete(it) }
+            patientDao.deleteById(id)
         }
     }
 
@@ -115,13 +110,6 @@ class PatientManager @Inject constructor(
      * delete all the patients
      */
     suspend fun deleteAll() = withContext(IO) { patientDao.deleteAllPatients() }
-
-    /**
-     * get all the patients
-     */
-    suspend fun getAllPatients(): List<Patient> = withContext(IO) {
-        patientDao.getAllPatients()
-    }
 
     /**
      * get a list of patient ids for all patients.
@@ -155,7 +143,7 @@ class PatientManager @Inject constructor(
      * get edited Patients that also exists on the server
      */
     suspend fun getEditedPatients(timeStamp: Long): List<Patient> =
-        withContext(IO) { patientDao.getEditedPatients(timeStamp) }
+        withContext(IO) { patientDao.getEditedPatientsAfterTime(timeStamp) }
 
     /**
      * Uploads a patient and associated readings to the server.

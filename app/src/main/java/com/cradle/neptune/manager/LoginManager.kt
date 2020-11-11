@@ -26,9 +26,8 @@ import kotlinx.coroutines.withContext
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
+import java.net.HttpURLConnection.HTTP_OK
 import javax.inject.Inject
-
-private const val HTTP_OK = 200
 
 /**
  * Manages logging the user into the server and setting up the application once
@@ -124,7 +123,8 @@ class LoginManager @Inject constructor(
                     patientManager.addPatientWithReadings(
                         patientAndReadings.patient,
                         patientAndReadings.readings,
-                        areReadingsFromServer = true
+                        areReadingsFromServer = true,
+                        isPatientNew = true
                     )
                 }
             }
@@ -135,7 +135,7 @@ class LoginManager @Inject constructor(
                 // that into a String.
                 mapper.createParser(inputStream).use { parser ->
                     if (parser.nextToken() != JsonToken.START_ARRAY) {
-                        throw IOException()
+                        throw IOException("expected JSON array input")
                     }
 
                     while (parser.nextToken() != JsonToken.END_ARRAY) {
@@ -151,14 +151,24 @@ class LoginManager @Inject constructor(
                     }
                 }
             }
-            if (result !is Success) {
-                Log.e(TAG, "Failed to download patients")
+            when (result) {
+                is Success -> Log.d(TAG, "Patients and readings download successful!")
+                is Failure -> Log.e(
+                    TAG,
+                    "Patient and readings download failed, " +
+                        "got status code: ${result.statusCode}"
+                )
+                is NetworkException -> Log.e(
+                    TAG,
+                    "Patient and readings download failed, encountered exception",
+                    result.cause
+                )
             }
 
             channel.close()
             databaseJob.join()
             val endTime = System.currentTimeMillis()
-            Log.d(TAG, "Patient download and insertion took ${endTime - startTime} ms")
+            Log.d(TAG, "Patient/readings download overall took ${endTime - startTime} ms")
         }
 
         val healthFacilityJob = launch {
