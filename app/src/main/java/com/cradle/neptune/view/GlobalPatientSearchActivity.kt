@@ -57,7 +57,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_global_patient_search)
 
-        localPatientSetDeferred = lifecycleScope.async(Dispatchers.Main) {
+        localPatientSetDeferred = lifecycleScope.async(Dispatchers.Default) {
             patientManager.getPatientIdsOnly().toHashSet()
         }
 
