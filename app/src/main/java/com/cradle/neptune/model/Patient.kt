@@ -11,6 +11,7 @@ import androidx.room.PrimaryKey
 import androidx.room.Relation
 import com.cradle.neptune.R
 import com.cradle.neptune.ext.Field
+import com.cradle.neptune.ext.longField
 import com.cradle.neptune.ext.map
 import com.cradle.neptune.ext.mapField
 import com.cradle.neptune.ext.optArrayField
@@ -533,7 +534,7 @@ sealed class GestationalAge(val timestamp: Long) : Marshal<JSONObject>, Serializ
          */
         override fun unmarshal(data: JSONObject): GestationalAge {
             val units = data.stringField(PatientField.GESTATIONAL_AGE_UNIT)
-            val value = data.stringField(PatientField.GESTATIONAL_AGE_VALUE).toLong()
+            val value = data.longField(PatientField.GESTATIONAL_AGE_VALUE)
             return when (units) {
                 UNIT_VALUE_WEEKS -> GestationalAgeWeeks(value)
                 UNIT_VALUE_MONTHS -> GestationalAgeMonths(value)
