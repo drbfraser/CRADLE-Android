@@ -58,7 +58,7 @@ class PatientAndReadingsTests {
     fun `test the unmarshalling`() {
         // Check that the JSON and the PatientsAndReadings object can actually unmarshal
         // and be parsed correctly.
-        val jsonArray = JSONArray(CommonPatientReadingJsons.bothPatientsInArray.first)
+        val jsonArray = JSONArray(CommonPatientReadingJsons.allPatientsJsonExpectedPair.first)
         val unmarshalPatientAndReadings = jsonArray.map(
             JSONArray::getJSONObject,
             PatientAndReadings.Companion::unmarshal
@@ -68,7 +68,7 @@ class PatientAndReadingsTests {
             val (unmarshalPatient, unmarshalReadings) =
                 unmarshaledPatientAndReadings.patient to unmarshaledPatientAndReadings.readings
 
-            CommonPatientReadingJsons.bothPatientsInArray.second.find {
+            CommonPatientReadingJsons.allPatientsJsonExpectedPair.second.find {
                 it.patient.id == unmarshalPatient.id
             }?.let { expectedPatientAndReadings ->
                 assertEquals(expectedPatientAndReadings.patient, unmarshalPatient) {

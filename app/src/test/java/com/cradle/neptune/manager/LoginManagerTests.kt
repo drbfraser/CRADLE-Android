@@ -133,7 +133,9 @@ internal class LoginManagerTests {
         } coAnswers {
             // Simulate the network sending over the JSON as a stream of bytes.
             val inputStreamBlock = arg<suspend (InputStream) -> Unit>(0)
-            val jsonStream = CommonPatientReadingJsons.bothPatientsInArray.first.byteInputStream()
+            val jsonStream = CommonPatientReadingJsons
+                .allPatientsJsonExpectedPair.first
+                .byteInputStream()
             inputStreamBlock(jsonStream)
             Success(Unit, 200)
         }
@@ -331,7 +333,8 @@ internal class LoginManagerTests {
             }
 
             assertEquals(
-                CommonPatientReadingJsons.bothPatientsInArray.second.size, fakePatientDatabase.size
+                CommonPatientReadingJsons.allPatientsJsonExpectedPair.second.size,
+                fakePatientDatabase.size
             ) {
                 "parsing the patients failed: not enough patients parsed"
             }
@@ -344,7 +347,8 @@ internal class LoginManagerTests {
             }
 
             // Verify that the streamed parsing via Jackson was correct.
-            val expectedPatientAndReadings = CommonPatientReadingJsons.bothPatientsInArray.second
+            val expectedPatientAndReadings = CommonPatientReadingJsons
+                .allPatientsJsonExpectedPair.second
             expectedPatientAndReadings.forEach { patientAndReadings ->
                 val (expectedPatient, expectedReadings) =
                     patientAndReadings.patient to patientAndReadings.readings.map {

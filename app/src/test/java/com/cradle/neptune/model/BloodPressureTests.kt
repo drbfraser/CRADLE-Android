@@ -1,16 +1,11 @@
 package com.cradle.neptune.model
 
 import android.content.Context
-import android.text.TextUtils
-import androidx.annotation.StringRes
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.lang.IllegalArgumentException
-import java.lang.IllegalStateException
 
 class BloodPressureTests {
 
@@ -18,11 +13,11 @@ class BloodPressureTests {
 
     @BeforeEach
     fun beforeEach() {
-        every { mockContext.getString(any(), *anyVararg()) } answers { getMockStringFromResId(arg(0)) }
-        every { mockContext.getString(any()) } answers { getMockStringFromResId(arg(0)) }
+        every { mockContext.getString(any(), *anyVararg()) } answers { getMockStringFromResId() }
+        every { mockContext.getString(any()) } answers { getMockStringFromResId() }
     }
 
-    private fun getMockStringFromResId(@StringRes resId: Int): String {
+    private fun getMockStringFromResId(): String {
         return "mocked error message"
     }
 
