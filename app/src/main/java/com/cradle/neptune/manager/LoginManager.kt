@@ -3,13 +3,16 @@ package com.cradle.neptune.manager
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.core.content.edit
 import com.cradle.neptune.R
+import com.cradle.neptune.database.CradleDatabase
 import com.cradle.neptune.model.PatientAndReadings
 import com.cradle.neptune.net.Failure
 import com.cradle.neptune.net.NetworkException
 import com.cradle.neptune.net.RestApi
 import com.cradle.neptune.net.Success
 import com.cradle.neptune.sync.SyncStepperImplementation
+import com.cradle.neptune.utilitiles.SharedPreferencesMigration
 import com.cradle.neptune.utilitiles.UnixTimestamp
 import com.fasterxml.jackson.core.JsonToken
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -34,6 +37,7 @@ private const val HTTP_OK = 200
 class LoginManager @Inject constructor(
     private val restApi: RestApi,
     private val sharedPreferences: SharedPreferences,
+    private val database: CradleDatabase,
     private val patientManager: PatientManager,
     private val healthFacilityManager: HealthFacilityManager,
     @ApplicationContext private val context: Context
@@ -44,6 +48,18 @@ class LoginManager @Inject constructor(
         const val TOKEN_KEY = "token"
         const val EMAIL_KEY = "loginEmail"
         const val USER_ID_KEY = "userId"
+    }
+
+    fun isLoggedIn(): Boolean {
+        sharedPreferences.run {
+            if (!contains(TOKEN_KEY)) {
+                return false
+            }
+            if (!contains(USER_ID_KEY)) {
+                return false
+            }
+        }
+        return true
     }
 
     /**
@@ -79,12 +95,11 @@ class LoginManager @Inject constructor(
                     null
                 }
 
-                with(sharedPreferences.edit()) {
+                sharedPreferences.edit {
                     putString(TOKEN_KEY, token)
                     putInt(USER_ID_KEY, userId)
                     putString(EMAIL_KEY, email)
                     putString(context.getString(R.string.key_vht_name), name)
-                    apply()
                 }
             }
 
@@ -185,11 +200,30 @@ class LoginManager @Inject constructor(
 
         joinAll(patientsJob, healthFacilityJob)
 
-        with(sharedPreferences.edit()) {
+        sharedPreferences.edit {
             putLong(SyncStepperImplementation.LAST_SYNC, loginTime)
-            apply()
+            putInt(
+                SharedPreferencesMigration.KEY_SHARED_PREFERENCE_VERSION,
+                SharedPreferencesMigration.LATEST_SHARED_PREF_VERSION
+            )
         }
 
         Success(Unit, HTTP_OK)
+    }
+
+    suspend fun logout(): Unit = withContext(Dispatchers.IO) {
+        val (hostname, port) =
+            sharedPreferences.getString(context.getString(R.string.key_server_hostname), null) to
+                sharedPreferences.getString(context.getString(R.string.key_server_port), null)
+
+        sharedPreferences.edit(commit = true) {
+            clear()
+            hostname?.let { putString(context.getString(R.string.key_server_hostname), it) }
+            port?.let { putString(context.getString(R.string.key_server_port), it) }
+        }
+
+        database.run {
+            clearAllTables()
+        }
     }
 }
