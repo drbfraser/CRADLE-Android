@@ -3,6 +3,7 @@ package com.cradle.neptune.database
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import androidx.core.content.contentValuesOf
 import androidx.core.database.getIntOrNull
 import androidx.core.database.getStringOrNull
 import androidx.room.Database
@@ -32,7 +33,7 @@ import com.cradle.neptune.utilitiles.DateUtil
 @Database(
     entities = [Reading::class, Patient::class, HealthFacility::class],
     views = [LocalSearchPatient::class],
-    version = 7,
+    version = 8,
     exportSchema = true
 )
 @TypeConverters(DatabaseTypeConverters::class)
@@ -83,7 +84,8 @@ internal object Migrations {
             MIGRATION_3_4,
             MIGRATION_4_5,
             MIGRATION_5_6,
-            MIGRATION_6_7
+            MIGRATION_6_7,
+            MIGRATION_7_8
         )
     }
 
@@ -400,6 +402,71 @@ CREATE TABLE IF NOT EXISTS `new_Reading` (
                     )
                     execSQL("DROP TABLE Reading")
                     execSQL("ALTER TABLE new_Reading RENAME TO Reading")
+
+                    setTransactionSuccessful()
+                } finally {
+                    endTransaction()
+                    execSQL("PRAGMA foreign_keys = ON")
+                }
+            }
+        }
+    }
+
+    /**
+     * Version 8:
+     * Change drug and medical history in [Patient] to just be strings instead of List<String>.
+     * It's a paragraph entry, so doesn't make sense to assume it's a list.
+     * Also, the column names were changed
+     */
+    private val MIGRATION_7_8 = object : Migration(7, 8) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.apply {
+                execSQL("PRAGMA foreign_keys = OFF")
+                beginTransaction()
+                try {
+                    execSQL(
+                        "ALTER TABLE `Patient` " +
+                            "RENAME COLUMN `drugHistoryList` to `drugHistory`"
+                    )
+                    execSQL(
+                        "ALTER TABLE `Patient` " +
+                            "RENAME COLUMN `medicalHistoryList` to `medicalHistory`"
+                    )
+
+                    // Now, we have to convert all of the lists in the database to just strings
+                    val medicalDrugHistoryQuery = SupportSQLiteQueryBuilder.builder("Patient")
+                        .columns(arrayOf("id", "drugHistory", "medicalHistory"))
+                        .create()
+
+                    val typeConverter = DatabaseTypeConverters()
+                    database.query(medicalDrugHistoryQuery).use { cursor ->
+                        while (cursor != null && cursor.moveToNext()) {
+                            val id = cursor.getString(cursor.getColumnIndexOrThrow("id"))
+                            val drugHistoryAsList = cursor
+                                .getString(cursor.getColumnIndexOrThrow("drugHistory"))
+                            val medicalHistoryAsList = cursor
+                                .getString(cursor.getColumnIndexOrThrow("medicalHistory"))
+
+                            // It's a non-null column
+                            val drugHistory = typeConverter.toStringList(drugHistoryAsList)!!
+                                .joinToString(",")
+                            val medicalHistory = typeConverter.toStringList(medicalHistoryAsList)!!
+                                .joinToString(",")
+
+                            val updateValues = contentValuesOf(
+                                "drugHistory" to drugHistory,
+                                "medicalHistory" to medicalHistory
+                            )
+
+                            database.update(
+                                "Patient" /* table */,
+                                SQLiteDatabase.CONFLICT_REPLACE /* conflictAlgorithm */,
+                                updateValues /* values */,
+                                "id = ?" /* whereClause */,
+                                arrayOf(id) /* whereArgs */
+                            )
+                        }
+                    }
 
                     setTransactionSuccessful()
                 } finally {

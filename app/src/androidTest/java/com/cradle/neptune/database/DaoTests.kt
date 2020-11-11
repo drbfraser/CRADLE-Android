@@ -51,7 +51,7 @@ class DaoTests {
             ApplicationProvider.getApplicationContext(),
             CradleDatabase::class.java,
             DATABASE
-        ).build()
+        ).fallbackToDestructiveMigration().build()
         // Close the database and release any stream resources when the test finishes
         helper.closeWhenFinished(database)
         return database
@@ -88,8 +88,8 @@ class DaoTests {
                 isPregnant = true,
                 zone = null,
                 villageNumber = null,
-                drugHistoryList = emptyList(),
-                medicalHistoryList = emptyList()
+                drugHistory = "",
+                medicalHistory = ""
             ),
             Patient(
                 id = "2",
@@ -101,8 +101,8 @@ class DaoTests {
                 isPregnant = true,
                 zone = "45",
                 villageNumber = "2333",
-                drugHistoryList = emptyList(),
-                medicalHistoryList = emptyList()
+                drugHistory = "",
+                medicalHistory = ""
             ),
         )
 
@@ -125,8 +125,8 @@ class DaoTests {
             isPregnant = true,
             zone = null,
             villageNumber = null,
-            drugHistoryList = emptyList(),
-            medicalHistoryList = emptyList()
+            drugHistory = "",
+            medicalHistory = ""
         )
 
         val rowIdsForMixOfExistingAndNewPatients =
@@ -259,8 +259,8 @@ class DaoTests {
             isPregnant = true,
             zone = null,
             villageNumber = null,
-            drugHistoryList = emptyList(),
-            medicalHistoryList = emptyList()
+            drugHistory = "Drug hsitroy",
+            medicalHistory = "Asthma"
         )
         val reading = createReading(patientId)
         return patient to reading

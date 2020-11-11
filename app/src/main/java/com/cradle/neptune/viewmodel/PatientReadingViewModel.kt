@@ -708,12 +708,12 @@ class PatientReadingViewModel @ViewModelInject constructor(
         get() = patientBuilder.get<String?>(Patient::villageNumber)
 
     /** Used in two-way Data Binding with PatientInfoFragment */
-    val patientDrugHistory: MutableLiveData<List<String>> =
-        patientBuilder.get<List<String>>(Patient::drugHistoryList, defaultValue = emptyList())
+    val patientDrugHistory: MutableLiveData<String> =
+        patientBuilder.get<String>(Patient::drugHistory, defaultValue = "")
 
     /** Used in two-way Data Binding with PatientInfoFragment */
-    val patientMedicalHistory: MutableLiveData<List<String>> =
-        patientBuilder.get<List<String>>(Patient::medicalHistoryList, defaultValue = emptyList())
+    val patientMedicalHistory: MutableLiveData<String> =
+        patientBuilder.get<String>(Patient::medicalHistory, defaultValue = "")
 
     val patientLastEdited: MutableLiveData<Long?>
         get() = patientBuilder.get<Long?>(Patient::lastEdited)

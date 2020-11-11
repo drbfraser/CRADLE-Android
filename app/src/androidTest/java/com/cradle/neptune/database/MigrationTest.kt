@@ -64,8 +64,8 @@ class MigrationTests {
             isPregnant = true,
             zone = null,
             villageNumber = null,
-            drugHistoryList = emptyList(),
-            medicalHistoryList = emptyList()
+            drugHistory = "",
+            medicalHistory = "abc"
         )
 
         helper.createDatabase(TEST_DB, 1).apply {
@@ -116,8 +116,8 @@ class MigrationTests {
             isPregnant = true,
             zone = null,
             villageNumber = null,
-            drugHistoryList = emptyList(),
-            medicalHistoryList = emptyList()
+            drugHistory = "",
+            medicalHistory = "Asthma"
         )
         val patientWithApproxAgeOf23 = Patient(
             id = "2",
@@ -129,8 +129,8 @@ class MigrationTests {
             isPregnant = true,
             zone = "zone2",
             villageNumber = "villageNumber2",
-            drugHistoryList = listOf("drug history 2"),
-            medicalHistoryList = listOf("drug history 2")
+            drugHistory = "drug history 2",
+            medicalHistory = "drug history 2"
         )
         val patientWithBothDobAndAgeOf19 = Patient(
             id = "3",
@@ -142,8 +142,8 @@ class MigrationTests {
             isPregnant = false,
             zone = "zone3",
             villageNumber = "villageNumber3",
-            drugHistoryList = listOf("drug history 3"),
-            medicalHistoryList = listOf("medical history 3")
+            drugHistory = "drug history 3",
+            medicalHistory = "medical history 3"
         )
 
         helper.createDatabase(TEST_DB, 1).apply {
@@ -302,8 +302,9 @@ class MigrationTests {
                 "isPregnant" to isPregnant,
                 "zone" to zone,
                 "villageNumber" to villageNumber,
-                "drugHistoryList" to typeConverter.fromStringList(drugHistoryList),
-                "medicalHistoryList" to typeConverter.fromStringList(medicalHistoryList),
+                // The schema prior to version 8 has these as non-null List<String>
+                "drugHistoryList" to typeConverter.fromStringList(listOf(drugHistory))!!,
+                "medicalHistoryList" to typeConverter.fromStringList(listOf(medicalHistory))!!,
                 "lastEdited" to lastEdited,
                 "base" to base
             )
