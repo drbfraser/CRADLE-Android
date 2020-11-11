@@ -330,17 +330,12 @@ internal class LoginManagerTests {
                 "wrong health facility selected"
             }
 
-            assertEquals(2, fakePatientDatabase.size) { "parsing the patients failed" }
-            fakePatientDatabase[0].run {
-                assertEquals("3459834789348", id)
-                assertEquals("Test patient", name)
-            }
-            fakePatientDatabase[1].run {
-                assertEquals("123456", id)
-                assertEquals("Another patient", name)
+            assertEquals(
+                CommonPatientReadingJsons.bothPatientsInArray.second.size, fakePatientDatabase.size
+            ) {
+                "parsing the patients failed: not enough patients parsed"
             }
 
-            assertEquals(2, fakeReadingDatabase.size) { "parsing the readings failed" }
             fakeReadingDatabase.forEach {
                 assert(it.isUploadedToServer)
             }

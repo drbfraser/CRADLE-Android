@@ -28,6 +28,16 @@ class PatientAndReadingsTests {
     }
 
     @Test
+    fun `test single unmarshal with referral and follow up`() {
+        val (jsonString, expected) = CommonPatientReadingJsons.patientWithReferralAndFollowup
+
+        val jsonObject = JSONObject(jsonString)
+        val patientAndReadingsUnmarshal = PatientAndReadings.unmarshal(jsonObject)
+        assertEquals(expected.patient, patientAndReadingsUnmarshal.patient)
+        assertEquals(expected.readings, patientAndReadingsUnmarshal.readings)
+    }
+
+    @Test
     fun `test the unmarshalling`() {
         // Check that the JSON and the PatientsAndReadings object can actually unmarshal
         // and be parsed correctly.
