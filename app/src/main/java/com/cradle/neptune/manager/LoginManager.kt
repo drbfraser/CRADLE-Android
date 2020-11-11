@@ -136,7 +136,7 @@ class LoginManager @Inject constructor(
                 // that into a String.
                 mapper.createParser(inputStream).use { parser ->
                     if (parser.nextToken() != JsonToken.START_ARRAY) {
-                        throw IOException()
+                        throw IOException("expected JSON array input")
                     }
 
                     while (parser.nextToken() != JsonToken.END_ARRAY) {

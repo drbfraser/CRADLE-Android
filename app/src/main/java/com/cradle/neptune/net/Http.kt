@@ -4,6 +4,7 @@ import android.util.Log
 import com.cradle.neptune.model.Marshal
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
@@ -76,7 +77,7 @@ InputStream from the HTTPUrlConnection.
      * @param timeout the connect and read timeout; defaults to 30 seconds
      * @param inputStreamHandler A lambda that handles the [InputStream]. If [requestWithStream]
      * returns a [Success], the value inside of the [Success] will be the return value of
-     * the [inputStreamHandler] lambda.
+     * the [inputStreamHandler] lambda. Not expected to close the given [InputStream].
      * @return The result of the network request
      * @throws java.net.MalformedURLException if [url] is malformed
      */
@@ -114,7 +115,7 @@ InputStream from the HTTPUrlConnection.
                     val responseBody = errorStream.use { it.readBytes() }
                     Failure(responseBody, responseCode)
                 }
-            } catch (ex: Exception) {
+            } catch (ex: IOException) {
                 Log.e("HTTP", "$message - Exception", ex)
                 NetworkException(ex)
             }
@@ -175,7 +176,7 @@ InputStream from the HTTPUrlConnection.
      * @param body an optional body to send along with the request
      * @param inputStreamHandler A lambda that handles the [InputStream]. If [requestWithStream]
      * returns a [Success], the value inside of the [Success] will be the return value of
-     * the [inputStreamHandler] lambda.
+     * the [inputStreamHandler] lambda. Not expected to close the given [InputStream].
      * @return the result of the network request
      * @throws java.net.MalformedURLException if [url] is malformed
      * @throws org.json.JSONException if the response body is not JSON
