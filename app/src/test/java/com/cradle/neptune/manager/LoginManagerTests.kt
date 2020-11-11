@@ -232,7 +232,10 @@ internal class LoginManagerTests {
         every { close() } returns Unit
     }
     private val mockPatientDao = mockk<PatientDao> {
-        every { insert(any()) } answers { fakePatientDatabase.add(firstArg()) }
+        every { insert(any()) } answers {
+            fakePatientDatabase.add(firstArg())
+            5L
+        }
     }
     private val mockReadingDao = mockk<ReadingDao> {
         every { insertAll(any()) } answers {

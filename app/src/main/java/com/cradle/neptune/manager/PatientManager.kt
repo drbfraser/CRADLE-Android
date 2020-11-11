@@ -14,7 +14,6 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
-import java.util.ArrayList
 import javax.inject.Inject
 
 /**
@@ -32,13 +31,6 @@ class PatientManager @Inject constructor(
      */
     suspend fun add(patient: Patient) =
         withContext(IO) { patientDao.updateOrInsertIfNotExists(patient) }
-
-    /**
-     * add all patients
-     */
-    suspend fun addAll(patients: ArrayList<Patient>) = withContext(IO) {
-        patientDao.updateOrInsertAllIfNotExists(patients)
-    }
 
     /**
      * Adds a patient and its reading to the database in a single transaction.
@@ -108,7 +100,7 @@ class PatientManager @Inject constructor(
      */
     suspend fun delete(id: String) {
         withContext(IO) {
-            getPatientById(id)?.let { patientDao.delete(it) }
+            patientDao.deleteById(id)
         }
     }
 
@@ -116,13 +108,6 @@ class PatientManager @Inject constructor(
      * delete all the patients
      */
     suspend fun deleteAll() = withContext(IO) { patientDao.deleteAllPatients() }
-
-    /**
-     * get all the patients
-     */
-    suspend fun getAllPatients(): List<Patient> = withContext(IO) {
-        patientDao.getAllPatients()
-    }
 
     /**
      * get a list of patient ids for all patients.
@@ -156,7 +141,7 @@ class PatientManager @Inject constructor(
      * get edited Patients that also exists on the server
      */
     suspend fun getEditedPatients(timeStamp: Long): List<Patient> =
-        withContext(IO) { patientDao.getEditedPatients(timeStamp) }
+        withContext(IO) { patientDao.getEditedPatientsAfterTime(timeStamp) }
 
     /**
      * Uploads a patient and associated readings to the server.
