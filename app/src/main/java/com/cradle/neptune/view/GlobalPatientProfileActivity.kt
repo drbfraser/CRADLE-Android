@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.view.View.VISIBLE
 import android.widget.Button
 import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradle.neptune.R
@@ -20,7 +21,6 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.reading_card_assesment.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -66,7 +66,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         progressDialog.setMessage(getString(R.string.global_patient_profile_add_dialog_message))
         progressDialog.show()
 
-        MainScope().launch {
+        lifecycleScope.launch {
             val result = patientManager.associatePatientWithUser(currPatient.id)
             if (result.failed) {
                 progressDialog.cancel()
@@ -115,7 +115,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
             getString(R.string.global_patient_profile_fetch_patient_dialog_message)
         )
         progressDialog.show()
-        MainScope().launch {
+        lifecycleScope.launch {
             val result = patientManager.downloadPatientAndReading(globalPatient.id)
             if (result !is Success) {
                 progressDialog.cancel()

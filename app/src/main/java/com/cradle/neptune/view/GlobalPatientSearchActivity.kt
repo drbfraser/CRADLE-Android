@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradle.neptune.R
@@ -23,7 +24,6 @@ import com.cradle.neptune.viewmodel.GlobalPatientAdapter
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -54,7 +54,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_global_patient_search)
-        MainScope().launch {
+        lifecycleScope.launch {
             localPatientSet = patientManager.getPatientIdsOnly().toHashSet()
         }
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -97,7 +97,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         )
         progressDialog.show()
 
-        MainScope().launch {
+        lifecycleScope.launch {
             val result = restApi.searchForPatient(searchUrl)
             progressDialog.cancel()
             searchView.hideKeyboard()
@@ -177,7 +177,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
      */
     private fun startActivityForPatient(patient: GlobalPatient, isLocal: Boolean) {
         if (isLocal) {
-            MainScope().launch {
+            lifecycleScope.launch {
                 withContext(Dispatchers.IO) {
                     val localPatient = patientManager.getPatientById(patient.id)
                     val intent =
@@ -206,7 +206,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
             getString(R.string.global_patient_search_adding_to_your_patient_list)
         )
         progressDialog.show()
-        MainScope().launch {
+        lifecycleScope.launch {
             when (patientManager.downloadAssociateAndSavePatient(patient.id)) {
                 is Success -> {
                     localPatientSet.add(patient.id)

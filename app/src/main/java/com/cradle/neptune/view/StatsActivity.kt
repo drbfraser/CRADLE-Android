@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import androidx.lifecycle.lifecycleScope
 import com.cradle.neptune.R
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.model.Reading
@@ -21,7 +22,6 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.ArrayList
@@ -39,7 +39,7 @@ class StatsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_stats)
 
-        MainScope().launch {
+        lifecycleScope.launch {
             // TODO: Do this as a database query or a database view. Taking all the readings and
             //  them sorting them in memory is not efficient. Reading objects also contain
             //  information that is irrelevant for StatsActivity.

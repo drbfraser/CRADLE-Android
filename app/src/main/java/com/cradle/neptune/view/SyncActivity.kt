@@ -17,9 +17,7 @@ import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 @AndroidEntryPoint
-class SyncActivity :
-    AppCompatActivity(),
-    SyncStepperCallback {
+class SyncActivity : AppCompatActivity(), SyncStepperCallback {
 
     companion object {
         private const val NUM_STEPS_FOR_SYNC = 3.0
@@ -51,6 +49,9 @@ class SyncActivity :
         findViewById<Button>(R.id.uploadEverythingButton).setOnClickListener {
             syncText.text = getString(R.string.sync_activity_sync_progress_text)
             progressBar.visibility = View.VISIBLE
+            // TODO: launch this in the background as a service or use WorkManager.
+            //  User shouldn't be expected to leave the screen on and keep this
+            //  activity on to sync. MainScope() also doesn't get cancelled properly.
             MainScope().launch {
                 SyncStepperImplementation(
                     this@SyncActivity,
