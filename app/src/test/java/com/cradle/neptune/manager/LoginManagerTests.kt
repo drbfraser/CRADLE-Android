@@ -8,6 +8,7 @@ import com.cradle.neptune.database.CradleDatabase
 import com.cradle.neptune.database.daos.PatientDao
 import com.cradle.neptune.database.daos.ReadingDao
 import com.cradle.neptune.ext.map
+import com.cradle.neptune.model.CommonPatientReadingJsons
 import com.cradle.neptune.model.HealthFacility
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
@@ -21,107 +22,26 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestCoroutineDispatcher
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.json.JSONArray
 import org.json.JSONObject
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import java.io.InputStream
 
 @ExperimentalCoroutinesApi
 internal class LoginManagerTests {
-    private val testDispatcher = TestCoroutineDispatcher()
+    private val testMainDispatcher = TestCoroutineDispatcher()
+    private val testTransactionExecutor = TestCoroutineDispatcher()
 
     companion object {
-        private const val PATIENT_AND_READINGS_JSON =
-            """
-[
-    {
-        "isPregnant": true,
-        "patientName": "Test patient",
-        "patientId": "3459834789348",
-        "gestationalTimestamp": 1590969549,
-        "drugHistory": "Some drug history",
-        "dob": "2002-01-08",
-        "villageNumber": "133",
-        "created": 1604883600,
-        "gestationalAgeUnit": "GESTATIONAL_AGE_UNITS_WEEKS",
-        "patientSex": "FEMALE",
-        "medicalHistory": "Some med history.",
-        "zone": "634",
-        "isExactDob": true,
-        "householdNumber": "95682385",
-        "lastEdited": 1604883600,
-        "base": 1604883600,
-        "readings": [
-            {
-                "bpSystolic": 119,
-                "dateTimeTaken": 1604883580,
-                "bpDiastolic": 97,
-                "heartRateBPM": 78,
-                "respiratoryRate": 65,
-                "oxygenSaturation": 98,
-                "userId": 10,
-                "temperature": 35,
-                "patientId": "3459834789348",
-                "readingId": "ca84ac2d-953f-4f5e-ae24-e0a6e8af7c94",
-                "symptoms": [
-                    "BLURRED VISION",
-                    "FEVERISH",
-                    "LOSS of SENSE",
-                    "Other symptoms"
-                ],
-                "trafficLightStatus": "YELLOW_UP",
-                "urineTests": {
-                    "urineTestLeuc": "++",
-                    "urineTestGlu": "+++",
-                    "urineTestPro": "NAD",
-                    "readingId": "ca84ac2d-953f-4f5e-ae24-e0a6e8af7c94",
-                    "urineTestNit": "NAD",
-                    "id": 18,
-                    "urineTestBlood": "NAD"
-                }
-            }
-        ]
-    },
-    {
-        "isPregnant": false,
-        "patientName": "Another patient",
-        "patientId": "123456",
-        "gestationalTimestamp": 0,
-        "drugHistory": "History",
-        "dob": "1974-11-08",
-        "villageNumber": "4555",
-        "created": 1604883668,
-        "gestationalAgeUnit": "GESTATIONAL_AGE_UNITS_WEEKS",
-        "patientSex": "MALE",
-        "medicalHistory": "",
-        "zone": "354",
-        "isExactDob": false,
-        "householdNumber": "111",
-        "lastEdited": 1604883668,
-        "base": 1604883668,
-        "readings": [
-            {
-                "bpSystolic": 119,
-                "dateTimeTaken": 1604883648,
-                "bpDiastolic": 98,
-                "heartRateBPM": 87,
-                "userId": 10,
-                "patientId": "123456",
-                "readingId": "777850f0-dc71-4501-a440-1871ecea6381",
-                "symptoms": [
-                    "NONE"
-                ],
-                "trafficLightStatus": "YELLOW_UP"
-            }
-        ]
-    }
-]
-        """
 
         private const val HEALTH_FACILITY_JSON =
             """
@@ -211,19 +131,30 @@ internal class LoginManagerTests {
         coEvery {
             getAllPatientsStreaming(any())
         } coAnswers {
+            // Simulate the network sending over the JSON as a stream of bytes.
             val inputStreamBlock = arg<suspend (InputStream) -> Unit>(0)
-            inputStreamBlock.invoke(PATIENT_AND_READINGS_JSON.byteInputStream())
+            val jsonStream = CommonPatientReadingJsons.bothPatientsInArray.first.byteInputStream()
+            inputStreamBlock(jsonStream)
             Success(Unit, 200)
         }
     }
 
-    private val fakeSharedPreferencesMap = mutableMapOf<String, Any?>()
+    private val fakeSharedPreferences = mutableMapOf<String, Any?>()
     private val fakeHealthFacilityDatabase = mutableListOf<HealthFacility>()
     private val fakePatientDatabase = mutableListOf<Patient>()
     private val fakeReadingDatabase = mutableListOf<Reading>()
 
-    private val mockCradleDatabase = mockk<CradleDatabase> {
+    @Suppress("unused")
+    private val mockDatabase = mockk<CradleDatabase> {
         every { runInTransaction(any()) } answers { arg<Runnable>(0).run() }
+        // FIXME: Look into why this causes the entire test to fail (it will freeze the test and
+        //  prevent it from completing). Until then, we will
+        //  have to mock patient manager directly instead of creating a patient manager with
+        //  mocked dependencies.
+        //coEvery { withTransaction<Unit>(any()) } coAnswers {
+        // For whatever reason, this is broken
+        //firstArg<suspend () -> Unit>().invoke()
+        //}
         every { clearAllTables() } answers {
             fakeHealthFacilityDatabase.clear()
             fakePatientDatabase.clear()
@@ -231,6 +162,7 @@ internal class LoginManagerTests {
         }
         every { close() } returns Unit
     }
+
     private val mockPatientDao = mockk<PatientDao> {
         every { insert(any()) } answers {
             fakePatientDatabase.add(firstArg())
@@ -268,7 +200,7 @@ internal class LoginManagerTests {
 
     private fun <T> putInFakeSharedPreference(key: String?, value: T?) {
         key ?: return
-        fakeSharedPreferencesMap[key] = value
+        fakeSharedPreferences[key] = value
     }
 
     private val mockSharedPrefs = mockk<SharedPreferences> {
@@ -279,8 +211,8 @@ internal class LoginManagerTests {
             }
 
             every { getString(any(), any()) } answers {
-                val stringValue = fakeSharedPreferencesMap[firstArg()] as String?
-                if (stringValue == null && !fakeSharedPreferencesMap.contains(firstArg())) {
+                val stringValue = fakeSharedPreferences[firstArg()] as String?
+                if (stringValue == null && !fakeSharedPreferences.contains(firstArg())) {
                     secondArg()
                 } else {
                     stringValue
@@ -300,18 +232,30 @@ internal class LoginManagerTests {
             every { commit() } returns true
             every { apply() } returns Unit
             every { clear() } answers {
-                fakeSharedPreferencesMap.clear()
+                fakeSharedPreferences.clear()
                 this@editor
             }
         }
     }
 
-    private val fakePatientManager = PatientManager(
-        mockCradleDatabase,
-        mockPatientDao,
-        mockReadingDao,
-        mockRestApi
-    )
+    private val mockPatientManager = mockk<PatientManager> {
+        coEvery { addPatientWithReadings(any(), any(), any(), any()) } coAnswers {
+            val patient = arg<Patient>(0)
+            val readings = arg<List<Reading>>(1)
+            val areReadingsFromServer = arg<Boolean>(2)
+            val isPatientNew = arg<Boolean>(3)
+            if (areReadingsFromServer) {
+                readings.forEach { it.isUploadedToServer = true }
+            }
+            if (isPatientNew) {
+                mockPatientDao.insert(patient)
+            } else {
+                mockPatientDao.updateOrInsertIfNotExists(patient)
+            }
+            mockReadingDao.insertAll(secondArg())
+            delay(25L)
+        }
+    }
 
     private val mockHealthManager = mockk<HealthFacilityManager> {
         coEvery {
@@ -331,12 +275,17 @@ internal class LoginManagerTests {
         every { Log.d(any(), any()) } returns 0
         every { Log.e(any(), any()) } returns 0
         every { Log.e(any(), any(), any()) } returns 0
-        Dispatchers.setMain(testDispatcher)
+        Dispatchers.setMain(testMainDispatcher)
 
-        fakeSharedPreferencesMap.clear()
+        fakeSharedPreferences.clear()
         fakeHealthFacilityDatabase.clear()
         fakePatientDatabase.clear()
         fakeReadingDatabase.clear()
+    }
+
+    @AfterEach
+    fun cleanUp() {
+        Dispatchers.resetMain()
     }
 
     @Test
@@ -345,8 +294,8 @@ internal class LoginManagerTests {
             val loginManager = LoginManager(
                 mockRestApi,
                 mockSharedPrefs,
-                mockCradleDatabase,
-                fakePatientManager,
+                mockDatabase,
+                mockPatientManager,
                 mockHealthManager,
                 mockContext
             )
@@ -355,18 +304,18 @@ internal class LoginManagerTests {
             assert(result is Success) {
                 "expected login to be successful, but it failed, with " +
                     "result $result and\n" +
-                    "shared prefs map $fakeSharedPreferencesMap"
+                    "shared prefs map $fakeSharedPreferences"
             }
 
-            assertEquals(TEST_AUTH_TOKEN, fakeSharedPreferencesMap["token"]) { "bad auth token" }
-            assertEquals(TEST_USER_ID, fakeSharedPreferencesMap["userId"]) { "bad userId" }
+            assertEquals(TEST_AUTH_TOKEN, fakeSharedPreferences["token"]) { "bad auth token" }
+            assertEquals(TEST_USER_ID, fakeSharedPreferences["userId"]) { "bad userId" }
             assertEquals(
                 TEST_FIRST_NAME,
-                fakeSharedPreferencesMap[mockContext.getString(R.string.key_vht_name)]
+                fakeSharedPreferences[mockContext.getString(R.string.key_vht_name)]
             ) { "bad first name" }
 
             val latestVersion = SharedPreferencesMigration.LATEST_SHARED_PREF_VERSION
-            val versionStored = fakeSharedPreferencesMap[
+            val versionStored = fakeSharedPreferences[
                 SharedPreferencesMigration.KEY_SHARED_PREFERENCE_VERSION] as? Int
             assertEquals(latestVersion, versionStored) {
                 "expected shared pref version to be $latestVersion, but got $versionStored"
@@ -392,12 +341,47 @@ internal class LoginManagerTests {
             }
 
             assertEquals(2, fakeReadingDatabase.size) { "parsing the readings failed" }
-            fakeReadingDatabase[0].run { assertEquals(fakePatientDatabase[0].id, patientId) }
-            fakeReadingDatabase[1].run { assertEquals(fakePatientDatabase[1].id, patientId) }
+            fakeReadingDatabase.forEach {
+                assert(it.isUploadedToServer)
+            }
+            fakePatientDatabase.forEach {
+                assert(it.base != null)
+            }
+
+            // Verify that the streamed parsing via Jackson was correct.
+            val expectedPatientAndReadings = CommonPatientReadingJsons.bothPatientsInArray.second
+            expectedPatientAndReadings.forEach { patientAndReadings ->
+                val (expectedPatient, expectedReadings) =
+                    patientAndReadings.patient to patientAndReadings.readings.map {
+                        it.copy(isUploadedToServer = true)
+                    }
+
+                // The patient ID must have been parsed correctly at least since that's the
+                // primary key. When we find a match, we then check to see if all of the fields
+                // are the same.
+                fakePatientDatabase.find { it.id == expectedPatient.id }
+                    ?.let { parsedPatient ->
+                        assertEquals(expectedPatient, parsedPatient) {
+                            "found a patient with the same ID, but one or more properties are wrong"
+                        }
+                    }
+                    ?: fail { "couldn't find expected patient in fake database: $expectedPatient" }
+
+                expectedReadings.forEach { expectedReading ->
+                    fakeReadingDatabase.find { it.id == expectedReading.id }
+                        ?.let { parsedReading ->
+                            assertEquals(expectedReading, parsedReading) {
+                                "found a reading with the same ID, but one or more properties are" +
+                                    " wrong"
+                            }
+                        }
+                        ?: fail { "couldn't find expected reading in fake database: $expectedReading" }
+                }
+            }
 
             loginManager.logout()
 
-            assert(fakeSharedPreferencesMap.isEmpty())
+            assert(fakeSharedPreferences.isEmpty())
             assert(fakePatientDatabase.isEmpty())
             assert(fakeReadingDatabase.isEmpty())
             assert(fakeHealthFacilityDatabase.isEmpty())
@@ -410,8 +394,8 @@ internal class LoginManagerTests {
             val loginManager = LoginManager(
                 mockRestApi,
                 mockSharedPrefs,
-                mockCradleDatabase,
-                fakePatientManager,
+                mockDatabase,
+                mockPatientManager,
                 mockHealthManager,
                 mockContext
             )
@@ -419,12 +403,12 @@ internal class LoginManagerTests {
             val result = loginManager.login(TEST_USER_EMAIL, TEST_USER_PASSWORD + "wronglol")
             assert(result is Failure) {
                 "expected a failure, but got result $result and " +
-                    "shared prefs map $fakeSharedPreferencesMap"
+                    "shared prefs map $fakeSharedPreferences"
             }
             val statusCode = (result as Failure).statusCode
             assertEquals(401, statusCode) { "expected 401 status code, but got $statusCode" }
 
-            assertEquals(0, fakeSharedPreferencesMap.keys.size)
+            assertEquals(0, fakeSharedPreferences.keys.size)
             val healthFacilities = fakeHealthFacilityDatabase
             assertEquals(0, healthFacilities.size) { "nothing should be added" }
             assertEquals(0, fakePatientDatabase.size) { "nothing should be added" }
