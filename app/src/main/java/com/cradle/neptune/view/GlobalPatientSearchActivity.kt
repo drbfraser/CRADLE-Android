@@ -23,7 +23,9 @@ import com.cradle.neptune.net.Success
 import com.cradle.neptune.viewmodel.GlobalPatientAdapter
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -48,15 +50,17 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
 
     private lateinit var searchView: SearchView
 
-    // local patient set to compare agains
-    private lateinit var localPatientSet: HashSet<String>
+    // local patient set to compare against
+    private lateinit var localPatientSetDeferred: Deferred<HashSet<String>>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_global_patient_search)
-        lifecycleScope.launch {
-            localPatientSet = patientManager.getPatientIdsOnly().toHashSet()
+
+        localPatientSetDeferred = lifecycleScope.async(Dispatchers.Main) {
+            patientManager.getPatientIdsOnly().toHashSet()
         }
+
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = getString(R.string.global_patient_search_title)
         setupGlobalPatientSearch()
@@ -127,10 +131,11 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         recyclerView.visibility = View.VISIBLE
 
         // get patient set so we can compare for our patients
+        val localPatients = localPatientSetDeferred.await()
 
         globalPatientList.forEachIndexed { index, globalPatient ->
             globalPatient.index = index
-            if (localPatientSet.contains(globalPatient.id)) {
+            if (localPatients.contains(globalPatient.id)) {
                 globalPatient.isMyPatient = true
             }
         }
@@ -145,7 +150,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         globalPatientAdapter.addPatientClickObserver(
             object : GlobalPatientAdapter.OnGlobalPatientClickListener {
                 override fun onCardClick(patient: GlobalPatient) {
-                    startActivityForPatient(patient, localPatientSet.contains(patient.id))
+                    startActivityForPatient(patient, localPatients.contains(patient.id))
                 }
 
                 override fun onAddToLocalClicked(patient: GlobalPatient) {
@@ -206,10 +211,12 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
             getString(R.string.global_patient_search_adding_to_your_patient_list)
         )
         progressDialog.show()
+
         lifecycleScope.launch {
+            val localPatients = localPatientSetDeferred.await()
             when (patientManager.downloadAssociateAndSavePatient(patient.id)) {
                 is Success -> {
-                    localPatientSet.add(patient.id)
+                    localPatients.add(patient.id)
                     patient.isMyPatient = true
                     globalPatientAdapter.run {
                         patient.index?.let { notifyItemChanged(it) } ?: notifyDataSetChanged()
