@@ -57,7 +57,11 @@ interface ReadingDao {
 
     /**
      * All of the readings in the database.
+     * Do not use this. This should only be used for (instrumented) unit tests.
+     * Calculating statistics should be done as a query or done via a raw cursor; a Reading object
+     * contains too much unneeded info.
      */
+    @Deprecated("Do not use this. This is not memory efficient")
     @Query("SELECT * FROM Reading")
     fun getAllReadingEntities(): List<Reading>
 

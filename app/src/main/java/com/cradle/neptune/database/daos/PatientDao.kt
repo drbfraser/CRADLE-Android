@@ -44,15 +44,14 @@ interface PatientDao {
 
     /**
      * Insert a list of [Patient]s into the [Patient] table. This is meant for
-     * NEW patients.
+     * NEW patients. It will not update patients that already exist in the database.
+     * This is because SQLite's REPLACE doesn't work well with foreign keys. Readings
+     * with foreign keys pointing to the replaced Patients will cascade and delete
+     * themselves, because Room's OnConflictStrategy.REPLACE somehow involves deleting
+     * the entity and replacing it.
      *
-     * If there are patients in the list that
-     * are not new, those patients will have -1 as the id for them in the returned
-     * Array of SQLite rowIds.
-     *
-     * SQLite's REPLACE doesn't work well with foreign keys. Readings with foreign keys pointing to
-     * the replaced Patients will cascade and delete themselves, because Room's
-     * OnConflictStrategy.REPLACE somehow involves deleting the entity and replacing it.
+     * If there are patients in the list that are not new, those patients will have -1 as the id for
+     * them in the returned Array of SQLite rowIds.
      *
      * @return An Array of the SQLite rowIds for the inserted [Patient]s, where the positions in the
      * Array correspond to the position in the given [patients] list. -1 means the Patient was not
@@ -64,6 +63,7 @@ interface PatientDao {
 
     /**
      * Deletes a patient from the patient table.
+     *
      * @return The number of rows affected in the database (i.e., 0 means no [Patient]s were deleted
      * and 1 means the given [patient] was deleted).
      */

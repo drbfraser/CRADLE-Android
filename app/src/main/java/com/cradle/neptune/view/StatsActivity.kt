@@ -40,6 +40,9 @@ class StatsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_stats)
 
         MainScope().launch {
+            // TODO: Do this as a database query or a database view. Taking all the readings and
+            //  them sorting them in memory is not efficient. Reading objects also contain
+            //  information that is irrelevant for StatsActivity.
             readings = withContext(Dispatchers.IO) { readingManager.getAllReadings() }
             Collections.sort(readings, Reading.AscendingDataComparator)
             if (readings.isNotEmpty()) {

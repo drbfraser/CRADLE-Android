@@ -57,6 +57,11 @@ class ReadingManager @Inject constructor(
      * Returns a list of all readings (and their associated patients) in the
      * database.
      */
+    @Deprecated(
+        """
+        Do not use this; this is memory inefficient. For stats, it should be done in the database
+    """
+    )
     suspend fun getAllReadings(): List<Reading> = withContext(IO) {
         readingDao.getAllReadingEntities()
     }
