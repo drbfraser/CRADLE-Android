@@ -115,18 +115,22 @@
                 app:backgroundTint="@color/colorPrimaryLight"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/guideline3"
-                app:layout_constraintTop_toBottomOf="@+id/invalidLoginText" />
+                app:layout_constraintTop_toBottomOf="@+id/passwordEditText" />
 
             <TextView
                 android:id="@+id/invalidLoginText"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="@string/login_error"
                 android:textColor="@color/error"
                 android:visibility="gone"
+                app:layout_constraintBottom_toTopOf="@+id/loginButton"
+                app:layout_constraintEnd_toStartOf="@+id/guideline3"
                 app:layout_constraintStart_toStartOf="@+id/passwordEditText"
-                app:layout_constraintTop_toBottomOf="@+id/passwordEditText" />
+                app:layout_constraintTop_toBottomOf="@+id/passwordEditText"
+                app:layout_constraintVertical_bias="0.0"
+                tools:visibility="visible" />
 
             <androidx.constraintlayout.widget.Guideline
                 android:id="@+id/guideline3"
