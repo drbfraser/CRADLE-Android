@@ -3,6 +3,7 @@ package com.cradle.neptune.manager
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.room.withTransaction
 import com.cradle.neptune.R
 import com.cradle.neptune.database.CradleDatabase
 import com.cradle.neptune.database.daos.PatientDao
@@ -20,6 +21,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import io.mockk.slot
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -40,7 +42,6 @@ import java.io.InputStream
 @ExperimentalCoroutinesApi
 internal class LoginManagerTests {
     private val testMainDispatcher = TestCoroutineDispatcher()
-    private val testTransactionExecutor = TestCoroutineDispatcher()
 
     companion object {
 
@@ -150,14 +151,12 @@ internal class LoginManagerTests {
     @Suppress("unused")
     private val mockDatabase = mockk<CradleDatabase> {
         every { runInTransaction(any()) } answers { arg<Runnable>(0).run() }
-        // FIXME: Look into why this causes the entire test to fail (it will freeze the test and
-        //  prevent it from completing). Until then, we will
-        //  have to mock patient manager directly instead of creating a patient manager with
-        //  mocked dependencies.
-        //coEvery { withTransaction<Unit>(any()) } coAnswers {
-        // For whatever reason, this is broken
-        //firstArg<suspend () -> Unit>().invoke()
-        //}
+        // https://stackoverflow.com/a/56652529 - if we don't do this, test will hang forever
+        mockkStatic("androidx.room.RoomDatabaseKt")
+        val transactionLambda = slot<suspend () -> R>()
+        coEvery { withTransaction(capture(transactionLambda)) } coAnswers {
+            transactionLambda.captured.invoke()
+        }
         every { clearAllTables() } answers {
             fakeHealthFacilityDatabase.clear()
             fakePatientDatabase.clear()
@@ -232,6 +231,8 @@ internal class LoginManagerTests {
                 this@editor
             }
 
+            every { contains(any()) } answers { fakeSharedPreferences.containsKey(firstArg()) }
+
             every { commit() } returns true
             every { apply() } returns Unit
             every { clear() } answers {
@@ -241,24 +242,12 @@ internal class LoginManagerTests {
         }
     }
 
-    private val mockPatientManager = mockk<PatientManager> {
-        coEvery { addPatientWithReadings(any(), any(), any(), any()) } coAnswers {
-            val patient = arg<Patient>(0)
-            val readings = arg<List<Reading>>(1)
-            val areReadingsFromServer = arg<Boolean>(2)
-            val isPatientNew = arg<Boolean>(3)
-            if (areReadingsFromServer) {
-                readings.forEach { it.isUploadedToServer = true }
-            }
-            if (isPatientNew) {
-                mockPatientDao.insert(patient)
-            } else {
-                mockPatientDao.updateOrInsertIfNotExists(patient)
-            }
-            mockReadingDao.insertAll(secondArg())
-            delay(25L)
-        }
-    }
+    private val fakePatientManager = PatientManager(
+        mockDatabase,
+        mockPatientDao,
+        mockReadingDao,
+        mockRestApi
+    )
 
     private val mockHealthManager = mockk<HealthFacilityManager> {
         coEvery {
@@ -278,8 +267,8 @@ internal class LoginManagerTests {
         every { Log.d(any(), any()) } returns 0
         every { Log.e(any(), any()) } returns 0
         every { Log.e(any(), any(), any()) } returns 0
-        Dispatchers.setMain(testMainDispatcher)
 
+        Dispatchers.setMain(testMainDispatcher)
         fakeSharedPreferences.clear()
         fakeHealthFacilityDatabase.clear()
         fakePatientDatabase.clear()
@@ -298,7 +287,7 @@ internal class LoginManagerTests {
                 mockRestApi,
                 mockSharedPrefs,
                 mockDatabase,
-                mockPatientManager,
+                fakePatientManager,
                 mockHealthManager,
                 mockContext
             )
@@ -319,6 +308,7 @@ internal class LoginManagerTests {
                     "migrations in the future can fail"
             }
 
+            assert(loginManager.isLoggedIn())
             assertEquals(TEST_AUTH_TOKEN, fakeSharedPreferences["token"]) { "bad auth token" }
             assertEquals(TEST_USER_ID, fakeSharedPreferences["userId"]) { "bad userId" }
             assertEquals(
@@ -402,7 +392,7 @@ internal class LoginManagerTests {
                 mockRestApi,
                 mockSharedPrefs,
                 mockDatabase,
-                mockPatientManager,
+                fakePatientManager,
                 mockHealthManager,
                 mockContext
             )
@@ -415,6 +405,7 @@ internal class LoginManagerTests {
             val statusCode = (result as Failure).statusCode
             assertEquals(401, statusCode) { "expected 401 status code, but got $statusCode" }
 
+            assert(!loginManager.isLoggedIn())
             assertEquals(0, fakeSharedPreferences.keys.size)
             val healthFacilities = fakeHealthFacilityDatabase
             assertEquals(0, healthFacilities.size) { "nothing should be added" }
