@@ -84,8 +84,7 @@
                                 android:scrollbars="vertical"
                                 android:text="@={viewModel.otherSymptomsInput}"
                                 android:verticalScrollbarPosition="right"
-                                bind:loseFocuswhen="@{!viewModel.symptomsState.areThereDefaultSymptoms()}"
-                                bind:makeTextEmptyWhen="@{!viewModel.symptomsState.areThereDefaultSymptoms()}"
+                                bind:loseFocuswhen="@{!viewModel.symptomsState.areThereAnySymptoms()}"
                                 tools:text="Other symptoms example" />
                         </com.google.android.material.textfield.TextInputLayout>
 

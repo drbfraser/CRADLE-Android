@@ -78,7 +78,7 @@ class SymptomsFragment : Fragment() {
                 CheckBox(checkBoxContainer.context)
                     .apply {
                         text = symptomString
-                        isChecked = viewModel.symptomsState.value?.isSymptomIndexChecked(index)
+                        isChecked = viewModel.symptomsState.value?.get(index)
                             ?: false
                         setOnCheckedChangeListener { _, isChecked ->
                             viewModel.setSymptomsState(index, isChecked)
@@ -91,7 +91,7 @@ class SymptomsFragment : Fragment() {
 
         viewModel.symptomsState.observe(viewLifecycleOwner) { newSymptomsState ->
             checkBoxes?.forEachIndexed { index, checkBox ->
-                val newState = newSymptomsState.isSymptomIndexChecked(index)
+                val newState = newSymptomsState[index]
                 // Prevent infinite loops: Changing the checked state will trigger
                 // setOnCheckedChangeListener, which can trigger a change to symptomsState LiveData.
                 if (newState != checkBox.isChecked) {

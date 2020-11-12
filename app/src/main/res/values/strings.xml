@@ -36,8 +36,9 @@
     <string name="reading_tab_summary">Summary</string>
 
     <!-- Readings Patient Info-->
+    <!-- The first symptom in this array will be used as the None symptom, so make sure that's true -->
     <string-array name="reading_symptoms">
-        <item>No Symptoms (patient healthy)</item>
+        <item>No symptoms</item>
         <item>Headache</item>
         <item>Blurred vision</item>
         <item>Abdominal pain</item>

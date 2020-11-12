@@ -1,5 +1,7 @@
 package com.cradle.neptune.model
 
+import com.cradle.neptune.ext.findIndex
+import com.cradle.neptune.ext.splitAndForEach
 import java.util.Locale
 
 /**
@@ -57,11 +59,8 @@ class SymptomsState(val numberOfDefaultSymptoms: Int) {
             // If it's not there, find will return null; that means it'll be added to the
             // other symptoms.
             defaultEnglishSymptoms
-                .find { trimAndLowercase(it) == trimAndLowercase(symptomFromList) }
-                ?.apply {
-                    val indexOfEnglishSymptom = defaultEnglishSymptoms.indexOf(this)
-                    setSymptomIndexState(indexOfEnglishSymptom, true)
-                }
+                .findIndex { trimAndLowercase(it) == trimAndLowercase(symptomFromList) }
+                ?.let { index -> set(index, true) }
                 ?: otherSymptomsBuilder.append(symptomFromList).append(", ")
         }
         setOtherSymptoms(otherSymptomsBuilder.removeSuffix(", ").toString())
@@ -70,20 +69,53 @@ class SymptomsState(val numberOfDefaultSymptoms: Int) {
     /**
      * Builds a list of symptoms given a String array from R.array.reading_symptoms.
      * [defaultSymptoms] can be in any language.
+     *
+     * The [otherSymptoms] (the user-inputted symptoms) will be split by commas in the
+     * resulting list.
+     *
+     * If [listForDisplayingInUi] is true, then no symptoms is represented by a single element
+     * list of the first element in [defaultSymptoms]. If it is false, then no symptoms will
+     * return an empty list.
      */
-    fun buildSymptomsList(defaultSymptoms: Array<String>): List<String> {
-        val list = defaultSymptoms
-            .filterIndexed { index, _ -> defaultSymptomsState[index] }
-            .toMutableList()
-        if (areThereOtherSymptoms()) list.add(otherSymptoms)
+    fun buildSymptomsList(
+        defaultSymptoms: Array<String>,
+        listForDisplayingInUi: Boolean = false
+    ): List<String> {
+        if (defaultSymptomsState[0]) {
+            return if (listForDisplayingInUi) {
+                listOf(defaultSymptoms[0])
+            } else {
+                emptyList()
+            }
+        }
+
+        val list = arrayListOf<String>()
+        defaultSymptoms.forEachIndexed { index, symptomString ->
+            if (defaultSymptomsState[index]) {
+                list.add(symptomString.trim())
+            }
+        }
+        if (areThereOtherSymptoms()) {
+            otherSymptoms.splitAndForEach(",") { if (it.isNotBlank()) list.add(it.trim()) }
+        }
         return list
     }
 
+    fun areThereAnySymptoms() = areThereOtherSymptoms() || areThereDefaultSymptoms()
+
     fun areThereOtherSymptoms() = otherSymptoms.isNotBlank()
 
-    fun areThereDefaultSymptoms() = !defaultSymptomsState[0]
+    fun areThereDefaultSymptoms(): Boolean {
+        if (defaultSymptomsState[0]) return false
+        for (i in 1 until defaultSymptomsState.size) {
+            if (defaultSymptomsState[i]) {
+                return true
+            }
+        }
+        return false
+    }
 
-    fun isSymptomIndexChecked(index: Int) = defaultSymptomsState[index]
+    operator fun get(index: Int) = defaultSymptomsState[index]
 
     fun clearSymptoms() {
         defaultSymptomsState.forEachIndexed { index, _ -> defaultSymptomsState[index] = false }
@@ -93,9 +125,10 @@ class SymptomsState(val numberOfDefaultSymptoms: Int) {
 
     fun clearOtherSymptoms() {
         otherSymptoms = ""
+        onNewInput(inputAddedSymptom = false)
     }
 
-    fun setSymptomIndexState(index: Int, newValue: Boolean) {
+    operator fun set(index: Int, newValue: Boolean) {
         if (index == 0) {
             // This makes it so that defaultSymptomsState[0] is true, and it cannot be turned off
             // by toggling it again.
@@ -104,13 +137,30 @@ class SymptomsState(val numberOfDefaultSymptoms: Int) {
             }
         } else {
             defaultSymptomsState[index] = newValue
+            onNewInput(inputAddedSymptom = newValue)
+        }
+    }
+
+    /**
+     * When new input is added to this [SymptomsState] object, run this to update
+     * the state of the first checkbox depending on the others.
+     */
+    private fun onNewInput(inputAddedSymptom: Boolean) {
+        if (inputAddedSymptom) {
             defaultSymptomsState[0] = false
+        } else {
+            // Worst case: O(n) check, but acceptable because this is meant to be used
+            // with a small number of checkboxes. For maximum efficiency, we could use
+            // bits and do an bitwise AND or something, but that's unneeded right now.
+            if (!areThereAnySymptoms()) {
+                defaultSymptomsState[0] = true
+            }
         }
     }
 
     fun setOtherSymptoms(otherSymptoms: String) {
         this.otherSymptoms = otherSymptoms
-        defaultSymptomsState[0] = false
+        onNewInput(inputAddedSymptom = areThereOtherSymptoms())
     }
 
     /**
@@ -118,7 +168,7 @@ class SymptomsState(val numberOfDefaultSymptoms: Int) {
      * of all caps.
      */
     private fun trimAndLowercase(symptomString: String) =
-        symptomString.toLowerCase(Locale.getDefault()).replace("\\s".toRegex(), "")
+        symptomString.toLowerCase(Locale.getDefault()).replace(whitespaceRegex, "")
 
     /**
      * When we see these symptoms, the [SymptomsState] has to change so that all the other symptoms
@@ -158,5 +208,9 @@ class SymptomsState(val numberOfDefaultSymptoms: Int) {
             "defaultSymptomsState=[${defaultSymptomsState.joinToString(", ")}], " +
             "otherSymptoms=\"$otherSymptoms\"" +
             ")"
+    }
+
+    companion object {
+        private val whitespaceRegex = Regex("\\s")
     }
 }
