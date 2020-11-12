@@ -484,11 +484,11 @@ class PatientReadingViewModel @ViewModelInject constructor(
                 }
             }
 
+            val defaultEnglishSymptoms = app.getEnglishResources()
+                .getStringArray(R.array.reading_symptoms)
             symptoms.apply {
                 addSource(_symptomsState) { symptomsState ->
                     // Store only English symptoms.
-                    val defaultEnglishSymptoms = app.getEnglishResources()
-                        .getStringArray(R.array.reading_symptoms)
                     value = symptomsState.buildSymptomsList(defaultEnglishSymptoms)
                 }
             }

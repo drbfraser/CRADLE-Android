@@ -2,6 +2,7 @@ package com.cradle.neptune.model
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 
 private const val DEFAULT_SIZE = 6
 
@@ -876,14 +877,17 @@ class SymptomsStateTests {
         val expectedOtherSymptoms = symptomsNotFromList.joinToString(", ")
         assertEquals(expectedOtherSymptoms, symptomsState.otherSymptoms)
 
-        val arrayOfSymptoms = symptomsState.buildSymptomsList(englishSymptoms).toTypedArray()
-        val expectedArray = arrayOf(
-            "Headache", "Blurred vision", "Bleeding", "Feverish", "Unwell", expectedOtherSymptoms
-        )
-        assert(expectedArray.contentEquals(arrayOfSymptoms)) {
-            "\n" +
-                "expected: ${expectedArray.asList()},\n" +
-                "  actual: ${arrayOfSymptoms.asList()}"
+        val listOfSymptoms = symptomsState.buildSymptomsList(englishSymptoms)
+
+        val expected = mutableListOf(
+            "Headache", "Blurred vision", "Bleeding", "Feverish", "Unwell"
+        ).apply { addAll(listOfSymptoms) }
+
+        expected.forEach { expectedSymptom ->
+            listOfSymptoms.find { it == expectedSymptom } ?: fail {
+                "The string <$expectedSymptom]> not found in resulting list of symptoms: " +
+                    "$listOfSymptoms"
+            }
         }
     }
 

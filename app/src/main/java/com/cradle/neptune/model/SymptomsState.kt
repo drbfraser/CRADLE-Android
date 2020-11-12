@@ -1,6 +1,7 @@
 package com.cradle.neptune.model
 
 import com.cradle.neptune.ext.findIndex
+import com.cradle.neptune.ext.splitAndForEach
 import java.util.Locale
 
 /**
@@ -69,6 +70,9 @@ class SymptomsState(val numberOfDefaultSymptoms: Int) {
      * Builds a list of symptoms given a String array from R.array.reading_symptoms.
      * [defaultSymptoms] can be in any language.
      *
+     * The [otherSymptoms] (the user-inputted symptoms) will be split by commas in the
+     * resulting list.
+     *
      * If [listForDisplayingInUi] is true, then no symptoms is represented by a single element
      * list of the first element in [defaultSymptoms]. If it is false, then no symptoms will
      * return an empty list.
@@ -85,10 +89,15 @@ class SymptomsState(val numberOfDefaultSymptoms: Int) {
             }
         }
 
-        val list = defaultSymptoms
-            .filterIndexed { index, _ -> defaultSymptomsState[index] }
-            .toMutableList()
-        if (areThereOtherSymptoms()) list.add(otherSymptoms)
+        val list = arrayListOf<String>()
+        defaultSymptoms.forEachIndexed { index, symptomString ->
+            if (defaultSymptomsState[index]) {
+                list.add(symptomString.trim())
+            }
+        }
+        if (areThereOtherSymptoms()) {
+            otherSymptoms.splitAndForEach(",") { if (it.isNotBlank()) list.add(it.trim()) }
+        }
         return list
     }
 
@@ -159,7 +168,7 @@ class SymptomsState(val numberOfDefaultSymptoms: Int) {
      * of all caps.
      */
     private fun trimAndLowercase(symptomString: String) =
-        symptomString.toLowerCase(Locale.getDefault()).replace("\\s".toRegex(), "")
+        symptomString.toLowerCase(Locale.getDefault()).replace(whitespaceRegex, "")
 
     /**
      * When we see these symptoms, the [SymptomsState] has to change so that all the other symptoms
@@ -199,5 +208,9 @@ class SymptomsState(val numberOfDefaultSymptoms: Int) {
             "defaultSymptomsState=[${defaultSymptomsState.joinToString(", ")}], " +
             "otherSymptoms=\"$otherSymptoms\"" +
             ")"
+    }
+
+    companion object {
+        private val whitespaceRegex = Regex("\\s")
     }
 }
