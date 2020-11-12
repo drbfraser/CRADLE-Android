@@ -70,8 +70,23 @@ class SymptomsState(val numberOfDefaultSymptoms: Int) {
     /**
      * Builds a list of symptoms given a String array from R.array.reading_symptoms.
      * [defaultSymptoms] can be in any language.
+     *
+     * If [listForDisplayingInUi] is true, then no symptoms is represented by a single element
+     * list of the first element in [defaultSymptoms]. If it is false, then no symptoms will
+     * return an empty list.
      */
-    fun buildSymptomsList(defaultSymptoms: Array<String>): List<String> {
+    fun buildSymptomsList(
+        defaultSymptoms: Array<String>,
+        listForDisplayingInUi: Boolean = false
+    ): List<String> {
+        if (defaultSymptomsState[0]) {
+            return if (listForDisplayingInUi) {
+                listOf(defaultSymptoms[0])
+            } else {
+                emptyList()
+            }
+        }
+
         val list = defaultSymptoms
             .filterIndexed { index, _ -> defaultSymptomsState[index] }
             .toMutableList()

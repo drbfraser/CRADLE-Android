@@ -247,7 +247,6 @@ class SymptomsStateTests {
     @Test
     fun `if all the checkboxes are unchecked but using custom symptom, custom symptom stays`() {
         val symptomsState = SymptomsState(DEFAULT_SIZE)
-
         /*
         Expected:
         [x] No symptoms (index 0)
@@ -260,6 +259,7 @@ class SymptomsStateTests {
          */
         assert(!symptomsState.areThereOtherSymptoms())
         assert(!symptomsState.areThereDefaultSymptoms())
+        assert(!symptomsState.areThereAnySymptoms())
         assert(symptomsState[0])
         for (i in 1 until DEFAULT_SIZE) {
             assert(!symptomsState[i])
@@ -279,6 +279,7 @@ class SymptomsStateTests {
         Other symptoms: (empty)
          */
         // Verify that the first is false now
+        assert(symptomsState.areThereAnySymptoms())
         assert(symptomsState.areThereDefaultSymptoms())
         assert(!symptomsState[0])
 
@@ -592,6 +593,28 @@ class SymptomsStateTests {
                 "expected: ${expectedArray.asList()},\n" +
                 "  actual: ${arrayOfSymptoms.asList()}"
         }
+    }
+
+    @Test
+    fun `building a no-symptoms SymptomsState results in empty list`() {
+        val symptomsState = SymptomsState(DEFAULT_SIZE)
+        assert(!symptomsState.areThereAnySymptoms())
+        assert(!symptomsState.areThereDefaultSymptoms())
+        assert(!symptomsState.areThereOtherSymptoms())
+        assert(symptomsState[0])
+        for (i in 1 until DEFAULT_SIZE) {
+            assert(!symptomsState[i])
+        }
+
+        val fakeArray = arrayOf("none", "2", "3", "4", "5", "6")
+
+        assert(symptomsState.buildSymptomsList(fakeArray).isEmpty())
+
+        symptomsState.setOtherSymptoms("this is my custom symptom")
+        assertEquals(listOf("this is my custom symptom"), symptomsState.buildSymptomsList(fakeArray))
+
+        symptomsState.setOtherSymptoms("")
+        assert(symptomsState.buildSymptomsList(fakeArray).isEmpty())
     }
 
     @Test
