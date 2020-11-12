@@ -13,6 +13,7 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cradle.neptune.R;
+import com.cradle.neptune.ext.ContextUtil;
 import com.cradle.neptune.model.Assessment;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingAnalysis;
@@ -79,11 +80,15 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             );
         }
 
+        String[] englishSymptoms = ContextUtil
+                .getEnglishResources(myViewHolder.itemView.getContext())
+                .getStringArray(R.array.reading_symptoms);
+        SymptomsState symptomsState = new SymptomsState(currReading.getSymptoms(), englishSymptoms);
 
+        StringBuilder symptomsStringBuilder = new StringBuilder();
         String[] defaultSymptoms = myViewHolder.itemView.getResources()
                 .getStringArray(R.array.reading_symptoms);
-        SymptomsState symptomsState = new SymptomsState(currReading.getSymptoms(), defaultSymptoms);
-        StringBuilder symptomsStringBuilder = new StringBuilder();
+
         final List<String> symptoms = symptomsState.buildSymptomsList(defaultSymptoms, true);
         for (int j = 0; j < symptoms.size(); j++) {
             symptomsStringBuilder.append(symptoms.get(j));

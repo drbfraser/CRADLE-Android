@@ -3,8 +3,6 @@ package com.cradle.neptune.viewmodel
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
-import android.content.res.Configuration
-import android.content.res.Resources
 import android.util.Log
 import androidx.annotation.GuardedBy
 import androidx.annotation.IdRes
@@ -19,6 +17,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cradle.neptune.BuildConfig
 import com.cradle.neptune.R
+import com.cradle.neptune.ext.getEnglishResources
 import com.cradle.neptune.ext.setValueOnMainThread
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
@@ -59,7 +58,6 @@ import kotlinx.coroutines.yield
 import org.threeten.bp.ZonedDateTime
 import java.lang.reflect.InvocationTargetException
 import java.text.DecimalFormat
-import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlin.reflect.KProperty
@@ -462,7 +460,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
             val currentSymptoms = symptoms.value ?: emptyList()
             SymptomsState(
                 currentSymptoms,
-                getEnglishResources().getStringArray(R.array.reading_symptoms)
+                app.getEnglishResources().getStringArray(R.array.reading_symptoms)
             ).let {
                 _symptomsState.value = it
                 otherSymptomsInput.value = it.otherSymptoms
@@ -481,8 +479,8 @@ class PatientReadingViewModel @ViewModelInject constructor(
             symptoms.apply {
                 addSource(_symptomsState) { symptomsState ->
                     // Store only English symptoms.
-                    val defaultEnglishSymptoms =
-                        getEnglishResources().getStringArray(R.array.reading_symptoms)
+                    val defaultEnglishSymptoms = app.getEnglishResources()
+                        .getStringArray(R.array.reading_symptoms)
                     value = symptomsState.buildSymptomsList(defaultEnglishSymptoms)
                 }
             }
@@ -642,13 +640,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
         }
     }
 
-    private fun getEnglishResources(): Resources =
-        Configuration(app.resources.configuration)
-            .apply { setLocale(Locale.ENGLISH) }
-            .run { app.createConfigurationContext(this).resources }
-
     /* Patient Info */
-
     /** Used in two-way Data Binding with PatientInfoFragment */
     val patientId: MutableLiveData<String>
         get() = patientBuilder.get<String>(Patient::id)
