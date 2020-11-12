@@ -16,6 +16,7 @@ import com.cradle.neptune.R;
 import com.cradle.neptune.model.Assessment;
 import com.cradle.neptune.model.Reading;
 import com.cradle.neptune.model.ReadingAnalysis;
+import com.cradle.neptune.model.SymptomsState;
 import com.cradle.neptune.model.UrineTest;
 import com.cradle.neptune.utilitiles.DateUtil;
 import com.google.android.material.snackbar.Snackbar;
@@ -77,18 +78,21 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
                     getUrineTestFormattedTxt(currReading.getUrineTest())
             );
         }
-        if (!currReading.getSymptoms().isEmpty()) {
-            StringBuilder symptomsStringBuilder = new StringBuilder();
-            // TODO: make it so that the symptoms that are sent via api are forced to be in English
-            final List<String> symptoms = currReading.getSymptoms();
-            for (int j = 0; j < symptoms.size(); j++) {
-                symptomsStringBuilder.append(symptoms.get(j));
-                if (j < symptoms.size() - 1) {
-                    symptomsStringBuilder.append(", ");
-                }
+
+
+        String[] defaultSymptoms = myViewHolder.itemView.getResources()
+                .getStringArray(R.array.reading_symptoms);
+        SymptomsState symptomsState = new SymptomsState(currReading.getSymptoms(), defaultSymptoms);
+        StringBuilder symptomsStringBuilder = new StringBuilder();
+        final List<String> symptoms = symptomsState.buildSymptomsList(defaultSymptoms, true);
+        for (int j = 0; j < symptoms.size(); j++) {
+            symptomsStringBuilder.append(symptoms.get(j));
+            if (j < symptoms.size() - 1) {
+                symptomsStringBuilder.append(", ");
             }
-            myViewHolder.symptomTxt.setText(symptomsStringBuilder.toString());
         }
+        myViewHolder.symptomTxt.setText(symptomsStringBuilder.toString());
+
         myViewHolder.trafficLight.setImageResource(ReadingAnalysisViewSupport.getColorCircleImageId(analysis));
         myViewHolder.arrow.setImageResource(ReadingAnalysisViewSupport.getArrowImageId(analysis));
 
