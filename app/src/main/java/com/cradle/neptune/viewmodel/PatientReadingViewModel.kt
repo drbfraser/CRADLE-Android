@@ -747,8 +747,8 @@ class PatientReadingViewModel @ViewModelInject constructor(
         val currentSymptomsState = _symptomsState.value ?: return
 
         // Prevent infinite loops and unnecessary updates.
-        if (currentSymptomsState.isSymptomIndexChecked(index) != newValue) {
-            currentSymptomsState.setSymptomIndexState(index, newValue)
+        if (currentSymptomsState[index] != newValue) {
+            currentSymptomsState[index] = newValue
             _symptomsState.value = currentSymptomsState
         }
     }

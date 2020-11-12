@@ -60,7 +60,7 @@ class SymptomsState(val numberOfDefaultSymptoms: Int) {
                 .find { trimAndLowercase(it) == trimAndLowercase(symptomFromList) }
                 ?.apply {
                     val indexOfEnglishSymptom = defaultEnglishSymptoms.indexOf(this)
-                    setSymptomIndexState(indexOfEnglishSymptom, true)
+                    set(indexOfEnglishSymptom, true)
                 }
                 ?: otherSymptomsBuilder.append(symptomFromList).append(", ")
         }
@@ -83,7 +83,7 @@ class SymptomsState(val numberOfDefaultSymptoms: Int) {
 
     fun areThereDefaultSymptoms() = !defaultSymptomsState[0]
 
-    fun isSymptomIndexChecked(index: Int) = defaultSymptomsState[index]
+    operator fun get(index: Int) = defaultSymptomsState[index]
 
     fun clearSymptoms() {
         defaultSymptomsState.forEachIndexed { index, _ -> defaultSymptomsState[index] = false }
@@ -95,7 +95,7 @@ class SymptomsState(val numberOfDefaultSymptoms: Int) {
         otherSymptoms = ""
     }
 
-    fun setSymptomIndexState(index: Int, newValue: Boolean) {
+    operator fun set(index: Int, newValue: Boolean) {
         if (index == 0) {
             // This makes it so that defaultSymptomsState[0] is true, and it cannot be turned off
             // by toggling it again.

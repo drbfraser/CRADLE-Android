@@ -1,7 +1,6 @@
 package com.cradle.neptune.model
 
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
 
 private const val DEFAULT_SIZE = 6
@@ -19,27 +18,27 @@ class SymptomsStateTests {
         assertEquals(DEFAULT_SIZE, symptomsState.numberOfDefaultSymptoms)
         assert(!symptomsState.areThereDefaultSymptoms())
         assert(!symptomsState.areThereOtherSymptoms())
-        assert(symptomsState.isSymptomIndexChecked(0))
+        assert(symptomsState[0])
         for (i in 1 until DEFAULT_SIZE) {
-            assert(!symptomsState.isSymptomIndexChecked(i))
+            assert(!symptomsState[i])
         }
 
         // Setting index 0 to true should not do anything.
-        symptomsState.setSymptomIndexState(0, true)
+        symptomsState[0] = true
         assert(!symptomsState.areThereDefaultSymptoms())
         assert(!symptomsState.areThereOtherSymptoms())
-        assert(symptomsState.isSymptomIndexChecked(0))
+        assert(symptomsState[0])
         for (i in 1 until DEFAULT_SIZE) {
-            assert(!symptomsState.isSymptomIndexChecked(i))
+            assert(!symptomsState[i])
         }
 
         // Setting index 0 to false should reject that change, and not do anything.
-        symptomsState.setSymptomIndexState(0, false)
+        symptomsState[0] = false
         assert(!symptomsState.areThereDefaultSymptoms())
         assert(!symptomsState.areThereOtherSymptoms())
-        assert(symptomsState.isSymptomIndexChecked(0))
+        assert(symptomsState[0])
         for (i in 1 until DEFAULT_SIZE) {
-            assert(!symptomsState.isSymptomIndexChecked(i))
+            assert(!symptomsState[i])
         }
     }
 
@@ -48,33 +47,33 @@ class SymptomsStateTests {
         val symptomsState = SymptomsState(DEFAULT_SIZE)
 
         assert(!symptomsState.areThereDefaultSymptoms())
-        assert(symptomsState.isSymptomIndexChecked(0))
+        assert(symptomsState[0])
         for (i in 1 until DEFAULT_SIZE) {
-            assert(!symptomsState.isSymptomIndexChecked(i))
+            assert(!symptomsState[i])
         }
 
         // Now, set all the other symptoms to true.
         for (i in 1 until DEFAULT_SIZE) {
-            symptomsState.setSymptomIndexState(i, true)
+            symptomsState[i] = true
         }
 
         // Verify that they're all true
         for (i in 1 until DEFAULT_SIZE) {
-            assert(symptomsState.isSymptomIndexChecked(i))
+            assert(symptomsState[i])
         }
 
         // Verify that the first is false now
         assert(symptomsState.areThereDefaultSymptoms())
-        assert(!symptomsState.isSymptomIndexChecked(0))
+        assert(!symptomsState[0])
 
         // Now, clear the symptoms
         symptomsState.clearSymptoms()
 
         // Check that the first is true again, and that all the others are false
         assert(!symptomsState.areThereDefaultSymptoms())
-        assert(symptomsState.isSymptomIndexChecked(0))
+        assert(symptomsState[0])
         for (i in 1 until DEFAULT_SIZE) {
-            assert(!symptomsState.isSymptomIndexChecked(i))
+            assert(!symptomsState[i])
         }
     }
 
@@ -83,33 +82,33 @@ class SymptomsStateTests {
         val symptomsState = SymptomsState(DEFAULT_SIZE)
 
         assert(!symptomsState.areThereDefaultSymptoms())
-        assert(symptomsState.isSymptomIndexChecked(0))
+        assert(symptomsState[0])
         for (i in 1 until DEFAULT_SIZE) {
-            assert(!symptomsState.isSymptomIndexChecked(i))
+            assert(!symptomsState[i])
         }
 
         // Now, set all the other symptoms to true.
         for (i in 1 until DEFAULT_SIZE) {
-            symptomsState.setSymptomIndexState(i, true)
+            symptomsState[i] = true
         }
 
         // Verify that they're all true
         for (i in 1 until DEFAULT_SIZE) {
-            assert(symptomsState.isSymptomIndexChecked(i))
+            assert(symptomsState[i])
         }
 
         // Verify that the first is false now
         assert(symptomsState.areThereDefaultSymptoms())
-        assert(!symptomsState.isSymptomIndexChecked(0))
+        assert(!symptomsState[0])
 
         // Now, set index 0
-        symptomsState.setSymptomIndexState(0, true)
+        symptomsState[0] = true
 
         // Check that the first is true again, and that all the others are false
         assert(!symptomsState.areThereDefaultSymptoms())
-        assert(symptomsState.isSymptomIndexChecked(0))
+        assert(symptomsState[0])
         for (i in 1 until DEFAULT_SIZE) {
-            assert(!symptomsState.isSymptomIndexChecked(i))
+            assert(!symptomsState[i])
         }
     }
 
@@ -120,9 +119,9 @@ class SymptomsStateTests {
         assertEquals("other symptom", symptomsState.otherSymptoms)
 
         assert(symptomsState.areThereDefaultSymptoms())
-        assert(!symptomsState.isSymptomIndexChecked(0))
+        assert(!symptomsState[0])
         for (i in 1 until DEFAULT_SIZE) {
-            assert(!symptomsState.isSymptomIndexChecked(i))
+            assert(!symptomsState[i])
         }
     }
 
@@ -131,29 +130,29 @@ class SymptomsStateTests {
         val symptomsState = SymptomsState(DEFAULT_SIZE)
         symptomsState.setOtherSymptoms("other symptom")
         for (i in 1 until DEFAULT_SIZE) {
-            symptomsState.setSymptomIndexState(i, true)
+            symptomsState[i] = true
         }
 
         // Verify that they're all true
         for (i in 1 until DEFAULT_SIZE) {
-            assert(symptomsState.isSymptomIndexChecked(i))
+            assert(symptomsState[i])
         }
 
         // Verify that the first is false now
         assert(symptomsState.areThereDefaultSymptoms())
-        assert(!symptomsState.isSymptomIndexChecked(0))
+        assert(!symptomsState[0])
 
         // Now, clear the symptoms
         symptomsState.clearOtherSymptoms()
 
         // Verify that they're all still true
         for (i in 1 until DEFAULT_SIZE) {
-            assert(symptomsState.isSymptomIndexChecked(i))
+            assert(symptomsState[i])
         }
 
         // Verify that the first is still false
         assert(symptomsState.areThereDefaultSymptoms())
-        assert(!symptomsState.isSymptomIndexChecked(0))
+        assert(!symptomsState[0])
     }
 
     @Test
@@ -165,9 +164,9 @@ class SymptomsStateTests {
 
         assert(!symptomsState.areThereDefaultSymptoms()) {"failed symptomsState: $symptomsState"}
         assert(!symptomsState.areThereOtherSymptoms()) {"failed symptomsState: $symptomsState"}
-        assert(symptomsState.isSymptomIndexChecked(0)) {"failed symptomsState: $symptomsState"}
+        assert(symptomsState[0]) {"failed symptomsState: $symptomsState"}
         for (i in 1 until DEFAULT_SIZE) {
-            assert(!symptomsState.isSymptomIndexChecked(i)) {"failed symptomsState: $symptomsState"}
+            assert(!symptomsState[i]) {"failed symptomsState: $symptomsState"}
         }
     }
 
@@ -179,8 +178,8 @@ class SymptomsStateTests {
         )
         assert(!symptomsState.areThereDefaultSymptoms()) {"failed symptomsState: $symptomsState"}
         assert(!symptomsState.areThereOtherSymptoms()) {"failed symptomsState: $symptomsState"}
-        assert(symptomsState.isSymptomIndexChecked(0)) {"failed symptomsState: $symptomsState"}
-        assert(!symptomsState.isSymptomIndexChecked(1)) {"failed symptomsState: $symptomsState"}
+        assert(symptomsState[0]) {"failed symptomsState: $symptomsState"}
+        assert(!symptomsState[1]) {"failed symptomsState: $symptomsState"}
 
         symptomsState = SymptomsState(
             symptomStrings = listOf("nOnE", "some useless symptom"),
@@ -188,8 +187,8 @@ class SymptomsStateTests {
         )
         assert(!symptomsState.areThereDefaultSymptoms()) {"failed symptomsState: $symptomsState"}
         assert(!symptomsState.areThereOtherSymptoms()) {"failed symptomsState: $symptomsState"}
-        assert(symptomsState.isSymptomIndexChecked(0)) {"failed symptomsState: $symptomsState"}
-        assert(!symptomsState.isSymptomIndexChecked(1)) {"failed symptomsState: $symptomsState"}
+        assert(symptomsState[0]) {"failed symptomsState: $symptomsState"}
+        assert(!symptomsState[1]) {"failed symptomsState: $symptomsState"}
 
         symptomsState = SymptomsState(
             symptomStrings = listOf("No symptoms (patient healthy)"),
@@ -197,8 +196,8 @@ class SymptomsStateTests {
         )
         assert(!symptomsState.areThereDefaultSymptoms()) {"failed symptomsState: $symptomsState"}
         assert(!symptomsState.areThereOtherSymptoms()) {"failed symptomsState: $symptomsState"}
-        assert(symptomsState.isSymptomIndexChecked(0)) {"failed symptomsState: $symptomsState"}
-        assert(!symptomsState.isSymptomIndexChecked(1)) {"failed symptomsState: $symptomsState"}
+        assert(symptomsState[0]) {"failed symptomsState: $symptomsState"}
+        assert(!symptomsState[1]) {"failed symptomsState: $symptomsState"}
     }
 
     @Test
@@ -233,15 +232,15 @@ class SymptomsStateTests {
         )
         assert(symptomsState.areThereDefaultSymptoms())
         assert(symptomsState.areThereOtherSymptoms())
-        assert(!symptomsState.isSymptomIndexChecked(0))
+        assert(!symptomsState[0])
 
         englishSymptoms.forEachIndexed { index, currentSymptom ->
             if (index in expectedTrueSymptomsIndexes) {
-                assert(symptomsState.isSymptomIndexChecked(index)) {
+                assert(symptomsState[index]) {
                     "expected $currentSymptom to be true but it was false"
                 }
             } else {
-                assert(!symptomsState.isSymptomIndexChecked(index)) {
+                assert(!symptomsState[index]) {
                     "expected $currentSymptom to be false but it was true"
                 }
             }
