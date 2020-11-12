@@ -37,7 +37,7 @@
 
     <!-- Readings Patient Info-->
     <string-array name="reading_symptoms">
-        <item>No Symptoms (patient healthy)</item>
+        <item>No symptoms</item>
         <item>Headache</item>
         <item>Blurred vision</item>
         <item>Abdominal pain</item>
