@@ -112,13 +112,321 @@ class SymptomsStateTests {
         }
     }
 
+    /**
+     * This makes sure that if all the checkboxes are unchecked, the first symptom is
+     * checked again
+     */
+    @Test
+    fun `if all the checkboxes are unchecked, first symptom is checked again`() {
+        val symptomsState = SymptomsState(DEFAULT_SIZE)
+
+        /*
+        Expected:
+        [x] No symptoms (index 0)
+        [ ] Symptom at index 1
+        [ ] Symptom at index 2
+        [ ] Symptom at index 3
+        [ ] Symptom at index 4
+        [ ] Symptom at index 5
+        Other symptoms: (empty)
+         */
+        assert(!symptomsState.areThereOtherSymptoms())
+        assert(!symptomsState.areThereDefaultSymptoms())
+        assert(symptomsState[0])
+        for (i in 1 until DEFAULT_SIZE) {
+            assert(!symptomsState[i])
+        }
+
+        // Now, set the last symptom to true
+        symptomsState[DEFAULT_SIZE - 1] = true
+
+        /*
+        Expected:
+        [ ] No symptoms (index 0)
+        [ ] Symptom at index 1
+        [ ] Symptom at index 2
+        [ ] Symptom at index 3
+        [ ] Symptom at index 4
+        [x] Symptom at index 5
+        Other symptoms: (empty)
+         */
+        // Verify that the first is false now
+        assert(symptomsState.areThereDefaultSymptoms())
+        assert(!symptomsState[0])
+
+        // Verify that they're all false except for the last
+        for (i in 0 until DEFAULT_SIZE - 1) {
+            assert(!symptomsState[i])
+        }
+        assert(!symptomsState.areThereOtherSymptoms())
+        // Verify the last symptom is true
+        assert(symptomsState[DEFAULT_SIZE - 1])
+
+        // Now, set the second last symptom to true
+        symptomsState[DEFAULT_SIZE - 2] = true
+
+        /*
+        Expected:
+        [ ] No symptoms (index 0)
+        [ ] Symptom at index 1
+        [ ] Symptom at index 2
+        [ ] Symptom at index 3
+        [x] Symptom at index 4
+        [x] Symptom at index 5
+        Other symptoms: (empty)
+         */
+        // Verify that the first is still false
+        assert(!symptomsState[0])
+
+        // Verify that they're all false except for the last two
+        for (i in 0 until DEFAULT_SIZE - 2) {
+            assert(!symptomsState[i])
+        }
+        assert(symptomsState.areThereDefaultSymptoms())
+        // Verify that no custom symptom is set
+        assert(!symptomsState.areThereOtherSymptoms())
+        // Verify the second last and last symptoms are true
+        assert(symptomsState[DEFAULT_SIZE - 2])
+        assert(symptomsState[DEFAULT_SIZE - 1])
+
+        // Now, uncheck the second last symptom
+        symptomsState[DEFAULT_SIZE - 2] = false
+
+        /*
+        Expected:
+        [ ] No symptoms (index 0)
+        [ ] Symptom at index 1
+        [ ] Symptom at index 2
+        [ ] Symptom at index 3
+        [ ] Symptom at index 4
+        [x] Symptom at index 5
+        Other symptoms: (empty)
+         */
+        // Verify that the first is still false
+        assert(!symptomsState[0])
+
+        // Verify that they're all false except for the last
+        for (i in 0 until DEFAULT_SIZE - 1) {
+            assert(!symptomsState[i])
+        }
+        assert(symptomsState.areThereDefaultSymptoms())
+        assert(!symptomsState.areThereOtherSymptoms())
+        // Verify the last symptom is true
+        assert(symptomsState[DEFAULT_SIZE - 1])
+
+        // Now, uncheck the last symptom
+        symptomsState[DEFAULT_SIZE - 1] = false
+
+        /*
+        Expected:
+        [x] No symptoms (index 0)
+        [ ] Symptom at index 1
+        [ ] Symptom at index 2
+        [ ] Symptom at index 3
+        [ ] Symptom at index 4
+        [ ] Symptom at index 5
+        Other symptoms: (empty)
+         */
+        // Verify custom symptoms not set
+        assert(!symptomsState.areThereOtherSymptoms())
+
+        // Verify that the first is true now
+        assert(!symptomsState.areThereDefaultSymptoms())
+        assert(symptomsState[0])
+
+        // Verify all others are false
+        for (i in 1 until DEFAULT_SIZE) {
+            assert(!symptomsState[i])
+        }
+    }
+
+    /**
+     * This makes sure that if all the checkboxes are unchecked, the first symptom is
+     * checked again
+     */
+    @Test
+    fun `if all the checkboxes are unchecked but using custom symptom, custom symptom stays`() {
+        val symptomsState = SymptomsState(DEFAULT_SIZE)
+
+        /*
+        Expected:
+        [x] No symptoms (index 0)
+        [ ] Symptom at index 1
+        [ ] Symptom at index 2
+        [ ] Symptom at index 3
+        [ ] Symptom at index 4
+        [ ] Symptom at index 5
+        Other symptoms: (empty)
+         */
+        assert(!symptomsState.areThereOtherSymptoms())
+        assert(!symptomsState.areThereDefaultSymptoms())
+        assert(symptomsState[0])
+        for (i in 1 until DEFAULT_SIZE) {
+            assert(!symptomsState[i])
+        }
+
+        // Now, set the last symptom to true
+        symptomsState[DEFAULT_SIZE - 1] = true
+
+        /*
+        Expected:
+        [ ] No symptoms (index 0)
+        [ ] Symptom at index 1
+        [ ] Symptom at index 2
+        [ ] Symptom at index 3
+        [ ] Symptom at index 4
+        [x] Symptom at index 5
+        Other symptoms: (empty)
+         */
+        // Verify that the first is false now
+        assert(symptomsState.areThereDefaultSymptoms())
+        assert(!symptomsState[0])
+
+        // Verify that they're all false except for the last
+        for (i in 0 until DEFAULT_SIZE - 1) {
+            assert(!symptomsState[i])
+        }
+        assert(!symptomsState.areThereOtherSymptoms())
+        // Verify the last symptom is true
+        assert(symptomsState[DEFAULT_SIZE - 1])
+
+        // Now, set the second last symptom to true
+        symptomsState[DEFAULT_SIZE - 2] = true
+
+        /*
+        Expected:
+        [ ] No symptoms (index 0)
+        [ ] Symptom at index 1
+        [ ] Symptom at index 2
+        [ ] Symptom at index 3
+        [x] Symptom at index 4
+        [x] Symptom at index 5
+        Other symptoms: (empty)
+         */
+        // Verify that the first is still false
+        assert(!symptomsState[0])
+
+        // Verify that they're all false except for the last two
+        for (i in 0 until DEFAULT_SIZE - 2) {
+            assert(!symptomsState[i])
+        }
+        assert(symptomsState.areThereDefaultSymptoms())
+        // Verify that no custom symptom is set
+        assert(!symptomsState.areThereOtherSymptoms())
+        // Verify the second last and last symptoms are true
+        assert(symptomsState[DEFAULT_SIZE - 2])
+        assert(symptomsState[DEFAULT_SIZE - 1])
+
+        // Now, add a custom symptom
+        symptomsState.setOtherSymptoms("this is my custom symptom")
+
+        /*
+        Expected:
+        [ ] No symptoms (index 0)
+        [ ] Symptom at index 1
+        [ ] Symptom at index 2
+        [ ] Symptom at index 3
+        [x] Symptom at index 4
+        [x] Symptom at index 5
+        Other symptoms: "this is my custom symptom"
+         */
+        // Verify that the first is still false
+        assert(!symptomsState[0])
+
+        // Verify that they're all false except for the last two
+        for (i in 0 until DEFAULT_SIZE - 2) {
+            assert(!symptomsState[i])
+        }
+        assert(symptomsState.areThereDefaultSymptoms())
+        // Verify that the custom symptom is set
+        assert(symptomsState.areThereOtherSymptoms())
+        assertEquals("this is my custom symptom", symptomsState.otherSymptoms)
+
+        // Now, uncheck the second last symptom
+        symptomsState[DEFAULT_SIZE - 2] = false
+
+        /*
+        Expected:
+        [ ] No symptoms (index 0)
+        [ ] Symptom at index 1
+        [ ] Symptom at index 2
+        [ ] Symptom at index 3
+        [ ] Symptom at index 4
+        [x] Symptom at index 5
+        Other symptoms: "this is my custom symptom"
+         */
+        // Verify that the first is still false
+        assert(!symptomsState[0])
+
+        // Verify that they're all false except for the last
+        for (i in 0 until DEFAULT_SIZE - 1) {
+            assert(!symptomsState[i])
+        }
+        assert(symptomsState.areThereDefaultSymptoms())
+        // Verify that the custom symptom is set
+        assert(symptomsState.areThereOtherSymptoms())
+        assertEquals("this is my custom symptom", symptomsState.otherSymptoms)
+        // Verify the last symptom is true
+        assert(symptomsState[DEFAULT_SIZE - 1])
+
+        // Now, uncheck the last symptom
+        symptomsState[DEFAULT_SIZE - 1] = false
+
+        /*
+        Expected:
+        [ ] No symptoms (index 0)
+        [ ] Symptom at index 1
+        [ ] Symptom at index 2
+        [ ] Symptom at index 3
+        [ ] Symptom at index 4
+        [ ] Symptom at index 5
+        Other symptoms: "this is my custom symptom"
+         */
+        // Verify that the first is still false
+        assert(!symptomsState[0])
+
+        // Verify that all checkboxes are false
+        for (i in 0 until DEFAULT_SIZE) {
+            assert(!symptomsState[i])
+        }
+        assert(!symptomsState.areThereDefaultSymptoms())
+        // Verify that the custom symptom is set
+        assert(symptomsState.areThereOtherSymptoms())
+        assertEquals("this is my custom symptom", symptomsState.otherSymptoms)
+
+        // Now, clear the custom symptom
+        symptomsState.setOtherSymptoms("")
+
+        /*
+        Expected:
+        [x] No symptoms (index 0)
+        [ ] Symptom at index 1
+        [ ] Symptom at index 2
+        [ ] Symptom at index 3
+        [ ] Symptom at index 4
+        [ ] Symptom at index 5
+        Other symptoms: (empty)
+         */
+        // Verify custom symptoms not set
+        assert(!symptomsState.areThereOtherSymptoms())
+
+        // Verify that the first is true now
+        assert(!symptomsState.areThereDefaultSymptoms())
+        assert(symptomsState[0])
+
+        // Verify all others are false
+        for (i in 1 until DEFAULT_SIZE) {
+            assert(!symptomsState[i])
+        }
+    }
+
     @Test
     fun `setOtherSymptoms doesn't toggle anything else`() {
         val symptomsState = SymptomsState(DEFAULT_SIZE)
         symptomsState.setOtherSymptoms("other symptom")
         assertEquals("other symptom", symptomsState.otherSymptoms)
 
-        assert(symptomsState.areThereDefaultSymptoms())
+        assert(!symptomsState.areThereDefaultSymptoms())
         assert(!symptomsState[0])
         for (i in 1 until DEFAULT_SIZE) {
             assert(!symptomsState[i])
@@ -153,6 +461,31 @@ class SymptomsStateTests {
         // Verify that the first is still false
         assert(symptomsState.areThereDefaultSymptoms())
         assert(!symptomsState[0])
+    }
+
+    @Test
+    fun `entering other symptoms and then erasing it results in first checkbox checked`() {
+        val symptomsState = SymptomsState(DEFAULT_SIZE)
+        symptomsState.setOtherSymptoms("other symptom")
+        // Verify that they're all false
+        for (i in 0 until DEFAULT_SIZE) {
+            assert(!symptomsState[i])
+        }
+        assert(symptomsState.areThereOtherSymptoms())
+        assert(!symptomsState.areThereDefaultSymptoms())
+
+        // Now, clear the symptoms
+        symptomsState.setOtherSymptoms("")
+
+        // Verify that the first one is now true
+        assert(symptomsState[0])
+        // Verify that the other checkboxes are false
+        for (i in 1 until DEFAULT_SIZE) {
+            assert(!symptomsState[i])
+        }
+        assert(!symptomsState.areThereOtherSymptoms())
+        assert(!symptomsState.areThereDefaultSymptoms())
+        assert(!symptomsState.areThereAnySymptoms())
     }
 
     @Test

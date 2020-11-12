@@ -79,9 +79,19 @@ class SymptomsState(val numberOfDefaultSymptoms: Int) {
         return list
     }
 
+    fun areThereAnySymptoms() = areThereOtherSymptoms() || areThereDefaultSymptoms()
+
     fun areThereOtherSymptoms() = otherSymptoms.isNotBlank()
 
-    fun areThereDefaultSymptoms() = !defaultSymptomsState[0]
+    fun areThereDefaultSymptoms(): Boolean {
+        if (defaultSymptomsState[0]) return false
+        for (i in 1 until defaultSymptomsState.size) {
+            if (defaultSymptomsState[i]) {
+                return true
+            }
+        }
+        return false
+    }
 
     operator fun get(index: Int) = defaultSymptomsState[index]
 
@@ -93,6 +103,7 @@ class SymptomsState(val numberOfDefaultSymptoms: Int) {
 
     fun clearOtherSymptoms() {
         otherSymptoms = ""
+        onNewInput(inputAddedSymptom = false)
     }
 
     operator fun set(index: Int, newValue: Boolean) {
@@ -104,13 +115,30 @@ class SymptomsState(val numberOfDefaultSymptoms: Int) {
             }
         } else {
             defaultSymptomsState[index] = newValue
+            onNewInput(inputAddedSymptom = newValue)
+        }
+    }
+
+    /**
+     * When new input is added to this [SymptomsState] object, run this to update
+     * the state of the first checkbox depending on the others.
+     */
+    private fun onNewInput(inputAddedSymptom: Boolean) {
+        if (inputAddedSymptom) {
             defaultSymptomsState[0] = false
+        } else {
+            // Worst case: O(n) check, but acceptable because this is meant to be used
+            // with a small number of checkboxes. For maximum efficiency, we could use
+            // bits and do an bitwise AND or something, but that's unneeded right now.
+            if (!areThereAnySymptoms()) {
+                defaultSymptomsState[0] = true
+            }
         }
     }
 
     fun setOtherSymptoms(otherSymptoms: String) {
         this.otherSymptoms = otherSymptoms
-        defaultSymptomsState[0] = false
+        onNewInput(inputAddedSymptom = areThereOtherSymptoms())
     }
 
     /**
