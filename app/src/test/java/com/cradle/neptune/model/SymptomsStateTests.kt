@@ -490,6 +490,31 @@ class SymptomsStateTests {
     }
 
     @Test
+    fun `entering other symptoms and then checking first checkbox erases it`() {
+        val symptomsState = SymptomsState(DEFAULT_SIZE)
+        symptomsState.setOtherSymptoms("other symptom")
+        // Verify that they're all false
+        for (i in 0 until DEFAULT_SIZE) {
+            assert(!symptomsState[i])
+        }
+        assert(symptomsState.areThereOtherSymptoms())
+        assert(!symptomsState.areThereDefaultSymptoms())
+
+        // Now, check the first checkbox
+        symptomsState[0] = true
+
+        // Verify that the first one is now true
+        assert(symptomsState[0])
+        // Verify that the other checkboxes are false
+        for (i in 1 until DEFAULT_SIZE) {
+            assert(!symptomsState[i])
+        }
+        assert(!symptomsState.areThereOtherSymptoms())
+        assert(!symptomsState.areThereDefaultSymptoms())
+        assert(!symptomsState.areThereAnySymptoms())
+    }
+
+    @Test
     fun `constructor setup from empty user-supplied symptoms has no symptoms`() {
         val symptomsState = SymptomsState(
             symptomStrings = emptyList(),

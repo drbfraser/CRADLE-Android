@@ -466,6 +466,14 @@ class PatientReadingViewModel @ViewModelInject constructor(
                 otherSymptomsInput.value = it.otherSymptoms
             }
 
+            otherSymptomsInput.apply {
+                addSource(_symptomsState) {
+                    if (value != it.otherSymptoms) {
+                        value = it.otherSymptoms
+                    }
+                }
+            }
+
             _symptomsState.apply {
                 addSource(otherSymptomsInput) { otherSymptomsString ->
                     val currentSymptomsState = value ?: return@addSource
@@ -728,7 +736,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
      * Used in two-way Data Binding with SymptomsFragment
      * The user's arbitrary text input for the "Other symptoms" field is tracked here.
      */
-    val otherSymptomsInput = MutableLiveData("")
+    val otherSymptomsInput = MediatorLiveData<String>()
 
     /**
      * Sets the symptom state for a particular symptom with index [index] inside of the symptoms
