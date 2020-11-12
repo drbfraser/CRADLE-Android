@@ -16,6 +16,17 @@ class SymptomsStateTests {
     fun `setSymptomIndexState when index 0 is checked, it cannot be unchecked again`() {
         val symptomsState = SymptomsState(DEFAULT_SIZE)
         assertEquals(DEFAULT_SIZE, symptomsState.numberOfDefaultSymptoms)
+
+        /*
+        Expected:
+        [x] No symptoms (index 0)
+        [ ] Symptom at index 1
+        [ ] Symptom at index 2
+        [ ] Symptom at index 3
+        [ ] Symptom at index 4
+        [ ] Symptom at index 5
+        Other symptoms: (empty)
+         */
         assert(!symptomsState.areThereDefaultSymptoms())
         assert(!symptomsState.areThereOtherSymptoms())
         assert(symptomsState[0])
@@ -25,6 +36,16 @@ class SymptomsStateTests {
 
         // Setting index 0 to true should not do anything.
         symptomsState[0] = true
+        /*
+        Expected:
+        [x] No symptoms (index 0)
+        [ ] Symptom at index 1
+        [ ] Symptom at index 2
+        [ ] Symptom at index 3
+        [ ] Symptom at index 4
+        [ ] Symptom at index 5
+        Other symptoms: (empty)
+         */
         assert(!symptomsState.areThereDefaultSymptoms())
         assert(!symptomsState.areThereOtherSymptoms())
         assert(symptomsState[0])
@@ -34,6 +55,16 @@ class SymptomsStateTests {
 
         // Setting index 0 to false should reject that change, and not do anything.
         symptomsState[0] = false
+        /*
+        Expected:
+        [x] No symptoms (index 0)
+        [ ] Symptom at index 1
+        [ ] Symptom at index 2
+        [ ] Symptom at index 3
+        [ ] Symptom at index 4
+        [ ] Symptom at index 5
+        Other symptoms: (empty)
+         */
         assert(!symptomsState.areThereDefaultSymptoms())
         assert(!symptomsState.areThereOtherSymptoms())
         assert(symptomsState[0])
@@ -43,9 +74,19 @@ class SymptomsStateTests {
     }
 
     @Test
-    fun `setSymptomIndexState makes first false and clearing symptoms turns all others off`() {
+    fun `checking a checkbox makes first false and clearing symptoms turns all others off`() {
         val symptomsState = SymptomsState(DEFAULT_SIZE)
 
+        /*
+        Expected:
+        [x] No symptoms (index 0)
+        [ ] Symptom at index 1
+        [ ] Symptom at index 2
+        [ ] Symptom at index 3
+        [ ] Symptom at index 4
+        [ ] Symptom at index 5
+        Other symptoms: (empty)
+         */
         assert(!symptomsState.areThereDefaultSymptoms())
         assert(symptomsState[0])
         for (i in 1 until DEFAULT_SIZE) {
@@ -58,10 +99,19 @@ class SymptomsStateTests {
         }
 
         // Verify that they're all true
+        /*
+        Expected:
+        [ ] No symptoms (index 0)
+        [x] Symptom at index 1
+        [x] Symptom at index 2
+        [x] Symptom at index 3
+        [x] Symptom at index 4
+        [x] Symptom at index 5
+        Other symptoms: (empty)
+         */
         for (i in 1 until DEFAULT_SIZE) {
             assert(symptomsState[i])
         }
-
         // Verify that the first is false now
         assert(symptomsState.areThereDefaultSymptoms())
         assert(!symptomsState[0])
@@ -69,6 +119,16 @@ class SymptomsStateTests {
         // Now, clear the symptoms
         symptomsState.clearSymptoms()
 
+        /*
+        Expected:
+        [x] No symptoms (index 0)
+        [ ] Symptom at index 1
+        [ ] Symptom at index 2
+        [ ] Symptom at index 3
+        [ ] Symptom at index 4
+        [ ] Symptom at index 5
+        Other symptoms: (empty)
+         */
         // Check that the first is true again, and that all the others are false
         assert(!symptomsState.areThereDefaultSymptoms())
         assert(symptomsState[0])
@@ -78,9 +138,19 @@ class SymptomsStateTests {
     }
 
     @Test
-    fun `setSymptomIndexState makes first false and setting index 0 turns all others off`() {
+    fun `checking a checkbox makes first false, manually clearing symptoms turns all others off`() {
         val symptomsState = SymptomsState(DEFAULT_SIZE)
 
+        /*
+        Expected:
+        [x] No symptoms (index 0)
+        [ ] Symptom at index 1
+        [ ] Symptom at index 2
+        [ ] Symptom at index 3
+        [ ] Symptom at index 4
+        [ ] Symptom at index 5
+        Other symptoms: (empty)
+         */
         assert(!symptomsState.areThereDefaultSymptoms())
         assert(symptomsState[0])
         for (i in 1 until DEFAULT_SIZE) {
@@ -93,6 +163,82 @@ class SymptomsStateTests {
         }
 
         // Verify that they're all true
+        /*
+        Expected:
+        [ ] No symptoms (index 0)
+        [x] Symptom at index 1
+        [x] Symptom at index 2
+        [x] Symptom at index 3
+        [x] Symptom at index 4
+        [x] Symptom at index 5
+        Other symptoms: (empty)
+         */
+        for (i in 1 until DEFAULT_SIZE) {
+            assert(symptomsState[i])
+        }
+        // Verify that the first is false now
+        assert(symptomsState.areThereDefaultSymptoms())
+        assert(!symptomsState[0])
+
+        // Now, manually clear the symptoms
+        for (i in 1 until DEFAULT_SIZE) {
+            symptomsState[i] = false
+        }
+
+        /*
+        Expected:
+        [x] No symptoms (index 0)
+        [ ] Symptom at index 1
+        [ ] Symptom at index 2
+        [ ] Symptom at index 3
+        [ ] Symptom at index 4
+        [ ] Symptom at index 5
+        Other symptoms: (empty)
+         */
+        // Check that the first is true again, and that all the others are false
+        assert(!symptomsState.areThereDefaultSymptoms())
+        assert(symptomsState[0])
+        for (i in 1 until DEFAULT_SIZE) {
+            assert(!symptomsState[i])
+        }
+    }
+
+    @Test
+    fun `checking other checkboxes makes first box false, and index 0 turns all others off`() {
+        val symptomsState = SymptomsState(DEFAULT_SIZE)
+
+        /*
+        Expected:
+        [x] No symptoms (index 0)
+        [ ] Symptom at index 1
+        [ ] Symptom at index 2
+        [ ] Symptom at index 3
+        [ ] Symptom at index 4
+        [ ] Symptom at index 5
+        Other symptoms: (empty)
+         */
+        assert(!symptomsState.areThereDefaultSymptoms())
+        assert(symptomsState[0])
+        for (i in 1 until DEFAULT_SIZE) {
+            assert(!symptomsState[i])
+        }
+
+        // Now, set all the other symptoms to true.
+        for (i in 1 until DEFAULT_SIZE) {
+            symptomsState[i] = true
+        }
+
+        // Verify that they're all true
+        /*
+        Expected:
+        [ ] No symptoms (index 0)
+        [x] Symptom at index 1
+        [x] Symptom at index 2
+        [x] Symptom at index 3
+        [x] Symptom at index 4
+        [x] Symptom at index 5
+        Other symptoms: (empty)
+         */
         for (i in 1 until DEFAULT_SIZE) {
             assert(symptomsState[i])
         }
@@ -105,6 +251,16 @@ class SymptomsStateTests {
         symptomsState[0] = true
 
         // Check that the first is true again, and that all the others are false
+        /*
+        Expected:
+        [x] No symptoms (index 0)
+        [ ] Symptom at index 1
+        [ ] Symptom at index 2
+        [ ] Symptom at index 3
+        [ ] Symptom at index 4
+        [ ] Symptom at index 5
+        Other symptoms: (empty)
+         */
         assert(!symptomsState.areThereDefaultSymptoms())
         assert(symptomsState[0])
         for (i in 1 until DEFAULT_SIZE) {
@@ -425,8 +581,20 @@ class SymptomsStateTests {
     fun `setOtherSymptoms doesn't toggle anything else`() {
         val symptomsState = SymptomsState(DEFAULT_SIZE)
         symptomsState.setOtherSymptoms("other symptom")
-        assertEquals("other symptom", symptomsState.otherSymptoms)
 
+        /*
+        Expected:
+        [ ] No symptoms (index 0)
+        [ ] Symptom at index 1
+        [ ] Symptom at index 2
+        [ ] Symptom at index 3
+        [ ] Symptom at index 4
+        [ ] Symptom at index 5
+        Other symptoms: "other symptom"
+         */
+        assertEquals("other symptom", symptomsState.otherSymptoms)
+        assert(symptomsState.areThereAnySymptoms())
+        assert(symptomsState.areThereOtherSymptoms())
         assert(!symptomsState.areThereDefaultSymptoms())
         assert(!symptomsState[0])
         for (i in 1 until DEFAULT_SIZE) {
@@ -443,6 +611,16 @@ class SymptomsStateTests {
         }
 
         // Verify that they're all true
+        /*
+        Expected:
+        [ ] No symptoms (index 0)
+        [x] Symptom at index 1
+        [x] Symptom at index 2
+        [x] Symptom at index 3
+        [x] Symptom at index 4
+        [x] Symptom at index 5
+        Other symptoms: "other symptom"
+         */
         for (i in 1 until DEFAULT_SIZE) {
             assert(symptomsState[i])
         }
@@ -451,10 +629,20 @@ class SymptomsStateTests {
         assert(symptomsState.areThereDefaultSymptoms())
         assert(!symptomsState[0])
 
-        // Now, clear the symptoms
+        // Now, clear the user-entered symptoms
         symptomsState.clearOtherSymptoms()
 
         // Verify that they're all still true
+        /*
+        Expected:
+        [ ] No symptoms (index 0)
+        [x] Symptom at index 1
+        [x] Symptom at index 2
+        [x] Symptom at index 3
+        [x] Symptom at index 4
+        [x] Symptom at index 5
+        Other symptoms: (empty)
+         */
         for (i in 1 until DEFAULT_SIZE) {
             assert(symptomsState[i])
         }
@@ -469,15 +657,35 @@ class SymptomsStateTests {
         val symptomsState = SymptomsState(DEFAULT_SIZE)
         symptomsState.setOtherSymptoms("other symptom")
         // Verify that they're all false
+        /*
+        Expected:
+        [ ] No symptoms (index 0)
+        [ ] Symptom at index 1
+        [ ] Symptom at index 2
+        [ ] Symptom at index 3
+        [ ] Symptom at index 4
+        [ ] Symptom at index 5
+        Other symptoms: "other symptom"
+         */
         for (i in 0 until DEFAULT_SIZE) {
             assert(!symptomsState[i])
         }
         assert(symptomsState.areThereOtherSymptoms())
         assert(!symptomsState.areThereDefaultSymptoms())
 
-        // Now, clear the symptoms
+        // Now, clear the user-entered symptoms
         symptomsState.setOtherSymptoms("")
 
+        /*
+        Expected:
+        [x] No symptoms (index 0)
+        [ ] Symptom at index 1
+        [ ] Symptom at index 2
+        [ ] Symptom at index 3
+        [ ] Symptom at index 4
+        [ ] Symptom at index 5
+        Other symptoms: (empty)
+         */
         // Verify that the first one is now true
         assert(symptomsState[0])
         // Verify that the other checkboxes are false
@@ -493,6 +701,17 @@ class SymptomsStateTests {
     fun `entering other symptoms and then checking first checkbox erases it`() {
         val symptomsState = SymptomsState(DEFAULT_SIZE)
         symptomsState.setOtherSymptoms("other symptom")
+
+        /*
+        Expected:
+        [ ] No symptoms (index 0)
+        [ ] Symptom at index 1
+        [ ] Symptom at index 2
+        [ ] Symptom at index 3
+        [ ] Symptom at index 4
+        [ ] Symptom at index 5
+        Other symptoms: "other symptom"
+         */
         // Verify that they're all false
         for (i in 0 until DEFAULT_SIZE) {
             assert(!symptomsState[i])
@@ -503,6 +722,16 @@ class SymptomsStateTests {
         // Now, check the first checkbox
         symptomsState[0] = true
 
+        /*
+        Expected:
+        [x] No symptoms (index 0)
+        [ ] Symptom at index 1
+        [ ] Symptom at index 2
+        [ ] Symptom at index 3
+        [ ] Symptom at index 4
+        [ ] Symptom at index 5
+        Other symptoms: (none)
+         */
         // Verify that the first one is now true
         assert(symptomsState[0])
         // Verify that the other checkboxes are false
@@ -521,6 +750,11 @@ class SymptomsStateTests {
             defaultEnglishSymptoms = Array(DEFAULT_SIZE) { "" }
         )
 
+        /*
+        Expected:
+        [x] (empty string)(index 0)
+        Other symptoms: (none)
+         */
         assert(!symptomsState.areThereDefaultSymptoms()) {"failed symptomsState: $symptomsState"}
         assert(!symptomsState.areThereOtherSymptoms()) {"failed symptomsState: $symptomsState"}
         assert(symptomsState[0]) {"failed symptomsState: $symptomsState"}
@@ -535,11 +769,24 @@ class SymptomsStateTests {
             symptomStrings = listOf("some useless symptom", "nOnE"),
             defaultEnglishSymptoms = arrayOf("none", "hello")
         )
+
+        /*
+        Expected:
+        [x] none (index 0)
+        [x] hello (index 0)
+        Other symptoms: "some useless symptom"
+         */
         assert(!symptomsState.areThereDefaultSymptoms()) {"failed symptomsState: $symptomsState"}
         assert(!symptomsState.areThereOtherSymptoms()) {"failed symptomsState: $symptomsState"}
         assert(symptomsState[0]) {"failed symptomsState: $symptomsState"}
         assert(!symptomsState[1]) {"failed symptomsState: $symptomsState"}
 
+        /*
+        Expected:
+        [x] No symptoms (patient healthy) (index 0)
+        [ ] hello (index 0)
+        Other symptoms: "some useless symptom"
+         */
         symptomsState = SymptomsState(
             symptomStrings = listOf("nOnE", "some useless symptom"),
             defaultEnglishSymptoms = arrayOf("No symptoms (patient healthy)", "hello")
@@ -553,6 +800,12 @@ class SymptomsStateTests {
             symptomStrings = listOf("No symptoms (patient healthy)"),
             defaultEnglishSymptoms = arrayOf("No symptoms (patient healthy)", "hello")
         )
+        /*
+        Expected:
+        [x] No symptoms (patient healthy) (index 0)
+        [ ] hello (index 0)
+        Other symptoms: "some useless symptom"
+         */
         assert(!symptomsState.areThereDefaultSymptoms()) {"failed symptomsState: $symptomsState"}
         assert(!symptomsState.areThereOtherSymptoms()) {"failed symptomsState: $symptomsState"}
         assert(symptomsState[0]) {"failed symptomsState: $symptomsState"}
@@ -569,13 +822,6 @@ class SymptomsStateTests {
             s to index
         }.toMap()
 
-        val expectedTrueSymptomsIndexes = arrayOf(
-            englishStringToIndexMap["Headache"],
-            englishStringToIndexMap["Blurred vision"],
-            englishStringToIndexMap["Bleeding"],
-            englishStringToIndexMap["Feverish"],
-            englishStringToIndexMap["Unwell"]
-        )
         val symptomsFromList = listOf(
             // These symptoms should be matched with the ones in the default English symptoms,
             // as whitespace is stripped.
@@ -589,6 +835,27 @@ class SymptomsStateTests {
             symptomStrings = symptomsFromList union symptomsNotFromList,
             defaultEnglishSymptoms =  englishSymptoms
         )
+
+        val expectedTrueSymptomsIndexes = arrayOf(
+            englishStringToIndexMap["Headache"],
+            englishStringToIndexMap["Blurred vision"],
+            englishStringToIndexMap["Bleeding"],
+            englishStringToIndexMap["Feverish"],
+            englishStringToIndexMap["Unwell"]
+        )
+        /*
+        Expected:
+        [ ] No symptoms (patient healthy) (index 0)
+        [x] Headache (index 1)
+        [x] Blurred vision (index 2)
+        [ ] Abdominal pain (index 3)
+        [x] Bleeding (index 4)
+        [x] Feverish (index 5)
+        [x] Unwell (index 6)
+        [ ] Cough (index 7)
+        [ ] Sneezing
+        Other symptoms: "Delusions of grandeur, Too happy, w H a t?, Nothing."
+         */
         assert(symptomsState.areThereDefaultSymptoms())
         assert(symptomsState.areThereOtherSymptoms())
         assert(!symptomsState[0])
