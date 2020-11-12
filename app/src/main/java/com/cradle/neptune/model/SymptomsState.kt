@@ -1,5 +1,6 @@
 package com.cradle.neptune.model
 
+import com.cradle.neptune.ext.findIndex
 import java.util.Locale
 
 /**
@@ -57,11 +58,8 @@ class SymptomsState(val numberOfDefaultSymptoms: Int) {
             // If it's not there, find will return null; that means it'll be added to the
             // other symptoms.
             defaultEnglishSymptoms
-                .find { trimAndLowercase(it) == trimAndLowercase(symptomFromList) }
-                ?.apply {
-                    val indexOfEnglishSymptom = defaultEnglishSymptoms.indexOf(this)
-                    set(indexOfEnglishSymptom, true)
-                }
+                .findIndex { trimAndLowercase(it) == trimAndLowercase(symptomFromList) }
+                ?.let { index -> set(index, true) }
                 ?: otherSymptomsBuilder.append(symptomFromList).append(", ")
         }
         setOtherSymptoms(otherSymptomsBuilder.removeSuffix(", ").toString())
