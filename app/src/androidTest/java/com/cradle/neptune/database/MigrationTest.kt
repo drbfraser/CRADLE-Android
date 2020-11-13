@@ -374,7 +374,11 @@ class MigrationTests {
     private fun insertFirstVersionReading(
         database: SupportSQLiteDatabase,
         readingTableName: String = "Reading",
-        reading: Reading
+        reading: Reading,
+        // in a previous version, null was being stored as a "null" string
+        urineTestForV1: String = typeConverter.fromUrineTest(reading.urineTest) ?: "null",
+        referralForV1: String = typeConverter.fromReferral(reading.referral) ?: "null",
+        followupForV1: String = typeConverter.fromFollowUp(reading.followUp) ?: "null",
     ) {
         val values = reading.run {
             // Using string literals, because we need to use the property names for the v1 schema.
@@ -385,10 +389,10 @@ class MigrationTests {
                 "patientId" to patientId,
                 "dateTimeTaken" to dateTimeTaken,
                 "bloodPressure" to typeConverter.fromBloodPressure(bloodPressure),
-                "urineTest" to typeConverter.fromUrineTest(urineTest),
+                "urineTest" to urineTestForV1,
                 "symptoms" to typeConverter.fromStringList(symptoms),
-                "referral" to typeConverter.fromReferral(referral),
-                "followUp" to typeConverter.fromFollowUp(followUp),
+                "referral" to referralForV1,
+                "followUp" to followupForV1,
                 "dateRecheckVitalsNeeded" to dateRecheckVitalsNeeded,
                 "isFlaggedForFollowUp" to isFlaggedForFollowUp,
                 "previousReadingIds" to typeConverter.fromStringList(previousReadingIds),
@@ -412,6 +416,8 @@ class MigrationTests {
         patientsTableName: String = "Patient",
         patient: Patient,
         ageForV1: Int?,
+        gestationalAgeForV1: String =
+            typeConverter.gestationalAgeToString(patient.gestationalAge) ?: "null",
     ) {
         val values = patient.run {
             // Using string literals, because we need to use the property names for the v1 schema.
@@ -422,7 +428,7 @@ class MigrationTests {
                 "name" to name,
                 "dob" to dob,
                 "age" to ageForV1,
-                "gestationalAge" to typeConverter.gestationalAgeToString(gestationalAge),
+                "gestationalAge" to gestationalAgeForV1,
                 "sex" to typeConverter.sexToString(sex),
                 "isPregnant" to isPregnant,
                 "zone" to zone,
