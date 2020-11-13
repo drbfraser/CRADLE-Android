@@ -43,7 +43,7 @@ sealed class Either<T, U> {
      * important to note that it will only be called if this either is a
      * [Left] variant.
      */
-    fun <A> mapLeft(f: (T) -> A): Either<A, U> = when (this) {
+    inline fun <A> mapLeft(f: (T) -> A): Either<A, U> = when (this) {
         is Left -> Left(f(this.value))
         is Right -> Right(this.value)
     }
@@ -55,7 +55,7 @@ sealed class Either<T, U> {
      * important to note that it will only be called if this either is a
      * [Right] variant.
      */
-    fun <B> mapRight(f: (U) -> B): Either<T, B> = when (this) {
+    inline fun <B> mapRight(f: (U) -> B): Either<T, B> = when (this) {
         is Left -> Left(this.value)
         is Right -> Right(f(this.value))
     }

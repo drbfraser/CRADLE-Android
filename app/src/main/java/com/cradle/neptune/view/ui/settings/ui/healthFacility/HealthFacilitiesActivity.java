@@ -80,8 +80,7 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
                 healthFacility.setUserSelected(!healthFacility.isUserSelected());
                 healthFacilityViewModel.updateFacility(healthFacility);
             })
-                    .setNegativeButton(android.R.string.cancel, (dialogInterface, i) -> {
-                    })
+                    .setNegativeButton(android.R.string.cancel, null)
                     .create()
                     .show();
         });

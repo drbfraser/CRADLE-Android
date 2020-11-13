@@ -299,7 +299,7 @@ class ReadingActivity : AppCompatActivity() {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.discard_dialog_title)
             .setMessage(getDiscardDialogMessageId())
-            .setNegativeButton(android.R.string.cancel) { _, _ -> /* noop */ }
+            .setNegativeButton(android.R.string.cancel, null)
             .setPositiveButton(R.string.discard_dialog_discard) { _, _ ->
                 findNavController(R.id.reading_nav_host).popBackStack(R.id.loadingFragment, true)
                 finish()

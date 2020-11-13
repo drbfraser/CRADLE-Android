@@ -331,7 +331,7 @@ fun <F : Field> JSONObject.optArrayField(field: F): JSONArray? = try {
  *
  * @throws JSONException If no such field exists.
  */
-fun <T, F : Field> JSONObject.mapField(field: F, transform: (String) -> T): T =
+inline fun <T, F : Field> JSONObject.mapField(field: F, transform: (String) -> T): T =
     transform(stringField(field))
 
 /**
@@ -344,7 +344,7 @@ fun <T, F : Field> JSONObject.mapField(field: F, transform: (String) -> T): T =
  * from the field.
  * @return The result of [transform] or `null` if the field doesn't exist.
  */
-fun <T, F : Field> JSONObject.mapOptField(field: F, transform: (String) -> T): T? {
+inline fun <T, F : Field> JSONObject.mapOptField(field: F, transform: (String) -> T): T? {
     val str = optStringField(field) ?: return null
     return transform(str)
 }
@@ -410,7 +410,7 @@ fun <M : Marshal<JSONObject>> JSONObject.union(other: M?): JSONObject = union(ot
  *  and produces a value which will be appended to the list
  * @return the JSON array as a list of elements of type [T]
  */
-fun <T> JSONArray.toList(producer: (JSONArray, Int) -> T): List<T> =
+inline fun <T> JSONArray.toList(producer: (JSONArray, Int) -> T): List<T> =
     (0 until length()).map { producer(this, it) }
 
 /**
@@ -431,5 +431,5 @@ fun <T> JSONArray.toList(producer: (JSONArray, Int) -> T): List<T> =
  *  value of type [U]
  * @return the result of mapping [mapper] over each element in this JSON array
  */
-fun <T, U> JSONArray.map(producer: (JSONArray, Int) -> T, mapper: (T) -> U): List<U> =
+inline fun <T, U> JSONArray.map(producer: (JSONArray, Int) -> T, mapper: (T) -> U): List<U> =
     toList(producer).map(mapper)
