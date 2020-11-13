@@ -17,10 +17,12 @@ import com.cradle.neptune.database.daos.HealthFacilityDao
 import com.cradle.neptune.database.daos.PatientDao
 import com.cradle.neptune.database.daos.ReadingDao
 import com.cradle.neptune.database.views.LocalSearchPatient
+import com.cradle.neptune.ext.toList
 import com.cradle.neptune.model.HealthFacility
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.utilitiles.DateUtil
+import org.json.JSONArray
 
 /**
  * An interface for the local CRADLE database.
@@ -423,8 +425,6 @@ FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE 
                 val medicalDrugHistoryQuery = SupportSQLiteQueryBuilder.builder("Patient")
                     .columns(arrayOf("id", "drugHistory", "medicalHistory"))
                     .create()
-
-                val typeConverter = DatabaseTypeConverters()
                 query(medicalDrugHistoryQuery).use { cursor ->
                     while (cursor != null && cursor.moveToNext()) {
                         val id = cursor.getString(cursor.getColumnIndexOrThrow("id"))
@@ -433,10 +433,15 @@ FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE 
                         val medicalHistoryAsList = cursor
                             .getString(cursor.getColumnIndexOrThrow("medicalHistory"))
 
-                        // It's a non-null column
-                        val drugHistory = typeConverter.toStringList(drugHistoryAsList)!!
+                        // Can't use the DatabaseTypeConverter class. Using that can cause issues
+                        // if any of that code changes. The code here has to just copy and paste
+                        // from the DatabaseTypeConverter it was working at to be migrated properly
+                        // in the future.
+                        val drugHistory = JSONArray(drugHistoryAsList)
+                            .toList(JSONArray::getString)
                             .joinToString(",")
-                        val medicalHistory = typeConverter.toStringList(medicalHistoryAsList)!!
+                        val medicalHistory = JSONArray(medicalHistoryAsList)
+                            .toList(JSONArray::getString)
                             .joinToString(",")
 
                         val updateValues = contentValuesOf(

@@ -4,13 +4,16 @@ import android.database.sqlite.SQLiteConstraintException
 import android.database.sqlite.SQLiteDatabase
 import androidx.core.content.contentValuesOf
 import androidx.room.Room
+import androidx.room.TypeConverter
 import androidx.room.testing.MigrationTestHelper
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
+import com.cradle.neptune.ext.toList
 import com.cradle.neptune.model.Assessment
 import com.cradle.neptune.model.BloodPressure
+import com.cradle.neptune.model.GestationalAge
 import com.cradle.neptune.model.GestationalAgeMonths
 import com.cradle.neptune.model.GestationalAgeWeeks
 import com.cradle.neptune.model.Patient
@@ -24,6 +27,8 @@ import com.cradle.neptune.testutils.assertThrows
 import com.cradle.neptune.utilitiles.DateUtil
 import com.cradle.neptune.utilitiles.Months
 import com.cradle.neptune.utilitiles.Weeks
+import org.json.JSONArray
+import org.json.JSONObject
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -34,7 +39,11 @@ import java.util.UUID
 class MigrationTests {
     private val TEST_DB = "migration-test"
 
-    private val typeConverter = DatabaseTypeConverters()
+    /**
+     * Cannot use the normal [DatabaseTypeConverters] class; see the comments on
+     * the [Version1CompatibleDatabaseTypeConverters]
+     */
+    private val typeConverter = Version1CompatibleDatabaseTypeConverters()
 
     @Rule @JvmField
     val helper: MigrationTestHelper = MigrationTestHelper(
@@ -451,4 +460,64 @@ class MigrationTests {
         helper.closeWhenFinished(database)
         return database
     }
+}
+
+/**
+ * A list of [TypeConverter] to save objects into Room database for version 1.
+ * This must be used in case there are any changes to the original [DatabaseTypeConverters]
+ * class in the future. These are the type converters that were compatible with the
+ * version 1 schema. In a sense, these are time-frozen type converters.
+ */
+@Suppress("unused")
+private class Version1CompatibleDatabaseTypeConverters {
+
+    fun gestationalAgeToString(gestationalAge: GestationalAge?): String? =
+        gestationalAge?.marshal()?.toString()
+
+    fun stringToGestationalAge(string: String?): GestationalAge? =
+        string?.let { if (it == "null") null else GestationalAge.unmarshal(JSONObject(it)) }
+
+    fun stringToSex(string: String): Sex = enumValueOf(string)
+
+    fun sexToString(sex: Sex): String = sex.name
+
+    fun fromStringList(list: List<String>?): String? {
+        if (list == null) {
+            return null
+        }
+        return JSONArray()
+            .apply { list.forEach { put(it) } }
+            .toString()
+    }
+
+    fun toStringList(string: String?): List<String>? = string?.let {
+        JSONArray(it).toList(JSONArray::getString)
+    }
+
+    fun toBloodPressure(string: String?): BloodPressure? =
+        string?.let { if (it == "null") null else BloodPressure.unmarshal(JSONObject(string)) }
+
+    fun fromBloodPressure(bloodPressure: BloodPressure?): String? =
+        bloodPressure?.marshal()?.toString()
+
+    fun toUrineTest(string: String?): UrineTest? =
+        string?.let { if (it == "null") null else UrineTest.unmarshal(JSONObject(it)) }
+
+    fun fromUrineTest(urineTest: UrineTest?): String? = urineTest?.marshal()?.toString()
+
+    fun toReferral(string: String?): Referral? =
+        string?.let { if (it == "null") null else Referral.unmarshal(JSONObject(it)) }
+
+    fun fromReferral(referral: Referral?): String? = referral?.marshal()?.toString()
+
+    fun toFollowUp(string: String?): Assessment? =
+        string?.let { if (it == "null") null else Assessment.unmarshal(JSONObject(it)) }
+
+    fun fromFollowUp(followUp: Assessment?): String? = followUp?.marshal()?.toString()
+
+    fun toReadingMetadata(string: String?): ReadingMetadata? =
+        string?.let { if (it == "null") null else ReadingMetadata.unmarshal(JSONObject(it)) }
+
+    fun fromReadingMetaData(readingMetadata: ReadingMetadata?): String? =
+        readingMetadata?.marshal()?.toString()
 }
