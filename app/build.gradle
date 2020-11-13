@@ -88,7 +88,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.vectordrawable:vectordrawable:1.1.0'
@@ -117,7 +117,7 @@ dependencies {
 
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
 
-    implementation "androidx.paging:paging-runtime-ktx:3.0.0-alpha08"
+    implementation "androidx.paging:paging-runtime-ktx:3.0.0-alpha09"
 
     // Time: Backport of Java 8's interfaces for Android
     // https://github.com/JakeWharton/ThreeTenABP
@@ -136,7 +136,7 @@ dependencies {
     // Blur
     implementation 'com.wonderkiln:blurkit:1.0.0'
 
-    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
+    implementation 'com.github.PhilJay:MPAndroidChart:3.1.0'
 
     // junit 5 unit testing
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
@@ -161,7 +161,7 @@ dependencies {
     // Kotlin version of mockito
     testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
 
-    implementation 'com.google.firebase:firebase-analytics:17.6.0'
+    implementation 'com.google.firebase:firebase-analytics:18.0.0'
     implementation 'com.google.firebase:firebase-crashlytics:17.2.2'
     implementation 'com.google.firebase:firebase-perf:19.0.9'
     implementation 'com.google.firebase:firebase-storage:19.2.0'
