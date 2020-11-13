@@ -291,15 +291,13 @@ class MigrationTests {
             assertEquals(reading, readingFromMigratedDb)
         } ?: error {
             "Missing a reading after migration. Expected that the foreign key ON CASCADE DELETE was" +
-                "run inside of Reading. " +
-                "Please make sure the migrations use PRAGMA foreign_keys = OFF"
+                "run inside of Reading. "
         }
         readingDao.getReadingById(reading2.id)?.let { readingFromMigratedDb ->
             assertEquals(reading2, readingFromMigratedDb)
         } ?: error {
             "Missing a reading after migration. Expected that the foreign key ON CASCADE DELETE was" +
-                "run inside of Reading. " +
-                "Please make sure the migrations use PRAGMA foreign_keys = OFF"
+                "run inside of Reading. "
         }
 
         // Now, try inserting a reading for non-existent patient
