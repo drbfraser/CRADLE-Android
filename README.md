@@ -17,25 +17,28 @@ Install [Android Studio](https://developer.android.com/studio/) and import the p
 
 ## Pre-push Git hook
 
-The pre-push hook can be found in `hooks/pre-push.sh`. It ensures that the
-static code analysis and the unit tests pass before pushing to the remote repo. If one of those
-verification tasks fail, your commits won't be pushed to the repo and Android Studio or the command
-line will notify you about it. The issues uncoovered would've been caught by the CI pipelines
-anyway. (There are options in the push modal in Android Studio to not run Git hooks, but this isn't
+The pre-push hook can be found in `hooks/pre-push.sh`. When the Git hook is setup, it ensures that
+the static code analysis and the unit tests pass before pushing to the remote repo. If one of those
+verification tasks fail, your commits won't be pushed to the repo, and Android Studio or the command
+line will notify you about it. The issues uncovered would've been caught by the CI pipelines anyway.
+(There are options in the push modal in Android Studio to not run Git hooks, but this isn't
 recommended.)
 
 Follow the below instructions for your development environment to setup the Git pre-push hook. After
 setting it up, you can verify that it is setup properly by trying to push a commit via the command
 line / terminal: `git push`. It should display the static code analysis and unit tests in the window
 before pushing. Android Studio has the ability to also run these hooks using the Git push interface
-in Android Studio.
+in Android Studio, but it's not as verbose about it unless there's a failure.
 
-### Mac and Linux Run the `setup-hooks.sh` script, which should set up the symbolic links targeted
+### Mac and Linux
+
+Run the `setup-hooks.sh` script, which should set up the symbolic links targeted
 in `.git/hooks` automatically:
 
     hooks/setup-hooks.sh
 
 ### Windows
+
 Run the following command as an Admin
 
     mklink .git\hooks\pre-push ..\..\hooks\pre-push.sh
@@ -74,6 +77,8 @@ https://developer.android.com/training/testing/espresso/setup#set-up-environment
 > * Window animation scale
 > * Transition animation scale
 > * Animator duration scale
+
+# Other links
 
 <!-- The wiki isn't preferred. For an open source project, the wiki won't be available
      for others since it requires a computing ID to access. -->
