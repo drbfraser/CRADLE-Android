@@ -8,6 +8,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.zip.GZIPInputStream
 
 /**
  * HTTP network driver.
@@ -96,6 +97,7 @@ InputStream from the HTTPUrlConnection.
             readTimeout = timeout
             requestMethod = method.toString()
             headers.forEach { (k, v) -> addRequestProperty(k, v) }
+            addRequestProperty("Accept-Encoding", "gzip")
             doInput = true
 
             val message = "${method.name} $url"
@@ -105,14 +107,13 @@ InputStream from the HTTPUrlConnection.
                     outputStream.use { it.write(body) }
                 }
 
-                @Suppress("MagicNumber")
                 if (responseCode in SUCCESS_RANGE) {
                     Log.i("HTTP", "$message - Success $responseCode")
-                    val returnBody = inputStream.use { inputStreamHandler(it) }
+                    val returnBody = gzipInputStream(inputStream).use { inputStreamHandler(it) }
                     Success(returnBody, responseCode)
                 } else {
                     Log.e("HTTP", "$message - Failure $responseCode")
-                    val responseBody = errorStream.use { it.readBytes() }
+                    val responseBody = gzipInputStream(errorStream).use { it.readBytes() }
                     Failure(responseBody, responseCode)
                 }
             } catch (ex: IOException) {
@@ -224,4 +225,16 @@ InputStream from the HTTPUrlConnection.
         // Refer to https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
         val SUCCESS_RANGE = 200 until 300
     }
+}
+
+private const val DEFAULT_GZIP_BUFFER_SIZE = 8 * 1024
+
+/**
+ * Returns a [GZIPInputStream] using the given [stream] if [HttpURLConnection.getContentEncoding] is
+ * "gzip", otherwise returns [stream].
+ */
+fun HttpURLConnection.gzipInputStream(stream: InputStream) = if (contentEncoding == "gzip") {
+    GZIPInputStream(stream, DEFAULT_GZIP_BUFFER_SIZE)
+} else {
+    stream
 }
