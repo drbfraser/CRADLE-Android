@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.cradle.neptune.view.PosterViewActivity">
+    tools:context="com.cradle.neptune.view.PosterActivity">
 
     <com.ortiz.touchview.TouchImageView
         android:id="@+id/pdf_view_touch_image_view"

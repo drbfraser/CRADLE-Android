@@ -46,20 +46,24 @@ import com.ortiz.touchview.TouchImageView
  *     pngquant --quality=55-100 result-image.png
  *
  */
-class PosterViewActivity : AppCompatActivity() {
+class PosterActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         check(DEFAULT_ZOOM_RATIO in 0f..MAX_ZOOM_RATIO)
+        check(intent?.hasExtra(EXTRA_POSTER_RES_ID) == true)
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pdf_view)
-        if (supportActionBar != null) {
-            supportActionBar?.setDisplayHomeAsUpEnabled(true)
-            supportActionBar?.title = getString(R.string.activity_poster_view_action_bar_title)
-        }
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        intent?.getIntExtra(EXTRA_POSTER_RES_ID, 0)?.let {
-            if (it == 0) return@let
-            setupPdfView(it)
+        intent.getIntExtra(EXTRA_POSTER_RES_ID, 0).let { drawableResId ->
+            supportActionBar?.title = when (drawableResId) {
+                R.drawable.educational_clinic_poster ->
+                    getString(R.string.activity_poster_view_clinic_poster_title)
+                R.drawable.educational_community_poster ->
+                    getString(R.string.activity_poster_view_community_poster_title)
+                else -> error("invalid poster ID; maybe the title isn't setup?")
+            }
+            setupPdfView(drawableResId)
         }
     }
 
@@ -82,7 +86,7 @@ class PosterViewActivity : AppCompatActivity() {
         private const val DEFAULT_ZOOM_RATIO = 1.8f
 
         fun makeIntent(context: Context, @DrawableRes drawableResId: Int) =
-            Intent(context, PosterViewActivity::class.java)
+            Intent(context, PosterActivity::class.java)
                 .putExtra(EXTRA_POSTER_RES_ID, drawableResId)
     }
 }

@@ -19,7 +19,7 @@ class EducationActivity : AppCompatActivity() {
     private fun setupOnCLickMethods() {
         val communityPosterCard = findViewById<CardView>(R.id.communityPosterView)
         communityPosterCard.setOnClickListener {
-            val intent = PosterViewActivity.makeIntent(
+            val intent = PosterActivity.makeIntent(
                 this@EducationActivity,
                 R.drawable.educational_community_poster
             )
@@ -31,7 +31,7 @@ class EducationActivity : AppCompatActivity() {
         }
         val clinicPosterCard = findViewById<CardView>(R.id.clinicPosterView)
         clinicPosterCard.setOnClickListener {
-            val intent = PosterViewActivity.makeIntent(
+            val intent = PosterActivity.makeIntent(
                 this@EducationActivity,
                 R.drawable.educational_clinic_poster
             )
