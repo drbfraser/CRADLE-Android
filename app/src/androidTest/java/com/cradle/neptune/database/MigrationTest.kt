@@ -122,9 +122,8 @@ class MigrationTests {
         readingDao.getReadingById(reading.id)?.let { readingFromMigratedDb ->
             assertEquals(reading, readingFromMigratedDb)
         } ?: error {
-            "Missing a reading after migration. Expected that the foreign key ON CASCADE DELETE was" +
-                "run inside of Reading. " +
-                "Please make sure the migrations use PRAGMA foreign_keys = OFF"
+            "Missing a reading after migration. Probably ON CASCADE DELETE was invoked for " +
+                "Reading when it should not have been"
         }
     }
 
@@ -299,14 +298,14 @@ class MigrationTests {
         readingDao.getReadingById(reading.id)?.let { readingFromMigratedDb ->
             assertEquals(reading, readingFromMigratedDb)
         } ?: error {
-            "Missing a reading after migration. Expected that the foreign key ON CASCADE DELETE was" +
-                "run inside of Reading. "
+            "Missing a reading after migration. Probably ON CASCADE DELETE was invoked for " +
+                "Reading when it should not have been"
         }
         readingDao.getReadingById(reading2.id)?.let { readingFromMigratedDb ->
             assertEquals(reading2, readingFromMigratedDb)
         } ?: error {
-            "Missing a reading after migration. Expected that the foreign key ON CASCADE DELETE was" +
-                "run inside of Reading. "
+            "Missing a reading after migration. Probably ON CASCADE DELETE was invoked for " +
+                "Reading when it should not have been"
         }
 
         // Now, try inserting a reading for non-existent patient
