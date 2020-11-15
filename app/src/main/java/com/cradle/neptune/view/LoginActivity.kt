@@ -25,6 +25,7 @@ import com.google.android.gms.common.GooglePlayServicesNotAvailableException
 import com.google.android.gms.common.GooglePlayServicesRepairableException
 import com.google.android.gms.security.ProviderInstaller
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -125,6 +126,7 @@ class LoginActivity : AppCompatActivity() {
                     is NetworkException -> {
                         errorText.visibility = View.VISIBLE
                         if (result.cause is SSLHandshakeException) {
+                            FirebaseCrashlytics.getInstance().recordException(result.cause)
                             errorText.text = getString(R.string.login_error_ssl_handshake_exception)
                             Log.d("LoginActivity", "attempting to run ProviderInstaller")
                             Toast.makeText(
