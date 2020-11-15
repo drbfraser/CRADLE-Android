@@ -74,11 +74,6 @@ android {
         }
         release {
             signingConfig signingConfigs.release
-
-            ndk {
-                debugSymbolLevel 'FULL'
-            }
-
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile(
