@@ -26,7 +26,7 @@
             android:name=".view.GlobalPatientSearchActivity"
             android:windowSoftInputMode="adjustNothing" />
         <activity android:name=".view.ui.settings.ui.healthFacility.HealthFacilitiesActivity" />
-        <activity android:name=".view.PdfViewActivity" />
+        <activity android:name=".view.PosterActivity" />
         <activity android:name=".view.EducationActivity" />
         <activity android:name=".view.StatsActivity" />
         <activity

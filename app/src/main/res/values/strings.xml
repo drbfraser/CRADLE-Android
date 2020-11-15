@@ -494,6 +494,9 @@
     <string name="logout_due_to_error_dialog_message">You have been logged out due to an error. Please log in again.</string>
     <string name="logout_in_progress_dialog_title">Logging out</string>
     <string name="sign_out_dialog_yes_button">Sign out</string>
+    <string name="activity_poster_view_action_bar_title">Educational poster</string>
+    <string name="activity_poster_view_clinic_poster_title">Clinic poster</string>
+    <string name="activity_poster_view_community_poster_title">Community poster</string>
 
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>

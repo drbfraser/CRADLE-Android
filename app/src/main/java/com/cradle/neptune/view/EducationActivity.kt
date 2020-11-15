@@ -1,6 +1,5 @@
 package com.cradle.neptune.view
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
@@ -18,22 +17,24 @@ class EducationActivity : AppCompatActivity() {
     }
 
     private fun setupOnCLickMethods() {
-        val postercard = findViewById<CardView>(R.id.communityPosterView)
-        postercard.setOnClickListener {
-            val intent = Intent(this@EducationActivity, PdfViewActivity::class.java)
-            intent.putExtra("poster", "education_community_poster.pdf")
+        val communityPosterCard = findViewById<CardView>(R.id.communityPosterView)
+        communityPosterCard.setOnClickListener {
+            val intent = PosterActivity.makeIntent(
+                this@EducationActivity,
+                R.drawable.educational_community_poster
+            )
             startActivity(intent)
         }
         val videoCard = findViewById<CardView>(R.id.videoCardview)
         videoCard.setOnClickListener {
-            startActivity(
-                VideoActivity.makeIntent(this@EducationActivity)
-            )
+            startActivity(VideoActivity.makeIntent(this@EducationActivity))
         }
-        val clinicPoster = findViewById<CardView>(R.id.clinicPosterView)
-        clinicPoster.setOnClickListener {
-            val intent = Intent(this@EducationActivity, PdfViewActivity::class.java)
-            intent.putExtra("poster", "education_clinic_poster.pdf")
+        val clinicPosterCard = findViewById<CardView>(R.id.clinicPosterView)
+        clinicPosterCard.setOnClickListener {
+            val intent = PosterActivity.makeIntent(
+                this@EducationActivity,
+                R.drawable.educational_clinic_poster
+            )
             startActivity(intent)
         }
     }
