@@ -72,7 +72,7 @@ class LoginActivity : AppCompatActivity() {
                     setMessage(resId)
                 }
             }
-            setPositiveButton(android.R.string.ok) { _, _ -> /* noop */ }
+            setPositiveButton(android.R.string.ok, null)
         }.show()
     }
 
@@ -164,7 +164,7 @@ class LoginActivity : AppCompatActivity() {
             MaterialAlertDialogBuilder(this@LoginActivity)
                 .setTitle(R.string.login_activity_device_is_outdated_dialog_title)
                 .setMessage(R.string.login_activity_device_is_outdated_dialog_message)
-                .setPositiveButton(android.R.string.ok) { _, _ -> /* noop */ }
+                .setPositiveButton(android.R.string.ok, null)
                 .show()
         }
     }

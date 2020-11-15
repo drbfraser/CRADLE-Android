@@ -319,6 +319,7 @@ class RestApi @Inject constructor(
 
     /**
      * The common headers used for most API requests.
+     * Note: The [Http] class also sets some headers for encoding.
      *
      * By design, the [authenticate] method doesn't include these headers in
      * its request.

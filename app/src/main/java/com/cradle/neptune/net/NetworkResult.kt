@@ -84,7 +84,7 @@ sealed class NetworkResult<T> {
      * @param f transformation to apply to the result value
      * @return a new [NetworkResult] with the transformed value
      */
-    fun <U> map(f: (T) -> U): NetworkResult<U> = when (this) {
+    inline fun <U> map(f: (T) -> U): NetworkResult<U> = when (this) {
         is Success -> Success(f(value), statusCode)
         is Failure -> Failure(body, statusCode)
         is NetworkException -> NetworkException(cause)
