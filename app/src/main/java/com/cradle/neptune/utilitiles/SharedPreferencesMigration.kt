@@ -58,17 +58,20 @@ class SharedPreferencesMigration constructor(
     }
 
     /**
-     * Migrates the shared preferences to the latest version.
+     * Migrates the shared preferences to the latest version. The bulk of the migration code is
+     * handled in [doMigration].
      *
      * @return true if the migration was successful, false if not. If migration is not successful,
      * the recommended action is to logout, since something went wrong (or we want to force
      * the user to logout).
      */
     fun migrate(): Boolean {
+        // Try to get the shared preference version. If there isn't a version stored, we assume
+        // that the user is logging in for the first time, so their shared preferences
         val currentVersion = try {
             sharedPreferences.getInt(KEY_SHARED_PREFERENCE_VERSION, DEFAULT_VERSION)
         } catch (e: ClassCastException) {
-            sharedPreferences.edit().remove(KEY_SHARED_PREFERENCE_VERSION).apply()
+            sharedPreferences.edit(commit = true) { remove(KEY_SHARED_PREFERENCE_VERSION) }
             DEFAULT_VERSION
         }
 

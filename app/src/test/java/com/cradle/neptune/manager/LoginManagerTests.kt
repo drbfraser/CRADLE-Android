@@ -31,6 +31,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
@@ -291,7 +292,7 @@ internal class LoginManagerTests {
     }
 
     @Test
-    fun `login with right credentials`() {
+    fun `login with right credentials and logout`() {
         runBlocking {
             val loginManager = LoginManager(
                 mockRestApi,
@@ -309,6 +310,15 @@ internal class LoginManagerTests {
                     "shared prefs map $fakeSharedPreferences"
             }
 
+            val latestVersion = SharedPreferencesMigration.LATEST_SHARED_PREF_VERSION
+            val versionStored = fakeSharedPreferences[
+                SharedPreferencesMigration.KEY_SHARED_PREFERENCE_VERSION] as? Int
+            assertEquals(latestVersion, versionStored) {
+                "expected stored shared pref version to be $latestVersion, but got $versionStored" +
+                    "make sure that the login stores the SharedPreferences version, otherwise " +
+                    "migrations in the future can fail"
+            }
+
             assertEquals(TEST_AUTH_TOKEN, fakeSharedPreferences["token"]) { "bad auth token" }
             assertEquals(TEST_USER_ID, fakeSharedPreferences["userId"]) { "bad userId" }
             assertEquals(
@@ -316,17 +326,13 @@ internal class LoginManagerTests {
                 fakeSharedPreferences[mockContext.getString(R.string.key_vht_name)]
             ) { "bad first name" }
 
-            val latestVersion = SharedPreferencesMigration.LATEST_SHARED_PREF_VERSION
-            val versionStored = fakeSharedPreferences[
-                SharedPreferencesMigration.KEY_SHARED_PREFERENCE_VERSION] as? Int
-            assertEquals(latestVersion, versionStored) {
-                "expected shared pref version to be $latestVersion, but got $versionStored"
-            }
-
             val userSelectedHealthFacilities = fakeHealthFacilityDatabase
                 .filter { it.isUserSelected }
-            assertEquals(1, userSelectedHealthFacilities.size) {
+            assertNotEquals(0, userSelectedHealthFacilities.size) {
                 "LoginManager failed to select a health facility"
+            }
+            assertEquals(1, userSelectedHealthFacilities.size) {
+                "LoginManager selected too many health health facilities"
             }
             assertEquals(TEST_USER_FACILITY_NAME, userSelectedHealthFacilities[0].name) {
                 "wrong health facility selected"
@@ -346,7 +352,8 @@ internal class LoginManagerTests {
                 assert(it.base != null)
             }
 
-            // Verify that the streamed parsing via Jackson was correct.
+            // Verify that the streamed parsing via Jackson of the simulated downloading of all
+            // patients and their readings from the server was correct.
             val expectedPatientAndReadings = CommonPatientReadingJsons
                 .allPatientsJsonExpectedPair.second
             expectedPatientAndReadings.forEach { patientAndReadings ->
@@ -357,7 +364,8 @@ internal class LoginManagerTests {
 
                 // The patient ID must have been parsed correctly at least since that's the
                 // primary key. When we find a match, we then check to see if all of the fields
-                // are the same.
+                // are the same. Doing a direct equality check gives us less information about
+                // what failed.
                 fakePatientDatabase.find { it.id == expectedPatient.id }
                     ?.let { parsedPatient ->
                         assertEquals(expectedPatient, parsedPatient) {

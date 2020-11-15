@@ -94,14 +94,17 @@ class LoginManager @Inject constructor(
                     null
                 }
 
-                sharedPreferences.edit {
+                sharedPreferences.edit(commit = true) {
                     putString(TOKEN_KEY, token)
                     putInt(USER_ID_KEY, userId)
                     putString(EMAIL_KEY, email)
                     putString(context.getString(R.string.key_vht_name), name)
+                    putInt(
+                        SharedPreferencesMigration.KEY_SHARED_PREFERENCE_VERSION,
+                        SharedPreferencesMigration.LATEST_SHARED_PREF_VERSION
+                    )
                 }
             }
-
             else -> return@withContext loginResult.cast()
         }
 
@@ -210,12 +213,8 @@ class LoginManager @Inject constructor(
 
         joinAll(patientsJob, healthFacilityJob)
 
-        sharedPreferences.edit {
+        sharedPreferences.edit(commit = true) {
             putLong(SyncStepperImplementation.LAST_SYNC, loginTime)
-            putInt(
-                SharedPreferencesMigration.KEY_SHARED_PREFERENCE_VERSION,
-                SharedPreferencesMigration.LATEST_SHARED_PREF_VERSION
-            )
         }
 
         Success(Unit, HTTP_OK)
