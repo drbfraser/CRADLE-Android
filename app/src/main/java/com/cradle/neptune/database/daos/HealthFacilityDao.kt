@@ -37,7 +37,7 @@ interface HealthFacilityDao {
     fun insertAll(healthFacilities: List<HealthFacility>)
 
     /**
-     * Updates an existing health facility.
+     * Updates an existing [HealthFacility].
      *
      * @param healthFacility An entity containing updated data.
      */
@@ -65,8 +65,7 @@ interface HealthFacilityDao {
     fun getAllHealthFacilities(): List<HealthFacility>
 
     /**
-     * Returns the first health facility from the database whose id matches
-     * the supplied pattern.
+     * Returns the first health facility from the database with the given [id]
      *
      * @param id The id of the health facility to retrieve.
      */
