@@ -36,8 +36,8 @@ android {
     compileSdkVersion 29
     defaultConfig {
         // Update this for new tags
-        versionCode 22
-        versionName "0.2.0-alpha"
+        versionCode 23
+        versionName "0.2.1-alpha"
 
         applicationId "com.cradleVSA.neptune"
         minSdkVersion 17    // Android 4.2
