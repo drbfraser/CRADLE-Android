@@ -342,7 +342,7 @@
                                 android:inputType="textLongMessage|textMultiLine|textNoSuggestions"
                                 android:minLines="1"
                                 android:singleLine="false"
-                                android:text="@={Converter.singleElementListToString(viewModel.patientDrugHistory)}"
+                                android:text="@={viewModel.patientDrugHistory}"
                                 android:verticalScrollbarPosition="right"
                                 tools:text="Drug history sample" />
                         </com.google.android.material.textfield.TextInputLayout>
@@ -367,7 +367,7 @@
                                 android:inputType="textLongMessage|textMultiLine|textNoSuggestions"
                                 android:minLines="1"
                                 android:singleLine="false"
-                                android:text="@={Converter.singleElementListToString(viewModel.patientMedicalHistory)}"
+                                android:text="@={viewModel.patientMedicalHistory}"
                                 android:verticalScrollbarPosition="right"
                                 tools:text="Medical history sample" />
                         </com.google.android.material.textfield.TextInputLayout>

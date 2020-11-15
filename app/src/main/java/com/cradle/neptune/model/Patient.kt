@@ -55,13 +55,10 @@ import kotlin.reflect.KProperty
  * @property isPregnant Whether this patient is pregnant or not.
  * @property zone The zone in which this patient lives.
  * @property villageNumber The number of the village in which this patient lives.
- * @property drugHistoryList A list of drug history for the patient.
- * @property medicalHistoryList A list of medical history for the patient.
+ * @property drugHistory Drug history for the patient (paragraph form expected).
+ * @property medicalHistory Medical history for the patient (paragraph form expected).
  * @property lastEdited Last time patient info was edited
  *
- * TODO: Move drug and medical history to just be Strings, or get the frontend and backend to change
- *  this into a list. There's no point in doing things different on Android and the frontend /
- *  backend.
  * TODO: Make [isExactDob] and [dob] not optional. Requires backend work to enforce it.
  */
 @Entity(
@@ -81,8 +78,8 @@ data class Patient(
     @ColumnInfo var zone: String? = null,
     @ColumnInfo var villageNumber: String? = null,
     @ColumnInfo var householdNumber: String? = null,
-    @ColumnInfo var drugHistoryList: List<String> = emptyList(),
-    @ColumnInfo var medicalHistoryList: List<String> = emptyList(),
+    @ColumnInfo var drugHistory: String = "",
+    @ColumnInfo var medicalHistory: String = "",
     @ColumnInfo var lastEdited: Long? = null,
     @ColumnInfo var base: Long? = null
 ) : Marshal<JSONObject>, Serializable, Verifiable<Patient> {
@@ -104,8 +101,8 @@ data class Patient(
         put(PatientField.VILLAGE_NUMBER, villageNumber)
         put(PatientField.HOUSEHOLD_NUMBER, householdNumber)
         // server only takes string
-        put(PatientField.DRUG_HISTORY, drugHistoryList.joinToString())
-        put(PatientField.MEDICAL_HISTORY, medicalHistoryList.joinToString())
+        put(PatientField.DRUG_HISTORY, drugHistory)
+        put(PatientField.MEDICAL_HISTORY, medicalHistory)
         put(PatientField.LAST_EDITED, lastEdited)
         put(PatientField.BASE, base)
     }
@@ -404,15 +401,8 @@ data class Patient(
             villageNumber = data.optStringField(PatientField.VILLAGE_NUMBER)
             householdNumber = data.optStringField(PatientField.HOUSEHOLD_NUMBER)
             // Server returns a String for drug and medical histories.
-            // TODO: see Patient doc comment for the note
-            drugHistoryList = data.optStringField(PatientField.DRUG_HISTORY)
-                ?.ifBlank { null }
-                ?.run { listOf(this) }
-                ?: emptyList()
-            medicalHistoryList = data.optStringField(PatientField.MEDICAL_HISTORY)
-                ?.ifBlank { null }
-                ?.run { listOf(this) }
-                ?: emptyList()
+            drugHistory = data.optStringField(PatientField.DRUG_HISTORY) ?: ""
+            medicalHistory = data.optStringField(PatientField.MEDICAL_HISTORY) ?: ""
             lastEdited = data.optLongField(PatientField.LAST_EDITED)
             base = data.optLongField(PatientField.BASE)
         }

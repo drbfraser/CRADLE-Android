@@ -187,17 +187,14 @@ public class PatientProfileActivity extends AppCompatActivity {
             pregnancyInfoLayout.setVisibility(View.GONE);
         }
 
-        patient.getDrugHistoryList();
-        if (!patient.getDrugHistoryList().isEmpty()) {
-            TextView drugHistroy = findViewById(R.id.drugHistroyTxt);
-            drugHistroy.setText(patient.getDrugHistoryList().get(0));
+        if (!patient.getDrugHistory().isEmpty()) {
+            TextView drugHistory = findViewById(R.id.drugHistroyTxt);
+            drugHistory.setText(patient.getDrugHistory());
 
         }
-        patient.getMedicalHistoryList();
-        if (!patient.getMedicalHistoryList().isEmpty()) {
-
+        if (!patient.getMedicalHistory().isEmpty()) {
             TextView medHistory = findViewById(R.id.medHistoryText);
-            medHistory.setText(patient.getMedicalHistoryList().get(0));
+            medHistory.setText(patient.getMedicalHistory());
         }
     }
 

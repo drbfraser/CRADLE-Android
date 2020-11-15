@@ -1,15 +1,19 @@
 package com.cradle.neptune.database
 
+import android.database.sqlite.SQLiteConstraintException
 import android.database.sqlite.SQLiteDatabase
 import androidx.core.content.contentValuesOf
 import androidx.room.Room
+import androidx.room.TypeConverter
 import androidx.room.testing.MigrationTestHelper
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
+import com.cradle.neptune.ext.toList
 import com.cradle.neptune.model.Assessment
 import com.cradle.neptune.model.BloodPressure
+import com.cradle.neptune.model.GestationalAge
 import com.cradle.neptune.model.GestationalAgeMonths
 import com.cradle.neptune.model.GestationalAgeWeeks
 import com.cradle.neptune.model.Patient
@@ -18,10 +22,16 @@ import com.cradle.neptune.model.ReadingMetadata
 import com.cradle.neptune.model.Referral
 import com.cradle.neptune.model.Sex
 import com.cradle.neptune.model.UrineTest
+import com.cradle.neptune.testutils.assertEquals
+import com.cradle.neptune.testutils.assertThrows
 import com.cradle.neptune.utilitiles.DateUtil
 import com.cradle.neptune.utilitiles.Months
 import com.cradle.neptune.utilitiles.Weeks
+import org.json.JSONArray
+import org.json.JSONObject
+import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import java.util.UUID
@@ -29,7 +39,11 @@ import java.util.UUID
 class MigrationTests {
     private val TEST_DB = "migration-test"
 
-    private val typeConverter = DatabaseTypeConverters()
+    /**
+     * Cannot use the normal [DatabaseTypeConverters] class; see the comments on
+     * the [Version1CompatibleDatabaseTypeConverters]
+     */
+    private val typeConverter = Version1CompatibleDatabaseTypeConverters()
 
     @Rule @JvmField
     val helper: MigrationTestHelper = MigrationTestHelper(
@@ -37,6 +51,22 @@ class MigrationTests {
         CradleDatabase::class.java.canonicalName,
         FrameworkSQLiteOpenHelperFactory()
     )
+
+    @Before
+    fun before() {
+        getMigratedRoomDatabase().apply {
+            clearAllTables()
+            close()
+        }
+    }
+
+    @After
+    fun after() {
+        getMigratedRoomDatabase().apply {
+            clearAllTables()
+            close()
+        }
+    }
 
     /**
      * Tests migration to the latest database version.
@@ -64,8 +94,8 @@ class MigrationTests {
             isPregnant = true,
             zone = null,
             villageNumber = null,
-            drugHistoryList = emptyList(),
-            medicalHistoryList = emptyList()
+            drugHistory = "",
+            medicalHistory = "abc"
         )
 
         helper.createDatabase(TEST_DB, 1).apply {
@@ -88,9 +118,14 @@ class MigrationTests {
         // that the data was migrated properly. This includes checking that all properties for
         // unaltered columns are unchanged.
         val readingDao = getMigratedRoomDatabase().readingDao()
+        assertEquals(1, readingDao.getAllReadingEntities().size)
         readingDao.getReadingById(reading.id)?.let { readingFromMigratedDb ->
             assertEquals(reading, readingFromMigratedDb)
-        } ?: error("no reading")
+        } ?: error {
+            "Missing a reading after migration. Expected that the foreign key ON CASCADE DELETE was" +
+                "run inside of Reading. " +
+                "Please make sure the migrations use PRAGMA foreign_keys = OFF"
+        }
     }
 
     /**
@@ -116,8 +151,8 @@ class MigrationTests {
             isPregnant = true,
             zone = null,
             villageNumber = null,
-            drugHistoryList = emptyList(),
-            medicalHistoryList = emptyList()
+            drugHistory = "",
+            medicalHistory = "Asthma"
         )
         val patientWithApproxAgeOf23 = Patient(
             id = "2",
@@ -129,8 +164,8 @@ class MigrationTests {
             isPregnant = true,
             zone = "zone2",
             villageNumber = "villageNumber2",
-            drugHistoryList = listOf("drug history 2"),
-            medicalHistoryList = listOf("drug history 2")
+            drugHistory = "drug history 2",
+            medicalHistory = "drug history 2"
         )
         val patientWithBothDobAndAgeOf19 = Patient(
             id = "3",
@@ -142,8 +177,8 @@ class MigrationTests {
             isPregnant = false,
             zone = "zone3",
             villageNumber = "villageNumber3",
-            drugHistoryList = listOf("drug history 3"),
-            medicalHistoryList = listOf("medical history 3")
+            drugHistory = "drug history 3",
+            medicalHistory = "medical history 3"
         )
 
         helper.createDatabase(TEST_DB, 1).apply {
@@ -180,6 +215,8 @@ class MigrationTests {
         // unaltered columns are unchanged.
         val patientDao = getMigratedRoomDatabase().patientDao()
 
+        assertEquals(3, patientDao.getPatientIdsList().size)
+
         // Test that the isExactDob is set depending on the nullity of dob and age.
         // patientWithExactDob has a non-null dob, so the dob should be exact.
         patientDao.getPatientById(patientWithExactDob.id)?.let { patientFromMigratedDb ->
@@ -197,6 +234,101 @@ class MigrationTests {
         patientDao.getPatientById(patientWithBothDobAndAgeOf19.id)?.let { patientFromMigratedDb ->
             assertEquals(patientWithBothDobAndAgeOf19, patientFromMigratedDb)
         } ?: error("no patient")
+    }
+
+    /**
+     * Tests migration to the latest database version and make sure the foreign key ON DELETE
+     * CASCADEs in [Reading] are not triggered during migration, and that foreign key checks are
+     * on after migration.
+     */
+    @Test
+    fun migrationTestForeignKeysAfterMigration() {
+        val patientId = "3453455"
+        val reading = createFirstVersionReading(patientId = patientId)
+        val reading2 = createFirstVersionReading(patientId = patientId)
+        val patientWithExactDob = Patient(
+            id = patientId,
+            name = "Exact dob",
+            dob = "1989-10-24",
+            isExactDob = true,
+            gestationalAge = GestationalAgeWeeks(Weeks(20L)),
+            sex = Sex.FEMALE,
+            isPregnant = true,
+            zone = null,
+            villageNumber = null,
+            drugHistory = "",
+            medicalHistory = "abc"
+        )
+
+        helper.createDatabase(TEST_DB, 1).apply {
+            // db has schema version 1. Need to insert some data using SQL queries.
+            // Can't use DAO classes; they expect the latest schema.
+            insertFirstVersionPatient(
+                database = this,
+                patient = patientWithExactDob,
+                ageForV1 = null
+            )
+
+            insertFirstVersionReading(
+                database = this, reading = reading
+            )
+
+            insertFirstVersionReading(
+                database = this, reading = reading2
+            )
+            // Prepare for the next version.
+            close()
+        }
+
+        // Check that the foreign keys ON DELETE CASCADE didn't get triggered by dropping and
+        // recreating the patient table
+        val database = getMigratedRoomDatabase()
+        val patientDao = database.patientDao()
+        assertEquals(1, patientDao.getPatientIdsList().size) {
+            "Mismatch in expected number of patients: got ${patientDao.getPatientIdsList().size}" +
+                " instead of 1"
+        }
+
+        val readingDao = database.readingDao()
+        assertEquals(2, readingDao.getAllReadingEntities().size) {
+            "Mismatch in expected number of patients: got " +
+                "${readingDao.getAllReadingEntities().size}" +
+                " instead of 2"
+        }
+
+        readingDao.getReadingById(reading.id)?.let { readingFromMigratedDb ->
+            assertEquals(reading, readingFromMigratedDb)
+        } ?: error {
+            "Missing a reading after migration. Expected that the foreign key ON CASCADE DELETE was" +
+                "run inside of Reading. "
+        }
+        readingDao.getReadingById(reading2.id)?.let { readingFromMigratedDb ->
+            assertEquals(reading2, readingFromMigratedDb)
+        } ?: error {
+            "Missing a reading after migration. Expected that the foreign key ON CASCADE DELETE was" +
+                "run inside of Reading. "
+        }
+
+        // Now, try inserting a reading for non-existent patient
+        val readingForNonExistentPatient = createFirstVersionReading(patientId = "NOPE")
+        val sqLiteException = assertThrows<SQLiteConstraintException> {
+            readingDao.insert(readingForNonExistentPatient)
+        }
+        assertEquals(
+            "FOREIGN KEY constraint failed (code 787 SQLITE_CONSTRAINT_FOREIGNKEY)",
+            sqLiteException.message
+        )
+
+        // Now, try deleting a patient and assert that all the readings associated with the
+        // patient are deleted
+        assertEquals(1, patientDao.deleteById(patientId))
+        assertEquals(0, patientDao.getPatientIdsList().size) {
+            "expected no patients in the database"
+        }
+        assertEquals(0, readingDao.getAllReadingEntities().size) {
+            "expected foreign key ON DELETE CASCADE for Readings, but it didn't happen"
+        }
+
     }
 
     private fun createFirstVersionReading(patientId: String): Reading {
@@ -249,7 +381,11 @@ class MigrationTests {
     private fun insertFirstVersionReading(
         database: SupportSQLiteDatabase,
         readingTableName: String = "Reading",
-        reading: Reading
+        reading: Reading,
+        // in a previous version, null was being stored as a "null" string
+        urineTestForV1: String = typeConverter.fromUrineTest(reading.urineTest) ?: "null",
+        referralForV1: String = typeConverter.fromReferral(reading.referral) ?: "null",
+        followupForV1: String = typeConverter.fromFollowUp(reading.followUp) ?: "null",
     ) {
         val values = reading.run {
             // Using string literals, because we need to use the property names for the v1 schema.
@@ -260,10 +396,10 @@ class MigrationTests {
                 "patientId" to patientId,
                 "dateTimeTaken" to dateTimeTaken,
                 "bloodPressure" to typeConverter.fromBloodPressure(bloodPressure),
-                "urineTest" to typeConverter.fromUrineTest(urineTest),
+                "urineTest" to urineTestForV1,
                 "symptoms" to typeConverter.fromStringList(symptoms),
-                "referral" to typeConverter.fromReferral(referral),
-                "followUp" to typeConverter.fromFollowUp(followUp),
+                "referral" to referralForV1,
+                "followUp" to followupForV1,
                 "dateRecheckVitalsNeeded" to dateRecheckVitalsNeeded,
                 "isFlaggedForFollowUp" to isFlaggedForFollowUp,
                 "previousReadingIds" to typeConverter.fromStringList(previousReadingIds),
@@ -287,6 +423,8 @@ class MigrationTests {
         patientsTableName: String = "Patient",
         patient: Patient,
         ageForV1: Int?,
+        gestationalAgeForV1: String =
+            typeConverter.gestationalAgeToString(patient.gestationalAge) ?: "null",
     ) {
         val values = patient.run {
             // Using string literals, because we need to use the property names for the v1 schema.
@@ -297,13 +435,14 @@ class MigrationTests {
                 "name" to name,
                 "dob" to dob,
                 "age" to ageForV1,
-                "gestationalAge" to typeConverter.gestationalAgeToString(gestationalAge),
+                "gestationalAge" to gestationalAgeForV1,
                 "sex" to typeConverter.sexToString(sex),
                 "isPregnant" to isPregnant,
                 "zone" to zone,
                 "villageNumber" to villageNumber,
-                "drugHistoryList" to typeConverter.fromStringList(drugHistoryList),
-                "medicalHistoryList" to typeConverter.fromStringList(medicalHistoryList),
+                // The schema prior to version 8 has these as non-null List<String>
+                "drugHistoryList" to typeConverter.fromStringList(listOf(drugHistory))!!,
+                "medicalHistoryList" to typeConverter.fromStringList(listOf(medicalHistory))!!,
                 "lastEdited" to lastEdited,
                 "base" to base
             )
@@ -321,4 +460,64 @@ class MigrationTests {
         helper.closeWhenFinished(database)
         return database
     }
+}
+
+/**
+ * A list of [TypeConverter] to save objects into Room database for version 1.
+ * This must be used in case there are any changes to the original [DatabaseTypeConverters]
+ * class in the future. These are the type converters that were compatible with the
+ * version 1 schema. In a sense, these are time-frozen type converters.
+ */
+@Suppress("unused")
+private class Version1CompatibleDatabaseTypeConverters {
+
+    fun gestationalAgeToString(gestationalAge: GestationalAge?): String? =
+        gestationalAge?.marshal()?.toString()
+
+    fun stringToGestationalAge(string: String?): GestationalAge? =
+        string?.let { if (it == "null") null else GestationalAge.unmarshal(JSONObject(it)) }
+
+    fun stringToSex(string: String): Sex = enumValueOf(string)
+
+    fun sexToString(sex: Sex): String = sex.name
+
+    fun fromStringList(list: List<String>?): String? {
+        if (list == null) {
+            return null
+        }
+        return JSONArray()
+            .apply { list.forEach { put(it) } }
+            .toString()
+    }
+
+    fun toStringList(string: String?): List<String>? = string?.let {
+        JSONArray(it).toList(JSONArray::getString)
+    }
+
+    fun toBloodPressure(string: String?): BloodPressure? =
+        string?.let { if (it == "null") null else BloodPressure.unmarshal(JSONObject(string)) }
+
+    fun fromBloodPressure(bloodPressure: BloodPressure?): String? =
+        bloodPressure?.marshal()?.toString()
+
+    fun toUrineTest(string: String?): UrineTest? =
+        string?.let { if (it == "null") null else UrineTest.unmarshal(JSONObject(it)) }
+
+    fun fromUrineTest(urineTest: UrineTest?): String? = urineTest?.marshal()?.toString()
+
+    fun toReferral(string: String?): Referral? =
+        string?.let { if (it == "null") null else Referral.unmarshal(JSONObject(it)) }
+
+    fun fromReferral(referral: Referral?): String? = referral?.marshal()?.toString()
+
+    fun toFollowUp(string: String?): Assessment? =
+        string?.let { if (it == "null") null else Assessment.unmarshal(JSONObject(it)) }
+
+    fun fromFollowUp(followUp: Assessment?): String? = followUp?.marshal()?.toString()
+
+    fun toReadingMetadata(string: String?): ReadingMetadata? =
+        string?.let { if (it == "null") null else ReadingMetadata.unmarshal(JSONObject(it)) }
+
+    fun fromReadingMetaData(readingMetadata: ReadingMetadata?): String? =
+        readingMetadata?.marshal()?.toString()
 }

@@ -64,8 +64,8 @@ class PatientTests {
             zone = "9945",
             villageNumber = "2342",
             householdNumber = "345345",
-            drugHistoryList = listOf("aab"),
-            medicalHistoryList = emptyList()
+            drugHistory = "aab",
+            medicalHistory = ""
         )
 
         val json = patient.marshal()

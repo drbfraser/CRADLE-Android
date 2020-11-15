@@ -3,6 +3,7 @@ package com.cradle.neptune.database
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import androidx.core.content.contentValuesOf
 import androidx.core.database.getIntOrNull
 import androidx.core.database.getStringOrNull
 import androidx.room.Database
@@ -16,10 +17,12 @@ import com.cradle.neptune.database.daos.HealthFacilityDao
 import com.cradle.neptune.database.daos.PatientDao
 import com.cradle.neptune.database.daos.ReadingDao
 import com.cradle.neptune.database.views.LocalSearchPatient
+import com.cradle.neptune.ext.toList
 import com.cradle.neptune.model.HealthFacility
 import com.cradle.neptune.model.Patient
 import com.cradle.neptune.model.Reading
 import com.cradle.neptune.utilitiles.DateUtil
+import org.json.JSONArray
 
 /**
  * An interface for the local CRADLE database.
@@ -32,7 +35,7 @@ import com.cradle.neptune.utilitiles.DateUtil
 @Database(
     entities = [Reading::class, Patient::class, HealthFacility::class],
     views = [LocalSearchPatient::class],
-    version = 7,
+    version = 8,
     exportSchema = true
 )
 @TypeConverters(DatabaseTypeConverters::class)
@@ -83,7 +86,8 @@ internal object Migrations {
             MIGRATION_3_4,
             MIGRATION_4_5,
             MIGRATION_5_6,
-            MIGRATION_6_7
+            MIGRATION_6_7,
+            MIGRATION_7_8
         )
     }
 
@@ -343,68 +347,116 @@ GROUP BY
     private val MIGRATION_6_7 = object : Migration(6, 7) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.apply {
-                execSQL("PRAGMA foreign_keys = OFF")
-                beginTransaction()
-                try {
-                    execSQL(
-                        """
+                execSQL(
+                    """
 CREATE TABLE IF NOT EXISTS `new_Patient` (
-  `id` TEXT NOT NULL, `name` TEXT NOT NULL, `dob` TEXT, `isExactDob` INTEGER, `gestationalAge` TEXT, 
-  `sex` TEXT NOT NULL, `isPregnant` INTEGER NOT NULL, `zone` TEXT, `villageNumber` TEXT, 
-  `householdNumber` TEXT, `drugHistoryList` TEXT NOT NULL, `medicalHistoryList` TEXT NOT NULL, 
-  `lastEdited` INTEGER, `base` INTEGER, PRIMARY KEY(`id`)
+`id` TEXT NOT NULL, `name` TEXT NOT NULL, `dob` TEXT, `isExactDob` INTEGER, `gestationalAge` TEXT, 
+`sex` TEXT NOT NULL, `isPregnant` INTEGER NOT NULL, `zone` TEXT, `villageNumber` TEXT, 
+`householdNumber` TEXT, `drugHistoryList` TEXT NOT NULL, `medicalHistoryList` TEXT NOT NULL, 
+`lastEdited` INTEGER, `base` INTEGER, PRIMARY KEY(`id`)
 )
-                        """.trimIndent()
-                    )
-                    execSQL("CREATE UNIQUE INDEX `index_Patient_id` ON `new_Patient` (`id`)")
-                    val patientProperties = "`id`,`name`,`dob`,`isExactDob`,`gestationalAge`," +
-                        "`sex`,`isPregnant`,`zone`,`villageNumber`,`householdNumber`," +
-                        "`drugHistoryList`,`medicalHistoryList`,`lastEdited`,`base`"
-                    execSQL(
-                        "INSERT INTO new_Patient ($patientProperties) " +
-                            "SELECT $patientProperties FROM Patient"
-                    )
-                    execSQL("DROP TABLE Patient")
-                    execSQL("ALTER TABLE new_Patient RENAME TO Patient")
+                    """.trimIndent()
+                )
+                execSQL("CREATE UNIQUE INDEX `index_Patient_id` ON `new_Patient` (`id`)")
+                val patientProperties = "`id`,`name`,`dob`,`isExactDob`,`gestationalAge`," +
+                    "`sex`,`isPregnant`,`zone`,`villageNumber`,`householdNumber`," +
+                    "`drugHistoryList`,`medicalHistoryList`,`lastEdited`,`base`"
+                execSQL(
+                    "INSERT INTO new_Patient ($patientProperties) " +
+                        "SELECT $patientProperties FROM Patient"
+                )
+                execSQL("DROP TABLE Patient")
+                execSQL("ALTER TABLE new_Patient RENAME TO Patient")
 
-                    execSQL(
-                        """
+                execSQL(
+                    """
 CREATE TABLE IF NOT EXISTS `new_Reading` (
-  `readingId` TEXT NOT NULL, `patientId` TEXT NOT NULL, `dateTimeTaken` INTEGER NOT NULL, 
-  `bloodPressure` TEXT NOT NULL, `respiratoryRate` INTEGER, `oxygenSaturation` INTEGER, 
-  `temperature` INTEGER, `urineTest` TEXT, `symptoms` TEXT NOT NULL, `referral` TEXT, 
-  `followUp` TEXT, `dateRecheckVitalsNeeded` INTEGER, `isFlaggedForFollowUp` INTEGER NOT NULL, 
-  `previousReadingIds` TEXT NOT NULL, `metadata` TEXT NOT NULL, 
-  `isUploadedToServer` INTEGER NOT NULL, 
-  PRIMARY KEY(`readingId`), 
-  FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE 
+`readingId` TEXT NOT NULL, `patientId` TEXT NOT NULL, `dateTimeTaken` INTEGER NOT NULL, 
+`bloodPressure` TEXT NOT NULL, `respiratoryRate` INTEGER, `oxygenSaturation` INTEGER, 
+`temperature` INTEGER, `urineTest` TEXT, `symptoms` TEXT NOT NULL, `referral` TEXT, 
+`followUp` TEXT, `dateRecheckVitalsNeeded` INTEGER, `isFlaggedForFollowUp` INTEGER NOT NULL, 
+`previousReadingIds` TEXT NOT NULL, `metadata` TEXT NOT NULL, 
+`isUploadedToServer` INTEGER NOT NULL, 
+PRIMARY KEY(`readingId`), 
+FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE 
 )
-                        """.trimIndent()
-                    )
-                    execSQL(
-                        "CREATE UNIQUE INDEX IF NOT EXISTS `index_Reading_readingId` " +
-                            "ON `new_Reading` (`readingId`)"
-                    )
-                    execSQL(
-                        "CREATE INDEX IF NOT EXISTS `index_Reading_patientId` " +
-                            "ON `new_Reading` (`patientId`)"
-                    )
-                    val readingProperties = "`readingId`,`patientId`,`dateTimeTaken`," +
-                        "`bloodPressure`,`respiratoryRate`,`oxygenSaturation`," +
-                        "`temperature`,`urineTest`,`symptoms`,`referral`,`followUp`," +
-                        "`dateRecheckVitalsNeeded`,`isFlaggedForFollowUp`," +
-                        "`previousReadingIds`,`metadata`,`isUploadedToServer`"
-                    execSQL(
-                        "INSERT INTO new_Reading ($readingProperties) " +
-                            "SELECT $readingProperties FROM Reading"
-                    )
-                    execSQL("DROP TABLE Reading")
-                    execSQL("ALTER TABLE new_Reading RENAME TO Reading")
+                    """.trimIndent()
+                )
+                execSQL(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS `index_Reading_readingId` " +
+                        "ON `new_Reading` (`readingId`)"
+                )
+                execSQL(
+                    "CREATE INDEX IF NOT EXISTS `index_Reading_patientId` " +
+                        "ON `new_Reading` (`patientId`)"
+                )
+                val readingProperties = "`readingId`,`patientId`,`dateTimeTaken`," +
+                    "`bloodPressure`,`respiratoryRate`,`oxygenSaturation`," +
+                    "`temperature`,`urineTest`,`symptoms`,`referral`,`followUp`," +
+                    "`dateRecheckVitalsNeeded`,`isFlaggedForFollowUp`," +
+                    "`previousReadingIds`,`metadata`,`isUploadedToServer`"
+                execSQL(
+                    "INSERT INTO new_Reading ($readingProperties) " +
+                        "SELECT $readingProperties FROM Reading"
+                )
+                execSQL("DROP TABLE Reading")
+                execSQL("ALTER TABLE new_Reading RENAME TO Reading")
+            }
+        }
+    }
 
-                    setTransactionSuccessful()
-                } finally {
-                    endTransaction()
-                    execSQL("PRAGMA foreign_keys = ON")
+    /**
+     * Version 8:
+     * Change drug and medical history in [Patient] to just be strings instead of List<String>.
+     * It's a paragraph entry, so doesn't make sense to assume it's a list.
+     * Also, the column names were changed
+     */
+    private val MIGRATION_7_8 = object : Migration(7, 8) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.apply {
+                execSQL(
+                    "ALTER TABLE `Patient` RENAME COLUMN `drugHistoryList` to `drugHistory`"
+                )
+                execSQL(
+                    "ALTER TABLE `Patient` RENAME COLUMN `medicalHistoryList` to `medicalHistory`"
+                )
+
+                // Now, we have to convert all of the lists in the database to just strings
+                val medicalDrugHistoryQuery = SupportSQLiteQueryBuilder.builder("Patient")
+                    .columns(arrayOf("id", "drugHistory", "medicalHistory"))
+                    .create()
+                query(medicalDrugHistoryQuery).use { cursor ->
+                    while (cursor != null && cursor.moveToNext()) {
+                        val id = cursor.getString(cursor.getColumnIndexOrThrow("id"))
+                        val drugHistoryAsList = cursor
+                            .getString(cursor.getColumnIndexOrThrow("drugHistory"))
+                        val medicalHistoryAsList = cursor
+                            .getString(cursor.getColumnIndexOrThrow("medicalHistory"))
+
+                        // Can't use the DatabaseTypeConverter class. Using that can cause issues
+                        // if any of that code changes. The code here has to just copy and paste
+                        // from the DatabaseTypeConverter it was working at to be migrated properly
+                        // in the future.
+                        val drugHistory = JSONArray(drugHistoryAsList)
+                            .toList(JSONArray::getString)
+                            .joinToString(",")
+                        val medicalHistory = JSONArray(medicalHistoryAsList)
+                            .toList(JSONArray::getString)
+                            .joinToString(",")
+
+                        val updateValues = contentValuesOf(
+                            "drugHistory" to drugHistory,
+                            "medicalHistory" to medicalHistory
+                        )
+
+                        database.update(
+                            "Patient" /* table */,
+                            SQLiteDatabase.CONFLICT_REPLACE /* conflictAlgorithm */,
+                            updateValues /* values */,
+                            "id = ?" /* whereClause */,
+                            arrayOf(id) /* whereArgs */
+                        )
+                    }
                 }
             }
         }
