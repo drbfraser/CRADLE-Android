@@ -67,19 +67,25 @@ These tests are not run automatically, and these tests are not run by the CI pip
 Nevertheless, they're important, as they test various things such as database migrations and UI
 flows automatically. These should be run often (at least once before a new release).
 
-The UI tests need special setup on the device to be run. Follow the _Set up your test environment_
-instructions outlined in
-https://developer.android.com/training/testing/espresso/setup#set-up-environment:
+### UI tests
 
-> To avoid flakiness, we highly recommend that you turn off system animations on the virtual or
-> physical devices used for testing. On your device, under Settings > Developer options, disable the
-> following 3 settings
-> * Window animation scale
-> * Transition animation scale
-> * Animator duration scale
+The UI tests need special setup on the device to be run.
+
+1. Follow the _Set up your test environment_ instructions outlined in
+   https://developer.android.com/training/testing/espresso/setup#set-up-environment:
+
+   > To avoid flakiness, we highly recommend that you turn off system animations on the virtual or
+   > physical devices used for testing. On your device, under Settings > Developer options, disable
+   > the following 3 settings
+   > * Window animation scale
+   > * Transition animation scale
+   > * Animator duration scale
+
+2. Uninstall or log out of the app if it's already installed. The UI tests LoginActivity, and those
+   tests can fail if already logged in.
 
 # Other links
 
 <!-- The wiki isn't preferred. For an open source project, the wiki won't be available
-     for others since it requires a computing ID to access. -->
-> [Check Wiki for technical details](https://csil-git1.cs.surrey.sfu.ca/415-cradle/cradlemobile/-/wikis/home)
+     for others, since it requires a computing ID to access. -->
+[Check Wiki for technical details](https://csil-git1.cs.surrey.sfu.ca/415-cradle/cradlemobile/-/wikis/home)
