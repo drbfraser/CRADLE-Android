@@ -68,12 +68,9 @@ interface ReadingDao {
     /**
      * Returns the first reading who's id matches a given pattern.
      *
-     * Note that this method does not perform an exact match on the reading id
-     * and instead performs an SQL `LIKE` operation limiting the result to 1.
-     *
      * @param id The reading id to search for.
      */
-    @Query("SELECT * FROM Reading WHERE readingId LIKE :id LIMIT 1")
+    @Query("SELECT * FROM Reading WHERE readingId = :id")
     fun getReadingById(id: String): Reading?
 
     /**
@@ -81,7 +78,7 @@ interface ReadingDao {
      *
      * @param id The id of the patient to find readings for.
      */
-    @Query("SELECT * FROM Reading WHERE patientId LIKE :id")
+    @Query("SELECT * FROM Reading WHERE patientId = :id")
     fun getAllReadingByPatientId(id: String): List<Reading>
 
     /**
@@ -99,8 +96,8 @@ interface ReadingDao {
         """
         SELECT * 
         FROM Reading r 
-        JOIN Patient p ON r.patientId like p.id
-        WHERE p.base is NOT null AND r.isUploadedToServer = 0
+        JOIN Patient p ON r.patientId = p.id
+        WHERE p.base IS NOT NULL AND r.isUploadedToServer = 0
     """
     )
     fun getAllUnUploadedReadingsForTrackedPatients(): List<Reading>
@@ -108,7 +105,7 @@ interface ReadingDao {
     /**
      * get the newest reading of a particular patient
      */
-    @Query("SELECT * FROM READING WHERE patientId LIKE :id ORDER BY dateTimeTaken LIMIT 1 ")
+    @Query("SELECT * FROM Reading WHERE patientId = :id ORDER BY dateTimeTaken LIMIT 1")
     fun getNewestReadingByPatientId(id: String): Reading?
 
     /**

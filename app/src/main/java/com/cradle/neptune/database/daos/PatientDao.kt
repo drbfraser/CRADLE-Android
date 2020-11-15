@@ -107,13 +107,13 @@ ORDER BY latestReadingDate DESC, name COLLATE NOCASE ASC
     fun getAllPatientsAndReading(): List<PatientAndReadings>
 
     @Transaction
-    @Query("SELECT * FROM Patient WHERE base IS null")
+    @Query("SELECT * FROM Patient WHERE base IS NULL")
     fun getUnUploadedPatientAndReadings(): List<PatientAndReadings>
 
     /**
      * Get [Patient]s that were edited after a given timestamp and are not brand new patients
      */
-    @Query("SELECT * FROM Patient WHERE lastEdited > :unixTime AND base IS NOT null")
+    @Query("SELECT * FROM Patient WHERE lastEdited > :unixTime AND base IS NOT NULL")
     fun getEditedPatientsAfterTime(unixTime: Long): List<Patient>
 
     /**

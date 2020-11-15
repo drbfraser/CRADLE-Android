@@ -65,12 +65,12 @@ interface HealthFacilityDao {
     fun getAllHealthFacilities(): List<HealthFacility>
 
     /**
-     * Returns the first health facility from the database who's id matches
+     * Returns the first health facility from the database whose id matches
      * the supplied pattern.
      *
      * @param id The id of the health facility to retrieve.
      */
-    @Query("SELECT * FROM HealthFacility WHERE id LIKE :id LIMIT 1")
+    @Query("SELECT * FROM HealthFacility WHERE id = :id")
     fun getHealthFacilityById(id: String): HealthFacility?
 
     /**
