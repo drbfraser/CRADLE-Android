@@ -3,11 +3,14 @@ package com.cradle.neptune.net
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.zip.GZIPInputStream
+import javax.net.ssl.HttpsURLConnection
 
 /**
  * HTTP network driver.
@@ -26,43 +29,6 @@ class Http {
     enum class Method { GET, POST, PUT, DELETE }
 
     /**
-     * Performs a generic HTTP request.
-     *
-     * @param method the request method
-     * @param url where to send the request
-     * @param headers HTTP headers to include with the request
-     * @param body an optional body to send along with the request
-     * @param timeout the connect and read timeout; defaults to 30 seconds
-     * @return the result of the network request
-     * @throws java.net.MalformedURLException if [url] is malformed
-     */
-    @Deprecated(
-        message = """
-Use jsonRequestStream to avoid storing a ByteArray in memory and to avoid creating an extra String
-object of that ByteArray to create JSONArrays / JSONObjects for unmarshalling. When using
-jsonRequestStream, the caller is expected to provide code (as the inputStreamHandlerBlock lambda)
-that directly handles the InputStream from the HTTPUrlConnection.
-            """,
-        replaceWith = ReplaceWith(
-            "requestWithStream(method, url, headers, body, timeout, inputStreamHandler)"
-        )
-    )
-    suspend fun request(
-        method: Method,
-        url: String,
-        headers: Map<String, String>,
-        body: ByteArray?,
-        timeout: Int = DEFAULT_TIMEOUT_MILLIS
-    ): NetworkResult<ByteArray> = requestWithStream(
-        method = method,
-        url = url,
-        headers = headers,
-        body = body,
-        timeout = timeout,
-        inputStreamHandler = { inputStream -> inputStream.readBytes() }
-    )
-
-    /**
      * Performs a generic HTTP request with custom [InputStream] handling via
      * [inputStreamHandler].
      *
@@ -71,8 +37,14 @@ that directly handles the InputStream from the HTTPUrlConnection.
      * @param method the request method
      * @param url where to send the request
      * @param headers HTTP headers to include with the request
-     * @param body an optional body to send along with the request
+     * @param body an optional body to send along with the request. null by default
      * @param timeout the connect and read timeout; default is [DEFAULT_TIMEOUT_MILLIS]
+     * @param bufferInput Whether to use a BufferedInputStream for the InputStream. For large or
+     * bulk reads like a download of all patients from a server, can be faster to not buffer the
+     * input. For smaller reads, recommended to leave this as true. True by default.
+     * @param bufferOutput Whether to use a BufferedOutputStream for the OutputStream. For bulk
+     * writes like an upload of all new patients to a server, can be faster to not buffer the
+     * output. For smaller writes, recommended to leave this as true. True by default.
      * @param inputStreamHandler A function that processes the [InputStream]. If [requestWithStream]
      * returns a [Success], the value inside of the [Success] will be the return value of
      * the [inputStreamHandler]. The [inputStreamHandler] is only called if the server returns a
@@ -86,8 +58,10 @@ that directly handles the InputStream from the HTTPUrlConnection.
         method: Method,
         url: String,
         headers: Map<String, String>,
-        body: ByteArray?,
+        body: ByteArray? = null,
         timeout: Int = DEFAULT_TIMEOUT_MILLIS,
+        bufferInput: Boolean = true,
+        bufferOutput: Boolean = true,
         crossinline inputStreamHandler: suspend (InputStream) -> T
     ): NetworkResult<T> = withContext(Dispatchers.IO) {
         // The choice to use inline functions was made to reduce the overhead that
@@ -102,23 +76,37 @@ that directly handles the InputStream from the HTTPUrlConnection.
             readTimeout = timeout
             requestMethod = method.toString()
             headers.forEach { (k, v) -> addRequestProperty(k, v) }
-            addRequestProperty("Accept-Encoding", "gzip")
+            setRequestProperty("Accept-Encoding", "gzip")
             doInput = true
 
             val message = "${method.name} $url"
             try {
                 if (body != null) {
                     doOutput = true
-                    outputStream.use { it.write(body) }
+                    setFixedLengthStreamingMode(body.size)
+                    if (bufferOutput) {
+                        BufferedOutputStream(outputStream).use { it.write(body) }
+                    } else {
+                        outputStream.use { it.write(body) }
+                    }
                 }
 
                 if (responseCode in SUCCESS_RANGE) {
                     Log.i(TAG, "$message - Success $responseCode")
-                    val returnBody = gzipInputStream(inputStream).use { inputStreamHandler(it) }
+                    val returnBody = if (bufferInput) {
+                        BufferedInputStream(gzipInputStream(inputStream)!!).use {
+                            inputStreamHandler(it)
+                        }
+                    } else {
+                        gzipInputStream(inputStream)!!.use {
+                            inputStreamHandler(it)
+                        }
+                    }
                     Success(returnBody, responseCode)
                 } else {
                     Log.e(TAG, "$message - Failure $responseCode")
-                    val responseBody = gzipInputStream(errorStream).use { it.readBytes() }
+                    val responseBody = gzipInputStream(errorStream)?.use { it.readBytes() }
+                        ?: ByteArray(0)
                     Failure(responseBody, responseCode)
                 }
             } catch (ex: IOException) {
@@ -138,7 +126,7 @@ that directly handles the InputStream from the HTTPUrlConnection.
      * @param method the request method
      * @param url where to send the request
      * @param headers HTTP headers to include with the request
-     * @param body an optional body to send along with the request
+     * @param body an optional body to send along with the request. null by default
      * @return The result of the network request
      * @throws java.net.MalformedURLException if [url] is malformed
      * @throws org.json.JSONException if the response body is not JSON
@@ -158,50 +146,45 @@ that directly handles the InputStream from the HTTPUrlConnection.
         method: Method,
         url: String,
         headers: Map<String, String>,
-        body: Json?
+        body: Json? = null,
+        bufferInput: Boolean = true,
+        bufferOutput: Boolean = true
     ): NetworkResult<Json> =
-        request(
-            method,
-            url,
-            headers + ("Content-Type" to "application/json"),
-            body?.marshal()
+        requestWithStream(
+            method = method,
+            url = url,
+            headers = headers + ("Content-Type" to "application/json"),
+            body = body?.marshal(),
+            inputStreamHandler = { inputStream -> inputStream.readBytes() }
         ).map(Json.Companion::unmarshal)
 
     /**
-     * Sends a generic HTTP request with a JSON body and expects a JSON
+     * Sends a generic HTTP request with an optional JSON body and expects a JSON
      * response. The JSON response is then parsed by the [inputStreamHandler].
      *
      * The "Content-Type application/json" header is automatically included
      * in requests sent using this function.
      *
-     * TODO: Handle output streaming
+     * For comments on what the parameters are for, see [requestWithStream]
      *
-     * @param method the request method
-     * @param url where to send the request
-     * @param headers HTTP headers to include with the request
-     * @param body an optional body to send along with the request
-     * @param inputStreamHandler A function that processes the [InputStream]. If [requestWithStream]
-     * returns a [Success], the value inside of the [Success] will be the return value of
-     * the [inputStreamHandler]. The [inputStreamHandler] is only called if the server returns a
-     * successful response code (as defined by [SUCCESS_RANGE]). Not expected to close the given
-     * [InputStream]. Note: [IOException]s will be caught by the outer function and it will return a
-     * [NetworkException] as the result.
-     * @return the result of the network request
-     * @throws java.net.MalformedURLException if [url] is malformed
-     * @throws org.json.JSONException if the response body is not JSON
+     * @see requestWithStream
      */
     suspend inline fun jsonRequestStream(
         method: Method,
         url: String,
         headers: Map<String, String>,
-        body: Json?,
+        body: Json? = null,
+        bufferInput: Boolean = true,
+        bufferOutput: Boolean = true,
         crossinline inputStreamHandler: suspend (InputStream) -> Unit
     ): NetworkResult<Unit> =
         requestWithStream(
-            method,
-            url,
-            headers + ("Content-Type" to "application/json"),
-            body?.marshal(),
+            method = method,
+            url = url,
+            headers = headers + ("Content-Type" to "application/json"),
+            body = body?.marshal(),
+            bufferInput = bufferInput,
+            bufferOutput = bufferOutput,
             inputStreamHandler = inputStreamHandler
         )
 
@@ -220,9 +203,25 @@ private const val DEFAULT_GZIP_BUFFER_SIZE = 8 * 1024
 /**
  * Returns a [GZIPInputStream] using the given [stream] if [HttpURLConnection.getContentEncoding] is
  * "gzip", otherwise returns [stream].
+ *
+ * Note: [HttpURLConnection] by design automatically handles gzip for
+ * [HttpURLConnection.getInputStream] However, it doesn't seem like [HttpsURLConnection] (even
+ * though it extends [HttpURLConnection]) does this. See
+ * http://andrewt.com/2014/09/01/android-enabling-gzip-compression-over-https.html or try viewing
+ * the network connections in Profiler in Android Studio without this function. So we have to handle
+ * this for [HttpsURLConnection]. We obviously can't assume that we will be using plaintext HTTP.
  */
-fun HttpURLConnection.gzipInputStream(stream: InputStream) = if (contentEncoding == "gzip") {
-    GZIPInputStream(stream, DEFAULT_GZIP_BUFFER_SIZE)
-} else {
-    stream
-}
+fun HttpURLConnection.gzipInputStream(stream: InputStream?): InputStream? =
+    when {
+        stream == null -> {
+            null
+        }
+        "gzip".equals(contentEncoding, ignoreCase = true) -> {
+            Log.d("HTTP", "using GZIP")
+            GZIPInputStream(stream, DEFAULT_GZIP_BUFFER_SIZE)
+        }
+        else -> {
+            Log.d("HTTP", "not using GZIP")
+            stream
+        }
+    }

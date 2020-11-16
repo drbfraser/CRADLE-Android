@@ -83,10 +83,11 @@ class RestApi @Inject constructor(
         inputStreamHandlerBlock: suspend (InputStream) -> Unit
     ): NetworkResult<Unit> = withContext(IO) {
         http.jsonRequestStream(
-            Http.Method.GET,
-            urlManager.getAllPatients,
-            headers,
-            null,
+            method = Http.Method.GET,
+            url = urlManager.getAllPatients,
+            headers = headers,
+            // Bulk input; don't bother buffering
+            bufferInput = false,
             inputStreamHandler = inputStreamHandlerBlock
         )
     }
@@ -102,10 +103,9 @@ class RestApi @Inject constructor(
     suspend fun getPatient(id: String): NetworkResult<PatientAndReadings> =
         withContext(IO) {
             http.jsonRequest(
-                Http.Method.GET,
-                urlManager.getPatient(id),
-                headers,
-                null
+                method = Http.Method.GET,
+                url = urlManager.getPatient(id),
+                headers = headers
             ).map { PatientAndReadings.unmarshal(it.obj!!) }
         }
 
@@ -121,10 +121,9 @@ class RestApi @Inject constructor(
     suspend fun getPatientInfo(id: String): NetworkResult<Patient> =
         withContext(IO) {
             http.jsonRequest(
-                Http.Method.GET,
-                urlManager.getPatientInfo(id),
-                headers,
-                null
+                method = Http.Method.GET,
+                url = urlManager.getPatientInfo(id),
+                headers = headers
             ).map { Patient.unmarshal(it.obj!!) }
         }
 
@@ -140,10 +139,9 @@ class RestApi @Inject constructor(
     suspend fun searchForPatient(searchString: String): NetworkResult<List<GlobalPatient>> =
         withContext(IO) {
             http.jsonRequest(
-                Http.Method.GET,
-                urlManager.getGlobalPatientSearch(searchString),
-                headers,
-                null
+                method = Http.Method.GET,
+                url = urlManager.getGlobalPatientSearch(searchString),
+                headers = headers
             ).map {
                 it.arr!!.map(
                     JSONArray::getJSONObject,
@@ -162,10 +160,9 @@ class RestApi @Inject constructor(
     suspend fun getReading(id: String): NetworkResult<Reading> =
         withContext(IO) {
             http.jsonRequest(
-                Http.Method.GET,
-                urlManager.getReading(id),
-                headers,
-                null
+                method = Http.Method.GET,
+                url = urlManager.getReading(id),
+                headers = headers
             ).map { Reading.unmarshal(it.obj!!) }
         }
 
@@ -179,10 +176,9 @@ class RestApi @Inject constructor(
     suspend fun getAssessment(id: String): NetworkResult<Assessment> =
         withContext(IO) {
             http.jsonRequest(
-                Http.Method.GET,
-                urlManager.getAssessmentById(id),
-                headers,
-                null
+                method = Http.Method.GET,
+                url = urlManager.getAssessmentById(id),
+                headers = headers
             ).map { Assessment.unmarshal(it.obj!!) }
         }
 
@@ -206,10 +202,10 @@ class RestApi @Inject constructor(
     suspend fun postPatient(patient: PatientAndReadings): NetworkResult<PatientAndReadings> =
         withContext(IO) {
             http.jsonRequest(
-                Http.Method.POST,
-                urlManager.postPatient,
-                headers,
-                JsonObject(patient.marshal())
+                method = Http.Method.POST,
+                url = urlManager.postPatient,
+                headers = headers,
+                body = JsonObject(patient.marshal())
             ).map { PatientAndReadings.unmarshal(it.obj!!) }
         }
 
@@ -226,10 +222,10 @@ class RestApi @Inject constructor(
     suspend fun putPatient(patient: Patient): NetworkResult<Unit> =
         withContext(IO) {
             http.jsonRequest(
-                Http.Method.PUT,
-                urlManager.getPatientInfoOnly(patient.id),
-                headers,
-                JsonObject(patient.marshal())
+                method = Http.Method.PUT,
+                url = urlManager.getPatientInfoOnly(patient.id),
+                headers = headers,
+                body = JsonObject(patient.marshal())
             ).map { Unit }
         }
 
@@ -242,10 +238,10 @@ class RestApi @Inject constructor(
     suspend fun postReading(reading: Reading): NetworkResult<Reading> =
         withContext(IO) {
             http.jsonRequest(
-                Http.Method.POST,
-                urlManager.postReading,
-                headers,
-                JsonObject(reading.marshal())
+                method = Http.Method.POST,
+                url = urlManager.postReading,
+                headers = headers,
+                body = JsonObject(reading.marshal())
             ).map { Reading.unmarshal(it.obj!!) }
         }
 
@@ -264,10 +260,10 @@ class RestApi @Inject constructor(
         withContext(IO) {
             val body = JsonObject(mapOf("patientId" to id))
             http.jsonRequest(
-                Http.Method.POST,
-                urlManager.userPatientAssociation,
-                headers,
-                body
+                method = Http.Method.POST,
+                url = urlManager.userPatientAssociation,
+                headers = headers,
+                body = body
             ).map { Unit }
         }
 
@@ -280,10 +276,11 @@ class RestApi @Inject constructor(
     suspend fun getAllHealthFacilities(): NetworkResult<List<HealthFacility>> =
         withContext(IO) {
             http.jsonRequest(
-                Http.Method.GET,
-                urlManager.healthFacilities,
-                headers,
-                null
+                method = Http.Method.GET,
+                url = urlManager.healthFacilities,
+                headers = headers,
+                // Bulk input; don't bother buffering
+                bufferInput = false
             ).map {
                 it.arr!!.map(
                     JSONArray::getJSONObject,
@@ -310,10 +307,9 @@ class RestApi @Inject constructor(
     suspend fun getUpdates(lastSyncTimestamp: Long): NetworkResult<SyncUpdate> =
         withContext(IO) {
             http.jsonRequest(
-                Http.Method.GET,
-                urlManager.getUpdates(lastSyncTimestamp),
-                headers,
-                null
+                method = Http.Method.GET,
+                url = urlManager.getUpdates(lastSyncTimestamp),
+                headers = headers
             ).map { SyncUpdate.unmarshal(it.obj!!) }
         }
 
