@@ -15,10 +15,12 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.test.espresso.idling.CountingIdlingResource
 import com.cradle.neptune.BuildConfig
 import com.cradle.neptune.R
 import com.cradle.neptune.ext.getEnglishResources
 import com.cradle.neptune.ext.setValueOnMainThread
+import com.cradle.neptune.ext.withIdlingResource
 import com.cradle.neptune.manager.PatientManager
 import com.cradle.neptune.manager.ReadingManager
 import com.cradle.neptune.manager.ReferralUploadManager
@@ -106,6 +108,11 @@ class PatientReadingViewModel @ViewModelInject constructor(
 ) : ViewModel() {
     private val patientBuilder = LiveDataDynamicModelBuilder()
     private val readingBuilder = LiveDataDynamicModelBuilder()
+
+    /**
+     * This is null if and only if this [ReadingActivity] is not being tested under Espresso.
+     */
+    var idlingResource: CountingIdlingResource? = null
 
     private val monthsUnitString = app.resources
         .getStringArray(R.array.reading_ga_units)[GEST_AGE_UNIT_MONTHS_INDEX]
@@ -397,10 +404,13 @@ class PatientReadingViewModel @ViewModelInject constructor(
                         isPatientValidJob?.cancel()
                             ?: Log.d(TAG, "isPatientValidJob: no job to cancel")
                         isPatientValidJob = viewModelScope.launch(Dispatchers.Default) {
-                            attemptToBuildValidPatient().let { patient ->
-                                yield()
-                                // Post the value immediately: requires main thread to do so.
-                                setValueOnMainThread(patient != null)
+                            // Let Espresso know we're busy
+                            withIdlingResource(idlingResource) {
+                                attemptToBuildValidPatient().let { patient ->
+                                    yield()
+                                    // Post the value immediately: requires main thread to do so.
+                                    setValueOnMainThread(patient != null)
+                                }
                             }
                         }
                     }
@@ -1098,10 +1108,12 @@ class PatientReadingViewModel @ViewModelInject constructor(
         private fun launchVitalSignsFragmentVerifyJob() {
             vitalSignsFragmentVerifyJob?.cancel()
             vitalSignsFragmentVerifyJob = viewModelScope.launch {
-                isNextButtonEnabledMutex.withLock {
-                    val newValue = verifyVitalSignsFragment()
-                    yield()
-                    isNextButtonEnabled.value = newValue
+                withIdlingResource(idlingResource) {
+                    isNextButtonEnabledMutex.withLock {
+                        val newValue = verifyVitalSignsFragment()
+                        yield()
+                        isNextButtonEnabled.value = newValue
+                    }
                 }
             }
         }
@@ -1928,6 +1940,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
             propertyForErrorMapKey: KProperty<*> = propertyToCheck,
             currentValuesMap: Map<String, Any?>? = null
         ) {
+            idlingResource?.increment()
             viewModelScope.launch(Dispatchers.Default) {
                 // Selects the map to use for all the other fields on the form. The validity of a
                 // property might depend on other properties being there, e.g. a null date of birth
@@ -1970,6 +1983,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
                         errorMap.setValueOnMainThread(currentMap)
                     }
                 }
+                idlingResource?.decrement()
             }
         }
     }

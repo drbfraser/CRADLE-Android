@@ -12,6 +12,7 @@ import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.annotation.IdRes
 import androidx.annotation.StringRes
+import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -21,6 +22,8 @@ import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.navOptions
+import androidx.test.espresso.IdlingResource
+import androidx.test.espresso.idling.CountingIdlingResource
 import com.cradle.neptune.R
 import com.cradle.neptune.databinding.ActivityReadingBinding
 import com.cradle.neptune.ext.hideKeyboard
@@ -47,6 +50,18 @@ class ReadingActivity : AppCompatActivity() {
 
     // ViewModel shared by all Fragments.
     private val viewModel: PatientReadingViewModel by viewModels()
+
+    /**
+     * Called only from tests. Creates and returns a new [CountingIdlingResource].
+     * This is null if and only if this [ReadingActivity] is not being tested under Espresso.
+     */
+    @VisibleForTesting
+    fun getIdlingResource(): IdlingResource {
+        return viewModel.idlingResource
+            ?: CountingIdlingResource("ReadingActivity").also {
+                viewModel.idlingResource = it
+            }
+    }
 
     override fun onDestroy() {
         super.onDestroy()
@@ -219,6 +234,9 @@ class ReadingActivity : AppCompatActivity() {
     }
 
     private fun onNextButtonClicked(button: View) {
+        // Make Espresso wait
+        viewModel.idlingResource?.increment()
+
         button.hideKeyboard()
         val navController = findNavController(R.id.reading_nav_host)
 
@@ -260,6 +278,7 @@ class ReadingActivity : AppCompatActivity() {
                     viewModel.setInputEnabledState(true)
                 }
             }
+            viewModel.idlingResource?.decrement()
         }
     }
 
