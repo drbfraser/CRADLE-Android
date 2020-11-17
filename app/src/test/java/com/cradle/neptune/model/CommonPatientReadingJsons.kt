@@ -237,10 +237,6 @@ object CommonPatientReadingJsons {
      * first: A JSONObject string of the [PatientAndReadings] object
      * second: The corresponding expected [PatientAndReadings] object.
      *
-     * TODO: There is a server issue where this is returning with field "urineTest"
-     *  instead of the expected "urineTests" from api/mobile/patients. The urineTest field
-     *  here was modified to fix that. When that is fixed, this TODO comment should be
-     *  removed
      */
     val patientWithReferralAndFollowup = Pair(
         first = """
@@ -261,6 +257,7 @@ object CommonPatientReadingJsons {
     "created": 1604981097,
     "base": 1604981097,
     "lastEdited": 1604981097,
+    "userId": 12,
     "readings": [
         {
             "readingId": "b1e9d431-0265-484d-a4df-695dd6aa827e",
@@ -273,9 +270,7 @@ object CommonPatientReadingJsons {
             ],
             "trafficLightStatus": "YELLOW_UP",
             "dateTimeTaken": 1604981072,
-            "retestOfPreviousReadingIds": "",
             "patientId": "66665",
-            "isFlaggedForFollowup": false,
             "referral": {
                 "id": 104,
                 "comment": "",
@@ -305,10 +300,12 @@ object CommonPatientReadingJsons {
                 "urineTestPro": "++",
                 "urineTestBlood": "+"
             },
-            "dateRecheckVitalsNeeded": 1604981973,
             "respiratoryRate": 65,
             "oxygenSaturation": 95,
-            "temperature": 44
+            "temperature": 44,
+            "retestOfPreviousReadingIds": "",
+            "isFlaggedForFollowup": false,
+            "dateRecheckVitalsNeeded": 1604981973
         }
     ]
 }
