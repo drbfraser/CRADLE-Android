@@ -26,6 +26,12 @@ inline fun <reified T : Throwable> assertThrows(block: () -> Unit): T {
     )
 }
 
+inline fun assert(value: Boolean, lazyMessage: () -> String) {
+    if (!value) {
+        throw AssertionError(lazyMessage())
+    }
+}
+
 inline fun <T> assertEquals(expected: T, actual: T, lazyMessage: () -> String) {
     if (expected != actual) {
         throw AssertionError(lazyMessage())

@@ -17,6 +17,7 @@ import com.cradle.neptune.model.Referral
 import com.cradle.neptune.model.Sex
 import com.cradle.neptune.model.UrineTest
 import com.cradle.neptune.testutils.assertEquals
+import com.cradle.neptune.testutils.assertForeignKeyCode787Exception
 import com.cradle.neptune.testutils.assertNotEquals
 import com.cradle.neptune.testutils.assertThrows
 import com.cradle.neptune.utilitiles.Months
@@ -152,11 +153,12 @@ class DaoTests {
 
         // Must be prevented from inserting a Reading for a nonexistent patient.
         val reading = createReading(patientId = "1")
-        val sqLiteException = assertThrows<SQLiteConstraintException> { readingDao.insert(reading) }
-        assertEquals(
-            "FOREIGN KEY constraint failed (code 787 SQLITE_CONSTRAINT_FOREIGNKEY)",
-            sqLiteException.message
-        )
+
+        val sqLiteException = assertThrows<SQLiteConstraintException> {
+            readingDao.insert(reading)
+        }
+
+        assertForeignKeyCode787Exception(sqLiteException)
 
         // Nothing should be inserted.
         assertEquals(0, patientDao.getPatientIdsList().size)

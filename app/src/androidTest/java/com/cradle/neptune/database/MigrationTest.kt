@@ -23,15 +23,14 @@ import com.cradle.neptune.model.Referral
 import com.cradle.neptune.model.Sex
 import com.cradle.neptune.model.UrineTest
 import com.cradle.neptune.testutils.assertEquals
+import com.cradle.neptune.testutils.assertForeignKeyCode787Exception
 import com.cradle.neptune.testutils.assertThrows
 import com.cradle.neptune.utilitiles.DateUtil
 import com.cradle.neptune.utilitiles.Months
 import com.cradle.neptune.utilitiles.Weeks
 import org.json.JSONArray
 import org.json.JSONObject
-import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import java.util.UUID
@@ -51,22 +50,6 @@ class MigrationTests {
         CradleDatabase::class.java.canonicalName,
         FrameworkSQLiteOpenHelperFactory()
     )
-
-    @Before
-    fun before() {
-        getMigratedRoomDatabase().apply {
-            clearAllTables()
-            close()
-        }
-    }
-
-    @After
-    fun after() {
-        getMigratedRoomDatabase().apply {
-            clearAllTables()
-            close()
-        }
-    }
 
     /**
      * Tests migration to the latest database version.
@@ -313,10 +296,7 @@ class MigrationTests {
         val sqLiteException = assertThrows<SQLiteConstraintException> {
             readingDao.insert(readingForNonExistentPatient)
         }
-        assertEquals(
-            "FOREIGN KEY constraint failed (code 787 SQLITE_CONSTRAINT_FOREIGNKEY)",
-            sqLiteException.message
-        )
+        assertForeignKeyCode787Exception(sqLiteException)
 
         // Now, try deleting a patient and assert that all the readings associated with the
         // patient are deleted
@@ -449,12 +429,20 @@ class MigrationTests {
         database.insert(patientsTableName, SQLiteDatabase.CONFLICT_REPLACE, values)
     }
 
-    private fun getMigratedRoomDatabase(): CradleDatabase {
-        val database: CradleDatabase = Room.databaseBuilder(
+    private fun getMigratedRoomDatabase(
+        fallbackToDestructiveMigration: Boolean = false
+    ): CradleDatabase {
+        val database = Room.databaseBuilder(
             ApplicationProvider.getApplicationContext(),
             CradleDatabase::class.java,
             TEST_DB
-        ).addMigrations(*Migrations.ALL_MIGRATIONS).build()
+        ).apply {
+            if (fallbackToDestructiveMigration) {
+                fallbackToDestructiveMigration()
+            } else {
+                addMigrations(*Migrations.ALL_MIGRATIONS)
+            }
+        }.build()
         // Close the database and release any stream resources when the test finishes
         helper.closeWhenFinished(database)
         return database
