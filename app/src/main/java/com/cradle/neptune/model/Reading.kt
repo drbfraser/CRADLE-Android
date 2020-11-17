@@ -179,7 +179,7 @@ data class Reading(
         private const val RESPIRATORY_RATE_MAX = 120
         private const val OXYGEN_SATURATION_MIN = 0
         private const val OXYGEN_SATURATION_MAX = 100
-        private const val TEMPERATURE_MIN = 34
+        private const val TEMPERATURE_MIN = 30
         private const val TEMPERATURE_MAX = 45
 
         @Suppress("NestedBlockDepth")
