@@ -414,12 +414,38 @@ FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE 
     private val MIGRATION_7_8 = object : Migration(7, 8) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.apply {
+                // Rename drugHistoryList and medicalHistoryList to drugHistory and medicalHistory
+                // We CANNOT use
+                //   "ALTER TABLE Patient RENAME COLUMN medicalHistoryList TO medicalHistory
+                // because that was introduced in a later version of SQLite (3.25.0, see
+                // https://stackoverflow.com/a/52346199) but version of SQLite depends on the
+                // version of Android
+                // (https://developer.android.com/reference/android/database/sqlite/package-summary)
+                // At the minimum, we should expect SQLite 3.7
+                execSQL("DROP INDEX `index_Patient_id`")
                 execSQL(
-                    "ALTER TABLE `Patient` RENAME COLUMN `drugHistoryList` to `drugHistory`"
+                    """
+CREATE TABLE IF NOT EXISTS `new_Patient` (
+`id` TEXT NOT NULL, `name` TEXT NOT NULL, `dob` TEXT, `isExactDob` INTEGER, `gestationalAge` TEXT, 
+`sex` TEXT NOT NULL, `isPregnant` INTEGER NOT NULL, `zone` TEXT, `villageNumber` TEXT, 
+`householdNumber` TEXT, `drugHistory` TEXT NOT NULL, `medicalHistory` TEXT NOT NULL,
+`lastEdited` INTEGER, `base` INTEGER, PRIMARY KEY(`id`)
+)
+                    """.trimIndent()
                 )
+                execSQL("CREATE UNIQUE INDEX `index_Patient_id` ON `new_Patient` (`id`)")
+                val oldPatientProperties = "`id`,`name`,`dob`,`isExactDob`,`gestationalAge`," +
+                    "`sex`,`isPregnant`,`zone`,`villageNumber`,`householdNumber`," +
+                    "`drugHistoryList`,`medicalHistoryList`,`lastEdited`,`base`"
+                val newPatientProperties = "`id`,`name`,`dob`,`isExactDob`,`gestationalAge`," +
+                    "`sex`,`isPregnant`,`zone`,`villageNumber`,`householdNumber`," +
+                    "`drugHistory`,`medicalHistory`,`lastEdited`,`base`"
                 execSQL(
-                    "ALTER TABLE `Patient` RENAME COLUMN `medicalHistoryList` to `medicalHistory`"
+                    "INSERT INTO new_Patient ($newPatientProperties) " +
+                        "SELECT $oldPatientProperties FROM Patient"
                 )
+                execSQL("DROP TABLE Patient")
+                execSQL("ALTER TABLE new_Patient RENAME TO Patient")
 
                 // Now, we have to convert all of the lists in the database to just strings
                 val medicalDrugHistoryQuery = SupportSQLiteQueryBuilder.builder("Patient")
