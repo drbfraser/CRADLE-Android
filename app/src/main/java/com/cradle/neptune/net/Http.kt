@@ -93,20 +93,15 @@ class Http {
 
                 if (responseCode in SUCCESS_RANGE) {
                     Log.i(TAG, "$message - Success $responseCode")
-                    val returnBody = if (bufferInput) {
-                        BufferedInputStream(gzipInputStream(inputStream)!!).use {
-                            inputStreamHandler(it)
-                        }
-                    } else {
-                        gzipInputStream(inputStream)!!.use {
-                            inputStreamHandler(it)
-                        }
+                    val returnBody = gzipInputStream(inputStream, bufferInput)!!.use {
+                        inputStreamHandler(it)
                     }
                     Success(returnBody, responseCode)
                 } else {
                     Log.e(TAG, "$message - Failure $responseCode")
-                    val responseBody = gzipInputStream(errorStream)?.use { it.readBytes() }
-                        ?: ByteArray(0)
+                    val responseBody = gzipInputStream(errorStream, bufferInput)?.use {
+                        it.readBytes()
+                    } ?: ByteArray(0)
                     Failure(responseBody, responseCode)
                 }
             } catch (ex: IOException) {
@@ -155,6 +150,8 @@ that directly handles the InputStream from the HTTPUrlConnection.
             url = url,
             headers = headers + ("Content-Type" to "application/json"),
             body = body?.marshal(),
+            bufferInput = bufferInput,
+            bufferOutput = bufferOutput,
             inputStreamHandler = { inputStream -> inputStream.readBytes() }
         ).map(Json.Companion::unmarshal)
 
@@ -202,7 +199,8 @@ private const val DEFAULT_GZIP_BUFFER_SIZE = 8 * 1024
 
 /**
  * Returns a [GZIPInputStream] using the given [stream] if [HttpURLConnection.getContentEncoding] is
- * "gzip", otherwise returns [stream].
+ * "gzip", otherwise returns [stream]. If [shouldBuffer] is true, the returned [InputStream] will be
+ * a [BufferedInputStream].
  *
  * Note: [HttpURLConnection] by design automatically handles gzip for
  * [HttpURLConnection.getInputStream] However, it doesn't seem like [HttpsURLConnection] (even
@@ -211,17 +209,15 @@ private const val DEFAULT_GZIP_BUFFER_SIZE = 8 * 1024
  * the network connections in Profiler in Android Studio without this function. So we have to handle
  * this for [HttpsURLConnection]. We obviously can't assume that we will be using plaintext HTTP.
  */
-fun HttpURLConnection.gzipInputStream(stream: InputStream?): InputStream? =
+fun HttpURLConnection.gzipInputStream(stream: InputStream?, shouldBuffer: Boolean): InputStream? =
     when {
         stream == null -> {
             null
         }
         "gzip".equals(contentEncoding, ignoreCase = true) -> {
-            Log.d("HTTP", "using GZIP")
             GZIPInputStream(stream, DEFAULT_GZIP_BUFFER_SIZE)
         }
         else -> {
-            Log.d("HTTP", "not using GZIP")
             stream
         }
-    }
+    }?.let { returnStream -> if (shouldBuffer) BufferedInputStream(returnStream) else returnStream }
