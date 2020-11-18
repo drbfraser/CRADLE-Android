@@ -28,6 +28,7 @@ import com.cradleVSA.neptune.testutils.assertThrows
 import com.cradleVSA.neptune.utilitiles.DateUtil
 import com.cradleVSA.neptune.utilitiles.Months
 import com.cradleVSA.neptune.utilitiles.Weeks
+import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
@@ -101,12 +102,14 @@ class MigrationTests {
         // that the data was migrated properly. This includes checking that all properties for
         // unaltered columns are unchanged.
         val readingDao = getMigratedRoomDatabase().readingDao()
-        assertEquals(1, readingDao.getAllReadingEntities().size)
-        readingDao.getReadingById(reading.id)?.let { readingFromMigratedDb ->
-            assertEquals(reading, readingFromMigratedDb)
-        } ?: error {
-            "Missing a reading after migration. Probably ON CASCADE DELETE was invoked for " +
-                "Reading when it should not have been"
+        runBlocking {
+            assertEquals(1, readingDao.getAllReadingEntities().size)
+            readingDao.getReadingById(reading.id)?.let { readingFromMigratedDb ->
+                assertEquals(reading, readingFromMigratedDb)
+            } ?: error {
+                "Missing a reading after migration. Probably ON CASCADE DELETE was invoked for " +
+                    "Reading when it should not have been"
+            }
         }
     }
 
@@ -192,30 +195,33 @@ class MigrationTests {
             close()
         }
 
-        // Migrate to the latest version. Room handles schema validation, so we must now validate
-        // that the data was migrated properly. This includes checking that all properties for
-        // unaltered columns are unchanged.
-        val patientDao = getMigratedRoomDatabase().patientDao()
+        runBlocking {
+            // Migrate to the latest version. Room handles schema validation, so we must now validate
+            // that the data was migrated properly. This includes checking that all properties for
+            // unaltered columns are unchanged.
+            val patientDao = getMigratedRoomDatabase().patientDao()
 
-        assertEquals(3, patientDao.getPatientIdsList().size)
+            assertEquals(3, patientDao.getPatientIdsList().size)
 
-        // Test that the isExactDob is set depending on the nullity of dob and age.
-        // patientWithExactDob has a non-null dob, so the dob should be exact.
-        patientDao.getPatientById(patientWithExactDob.id)?.let { patientFromMigratedDb ->
-            assertEquals(patientWithExactDob, patientFromMigratedDb)
-        } ?: error("no patient")
+            // Test that the isExactDob is set depending on the nullity of dob and age.
+            // patientWithExactDob has a non-null dob, so the dob should be exact.
+            patientDao.getPatientById(patientWithExactDob.id)?.let { patientFromMigratedDb ->
+                assertEquals(patientWithExactDob, patientFromMigratedDb)
+            } ?: error("no patient")
 
-        // Approximate age should have isExactDob false
-        // Age is non-null but dob is null, so the dob should be not exact.
-        patientDao.getPatientById(patientWithApproxAgeOf23.id)?.let { patientFromMigratedDb ->
-            patientWithApproxAgeOf23.dob = DateUtil.getDateStringFromAge(23)
-            assertEquals(patientWithApproxAgeOf23, patientFromMigratedDb)
-        } ?: error("no patient")
+            // Approximate age should have isExactDob false
+            // Age is non-null but dob is null, so the dob should be not exact.
+            patientDao.getPatientById(patientWithApproxAgeOf23.id)?.let { patientFromMigratedDb ->
+                patientWithApproxAgeOf23.dob = DateUtil.getDateStringFromAge(23)
+                assertEquals(patientWithApproxAgeOf23, patientFromMigratedDb)
+            } ?: error("no patient")
 
-        // Assume exact if there is somehow both age and dob
-        patientDao.getPatientById(patientWithBothDobAndAgeOf19.id)?.let { patientFromMigratedDb ->
-            assertEquals(patientWithBothDobAndAgeOf19, patientFromMigratedDb)
-        } ?: error("no patient")
+            // Assume exact if there is somehow both age and dob
+            patientDao.getPatientById(patientWithBothDobAndAgeOf19.id)
+                ?.let { patientFromMigratedDb ->
+                    assertEquals(patientWithBothDobAndAgeOf19, patientFromMigratedDb)
+                } ?: error("no patient")
+        }
     }
 
     /**
@@ -266,48 +272,49 @@ class MigrationTests {
         // recreating the patient table
         val database = getMigratedRoomDatabase()
         val patientDao = database.patientDao()
-        assertEquals(1, patientDao.getPatientIdsList().size) {
-            "Mismatch in expected number of patients: got ${patientDao.getPatientIdsList().size}" +
-                " instead of 1"
-        }
+        runBlocking {
+            assertEquals(1, patientDao.getPatientIdsList().size) {
+                "Mismatch in expected number of patients: got ${patientDao.getPatientIdsList().size}" +
+                    " instead of 1"
+            }
 
-        val readingDao = database.readingDao()
-        assertEquals(2, readingDao.getAllReadingEntities().size) {
-            "Mismatch in expected number of patients: got " +
-                "${readingDao.getAllReadingEntities().size}" +
-                " instead of 2"
-        }
+            val readingDao = database.readingDao()
+            assertEquals(2, readingDao.getAllReadingEntities().size) {
+                "Mismatch in expected number of patients: got " +
+                    "${readingDao.getAllReadingEntities().size}" +
+                    " instead of 2"
+            }
 
-        readingDao.getReadingById(reading.id)?.let { readingFromMigratedDb ->
-            assertEquals(reading, readingFromMigratedDb)
-        } ?: error {
-            "Missing a reading after migration. Probably ON CASCADE DELETE was invoked for " +
-                "Reading when it should not have been"
-        }
-        readingDao.getReadingById(reading2.id)?.let { readingFromMigratedDb ->
-            assertEquals(reading2, readingFromMigratedDb)
-        } ?: error {
-            "Missing a reading after migration. Probably ON CASCADE DELETE was invoked for " +
-                "Reading when it should not have been"
-        }
+            readingDao.getReadingById(reading.id)?.let { readingFromMigratedDb ->
+                assertEquals(reading, readingFromMigratedDb)
+            } ?: error {
+                "Missing a reading after migration. Probably ON CASCADE DELETE was invoked for " +
+                    "Reading when it should not have been"
+            }
+            readingDao.getReadingById(reading2.id)?.let { readingFromMigratedDb ->
+                assertEquals(reading2, readingFromMigratedDb)
+            } ?: error {
+                "Missing a reading after migration. Probably ON CASCADE DELETE was invoked for " +
+                    "Reading when it should not have been"
+            }
 
-        // Now, try inserting a reading for non-existent patient
-        val readingForNonExistentPatient = createFirstVersionReading(patientId = "NOPE")
-        val sqLiteException = assertThrows<SQLiteConstraintException> {
-            readingDao.insert(readingForNonExistentPatient)
-        }
-        assertForeignKeyConstraintException(sqLiteException)
+            // Now, try inserting a reading for non-existent patient
+            val readingForNonExistentPatient = createFirstVersionReading(patientId = "NOPE")
+            val sqLiteException = assertThrows<SQLiteConstraintException> {
+                readingDao.insert(readingForNonExistentPatient)
+            }
+            assertForeignKeyConstraintException(sqLiteException)
 
-        // Now, try deleting a patient and assert that all the readings associated with the
-        // patient are deleted
-        assertEquals(1, patientDao.deleteById(patientId))
-        assertEquals(0, patientDao.getPatientIdsList().size) {
-            "expected no patients in the database"
+            // Now, try deleting a patient and assert that all the readings associated with the
+            // patient are deleted
+            assertEquals(1, patientDao.deleteById(patientId))
+            assertEquals(0, patientDao.getPatientIdsList().size) {
+                "expected no patients in the database"
+            }
+            assertEquals(0, readingDao.getAllReadingEntities().size) {
+                "expected foreign key ON DELETE CASCADE for Readings, but it didn't happen"
+            }
         }
-        assertEquals(0, readingDao.getAllReadingEntities().size) {
-            "expected foreign key ON DELETE CASCADE for Readings, but it didn't happen"
-        }
-
     }
 
     private fun createFirstVersionReading(patientId: String): Reading {

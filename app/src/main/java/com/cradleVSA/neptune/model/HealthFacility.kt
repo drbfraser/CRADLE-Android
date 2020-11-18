@@ -22,11 +22,13 @@ import java.util.UUID
  * @property type The type of the health facility.
  * @property isUserSelected Whether the user wishes to see this health facility
  * in their drop down menu.
+ *
+ * TODO: move primary key to the name like the backend
  */
 @Entity
 data class HealthFacility(
     @PrimaryKey @JsonIgnore
-    var id: String = "",
+    var id: String = UUID.randomUUID().toString(),
     @ColumnInfo @JsonProperty("healthFacilityName")
     var name: String = "",
     @ColumnInfo

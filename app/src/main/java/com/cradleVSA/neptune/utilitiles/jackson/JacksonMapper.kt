@@ -1,5 +1,6 @@
 package com.cradleVSA.neptune.utilitiles.jackson
 
+import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.Patient
 import com.cradleVSA.neptune.model.PatientAndReadings
 import com.cradleVSA.neptune.model.Reading
@@ -21,6 +22,10 @@ object JacksonMapper {
 
     val readerForPatientAndReadings: ObjectReader by lazy {
         mapper.readerFor(PatientAndReadings::class.java)
+    }
+
+    val readerForHealthFacility: ObjectReader by lazy {
+        mapper.readerFor(HealthFacility::class.java)
     }
 
     val readerForReading: ObjectReader by lazy { mapper.readerFor(Reading::class.java) }

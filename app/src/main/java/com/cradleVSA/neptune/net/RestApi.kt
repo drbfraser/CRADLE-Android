@@ -6,7 +6,6 @@ import com.cradleVSA.neptune.manager.LoginManager
 import com.cradleVSA.neptune.manager.UrlManager
 import com.cradleVSA.neptune.model.Assessment
 import com.cradleVSA.neptune.model.GlobalPatient
-import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.Patient
 import com.cradleVSA.neptune.model.PatientAndReadings
 import com.cradleVSA.neptune.model.Reading
@@ -63,10 +62,10 @@ class RestApi @Inject constructor(
      * from the server.
      *
      * For memory efficiency, the [InputStream] from the [HttpURLConnection]
-     * is parsed by the [inputStreamHandlerBlock]. It's expected that the
+     * is parsed by the [inputStreamHandler]. It's expected that the
      * [Patient]s and [Reading]s parsed are inserted into the database during
      * parsing so that there are not a lot of [Patient] and [Reading] objects
-     * stuck in memory. The [inputStreamHandlerBlock] isn't expected to close
+     * stuck in memory. The [inputStreamHandler] isn't expected to close
      * the given [InputStream].
      *
      * Only the patient's managed by this user will be returned in the [InputStream].
@@ -80,7 +79,7 @@ class RestApi @Inject constructor(
      * or [NetworkException] if parsing or the connection fails.
      */
     suspend fun getAllPatientsStreaming(
-        inputStreamHandlerBlock: suspend (InputStream) -> Unit
+        inputStreamHandler: suspend (InputStream) -> Unit
     ): NetworkResult<Unit> = withContext(IO) {
         http.jsonRequestStream(
             method = Http.Method.GET,
@@ -88,7 +87,7 @@ class RestApi @Inject constructor(
             headers = headers,
             // Bulk input; don't bother buffering
             bufferInput = false,
-            inputStreamHandler = inputStreamHandlerBlock
+            inputStreamHandler = inputStreamHandler
         )
     }
 
@@ -269,25 +268,21 @@ class RestApi @Inject constructor(
 
     /**
      * Requests a list of all available health facilities from the server.
-     * TODO: Use Jackson streaming API?
      *
      * @return a list of health facilities
      */
-    suspend fun getAllHealthFacilities(): NetworkResult<List<HealthFacility>> =
-        withContext(IO) {
-            http.jsonRequest(
-                method = Http.Method.GET,
-                url = urlManager.healthFacilities,
-                headers = headers,
-                // Bulk input; don't bother buffering
-                bufferInput = false
-            ).map {
-                it.arr!!.map(
-                    JSONArray::getJSONObject,
-                    HealthFacility.Companion::unmarshal
-                )
-            }
-        }
+    suspend fun getAllHealthFacilities(
+        inputStreamHandler: suspend (InputStream) -> Unit
+    ): NetworkResult<Unit> = withContext(IO) {
+        http.jsonRequestStream(
+            method = Http.Method.GET,
+            url = urlManager.healthFacilities,
+            headers = headers,
+            // Bulk input; don't bother buffering
+            bufferInput = false,
+            inputStreamHandler = inputStreamHandler
+        )
+    }
 
     /**
      * Requests an abridged collection of changes made to the entities managed
