@@ -23,7 +23,7 @@ import com.cradle.neptune.model.Referral
 import com.cradle.neptune.model.Sex
 import com.cradle.neptune.model.UrineTest
 import com.cradle.neptune.testutils.assertEquals
-import com.cradle.neptune.testutils.assertForeignKeyCode787Exception
+import com.cradle.neptune.testutils.assertForeignKeyConstraintException
 import com.cradle.neptune.testutils.assertThrows
 import com.cradle.neptune.utilitiles.DateUtil
 import com.cradle.neptune.utilitiles.Months
@@ -296,7 +296,7 @@ class MigrationTests {
         val sqLiteException = assertThrows<SQLiteConstraintException> {
             readingDao.insert(readingForNonExistentPatient)
         }
-        assertForeignKeyCode787Exception(sqLiteException)
+        assertForeignKeyConstraintException(sqLiteException)
 
         // Now, try deleting a patient and assert that all the readings associated with the
         // patient are deleted

@@ -17,7 +17,7 @@ import com.cradle.neptune.model.Referral
 import com.cradle.neptune.model.Sex
 import com.cradle.neptune.model.UrineTest
 import com.cradle.neptune.testutils.assertEquals
-import com.cradle.neptune.testutils.assertForeignKeyCode787Exception
+import com.cradle.neptune.testutils.assertForeignKeyConstraintException
 import com.cradle.neptune.testutils.assertNotEquals
 import com.cradle.neptune.testutils.assertThrows
 import com.cradle.neptune.utilitiles.Months
@@ -158,7 +158,7 @@ class DaoTests {
             readingDao.insert(reading)
         }
 
-        assertForeignKeyCode787Exception(sqLiteException)
+        assertForeignKeyConstraintException(sqLiteException)
 
         // Nothing should be inserted.
         assertEquals(0, patientDao.getPatientIdsList().size)
