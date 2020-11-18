@@ -5,6 +5,7 @@ import android.text.TextUtils
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.utilitiles.Months
 import com.cradleVSA.neptune.utilitiles.Weeks
+import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
@@ -12,6 +13,7 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.verify
 import io.mockk.verifyOrder
+import org.json.JSONObject
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -49,6 +51,37 @@ class PatientTests {
         clearMocks(mockContext)
         every { mockContext.getString(any(), *anyVararg()) } answers { getMockStringFromResId(arg(0)) }
         every { mockContext.getString(any()) } answers { getMockStringFromResId(arg(0)) }
+    }
+
+    @Test
+    fun patient_jackson_deserializeAndSerialize() {
+        val possiblePairsToTest = arrayOf(
+            CommonPatientReadingJsons.patientNoGestAgeJsonAndExpected,
+            CommonPatientReadingJsons.patientWithGestAgeJsonAndExpected,
+            CommonPatientReadingJsons.patientWithReferralAndFollowup
+        ).map { it.first to it.second.patient }
+
+        for ((jsonString, expectedPatient) in possiblePairsToTest) {
+            val reader = JacksonMapper.readerForPatient
+            val parsedPatient = reader.readValue<Patient>(jsonString)
+            assertEquals(expectedPatient, parsedPatient)
+
+            val writer = JacksonMapper.writerForPatient
+            val serialized = writer.writeValueAsString(parsedPatient)
+
+            val expectedJson = parsedPatient.marshal()
+            val actualJson = JSONObject(serialized)
+            assertEquals(expectedJson.length(), actualJson.length()) {
+                "number of keys differ from expected\n" +
+                    "expected JSON: $expectedJson\n" +
+                    "actual JSON: $actualJson"
+            }
+            expectedJson.keys().forEach {
+                assertEquals(expectedJson.get(it).toString(), actualJson.get(it).toString()) {
+                    "key $it was different"
+                }
+            }
+        }
     }
 
     @Test

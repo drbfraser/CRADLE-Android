@@ -1,5 +1,13 @@
 package com.cradleVSA.neptune.model
 
+private const val DEPRECATION_MESSAGE = """
+Use Jackson instead, as Jackson's serialization can be integrated with Jackson's streaming API.
+Annotate with @JsonProperty and @JsonIgnore as needed, or if the model class is too complicated,
+write custom deserializers and serializers for use with Jackson.
+These methods will remain until Referrals and Assessments have their own database table and are not
+nested inside of Reading.
+"""
+
 /**
  * Describes types which can be converted into a data representation for
  * storage or transmission.
@@ -50,10 +58,12 @@ package com.cradleVSA.neptune.model
  *
  * @param Data The data type to marshal into.
  */
+@Deprecated(DEPRECATION_MESSAGE)
 interface Marshal<Data> {
     /**
      * Marshals this object into a [Data] object.
      */
+    @Deprecated("Use Jackson instead")
     fun marshal(): Data
 }
 
@@ -114,16 +124,19 @@ interface Marshal<Data> {
  * val d = unmarshal(Person.FromString, str)
  * ```
  */
+@Deprecated(DEPRECATION_MESSAGE)
 interface Unmarshal<Result, Data> {
     /**
      * Constructs a [Result] object from a [Data] object.
      */
+    @Deprecated("Use Jackson instead")
     fun unmarshal(data: Data): Result
 
     /**
      * Attempts to construct a [Result] object from a [Data] object. Returns
      * `null` if an exception was thrown during the construction process.
      */
+    @Deprecated("Use Jackson instead")
     fun maybeUnmarshal(data: Data): Result? = try {
         unmarshal(data)
     } catch (e: Exception) {

@@ -10,6 +10,8 @@ import com.cradleVSA.neptune.ext.optStringField
 import com.cradleVSA.neptune.ext.put
 import com.cradleVSA.neptune.ext.stringField
 import com.cradleVSA.neptune.manager.LoginManager
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.Serializable
@@ -28,9 +30,10 @@ import java.io.Serializable
  * @property readingId The id of the reading being referred
  * @property isAssessed True if the referral has been assessed
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class Referral(
     val comment: String?,
-    val healthFacilityName: String,
+    @JsonProperty("referralHealthFacilityName") val healthFacilityName: String,
     val dateReferred: Long,
     val id: Int?,
     val userId: Int?,

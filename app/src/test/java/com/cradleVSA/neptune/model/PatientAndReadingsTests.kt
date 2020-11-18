@@ -1,6 +1,7 @@
 package com.cradleVSA.neptune.model
 
 import com.cradleVSA.neptune.ext.map
+import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -75,6 +76,27 @@ class PatientAndReadingsTests {
                     "failed at outerIdx $outerIdx, "
                 }
                 assertEquals(expectedPatientAndReadings.readings, unmarshalReadings)
+            } ?: error("fail")
+        }
+    }
+
+    @Test
+    fun `test the jackson`() {
+        // Check that the JSON and the PatientsAndReadings object can actually deserialize
+        // and be read correctly
+        val reader = JacksonMapper.readerForPatientAndReadings
+        val jsonArrayAsString = CommonPatientReadingJsons.allPatientsJsonExpectedPair.first
+        val deserialized = reader.readValues<PatientAndReadings>(jsonArrayAsString)
+
+        deserialized.forEach { deserializedPatientAndReadings ->
+            val (deserializedPatient, deserializedReadings) =
+                deserializedPatientAndReadings.patient to deserializedPatientAndReadings.readings
+
+            CommonPatientReadingJsons.allPatientsJsonExpectedPair.second.find {
+                it.patient.id == deserializedPatient.id
+            }?.let { expectedPatientAndReadings ->
+                assertEquals(expectedPatientAndReadings.patient, deserializedPatient)
+                assertEquals(expectedPatientAndReadings.readings, deserializedReadings)
             } ?: error("fail")
         }
     }

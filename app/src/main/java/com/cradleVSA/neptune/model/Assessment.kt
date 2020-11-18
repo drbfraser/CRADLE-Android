@@ -8,6 +8,8 @@ import com.cradleVSA.neptune.ext.optIntField
 import com.cradleVSA.neptune.ext.optStringField
 import com.cradleVSA.neptune.ext.put
 import com.cradleVSA.neptune.ext.stringField
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
 import org.json.JSONObject
 import java.io.Serializable
 
@@ -27,9 +29,11 @@ import java.io.Serializable
  * @property followupNeeded True if a follow up is required by the VHT
  * @property followupInstructions Instructions for the follow up if required
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class Assessment(
     val id: Int?,
     val dateAssessed: Long,
+    @JsonProperty("healthcareWorkerId")
     val healthCareWorkerId: Int,
     val readingId: String,
     val diagnosis: String?,

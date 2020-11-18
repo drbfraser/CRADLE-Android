@@ -10,6 +10,16 @@ import androidx.room.PrimaryKey
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.ext.Field
 import com.cradleVSA.neptune.ext.intField
+import com.cradleVSA.neptune.ext.jackson.get
+import com.cradleVSA.neptune.ext.jackson.getOptObject
+import com.cradleVSA.neptune.ext.jackson.writeBooleanField
+import com.cradleVSA.neptune.ext.jackson.writeIntField
+import com.cradleVSA.neptune.ext.jackson.writeLongField
+import com.cradleVSA.neptune.ext.jackson.writeObjectField
+import com.cradleVSA.neptune.ext.jackson.writeOptIntField
+import com.cradleVSA.neptune.ext.jackson.writeOptLongField
+import com.cradleVSA.neptune.ext.jackson.writeOptObjectField
+import com.cradleVSA.neptune.ext.jackson.writeStringField
 import com.cradleVSA.neptune.ext.longField
 import com.cradleVSA.neptune.ext.map
 import com.cradleVSA.neptune.ext.optArrayField
@@ -23,6 +33,16 @@ import com.cradleVSA.neptune.ext.put
 import com.cradleVSA.neptune.ext.putStringArray
 import com.cradleVSA.neptune.ext.stringField
 import com.cradleVSA.neptune.ext.union
+import com.cradleVSA.neptune.utilitiles.nullIfEmpty
+import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer
+import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -86,6 +106,8 @@ private const val SECONDS_IN_MIN = 60
         )
     ]
 )
+@JsonSerialize(using = Reading.Serializer::class)
+@JsonDeserialize(using = Reading.Deserializer::class)
 data class Reading(
     @PrimaryKey
     @ColumnInfo(name = "readingId")
@@ -172,6 +194,86 @@ data class Reading(
         put(ReadingField.TEMPERATURE, temperature)
         put(ReadingField.URINE_TEST, urineTest)
         put(ReadingField.PREVIOUS_READING_IDS, previousReadingIds.joinToString(","))
+    }
+
+    class Serializer : StdSerializer<Reading>(Reading::class.java) {
+        override fun serialize(
+            reading: Reading,
+            gen: JsonGenerator,
+            provider: SerializerProvider
+        ) {
+            reading.run {
+                gen.writeStartObject()
+
+                gen.writeStringField(ReadingField.ID, id)
+                gen.writeStringField(ReadingField.PATIENT_ID, patientId)
+                gen.writeLongField(ReadingField.DATE_TIME_TAKEN, dateTimeTaken)
+                bloodPressure.serialize(gen)
+                gen.writeOptLongField(
+                    ReadingField.DATE_RECHECK_VITALS_NEEDED,
+                    dateRecheckVitalsNeeded
+                )
+                gen.writeBooleanField(ReadingField.IS_FLAGGED_FOR_FOLLOWUP, isFlaggedForFollowUp)
+                gen.writeObjectField(ReadingField.SYMPTOMS, symptoms)
+                gen.writeOptObjectField(ReadingField.REFERRAL, referral)
+                gen.writeOptObjectField(ReadingField.FOLLOWUP, followUp)
+                gen.writeOptIntField(ReadingField.RESPIRATORY_RATE, respiratoryRate)
+                gen.writeOptIntField(ReadingField.OXYGEN_SATURATION, oxygenSaturation)
+                gen.writeOptIntField(ReadingField.TEMPERATURE, temperature)
+                gen.writeOptObjectField(ReadingField.URINE_TEST, urineTest)
+                gen.writeStringField(
+                    ReadingField.PREVIOUS_READING_IDS,
+                    previousReadingIds.joinToString(",")
+                )
+
+                gen.writeEndObject()
+            }
+        }
+    }
+
+    class Deserializer : StdDeserializer<Reading>(Reading::class.java) {
+        override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Reading =
+            p.codec.readTree<JsonNode>(p)!!.run {
+                val readingId = get(ReadingField.ID.text).textValue()
+                val patientId = get(ReadingField.PATIENT_ID.text).textValue()
+                val dateTimeTaken = get(ReadingField.DATE_TIME_TAKEN.text).longValue()
+                val bloodPressure = BloodPressure.deserialize(this)
+                val respiratoryRate = get(ReadingField.RESPIRATORY_RATE.text)?.intValue()
+                val oxygenSaturation = get(ReadingField.OXYGEN_SATURATION.text)?.intValue()
+                val temperature = get(ReadingField.TEMPERATURE.text)?.intValue()
+                val urineTest = getOptObject<UrineTest>(ReadingField.URINE_TEST, p.codec)
+                val symptoms = getOptObject<List<String>>(ReadingField.SYMPTOMS, p.codec)
+                    ?: emptyList()
+                val referral = getOptObject<Referral>(ReadingField.REFERRAL, p.codec)
+                val followUp = getOptObject<Assessment>(ReadingField.FOLLOWUP, p.codec)
+                val dateRecheckVitalsNeeded = get(ReadingField.DATE_RECHECK_VITALS_NEEDED)
+                    ?.longValue()
+                val isFlaggedForFollowUp = get(ReadingField.IS_FLAGGED_FOR_FOLLOWUP)
+                    ?.booleanValue() ?: false
+                val previousReadingIds = get(ReadingField.PREVIOUS_READING_IDS.text)
+                    ?.textValue()
+                    ?.let { it.nullIfEmpty()?.split(",") }
+                    ?: emptyList()
+                val metadata = ReadingMetadata()
+
+                return@run Reading(
+                    id = readingId,
+                    patientId = patientId,
+                    dateTimeTaken = dateTimeTaken,
+                    bloodPressure = bloodPressure,
+                    respiratoryRate = respiratoryRate,
+                    oxygenSaturation = oxygenSaturation,
+                    temperature = temperature,
+                    urineTest = urineTest,
+                    symptoms = symptoms,
+                    referral = referral,
+                    followUp = followUp,
+                    dateRecheckVitalsNeeded = dateRecheckVitalsNeeded,
+                    isFlaggedForFollowUp = isFlaggedForFollowUp,
+                    previousReadingIds = previousReadingIds,
+                    metadata = metadata
+                )
+            }
     }
 
     companion object : Unmarshal<Reading, JSONObject>, Verifier<Reading> {
@@ -349,6 +451,14 @@ data class BloodPressure(
         put(BloodPressureField.HEART_RATE, heartRate)
     }
 
+    fun serialize(gen: JsonGenerator) {
+        gen.apply {
+            writeIntField(BloodPressureField.SYSTOLIC, systolic)
+            writeIntField(BloodPressureField.DIASTOLIC, diastolic)
+            writeIntField(BloodPressureField.HEART_RATE, heartRate)
+        }
+    }
+
     companion object : Unmarshal<BloodPressure, JSONObject>, Verifier<BloodPressure> {
         override fun isValueValid(
             property: KProperty<*>,
@@ -423,6 +533,14 @@ data class BloodPressure(
             val diastolic = data.intField(BloodPressureField.DIASTOLIC)
             val heartRate = data.intField(BloodPressureField.HEART_RATE)
             return BloodPressure(systolic, diastolic, heartRate)
+        }
+
+        fun deserialize(jsonNode: JsonNode) = jsonNode.run {
+            BloodPressure(
+                systolic = get(BloodPressureField.SYSTOLIC)!!.intValue(),
+                diastolic = get(BloodPressureField.DIASTOLIC)!!.intValue(),
+                heartRate = get(BloodPressureField.HEART_RATE)!!.intValue()
+            )
         }
     }
 

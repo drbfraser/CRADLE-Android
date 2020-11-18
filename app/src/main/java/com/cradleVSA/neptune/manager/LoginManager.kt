@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.core.content.edit
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.database.CradleDatabase
+import com.cradleVSA.neptune.ext.jackson.parseJsonArrayFromStream
 import com.cradleVSA.neptune.model.PatientAndReadings
 import com.cradleVSA.neptune.net.Failure
 import com.cradleVSA.neptune.net.NetworkException
@@ -14,9 +15,7 @@ import com.cradleVSA.neptune.net.Success
 import com.cradleVSA.neptune.sync.SyncStepperImplementation
 import com.cradleVSA.neptune.utilitiles.SharedPreferencesMigration
 import com.cradleVSA.neptune.utilitiles.UnixTimestamp
-import com.fasterxml.jackson.core.JsonToken
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -24,7 +23,6 @@ import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONException
-import org.json.JSONObject
 import java.io.IOException
 import java.net.HttpURLConnection.HTTP_OK
 import javax.inject.Inject
@@ -116,13 +114,10 @@ class LoginManager @Inject constructor(
         val patientsJob = launch {
             val startTime = System.currentTimeMillis()
 
-            val mapper = jacksonObjectMapper()
-
-            val channel = Channel<String>()
+            val channel = Channel<PatientAndReadings>()
 
             val databaseJob = launch {
-                for (jsonString in channel) {
-                    val patientAndReadings = PatientAndReadings.unmarshal(JSONObject(jsonString))
+                for (patientAndReadings in channel) {
                     patientManager.addPatientWithReadings(
                         patientAndReadings.patient,
                         patientAndReadings.readings,
@@ -136,21 +131,15 @@ class LoginManager @Inject constructor(
                 // Parse JSON strings directly from the HTTPUrlConnection's input stream to avoid
                 // dealing with a ByteArray of an entire JSON array in memory and trying to convert
                 // that into a String.
-                mapper.createParser(inputStream).use { parser ->
-                    if (parser.nextToken() != JsonToken.START_ARRAY) {
-                        throw IOException("expected JSON array input")
-                    }
-
-                    while (parser.nextToken() != JsonToken.END_ARRAY) {
-                        try {
-                            // TODO: Parse patient and readings directly.
-                            val jsonString = mapper.readTree<ObjectNode>(parser).toString()
-                            channel.send(jsonString)
-                        } catch (e: IOException) {
-                            Log.e(TAG, "failed to parse JSON object", e)
-                            // Propagate exceptions to the Http class so that it can log it
-                            throw e
-                        }
+                val reader = JacksonMapper.readerForPatientAndReadings
+                reader.parseJsonArrayFromStream(inputStream) { parser ->
+                    try {
+                        val patientAndReadings = reader.readValue<PatientAndReadings>(parser)
+                        channel.send(patientAndReadings)
+                    } catch (e: IOException) {
+                        Log.e(TAG, "failed to parse JSON object", e)
+                        // Propagate exceptions to the Http class so that it can log it
+                        throw e
                     }
                 }
             }
