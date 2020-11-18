@@ -12,6 +12,7 @@ import com.cradleVSA.neptune.ext.Field
 import com.cradleVSA.neptune.ext.intField
 import com.cradleVSA.neptune.ext.jackson.get
 import com.cradleVSA.neptune.ext.jackson.getOptObject
+import com.cradleVSA.neptune.ext.jackson.getOptObjectArray
 import com.cradleVSA.neptune.ext.jackson.writeBooleanField
 import com.cradleVSA.neptune.ext.jackson.writeIntField
 import com.cradleVSA.neptune.ext.jackson.writeLongField
@@ -242,7 +243,7 @@ data class Reading(
                 val oxygenSaturation = get(ReadingField.OXYGEN_SATURATION.text)?.intValue()
                 val temperature = get(ReadingField.TEMPERATURE.text)?.intValue()
                 val urineTest = getOptObject<UrineTest>(ReadingField.URINE_TEST, p.codec)
-                val symptoms = getOptObject<List<String>>(ReadingField.SYMPTOMS, p.codec)
+                val symptoms = getOptObjectArray<String>(ReadingField.SYMPTOMS, p.codec)
                     ?: emptyList()
                 val referral = getOptObject<Referral>(ReadingField.REFERRAL, p.codec)
                 val followUp = getOptObject<Assessment>(ReadingField.FOLLOWUP, p.codec)
