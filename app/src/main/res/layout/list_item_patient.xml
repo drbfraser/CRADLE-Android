@@ -9,11 +9,11 @@
 
         <variable
             name="localSearchPatient"
-            type="com.cradle.neptune.database.views.LocalSearchPatient" />
+            type="com.cradleVSA.neptune.database.views.LocalSearchPatient" />
 
-        <import type="com.cradle.neptune.utilitiles.DateUtil" />
-        <import type="com.cradle.neptune.viewmodel.ReadingAnalysisViewSupport" />
-        <import type="com.cradle.neptune.utilitiles.Util" />
+        <import type="com.cradleVSA.neptune.utilitiles.DateUtil" />
+        <import type="com.cradleVSA.neptune.viewmodel.ReadingAnalysisViewSupport" />
+        <import type="com.cradleVSA.neptune.utilitiles.Util" />
         <import type="android.view.View" />
     </data>
 

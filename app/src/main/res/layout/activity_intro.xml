@@ -18,7 +18,7 @@
             tools:context=".view.ReadingActivity">
 
             <!-- Hold Fragments -->
-            <com.cradle.neptune.view.ui.intro.SwipeControlViewPager
+            <com.cradleVSA.neptune.view.ui.intro.SwipeControlViewPager
                 android:id="@+id/view_pager"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

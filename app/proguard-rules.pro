@@ -25,8 +25,8 @@
 
 -printusage usage.txt
 
-#-keep class com.cradle.neptune.** { *; }
-#-keepclassmembers class com.cradle.neptune.** { *; }
+#-keep class com.cradleVSA.neptune.** { *; }
+#-keepclassmembers class com.cradleVSA.neptune.** { *; }
 
 # BlurKit and RenderScript causing crashes on Android 4.4.4
 # Caused by calling some native method

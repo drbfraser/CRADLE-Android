@@ -87,3 +87,6 @@ lint/reports/
 
 # App signing files
 keystore.properties
+
+# ProGuard usage
+usage.txt

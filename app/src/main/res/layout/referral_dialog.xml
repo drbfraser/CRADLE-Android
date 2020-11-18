@@ -5,15 +5,15 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-        <import type="com.cradle.neptune.binding.Converter" />
-        <import type="com.cradle.neptune.view.ReadingActivity.LaunchReason" />
+        <import type="com.cradleVSA.neptune.binding.Converter" />
+        <import type="com.cradleVSA.neptune.view.ReadingActivity.LaunchReason" />
 
         <variable
             name="viewModel"
-            type="com.cradle.neptune.viewmodel.ReferralDialogViewModel" />
+            type="com.cradleVSA.neptune.viewmodel.ReferralDialogViewModel" />
         <variable
             name="launchReason"
-            type="com.cradle.neptune.view.ReadingActivity.LaunchReason" />
+            type="com.cradleVSA.neptune.view.ReadingActivity.LaunchReason" />
     </data>
 
 

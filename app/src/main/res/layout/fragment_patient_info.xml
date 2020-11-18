@@ -6,14 +6,14 @@
     xmlns:bind="http://schemas.android.com/apk/res-auto">
 
     <data>
-        <import type="com.cradle.neptune.binding.Converter" />
+        <import type="com.cradleVSA.neptune.binding.Converter" />
         <import type="android.text.InputType" />
-        <import type="com.cradle.neptune.model.Sex" />
-        <import type="com.cradle.neptune.model.Patient" />
+        <import type="com.cradleVSA.neptune.model.Sex" />
+        <import type="com.cradleVSA.neptune.model.Patient" />
 
         <variable
             name="viewModel"
-            type="com.cradle.neptune.viewmodel.PatientReadingViewModel" />
+            type="com.cradleVSA.neptune.viewmodel.PatientReadingViewModel" />
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout

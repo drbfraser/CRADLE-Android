@@ -7,16 +7,16 @@
     xmlns:bind="http://schemas.android.com/apk/res-auto">
 
     <data>
-        <import type="com.cradle.neptune.binding.Converter" />
-        <import type="com.cradle.neptune.utilitiles.DateUtil" />
-        <import type="com.cradle.neptune.viewmodel.ReadingAnalysisViewSupport" />
+        <import type="com.cradleVSA.neptune.binding.Converter" />
+        <import type="com.cradleVSA.neptune.utilitiles.DateUtil" />
+        <import type="com.cradleVSA.neptune.viewmodel.ReadingAnalysisViewSupport" />
 
         <variable
             name="reading"
-            type="com.cradle.neptune.model.Reading" />
+            type="com.cradleVSA.neptune.model.Reading" />
         <variable
             name="analysis"
-            type="com.cradle.neptune.model.ReadingAnalysis" />
+            type="com.cradleVSA.neptune.model.ReadingAnalysis" />
     </data>
 
     <com.google.android.material.card.MaterialCardView

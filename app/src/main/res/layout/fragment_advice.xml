@@ -6,17 +6,17 @@
     xmlns:bind="http://schemas.android.com/apk/res-auto">
 
     <data>
-        <import type="com.cradle.neptune.binding.Converter" />
-        <import type="com.cradle.neptune.model.RetestAdvice" />
-        <import type="com.cradle.neptune.view.ReadingActivity.LaunchReason"/>
+        <import type="com.cradleVSA.neptune.binding.Converter" />
+        <import type="com.cradleVSA.neptune.model.RetestAdvice" />
+        <import type="com.cradleVSA.neptune.view.ReadingActivity.LaunchReason"/>
 
         <variable
             name="viewModel"
-            type="com.cradle.neptune.viewmodel.PatientReadingViewModel" />
+            type="com.cradleVSA.neptune.viewmodel.PatientReadingViewModel" />
 
         <variable
             name="launchReason"
-            type="com.cradle.neptune.view.ReadingActivity.LaunchReason" />
+            type="com.cradleVSA.neptune.view.ReadingActivity.LaunchReason" />
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
