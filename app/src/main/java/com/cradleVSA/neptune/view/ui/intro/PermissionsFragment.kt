@@ -137,7 +137,6 @@ class PermissionsFragment : IntroBaseFragment() {
      */
         private val requiredPermissions = arrayOf(
             Manifest.permission.CAMERA,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.INTERNET,
             Manifest.permission.ACCESS_NETWORK_STATE
         )

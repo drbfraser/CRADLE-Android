@@ -33,7 +33,9 @@ android {
         javaMaxHeapSize "4g"
     }
 
-    compileSdkVersion 29
+    compileSdkVersion 30
+    buildToolsVersion '30.0.2'
+
     defaultConfig {
         // Update this for new tags / new builds / new releases
         versionCode 25
@@ -42,7 +44,7 @@ android {
         applicationId "com.cradleVSA.neptune"
         // Android 5
         minSdkVersion 21
-        targetSdkVersion 29
+        targetSdkVersion 30
         // Set the base name for the compiled APKs.
         project.ext.set("archivesBaseName", "CRADLE");
 
@@ -113,8 +115,6 @@ android {
     buildFeatures {
         dataBinding true
     }
-
-    buildToolsVersion = '29.0.3'
 
     sourceSets {
         // Adds exported schema location as test app assets.

@@ -106,8 +106,8 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
      * makes a web request to get full patient info
      */
     private fun getGlobalPatient() {
-        val globalPatient =
-            intent.getParcelableExtra(EXTRA_GLOBAL_PATIENT) as GlobalPatient
+        val globalPatient = intent.getParcelableExtra<GlobalPatient>(EXTRA_GLOBAL_PATIENT)
+        check(globalPatient != null)
 
         val progressDialog = ProgressDialog(this)
         progressDialog.setCancelable(false)
