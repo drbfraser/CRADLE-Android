@@ -205,12 +205,12 @@ data class Reading(
     class Deserializer : StdDeserializer<Reading>(Reading::class.java) {
         override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Reading =
             p.codec.readTree<JsonNode>(p)!!.run {
-                val readingId = get(ReadingField.ID.text).textValue()
-                val patientId = get(ReadingField.PATIENT_ID.text).textValue()
-                val dateTimeTaken = get(ReadingField.DATE_TIME_TAKEN.text).longValue()
+                val readingId = get(ReadingField.ID)!!.textValue()
+                val patientId = get(ReadingField.PATIENT_ID)!!.textValue()
+                val dateTimeTaken = get(ReadingField.DATE_TIME_TAKEN)!!.longValue()
                 val bloodPressure = BloodPressure.deserialize(this)
-                val respiratoryRate = get(ReadingField.RESPIRATORY_RATE.text)?.intValue()
-                val oxygenSaturation = get(ReadingField.OXYGEN_SATURATION.text)?.intValue()
+                val respiratoryRate = get(ReadingField.RESPIRATORY_RATE)?.intValue()
+                val oxygenSaturation = get(ReadingField.OXYGEN_SATURATION)?.intValue()
                 val temperature = get(ReadingField.TEMPERATURE.text)?.intValue()
                 val urineTest = getOptObject<UrineTest>(ReadingField.URINE_TEST, p.codec)
                 val symptoms = getOptObjectArray<String>(ReadingField.SYMPTOMS, p.codec)
