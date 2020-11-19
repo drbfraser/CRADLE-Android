@@ -13,6 +13,7 @@ import com.cradleVSA.neptune.model.SyncUpdate
 import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import java.io.InputStream
 import java.net.HttpURLConnection
 import javax.inject.Inject
@@ -41,12 +42,13 @@ class RestApi @Inject constructor(
      *
      * @param email the user's email
      * @param password the user's password
-     * @return if successful, the [JsonObject] that was returned by the server
+     * @return if successful, the [LoginResponse] that was returned by the server
      *  which contains a bearer token to authenticate the user
      */
     suspend fun authenticate(email: String, password: String): NetworkResult<LoginResponse> =
         withContext(IO) {
-            val body = "{\"email\":\"$email\",\"password\":\"$password\"}".encodeToByteArray()
+            val body = JSONObject(mapOf("email" to email, "password" to password))
+                .toString().encodeToByteArray()
             http.jsonRequestStream(
                 method = Http.Method.POST,
                 url = urlManager.authentication,
