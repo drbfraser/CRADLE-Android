@@ -8,10 +8,13 @@ import java.io.InputStream
 
 /**
  * Performs parsing from [inputStream] for a JSON array of JSON objects. [block] is invoked
- * repeatedly for each object in the array, and the [JsonParser] moves forward with each invocation.
+ * repeatedly for each JsonToken from the [inputStream].
  *
- * The given [block] should not close the [JsonParser].
+ * The given [block] should not close the [JsonParser], and it should advance the stream so that
+ * after [block] is invoked, [JsonParser.nextToken] is [JsonToken.START_OBJECT] or
+ * [JsonToken.END_ARRAY].
  *
+ * @sample com.cradleVSA.neptune.ext.jackson.ObjectReaderExtensionsKtTest.parseJsonArrayFromStream
  * @throws IOException if the [InputStream] doesn't start with a "[" token to signify that it's
  * an array.
  */
