@@ -32,33 +32,66 @@ object CommonPatientReadingJsons {
     val patientNoGestAgeJsonAndExpected = Pair(
         first = """
 {
-    "isPregnant": false,
-    "patientName": "Another patient",
     "patientId": "123456",
-    "drugHistory": "History",
-    "dob": "1974-11-08",
-    "villageNumber": "4555",
-    "created": 1604883668,
+    "patientName": "Another patient",
     "patientSex": "MALE",
+    "isPregnant": false,
     "medicalHistory": "",
+    "drugHistory": "History",
     "zone": "354",
+    "dob": "1974-11-08",
     "isExactDob": false,
+    "villageNumber": "4555",
     "householdNumber": "111",
-    "lastEdited": 1604883668,
-    "base": 1604883668,
+    "created": 1604883668,
+    "base": 1605687954,
+    "lastEdited": 1605687954,
+    "userId": 12,
     "readings": [
         {
+            "readingId": "25255191-05b1-47f3-a7c7-2a0321ea3588",
+            "bpSystolic": 114,
+            "bpDiastolic": 95,
+            "heartRateBPM": 85,
+            "symptoms": [
+                "Feverish",
+                "Muscle ache"
+            ],
+            "trafficLightStatus": "YELLOW_UP",
+            "dateTimeTaken": 1605753210,
+            "dateRecheckVitalsNeeded": 1605754111,
+            "retestOfPreviousReadingIds": "",
+            "patientId": "123456",
+            "isFlaggedForFollowup": false,
+            "referral": {
+                "id": 120,
+                "comment": "",
+                "isAssessed": false,
+                "referralHealthFacilityName": "H0000",
+                "patientId": "123456",
+                "readingId": "25255191-05b1-47f3-a7c7-2a0321ea3588",
+                "dateReferred": 1605753210
+            },
+            "followup": null,
+            "urineTests": null
+        },
+        {
+            "readingId": "777850f0-dc71-4501-a440-1871ecea6381",
             "bpSystolic": 119,
-            "dateTimeTaken": 1604883648,
             "bpDiastolic": 98,
             "heartRateBPM": 87,
-            "userId": 10,
-            "patientId": "123456",
-            "readingId": "777850f0-dc71-4501-a440-1871ecea6381",
             "symptoms": [
                 "NONE"
             ],
-            "trafficLightStatus": "YELLOW_UP"
+            "trafficLightStatus": "YELLOW_UP",
+            "dateTimeTaken": 1604883648,
+            "dateRecheckVitalsNeeded": 1605754111,
+            "retestOfPreviousReadingIds": "",
+            "patientId": "123456",
+            "isFlaggedForFollowup": false,
+            "referral": null,
+            "followup": null,
+            "urineTests": null
         }
     ]
 }
@@ -77,10 +110,36 @@ object CommonPatientReadingJsons {
                 zone = "354",
                 isExactDob = false,
                 householdNumber = "111",
-                lastEdited = 1604883668L,
-                base = 1604883668L
+                lastEdited = 1605687954,
+                base = 1605687954
             ),
             listOf(
+                Reading(
+                    id = "25255191-05b1-47f3-a7c7-2a0321ea3588",
+                    bloodPressure = BloodPressure(
+                        systolic = 114,
+                        diastolic = 95,
+                        heartRate = 85
+                    ),
+                    symptoms = listOf("Feverish", "Muscle ache"),
+                    dateTimeTaken = 1605753210,
+                    dateRecheckVitalsNeeded = 1605754111,
+                    previousReadingIds = listOf(),
+                    patientId = "123456",
+                    isFlaggedForFollowUp = false,
+                    referral = Referral(
+                        id = 120,
+                        comment = "",
+                        isAssessed = false,
+                        healthFacilityName = "H0000",
+                        patientId = "123456",
+                        readingId = "25255191-05b1-47f3-a7c7-2a0321ea3588",
+                        dateReferred = 1605753210,
+                        userId = null /* not sent back by server */
+                    ),
+                    followUp = null,
+                    urineTest = null,
+                ),
                 Reading(
                     bloodPressure = BloodPressure(
                         systolic = 119,
@@ -91,7 +150,7 @@ object CommonPatientReadingJsons {
                     patientId = "123456",
                     id = "777850f0-dc71-4501-a440-1871ecea6381",
                     symptoms = listOf("NONE"),
-                    dateRecheckVitalsNeeded = null,
+                    dateRecheckVitalsNeeded = 1605754111,
                     followUp = null,
                     referral = null,
                     isFlaggedForFollowUp = false,
@@ -124,52 +183,51 @@ object CommonPatientReadingJsons {
     val patientWithGestAgeJsonAndExpected = Pair(
         first = """
 {
-"patientName": "Test patient",
-"patientSex": "FEMALE",
-"gestationalAgeUnit": "GESTATIONAL_AGE_UNITS_WEEKS",
-"medicalHistory": "Some med history.",
-"zone": "634",
-"isExactDob": true,
-"householdNumber": "95682385",
-"lastEdited": 1604883600,
-"patientId": "3459834789348",
-"isPregnant": true,
-"gestationalTimestamp": 1590969549,
-"drugHistory": "Some drug history",
-"dob": "2002-01-08",
-"villageNumber": "133",
-"created": 1604883600,
-"base": 1604883600,
-"readings": [
-    {
-        "bpDiastolic": 97,
-        "heartRateBPM": 78,
-        "respiratoryRate": 65,
-        "oxygenSaturation": 98,
-        "userId": 10,
-        "temperature": 35,
-        "patientId": "3459834789348",
-        "readingId": "ca84ac2d-953f-4f5e-ae24-e0a6e8af7c94",
-        "symptoms": [
-            "BLURRED VISION",
-            "FEVERISH",
-            "LOSS of SENSE",
-            "Other symptoms"
-        ],
-        "bpSystolic": 119,
-        "trafficLightStatus": "YELLOW_UP",
-        "dateTimeTaken": 1604883580,
-        "urineTests": {
-            "urineTestNit": "NAD",
-            "id": 18,
-            "urineTestPro": "NAD",
-            "urineTestBlood": "NAD",
-            "urineTestLeuc": "++",
-            "urineTestGlu": "+++",
-            "readingId": "ca84ac2d-953f-4f5e-ae24-e0a6e8af7c94"
+    "patientName": "Test patient",
+    "patientSex": "FEMALE",
+    "gestationalAgeUnit": "GESTATIONAL_AGE_UNITS_WEEKS",
+    "medicalHistory": "Some med history.",
+    "zone": "634",
+    "isExactDob": true,
+    "householdNumber": "95682385",
+    "lastEdited": 1604883600,
+    "isPregnant": true,
+    "patientId": "3459834789348",
+    "gestationalTimestamp": 1590969549,
+    "drugHistory": "Some drug history",
+    "dob": "2002-01-08",
+    "villageNumber": "133",
+    "created": 1604883600,
+    "base": 1604883600,
+    "readings": [
+        {
+            "bpDiastolic": 97,
+            "heartRateBPM": 78,
+            "respiratoryRate": 65,
+            "oxygenSaturation": 98,
+            "temperature": 35,
+            "patientId": "3459834789348",
+            "readingId": "ca84ac2d-953f-4f5e-ae24-e0a6e8af7c94",
+            "symptoms": [
+                "BLURRED VISION",
+                "FEVERISH",
+                "LOSS of SENSE",
+                "Other symptoms"
+            ],
+            "bpSystolic": 119,
+            "trafficLightStatus": "YELLOW_UP",
+            "dateTimeTaken": 1604883580,
+            "urineTests": {
+                "urineTestNit": "NAD",
+                "id": 18,
+                "urineTestPro": "NAD",
+                "urineTestBlood": "NAD",
+                "urineTestGlu": "+++",
+                "urineTestLeuc": "++",
+                "readingId": "ca84ac2d-953f-4f5e-ae24-e0a6e8af7c94"
+            }
         }
-    }
-]
+    ]
 }
     """.trimIndent(),
         second = PatientAndReadings(
@@ -268,7 +326,10 @@ object CommonPatientReadingJsons {
             ],
             "trafficLightStatus": "YELLOW_UP",
             "dateTimeTaken": 1604981072,
+            "dateRecheckVitalsNeeded": 1604981973,
+            "retestOfPreviousReadingIds": "",
             "patientId": "66665",
+            "isFlaggedForFollowup": false,
             "referral": {
                 "id": 104,
                 "comment": "",
@@ -300,10 +361,7 @@ object CommonPatientReadingJsons {
             },
             "respiratoryRate": 65,
             "oxygenSaturation": 95,
-            "temperature": 44,
-            "retestOfPreviousReadingIds": "",
-            "isFlaggedForFollowup": false,
-            "dateRecheckVitalsNeeded": 1604981973
+            "temperature": 44
         }
     ]
 }
@@ -378,6 +436,95 @@ object CommonPatientReadingJsons {
     )
 
     /**
+     * A patient that has no symptoms.
+     *
+     * This JSON was taken from the /api/mobile/patients
+     * endpoint on the staging server from the for-android-unit-tests@example.com user.
+     * Command to run:
+     *
+     *     ./get.sh https://staging.cradleplatform.com /api/mobile/patients \
+     *         for-android-unit-tests@example.com $PASSWORD
+     */
+    val patientWithNoSymptoms = Pair(
+        first = """
+{
+    "patientId": "6454875454",
+    "patientName": "PatientNoSymptoms",
+    "patientSex": "MALE",
+    "isPregnant": false,
+    "medicalHistory": "",
+    "drugHistory": "Morphine",
+    "zone": "7188473",
+    "dob": "1982-09-09",
+    "isExactDob": true,
+    "villageNumber": "566454518",
+    "householdNumber": "6594",
+    "created": 1605778651,
+    "base": 1605778651,
+    "lastEdited": 1605778651,
+    "userId": 12,
+    "readings": [
+        {
+            "readingId": "1d242c26-5252-4187-bc82-9e4473c5a8c6",
+            "bpSystolic": 123,
+            "bpDiastolic": 89,
+            "heartRateBPM": 85,
+            "symptoms": "",
+            "trafficLightStatus": "GREEN",
+            "dateTimeTaken": 1605778643,
+            "dateRecheckVitalsNeeded": 1603347681,
+            "retestOfPreviousReadingIds": "",
+            "patientId": "6454875454",
+            "isFlaggedForFollowup": true,
+            "referral": null,
+            "followup": null,
+            "urineTests": null,
+            "respiratoryRate": 65,
+            "oxygenSaturation": 55,
+            "temperature": 37
+        }
+    ]
+}
+        """,
+        second = PatientAndReadings(
+            Patient(
+                id = "6454875454",
+                name = "PatientNoSymptoms",
+                sex = Sex.MALE,
+                isPregnant = false,
+                gestationalAge = null,
+                medicalHistory = "",
+                drugHistory = "Morphine",
+                zone = "7188473",
+                dob = "1982-09-09",
+                isExactDob = true,
+                villageNumber = "566454518",
+                householdNumber = "6594",
+                base = 1605778651,
+                lastEdited = 1605778651,
+            ),
+            listOf(
+                Reading(
+                    id = "1d242c26-5252-4187-bc82-9e4473c5a8c6",
+                    bloodPressure = BloodPressure(123, 89, 85),
+                    symptoms = emptyList(),
+                    dateTimeTaken = 1605778643,
+                    dateRecheckVitalsNeeded = 1603347681,
+                    previousReadingIds = emptyList(),
+                    patientId = "6454875454",
+                    isFlaggedForFollowUp = true,
+                    referral = null,
+                    followUp = null,
+                    urineTest = null,
+                    respiratoryRate = 65,
+                    oxygenSaturation = 55,
+                    temperature = 37
+                )
+            )
+        )
+    )
+
+    /**
      * first: JSONArray string of [PatientAndReadings] objects
      * second: The expected [PatientAndReadings] object for the JSONArray string. The order
      * of the list corresponds to the order in the JSONArray string.
@@ -387,13 +534,15 @@ object CommonPatientReadingJsons {
 [
     ${patientWithGestAgeJsonAndExpected.first},
     ${patientNoGestAgeJsonAndExpected.first},
-    ${patientWithReferralAndFollowup.first}
+    ${patientWithReferralAndFollowup.first},
+    ${patientWithNoSymptoms.first}
 ]
         """.trimIndent(),
         second = listOf(
             patientWithGestAgeJsonAndExpected.second,
             patientNoGestAgeJsonAndExpected.second,
             patientWithReferralAndFollowup.second,
+            patientWithNoSymptoms.second
         )
     )
 }
