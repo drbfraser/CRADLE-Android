@@ -40,7 +40,8 @@ android {
         versionName "0.2.3-alpha"
 
         applicationId "com.cradleVSA.neptune"
-        minSdkVersion 17    // Android 4.2
+        // Android 5
+        minSdkVersion 21
         targetSdkVersion 29
         multiDexEnabled true
         // Set the base name for the compiled APKs.
