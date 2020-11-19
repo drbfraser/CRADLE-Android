@@ -7,6 +7,7 @@ import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.IOException
 import java.io.InputStream
+import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.zip.GZIPInputStream
@@ -30,14 +31,16 @@ class Http {
 
     /**
      * Performs a generic HTTP request with custom [InputStream] handling via
-     * [inputStreamHandler].
-     *
-     * TODO: Handle output streaming
+     * [inputStreamReader].
      *
      * @param method the request method
      * @param url where to send the request
      * @param headers HTTP headers to include with the request
-     * @param body an optional body to send along with the request. null by default
+     * @param doOutput Whether to do output. If this is true, [outputStreamWriter] should be
+     * set.
+     * @param outputSize The size of the output in bytes if known. Will be used for fixed streaming
+     * mode. If size is unknown, then leave it at the default value, which will use chunked
+     * streaming. The default value is null.
      * @param timeout the connect and read timeout; default is [DEFAULT_TIMEOUT_MILLIS]
      * @param bufferInput Whether to use a BufferedInputStream for the InputStream. For large or
      * bulk reads like a download of all patients from a server, can be faster to not buffer the
@@ -45,9 +48,11 @@ class Http {
      * @param bufferOutput Whether to use a BufferedOutputStream for the OutputStream. For bulk
      * writes like an upload of all new patients to a server, can be faster to not buffer the
      * output. For smaller writes, recommended to leave this as true. True by default.
-     * @param inputStreamHandler A function that processes the [InputStream]. If [requestWithStream]
+     * @param outputStreamWriter A lambda that handles the [OutputStream]. This MUST be supplied
+     * if [doOutput] is true. Not expected to close the given [OutputStream].
+     * @param inputStreamReader A function that processes the [InputStream]. If [requestWithStream]
      * returns a [Success], the value inside of the [Success] will be the return value of
-     * the [inputStreamHandler]. The [inputStreamHandler] is only called if the server returns a
+     * the [inputStreamReader]. The [inputStreamReader] is only called if the server returns a
      * successful response code (as defined by [SUCCESS_RANGE]). Not expected to close the given
      * [InputStream]. Note: [IOException]s will be caught by the outer function and it will return a
      * [NetworkException] as the result.
@@ -58,11 +63,13 @@ class Http {
         method: Method,
         url: String,
         headers: Map<String, String>,
-        body: ByteArray? = null,
+        doOutput: Boolean,
+        outputSize: Int? = null,
         timeout: Int = DEFAULT_TIMEOUT_MILLIS,
         bufferInput: Boolean = true,
         bufferOutput: Boolean = true,
-        crossinline inputStreamHandler: suspend (InputStream) -> T
+        crossinline outputStreamWriter: suspend (OutputStream) -> Unit,
+        crossinline inputStreamReader: suspend (InputStream) -> T
     ): NetworkResult<T> = withContext(Dispatchers.IO) {
         // The choice to use inline functions was made to reduce the overhead that
         // occurs with the lambdas. Although we run the risk of increasing the size
@@ -81,27 +88,23 @@ class Http {
 
             val message = "${method.name} $url"
             try {
-                if (body != null) {
-                    doOutput = true
-                    setFixedLengthStreamingMode(body.size)
-                    if (bufferOutput) {
-                        BufferedOutputStream(outputStream).use { it.write(body) }
-                    } else {
-                        outputStream.use { it.write(body) }
-                    }
+                if (doOutput) {
+                    setDoOutput(true)
+                    handleOutputStream(outputSize, bufferOutput, outputStreamWriter)
                 }
 
                 if (responseCode in SUCCESS_RANGE) {
                     Log.i(TAG, "$message - Success $responseCode")
-                    val returnBody = gzipInputStream(inputStream, bufferInput)!!.use {
-                        inputStreamHandler(it)
-                    }
+                    val returnBody = gzipInputStream(inputStream, bufferInput)!!
+                        .use { inputStreamReader(it) }
+
                     Success(returnBody, responseCode)
                 } else {
                     Log.e(TAG, "$message - Failure $responseCode")
-                    val responseBody = gzipInputStream(errorStream, bufferInput)?.use {
-                        it.readBytes()
-                    } ?: ByteArray(0)
+                    val responseBody = gzipInputStream(errorStream, bufferInput)
+                        ?.use { it.readBytes() }
+                        ?: ByteArray(0)
+
                     Failure(responseBody, responseCode)
                 }
             } catch (ex: IOException) {
@@ -112,52 +115,9 @@ class Http {
     }
 
     /**
-     * Sends a generic HTTP request with a JSON body and expects a JSON
-     * response.
-     *
-     * The "Content-Type application/json" header is automatically included
-     * in requests sent using this function.
-     *
-     * @param method the request method
-     * @param url where to send the request
-     * @param headers HTTP headers to include with the request
-     * @param body an optional body to send along with the request. null by default
-     * @return The result of the network request
-     * @throws java.net.MalformedURLException if [url] is malformed
-     * @throws org.json.JSONException if the response body is not JSON
-     */
-    @Deprecated(
-        message = """
-Use jsonRequestStream to avoid storing a ByteArray in memory and to avoid creating an extra String
-object of that ByteArray to create JSONArrays / JSONObjects for unmarshalling. When using
-jsonRequestStream, the caller is expected to provide code (as the inputStreamHandlerBlock lambda)
-that directly handles the InputStream from the HTTPUrlConnection.
-            """,
-        replaceWith = ReplaceWith(
-            "jsonRequestStream(method, url, headers, body, inputStreamHandler)"
-        )
-    )
-    suspend fun jsonRequest(
-        method: Method,
-        url: String,
-        headers: Map<String, String>,
-        body: Json? = null,
-        bufferInput: Boolean = true,
-        bufferOutput: Boolean = true
-    ): NetworkResult<Json> =
-        requestWithStream(
-            method = method,
-            url = url,
-            headers = headers + ("Content-Type" to "application/json"),
-            body = body?.marshal(),
-            bufferInput = bufferInput,
-            bufferOutput = bufferOutput,
-            inputStreamHandler = { inputStream -> inputStream.readBytes() }
-        ).map(Json.Companion::unmarshal)
-
-    /**
-     * Sends a generic HTTP request with an optional JSON body and expects a JSON
-     * response. The JSON response is then parsed by the [inputStreamHandler].
+     * Sends a generic HTTP request and expects a JSON response. The JSON response is then parsed
+     * by the [inputStreamReader], and then whatever the [inputStreamReader] lambda returns is
+     * returned by the function
      *
      * The "Content-Type application/json" header is automatically included
      * in requests sent using this function.
@@ -166,24 +126,29 @@ that directly handles the InputStream from the HTTPUrlConnection.
      *
      * @see requestWithStream
      */
-    suspend inline fun jsonRequestStream(
+    suspend inline fun <T> jsonRequestStream(
         method: Method,
         url: String,
         headers: Map<String, String>,
-        body: Json? = null,
+        doOutput: Boolean,
+        outputSize: Int? = null,
+        timeout: Int = DEFAULT_TIMEOUT_MILLIS,
         bufferInput: Boolean = true,
         bufferOutput: Boolean = true,
-        crossinline inputStreamHandler: suspend (InputStream) -> Unit
-    ): NetworkResult<Unit> =
-        requestWithStream(
-            method = method,
-            url = url,
-            headers = headers + ("Content-Type" to "application/json"),
-            body = body?.marshal(),
-            bufferInput = bufferInput,
-            bufferOutput = bufferOutput,
-            inputStreamHandler = inputStreamHandler
-        )
+        crossinline outputStreamWriter: suspend (OutputStream) -> Unit,
+        crossinline inputStreamReader: suspend (InputStream) -> T
+    ): NetworkResult<T> = requestWithStream(
+        method = method,
+        url = url,
+        headers = headers + ("Content-Type" to "application/json"),
+        doOutput = doOutput,
+        outputSize = outputSize,
+        timeout = timeout,
+        bufferInput = bufferInput,
+        bufferOutput = bufferOutput,
+        outputStreamWriter = outputStreamWriter,
+        inputStreamReader = inputStreamReader
+    )
 
     companion object {
         const val TAG = "HTTP"
@@ -192,6 +157,25 @@ that directly handles the InputStream from the HTTPUrlConnection.
 
         // Refer to https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
         val SUCCESS_RANGE = 200 until 300
+    }
+}
+
+suspend inline fun HttpURLConnection.handleOutputStream(
+    outputSize: Int?,
+    bufferOutput: Boolean,
+    crossinline outputStreamHandler: suspend (OutputStream) -> Unit
+) {
+    if (outputSize != null) {
+        setFixedLengthStreamingMode(outputSize)
+    } else {
+        // Use the default chunk length
+        setChunkedStreamingMode(0)
+    }
+
+    if (bufferOutput) {
+        BufferedOutputStream(outputStream).use { outputStreamHandler(it) }
+    } else {
+        outputStream.use { outputStreamHandler(it) }
     }
 }
 

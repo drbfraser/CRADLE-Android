@@ -28,7 +28,6 @@ import kotlinx.coroutines.test.TestCoroutineDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
-import org.json.JSONObject
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -112,14 +111,16 @@ internal class LoginManagerTests {
                 return@answers Failure(ByteArray(1), 401)
             }
 
-            val json = JSONObject().apply {
-                put("token", TEST_AUTH_TOKEN)
-                put("userId", TEST_USER_ID)
-                put(mockContext.getString(R.string.key_vht_name), TEST_FIRST_NAME)
-                put("healthFacilityName", TEST_USER_FACILITY_NAME)
-            }
+            val response = LoginResponse(
+                token = TEST_AUTH_TOKEN,
+                email = TEST_USER_EMAIL,
+                roles = arrayOf("VHT"),
+                userId = TEST_USER_ID,
+                firstName = TEST_FIRST_NAME,
+                healthFacilityName = TEST_USER_FACILITY_NAME
+            )
 
-            Success(json, 200)
+            Success(response, 200)
         }
 
         coEvery {

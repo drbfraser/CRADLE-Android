@@ -483,7 +483,7 @@ data class Patient(
             val id = get(PatientField.ID)!!.textValue()
             val name = get(PatientField.NAME)!!.textValue()
             val dob = get(PatientField.DOB)!!.textValue()
-            val isExactDob = get(PatientField.IS_EXACT_DOB)!!.booleanValue()
+            val isExactDob = get(PatientField.IS_EXACT_DOB)?.asBoolean(false)
 
             val gestationalAge = if (
                 has(PatientField.GESTATIONAL_AGE_UNIT.text) &&
@@ -862,20 +862,28 @@ private enum class PatientField(override val text: String) : Field {
  * @property index Index in the global search RecyclerView
  */
 @Parcelize
+@JsonDeserialize(using = GlobalPatient.Deserializer::class)
 data class GlobalPatient(
     val id: String,
-    val initials: String,
-    val villageNum: String,
+    val name: String,
+    val villageNum: String?,
     var isMyPatient: Boolean,
     var index: Int?
 ) : Parcelable {
-    companion object : Unmarshal<GlobalPatient, JSONObject> {
-        override fun unmarshal(data: JSONObject) = GlobalPatient(
-            id = data.stringField(PatientField.ID),
-            initials = data.stringField(PatientField.NAME),
-            villageNum = data.stringField(PatientField.VILLAGE_NUMBER),
-            isMyPatient = false,
-            index = null
-        )
+    class Deserializer : StdDeserializer<GlobalPatient>(GlobalPatient::class.java) {
+        override fun deserialize(p: JsonParser, ctxt: DeserializationContext): GlobalPatient {
+            p.codec.readTree<JsonNode>(p)!!.run {
+                return GlobalPatient(
+                    id = get(PatientField.ID)!!.textValue(),
+                    name = get(PatientField.NAME)!!.textValue(),
+                    villageNum = get(PatientField.VILLAGE_NUMBER)?.textValue()?.let {
+                        // server is ending back a null for this field for some patients
+                        if (it == "null") null else it
+                    },
+                    isMyPatient = false,
+                    index = null
+                )
+            }
+        }
     }
 }

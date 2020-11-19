@@ -12,6 +12,12 @@ inline fun <reified T> JsonNode.getObject(field: Field, codec: ObjectCodec): T {
     return findValue(field.text).traverse(codec).run { readValueAs(T::class.java) }
 }
 
+inline fun <reified T> JsonNode.getObjectArray(field: Field, codec: ObjectCodec): List<T> {
+    return (get(field) as ArrayNode).map { jsonNode ->
+        jsonNode.traverse(codec).readValueAs(T::class.java)
+    }
+}
+
 inline fun <reified T> JsonNode.getOptObjectArray(field: Field, codec: ObjectCodec): List<T>? {
     return (get(field) as? ArrayNode)?.map { jsonNode ->
         jsonNode.traverse(codec).readValueAs(T::class.java)

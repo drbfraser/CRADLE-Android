@@ -44,7 +44,7 @@ interface ReadingDao {
      *
      * @param reading An entity containing updated data.
      */
-    @Update(onConflict = OnConflictStrategy.REPLACE)
+    @Update
     suspend fun update(reading: Reading)
 
     /**

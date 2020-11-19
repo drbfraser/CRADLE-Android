@@ -28,8 +28,9 @@ class GlobalPatientAdapter(private val patientList: List<GlobalPatient>) :
     override fun onBindViewHolder(holder: GlobalPatientViewHolder, position: Int) {
         val globalPatient = patientList[position]
         holder.village.text = globalPatient.villageNum
+            ?: holder.itemView.context.getString(R.string.not_available_n_slash_a)
         holder.id.text = globalPatient.id
-        holder.name.text = globalPatient.initials
+        holder.name.text = globalPatient.name
         if (globalPatient.isMyPatient) {
             holder.addToMyPatientButton.background =
                 holder.addToMyPatientButton.context.resources.getDrawable(R.drawable.ic_check_circle_black_24dp)
