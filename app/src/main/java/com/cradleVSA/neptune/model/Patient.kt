@@ -19,15 +19,8 @@ import com.cradleVSA.neptune.ext.jackson.writeOptLongField
 import com.cradleVSA.neptune.ext.jackson.writeOptStringField
 import com.cradleVSA.neptune.ext.jackson.writeStringField
 import com.cradleVSA.neptune.ext.longField
-import com.cradleVSA.neptune.ext.map
-import com.cradleVSA.neptune.ext.mapField
-import com.cradleVSA.neptune.ext.optArrayField
-import com.cradleVSA.neptune.ext.optBooleanField
-import com.cradleVSA.neptune.ext.optLongField
-import com.cradleVSA.neptune.ext.optStringField
 import com.cradleVSA.neptune.ext.put
 import com.cradleVSA.neptune.ext.stringField
-import com.cradleVSA.neptune.ext.union
 import com.cradleVSA.neptune.utilitiles.Months
 import com.cradleVSA.neptune.utilitiles.Seconds
 import com.cradleVSA.neptune.utilitiles.UnixTimestamp
@@ -100,38 +93,14 @@ data class Patient(
     @ColumnInfo var medicalHistory: String = "",
     @ColumnInfo var lastEdited: Long? = null,
     @ColumnInfo var base: Long? = null
-) : Marshal<JSONObject>, Serializable, Verifiable<Patient> {
-
-    /**
-     * Constructs a [JSONObject] from this object.
-     */
-    override fun marshal(): JSONObject = with(JSONObject()) {
-        if (gestationalAge != null) {
-            union(gestationalAge)
-        }
-        put(PatientField.ID, id)
-        put(PatientField.NAME, name)
-        put(PatientField.DOB, dob)
-        put(PatientField.IS_EXACT_DOB, isExactDob)
-        put(PatientField.SEX, sex.name)
-        put(PatientField.IS_PREGNANT, isPregnant)
-        put(PatientField.ZONE, zone)
-        put(PatientField.VILLAGE_NUMBER, villageNumber)
-        put(PatientField.HOUSEHOLD_NUMBER, householdNumber)
-        // server only takes string
-        put(PatientField.DRUG_HISTORY, drugHistory)
-        put(PatientField.MEDICAL_HISTORY, medicalHistory)
-        put(PatientField.LAST_EDITED, lastEdited)
-        put(PatientField.BASE, base)
-    }
-
+) : Serializable, Verifiable<Patient> {
     override fun isValueForPropertyValid(
         property: KProperty<*>,
         value: Any?,
         context: Context
     ): Pair<Boolean, String> = isValueValid(property, value, context, instance = this)
 
-    companion object : Unmarshal<Patient, JSONObject>, Verifier<Patient> {
+    companion object : Verifier<Patient> {
         const val ID_MAX_LENGTH = 14
 
         // This group of limits are derived from the backend database setup:
@@ -396,36 +365,6 @@ data class Patient(
         }
 
         /**
-         * Constructs a [Patient] object from a [JSONObject].
-         *
-         * @param data The JSON data to unmarshal.
-         * @return A new patient.
-         *
-         * @throws JSONException If any of the required patient fields are
-         * missing from [data].
-         *
-         * @throws IllegalArgumentException If the value for an enum field
-         * cannot be converted into said enum.
-         */
-        override fun unmarshal(data: JSONObject): Patient = Patient().apply {
-            id = data.optStringField(PatientField.ID) ?: ""
-            name = data.optStringField(PatientField.NAME) ?: ""
-            dob = data.optStringField(PatientField.DOB)
-            isExactDob = data.optBooleanField(PatientField.IS_EXACT_DOB)
-            gestationalAge = maybeUnmarshal(GestationalAge, data)
-            sex = data.mapField(PatientField.SEX, Sex::valueOf)
-            isPregnant = data.optBooleanField(PatientField.IS_PREGNANT)
-            zone = data.optStringField(PatientField.ZONE)
-            villageNumber = data.optStringField(PatientField.VILLAGE_NUMBER)
-            householdNumber = data.optStringField(PatientField.HOUSEHOLD_NUMBER)
-            // Server returns a String for drug and medical histories.
-            drugHistory = data.optStringField(PatientField.DRUG_HISTORY) ?: ""
-            medicalHistory = data.optStringField(PatientField.MEDICAL_HISTORY) ?: ""
-            lastEdited = data.optLongField(PatientField.LAST_EDITED)
-            base = data.optLongField(PatientField.BASE)
-        }
-
-        /**
          * Given a date string of the from specified by [DOB_FORMAT_SIMPLEDATETIME], returns the
          * age. This logic is the same logic that is used in the frontend
          *
@@ -448,14 +387,8 @@ data class Patient(
     }
 
     object Serializer : StdSerializer<Patient>(Patient::class.java) {
-        override fun serialize(
-            patient: Patient,
-            gen: JsonGenerator,
-            provider: SerializerProvider
-        ) {
+        fun write(patient: Patient, gen: JsonGenerator) {
             patient.run {
-                gen.writeStartObject()
-
                 gen.writeStringField(PatientField.ID, id)
                 gen.writeStringField(PatientField.NAME, name)
                 gen.writeStringField(PatientField.DOB, dob!!)
@@ -472,14 +405,22 @@ data class Patient(
                 gen.writeOptStringField(PatientField.MEDICAL_HISTORY, medicalHistory)
                 gen.writeOptLongField(PatientField.LAST_EDITED, lastEdited)
                 gen.writeOptLongField(PatientField.BASE, base)
-
-                gen.writeEndObject()
             }
+        }
+
+        override fun serialize(
+            patient: Patient,
+            gen: JsonGenerator,
+            provider: SerializerProvider
+        ) {
+            gen.writeStartObject()
+            write(patient, gen)
+            gen.writeEndObject()
         }
     }
 
     object Deserializer : StdDeserializer<Patient>(Patient::class.java) {
-        fun deserialize(jsonNode: JsonNode): Patient = jsonNode.run {
+        fun get(jsonNode: JsonNode): Patient = jsonNode.run {
             val id = get(PatientField.ID)!!.textValue()
             val name = get(PatientField.NAME)!!.textValue()
             val dob = get(PatientField.DOB)!!.textValue()
@@ -524,7 +465,7 @@ data class Patient(
 
         override fun deserialize(parser: JsonParser, ctxt: DeserializationContext): Patient =
             parser.codec.readTree<JsonNode>(parser).run {
-                return deserialize(this)
+                return get(this)
             }
     }
 }
@@ -537,7 +478,7 @@ data class Patient(
  */
 @JsonSerialize(using = PatientAndReadings.Serializer::class)
 @JsonDeserialize(using = PatientAndReadings.Deserializer::class)
-class PatientAndReadings() : Marshal<JSONObject> {
+class PatientAndReadings() {
     @Embedded
     lateinit var patient: Patient
 
@@ -552,32 +493,6 @@ class PatientAndReadings() : Marshal<JSONObject> {
         this.readings = readings
     }
 
-    /**
-     * Marshals this patient and its readings into a single JSON object.
-     *
-     * All of the patient fields can be found at the top level of the object
-     * with the readings being nested under the "readings" field.
-     *
-     * @return A JSON object
-     */
-    override fun marshal() = with(JSONObject()) {
-        union(patient)
-        put(PatientField.READINGS, readings)
-    }
-
-    companion object : Unmarshal<PatientAndReadings, JSONObject> {
-        /**
-         * Converts a JSON object into a patient and list of readings.
-         */
-        override fun unmarshal(data: JSONObject): PatientAndReadings {
-            val patient = Patient.unmarshal(data)
-            val readings = data.optArrayField(PatientField.READINGS)
-                ?.map({ arr, i -> arr.getJSONObject(i) }, Reading.Companion::unmarshal)
-                ?: emptyList()
-            return PatientAndReadings(patient, readings)
-        }
-    }
-
     class Serializer : StdSerializer<PatientAndReadings>(PatientAndReadings::class.java) {
         override fun serialize(
             patientAndReadings: PatientAndReadings,
@@ -586,7 +501,7 @@ class PatientAndReadings() : Marshal<JSONObject> {
         ) {
             patientAndReadings.run {
                 gen.writeStartObject()
-                gen.writeObject(patient)
+                Patient.Serializer.write(patientAndReadings.patient, gen)
                 gen.writeObjectField(PatientField.READINGS, readings)
                 gen.writeEndObject()
             }
@@ -598,7 +513,7 @@ class PatientAndReadings() : Marshal<JSONObject> {
             p: JsonParser,
             ctxt: DeserializationContext
         ): PatientAndReadings = p.codec.readTree<JsonNode>(p)!!.run {
-            val patient = Patient.Deserializer.deserialize(this)
+            val patient = Patient.Deserializer.get(this)
             val readings = getOptObjectArray<Reading>(PatientField.READINGS, p.codec) ?: emptyList()
             return PatientAndReadings(patient, readings)
         }

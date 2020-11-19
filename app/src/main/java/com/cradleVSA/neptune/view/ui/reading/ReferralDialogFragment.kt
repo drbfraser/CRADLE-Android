@@ -25,6 +25,7 @@ import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.binding.FragmentDataBindingComponent
 import com.cradleVSA.neptune.databinding.ReferralDialogBinding
 import com.cradleVSA.neptune.model.PatientAndReadings
+import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
 import com.cradleVSA.neptune.view.ReadingActivity
 import com.cradleVSA.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity
 import com.cradleVSA.neptune.viewmodel.PatientReadingViewModel
@@ -178,9 +179,10 @@ class ReferralDialogFragment : DialogFragment() {
                 selectedHealthFacilityName
             )
         val id = UUID.randomUUID().toString()
+        val writer = JacksonMapper.createWriter<PatientAndReadings>()
         val json = with(JSONObject()) {
             put("referralId", id)
-            put("patient", patientAndReadings.marshal())
+            put("patient", writer.writeValueAsString(patientAndReadings))
         }
         val phoneNumber = selectedHealthFacility.phoneNumber
         val uri = Uri.parse("smsto:$phoneNumber")

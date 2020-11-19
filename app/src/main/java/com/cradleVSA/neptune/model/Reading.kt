@@ -21,19 +21,11 @@ import com.cradleVSA.neptune.ext.jackson.writeOptIntField
 import com.cradleVSA.neptune.ext.jackson.writeOptLongField
 import com.cradleVSA.neptune.ext.jackson.writeOptObjectField
 import com.cradleVSA.neptune.ext.jackson.writeStringField
-import com.cradleVSA.neptune.ext.longField
-import com.cradleVSA.neptune.ext.map
-import com.cradleVSA.neptune.ext.optArrayField
 import com.cradleVSA.neptune.ext.optBooleanField
 import com.cradleVSA.neptune.ext.optDoubleField
-import com.cradleVSA.neptune.ext.optIntField
 import com.cradleVSA.neptune.ext.optLongField
-import com.cradleVSA.neptune.ext.optObjectField
 import com.cradleVSA.neptune.ext.optStringField
 import com.cradleVSA.neptune.ext.put
-import com.cradleVSA.neptune.ext.putStringArray
-import com.cradleVSA.neptune.ext.stringField
-import com.cradleVSA.neptune.ext.union
 import com.cradleVSA.neptune.utilitiles.nullIfEmpty
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParser
@@ -44,8 +36,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
-import org.json.JSONArray
-import org.json.JSONException
 import org.json.JSONObject
 import org.threeten.bp.ZonedDateTime
 import java.io.Serializable
@@ -132,7 +122,7 @@ data class Reading(
 
     @ColumnInfo var metadata: ReadingMetadata = ReadingMetadata(),
     @ColumnInfo var isUploadedToServer: Boolean = false
-) : Serializable, Marshal<JSONObject>, Verifiable<Reading> {
+) : Serializable, Verifiable<Reading> {
 
     /**
      * True if this reading has a referral attached to it.
@@ -176,26 +166,6 @@ data class Reading(
         value: Any?,
         context: Context
     ): Pair<Boolean, String> = isValueValid(property, value, context)
-
-    /**
-     * Converts this [Reading] object into a [JSONObject].
-     */
-    override fun marshal(): JSONObject = with(JSONObject()) {
-        put(ReadingField.ID, id)
-        put(ReadingField.PATIENT_ID, patientId)
-        put(ReadingField.DATE_TIME_TAKEN, dateTimeTaken)
-        union(bloodPressure)
-        put(ReadingField.DATE_RECHECK_VITALS_NEEDED, dateRecheckVitalsNeeded)
-        put(ReadingField.IS_FLAGGED_FOR_FOLLOWUP, isFlaggedForFollowUp)
-        putStringArray(ReadingField.SYMPTOMS, symptoms)
-        put(ReadingField.REFERRAL, referral)
-        put(ReadingField.FOLLOWUP, followUp)
-        put(ReadingField.RESPIRATORY_RATE, respiratoryRate)
-        put(ReadingField.OXYGEN_SATURATION, oxygenSaturation)
-        put(ReadingField.TEMPERATURE, temperature)
-        put(ReadingField.URINE_TEST, urineTest)
-        put(ReadingField.PREVIOUS_READING_IDS, previousReadingIds.joinToString(","))
-    }
 
     class Serializer : StdSerializer<Reading>(Reading::class.java) {
         override fun serialize(
@@ -277,7 +247,7 @@ data class Reading(
             }
     }
 
-    companion object : Unmarshal<Reading, JSONObject>, Verifier<Reading> {
+    companion object : Verifier<Reading> {
         private const val RESPIRATORY_RATE_MIN = 0
         private const val RESPIRATORY_RATE_MAX = 120
         private const val OXYGEN_SATURATION_MIN = 0
@@ -341,44 +311,6 @@ data class Reading(
             Reading::urineTest -> Pair(true, "")
             else -> Pair(true, "")
         }
-
-        /**
-         * Constructs a [Reading] object form a [JSONObject].
-         *
-         * @throws JSONException if any required fields are missing.
-         */
-        override fun unmarshal(data: JSONObject) = Reading(
-            id = data.stringField(ReadingField.ID),
-            patientId = data.stringField(ReadingField.PATIENT_ID),
-            dateTimeTaken = data.longField(ReadingField.DATE_TIME_TAKEN),
-            bloodPressure = BloodPressure.unmarshal(data),
-            dateRecheckVitalsNeeded = data.optLongField(ReadingField.DATE_RECHECK_VITALS_NEEDED),
-            isFlaggedForFollowUp = data.optBooleanField(ReadingField.IS_FLAGGED_FOR_FOLLOWUP),
-
-            symptoms = data.optArrayField(ReadingField.SYMPTOMS)
-                ?.map(JSONArray::getString) { it }
-                ?: emptyList(),
-
-            referral = data.optObjectField(ReadingField.REFERRAL)
-                ?.let(Referral.Companion::unmarshal),
-
-            followUp = data.optObjectField(ReadingField.FOLLOWUP)
-                ?.let(Assessment.Companion::unmarshal),
-
-            respiratoryRate = data.optIntField(ReadingField.RESPIRATORY_RATE),
-            oxygenSaturation = data.optIntField(ReadingField.OXYGEN_SATURATION),
-            temperature = data.optIntField(ReadingField.TEMPERATURE),
-
-            urineTest = data.optObjectField(ReadingField.URINE_TEST)
-                ?.let(UrineTest.FromJson::unmarshal),
-
-            previousReadingIds = data.optStringField(ReadingField.PREVIOUS_READING_IDS)
-                ?.ifBlank { null }
-                ?.split(',')
-                ?: emptyList(),
-
-            metadata = ReadingMetadata()
-        )
     }
 
     object AscendingDataComparator : Comparator<Reading> {

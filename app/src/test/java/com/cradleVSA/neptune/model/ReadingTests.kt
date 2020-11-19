@@ -7,14 +7,6 @@ import java.util.UUID
 
 class ReadingTests {
     @Test
-    fun unmarshal_isTheInverseOf_marshal() {
-        val reading = createTestReading()
-        val json = reading.marshal()
-        val actual = unmarshal(Reading, json)
-        assertEquals(reading, actual)
-    }
-
-    @Test
     fun reading_jackson_serializeAndDeserialize() {
         val reading = createTestReading()
 

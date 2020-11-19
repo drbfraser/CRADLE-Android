@@ -13,9 +13,7 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.verify
 import io.mockk.verifyOrder
-import org.json.JSONObject
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -61,31 +59,23 @@ class PatientTests {
             CommonPatientReadingJsons.patientWithReferralAndFollowup
         ).map { it.first to it.second.patient }
 
-        for ((jsonString, expectedPatient) in possiblePairsToTest) {
+        for ((jsonStringOfPatientAndReadings, expectedPatient) in possiblePairsToTest) {
             val reader = JacksonMapper.readerForPatient
-            val parsedPatient = reader.readValue<Patient>(jsonString)
+            val parsedPatient = reader.readValue<Patient>(jsonStringOfPatientAndReadings)
             assertEquals(expectedPatient, parsedPatient)
 
             val writer = JacksonMapper.writerForPatient
-            val serialized = writer.writeValueAsString(parsedPatient)
+            val serializePatientAndReadings = writer.writeValueAsString(parsedPatient)
 
-            val expectedJson = parsedPatient.marshal()
-            val actualJson = JSONObject(serialized)
-            assertEquals(expectedJson.length(), actualJson.length()) {
-                "number of keys differ from expected\n" +
-                    "expected JSON: $expectedJson\n" +
-                    "actual JSON: $actualJson"
-            }
-            expectedJson.keys().forEach {
-                assertEquals(expectedJson.get(it).toString(), actualJson.get(it).toString()) {
-                    "key $it was different"
-                }
-            }
+            assertPatientJsonEqual(
+                jsonStringForExpected = jsonStringOfPatientAndReadings,
+                jsonStringForActual = serializePatientAndReadings
+            )
         }
     }
 
     @Test
-    fun unmarshal_isTheInverseOf_marshal() {
+    fun deserialize_isTheInverseOf_serialize() {
         val patient = Patient(
             id = "5414842504",
             name = "AB",
@@ -101,8 +91,11 @@ class PatientTests {
             medicalHistory = ""
         )
 
-        val json = patient.marshal()
-        val actual = unmarshal(Patient, json)
+        val writer = JacksonMapper.createWriter<Patient>()
+        val json = writer.writeValueAsString(patient)
+
+        val reader = JacksonMapper.createReader<Patient>()
+        val actual = reader.readValue<Patient>(json)
         assertEquals(patient, actual)
     }
 
@@ -127,15 +120,20 @@ class PatientTests {
         val patient = Patient(
             id = patientId,
             name = "AB",
-            dob = null,
+            dob = "1989-11-11",
+            isExactDob = false,
             sex = Sex.FEMALE,
             isPregnant = false
         )
         val patientAndReadings = PatientAndReadings(patient, listOf("a", "b", "c").map(makeReading))
 
-        val json = patientAndReadings.marshal()
-        assertTrue(json.has("readings"))
-        assertEquals(3, json.getJSONArray("readings").length())
+        val writer = JacksonMapper.createWriter<PatientAndReadings>()
+        val json = writer.writeValueAsString(patientAndReadings)
+
+        val reader = JacksonMapper.createReader<PatientAndReadings>()
+        val actual = reader.readValue<PatientAndReadings>(json)
+        assertEquals(patientAndReadings.patient, actual.patient)
+        assertEquals(patientAndReadings.readings, actual.readings)
     }
 
     @Test
