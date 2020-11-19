@@ -43,7 +43,6 @@ android {
         // Android 5
         minSdkVersion 21
         targetSdkVersion 29
-        multiDexEnabled true
         // Set the base name for the compiled APKs.
         project.ext.set("archivesBaseName", "CRADLE");
 
@@ -145,8 +144,6 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.3.0'
 
     implementation 'com.github.MikeOrtiz:TouchImageView:3.0.1'
-
-    implementation 'androidx.multidex:multidex:2.0.1'
 
     implementation "com.google.dagger:hilt-android:$hilt_version"
     kapt "com.google.dagger:hilt-android-compiler:$hilt_version"

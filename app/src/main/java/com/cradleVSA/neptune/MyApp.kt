@@ -1,10 +1,10 @@
 package com.cradleVSA.neptune
 
 import android.app.Activity
+import android.app.Application
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.util.Log
-import androidx.multidex.MultiDexApplication
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.wonderkiln.blurkit.BlurKit
 import dagger.hilt.android.HiltAndroidApp
@@ -17,7 +17,7 @@ import kotlinx.coroutines.Dispatchers
  */
 @Suppress("EmptyFunctionBlock")
 @HiltAndroidApp
-class MyApp : MultiDexApplication() {
+class MyApp : Application() {
     var isDisableBlurKit = false
 
     /**
