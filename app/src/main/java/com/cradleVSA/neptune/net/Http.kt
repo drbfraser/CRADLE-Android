@@ -90,6 +90,8 @@ class Http {
             try {
                 if (doOutput) {
                     setDoOutput(true)
+                    // This will handle choosing between fixed-length and chunked streaming modes,
+                    // buffering, and getting the outputStreamWriter to write to the OutputStream
                     handleOutputStream(outputSize, bufferOutput, outputStreamWriter)
                 }
 

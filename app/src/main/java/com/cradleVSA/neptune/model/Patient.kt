@@ -423,7 +423,7 @@ data class Patient(
         fun get(jsonNode: JsonNode): Patient = jsonNode.run {
             val id = get(PatientField.ID)!!.textValue()
             val name = get(PatientField.NAME)!!.textValue()
-            val dob = get(PatientField.DOB)!!.textValue()
+            val dob = get(PatientField.DOB)?.textValue()
             val isExactDob = get(PatientField.IS_EXACT_DOB)?.asBoolean(false)
 
             val gestationalAge = if (

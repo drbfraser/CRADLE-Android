@@ -57,7 +57,7 @@ class RestApi @Inject constructor(
                 inputStreamReader = { stream ->
                     JacksonMapper.createReader<LoginResponse>().readValue<LoginResponse>(stream)
                 }
-            ).map { it!! }
+            )
         }
 
     /**
@@ -114,7 +114,7 @@ class RestApi @Inject constructor(
                 inputStreamReader = {
                     JacksonMapper.readerForPatientAndReadings.readValue<PatientAndReadings>(it)
                 }
-            ).map { it!! }
+            )
         }
 
     /**
@@ -134,7 +134,7 @@ class RestApi @Inject constructor(
                 doOutput = false,
                 outputStreamWriter = {},
                 inputStreamReader = { JacksonMapper.readerForPatient.readValue<Patient>(it) }
-            ).map { it!! }
+            )
         }
 
     /**
@@ -157,7 +157,7 @@ class RestApi @Inject constructor(
                     JacksonMapper.createGlobalPatientsListReader()
                         .readValue<List<GlobalPatient>>(it)
                 }
-            ).map { it }
+            )
         }
 
     /**
@@ -175,7 +175,7 @@ class RestApi @Inject constructor(
                 doOutput = false,
                 outputStreamWriter = {},
                 inputStreamReader = { JacksonMapper.readerForReading.readValue<Reading>(it) }
-            ).map { it }
+            )
         }
 
     /**
@@ -195,7 +195,7 @@ class RestApi @Inject constructor(
                 inputStreamReader = {
                     JacksonMapper.createReader<Assessment>().readValue<Assessment>(it)
                 }
-            ).map { it!! }
+            )
         }
 
     /**
@@ -226,7 +226,7 @@ class RestApi @Inject constructor(
                 inputStreamReader = { input ->
                     JacksonMapper.readerForPatientAndReadings.readValue<PatientAndReadings>(input)
                 },
-            ).map { it!! }
+            )
         }
 
     /**
@@ -270,7 +270,7 @@ class RestApi @Inject constructor(
                 inputStreamReader = { input ->
                     JacksonMapper.readerForReading.readValue<Reading>(input)
                 },
-            ).map { it!! }
+            )
         }
 
     /**
@@ -334,8 +334,6 @@ class RestApi @Inject constructor(
      */
     suspend fun getUpdates(lastSyncTimestamp: Long): NetworkResult<SyncUpdate> =
         withContext(IO) {
-            val reader = JacksonMapper.readerForSyncUpdate
-            var syncUpdate: SyncUpdate? = null
             http.jsonRequestStream(
                 method = Http.Method.GET,
                 url = urlManager.getUpdates(lastSyncTimestamp),
@@ -343,9 +341,9 @@ class RestApi @Inject constructor(
                 doOutput = false,
                 // Bulk input; don't bother buffering
                 bufferInput = false,
-                inputStreamReader = { syncUpdate = reader.readValue(it) },
+                inputStreamReader = { JacksonMapper.readerForSyncUpdate.readValue<SyncUpdate>(it) },
                 outputStreamWriter = {}
-            ).map { syncUpdate!! }
+            )
         }
 
     /**
