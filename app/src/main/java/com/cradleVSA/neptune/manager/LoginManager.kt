@@ -7,7 +7,6 @@ import androidx.core.content.edit
 import androidx.room.withTransaction
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.database.CradleDatabase
-import com.cradleVSA.neptune.ext.jackson.parseJsonArrayFromStream
 import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.PatientAndReadings
 import com.cradleVSA.neptune.net.Failure
@@ -129,15 +128,17 @@ class LoginManager @Inject constructor(
                 // dealing with a ByteArray of an entire JSON array in memory and trying to convert
                 // that into a String.
                 val reader = JacksonMapper.readerForPatientAndReadings
-                reader.parseJsonArrayFromStream(inputStream) { parser ->
-                    try {
-                        val patientAndReadings = reader.readValue<PatientAndReadings>(parser)
-                        channel.send(patientAndReadings)
-                    } catch (e: IOException) {
-                        Log.e(TAG, "failed to parse JSON for patients and readings", e)
-                        // Propagate exceptions to the Http class so that it can log it
-                        throw e
+                try {
+                    reader.readValues<PatientAndReadings>(inputStream).use { iterator ->
+                        // Using Kotlin's forEach syntax results in a RuntimeException being thrown.
+                        while (iterator.hasNextValue()) {
+                            channel.send(iterator.nextValue())
+                        }
                     }
+                } catch (e: IOException) {
+                    Log.e(TAG, "exception while reading patients", e)
+                    // Propagate exceptions to the Http class so that it can log it
+                    throw e
                 }
             }
 
@@ -195,15 +196,17 @@ class LoginManager @Inject constructor(
             }
             val result = restApi.getAllHealthFacilities { inputStream ->
                 val reader = JacksonMapper.readerForHealthFacility
-                reader.parseJsonArrayFromStream(inputStream) { parser ->
-                    try {
-                        val healthFacility = reader.readValue<HealthFacility>(parser)
-                        channel.send(healthFacility)
-                    } catch (e: IOException) {
-                        Log.e(TAG, "failed to parse JSON for health facility", e)
-                        // Propagate exceptions to the Http class so that it can log it
-                        throw e
+                try {
+                    reader.readValues<HealthFacility>(inputStream).use { iterator ->
+                        // Using Kotlin's forEach syntax results in a RuntimeException being thrown.
+                        while (iterator.hasNextValue()) {
+                            channel.send(iterator.nextValue())
+                        }
                     }
+                } catch (e: IOException) {
+                    Log.e(TAG, "exception while reading health facilities", e)
+                    // Propagate exceptions to the Http class so that it can log it
+                    throw e
                 }
             }
 

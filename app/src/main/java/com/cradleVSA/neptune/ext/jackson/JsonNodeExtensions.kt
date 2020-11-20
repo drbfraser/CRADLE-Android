@@ -41,7 +41,10 @@ internal inline fun <reified T> JsonNode.getOptObjectArray(
         // The current token is START_ARRAY
         parser.nextToken()
         // We can use readValuesAs now.
-        parser.readValuesAs(T::class.java).forEach { list.add(it) }
+        val iterator = parser.readValuesAs(T::class.java)
+        while (iterator.hasNext()) {
+            list.add(iterator.next())
+        }
     }
     return list
 }

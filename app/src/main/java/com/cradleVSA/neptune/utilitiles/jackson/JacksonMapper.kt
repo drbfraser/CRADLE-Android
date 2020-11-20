@@ -21,9 +21,7 @@ object JacksonMapper {
      */
     @PublishedApi
     @VisibleForTesting
-    internal val mapper by lazy {
-        jacksonObjectMapper()
-    }
+    internal val mapper by lazy { jacksonObjectMapper() }
 
     inline fun <reified T> createReader(): ObjectReader = mapper.readerFor(T::class.java)
 
