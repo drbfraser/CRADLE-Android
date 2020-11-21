@@ -97,20 +97,21 @@ class Http {
 
                 if (responseCode in SUCCESS_RANGE) {
                     Log.i(TAG, "$message - Success $responseCode")
-                    val returnBody = gzipInputStream(inputStream, bufferInput)!!
+                    val returnBody = gzipInputStream(inputStream, bufferInput)
                         .use { inputStreamReader(it) }
 
                     Success(returnBody, responseCode)
                 } else {
                     Log.e(TAG, "$message - Failure $responseCode")
-                    val responseBody = gzipInputStream(errorStream, bufferInput)
+                    // The errorStream can be null (e.g., server sends no error data)
+                    val responseBody = errorStream?.let { gzipInputStream(it, bufferInput) }
                         ?.use { it.readBytes() }
                         ?: ByteArray(0)
 
                     Failure(responseBody, responseCode)
                 }
             } catch (ex: IOException) {
-                Log.e(TAG, "$message - Exception", ex)
+                Log.e(TAG, "$message - IOException", ex)
                 NetworkException(ex)
             }
         }
@@ -195,15 +196,12 @@ private const val DEFAULT_GZIP_BUFFER_SIZE = 8 * 1024
  * the network connections in Profiler in Android Studio without this function. So we have to handle
  * this for [HttpsURLConnection]. We obviously can't assume that we will be using plaintext HTTP.
  */
-fun HttpURLConnection.gzipInputStream(stream: InputStream?, shouldBuffer: Boolean): InputStream? =
+fun HttpURLConnection.gzipInputStream(stream: InputStream, shouldBuffer: Boolean): InputStream =
     when {
-        stream == null -> {
-            null
-        }
         "gzip".equals(contentEncoding, ignoreCase = true) -> {
             GZIPInputStream(stream, DEFAULT_GZIP_BUFFER_SIZE)
         }
         else -> {
             stream
         }
-    }?.let { returnStream -> if (shouldBuffer) BufferedInputStream(returnStream) else returnStream }
+    }.let { returnStream -> if (shouldBuffer) BufferedInputStream(returnStream) else returnStream }
