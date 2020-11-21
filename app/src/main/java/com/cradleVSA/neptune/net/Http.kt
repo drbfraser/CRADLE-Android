@@ -195,6 +195,12 @@ private const val DEFAULT_GZIP_BUFFER_SIZE = 8 * 1024
  * http://andrewt.com/2014/09/01/android-enabling-gzip-compression-over-https.html or try viewing
  * the network connections in Profiler in Android Studio without this function. So we have to handle
  * this for [HttpsURLConnection]. We obviously can't assume that we will be using plaintext HTTP.
+ *
+ * Note on BREACH attack (http://www.breachattack.com), a vulnerability involving HTTP compression
+ * and TLS: Doesn't seem relevant for the Android app. Also, backend doesn't include any tokens in
+ * HTTP responses (other than the user/auth endpoint).
+ * https://resources.infosecinstitute.com/topic/the-breach-attack/
+ * https://security.stackexchange.com/questions/172581/to-avoid-breach-can-we-use-gzip-on-non-token-responses
  */
 fun HttpURLConnection.gzipInputStream(stream: InputStream, shouldBuffer: Boolean): InputStream =
     when {
