@@ -7,6 +7,7 @@ import androidx.core.content.edit
 import androidx.room.withTransaction
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.database.CradleDatabase
+import com.cradleVSA.neptune.ext.jackson.forEachJackson
 import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.PatientAndReadings
 import com.cradleVSA.neptune.net.Failure
@@ -130,10 +131,7 @@ class LoginManager @Inject constructor(
                 val reader = JacksonMapper.readerForPatientAndReadings
                 try {
                     reader.readValues<PatientAndReadings>(inputStream).use { iterator ->
-                        // Using Kotlin's forEach syntax results in a RuntimeException being thrown.
-                        while (iterator.hasNextValue()) {
-                            channel.send(iterator.nextValue())
-                        }
+                        iterator.forEachJackson { channel.send(it) }
                     }
                 } catch (e: IOException) {
                     Log.e(TAG, "exception while reading patients", e)
@@ -198,10 +196,7 @@ class LoginManager @Inject constructor(
                 val reader = JacksonMapper.readerForHealthFacility
                 try {
                     reader.readValues<HealthFacility>(inputStream).use { iterator ->
-                        // Using Kotlin's forEach syntax results in a RuntimeException being thrown.
-                        while (iterator.hasNextValue()) {
-                            channel.send(iterator.nextValue())
-                        }
+                        iterator.forEachJackson { channel.send(it) }
                     }
                 } catch (e: IOException) {
                     Log.e(TAG, "exception while reading health facilities", e)

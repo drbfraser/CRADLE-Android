@@ -146,7 +146,7 @@ internal class LoginManagerTests {
             val jsonStream = if (streamingWillSucceed) {
                 json.byteInputStream()
             } else {
-                "${json.substring(0, json.length / 2)} a})".byteInputStream()
+                "${json.substring(0, json.length / 2)} a}})".byteInputStream()
             }
 
             // Simulate Http class catching IOExceptions

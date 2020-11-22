@@ -1,5 +1,6 @@
 package com.cradleVSA.neptune.utilities.jackson
 
+import com.cradleVSA.neptune.ext.jackson.forEachJackson
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -34,6 +35,24 @@ internal class ObjectReaderTest {
             val iterator = reader.readValues<TestHealthFacility>(notArrayStream)
             while (iterator.hasNextValue()) {
                 healthFacilities.add(iterator.nextValue())
+            }
+        }
+
+        val anotherNotArray = "{\"location\": \"Sample Location\","
+
+        // Do NOT use Kotlin's forEach extension function. Kotlin's forEach calls the
+        // MappingIterator's next() function instead of hasNextValue(), and the next()
+        // function throws JsonEOFException wrapped in a RuntimeException.
+        assertThrows(RuntimeException::class.java) {
+            reader.readValues<TestHealthFacility>(anotherNotArray.encodeToByteArray()).forEach {
+                healthFacilities.add(it)
+            }
+        }
+
+        // Use the fixed version, forEachJackson, instead, which throws checked exceptions.
+        assertThrows(IOException::class.java) {
+            reader.readValues<TestHealthFacility>(anotherNotArray.encodeToByteArray()).forEachJackson {
+                healthFacilities.add(it)
             }
         }
     }
