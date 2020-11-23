@@ -33,7 +33,6 @@ import com.google.crypto.tink.daead.AesSivKeyManager;
 import com.google.crypto.tink.daead.DeterministicAeadConfig;
 import com.google.crypto.tink.subtle.Base64;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
@@ -100,7 +99,6 @@ public final class EncryptedSharedPreferencesCustom implements SharedPreferences
      * @param prefValueEncryptionScheme The scheme to use for encrypting values.
      * @return The SharedPreferences instance that encrypts all data.
      * @throws GeneralSecurityException when a bad master key or keyset has been attempted
-     * @throws IOException              when fileName can not be used
      */
     @NonNull
     public static SharedPreferences create(@NonNull String fileName,

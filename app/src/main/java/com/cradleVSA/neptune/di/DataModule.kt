@@ -2,7 +2,7 @@ package com.cradleVSA.neptune.di
 
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.preference.PreferenceManager
+import com.cradleVSA.neptune.cryptography.EncryptedSharedPreferencesCustom
 import com.cradleVSA.neptune.database.CradleDatabase
 import com.cradleVSA.neptune.database.daos.HealthFacilityDao
 import com.cradleVSA.neptune.database.daos.PatientDao
@@ -69,7 +69,12 @@ class DataModule {
     @Provides
     @Singleton
     fun providesSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
-        return PreferenceManager.getDefaultSharedPreferences(context)
+        return EncryptedSharedPreferencesCustom.create(
+            "shared-pref-encrypted",
+            context,
+            EncryptedSharedPreferencesCustom.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferencesCustom.PrefValueEncryptionScheme.AES256_GCM
+        )
     }
 
     @Provides
