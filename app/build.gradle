@@ -165,6 +165,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.3'
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.11.3"
 
+    implementation "com.squareup.okhttp3:okhttp:4.9.0"
+
     // Time: Backport of Java 8's interfaces for Android
     // https://github.com/JakeWharton/ThreeTenABP
     implementation 'com.jakewharton.threetenabp:threetenabp:1.2.4'
