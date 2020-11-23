@@ -26,6 +26,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.IOException
 import java.net.HttpURLConnection.HTTP_OK
@@ -63,6 +65,8 @@ class LoginManager @Inject constructor(
         return true
     }
 
+    private val loginMutex = Mutex()
+
     /**
      * Performs the complete login sequence required to log a user in and
      * initialize the application for use.
@@ -79,166 +83,174 @@ class LoginManager @Inject constructor(
         password: String,
         parallelDownload: Boolean = true
     ) = withContext(Dispatchers.Default) {
-        // Send a request to the authentication endpoint to login
-        //
-        // If we failed to login, return immediately
-        val loginResult = restApi.authenticate(email, password)
-        when (loginResult) {
-            is Success -> {
-                val (token, userId) = loginResult.value.token to loginResult.value.userId
-                val name = loginResult.value.firstName?.nullIfEmpty()
-
-                sharedPreferences.edit(commit = true) {
-                    putString(TOKEN_KEY, token)
-                    putInt(USER_ID_KEY, userId)
-                    putString(EMAIL_KEY, email)
-                    putString(context.getString(R.string.key_vht_name), name)
-                    putInt(
-                        SharedPreferencesMigration.KEY_SHARED_PREFERENCE_VERSION,
-                        SharedPreferencesMigration.LATEST_SHARED_PREF_VERSION
-                    )
-                }
+        // Prevent logging in twice
+        loginMutex.withLock {
+            if (isLoggedIn()) {
+                Log.w(TAG, "trying to login twice!")
+                return@withContext NetworkException(Exception("already logged in"))
             }
-            else -> return@withContext loginResult.cast()
-        }
 
-        // Once successfully logged in, download the user's patients and health
-        // facilities in parallel.
-        // We will use this later as the last synced timestamp.
-        val loginTime = UnixTimestamp.now
+            // Send a request to the authentication endpoint to login
+            //
+            // If we failed to login, return immediately
+            val loginResult = restApi.authenticate(email, password)
+            when (loginResult) {
+                is Success -> {
+                    val (token, userId) = loginResult.value.token to loginResult.value.userId
+                    val name = loginResult.value.firstName?.nullIfEmpty()
 
-        val patientsResultAsync = async {
-            val startTime = System.currentTimeMillis()
-
-            val channel = Channel<PatientAndReadings>()
-            val databaseJob = launch {
-                database.withTransaction {
-                    for (patientAndReadings in channel) {
-                        patientManager.addPatientWithReadings(
-                            patientAndReadings.patient,
-                            patientAndReadings.readings,
-                            areReadingsFromServer = true,
-                            isPatientNew = true
+                    sharedPreferences.edit(commit = true) {
+                        putString(TOKEN_KEY, token)
+                        putInt(USER_ID_KEY, userId)
+                        putString(EMAIL_KEY, email)
+                        putString(context.getString(R.string.key_vht_name), name)
+                        putInt(
+                            SharedPreferencesMigration.KEY_SHARED_PREFERENCE_VERSION,
+                            SharedPreferencesMigration.LATEST_SHARED_PREF_VERSION
                         )
                     }
-                    Log.d(TAG, "patient & reading database job is done")
                 }
-            }
-            val result = restApi.getAllPatientsStreaming { inputStream ->
-                // Parse JSON strings directly from the HTTPUrlConnection's input stream to avoid
-                // dealing with a ByteArray of an entire JSON array in memory and trying to convert
-                // that into a String.
-                val reader = JacksonMapper.readerForPatientAndReadings
-                try {
-                    reader.readValues<PatientAndReadings>(inputStream).use { iterator ->
-                        iterator.forEachJackson { channel.send(it) }
-                    }
-                } catch (e: IOException) {
-                    Log.e(TAG, "exception while reading patients", e)
-                    // Propagate exceptions to the Http class so that it can log it
-                    throw e
-                }
+                else -> return@withContext loginResult.cast()
             }
 
-            when (result) {
-                is Success -> {
-                    channel.close()
-                    Log.d(TAG, "Patient and readings download successful!")
-                }
-                is Failure -> {
-                    channel.cancel()
-                    Log.e(
-                        TAG,
-                        "Patient and readings download failed, got status code: " +
-                            "${result.statusCode}"
-                    )
-                }
-                is NetworkException -> {
-                    channel.cancel()
-                    Log.e(
-                        TAG,
-                        "Patient and readings download failed, encountered exception",
-                        result.cause
-                    )
-                }
-            }
+            // Once successfully logged in, download the user's patients and health
+            // facilities in parallel.
+            // We will use this later as the last synced timestamp.
+            val loginTime = UnixTimestamp.now
 
-            databaseJob.join()
-            val endTime = System.currentTimeMillis()
-            Log.d(TAG, "Patient/readings download overall took ${endTime - startTime} ms")
-            return@async result
-        }
+            val patientsResultAsync = async {
+                val startTime = System.currentTimeMillis()
 
-        // for unit testing purposes
-        if (!parallelDownload) {
-            patientsResultAsync.join()
-        }
-
-        // TODO: Maybe make it so that the health facility the server sends back cannot
-        //       be removed by the user?
-        // TODO: Show some dialog to select a health facility
-        val healthFacilityResultAsync = async {
-            val defaultHealthFacilityName = loginResult.value.healthFacilityName
-
-            val channel = Channel<HealthFacility>()
-            val databaseJob = launch {
-                database.withTransaction {
-                    for (healthFacility in channel) {
-                        if (healthFacility.name == defaultHealthFacilityName) {
-                            healthFacility.isUserSelected = true
+                val channel = Channel<PatientAndReadings>()
+                val databaseJob = launch {
+                    database.withTransaction {
+                        for (patientAndReadings in channel) {
+                            patientManager.addPatientWithReadings(
+                                patientAndReadings.patient,
+                                patientAndReadings.readings,
+                                areReadingsFromServer = true,
+                                isPatientNew = true
+                            )
                         }
-                        healthFacilityManager.add(healthFacility)
+                        Log.d(TAG, "patient & reading database job is done")
                     }
-                    Log.d(TAG, "health facility database job is done")
                 }
-            }
-            val result = restApi.getAllHealthFacilities { inputStream ->
-                val reader = JacksonMapper.readerForHealthFacility
-                try {
-                    reader.readValues<HealthFacility>(inputStream).use { iterator ->
-                        iterator.forEachJackson { channel.send(it) }
+                val result = restApi.getAllPatientsStreaming { inputStream ->
+                    // Parse JSON strings directly from the HTTPUrlConnection's input stream to avoid
+                    // dealing with a ByteArray of an entire JSON array in memory and trying to convert
+                    // that into a String.
+                    val reader = JacksonMapper.readerForPatientAndReadings
+                    try {
+                        reader.readValues<PatientAndReadings>(inputStream).use { iterator ->
+                            iterator.forEachJackson { channel.send(it) }
+                        }
+                    } catch (e: IOException) {
+                        Log.e(TAG, "exception while reading patients", e)
+                        // Propagate exceptions to the Http class so that it can log it
+                        throw e
                     }
-                } catch (e: IOException) {
-                    Log.e(TAG, "exception while reading health facilities", e)
-                    // Propagate exceptions to the Http class so that it can log it
-                    throw e
+                }
+
+                when (result) {
+                    is Success -> {
+                        channel.close()
+                        Log.d(TAG, "Patient and readings download successful!")
+                    }
+                    is Failure -> {
+                        channel.cancel()
+                        Log.e(
+                            TAG,
+                            "Patient and readings download failed, got status code: " +
+                                "${result.statusCode}"
+                        )
+                    }
+                    is NetworkException -> {
+                        channel.cancel()
+                        Log.e(
+                            TAG,
+                            "Patient and readings download failed, encountered exception",
+                            result.cause
+                        )
+                    }
+                }
+
+                databaseJob.join()
+                val endTime = System.currentTimeMillis()
+                Log.d(TAG, "Patient/readings download overall took ${endTime - startTime} ms")
+                return@async result
+            }
+
+            // for unit testing purposes
+            if (!parallelDownload) {
+                patientsResultAsync.join()
+            }
+
+            // TODO: Maybe make it so that the health facility the server sends back cannot
+            //       be removed by the user?
+            // TODO: Show some dialog to select a health facility
+            val healthFacilityResultAsync = async {
+                val defaultHealthFacilityName = loginResult.value.healthFacilityName
+
+                val channel = Channel<HealthFacility>()
+                val databaseJob = launch {
+                    database.withTransaction {
+                        for (healthFacility in channel) {
+                            if (healthFacility.name == defaultHealthFacilityName) {
+                                healthFacility.isUserSelected = true
+                            }
+                            healthFacilityManager.add(healthFacility)
+                        }
+                        Log.d(TAG, "health facility database job is done")
+                    }
+                }
+                val result = restApi.getAllHealthFacilities { inputStream ->
+                    val reader = JacksonMapper.readerForHealthFacility
+                    try {
+                        reader.readValues<HealthFacility>(inputStream).use { iterator ->
+                            iterator.forEachJackson { channel.send(it) }
+                        }
+                    } catch (e: IOException) {
+                        Log.e(TAG, "exception while reading health facilities", e)
+                        // Propagate exceptions to the Http class so that it can log it
+                        throw e
+                    }
+                }
+
+                when (result) {
+                    is Success -> {
+                        channel.close()
+                        Log.d(TAG, "Health facility download successful!")
+                    }
+                    is Failure -> {
+                        channel.cancel()
+                        Log.e(
+                            TAG,
+                            "Health facility download failed, got status code: " +
+                                "${result.statusCode}"
+                        )
+                    }
+                    is NetworkException -> {
+                        channel.cancel()
+                        Log.e(
+                            TAG,
+                            "Health facility download failed, encountered exception",
+                            result.cause
+                        )
+                    }
+                }
+                databaseJob.join()
+                return@async result
+            }
+
+            joinAll(patientsResultAsync, healthFacilityResultAsync)
+            if (patientsResultAsync.await() is Success) {
+                sharedPreferences.edit(commit = true) {
+                    putLong(SyncStepperImplementation.LAST_SYNC, loginTime)
                 }
             }
 
-            when (result) {
-                is Success -> {
-                    channel.close()
-                    Log.d(TAG, "Health facility download successful!")
-                }
-                is Failure -> {
-                    channel.cancel()
-                    Log.e(
-                        TAG,
-                        "Health facility download failed, got status code: " +
-                            "${result.statusCode}"
-                    )
-                }
-                is NetworkException -> {
-                    channel.cancel()
-                    Log.e(
-                        TAG,
-                        "Health facility download failed, encountered exception",
-                        result.cause
-                    )
-                }
-            }
-            databaseJob.join()
-            return@async result
+            return@withContext Success(Unit, HTTP_OK)
         }
-
-        joinAll(patientsResultAsync, healthFacilityResultAsync)
-        if (patientsResultAsync.await() is Success) {
-            sharedPreferences.edit(commit = true) {
-                putLong(SyncStepperImplementation.LAST_SYNC, loginTime)
-            }
-        }
-
-        Success(Unit, HTTP_OK)
     }
 
     suspend fun logout(): Unit = withContext(Dispatchers.IO) {
