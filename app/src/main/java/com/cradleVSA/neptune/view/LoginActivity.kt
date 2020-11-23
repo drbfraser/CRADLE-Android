@@ -15,8 +15,10 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.edit
 import androidx.lifecycle.lifecycleScope
 import com.cradleVSA.neptune.R
+import com.cradleVSA.neptune.cryptography.EncryptedSharedPreferencesCustom
 import com.cradleVSA.neptune.ext.hideKeyboard
 import com.cradleVSA.neptune.manager.LoginManager
 import com.cradleVSA.neptune.net.Failure
@@ -31,6 +33,7 @@ import com.google.crypto.tink.JsonKeysetWriter
 import com.google.crypto.tink.KeysetHandle
 import com.google.crypto.tink.aead.AeadConfig
 import com.google.crypto.tink.aead.AesGcmKeyManager
+import com.google.crypto.tink.daead.DeterministicAeadConfig
 import com.google.crypto.tink.subtle.AesGcmJce
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.AndroidEntryPoint
@@ -154,6 +157,30 @@ class LoginActivity : AppCompatActivity() {
         val file2 = File(dir, "private-key-with-biometrics")
         keysetHandle.write(JsonKeysetWriter.withFile(file2), theKey2)
         keysetHandle.keysetInfo.primaryKeyId
+
+        DeterministicAeadConfig.register()
+
+        val sharedPrefCustom = EncryptedSharedPreferencesCustom.create(
+            "shared-pref-encrypted",
+            this,
+            EncryptedSharedPreferencesCustom.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferencesCustom.PrefValueEncryptionScheme.AES256_GCM
+        )
+
+        /*
+         * result looks like this
+         *
+         * <?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+         * <map>
+         *     <string name="AQtPf2KGy5/fWchOi9oZSom1TRK4pHvw">
+                    AQLrmdBfOooRE9B9ZP/0waXbhQ+Vj6aNRKJdN61AoB5p2RaImh5BqhU=</string>
+         * </map>
+         *
+         */
+        sharedPrefCustom.edit(commit = true) {
+            @Suppress("MagicNumber")
+            putInt("test_int_key", 4534535)
+        }
 
         loginButton.setOnClickListener { _ ->
             errorText.visibility = View.GONE

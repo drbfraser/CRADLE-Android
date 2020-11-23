@@ -183,6 +183,7 @@ dependencies {
 
     implementation 'com.google.crypto.tink:tink-android:1.5.0'
     implementation 'org.signal:argon2:13.1@aar'
+    implementation "androidx.security:security-crypto:1.1.0-alpha02"
 
     // TensorFlow (for OCR of CRADLE screen)
     // implementation 'org.tensorflow:tensorflow-lite:0.0.0-nightly'
