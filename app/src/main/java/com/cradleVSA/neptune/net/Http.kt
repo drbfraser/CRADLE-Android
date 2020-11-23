@@ -3,6 +3,7 @@ package com.cradleVSA.neptune.net
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.CertificatePinner
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -25,16 +26,49 @@ class Http {
      */
     enum class Method { GET, POST, PUT, DELETE }
 
-    val client = OkHttpClient()
+    val client: OkHttpClient = OkHttpClient.Builder()
+        .certificatePinner(
+            // Setup pins so that it's harder to do man-in-the-middle attacks.
+            // We're currently pinning against the leaf certificate's SubjectPublicKeyInfo;
+            // and also Let's Encrypt Authority X3's pubkey. This is done to decrease the risk of
+            // some attack on a user's TLS sessions, because it's our only method of transport
+            // security right now. Connections will be made if any one of the pins match any of the
+            // certificates from the server.
+            //
+            // The pins may need to be updated if something genuinely happens on the server side,
+            // like a change in certificate authorities. (Since we're pinning against a public key,
+            // certificate renewal won't require changing these pins)
+            // See the README for instructions on setting up certificate SPKI pinning.
+            CertificatePinner.Builder()
+                .add(
+                    "cradleplatform.com",
+                    // leaf cert: CN=cradleplatform.com
+                    "sha256/1qf/G8vZPEXgiM+7UbXmySdt6muYDR4LF34I9MSgAMc=",
+                    // Let's Encrypt Authority X3---can remove this if we want more security, but
+                    // then the app is forced to update if the server ends up changing / rotating
+                    // their key. Note: Certificate renewal doesn't imply a key change.
+                    "sha256/YLh1dUR9y6Kja30RrAn7JKnbQG/uEtLMkBgFF2Fuihg="
+                )
+                .add(
+                    "staging.cradleplatform.com",
+                    // leaf cert: CN=staging.cradleplatform.com
+                    "sha256/qJkZm9nsAGRnbHi9h1PQrjl9ndXgTHrItwWZtvcEqu4=",
+                    // Let's Encrypt Authority X3
+                    "sha256/YLh1dUR9y6Kja30RrAn7JKnbQG/uEtLMkBgFF2Fuihg="
+                )
+                .build()
+        )
+        .build()
 
     /**
-     * Performs an HTTP request with custom [InputStream] handling via
-     * [inputStreamReader].
+     * Performs an HTTP request with the connection's [InputStream] read by [inputStreamReader],
+     * and then returns the result of [inputStreamReader] if the connection and download were
+     * successful.
      *
      * The return value of the [inputStreamReader] will be returned by the function. For cases where
      * putting an entire response in memory isn't optional (e.g., a large JSON array is given by the
-     * server), specify [Unit] as the type parameter, and then have the [inputStreamReader] handle
-     * elements one by one from the [InputStream]
+     * server), specify [Unit] as the type parameter T, and then have the [inputStreamReader] handle
+     * elements one by one from the [InputStream].
      *
      * @param method the request method
      * @param url where to send the request

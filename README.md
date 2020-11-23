@@ -8,8 +8,8 @@ maternal care and reduce preventable maternal deaths in Ugandan villages.
 The Cradle VSA (Vital Signs Alert) is a portable medical device that can read a patient’s blood
 pressure and heart rate, mainly used to detect abnormalities during pregnancy. The Cradle VSA
 application can record the readings taken by the Cradle VSA device and upload it to the server. Our
-application is designed for remote areas with an unstable internet connection; thus, so we
-implemented an SMS feature.
+application is designed for remote areas with an unstable internet connection, so we implemented an
+SMS feature.
 
 # Setup
 
@@ -83,6 +83,14 @@ The UI tests need special setup on the device to be run.
 
 2. Uninstall or log out of the app if it's already installed. The UI tests LoginActivity, and those
    tests can fail if already logged in.
+
+# Pinning TLS certificate public keys
+We're currently pinning TLS public keys for the server. There are two ways to setup pinning: by
+following
+[OkHttp's guide](https://square.github.io/okhttp/4.x/okhttp/okhttp3/-certificate-pinner/#setting-up-certificate-pinning)
+or by using the bash script located in
+[scripts/x509-subject-pubkey-hash.sh](scripts/x509-subject-pubkey-hash.sh). If you're paranoid, try
+both ways and see if the pins match up.
 
 # Other links
 
