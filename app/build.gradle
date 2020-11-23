@@ -74,6 +74,24 @@ android {
         }
         release {
             signingConfig signingConfigs.release
+
+            // Use R8 for minification to reduce the app size. See the link for details:
+            // https://developer.android.com/studio/build/shrink-code
+            //
+            // Note that this may cause problems between debug builds (i.e., builds run directly
+            // from Android Studio using the standard app configuration or ./gradlew installDebug)
+            // and release builds (i.e., builds ready for Google Play Store distribution), because
+            // unused methods are being removed.
+            // * Sometimes, these unused methods are actually being used (e.g, some JNI call or a
+            //   call via reflection), but R8 removes them anyway. This can result in errors
+            //   appearing on release builds but not on debug builds. Fixing this usually involves
+            //   putting a rule in our proguard-rules.pro file.
+            // * Generally when adding new libraries, if the library is well-configured, then they
+            //   will include any relevant R8 rules for us (e.g., for OkHttp, it's included in the
+            //   library JAR and we don't do anything: https://square.github.io/okhttp/r8_proguard/)
+            //
+            // Before releasing a build, the release build must be tested thoroughly for defects;
+            // testing on a debug build isn't sufficient.
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile(
