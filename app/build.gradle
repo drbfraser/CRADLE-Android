@@ -33,16 +33,18 @@ android {
         javaMaxHeapSize "4g"
     }
 
-    compileSdkVersion 29
+    compileSdkVersion 30
+    buildToolsVersion '30.0.2'
+
     defaultConfig {
         // Update this for new tags / new builds / new releases
         versionCode 25
         versionName "0.2.3-alpha"
 
         applicationId "com.cradleVSA.neptune"
-        minSdkVersion 17    // Android 4.2
-        targetSdkVersion 29
-        multiDexEnabled true
+        // Android 5
+        minSdkVersion 21
+        targetSdkVersion 30
         // Set the base name for the compiled APKs.
         project.ext.set("archivesBaseName", "CRADLE");
 
@@ -114,8 +116,6 @@ android {
         dataBinding true
     }
 
-    buildToolsVersion = '29.0.3'
-
     sourceSets {
         // Adds exported schema location as test app assets.
         // https://developer.android.com/training/data-storage/room/
@@ -144,8 +144,6 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.3.0'
 
     implementation 'com.github.MikeOrtiz:TouchImageView:3.0.1'
-
-    implementation 'androidx.multidex:multidex:2.0.1'
 
     implementation "com.google.dagger:hilt-android:$hilt_version"
     kapt "com.google.dagger:hilt-android-compiler:$hilt_version"

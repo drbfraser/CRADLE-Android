@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.provider.Telephony
 import android.view.LayoutInflater
@@ -191,10 +190,8 @@ class ReferralDialogFragment : DialogFragment() {
 
             // Use default SMS app if supported
             // https://stackoverflow.com/a/24804601
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                Telephony.Sms.getDefaultSmsPackage(context)?.let {
-                    setPackage(it)
-                }
+            Telephony.Sms.getDefaultSmsPackage(context)?.let {
+                setPackage(it)
             }
         }
     }

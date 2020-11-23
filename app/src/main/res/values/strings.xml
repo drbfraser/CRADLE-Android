@@ -13,9 +13,6 @@
         <p>App requires some permissions:</p>
         <h3>Camera</h3>
         <p>App uses the camera to take a photo of the CRADLE VSA\'s screen after it measures vitals.</p>
-
-        <h3>Storage</h3>
-        <p>App stores photos and collected data on your phone.</p>
         ]]>
     </string>
 

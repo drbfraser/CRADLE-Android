@@ -7,10 +7,10 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
 
     <application
-        android:name="com.cradleVSA.neptune.MyApp"
+        android:name=".MyApp"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -19,21 +19,21 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="false">
         <activity
-            android:name="com.cradleVSA.neptune.view.SyncActivity"
+            android:name=".view.SyncActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name="com.cradleVSA.neptune.view.GlobalPatientProfileActivity" />
+        <activity android:name=".view.GlobalPatientProfileActivity" />
         <activity
-            android:name="com.cradleVSA.neptune.view.GlobalPatientSearchActivity"
+            android:name=".view.GlobalPatientSearchActivity"
             android:windowSoftInputMode="adjustNothing" />
-        <activity android:name="com.cradleVSA.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity" />
-        <activity android:name="com.cradleVSA.neptune.view.PosterActivity" />
-        <activity android:name="com.cradleVSA.neptune.view.EducationActivity" />
-        <activity android:name="com.cradleVSA.neptune.view.StatsActivity" />
+        <activity android:name=".view.ui.settings.ui.healthFacility.HealthFacilitiesActivity" />
+        <activity android:name=".view.PosterActivity" />
+        <activity android:name=".view.EducationActivity" />
+        <activity android:name=".view.StatsActivity" />
         <activity
-            android:name="com.cradleVSA.neptune.view.LoginActivity"
+            android:name=".view.LoginActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name="com.cradleVSA.neptune.view.SplashActivity"
+            android:name=".view.SplashActivity"
             android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -41,15 +41,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.cradleVSA.neptune.view.DashBoardActivity" />
-        <activity android:name="com.cradleVSA.neptune.view.PatientProfileActivity" />
+        <activity android:name=".view.DashBoardActivity" />
+        <activity android:name=".view.PatientProfileActivity" />
         <activity
-            android:name="com.cradleVSA.neptune.view.IntroActivity"
+            android:name=".view.IntroActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name="com.cradleVSA.neptune.view.PatientsActivity"
+            android:name=".view.PatientsActivity"
             android:label="@string/title_activity_patients"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
@@ -59,15 +59,15 @@
         </activity>
         <!-- windowSoftInputMode=adjustResize so that wizard's bottom buttons stay visible -->
         <activity
-            android:name="com.cradleVSA.neptune.view.VideoActivity" />
+            android:name=".view.VideoActivity" />
         <activity
-            android:name="com.cradleVSA.neptune.view.ReadingActivity"
+            android:name=".view.ReadingActivity"
             android:label="@string/title_activity_reading"
             android:screenOrientation="portrait"
             android:theme="@style/ReadingFlowTheme"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name="com.cradleVSA.neptune.view.ui.settings.SettingsActivity"
+            android:name=".view.ui.settings.SettingsActivity"
             android:label="Settings"
             android:screenOrientation="portrait" />
     </application>
