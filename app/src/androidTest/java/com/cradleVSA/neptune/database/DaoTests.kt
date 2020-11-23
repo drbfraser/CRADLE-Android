@@ -3,6 +3,7 @@ package com.cradleVSA.neptune.database
 import android.database.sqlite.SQLiteConstraintException
 import androidx.room.Room
 import androidx.room.testing.MigrationTestHelper
+import androidx.room.withTransaction
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
@@ -22,6 +23,7 @@ import com.cradleVSA.neptune.testutils.assertNotEquals
 import com.cradleVSA.neptune.testutils.assertThrows
 import com.cradleVSA.neptune.utilitiles.Months
 import com.cradleVSA.neptune.utilitiles.Weeks
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -108,12 +110,12 @@ class DaoTests {
         )
 
         val patientDao = database.patientDao()
-        val rowIds = patientDao.insertAll(patients)
+        val rowIds = runBlocking { patientDao.insertAll(patients) }
         rowIds.forEach {
             assertNotEquals(-1, it)
         }
 
-        val alreadyExistingPatientRowIds = patientDao.insertAll(patients)
+        val alreadyExistingPatientRowIds = runBlocking { patientDao.insertAll(patients) }
         alreadyExistingPatientRowIds.forEach { assertEquals(-1, it) }
 
         val newPatient = Patient(
@@ -130,8 +132,9 @@ class DaoTests {
             medicalHistory = ""
         )
 
-        val rowIdsForMixOfExistingAndNewPatients =
-            patientDao.insertAll(patients + newPatient)
+        val rowIdsForMixOfExistingAndNewPatients = runBlocking {
+             patientDao.insertAll(patients + newPatient)
+        }
         rowIdsForMixOfExistingAndNewPatients.forEachIndexed { index, rowId ->
             // The newPatient appended to the end should not have -1 returned for its rowId
             if (index != rowIdsForMixOfExistingAndNewPatients.size - 1) {
@@ -148,106 +151,110 @@ class DaoTests {
         val patientDao = database.patientDao()
         val readingDao = database.readingDao()
 
-        assertEquals(0, patientDao.getPatientIdsList().size)
-        assertEquals(0, readingDao.getAllReadingEntities().size)
+        assertEquals(0, runBlocking { patientDao.getPatientIdsList() }.size)
+        assertEquals(0, runBlocking { readingDao.getAllReadingEntities() }.size)
 
         // Must be prevented from inserting a Reading for a nonexistent patient.
         val reading = createReading(patientId = "1")
 
         val sqLiteException = assertThrows<SQLiteConstraintException> {
-            readingDao.insert(reading)
+            runBlocking { readingDao.insert(reading) }
         }
 
         assertForeignKeyConstraintException(sqLiteException)
 
         // Nothing should be inserted.
-        assertEquals(0, patientDao.getPatientIdsList().size)
-        assertEquals(0, readingDao.getAllReadingEntities().size)
+        assertEquals(0, runBlocking { patientDao.getPatientIdsList().size })
+        assertEquals(0, runBlocking { readingDao.getAllReadingEntities().size })
     }
 
     @Test
     fun readingDao_foreignKeyConstraintOnDeleteCascade() {
-        val database = getRoomDatabase()
-        val patientDao = database.patientDao()
-        val readingDao = database.readingDao()
-        assertEquals(0, patientDao.getPatientIdsList().size)
-        assertEquals(0, readingDao.getAllReadingEntities().size)
+        runBlocking {
+            val database = getRoomDatabase()
+            val patientDao = database.patientDao()
+            val readingDao = database.readingDao()
+            assertEquals(0, patientDao.getPatientIdsList().size)
+            assertEquals(0, readingDao.getAllReadingEntities().size)
 
-        val (patient, reading) = createPatientAndReading(patientId = "1")
-        database.runInTransaction {
-            patientDao.insert(patient)
-            readingDao.insert(reading)
+            val (patient, reading) = createPatientAndReading(patientId = "1")
+            database.withTransaction {
+                patientDao.insert(patient)
+                readingDao.insert(reading)
+            }
+            assertEquals(patient, patientDao.getPatientById("1"))
+            assertEquals(listOf(reading), readingDao.getAllReadingEntities())
+
+            // Delete the patient, and the reading should also be deleted via the foreign key ON DELETE
+            patientDao.deleteById("1")
+            assertEquals(null, patientDao.getPatientById("1"))
+            assertEquals(0, patientDao.getPatientIdsList().size)
+            assertEquals(emptyList<Reading>(), readingDao.getAllReadingEntities())
         }
-        assertEquals(patient, patientDao.getPatientById("1"))
-        assertEquals(listOf(reading), readingDao.getAllReadingEntities())
-
-        // Delete the patient, and the reading should also be deleted via the foreign key ON DELETE
-        patientDao.deleteById("1")
-        assertEquals(null, patientDao.getPatientById("1"))
-        assertEquals(0, patientDao.getPatientIdsList().size)
-        assertEquals(emptyList<Reading>(), readingDao.getAllReadingEntities())
     }
 
     @Test
     fun patientDao_updatingDoesntDeletePreviousReadings() {
-        val database = getRoomDatabase()
-        val patientDao = database.patientDao()
-        val readingDao = database.readingDao()
-        assertEquals(0, patientDao.getPatientIdsList().size)
-        assertEquals(0, readingDao.getAllReadingEntities().size)
+        runBlocking {
+            val database = getRoomDatabase()
+            val patientDao = database.patientDao()
+            val readingDao = database.readingDao()
+            assertEquals(0, patientDao.getPatientIdsList().size)
+            assertEquals(0, readingDao.getAllReadingEntities().size)
 
-        val (patient, reading) = createPatientAndReading(patientId = "1")
-        database.runInTransaction {
-            patientDao.insert(patient)
+            val (patient, reading) = createPatientAndReading(patientId = "1")
+            database.withTransaction {
+                patientDao.insert(patient)
+                readingDao.insert(reading)
+            }
+            assertEquals(patient, patientDao.getPatientById("1"))
+            assertEquals(listOf(reading), readingDao.getAllReadingEntities())
+            assertEquals(1, patientDao.getPatientIdsList().size)
+            assertEquals(1, readingDao.getAllReadingEntities().size)
+
+            // Running insert again does not affect the patient and the reading.
+            // -1 is returend by the PatientDao.insert function to indicate that
+            // the insertion did nothing.
+            assertEquals(-1, patientDao.insert(patient))
             readingDao.insert(reading)
-        }
-        assertEquals(patient, patientDao.getPatientById("1"))
-        assertEquals(listOf(reading), readingDao.getAllReadingEntities())
-        assertEquals(1, patientDao.getPatientIdsList().size)
-        assertEquals(1, readingDao.getAllReadingEntities().size)
+            // Check that everything else didn't change.
+            assertEquals(patient, patientDao.getPatientById("1"))
+            assertEquals(listOf(reading), readingDao.getAllReadingEntities())
+            assertEquals(1, patientDao.getPatientIdsList().size)
+            assertEquals(1, readingDao.getAllReadingEntities().size)
 
-        // Running insert again does not affect the patient and the reading.
-        // -1 is returend by the PatientDao.insert function to indicate that
-        // the insertion did nothing.
-        assertEquals(-1, patientDao.insert(patient))
-        readingDao.insert(reading)
-        // Check that everything else didn't change.
-        assertEquals(patient, patientDao.getPatientById("1"))
-        assertEquals(listOf(reading), readingDao.getAllReadingEntities())
-        assertEquals(1, patientDao.getPatientIdsList().size)
-        assertEquals(1, readingDao.getAllReadingEntities().size)
+            // Update should change it
+            val editedPatient = patient.copy().apply { householdNumber += " 111" }
+            assertEquals(1, patientDao.update(editedPatient)) {
+                "expected an update to happen"
+            }
+            val insertedEditedPatient = patientDao.getPatientById("1") ?: error("missing")
+            assertEquals(editedPatient, insertedEditedPatient) { "edit didn't make it" }
+            assertNotEquals(patient, insertedEditedPatient) {
+                "expected the patients to be different, but they both were the same"
+            }
+            // Check that the Reading wasn't deleted by the foreign key ON CASCADE
+            assertEquals(listOf(reading), readingDao.getAllReadingEntities())
+            assertEquals(1, patientDao.getPatientIdsList().size)
+            assertEquals(1, readingDao.getAllReadingEntities().size)
 
-        // Update should change it
-        val editedPatient = patient.copy().apply { householdNumber += " 111" }
-        assertEquals(1, patientDao.update(editedPatient)) {
-            "expected an update to happen"
-        }
-        val insertedEditedPatient = patientDao.getPatientById("1") ?: error("missing")
-        assertEquals(editedPatient, insertedEditedPatient) { "edit didn't make it" }
-        assertNotEquals(patient, insertedEditedPatient) {
-            "expected the patients to be different, but they both were the same"
-        }
-        // Check that the Reading wasn't deleted by the foreign key ON CASCADE
-        assertEquals(listOf(reading), readingDao.getAllReadingEntities())
-        assertEquals(1, patientDao.getPatientIdsList().size)
-        assertEquals(1, readingDao.getAllReadingEntities().size)
+            // updateOrInsertIfNotExists should change it too
+            val editedPatient2 = editedPatient.copy().apply { name += " the third" }
+            patientDao.updateOrInsertIfNotExists(editedPatient2)
 
-        // updateOrInsertIfNotExists should change it too
-        val editedPatient2 = editedPatient.copy().apply { name += " the third" }
-        patientDao.updateOrInsertIfNotExists(editedPatient2)
-
-        val secondEditedPatientFromDb = patientDao.getPatientById("1") ?: error("missing")
-        assertEquals(editedPatient2, secondEditedPatientFromDb) {
-            "edit didn't make it. Expected name of ${editedPatient.name}, but the patient" +
-                "from the database has name ${secondEditedPatientFromDb.name}"
+            val secondEditedPatientFromDb = patientDao.getPatientById("1") ?: error("missing")
+            assertEquals(editedPatient2, secondEditedPatientFromDb) {
+                "edit didn't make it. Expected name of ${editedPatient.name}, but the patient" +
+                    "from the database has name ${secondEditedPatientFromDb.name}"
+            }
+            assertNotEquals(editedPatient, secondEditedPatientFromDb) {
+                "expected the patients to be different, but they both were the same"
+            }
+            // Check that the Reading wasn't deleted by the foreign key ON CASCADE
+            assertEquals(listOf(reading), readingDao.getAllReadingEntities())
+            assertEquals(1, patientDao.getPatientIdsList().size)
+            assertEquals(1, readingDao.getAllReadingEntities().size)
         }
-        assertNotEquals(editedPatient, secondEditedPatientFromDb) {
-            "expected the patients to be different, but they both were the same"
-        }
-        // Check that the Reading wasn't deleted by the foreign key ON CASCADE
-        assertEquals(listOf(reading), readingDao.getAllReadingEntities())
-        assertEquals(1, patientDao.getPatientIdsList().size)
-        assertEquals(1, readingDao.getAllReadingEntities().size)
     }
 
     private fun createPatientAndReading(patientId: String): Pair<Patient, Reading> {

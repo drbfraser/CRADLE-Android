@@ -26,7 +26,7 @@ interface HealthFacilityDao {
      * @param healthFacility The health facility to insert.
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(healthFacility: HealthFacility)
+    suspend fun insert(healthFacility: HealthFacility)
 
     /**
      * Inserts each health facility in the supplied list into the database.
@@ -34,7 +34,7 @@ interface HealthFacilityDao {
      * @param healthFacilities The list of facilities to insert.
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAll(healthFacilities: List<HealthFacility>)
+    suspend fun insertAll(healthFacilities: List<HealthFacility>)
 
     /**
      * Updates an existing [HealthFacility].
@@ -42,7 +42,7 @@ interface HealthFacilityDao {
      * @param healthFacility An entity containing updated data.
      */
     @Update
-    fun update(healthFacility: HealthFacility)
+    suspend fun update(healthFacility: HealthFacility)
 
     /**
      * Removes an entity from the database.
@@ -50,19 +50,19 @@ interface HealthFacilityDao {
      * @param healthFacility The entity to remove.
      */
     @Delete
-    fun delete(healthFacility: HealthFacility)
+    suspend fun delete(healthFacility: HealthFacility)
 
     /**
      * Deletes all health facilities in the database.
      */
     @Query("DELETE FROM HealthFacility")
-    fun deleteAll()
+    suspend fun deleteAll()
 
     /**
      * All health facilities stored in the database.
      */
     @Query("SELECT * FROM HealthFacility")
-    fun getAllHealthFacilities(): List<HealthFacility>
+    suspend fun getAllHealthFacilities(): List<HealthFacility>
 
     /**
      * Returns the first health facility from the database with the given [id]
@@ -70,13 +70,13 @@ interface HealthFacilityDao {
      * @param id The id of the health facility to retrieve.
      */
     @Query("SELECT * FROM HealthFacility WHERE id = :id")
-    fun getHealthFacilityById(id: String): HealthFacility?
+    suspend fun getHealthFacilityById(id: String): HealthFacility?
 
     /**
      * All health facilities which the user has selected to be visible.
      */
     @Query("SELECT * FROM HealthFacility WHERE isUserSelected = 1")
-    fun getAllUserSelectedHealthFacilities(): List<HealthFacility>
+    suspend fun getAllUserSelectedHealthFacilities(): List<HealthFacility>
 
     /**
      * Returns a live list of facilities

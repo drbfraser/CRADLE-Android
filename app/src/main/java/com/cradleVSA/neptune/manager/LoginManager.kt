@@ -4,8 +4,11 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.core.content.edit
+import androidx.room.withTransaction
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.database.CradleDatabase
+import com.cradleVSA.neptune.ext.jackson.forEachJackson
+import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.PatientAndReadings
 import com.cradleVSA.neptune.net.Failure
 import com.cradleVSA.neptune.net.NetworkException
@@ -14,17 +17,16 @@ import com.cradleVSA.neptune.net.Success
 import com.cradleVSA.neptune.sync.SyncStepperImplementation
 import com.cradleVSA.neptune.utilitiles.SharedPreferencesMigration
 import com.cradleVSA.neptune.utilitiles.UnixTimestamp
-import com.fasterxml.jackson.core.JsonToken
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
+import com.cradleVSA.neptune.utilitiles.nullIfEmpty
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.json.JSONException
-import org.json.JSONObject
 import java.io.IOException
 import java.net.HttpURLConnection.HTTP_OK
 import javax.inject.Inject
@@ -67,32 +69,24 @@ class LoginManager @Inject constructor(
      *
      * @param email the email to login with
      * @param password the password to login with
+     * @param parallelDownload whether to download patient + readings and health facilities in
+     * parallel. True by default. (For unit testing purposes to get around a problem.)
      * @return a [Success] variant if the user was able to login successfully,
      *  otherwise a [Failure] or [NetworkException] will be returned
      */
-    suspend fun login(email: String, password: String) = withContext(Dispatchers.Default) {
+    suspend fun login(
+        email: String,
+        password: String,
+        parallelDownload: Boolean = true
+    ) = withContext(Dispatchers.Default) {
         // Send a request to the authentication endpoint to login
         //
         // If we failed to login, return immediately
         val loginResult = restApi.authenticate(email, password)
         when (loginResult) {
             is Success -> {
-                // Fail the login if the token and userId are not in the response for
-                // whatever reason
-                val (token, userId) = try {
-                    loginResult.value.getString("token") to
-                        loginResult.value.getInt("userId")
-                } catch (e: JSONException) {
-                    return@withContext NetworkException(e)
-                }
-
-                // The name is not as important, so we don't fail the login if there isn't a name
-                // in the response.
-                val name = try {
-                    loginResult.value.getString("firstName")
-                } catch (e: JSONException) {
-                    null
-                }
+                val (token, userId) = loginResult.value.token to loginResult.value.userId
+                val name = loginResult.value.firstName?.nullIfEmpty()
 
                 sharedPreferences.edit(commit = true) {
                     putString(TOKEN_KEY, token)
@@ -113,108 +107,135 @@ class LoginManager @Inject constructor(
         // We will use this later as the last synced timestamp.
         val loginTime = UnixTimestamp.now
 
-        val patientsJob = launch {
+        val patientsResultAsync = async {
             val startTime = System.currentTimeMillis()
 
-            val mapper = jacksonObjectMapper()
-
-            val channel = Channel<String>()
-
+            val channel = Channel<PatientAndReadings>()
             val databaseJob = launch {
-                for (jsonString in channel) {
-                    val patientAndReadings = PatientAndReadings.unmarshal(JSONObject(jsonString))
-                    patientManager.addPatientWithReadings(
-                        patientAndReadings.patient,
-                        patientAndReadings.readings,
-                        areReadingsFromServer = true,
-                        isPatientNew = true
-                    )
+                database.withTransaction {
+                    for (patientAndReadings in channel) {
+                        patientManager.addPatientWithReadings(
+                            patientAndReadings.patient,
+                            patientAndReadings.readings,
+                            areReadingsFromServer = true,
+                            isPatientNew = true
+                        )
+                    }
+                    Log.d(TAG, "patient & reading database job is done")
                 }
             }
-
             val result = restApi.getAllPatientsStreaming { inputStream ->
                 // Parse JSON strings directly from the HTTPUrlConnection's input stream to avoid
                 // dealing with a ByteArray of an entire JSON array in memory and trying to convert
                 // that into a String.
-                mapper.createParser(inputStream).use { parser ->
-                    if (parser.nextToken() != JsonToken.START_ARRAY) {
-                        throw IOException("expected JSON array input")
+                val reader = JacksonMapper.readerForPatientAndReadings
+                try {
+                    reader.readValues<PatientAndReadings>(inputStream).use { iterator ->
+                        iterator.forEachJackson { channel.send(it) }
                     }
-
-                    while (parser.nextToken() != JsonToken.END_ARRAY) {
-                        try {
-                            // TODO: Parse patient and readings directly.
-                            val jsonString = mapper.readTree<ObjectNode>(parser).toString()
-                            channel.send(jsonString)
-                        } catch (e: IOException) {
-                            Log.e(TAG, "failed to parse JSON object", e)
-                            // Propagate exceptions to the Http class so that it can log it
-                            throw e
-                        }
-                    }
+                } catch (e: IOException) {
+                    Log.e(TAG, "exception while reading patients", e)
+                    // Propagate exceptions to the Http class so that it can log it
+                    throw e
                 }
             }
+
             when (result) {
-                is Success -> Log.d(TAG, "Patients and readings download successful!")
-                is Failure -> Log.e(
-                    TAG,
-                    "Patient and readings download failed, " +
-                        "got status code: ${result.statusCode}"
-                )
-                is NetworkException -> Log.e(
-                    TAG,
-                    "Patient and readings download failed, encountered exception",
-                    result.cause
-                )
+                is Success -> {
+                    channel.close()
+                    Log.d(TAG, "Patient and readings download successful!")
+                }
+                is Failure -> {
+                    channel.cancel()
+                    Log.e(
+                        TAG,
+                        "Patient and readings download failed, got status code: " +
+                            "${result.statusCode}"
+                    )
+                }
+                is NetworkException -> {
+                    channel.cancel()
+                    Log.e(
+                        TAG,
+                        "Patient and readings download failed, encountered exception",
+                        result.cause
+                    )
+                }
             }
 
-            channel.close()
             databaseJob.join()
             val endTime = System.currentTimeMillis()
             Log.d(TAG, "Patient/readings download overall took ${endTime - startTime} ms")
+            return@async result
         }
 
-        val healthFacilityJob = launch {
-            when (val result = restApi.getAllHealthFacilities()) {
-                is Success -> {
-                    val facilities = result.value
-                    if (facilities.isNotEmpty()) {
-                        // Select the first health facility by default
+        // for unit testing purposes
+        if (!parallelDownload) {
+            patientsResultAsync.join()
+        }
 
-                        // TODO: Make it so that the health facility the server sends back cannot
-                        //       be removed by the user.
-                        // TODO: Show some dialog to select a health facility if the server didn't
-                        //        send back one.
-                        try {
-                            val healthFacilityNameFromServer =
-                                loginResult.value.getString("healthFacilityName")
+        // TODO: Maybe make it so that the health facility the server sends back cannot
+        //       be removed by the user?
+        // TODO: Show some dialog to select a health facility
+        val healthFacilityResultAsync = async {
+            val defaultHealthFacilityName = loginResult.value.healthFacilityName
 
-                            facilities.find { it.name == healthFacilityNameFromServer }
-                                ?.apply { isUserSelected = true }
-                                ?: run {
-                                    // Select the first one by default if unable to find it.
-                                    facilities[0].isUserSelected = true
-                                }
-                        } catch (e: JSONException) {
-                            // Select the first one by default
-                            facilities[0].isUserSelected = true
+            val channel = Channel<HealthFacility>()
+            val databaseJob = launch {
+                database.withTransaction {
+                    for (healthFacility in channel) {
+                        if (healthFacility.name == defaultHealthFacilityName) {
+                            healthFacility.isUserSelected = true
                         }
-
-                        healthFacilityManager.addAll(facilities)
+                        healthFacilityManager.add(healthFacility)
                     }
-                }
-
-                // FIXME: (See above message)
-                else -> {
-                    Log.e(TAG, "Failed to download health facilities")
+                    Log.d(TAG, "health facility database job is done")
                 }
             }
+            val result = restApi.getAllHealthFacilities { inputStream ->
+                val reader = JacksonMapper.readerForHealthFacility
+                try {
+                    reader.readValues<HealthFacility>(inputStream).use { iterator ->
+                        iterator.forEachJackson { channel.send(it) }
+                    }
+                } catch (e: IOException) {
+                    Log.e(TAG, "exception while reading health facilities", e)
+                    // Propagate exceptions to the Http class so that it can log it
+                    throw e
+                }
+            }
+
+            when (result) {
+                is Success -> {
+                    channel.close()
+                    Log.d(TAG, "Health facility download successful!")
+                }
+                is Failure -> {
+                    channel.cancel()
+                    Log.e(
+                        TAG,
+                        "Health facility download failed, got status code: " +
+                            "${result.statusCode}"
+                    )
+                }
+                is NetworkException -> {
+                    channel.cancel()
+                    Log.e(
+                        TAG,
+                        "Health facility download failed, encountered exception",
+                        result.cause
+                    )
+                }
+            }
+            databaseJob.join()
+            return@async result
         }
 
-        joinAll(patientsJob, healthFacilityJob)
-
-        sharedPreferences.edit(commit = true) {
-            putLong(SyncStepperImplementation.LAST_SYNC, loginTime)
+        joinAll(patientsResultAsync, healthFacilityResultAsync)
+        if (patientsResultAsync.await() is Success) {
+            sharedPreferences.edit(commit = true) {
+                putLong(SyncStepperImplementation.LAST_SYNC, loginTime)
+            }
         }
 
         Success(Unit, HTTP_OK)
@@ -234,5 +255,52 @@ class LoginManager @Inject constructor(
         database.run {
             clearAllTables()
         }
+    }
+}
+
+/**
+ * Models the response sent back by the server for /api/user/auth.
+ * Not used outside of LoginManager.
+ * TODO: Store refresh token and use it
+ */
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class LoginResponse(
+    val email: String,
+    val roles: Array<String>,
+    val firstName: String?,
+    val healthFacilityName: String?,
+    val userId: Int,
+    val token: String
+) {
+    /**
+     * Generated by Android Studio
+     */
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as LoginResponse
+
+        if (email != other.email) return false
+        if (!roles.contentEquals(other.roles)) return false
+        if (firstName != other.firstName) return false
+        if (healthFacilityName != other.healthFacilityName) return false
+        if (userId != other.userId) return false
+        if (token != other.token) return false
+
+        return true
+    }
+
+    /**
+     * Generated by Android Studio
+     */
+    override fun hashCode(): Int {
+        var result = email.hashCode()
+        result = 31 * result + roles.contentHashCode()
+        result = 31 * result + firstName.hashCode()
+        result = 31 * result + healthFacilityName.hashCode()
+        result = 31 * result + userId
+        result = 31 * result + token.hashCode()
+        return result
     }
 }

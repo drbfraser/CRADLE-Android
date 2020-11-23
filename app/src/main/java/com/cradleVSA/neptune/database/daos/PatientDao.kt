@@ -15,7 +15,7 @@ import com.cradleVSA.neptune.model.PatientAndReadings
 @Dao
 interface PatientDao {
     @Transaction
-    fun updateOrInsertIfNotExists(patient: Patient) {
+    suspend fun updateOrInsertIfNotExists(patient: Patient) {
         if (update(patient) <= 0) {
             insert(patient)
         }
@@ -33,14 +33,14 @@ interface PatientDao {
      * into the database. -1 might occur if the [patient] already exists.
      */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(patient: Patient): Long
+    suspend fun insert(patient: Patient): Long
 
     /**
      * @return the number of rows updated (i.e., 0 means the given patient wasn't in the database,
      * and 1 means the [patient] was updated)
      */
     @Update
-    fun update(patient: Patient): Int
+    suspend fun update(patient: Patient): Int
 
     /**
      * Insert a list of [Patient]s into the [Patient] table. This is meant for
@@ -59,7 +59,7 @@ interface PatientDao {
      */
     @Transaction
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insertAll(patients: List<Patient>): LongArray
+    suspend fun insertAll(patients: List<Patient>): LongArray
 
     /**
      * Deletes a patient from the patient table.
@@ -68,7 +68,7 @@ interface PatientDao {
      * and 1 means the given [patient] was deleted).
      */
     @Delete
-    fun delete(patient: Patient): Int
+    suspend fun delete(patient: Patient): Int
 
     /**
      * Deletes a [Patient] with the [patientId].
@@ -76,7 +76,7 @@ interface PatientDao {
      * [patientId] was found and deleted, 0 if not found).
      */
     @Query("DELETE FROM Patient WHERE id = :patientId")
-    fun deleteById(patientId: String): Int
+    suspend fun deleteById(patientId: String): Int
 
     @Query(
         "SELECT * FROM LocalSearchPatient " +
@@ -104,40 +104,40 @@ ORDER BY latestReadingDate DESC, name COLLATE NOCASE ASC
      */
     @Transaction
     @Query("SELECT * FROM Patient")
-    fun getAllPatientsAndReading(): List<PatientAndReadings>
+    suspend fun getAllPatientsAndReading(): List<PatientAndReadings>
 
     @Transaction
     @Query("SELECT * FROM Patient WHERE base IS NULL")
-    fun getUnUploadedPatientAndReadings(): List<PatientAndReadings>
+    suspend fun getUnUploadedPatientAndReadings(): List<PatientAndReadings>
 
     /**
      * Get [Patient]s that were edited after a given timestamp and are not brand new patients
      */
     @Query("SELECT * FROM Patient WHERE lastEdited > :unixTime AND base IS NOT NULL")
-    fun getEditedPatientsAfterTime(unixTime: Long): List<Patient>
+    suspend fun getEditedPatientsAfterTime(unixTime: Long): List<Patient>
 
     /**
      * get a list of patient Ids
      */
     @Query("SELECT id FROM Patient")
-    fun getPatientIdsList(): List<String>
+    suspend fun getPatientIdsList(): List<String>
 
     /**
      * get a single patient by id if exists
      */
     @Query("SELECT * FROM Patient WHERE id = :id")
-    fun getPatientById(id: String): Patient?
+    suspend fun getPatientById(id: String): Patient?
 
     /**
      * Gets the patient along with all of its readings if it exists.
      */
     @Transaction
     @Query("SELECT * FROM Patient WHERE id = :id")
-    fun getPatientAndReadingsById(id: String): PatientAndReadings?
+    suspend fun getPatientAndReadingsById(id: String): PatientAndReadings?
 
     /**
      * delete all patients
      */
     @Query("DELETE FROM Patient")
-    fun deleteAllPatients()
+    suspend fun deleteAllPatients()
 }

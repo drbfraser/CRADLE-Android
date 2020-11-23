@@ -5,6 +5,8 @@ import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.ext.Field
 import com.cradleVSA.neptune.ext.put
 import com.cradleVSA.neptune.ext.stringField
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.Serializable
@@ -13,12 +15,13 @@ import kotlin.reflect.KProperty
 /**
  * Holds information about a urine test.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class UrineTest(
-    var leukocytes: String,
-    var nitrites: String,
-    var protein: String,
-    var blood: String,
-    var glucose: String
+    @JsonProperty("urineTestLeuc") var leukocytes: String,
+    @JsonProperty("urineTestNit") var nitrites: String,
+    @JsonProperty("urineTestPro") var protein: String,
+    @JsonProperty("urineTestBlood") var blood: String,
+    @JsonProperty("urineTestGlu") var glucose: String
 ) : Serializable, Marshal<JSONObject>, Verifiable<UrineTest> {
     /**
      * Converts this object to JSON.

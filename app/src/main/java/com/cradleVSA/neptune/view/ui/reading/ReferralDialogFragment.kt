@@ -23,7 +23,9 @@ import androidx.lifecycle.lifecycleScope
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.binding.FragmentDataBindingComponent
 import com.cradleVSA.neptune.databinding.ReferralDialogBinding
+import com.cradleVSA.neptune.ext.jackson.createJsonStringWithGenerator
 import com.cradleVSA.neptune.model.PatientAndReadings
+import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
 import com.cradleVSA.neptune.view.ReadingActivity
 import com.cradleVSA.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity
 import com.cradleVSA.neptune.viewmodel.PatientReadingViewModel
@@ -32,7 +34,6 @@ import com.cradleVSA.neptune.viewmodel.ReferralDialogViewModel
 import com.cradleVSA.neptune.viewmodel.ReferralOption
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import org.json.JSONObject
 import java.util.UUID
 
 /**
@@ -177,16 +178,19 @@ class ReferralDialogFragment : DialogFragment() {
                 selectedHealthFacilityName
             )
         val id = UUID.randomUUID().toString()
-        val json = with(JSONObject()) {
-            put("referralId", id)
-            put("patient", patientAndReadings.marshal())
-        }
+        val json = JacksonMapper.createWriter<PatientAndReadings>()
+            .createJsonStringWithGenerator {
+                writeStartObject()
+                writeStringField("referralId", id)
+                writeObjectField("patient", patientAndReadings)
+                writeEndObject()
+            }
         val phoneNumber = selectedHealthFacility.phoneNumber
         val uri = Uri.parse("smsto:$phoneNumber")
 
         return Intent(Intent.ACTION_SENDTO, uri).apply {
             putExtra("address", phoneNumber)
-            putExtra("sms_body", json.toString())
+            putExtra("sms_body", json)
 
             // Use default SMS app if supported
             // https://stackoverflow.com/a/24804601

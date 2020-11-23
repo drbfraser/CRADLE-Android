@@ -65,10 +65,6 @@ class PatientManager @Inject constructor(
 
     /**
      * Adds a patient and its readings to the local database in a single transaction.
-     * The [readings] should be for the given [patient].
-     *
-     * @throws IllegalArgumentException if any of the [readings] have a different patient ID from
-     * the given [patient]'s ID
      */
     suspend fun addPatientWithReadings(
         patient: Patient,
@@ -76,24 +72,17 @@ class PatientManager @Inject constructor(
         areReadingsFromServer: Boolean,
         isPatientNew: Boolean = false
     ) {
-        withContext(IO) {
-            readings.forEach {
-                if (it.patientId != patient.id) {
-                    throw IllegalArgumentException("mismatched ID")
-                }
-                if (areReadingsFromServer) {
-                    it.isUploadedToServer = true
-                }
-            }
+        if (areReadingsFromServer) {
+            readings.forEach { it.isUploadedToServer = true }
+        }
 
-            database.withTransaction {
-                if (isPatientNew) {
-                    patientDao.insert(patient)
-                } else {
-                    patientDao.updateOrInsertIfNotExists(patient)
-                }
-                readingDao.insertAll(readings)
+        database.withTransaction {
+            if (isPatientNew) {
+                patientDao.insert(patient)
+            } else {
+                patientDao.updateOrInsertIfNotExists(patient)
             }
+            readingDao.insertAll(readings)
         }
     }
 

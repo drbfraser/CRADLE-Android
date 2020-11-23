@@ -5,6 +5,7 @@ import android.text.TextUtils
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.utilitiles.Months
 import com.cradleVSA.neptune.utilitiles.Weeks
+import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
@@ -13,7 +14,6 @@ import io.mockk.mockkStatic
 import io.mockk.verify
 import io.mockk.verifyOrder
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -52,7 +52,30 @@ class PatientTests {
     }
 
     @Test
-    fun unmarshal_isTheInverseOf_marshal() {
+    fun patient_jackson_deserializeAndSerialize() {
+        val possiblePairsToTest = arrayOf(
+            CommonPatientReadingJsons.patientNoGestAgeJsonAndExpected,
+            CommonPatientReadingJsons.patientWithGestAgeJsonAndExpected,
+            CommonPatientReadingJsons.patientWithReferralAndFollowup
+        ).map { it.first to it.second.patient }
+
+        for ((jsonStringOfPatientAndReadings, expectedPatient) in possiblePairsToTest) {
+            val reader = JacksonMapper.readerForPatient
+            val parsedPatient = reader.readValue<Patient>(jsonStringOfPatientAndReadings)
+            assertEquals(expectedPatient, parsedPatient)
+
+            val writer = JacksonMapper.writerForPatient
+            val serializePatientAndReadings = writer.writeValueAsString(parsedPatient)
+
+            assertPatientJsonEqual(
+                jsonStringForExpected = jsonStringOfPatientAndReadings,
+                jsonStringForActual = serializePatientAndReadings
+            )
+        }
+    }
+
+    @Test
+    fun deserialize_isTheInverseOf_serialize() {
         val patient = Patient(
             id = "5414842504",
             name = "AB",
@@ -68,8 +91,11 @@ class PatientTests {
             medicalHistory = ""
         )
 
-        val json = patient.marshal()
-        val actual = unmarshal(Patient, json)
+        val writer = JacksonMapper.createWriter<Patient>()
+        val json = writer.writeValueAsString(patient)
+
+        val reader = JacksonMapper.createReader<Patient>()
+        val actual = reader.readValue<Patient>(json)
         assertEquals(patient, actual)
     }
 
@@ -94,15 +120,20 @@ class PatientTests {
         val patient = Patient(
             id = patientId,
             name = "AB",
-            dob = null,
+            dob = "1989-11-11",
+            isExactDob = false,
             sex = Sex.FEMALE,
             isPregnant = false
         )
         val patientAndReadings = PatientAndReadings(patient, listOf("a", "b", "c").map(makeReading))
 
-        val json = patientAndReadings.marshal()
-        assertTrue(json.has("readings"))
-        assertEquals(3, json.getJSONArray("readings").length())
+        val writer = JacksonMapper.createWriter<PatientAndReadings>()
+        val json = writer.writeValueAsString(patientAndReadings)
+
+        val reader = JacksonMapper.createReader<PatientAndReadings>()
+        val actual = reader.readValue<PatientAndReadings>(json)
+        assertEquals(patientAndReadings.patient, actual.patient)
+        assertEquals(patientAndReadings.readings, actual.readings)
     }
 
     @Test

@@ -6,6 +6,8 @@ import androidx.room.PrimaryKey
 import com.cradleVSA.neptune.ext.Field
 import com.cradleVSA.neptune.ext.put
 import com.cradleVSA.neptune.ext.stringField
+import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonProperty
 import org.json.JSONObject
 import java.util.UUID
 
@@ -20,16 +22,25 @@ import java.util.UUID
  * @property type The type of the health facility.
  * @property isUserSelected Whether the user wishes to see this health facility
  * in their drop down menu.
+ *
+ * TODO: move primary key to the name like the backend
  */
 @Entity
 data class HealthFacility(
-    @PrimaryKey var id: String = "",
-    @ColumnInfo var name: String = "",
-    @ColumnInfo var location: String = "",
-    @ColumnInfo var phoneNumber: String = "",
-    @ColumnInfo var about: String = "",
-    @ColumnInfo var type: String = "",
-    @ColumnInfo var isUserSelected: Boolean = false
+    @PrimaryKey @JsonIgnore
+    var id: String = UUID.randomUUID().toString(),
+    @ColumnInfo @JsonProperty("healthFacilityName")
+    var name: String = "",
+    @ColumnInfo
+    var location: String = "",
+    @ColumnInfo @JsonProperty("healthFacilityPhoneNumber")
+    var phoneNumber: String = "",
+    @ColumnInfo
+    var about: String = "",
+    @ColumnInfo @JsonProperty("facilityType")
+    var type: String = "",
+    @ColumnInfo @JsonIgnore
+    var isUserSelected: Boolean = false
 ) : Marshal<JSONObject> {
 
     /**

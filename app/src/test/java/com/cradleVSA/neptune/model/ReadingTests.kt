@@ -1,12 +1,25 @@
 package com.cradleVSA.neptune.model
 
+import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.util.UUID
 
 class ReadingTests {
     @Test
-    fun unmarshal_isTheInverseOf_marshal() {
+    fun reading_jackson_serializeAndDeserialize() {
+        val reading = createTestReading()
+
+        val writer = JacksonMapper.writerForReading
+        val serialized = writer.writeValueAsString(reading)
+
+        val reader = JacksonMapper.readerForReading
+        val deserializedReading = reader.readValue<Reading>(serialized)
+
+        assertEquals(reading, deserializedReading)
+    }
+
+    private fun createTestReading(): Reading {
         val unixTime: Long = 1595645893
         val patientId = "5414842504"
         val readingId = UUID.randomUUID().toString()
@@ -32,7 +45,7 @@ class ReadingTests {
             followupNeeded = true, followupInstructions = "These are things to do"
         )
 
-        val reading = Reading(
+        return Reading(
             id = readingId,
             patientId = patientId,
             dateTimeTaken = unixTime,
@@ -50,9 +63,5 @@ class ReadingTests {
             metadata = ReadingMetadata(),
             isUploadedToServer = false
         )
-
-        val json = reading.marshal()
-        val actual = unmarshal(Reading, json)
-        assertEquals(reading, actual)
     }
 }

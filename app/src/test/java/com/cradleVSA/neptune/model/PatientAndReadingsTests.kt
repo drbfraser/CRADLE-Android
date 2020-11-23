@@ -1,42 +1,56 @@
 package com.cradleVSA.neptune.model
 
-import com.cradleVSA.neptune.ext.map
-import org.json.JSONArray
-import org.json.JSONObject
+import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class PatientAndReadingsTests {
     @Test
-    fun `test single unmarshal without gestational age`() {
+    fun `test single deserialize without gestational age`() {
         val (jsonString, expected) = CommonPatientReadingJsons.patientNoGestAgeJsonAndExpected
 
-        val jsonObject = JSONObject(jsonString)
-        val patientAndReadingsUnmarshal = PatientAndReadings.unmarshal(jsonObject)
-        assertEquals(expected.patient, patientAndReadingsUnmarshal.patient)
-        assertEquals(expected.readings, patientAndReadingsUnmarshal.readings)
+        val reader = JacksonMapper.createReader<PatientAndReadings>()
+        val deserialize = reader.readValue<PatientAndReadings>(jsonString)
+        assertEquals(expected.patient, deserialize.patient)
+        assertEquals(expected.readings, deserialize.readings)
+
+        val writer = JacksonMapper.createWriter<PatientAndReadings>()
+        val serialized = writer.writeValueAsString(deserialize)
+
+        assertPatientJsonEqual(
+            jsonStringForExpected = jsonString,
+            jsonStringForActual = serialized
+        )
     }
 
     @Test
     fun `test single unmarshal with gestational age`() {
         val (jsonString, expected) = CommonPatientReadingJsons.patientWithGestAgeJsonAndExpected
 
-        val jsonObject = JSONObject(jsonString)
-        val patientAndReadingsUnmarshal = PatientAndReadings.unmarshal(jsonObject)
-        assertEquals(expected.patient, patientAndReadingsUnmarshal.patient)
-        assertEquals(expected.readings, patientAndReadingsUnmarshal.readings)
+        val reader = JacksonMapper.createReader<PatientAndReadings>()
+        val deserialize = reader.readValue<PatientAndReadings>(jsonString)
+        assertEquals(expected.patient, deserialize.patient)
+        assertEquals(expected.readings, deserialize.readings)
+
+        val writer = JacksonMapper.createWriter<PatientAndReadings>()
+        val serialized = writer.writeValueAsString(deserialize)
+
+        assertPatientJsonEqual(
+            jsonStringForExpected = jsonString,
+            jsonStringForActual = serialized
+        )
     }
 
     @Test
     fun `test single unmarshal with referral and follow up`() {
         val (jsonString, expected) = CommonPatientReadingJsons.patientWithReferralAndFollowup
 
-        val jsonObject = JSONObject(jsonString)
-        val patientAndReadingsUnmarshal = PatientAndReadings.unmarshal(jsonObject)
-        assertEquals(expected.patient, patientAndReadingsUnmarshal.patient)
+        val reader = JacksonMapper.createReader<PatientAndReadings>()
+        val deserialize = reader.readValue<PatientAndReadings>(jsonString)
+        assertEquals(expected.patient, deserialize.patient)
 
         val expectedEmptyList = expected.readings[0].previousReadingIds
-        val unmarshaledEmptyList = patientAndReadingsUnmarshal.readings[0].previousReadingIds
+        val unmarshaledEmptyList = deserialize.readings[0].previousReadingIds
 
         assert(expectedEmptyList.isEmpty()) {
             "expected empty but it has ${expectedEmptyList.size} elements." +
@@ -51,30 +65,32 @@ class PatientAndReadingsTests {
             unmarshaledEmptyList,
         ) { "what? they're both empty but they're not equal?" }
 
-        assertEquals(expected.readings, patientAndReadingsUnmarshal.readings)
+        assertEquals(expected.readings, deserialize.readings)
+
+        val writer = JacksonMapper.createWriter<PatientAndReadings>()
+        val serialized = writer.writeValueAsString(deserialize)
+
+        assertPatientJsonEqual(
+            jsonStringForExpected = jsonString,
+            jsonStringForActual = serialized
+        )
     }
 
     @Test
-    fun `test the unmarshalling`() {
-        // Check that the JSON and the PatientsAndReadings object can actually unmarshal
-        // and be parsed correctly.
-        val jsonArray = JSONArray(CommonPatientReadingJsons.allPatientsJsonExpectedPair.first)
-        val unmarshalPatientAndReadings = jsonArray.map(
-            JSONArray::getJSONObject,
-            PatientAndReadings.Companion::unmarshal
-        )
+    fun `test the deserialization of JSONArray of PatientAndReadings`() {
+        val reader = JacksonMapper.readerForPatientAndReadings
+        val jsonArrayAsString = CommonPatientReadingJsons.allPatientsJsonExpectedPair.first
+        val deserialized = reader.readValues<PatientAndReadings>(jsonArrayAsString)
 
-        unmarshalPatientAndReadings.forEachIndexed { outerIdx, unmarshaledPatientAndReadings ->
-            val (unmarshalPatient, unmarshalReadings) =
-                unmarshaledPatientAndReadings.patient to unmarshaledPatientAndReadings.readings
+        deserialized.forEach { deserializedPatientAndReadings ->
+            val (deserializedPatient, deserializedReadings) =
+                deserializedPatientAndReadings.patient to deserializedPatientAndReadings.readings
 
             CommonPatientReadingJsons.allPatientsJsonExpectedPair.second.find {
-                it.patient.id == unmarshalPatient.id
+                it.patient.id == deserializedPatient.id
             }?.let { expectedPatientAndReadings ->
-                assertEquals(expectedPatientAndReadings.patient, unmarshalPatient) {
-                    "failed at outerIdx $outerIdx, "
-                }
-                assertEquals(expectedPatientAndReadings.readings, unmarshalReadings)
+                assertEquals(expectedPatientAndReadings.patient, deserializedPatient)
+                assertEquals(expectedPatientAndReadings.readings, deserializedReadings)
             } ?: error("fail")
         }
     }
