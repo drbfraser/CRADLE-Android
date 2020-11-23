@@ -181,6 +181,9 @@ dependencies {
     def okhttp_version = "4.9.1"
     implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
 
+    implementation 'com.google.crypto.tink:tink-android:1.5.0'
+    implementation 'org.signal:argon2:13.1@aar'
+
     // TensorFlow (for OCR of CRADLE screen)
     // implementation 'org.tensorflow:tensorflow-lite:0.0.0-nightly'
     implementation 'org.tensorflow:tensorflow-lite:2.4.0'

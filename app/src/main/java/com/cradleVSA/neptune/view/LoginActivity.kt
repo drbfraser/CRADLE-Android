@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.text.method.PasswordTransformationMethod
+import android.util.Base64
 import android.util.Log
 import android.view.View
 import android.widget.Button
@@ -25,12 +27,23 @@ import com.google.android.gms.common.GooglePlayServicesNotAvailableException
 import com.google.android.gms.common.GooglePlayServicesRepairableException
 import com.google.android.gms.security.ProviderInstaller
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.crypto.tink.JsonKeysetWriter
+import com.google.crypto.tink.KeysetHandle
+import com.google.crypto.tink.aead.AeadConfig
+import com.google.crypto.tink.aead.AesGcmKeyManager
+import com.google.crypto.tink.subtle.AesGcmJce
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.signal.argon2.Argon2
+import org.signal.argon2.MemoryCost
+import org.signal.argon2.Type
+import org.signal.argon2.Version
+import java.io.File
 import java.net.HttpURLConnection.HTTP_UNAUTHORIZED
+import java.security.SecureRandom
 import javax.inject.Inject
 import javax.net.ssl.SSLHandshakeException
 
@@ -87,8 +100,60 @@ class LoginActivity : AppCompatActivity() {
     private fun setupLogin() {
         val emailET = findViewById<EditText>(R.id.emailEditText)
         val passwordET = findViewById<EditText>(R.id.passwordEditText)
+        passwordET.transformationMethod = PasswordTransformationMethod()
         val errorText = findViewById<TextView>(R.id.invalidLoginText)
         val loginButton = findViewById<Button>(R.id.loginButton)
+
+        // https://www.usenix.org/sites/default/files/conference/protected-files/hotsec15_slides_green.pdf
+        // https://github.com/google/tink/issues/347
+        @Suppress("MagicNumber")
+        val argon = Argon2.Builder(Version.V13)
+            .type(Type.Argon2id)
+            .memoryCost(MemoryCost.MiB(16))
+            .parallelism(1)
+            .iterations(32)
+            .hashLength(32)
+            .build()
+            .hash(
+                "hunter2".toByteArray(Charsets.UTF_8),
+                ByteArray(16).apply { SecureRandom().nextBytes(this) }
+            )
+        val theKey = AesGcmJce(argon.hash)
+        Log.d("LoginActivity", "hunter2 encoded with salt: ${argon.encoded}")
+        @Suppress("MagicNumber")
+        val aad = ByteArray(20).apply { SecureRandom().nextBytes(this) }
+        val cipherText = theKey.encrypt(
+            "this is a message".toByteArray(Charsets.UTF_8),
+            aad
+        )
+        Log.d("LoginActivity", "ciphertext is ${Base64.encodeToString(cipherText, Base64.DEFAULT)}")
+        val decrypt = theKey.decrypt(cipherText, aad)
+        Log.d("LoginActivity", "decrypted ciphertext is is ${decrypt.decodeToString()}")
+
+        AeadConfig.register()
+        val keysetTemplate = AesGcmKeyManager.aes256GcmTemplate()
+        val keysetHandle = KeysetHandle.generateNew(keysetTemplate)
+        val dir = getDir("keys", MODE_PRIVATE)
+        val file = File(dir, "private-key")
+        keysetHandle.write(JsonKeysetWriter.withFile(file), theKey)
+
+        // keysetHandle.getPrimitive(AesGcmJce::class.java)
+        @Suppress("MagicNumber")
+        val argon2 = Argon2.Builder(Version.V13)
+            .type(Type.Argon2id)
+            .memoryCost(MemoryCost.MiB(16))
+            .parallelism(1)
+            .iterations(32)
+            .hashLength(32)
+            .build()
+            .hash(
+                "hunter2abc".toByteArray(Charsets.UTF_8),
+                ByteArray(16).apply { SecureRandom().nextBytes(this) }
+            )
+        val theKey2 = AesGcmJce(argon2.hash)
+        val file2 = File(dir, "private-key-with-biometrics")
+        keysetHandle.write(JsonKeysetWriter.withFile(file2), theKey2)
+        keysetHandle.keysetInfo.primaryKeyId
 
         loginButton.setOnClickListener { _ ->
             errorText.visibility = View.GONE
