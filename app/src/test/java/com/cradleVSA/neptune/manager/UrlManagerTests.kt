@@ -1,8 +1,8 @@
 package com.cradleVSA.neptune.manager
 
 import com.cradleVSA.neptune.model.Settings
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -10,13 +10,11 @@ class UrlManagerTests {
 
     @Test
     fun base_portIsNull_constructUrlWithoutPort() {
-        val mockSettings: Settings = mock()
-        whenever(mockSettings.networkUseHttps)
-            .thenReturn(true)
-        whenever(mockSettings.networkHostname)
-            .thenReturn("sample.domain.com")
-        whenever(mockSettings.networkPort)
-            .thenReturn(null)
+        val mockSettings: Settings = mockk {
+            every { networkUseHttps } returns true
+            every { networkHostname } returns "sample.domain.com"
+            every { networkPort } returns null
+        }
 
         val url = UrlManager(mockSettings)
 
@@ -25,13 +23,11 @@ class UrlManagerTests {
 
     @Test
     fun base_portIsBlank_constructUrlWithoutPort() {
-        val mockSettings: Settings = mock()
-        whenever(mockSettings.networkUseHttps)
-            .thenReturn(true)
-        whenever(mockSettings.networkHostname)
-            .thenReturn("sample.domain.com")
-        whenever(mockSettings.networkPort)
-            .thenReturn("")
+        val mockSettings: Settings = mockk {
+            every { networkUseHttps } returns true
+            every { networkHostname } returns "sample.domain.com"
+            every { networkPort } returns null
+        }
 
         val url = UrlManager(mockSettings)
 
@@ -40,13 +36,11 @@ class UrlManagerTests {
 
     @Test
     fun base_portIsNotNull_constructUrlWithPort() {
-        val mockSettings: Settings = mock()
-        whenever(mockSettings.networkUseHttps)
-            .thenReturn(false)
-        whenever(mockSettings.networkHostname)
-            .thenReturn("sample.domain.com")
-        whenever(mockSettings.networkPort)
-            .thenReturn("8080")
+        val mockSettings: Settings = mockk {
+            every { networkUseHttps } returns false
+            every { networkHostname } returns "sample.domain.com"
+            every { networkPort } returns "8080"
+        }
 
         val url = UrlManager(mockSettings)
 

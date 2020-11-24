@@ -199,10 +199,6 @@ dependencies {
     //   The actual one is baked into the Android SDK so it fails if we try to test it
     testImplementation "org.json:json:20200518"
     testImplementation "io.mockk:mockk:1.10.2"
-    testImplementation 'org.mockito:mockito-core:3.5.13'
-    androidTestImplementation 'org.mockito:mockito-android:3.5.13'
-    // Kotlin version of mockito
-    testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     // https://github.com/android/testing-samples/tree/master/ui/espresso/IdlingResourceSample
     implementation 'androidx.test.espresso:espresso-idling-resource:3.3.0'
