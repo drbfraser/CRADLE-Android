@@ -54,7 +54,7 @@ class RestApi @Inject constructor(
                 .encodeToByteArray()
             val requestBody = buildJsonRequestBody(body)
 
-            return@withContext http.requestWithStream(
+            return@withContext http.makeRequest(
                 method = Http.Method.POST,
                 url = urlManager.authentication,
                 headers = mapOf(),
@@ -87,7 +87,7 @@ class RestApi @Inject constructor(
     suspend fun getAllPatientsStreaming(
         inputStreamWriter: suspend (InputStream) -> Unit
     ): NetworkResult<Unit> = withContext(IO) {
-        http.requestWithStream(
+        http.makeRequest(
             method = Http.Method.GET,
             url = urlManager.getAllPatients,
             headers = headers,
@@ -104,7 +104,7 @@ class RestApi @Inject constructor(
      */
     suspend fun getPatient(id: String): NetworkResult<PatientAndReadings> =
         withContext(IO) {
-            http.requestWithStream(
+            http.makeRequest(
                 method = Http.Method.GET,
                 url = urlManager.getPatient(id),
                 headers = headers,
@@ -122,7 +122,7 @@ class RestApi @Inject constructor(
      */
     suspend fun getPatientInfo(id: String): NetworkResult<Patient> =
         withContext(IO) {
-            http.requestWithStream(
+            http.makeRequest(
                 method = Http.Method.GET,
                 url = urlManager.getPatientInfo(id),
                 headers = headers,
@@ -140,7 +140,7 @@ class RestApi @Inject constructor(
      */
     suspend fun searchForPatient(searchString: String): NetworkResult<List<GlobalPatient>> =
         withContext(IO) {
-            http.requestWithStream(
+            http.makeRequest(
                 method = Http.Method.GET,
                 url = urlManager.getGlobalPatientSearch(searchString),
                 headers = headers,
@@ -158,7 +158,7 @@ class RestApi @Inject constructor(
      */
     suspend fun getReading(id: String): NetworkResult<Reading> =
         withContext(IO) {
-            http.requestWithStream(
+            http.makeRequest(
                 method = Http.Method.GET,
                 url = urlManager.getReading(id),
                 headers = headers,
@@ -174,7 +174,7 @@ class RestApi @Inject constructor(
      */
     suspend fun getAssessment(id: String): NetworkResult<Assessment> =
         withContext(IO) {
-            http.requestWithStream(
+            http.makeRequest(
                 method = Http.Method.GET,
                 url = urlManager.getAssessmentById(id),
                 headers = headers,
@@ -200,7 +200,7 @@ class RestApi @Inject constructor(
     suspend fun postPatient(patient: PatientAndReadings): NetworkResult<PatientAndReadings> =
         withContext(IO) {
             val body = JacksonMapper.createWriter<PatientAndReadings>().writeValueAsBytes(patient)
-            http.requestWithStream(
+            http.makeRequest(
                 method = Http.Method.POST,
                 url = urlManager.postPatient,
                 headers = headers,
@@ -222,7 +222,7 @@ class RestApi @Inject constructor(
     suspend fun putPatient(patient: Patient): NetworkResult<Unit> =
         withContext(IO) {
             val body = JacksonMapper.writerForPatient.writeValueAsBytes(patient)
-            http.requestWithStream(
+            http.makeRequest(
                 method = Http.Method.PUT,
                 url = urlManager.getPatientInfoOnly(patient.id),
                 headers = headers,
@@ -240,7 +240,7 @@ class RestApi @Inject constructor(
     suspend fun postReading(reading: Reading): NetworkResult<Reading> =
         withContext(IO) {
             val readingAsBytes = JacksonMapper.writerForReading.writeValueAsBytes(reading)
-            http.requestWithStream(
+            http.makeRequest(
                 method = Http.Method.POST,
                 url = urlManager.postReading,
                 headers = headers,
@@ -264,7 +264,7 @@ class RestApi @Inject constructor(
         withContext(IO) {
             // more efficient to just construct the bytes directly
             val body = "{\"patientId\":\"$id\"}".encodeToByteArray()
-            http.requestWithStream(
+            http.makeRequest(
                 method = Http.Method.POST,
                 url = urlManager.userPatientAssociation,
                 headers = headers,
@@ -281,7 +281,7 @@ class RestApi @Inject constructor(
     suspend fun getAllHealthFacilities(
         inputStreamReader: suspend (InputStream) -> Unit
     ): NetworkResult<Unit> = withContext(IO) {
-        http.requestWithStream(
+        http.makeRequest(
             method = Http.Method.GET,
             url = urlManager.healthFacilities,
             headers = headers,
@@ -304,7 +304,7 @@ class RestApi @Inject constructor(
      */
     suspend fun getUpdates(lastSyncTimestamp: Long): NetworkResult<SyncUpdate> =
         withContext(IO) {
-            http.requestWithStream(
+            http.makeRequest(
                 method = Http.Method.GET,
                 url = urlManager.getUpdates(lastSyncTimestamp),
                 headers = headers,

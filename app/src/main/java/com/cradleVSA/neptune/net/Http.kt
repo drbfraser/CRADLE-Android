@@ -77,19 +77,18 @@ class Http {
      * @param requestBody An optional body to send with the request. If doing a POST or PUT, this
      * should not be null. Use [buildJsonRequestBody] to create a ResponseBody with the correct
      * JSON Content-Type headers applied. This is null by default.
-     * @param inputStreamReader A function that processes the [InputStream]. If [requestWithStream]
+     * @param inputStreamReader A function that processes the [InputStream]. If [makeRequest]
      * returns a [Success], the value inside of the [Success] will be the return value of
      * the [inputStreamReader]. The [inputStreamReader] is only called if the server returns a
-     * successful response code. Not expected to close the given [InputStream]. Note:
-     * [IOException]s will be caught by the outer function and it will return a [NetworkException]
-     * as the result.
+     * successful response code. Not expected to close the given [InputStream]. Note: [IOException]s
+     * will be caught by [makeRequest] and return a [NetworkException] as the result.
      * @return The result of the network request: [Success] if it succeeds, [Failure] if the server
      * returns a non-successful status code, and [NetworkException] if an [IOException] occurs.
      *
      * @throws IllegalArgumentException - if url is not a valid HTTP or HTTPS URL, or if using an
      * HTTP method that requires a non-null [requestBody] (like POST or PUT).
      */
-    suspend inline fun <T> requestWithStream(
+    suspend inline fun <T> makeRequest(
         method: Method,
         url: String,
         headers: Map<String, String>,

@@ -2,6 +2,7 @@ package com.cradleVSA.neptune.model
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.cradleVSA.neptune.BuildConfig
 import com.cradleVSA.neptune.R
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -39,12 +40,17 @@ open class Settings @Inject constructor(
 
     /**
      * Whether to use HTTPS or not, configured in Settings > Advanced.
+     * For release builds, this is always true.
      */
     open val networkUseHttps: Boolean
-        get() = sharedPreferences.getBoolean(
-            context.getString(R.string.key_server_use_https),
+        get() = if (BuildConfig.DEBUG) {
+            sharedPreferences.getBoolean(
+                context.getString(R.string.key_server_use_https),
+                true
+            )
+        } else {
             true
-        )
+        }
 
     /* VHT Info */
 

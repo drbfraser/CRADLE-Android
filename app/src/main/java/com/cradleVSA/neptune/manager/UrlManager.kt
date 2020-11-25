@@ -78,9 +78,8 @@ class UrlManager @Inject constructor(val settings: Settings) {
 
             val hostname = settings.networkHostname
             if (hostname == null) {
-                val msg = "Network hostname was null"
-                Log.wtf(this::class.simpleName, msg)
-                throw NullPointerException(msg)
+                Log.wtf(TAG, "Network hostname was null")
+                throw NullPointerException()
             }
 
             val port = if (settings.networkPort.isNullOrBlank()) {
@@ -154,4 +153,8 @@ class UrlManager @Inject constructor(val settings: Settings) {
     fun getAssessmentById(id: String): String = "$base/assessments/$id"
 
     val userPatientAssociation = "$base/associations"
+
+    companion object {
+        private const val TAG = "UrlManager"
+    }
 }

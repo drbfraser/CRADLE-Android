@@ -48,7 +48,7 @@ internal class HttpTest {
             val reader = mapper.readerFor(ServerResponse::class.java)
 
             val testRequest: NetworkResult<ServerResponse> = runBlocking {
-                Http().requestWithStream(
+                Http().makeRequest(
                     method = Http.Method.GET,
                     url = server.url("/api/test").toString(),
                     headers = emptyMap(),
@@ -98,7 +98,7 @@ tortor rutrum mauris. Morbi pellentesque ex.
             val reader = mapper.readerFor(ServerResponse::class.java)
 
             val testRequest: NetworkResult<ServerResponse> = runBlocking {
-                Http().requestWithStream(
+                Http().makeRequest(
                     method = Http.Method.GET,
                     url = server.url("/api/test").toString(),
                     headers = emptyMap(),
@@ -133,7 +133,7 @@ tortor rutrum mauris. Morbi pellentesque ex.
             val http = Http()
 
             val notFoundRequest: NetworkResult<ServerResponse> = runBlocking {
-                http.requestWithStream(
+                http.makeRequest(
                     method = Http.Method.GET,
                     url = server.url("/api/unavailable/api/useless").toString(),
                     headers = emptyMap(),
@@ -154,7 +154,7 @@ tortor rutrum mauris. Morbi pellentesque ex.
 
 
             val testRequest: NetworkResult<ServerResponse> = runBlocking {
-                http.requestWithStream(
+                http.makeRequest(
                     method = Http.Method.GET,
                     url = server.url("/api/test/need-auth").toString(),
                     headers = emptyMap(),
@@ -173,7 +173,7 @@ tortor rutrum mauris. Morbi pellentesque ex.
             assertEquals("Signature verification failed", testRequest.toJson().obj!!.get("message"))
 
             val testRequestWithAuthToken: NetworkResult<Unit> = runBlocking {
-                http.requestWithStream(
+                http.makeRequest(
                     method = Http.Method.GET,
                     url = server.url("/api/test/need-auth").toString(),
                     headers = mapOf("Authorization" to "Abc"),
@@ -211,7 +211,7 @@ tortor rutrum mauris. Morbi pellentesque ex.
             val reader = mapper.readerFor(ServerResponse::class.java)
             // This should throw an exception during parsing
             val testRequest: NetworkResult<ServerResponse> = runBlocking {
-                Http().requestWithStream(
+                Http().makeRequest(
                     method = Http.Method.GET,
                     url = server.url("/api/anything").toString(),
                     headers = emptyMap(),
