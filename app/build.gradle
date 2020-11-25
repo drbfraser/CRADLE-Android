@@ -165,6 +165,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.3'
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.11.3"
 
+    implementation "com.squareup.okhttp3:okhttp:4.9.0"
+
     // Time: Backport of Java 8's interfaces for Android
     // https://github.com/JakeWharton/ThreeTenABP
     implementation 'com.jakewharton.threetenabp:threetenabp:1.2.4'
@@ -203,6 +205,7 @@ dependencies {
     // https://github.com/android/testing-samples/tree/master/ui/espresso/IdlingResourceSample
     implementation 'androidx.test.espresso:espresso-idling-resource:3.3.0'
     androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.3.0'
+    testImplementation "com.squareup.okhttp3:mockwebserver:4.9.0"
 
     detekt "io.gitlab.arturbosch.detekt:detekt-formatting:$detekt_version"
     detekt("io.gitlab.arturbosch.detekt:detekt-cli:$detekt_version")

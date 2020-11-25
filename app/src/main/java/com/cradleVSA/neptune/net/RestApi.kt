@@ -47,18 +47,19 @@ class RestApi @Inject constructor(
      */
     suspend fun authenticate(email: String, password: String): NetworkResult<LoginResponse> =
         withContext(IO) {
-            val body = JSONObject(mapOf("email" to email, "password" to password))
-                .toString().encodeToByteArray()
-            http.jsonRequestStream(
+            val body = JSONObject()
+                .put("email", email)
+                .put("password", password)
+                .toString()
+                .encodeToByteArray()
+            val requestBody = buildJsonRequestBody(body)
+
+            return@withContext http.makeRequest(
                 method = Http.Method.POST,
                 url = urlManager.authentication,
                 headers = mapOf(),
-                doOutput = true,
-                outputSize = body.size,
-                outputStreamWriter = { stream -> stream.write(body) },
-                inputStreamReader = { stream ->
-                    JacksonMapper.createReader<LoginResponse>().readValue<LoginResponse>(stream)
-                }
+                requestBody = requestBody,
+                inputStreamReader = { JacksonMapper.createReader<LoginResponse>().readValue(it) }
             )
         }
 
@@ -86,15 +87,11 @@ class RestApi @Inject constructor(
     suspend fun getAllPatientsStreaming(
         inputStreamWriter: suspend (InputStream) -> Unit
     ): NetworkResult<Unit> = withContext(IO) {
-        http.jsonRequestStream(
+        http.makeRequest(
             method = Http.Method.GET,
             url = urlManager.getAllPatients,
             headers = headers,
-            doOutput = false,
-            // Bulk input; don't bother buffering
-            bufferInput = false,
-            inputStreamReader = inputStreamWriter,
-            outputStreamWriter = {}
+            inputStreamReader = inputStreamWriter
         )
     }
 
@@ -107,15 +104,11 @@ class RestApi @Inject constructor(
      */
     suspend fun getPatient(id: String): NetworkResult<PatientAndReadings> =
         withContext(IO) {
-            http.jsonRequestStream(
+            http.makeRequest(
                 method = Http.Method.GET,
                 url = urlManager.getPatient(id),
                 headers = headers,
-                doOutput = false,
-                outputStreamWriter = {},
-                inputStreamReader = {
-                    JacksonMapper.readerForPatientAndReadings.readValue<PatientAndReadings>(it)
-                }
+                inputStreamReader = { JacksonMapper.readerForPatientAndReadings.readValue(it) }
             )
         }
 
@@ -129,13 +122,11 @@ class RestApi @Inject constructor(
      */
     suspend fun getPatientInfo(id: String): NetworkResult<Patient> =
         withContext(IO) {
-            http.jsonRequestStream(
+            http.makeRequest(
                 method = Http.Method.GET,
                 url = urlManager.getPatientInfo(id),
                 headers = headers,
-                doOutput = false,
-                outputStreamWriter = {},
-                inputStreamReader = { JacksonMapper.readerForPatient.readValue<Patient>(it) }
+                inputStreamReader = { JacksonMapper.readerForPatient.readValue(it) }
             )
         }
 
@@ -149,15 +140,12 @@ class RestApi @Inject constructor(
      */
     suspend fun searchForPatient(searchString: String): NetworkResult<List<GlobalPatient>> =
         withContext(IO) {
-            http.jsonRequestStream(
+            http.makeRequest(
                 method = Http.Method.GET,
                 url = urlManager.getGlobalPatientSearch(searchString),
                 headers = headers,
-                doOutput = false,
-                outputStreamWriter = {},
                 inputStreamReader = {
-                    JacksonMapper.createGlobalPatientsListReader()
-                        .readValue<List<GlobalPatient>>(it)
+                    JacksonMapper.createGlobalPatientsListReader().readValue(it)
                 }
             )
         }
@@ -170,13 +158,11 @@ class RestApi @Inject constructor(
      */
     suspend fun getReading(id: String): NetworkResult<Reading> =
         withContext(IO) {
-            http.jsonRequestStream(
+            http.makeRequest(
                 method = Http.Method.GET,
                 url = urlManager.getReading(id),
                 headers = headers,
-                doOutput = false,
-                outputStreamWriter = {},
-                inputStreamReader = { JacksonMapper.readerForReading.readValue<Reading>(it) }
+                inputStreamReader = { JacksonMapper.readerForReading.readValue(it) }
             )
         }
 
@@ -188,15 +174,11 @@ class RestApi @Inject constructor(
      */
     suspend fun getAssessment(id: String): NetworkResult<Assessment> =
         withContext(IO) {
-            http.jsonRequestStream(
+            http.makeRequest(
                 method = Http.Method.GET,
                 url = urlManager.getAssessmentById(id),
                 headers = headers,
-                doOutput = false,
-                outputStreamWriter = {},
-                inputStreamReader = {
-                    JacksonMapper.createReader<Assessment>().readValue<Assessment>(it)
-                }
+                inputStreamReader = { JacksonMapper.createReader<Assessment>().readValue(it) }
             )
         }
 
@@ -218,15 +200,13 @@ class RestApi @Inject constructor(
     suspend fun postPatient(patient: PatientAndReadings): NetworkResult<PatientAndReadings> =
         withContext(IO) {
             val body = JacksonMapper.createWriter<PatientAndReadings>().writeValueAsBytes(patient)
-            http.jsonRequestStream(
+            http.makeRequest(
                 method = Http.Method.POST,
                 url = urlManager.postPatient,
                 headers = headers,
-                doOutput = true,
-                outputSize = body.size,
-                outputStreamWriter = { outputStream -> outputStream.write(body) },
+                requestBody = buildJsonRequestBody(body),
                 inputStreamReader = { input ->
-                    JacksonMapper.readerForPatientAndReadings.readValue<PatientAndReadings>(input)
+                    JacksonMapper.readerForPatientAndReadings.readValue(input)
                 },
             )
         }
@@ -242,13 +222,11 @@ class RestApi @Inject constructor(
     suspend fun putPatient(patient: Patient): NetworkResult<Unit> =
         withContext(IO) {
             val body = JacksonMapper.writerForPatient.writeValueAsBytes(patient)
-            http.jsonRequestStream(
+            http.makeRequest(
                 method = Http.Method.PUT,
                 url = urlManager.getPatientInfoOnly(patient.id),
                 headers = headers,
-                doOutput = true,
-                outputSize = body.size,
-                outputStreamWriter = { outputStream -> outputStream.write(body) },
+                requestBody = buildJsonRequestBody(body),
                 inputStreamReader = {},
             )
         }
@@ -262,16 +240,12 @@ class RestApi @Inject constructor(
     suspend fun postReading(reading: Reading): NetworkResult<Reading> =
         withContext(IO) {
             val readingAsBytes = JacksonMapper.writerForReading.writeValueAsBytes(reading)
-            http.jsonRequestStream(
+            http.makeRequest(
                 method = Http.Method.POST,
                 url = urlManager.postReading,
                 headers = headers,
-                doOutput = true,
-                outputSize = readingAsBytes.size,
-                outputStreamWriter = { outputStream -> outputStream.write(readingAsBytes) },
-                inputStreamReader = { input ->
-                    JacksonMapper.readerForReading.readValue<Reading>(input)
-                },
+                requestBody = buildJsonRequestBody(readingAsBytes),
+                inputStreamReader = { input -> JacksonMapper.readerForReading.readValue(input) },
             )
         }
 
@@ -290,14 +264,12 @@ class RestApi @Inject constructor(
         withContext(IO) {
             // more efficient to just construct the bytes directly
             val body = "{\"patientId\":\"$id\"}".encodeToByteArray()
-            http.jsonRequestStream(
+            http.makeRequest(
                 method = Http.Method.POST,
                 url = urlManager.userPatientAssociation,
                 headers = headers,
-                doOutput = true,
-                outputSize = body.size,
+                requestBody = buildJsonRequestBody(body),
                 inputStreamReader = {},
-                outputStreamWriter = { outputStream -> outputStream.write(body) }
             ).map { Unit }
         }
 
@@ -307,17 +279,13 @@ class RestApi @Inject constructor(
      * @return a list of health facilities
      */
     suspend fun getAllHealthFacilities(
-        inputStreamWriter: suspend (InputStream) -> Unit
+        inputStreamReader: suspend (InputStream) -> Unit
     ): NetworkResult<Unit> = withContext(IO) {
-        http.jsonRequestStream(
+        http.makeRequest(
             method = Http.Method.GET,
             url = urlManager.healthFacilities,
             headers = headers,
-            doOutput = false,
-            // Bulk input; don't bother buffering
-            bufferInput = false,
-            inputStreamReader = inputStreamWriter,
-            outputStreamWriter = {}
+            inputStreamReader = inputStreamReader,
         )
     }
 
@@ -336,15 +304,11 @@ class RestApi @Inject constructor(
      */
     suspend fun getUpdates(lastSyncTimestamp: Long): NetworkResult<SyncUpdate> =
         withContext(IO) {
-            http.jsonRequestStream(
+            http.makeRequest(
                 method = Http.Method.GET,
                 url = urlManager.getUpdates(lastSyncTimestamp),
                 headers = headers,
-                doOutput = false,
-                // Bulk input; don't bother buffering
-                bufferInput = false,
-                inputStreamReader = { JacksonMapper.readerForSyncUpdate.readValue<SyncUpdate>(it) },
-                outputStreamWriter = {}
+                inputStreamReader = { JacksonMapper.readerForSyncUpdate.readValue(it) }
             )
         }
 
