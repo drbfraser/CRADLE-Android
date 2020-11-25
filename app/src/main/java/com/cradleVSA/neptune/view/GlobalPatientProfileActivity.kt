@@ -19,7 +19,6 @@ import com.cradleVSA.neptune.viewmodel.ReadingRecyclerViewAdapter
 import com.cradleVSA.neptune.viewmodel.ReadingRecyclerViewAdapter.OnClickElement
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.reading_card_assesment.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -154,7 +153,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
             object : OnClickElement {
                 override fun onClick(readingId: String) {
                     Snackbar.make(
-                        view,
+                        readingRecyclerview,
                         R.string.global_patient_profile_you_must_add_to_list_before_editing,
                         Snackbar.LENGTH_LONG
                     ).show()
@@ -166,7 +165,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
 
                 override fun onClickRecheckReading(readingId: String) {
                     Snackbar.make(
-                        view,
+                        readingRecyclerview,
                         R.string.global_patient_profile_you_must_add_to_list_before_reading,
                         Snackbar.LENGTH_LONG
                     ).show()
