@@ -47,8 +47,11 @@ class RestApi @Inject constructor(
      */
     suspend fun authenticate(email: String, password: String): NetworkResult<LoginResponse> =
         withContext(IO) {
-            val body = JSONObject(mapOf("email" to email, "password" to password))
-                .toString().encodeToByteArray()
+            val body = JSONObject()
+                .put("email", email)
+                .put("password", password)
+                .toString()
+                .encodeToByteArray()
             val requestBody = buildJsonRequestBody(body)
 
             return@withContext http.requestWithStream(
