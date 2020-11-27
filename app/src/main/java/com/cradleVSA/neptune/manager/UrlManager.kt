@@ -18,34 +18,10 @@ class UrlManager @Inject constructor(val settings: Settings) {
         get() = "$base/user/auth"
 
     /**
-     * Endpoint for retrieving information about all patients.
-     */
-    val allPatientInfo: String
-        get() = "$base/patients"
-
-    /**
      * Endpoint for retrieving health facility information.
      */
     val healthFacilities: String
         get() = "$base/facilities"
-
-    /**
-     * Endpoint for retrieving or uploading information about a reading.
-     */
-    val readings: String
-        get() = "$base/readings"
-
-    /**
-     * Endpoint for retrieving referral information.
-     */
-    val referral: String
-        get() = "$base/referral"
-
-    /**
-     * Endpoint for retrieving follow up information.
-     */
-    val followUp: String
-        get() = "$base/mobile/summarized/follow_up"
 
     /**
      * Endpoint for getting all patients managed by the current user.
@@ -120,11 +96,6 @@ class UrlManager @Inject constructor(val settings: Settings) {
      * @param id a reading id
      */
     fun getReading(id: String) = "$base/readings/$id"
-
-    /**
-     * Endpoint for retrieving all readings associated with a given patient id.
-     */
-    fun getPatientFullInfoById(patientId: String) = "$base/patients/$patientId"
 
     /**
      * Search the database for a list of patient by Id or Initials
