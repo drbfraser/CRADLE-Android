@@ -104,9 +104,13 @@ interface Verifiable<in T : Any> {
                 }
 
                 // First value in the pair is false; second value is the error message.
-                val result = isValueForPropertyValid(property, property.getter.call(thisTypedAsT), context)
-                if (!result.first) {
-                    listOfInvalidProperties.add(Pair(property.name, result.second))
+                val (isValid, errorMessage) = isValueForPropertyValid(
+                    property = property,
+                    value = property.getter.call(thisTypedAsT),
+                    context = context
+                )
+                if (!isValid) {
+                    listOfInvalidProperties.add(Pair(property.name, errorMessage))
                     if (shouldStopAtFirstError) {
                         return listOfInvalidProperties
                     }
@@ -144,6 +148,8 @@ interface Verifiable<in T : Any> {
 
 /**
  * A class / object that can verify values for properties of [Verifiable] type [T].
+ * Verification is done by the [isValueValid] function, which verifies a value for
+ * a property of [T].
  *
  * The expected use is to have the companion object of a [Verifiable] object implement this
  * interface so that other classes can verify properties for a class without needing to
@@ -244,7 +250,7 @@ interface Verifier<in T : Verifiable<T>> {
         currentValuesMap?.run {
             if (this.values.find { it is LiveData<*>? } != null) {
                 // If this was given by a LiveDataDynamicModelBuilder, extract the values.
-                this.mapValues { (it.value as LiveData<*>?)?.value }.toMap()
+                this.mapValues { (it.value as LiveData<*>?)?.value }
             } else {
                 this
             }

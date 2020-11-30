@@ -1,10 +1,15 @@
 package com.cradleVSA.neptune.model
 
 import android.content.Context
+import androidx.arch.core.executor.ArchTaskExecutor
+import androidx.arch.core.executor.TaskExecutor
+import com.cradleVSA.neptune.utilitiles.LiveDataDynamicModelBuilder
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import kotlin.math.sign
@@ -24,6 +29,39 @@ class VerifiableTests {
     private val invalidAges = -1000..-1 union 121..1000
 
     private val mockContext: Context = mockk(relaxed = true)
+
+    @BeforeEach
+    fun beforeEach() {
+        // This is needed to handle the Looper that is used by LiveData.
+        // Code taken from InstantTaskExecutorRule. See InstantTaskExecutor.java inside of
+        // lifecycle/lifecycle-livedata/src/test/java/androidx/lifecycle/util/ at
+        // https://android.googlesource.com/platform/frameworks/support/+/refs/heads/androidx-master-dev/
+        //
+        // Using
+        //      @Rule @JvmField
+        //      val rule = InstantTaskExecutorRule()
+        // with testImplementation androidx.arch.core:core-testing:2.1.0
+        // and import androidx.arch.core.executor.testing.InstantTaskExecutorRule isn't working;
+        // maybe some Kotlin-related issue.
+        ArchTaskExecutor.getInstance().setDelegate(object : TaskExecutor() {
+            override fun executeOnDiskIO(runnable: Runnable) {
+                runnable.run()
+            }
+
+            override fun postToMainThread(runnable: Runnable) {
+                runnable.run()
+            }
+
+            override fun isMainThread(): Boolean {
+                return true
+            }
+        })
+    }
+
+    @AfterEach
+    fun afterEach() {
+        ArchTaskExecutor.getInstance().setDelegate(null)
+    }
 
     @Test
     fun isValid_usingValidValues() {
@@ -184,6 +222,30 @@ class VerifiableTests {
             isPregnant = true, gestationalAgeWeeks = 5
         )
         assert(pregnant.getAllMembersWithInvalidValues(mockContext).isEmpty())
+    }
+
+    @Test
+    fun isPropertyValid_liveDataDynamicModelBuilderAsDependentProperties() {
+        // it's fine to be missing gestational age when not pregnant
+        val builder = LiveDataDynamicModelBuilder()
+        builder.set(PregnancyRecord::isPregnant, false)
+
+        val (isNullGestationalValidIfNotPregnant, _) = PregnancyRecord.isValueValid(
+            property = PregnancyRecord::gestationalAgeWeeks,
+            value = null,
+            context = mockContext,
+            currentValues = builder.publicMap
+        )
+        assert(isNullGestationalValidIfNotPregnant)
+
+        builder.set(PregnancyRecord::isPregnant, true)
+        val (isNullGestationalValidIfPregnant, _) = PregnancyRecord.isValueValid(
+            property = PregnancyRecord::gestationalAgeWeeks,
+            value = null,
+            context = mockContext,
+            currentValues = builder.publicMap
+        )
+        assert(!isNullGestationalValidIfPregnant)
     }
 }
 
