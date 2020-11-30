@@ -314,11 +314,14 @@ data class PregnancyRecord(
                         return if (
                             currentProperties[PregnancyRecord::isPregnant.name] == false
                         ) {
+                            // It's fine have null gestational age if not pregnant.
                             true to ""
                         } else {
                             false to "Missing gestational age despite being pregnant"
                         }
                     }
+                    // Maybe also check that if not pregnant, gestational
+                    // age should be null?
                     true to ""
                 }
                 else -> {
