@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
+import androidx.room.Transaction
 import androidx.room.Update
 import com.cradleVSA.neptune.model.Reading
 
@@ -17,6 +18,13 @@ import com.cradleVSA.neptune.model.Reading
  */
 @Dao
 interface ReadingDao {
+    @Transaction
+    suspend fun updateOrInsertIfNotExists(reading: Reading) {
+        if (update(reading) <= 0) {
+            insert(reading)
+        }
+    }
+
     /**
      * Inserts a new reading into the database.
      *
@@ -43,9 +51,11 @@ interface ReadingDao {
      * Updates an existing reading in the database.
      *
      * @param reading An entity containing updated data.
+     * @return The number of rows updated (0 means [reading] wasn't in the database, 1 means it
+     * was and it was updated).
      */
     @Update
-    suspend fun update(reading: Reading)
+    suspend fun update(reading: Reading): Int
 
     /**
      * Removes an entity from the database.
@@ -66,12 +76,18 @@ interface ReadingDao {
     suspend fun getAllReadingEntities(): List<Reading>
 
     /**
-     * Returns the first reading who's id matches a given pattern.
+     * Returns the first reading whose reading ID is equal to [id].
      *
      * @param id The reading id to search for.
      */
     @Query("SELECT * FROM Reading WHERE readingId = :id")
     suspend fun getReadingById(id: String): Reading?
+
+    /**
+     * Returns a List of Readings whose readingIds correspond to the given [ids]
+     */
+    @Query("SELECT * FROM Reading WHERE readingId IN (:ids)")
+    suspend fun getReadingsByIds(ids: List<String>): List<Reading>
 
     /**
      * Returns all of the readings associated with a specified patient.

@@ -1660,7 +1660,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
                     return@withContext false
                 }
 
-                val retestGroup = readingManager.getRetestGroup(reading)
+                val retestGroup = readingManager.createRetestGroup(reading)
 
                 // Set the radio buttons.
                 val needDefaultForRecheckVitals = metadata.value?.dateLastSaved == null

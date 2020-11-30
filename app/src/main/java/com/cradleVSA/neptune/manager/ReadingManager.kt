@@ -37,7 +37,7 @@ class ReadingManager @Inject constructor(
      * Adds a new reading to the database.
      * @param reading the reading to insert
      */
-    suspend fun addReading(reading: Reading) = withContext(IO) { readingDao.insert(reading) }
+    suspend fun addReading(reading: Reading) = readingDao.updateOrInsertIfNotExists(reading)
 
     /**
      * Get all the readings.
@@ -110,11 +110,11 @@ class ReadingManager @Inject constructor(
 
     /**
      * Constructs a [RetestGroup] for a given [reading].
+     * [reading] will be included in the resulting [RetestGroup].
      */
-    suspend fun getRetestGroup(reading: Reading): RetestGroup = withContext(Default) {
-        val readings = mutableListOf<Reading>()
-        readings.addAll(reading.previousReadingIds.mapNotNull { getReadingById(it) })
-        readings.add(reading)
+    suspend fun createRetestGroup(reading: Reading): RetestGroup = withContext(Default) {
+        val readings = readingDao.getReadingsByIds(reading.previousReadingIds).toMutableList()
+        if (reading.id !in reading.previousReadingIds) readings.add(reading)
         return@withContext RetestGroup(readings)
     }
 
