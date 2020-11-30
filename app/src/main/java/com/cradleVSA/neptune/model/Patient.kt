@@ -67,6 +67,7 @@ import kotlin.reflect.KProperty
  * @property drugHistory Drug history for the patient (paragraph form expected).
  * @property medicalHistory Medical history for the patient (paragraph form expected).
  * @property lastEdited Last time patient info was edited
+ * @property base Last time the patient has been synced with the server.
  *
  * TODO: Make [isExactDob] and [dob] not optional. Requires backend work to enforce it.
  */
