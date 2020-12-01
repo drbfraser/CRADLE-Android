@@ -121,6 +121,12 @@ class SyncStepper(
         val lastPatientSyncTime = sharedPreferences.getLong(LAST_PATIENT_SYNC, LAST_SYNC_DEFAULT)
         val patientsToUpload: List<Patient> = patientManager.getPatientsForUpload()
 
+        // We only use the timestamp right before the internet call is made.
+        // We do not use the timestamp after syncing is done; there could be a case where someone
+        // edits a patient or adds a reading etc. during the sync; those changes will never the
+        // phone if we only use a timestamp after the sync.
+        val syncTimestampToSave: Long = UnixTimestamp.now
+
         val patientResult: NetworkResult<Unit>
         val timeToSyncPatients = measureTimeMillis {
             patientResult = syncPatients(patientsToUpload, lastPatientSyncTime)
@@ -139,6 +145,9 @@ class SyncStepper(
 
         when (patientResult) {
             is Success -> {
+                sharedPreferences.edit(commit = true) {
+                    putLong(LAST_PATIENT_SYNC, syncTimestampToSave)
+                }
                 Log.d(TAG, "Success, moving on to syncing readings")
             }
             else -> {
@@ -185,6 +194,10 @@ class SyncStepper(
         withContext(Main) {
             when (readingResult) {
                 is Success -> {
+                    sharedPreferences.edit(commit = true) {
+                        putLong(LAST_READING_SYNC, syncTimestampToSave)
+                    }
+
                     stepperCallback.onNewPatientAndReadingDownloadFinish(
                         downloadRequestStatus
                     )
@@ -432,13 +445,6 @@ class SyncStepper(
      * saved last sync time in the shared pref. let the caller know
      */
     suspend fun finish(success: Boolean) = withContext(Default) {
-        if (success) {
-            val timestampToUse = UnixTimestamp.now
-            sharedPreferences.edit(commit = true) {
-                putLong(LAST_PATIENT_SYNC, timestampToUse)
-                putLong(LAST_READING_SYNC, timestampToUse)
-            }
-        }
         withContext(Main) {
             stepperCallback.onFinish(errorHashMap)
         }

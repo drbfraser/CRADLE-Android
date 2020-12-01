@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import android.util.Log
 import androidx.core.content.edit
 import com.cradleVSA.neptune.manager.LoginManager
+import com.cradleVSA.neptune.sync.SyncStepper
 
 /**
  * Handles migrations to values stored in SharedPreferences.
@@ -50,9 +51,14 @@ class SharedPreferencesMigration constructor(
         private const val CHANGE_USER_ID_TO_INT = 1
 
         /**
+         * A sync timestamp was added for reading sync
+         */
+        private const val ADD_READING_SYNC_TIMESTAMP = 2
+
+        /**
          * The latest version. This MUST be changed so that it's the latest version
          */
-        const val LATEST_SHARED_PREF_VERSION = 1
+        const val LATEST_SHARED_PREF_VERSION = 2
 
         const val KEY_SHARED_PREFERENCE_VERSION = "cradle_shared_preferences_version"
     }
@@ -102,6 +108,7 @@ class SharedPreferencesMigration constructor(
         if (oldVersion == LATEST_SHARED_PREF_VERSION) {
             return true
         }
+        Log.d(TAG, "Migrating from version $oldVersion to $LATEST_SHARED_PREF_VERSION")
         if (oldVersion > LATEST_SHARED_PREF_VERSION) {
             Log.w(
                 TAG,
@@ -143,6 +150,27 @@ class SharedPreferencesMigration constructor(
                 putInt(LoginManager.USER_ID_KEY, idAsInt)
             }
         }
+
+        (oldVersion < ADD_READING_SYNC_TIMESTAMP).runIfTrue {
+            // Set the reading sync to the previous sync time
+            if (
+                !sharedPreferences.contains(SyncStepper.LAST_PATIENT_SYNC) ||
+                sharedPreferences.contains(SyncStepper.LAST_READING_SYNC)
+            ) {
+                return@runIfTrue
+            }
+
+            val lastSyncTime = sharedPreferences.getLong(SyncStepper.LAST_PATIENT_SYNC, -1L)
+            if (lastSyncTime == -1L) {
+                return@runIfTrue
+            }
+
+            sharedPreferences.edit(commit = true) {
+                putLong(SyncStepper.LAST_READING_SYNC, lastSyncTime)
+            }
+        }
+
+        Log.d(TAG, "Migrating from version $oldVersion to $LATEST_SHARED_PREF_VERSION successful")
         return true
     }
 }
