@@ -315,11 +315,9 @@ data class Patient(
             }
 
             Patient::villageNumber -> with(value as? String?) {
-                if (this.isNullOrBlank()) {
-                    return Pair(
-                        false,
-                        context.getString(R.string.patient_error_village_number_missing)
-                    )
+                if (isNullOrBlank()) {
+                    // Village number is optional
+                    return true to ""
                 }
 
                 if (!isDigitsOnly()) {
