@@ -29,7 +29,9 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
         private const val NUM_STEPS_FOR_SYNC = 3.0
     }
 
-    private val syncStepper = SyncStepper(this@SyncActivity, this@SyncActivity)
+    private val syncStepper by lazy {
+        SyncStepper(this@SyncActivity, this@SyncActivity)
+    }
 
     private lateinit var uploadStatusTextView: TextView
     private lateinit var downloadStatusTextView: TextView
@@ -62,8 +64,10 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
             //  activity on to sync. MainScope() also doesn't get cancelled properly.
             MainScope().launch {
                 it.visibility = View.GONE
-                val totalTimeTaken = measureTimeMillis { syncStepper.doSync(this@SyncActivity) }
-                Log.d(TAG, "DEBUG: Total sync time taken: $totalTimeTaken")
+                val totalTimeTaken = measureTimeMillis {
+                    syncStepper.doSync(this@SyncActivity)
+                }
+                Log.d(TAG, "Total sync time taken: $totalTimeTaken")
             }
         }
     }
