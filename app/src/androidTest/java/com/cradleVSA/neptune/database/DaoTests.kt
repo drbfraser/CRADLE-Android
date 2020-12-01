@@ -185,7 +185,7 @@ class DaoTests {
         runBlocking { patientDao.updateOrInsertIfNotExists(updatedPatient) }
 
         val patientFromDb = runBlocking { patientDao.getPatientById(updatedPatient.id) }
-        assert(originalPatient == patientFromDb) {
+        assert(updatedPatient == patientFromDb) {
             "\nexpected: $originalPatient\n" +
                 "     got: $patientFromDb"
         }
