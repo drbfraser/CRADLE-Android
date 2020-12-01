@@ -146,6 +146,52 @@ class DaoTests {
     }
 
     @Test
+    fun testPatientDao_updateOrInsertIfNotExists() {
+        val database = getRoomDatabase()
+
+        val originalPatient = Patient(
+            id = "115",
+            name = "Exact dob",
+            dob = "1989-10-24",
+            isExactDob = true,
+            gestationalAge = GestationalAgeWeeks(Weeks(20L)),
+            sex = Sex.FEMALE,
+            isPregnant = true,
+            zone = null,
+            villageNumber = null,
+            drugHistory = "",
+            medicalHistory = "",
+            base = null
+        )
+        val patientDao = database.patientDao()
+        runBlocking { patientDao.updateOrInsertIfNotExists(originalPatient) }
+        val firstPatientFromDb = runBlocking { patientDao.getPatientById(originalPatient.id) }
+        assertEquals(originalPatient, firstPatientFromDb)
+
+        val updatedPatient = Patient(
+            id = "115",
+            name = "Exact dober",
+            dob = "1989-10-24",
+            isExactDob = true,
+            gestationalAge = GestationalAgeWeeks(Weeks(20L)),
+            sex = Sex.FEMALE,
+            isPregnant = true,
+            zone = null,
+            villageNumber = null,
+            drugHistory = "",
+            medicalHistory = "",
+            base = null
+        )
+        runBlocking { patientDao.updateOrInsertIfNotExists(updatedPatient) }
+
+        val patientFromDb = runBlocking { patientDao.getPatientById(updatedPatient.id) }
+        assert(originalPatient == patientFromDb) {
+            "\nexpected: $originalPatient\n" +
+                "     got: $patientFromDb"
+        }
+    }
+
+    @Test
     fun readingDao_foreignKeyConstraintInsert() {
         val database = getRoomDatabase()
         val patientDao = database.patientDao()

@@ -48,3 +48,30 @@ internal inline fun <reified T> JsonNode.getOptObjectArray(
     }
     return list
 }
+
+/**
+ * Gets an optional array field of objects.
+ * Note that if there is a field with the name but it's not an array, then it will return null.
+ */
+@PublishedApi
+internal suspend inline fun <reified T> JsonNode.parseObjectArray(
+    field: Field,
+    codec: ObjectCodec,
+    crossinline action: suspend (T) -> Unit
+): List<T>? {
+    val arrayNode = get(field) as? ArrayNode ?: return null
+    if (arrayNode.size() == 0) return emptyList()
+    val list = ArrayList<T>(arrayNode.size())
+    arrayNode.traverse(codec).use { parser ->
+        // Parser stream is before the start of the array; advance to START_ARRAY
+        if (parser.nextToken() != JsonToken.START_ARRAY) error("not array")
+        // The current token is START_ARRAY
+        parser.nextToken()
+        // We can use readValuesAs now.
+        val iterator = parser.readValuesAs(T::class.java)
+        while (iterator.hasNext()) {
+            action(iterator.next())
+        }
+    }
+    return list
+}

@@ -106,7 +106,16 @@ class UrlManager @Inject constructor(val settings: Settings) {
     /**
      * provides all the updates related to the user since the [currTime] stamp
      */
+    @Deprecated("use new sync function", ReplaceWith("getUpdatesNew()"))
     fun getUpdates(currTime: Long): String = "$base/sync/updates?since=$currTime"
+
+    fun getPatientsSync(lastSyncTimestamp: Long): String =
+        "$base/sync/patients?since=$lastSyncTimestamp"
+
+    fun getReadingsSync(lastSyncTimestamp: Long): String =
+        "$base/sync/readings?since=$lastSyncTimestamp"
+
+    fun getUpdatesNew(): String = "$base/sync/updates"
 
     /**
      * get a single reading by id

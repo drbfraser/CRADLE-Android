@@ -1,5 +1,6 @@
 package com.cradleVSA.neptune.net
 
+import kotlinx.coroutines.runBlocking
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody
 import okio.BufferedSink
@@ -14,12 +15,12 @@ val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
  * Use this if the body to send is too big to store in memory at once.
  */
 @Suppress("unused")
-inline fun buildJsonRequestBody(crossinline outputStreamWriter: (OutputStream) -> Unit) =
+inline fun buildJsonRequestBody(crossinline outputStreamWriter: suspend (OutputStream) -> Unit) =
     object : RequestBody() {
         override fun contentType() = JSON_MEDIA_TYPE
 
         override fun writeTo(sink: BufferedSink) {
-            outputStreamWriter(sink.outputStream())
+            runBlocking { outputStreamWriter(sink.outputStream()) }
         }
     }
 

@@ -30,7 +30,7 @@ class PatientManager @Inject constructor(
     /**
      * add a single patient
      */
-    suspend fun add(patient: Patient) = withContext(IO) {
+    suspend fun add(patient: Patient) {
         patientDao.updateOrInsertIfNotExists(patient)
     }
 
@@ -123,17 +123,9 @@ class PatientManager @Inject constructor(
     }
 
     /**
-     * returns all the  patients which dont exists on server and their readings
+     * Get patients.
      */
-    suspend fun getUnUploadedPatients(): List<PatientAndReadings> =
-        withContext(IO) { patientDao.getUnUploadedPatientAndReadings() }
-
-    /**
-     * get edited Patients that also exists on the server
-     */
-    suspend fun getEditedPatients(timeStamp: Long): List<Patient> =
-        withContext(IO) { patientDao.getEditedPatientsAfterTime(timeStamp) }
-
+    suspend fun getPatientsForUpload(): List<Patient> = patientDao.getPatientsForUpload()
     /**
      * Uploads a patient and associated readings to the server.
      *

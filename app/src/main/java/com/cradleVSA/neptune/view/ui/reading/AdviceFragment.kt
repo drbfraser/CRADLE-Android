@@ -118,6 +118,9 @@ class AdviceFragment : Fragment() {
                 when (val saveResult = viewModel.save()) {
                     ReadingFlowSaveResult.SAVE_SUCCESSFUL -> {
                         showStatusToast(view.context, saveResult)
+                        viewModel.isSaving.removeObservers(viewLifecycleOwner)
+                        savingDialog?.cancel()
+                        savingDialog = null
                         activity?.finish()
                     }
                     ReadingFlowSaveResult.REFERRAL_REQUIRED -> {

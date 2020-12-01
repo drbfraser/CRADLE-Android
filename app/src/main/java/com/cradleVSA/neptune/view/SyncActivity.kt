@@ -1,6 +1,7 @@
 package com.cradleVSA.neptune.view
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
@@ -8,20 +9,27 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.cradleVSA.neptune.R
+import com.cradleVSA.neptune.sync.SyncStepper
 import com.cradleVSA.neptune.sync.SyncStepperCallback
-import com.cradleVSA.neptune.sync.SyncStepperImplementation
 import com.cradleVSA.neptune.sync.TotalRequestStatus
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
+import kotlin.system.measureTimeMillis
 
+/**
+ * TODO: redesign
+ */
 @AndroidEntryPoint
 class SyncActivity : AppCompatActivity(), SyncStepperCallback {
 
     companion object {
+        private const val TAG = "SyncActivity"
         private const val NUM_STEPS_FOR_SYNC = 3.0
     }
+
+    private val syncStepper = SyncStepper(this@SyncActivity, this@SyncActivity)
 
     private lateinit var uploadStatusTextView: TextView
     private lateinit var downloadStatusTextView: TextView
@@ -53,11 +61,9 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
             //  User shouldn't be expected to leave the screen on and keep this
             //  activity on to sync. MainScope() also doesn't get cancelled properly.
             MainScope().launch {
-                SyncStepperImplementation(
-                    this@SyncActivity,
-                    this@SyncActivity
-                ).stepOneFetchUpdatesFromServer(this@SyncActivity)
                 it.visibility = View.GONE
+                val totalTimeTaken = measureTimeMillis { syncStepper.doSync(this@SyncActivity) }
+                Log.d(TAG, "DEBUG: Total sync time taken: $totalTimeTaken")
             }
         }
     }
@@ -67,13 +73,11 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
         return super.onSupportNavigateUp()
     }
 
-    @Synchronized
     override fun onFetchDataCompleted(success: Boolean) {
         progressPercent.current++
         setProgressPercent()
     }
 
-    @Synchronized
     override fun onNewPatientAndReadingUploading(uploadStatus: TotalRequestStatus) {
         uploadStatusTextView.text = getString(
             R.string.sync_activity_upload_status,
@@ -82,14 +86,12 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
         )
     }
 
-    @Synchronized
     override fun onNewPatientAndReadingDownloading(downloadStatus: TotalRequestStatus) {
         downloadStatusTextView.text =
             "Request completed ${downloadStatus.numUploaded + downloadStatus.numFailed} " +
             "out of  ${downloadStatus.totalNum}"
     }
 
-    @Synchronized
     override fun onNewPatientAndReadingUploadFinish(uploadStatus: TotalRequestStatus) {
         progressPercent.current++
         uploadStatusTextView.text =
@@ -98,16 +100,15 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
         setProgressPercent()
     }
 
-    @Synchronized
     override fun onNewPatientAndReadingDownloadFinish(downloadStatus: TotalRequestStatus) {
         progressPercent.current++
+        // TODO: Extract strings
         downloadStatusTextView.text =
             "Successfully made  ${downloadStatus.numUploaded} out of ${downloadStatus.totalNum} requests"
         setStatusArrow(downloadStatus.allRequestsSuccess(), R.id.ivDownloadStatus)
         setProgressPercent()
     }
 
-    @Synchronized
     override fun onFinish(errorCodes: HashMap<Int?, String?>) {
         progressBar.visibility = View.INVISIBLE
 
