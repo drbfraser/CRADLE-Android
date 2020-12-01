@@ -79,8 +79,10 @@ interface PatientDao {
     suspend fun deleteById(patientId: String): Int
 
     @Query(
-        "SELECT * FROM LocalSearchPatient " +
-            "ORDER BY latestReadingDate DESC, name COLLATE NOCASE ASC"
+        """
+SELECT * FROM LocalSearchPatient
+ORDER BY latestReadingDate DESC, name COLLATE NOCASE ASC
+    """
     )
     fun allLocalSearchPatientsByDate(): PagingSource<Int, LocalSearchPatient>
 
@@ -99,22 +101,8 @@ ORDER BY latestReadingDate DESC, name COLLATE NOCASE ASC
     )
     fun localSearchPatientsByNameOrId(query: String): PagingSource<Int, LocalSearchPatient>
 
-    /**
-     * Gets all patients along with their readings.
-     */
-    @Transaction
-    @Query("SELECT * FROM Patient")
-    suspend fun getAllPatientsAndReading(): List<PatientAndReadings>
-
-    @Transaction
     @Query("SELECT * FROM Patient WHERE base IS NULL")
-    suspend fun getUnUploadedPatientAndReadings(): List<PatientAndReadings>
-
-    /**
-     * Get [Patient]s that were edited after a given timestamp and are not brand new patients
-     */
-    @Query("SELECT * FROM Patient WHERE lastEdited > :unixTime AND base IS NOT NULL")
-    suspend fun getEditedPatientsAfterTime(unixTime: Long): List<Patient>
+    suspend fun getPatientsForUpload(): List<Patient>
 
     /**
      * get a list of patient Ids

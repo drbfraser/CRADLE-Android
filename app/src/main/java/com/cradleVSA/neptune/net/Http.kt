@@ -9,6 +9,7 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import java.io.IOException
 import java.io.InputStream
+import java.util.concurrent.TimeUnit
 
 /**
  * HTTP network driver.
@@ -26,7 +27,11 @@ class Http {
      */
     enum class Method { GET, POST, PUT, DELETE }
 
+    @Suppress("MagicNumber")
     val client: OkHttpClient = OkHttpClient.Builder()
+        .connectTimeout(30L, TimeUnit.SECONDS)
+        .readTimeout(30L, TimeUnit.SECONDS)
+        .writeTimeout(30L, TimeUnit.SECONDS)
         .certificatePinner(
             // Setup pins so that it's harder to do man-in-the-middle attacks.
             // We're currently pinning against the leaf certificate's SubjectPublicKeyInfo;

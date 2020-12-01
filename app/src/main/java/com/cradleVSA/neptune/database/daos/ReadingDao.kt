@@ -9,6 +9,7 @@ import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Transaction
 import androidx.room.Update
 import com.cradleVSA.neptune.model.Reading
+import com.cradleVSA.neptune.model.Referral
 
 /**
  * Data Access Object (DAO) for [Reading] entities.
@@ -57,6 +58,9 @@ interface ReadingDao {
     @Update
     suspend fun update(reading: Reading): Int
 
+    @Query("UPDATE Reading SET referral = :referral WHERE readingId = :readingId")
+    suspend fun updateReferral(readingId: String, referral: Referral): Int
+
     /**
      * Removes an entity from the database.
      *
@@ -102,6 +106,12 @@ interface ReadingDao {
      */
     @Query("SELECT * FROM Reading WHERE isUploadedToServer = 0")
     suspend fun getAllUnUploadedReadings(): List<Reading>
+
+    /**
+     * Returns number of readings that were marked as uploaded
+     */
+    @Query("UPDATE Reading SET isUploadedToServer = 1 WHERE isUploadedToServer = 0")
+    suspend fun markAllAsUploadedToServer(): Int
 
     /**
      * Returns all un-uploaded readings for patients who have previously been

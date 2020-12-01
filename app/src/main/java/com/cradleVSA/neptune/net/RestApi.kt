@@ -9,8 +9,8 @@ import com.cradleVSA.neptune.model.GlobalPatient
 import com.cradleVSA.neptune.model.Patient
 import com.cradleVSA.neptune.model.PatientAndReadings
 import com.cradleVSA.neptune.model.Reading
-import com.cradleVSA.neptune.model.SyncUpdate
 import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
+import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper.createWriter
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -290,25 +290,50 @@ class RestApi @Inject constructor(
     }
 
     /**
-     * Requests an abridged collection of changes made to the entities managed
-     * by the logged in user since a given timestamp.
+     * Syncs the patients on the device with the server, where [lastSyncTimestamp] is the last time
+     * the patients have been synced with the server. The given [listOfPatients] should be
+     * new patients. Sync conflicts are handled by the server.
      *
-     * This method is called during the first stage of the sync algorithm to
-     * determine what patients/readings/assessments need to be downloaded from
-     * the server in order to sync the mobile's state with the server's.
-     *
-     * @param lastSyncTimestamp timestamp of when the device was last synced
-     *  with the server
-     * @return a collection of ids for new or edited entities that need to be
-     *  downloaded from the server
+     * The [inputStreamReader] will read the server's response, which include new and edited
+     * patients.
      */
-    suspend fun getUpdates(lastSyncTimestamp: Long): NetworkResult<SyncUpdate> =
+    suspend fun syncPatients(
+        listOfPatients: List<Patient>,
+        lastSyncTimestamp: Long = 1L,
+        inputStreamReader: suspend (InputStream) -> Unit
+    ): NetworkResult<Unit> =
         withContext(IO) {
+            val body = createWriter<List<Patient>>().writeValueAsBytes(listOfPatients)
             http.makeRequest(
-                method = Http.Method.GET,
-                url = urlManager.getUpdates(lastSyncTimestamp),
+                method = Http.Method.POST,
+                url = urlManager.getPatientsSync(lastSyncTimestamp),
                 headers = headers,
-                inputStreamReader = { JacksonMapper.readerForSyncUpdate.readValue(it) }
+                requestBody = buildJsonRequestBody(body),
+                inputStreamReader = inputStreamReader
+            )
+        }
+
+    /**
+     * Syncs the readings on the device with the server, where [lastSyncTimestamp] is the last time
+     * the patients have been synced with the server. The given [listOfReadings] should be
+     * new readings. Sync conflicts are handled by the server.
+     *
+     * The [inputStreamReader] will read the server's response, which include new and edited
+     * readings, referrals, and assessments / follow ups.
+     */
+    suspend fun syncReadings(
+        listOfReadings: List<Reading>,
+        lastSyncTimestamp: Long = 1L,
+        inputStreamReader: suspend (InputStream) -> Unit
+    ): NetworkResult<Unit> =
+        withContext(IO) {
+            val body = createWriter<List<Reading>>().writeValueAsBytes(listOfReadings)
+            http.makeRequest(
+                method = Http.Method.POST,
+                url = urlManager.getReadingsSync(lastSyncTimestamp),
+                headers = headers,
+                requestBody = buildJsonRequestBody(body),
+                inputStreamReader = inputStreamReader
             )
         }
 

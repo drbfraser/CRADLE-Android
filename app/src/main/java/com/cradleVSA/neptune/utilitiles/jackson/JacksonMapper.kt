@@ -6,7 +6,6 @@ import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.Patient
 import com.cradleVSA.neptune.model.PatientAndReadings
 import com.cradleVSA.neptune.model.Reading
-import com.cradleVSA.neptune.model.SyncUpdate
 import com.fasterxml.jackson.databind.ObjectReader
 import com.fasterxml.jackson.databind.ObjectWriter
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -26,8 +25,6 @@ object JacksonMapper {
     inline fun <reified T> createReader(): ObjectReader = mapper.readerFor(T::class.java)
 
     inline fun <reified T> createWriter(): ObjectWriter = mapper.writerFor(T::class.java)
-
-    val readerForSyncUpdate: ObjectReader by lazy { mapper.readerFor(SyncUpdate::class.java) }
 
     val readerForPatientAndReadings: ObjectReader by lazy {
         mapper.readerFor(PatientAndReadings::class.java)

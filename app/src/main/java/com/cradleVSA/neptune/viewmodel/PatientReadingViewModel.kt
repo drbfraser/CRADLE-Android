@@ -1560,7 +1560,7 @@ class PatientReadingViewModel @ViewModelInject constructor(
                     isReadingFromServer = false
                 )
             } else {
-                readingManager.addReading(readingFromBuilder)
+                readingManager.addReading(readingFromBuilder, isReadingFromServer = false)
             }
         }
     }

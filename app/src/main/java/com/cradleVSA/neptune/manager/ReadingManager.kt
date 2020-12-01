@@ -1,7 +1,9 @@
 package com.cradleVSA.neptune.manager
 
 import com.cradleVSA.neptune.database.daos.ReadingDao
+import com.cradleVSA.neptune.model.Assessment
 import com.cradleVSA.neptune.model.Reading
+import com.cradleVSA.neptune.model.Referral
 import com.cradleVSA.neptune.model.RetestGroup
 import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.net.RestApi
@@ -37,7 +39,11 @@ class ReadingManager @Inject constructor(
      * Adds a new reading to the database.
      * @param reading the reading to insert
      */
-    suspend fun addReading(reading: Reading) = readingDao.updateOrInsertIfNotExists(reading)
+    suspend fun addReading(reading: Reading, isReadingFromServer: Boolean) {
+        if (isReadingFromServer) reading.isUploadedToServer = true
+
+        readingDao.updateOrInsertIfNotExists(reading)
+    }
 
     /**
      * Get all the readings.
@@ -51,7 +57,7 @@ class ReadingManager @Inject constructor(
      * of this class and make this a [suspend] function
      * @param reading the reading to update
      */
-    suspend fun updateReading(reading: Reading) = withContext(IO) { readingDao.update(reading) }
+    suspend fun updateReading(reading: Reading) = readingDao.update(reading)
 
     /**
      * Returns a list of all readings (and their associated patients) in the
@@ -97,9 +103,9 @@ class ReadingManager @Inject constructor(
     /**
      * Returns all readings which have not been uploaded to the server yet.
      */
-    suspend fun getUnUploadedReadings(): List<Reading> = withContext(IO) {
-        readingDao.getAllUnUploadedReadings()
-    }
+    suspend fun getUnUploadedReadings(): List<Reading> = readingDao.getAllUnUploadedReadings()
+
+    suspend fun markAllReadingsAsUploaded() = readingDao.markAllAsUploadedToServer()
 
     /**
      * get unUploaded readings for patients who already exists in the server
@@ -174,25 +180,30 @@ class ReadingManager @Inject constructor(
             val result = restApi.getReading(id)
             when (result) {
                 is Success -> {
-                    val reading = result.value.apply {
-                        isUploadedToServer = true
-                    }
-                    addReading(reading)
+                    addReading(result.value, isReadingFromServer = true)
                 }
             }
             result.map { Unit }
         }
+
+    suspend fun addAssessment(assessment: Assessment) {
+        getReadingById(assessment.readingId)?.apply {
+            followUp = assessment
+            referral?.isAssessed = true
+            updateReading(this)
+        }
+    }
+
+    suspend fun addReferral(referral: Referral) {
+        readingDao.updateReferral(referral.readingId, referral)
+    }
 
     suspend fun downloadAssessment(assessmentId: String): NetworkResult<Unit> =
         withContext(IO) {
             val result = restApi.getAssessment(assessmentId)
             when (result) {
                 is Success -> {
-                    getReadingById(result.value.readingId)?.apply {
-                        followUp = result.value
-                        referral?.isAssessed = true
-                        updateReading(this)
-                    }
+                    addAssessment(result.value)
                 }
             }
             result.map { Unit }
