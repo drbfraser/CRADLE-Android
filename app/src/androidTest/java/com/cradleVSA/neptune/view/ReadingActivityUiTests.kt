@@ -67,8 +67,7 @@ class ReadingActivityUiTests {
         GrantPermissionRule.grant(
             "android.permission.INTERNET",
             "android.permission.ACCESS_NETWORK_STATE",
-            "android.permission.CAMERA",
-            "android.permission.WRITE_EXTERNAL_STORAGE"
+            "android.permission.CAMERA"
         )
 
     @Before
