@@ -18,7 +18,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
 import androidx.lifecycle.lifecycleScope
 import com.cradleVSA.neptune.R
-import com.cradleVSA.neptune.cryptography.EncryptedSharedPreferencesCustom
+import com.cradleVSA.neptune.cryptography.EncryptedSharedPreferences
 import com.cradleVSA.neptune.ext.hideKeyboard
 import com.cradleVSA.neptune.manager.LoginManager
 import com.cradleVSA.neptune.net.Failure
@@ -241,7 +241,7 @@ class LoginActivity : AppCompatActivity() {
                 aeadFromMainKeyset
             )
 
-            val encryptedSharedPreferences = EncryptedSharedPreferencesCustom.create(
+            val encryptedSharedPreferences = EncryptedSharedPreferences.create(
                 "shared-pref-encrypted",
                 this,
                 keysetForSharedPrefKeys,
