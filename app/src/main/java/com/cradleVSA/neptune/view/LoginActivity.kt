@@ -248,8 +248,8 @@ class LoginActivity : AppCompatActivity() {
                 keysetForSharedPrefValues
             )
 
-            val existingTestInt = encryptedSharedPreferences.getLong("test_long_key", -1L)
-            Log.d("LoginActivity", "DEBUG: test_long_key from before is $existingTestInt")
+            val testValue = encryptedSharedPreferences.getLong("test_long_key", -1L)
+            Log.d("LoginActivity", "DEBUG: test_long_key from before is $testValue")
             encryptedSharedPreferences.edit(commit = true) {
                 @Suppress("MagicNumber")
                 putLong("test_long_key", System.currentTimeMillis() / 1000)
