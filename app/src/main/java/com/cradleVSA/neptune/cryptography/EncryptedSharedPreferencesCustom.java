@@ -95,28 +95,24 @@ public final class EncryptedSharedPreferencesCustom implements SharedPreferences
      * @param fileName                  The name of the file to open; can not contain path
      *                                  separators.
      * @param context                   The context to use to open the preferences file.
-     * @param prefKeyEncryptionScheme   The scheme to use for encrypting keys.
-     * @param prefValueEncryptionScheme The scheme to use for encrypting values.
+     * @param prefKeyEncryptionKeyset   The keyset to use for encrypting keys.
+     * @param prefValueEncryptionKeyset The keyset to use for encrypting values.
      * @return The SharedPreferences instance that encrypts all data.
      * @throws GeneralSecurityException when a bad master key or keyset has been attempted
      */
     @NonNull
     public static SharedPreferences create(@NonNull String fileName,
                                            @NonNull Context context,
-                                           @NonNull PrefKeyEncryptionScheme prefKeyEncryptionScheme,
-                                           @NonNull PrefValueEncryptionScheme prefValueEncryptionScheme)
+                                           @NonNull KeysetHandle prefKeyEncryptionKeyset,
+                                           @NonNull KeysetHandle prefValueEncryptionKeyset)
             throws GeneralSecurityException {
         AeadConfig.register();
         DeterministicAeadConfig.register();
 
         final Context applicationContext = context.getApplicationContext();
-        KeysetHandle daeadKeysetHandle = KeysetHandle.generateNew(
-                prefKeyEncryptionScheme.getKeyTemplate());
-        KeysetHandle aeadKeysetHandle = KeysetHandle.generateNew(
-                prefValueEncryptionScheme.getKeyTemplate());
 
-        DeterministicAead daead = daeadKeysetHandle.getPrimitive(DeterministicAead.class);
-        Aead aead = aeadKeysetHandle.getPrimitive(Aead.class);
+        DeterministicAead daead = prefKeyEncryptionKeyset.getPrimitive(DeterministicAead.class);
+        Aead aead = prefValueEncryptionKeyset.getPrimitive(Aead.class);
 
         return new EncryptedSharedPreferencesCustom(fileName,
                 applicationContext.getSharedPreferences(fileName, Context.MODE_PRIVATE), aead,

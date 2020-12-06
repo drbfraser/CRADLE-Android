@@ -29,10 +29,13 @@ import com.google.android.gms.common.GooglePlayServicesNotAvailableException
 import com.google.android.gms.common.GooglePlayServicesRepairableException
 import com.google.android.gms.security.ProviderInstaller
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.crypto.tink.Aead
+import com.google.crypto.tink.JsonKeysetReader
 import com.google.crypto.tink.JsonKeysetWriter
 import com.google.crypto.tink.KeysetHandle
 import com.google.crypto.tink.aead.AeadConfig
 import com.google.crypto.tink.aead.AesGcmKeyManager
+import com.google.crypto.tink.daead.AesSivKeyManager
 import com.google.crypto.tink.daead.DeterministicAeadConfig
 import com.google.crypto.tink.subtle.AesGcmJce
 import com.google.firebase.crashlytics.FirebaseCrashlytics
@@ -40,12 +43,17 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import org.signal.argon2.Argon2
 import org.signal.argon2.MemoryCost
 import org.signal.argon2.Type
 import org.signal.argon2.Version
 import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.IOException
 import java.net.HttpURLConnection.HTTP_UNAUTHORIZED
+import java.security.GeneralSecurityException
 import java.security.SecureRandom
 import javax.inject.Inject
 import javax.net.ssl.SSLHandshakeException
@@ -100,6 +108,48 @@ class LoginActivity : AppCompatActivity() {
         finish()
     }
 
+    private data class Argon2HashConfig(
+        val memory: MemoryCost,
+        val hashParallelism: Int,
+        val hashIterations: Int,
+        val hashSizeBytes: Int,
+        val salt: ByteArray,
+        val version: Version = Version.V13,
+        val type: Type = Type.Argon2id
+    ) {
+        fun toJson() = JSONObject().apply {
+            put("memory_KiB", memory.kiB)
+            put("parallelism", hashParallelism)
+            put("iterations", hashIterations)
+            put("size_bytes", hashSizeBytes)
+            put("salt", Base64.encodeToString(salt, /* flags= */ 0))
+            put("version", version.toString())
+            put("type", type.toString())
+        }
+
+        fun createHash(input: ByteArray): ByteArray = Argon2.Builder(version)
+            .type(type)
+            .memoryCost(memory)
+            .parallelism(hashParallelism)
+            .iterations(hashIterations)
+            .hashLength(hashSizeBytes)
+            .build()
+            .hash(input, salt)
+            .hash
+
+        companion object {
+            fun fromJson(jsonObject: JSONObject) = Argon2HashConfig(
+                memory = MemoryCost.KiB(jsonObject.getInt("memory_KiB")),
+                hashParallelism = jsonObject.getInt("parallelism"),
+                hashIterations = jsonObject.getInt("iterations"),
+                hashSizeBytes = jsonObject.getInt("size_bytes"),
+                salt = Base64.decode(jsonObject.getString("salt"), /* flags= */ 0),
+                version = Version.valueOf(jsonObject.getString("version")),
+                type = Type.valueOf(jsonObject.getString("type"))
+            )
+        }
+    }
+
     private fun setupLogin() {
         val emailET = findViewById<EditText>(R.id.emailEditText)
         val passwordET = findViewById<EditText>(R.id.passwordEditText)
@@ -109,63 +159,106 @@ class LoginActivity : AppCompatActivity() {
 
         // https://www.usenix.org/sites/default/files/conference/protected-files/hotsec15_slides_green.pdf
         // https://github.com/google/tink/issues/347
-        @Suppress("MagicNumber")
-        val argon = Argon2.Builder(Version.V13)
-            .type(Type.Argon2id)
-            .memoryCost(MemoryCost.MiB(16))
-            .parallelism(1)
-            .iterations(32)
-            .hashLength(32)
-            .build()
-            .hash(
-                "hunter2".toByteArray(Charsets.UTF_8),
-                ByteArray(16).apply { SecureRandom().nextBytes(this) }
-            )
-        val theKey = AesGcmJce(argon.hash)
-        Log.d("LoginActivity", "hunter2 encoded with salt: ${argon.encoded}")
-        @Suppress("MagicNumber")
-        val aad = ByteArray(20).apply { SecureRandom().nextBytes(this) }
-        val cipherText = theKey.encrypt(
-            "this is a message".toByteArray(Charsets.UTF_8),
-            aad
-        )
-        Log.d("LoginActivity", "ciphertext is ${Base64.encodeToString(cipherText, Base64.DEFAULT)}")
-        val decrypt = theKey.decrypt(cipherText, aad)
-        Log.d("LoginActivity", "decrypted ciphertext is is ${decrypt.decodeToString()}")
 
+        // Do this in the Application class
         AeadConfig.register()
-        val keysetTemplate = AesGcmKeyManager.aes256GcmTemplate()
-        val keysetHandle = KeysetHandle.generateNew(keysetTemplate)
-        val dir = getDir("keys", MODE_PRIVATE)
-        val file = File(dir, "private-key")
-        keysetHandle.write(JsonKeysetWriter.withFile(file), theKey)
-
-        // keysetHandle.getPrimitive(AesGcmJce::class.java)
-        @Suppress("MagicNumber")
-        val argon2 = Argon2.Builder(Version.V13)
-            .type(Type.Argon2id)
-            .memoryCost(MemoryCost.MiB(16))
-            .parallelism(1)
-            .iterations(32)
-            .hashLength(32)
-            .build()
-            .hash(
-                "hunter2abc".toByteArray(Charsets.UTF_8),
-                ByteArray(16).apply { SecureRandom().nextBytes(this) }
-            )
-        val theKey2 = AesGcmJce(argon2.hash)
-        val file2 = File(dir, "private-key-with-biometrics")
-        keysetHandle.write(JsonKeysetWriter.withFile(file2), theKey2)
-        keysetHandle.keysetInfo.primaryKeyId
-
         DeterministicAeadConfig.register()
 
-        val sharedPrefCustom = EncryptedSharedPreferencesCustom.create(
-            "shared-pref-encrypted",
-            this,
-            EncryptedSharedPreferencesCustom.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferencesCustom.PrefValueEncryptionScheme.AES256_GCM
-        )
+        // for printing purposes
+        val context = this as Context
+
+        val keyDirectory = context.getDir("keys", MODE_PRIVATE)
+        val hashParamsFile = File(keyDirectory, "password-argon2-params")
+        if (!hashParamsFile.exists()) {
+            @Suppress("MagicNumber")
+            // TODO: Change these parameters. Hash size must stay at 32 to use 256-bit keys
+            val params = Argon2HashConfig(
+                memory = MemoryCost.MiB(16),
+                hashParallelism = 1,
+                hashIterations = 32,
+                hashSizeBytes = 32,
+                salt = ByteArray(16).apply { SecureRandom().nextBytes(this) }
+            )
+            FileOutputStream(hashParamsFile).use {
+                it.write(params.toJson().toString().encodeToByteArray())
+            }
+        }
+        val hashParamsJson = FileInputStream(hashParamsFile).use {
+            JSONObject(it.readBytes().decodeToString())
+        }
+        val hashConfig = Argon2HashConfig.fromJson(hashParamsJson)
+        val userPassword = "somePassword123"
+        val passwordHash = hashConfig.createHash(userPassword.toByteArray(Charsets.UTF_8))
+        val passwordKey = AesGcmJce(passwordHash)
+
+        val mainKeyFile = File(keyDirectory, "main-key-password-encrypted")
+        if (!mainKeyFile.exists()) {
+            val aesGcmKeysetHandle = KeysetHandle.generateNew(AesGcmKeyManager.aes256GcmTemplate())
+            aesGcmKeysetHandle.write(JsonKeysetWriter.withFile(mainKeyFile), passwordKey)
+        }
+
+        try {
+            val mainKeyset = KeysetHandle.read(JsonKeysetReader.withFile(mainKeyFile), passwordKey)
+            val aeadFromMainKeyset = mainKeyset.getPrimitive(Aead::class.java)
+
+            val message = "This is a message"
+
+            @Suppress("MagicNumber")
+            val aad = ByteArray(20).apply { SecureRandom().nextBytes(this) }
+            val cipherText = aeadFromMainKeyset.encrypt(message.toByteArray(Charsets.UTF_8), aad)
+            Log.d(
+                "LoginActivity",
+                "ciphertext is ${Base64.encodeToString(cipherText, Base64.DEFAULT)}"
+            )
+            val decrypt = aeadFromMainKeyset.decrypt(cipherText, aad)
+            Log.d("LoginActivity", "decrypted ciphertext is is ${decrypt.decodeToString()}")
+
+            val prefValueEncryptionKeyFile = File(keyDirectory, "pref-values-encryption-key")
+            if (!prefValueEncryptionKeyFile.exists()) {
+                val aesGcmKeysetHandle =
+                    KeysetHandle.generateNew(AesGcmKeyManager.aes256GcmTemplate())
+                aesGcmKeysetHandle.write(
+                    JsonKeysetWriter.withFile(prefValueEncryptionKeyFile),
+                    aeadFromMainKeyset
+                )
+            }
+            val prefKeysEncryptionKeyFile = File(keyDirectory, "pref-keys-encryption-key")
+            if (!prefKeysEncryptionKeyFile.exists()) {
+                val aesSivKeysetHandle =
+                    KeysetHandle.generateNew(AesSivKeyManager.aes256SivTemplate())
+                aesSivKeysetHandle.write(
+                    JsonKeysetWriter.withFile(prefKeysEncryptionKeyFile),
+                    aeadFromMainKeyset
+                )
+            }
+
+            val keysetForSharedPrefKeys = KeysetHandle.read(
+                JsonKeysetReader.withFile(prefKeysEncryptionKeyFile),
+                aeadFromMainKeyset
+            )
+            val keysetForSharedPrefValues = KeysetHandle.read(
+                JsonKeysetReader.withFile(prefValueEncryptionKeyFile),
+                aeadFromMainKeyset
+            )
+
+            val encryptedSharedPreferences = EncryptedSharedPreferencesCustom.create(
+                "shared-pref-encrypted",
+                this,
+                keysetForSharedPrefKeys,
+                keysetForSharedPrefValues
+            )
+
+            val existingTestInt = encryptedSharedPreferences.getLong("test_long_key", -1L)
+            Log.d("LoginActivity", "DEBUG: test_long_key from before is $existingTestInt")
+            encryptedSharedPreferences.edit(commit = true) {
+                @Suppress("MagicNumber")
+                putLong("test_long_key", System.currentTimeMillis() / 1000)
+            }
+        } catch (e: IOException) {
+            Log.e("LoginActivity", "got IOException during encryption", e)
+        } catch (e: GeneralSecurityException) {
+            Log.e("LoginActivity", "got GeneralSecurityException during encryption", e)
+        }
 
         /*
          * result looks like this
@@ -177,10 +270,6 @@ class LoginActivity : AppCompatActivity() {
          * </map>
          *
          */
-        sharedPrefCustom.edit(commit = true) {
-            @Suppress("MagicNumber")
-            putInt("test_int_key", 4534535)
-        }
 
         loginButton.setOnClickListener { _ ->
             errorText.visibility = View.GONE
