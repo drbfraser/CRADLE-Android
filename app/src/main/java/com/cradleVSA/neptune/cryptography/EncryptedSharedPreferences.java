@@ -31,8 +31,10 @@ import com.google.crypto.tink.aead.AeadConfig;
 import com.google.crypto.tink.aead.AesGcmKeyManager;
 import com.google.crypto.tink.daead.AesSivKeyManager;
 import com.google.crypto.tink.daead.DeterministicAeadConfig;
+import com.google.crypto.tink.integration.android.AndroidKeysetManager;
 import com.google.crypto.tink.subtle.Base64;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
@@ -43,26 +45,28 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static androidx.security.crypto.MasterKey.KEYSTORE_PATH_URI;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * An implementation of {@link SharedPreferences} that encrypts keys and values.
- * This is a derived version from {@link androidx.security.crypto.EncryptedSharedPreferences}
- * that supports custom {@link KeysetHandle}s instead of using the Android Keystore.
  *
  * <pre>
- *  SharedPreferences sharedPreferences = EncryptedSharedPreferencesCustom.create(
+ *  String masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC);
+ *
+ *  SharedPreferences sharedPreferences = EncryptedSharedPreferences.create(
  *      "secret_shared_prefs",
+ *      masterKeyAlias,
  *      context,
- *      EncryptedSharedPreferencesCustom.PrefKeyEncryptionScheme.AES256_SIV,
- *      EncryptedSharedPreferencesCustom.PrefValueEncryptionScheme.AES256_GCM
+ *      EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+ *      EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
  *  );
  *
  *  // use the shared preferences and editor as you normally would
  *  SharedPreferences.Editor editor = sharedPreferences.edit();
  * </pre>
  */
-public final class EncryptedSharedPreferencesCustom implements SharedPreferences {
+public final class EncryptedSharedPreferences implements SharedPreferences {
 
     private static final String KEY_KEYSET_ALIAS =
             "__androidx_security_crypto_encrypted_prefs_key_keyset__";
@@ -72,21 +76,24 @@ public final class EncryptedSharedPreferencesCustom implements SharedPreferences
     private static final String NULL_VALUE = "__NULL__";
 
     final SharedPreferences mSharedPreferences;
-    final List<OnSharedPreferenceChangeListener> mListeners;
+    final CopyOnWriteArrayList<OnSharedPreferenceChangeListener> mListeners;
     final String mFileName;
+    final String mMasterKeyAlias;
 
     final Aead mValueAead;
     final DeterministicAead mKeyDeterministicAead;
 
-    EncryptedSharedPreferencesCustom(@NonNull String name,
-                                     @NonNull SharedPreferences sharedPreferences,
-                                     @NonNull Aead aead,
-                                     @NonNull DeterministicAead deterministicAead) {
+    EncryptedSharedPreferences(@NonNull String name,
+                               @NonNull String masterKeyAlias,
+                               @NonNull SharedPreferences sharedPreferences,
+                               @NonNull Aead aead,
+                               @NonNull DeterministicAead deterministicAead) {
         mFileName = name;
         mSharedPreferences = sharedPreferences;
+        mMasterKeyAlias = masterKeyAlias;
         mValueAead = aead;
         mKeyDeterministicAead = deterministicAead;
-        mListeners = new ArrayList<>();
+        mListeners = new CopyOnWriteArrayList<>();
     }
 
     /**
@@ -94,27 +101,66 @@ public final class EncryptedSharedPreferencesCustom implements SharedPreferences
      *
      * @param fileName                  The name of the file to open; can not contain path
      *                                  separators.
-     * @param context                   The context to use to open the preferences file.
-     * @param prefKeyEncryptionKeyset   The keyset to use for encrypting keys.
-     * @param prefValueEncryptionKeyset The keyset to use for encrypting values.
+     * @param masterKey                 The master key to use.
+     * @param prefKeyEncryptionScheme   The scheme to use for encrypting keys.
+     * @param prefValueEncryptionScheme The scheme to use for encrypting values.
      * @return The SharedPreferences instance that encrypts all data.
      * @throws GeneralSecurityException when a bad master key or keyset has been attempted
+     * @throws IOException              when fileName can not be used
      */
     @NonNull
+    public static SharedPreferences create(@NonNull Context context,
+                                           @NonNull String fileName,
+                                           @NonNull MasterKey masterKey,
+                                           @NonNull PrefKeyEncryptionScheme prefKeyEncryptionScheme,
+                                           @NonNull PrefValueEncryptionScheme prefValueEncryptionScheme)
+            throws GeneralSecurityException, IOException {
+        return create(fileName, masterKey.getKeyAlias(), context,
+                prefKeyEncryptionScheme, prefValueEncryptionScheme);
+    }
+
+    /**
+     * Opens an instance of encrypted SharedPreferences
+     *
+     * @param fileName                  The name of the file to open; can not contain path
+     *                                  separators.
+     * @param masterKeyAlias            The alias of the master key to use.
+     * @param context                   The context to use to open the preferences file.
+     * @param prefKeyEncryptionScheme   The scheme to use for encrypting keys.
+     * @param prefValueEncryptionScheme The scheme to use for encrypting values.
+     * @return The SharedPreferences instance that encrypts all data.
+     * @throws GeneralSecurityException when a bad master key or keyset has been attempted
+     * @throws IOException              when fileName can not be used
+     * @deprecated Use {@link #create(Context, String, MasterKey,
+     * PrefKeyEncryptionScheme, PrefValueEncryptionScheme)} instead.
+     */
+    @Deprecated
+    @NonNull
     public static SharedPreferences create(@NonNull String fileName,
+                                           @NonNull String masterKeyAlias,
                                            @NonNull Context context,
-                                           @NonNull KeysetHandle prefKeyEncryptionKeyset,
-                                           @NonNull KeysetHandle prefValueEncryptionKeyset)
-            throws GeneralSecurityException {
-        AeadConfig.register();
+                                           @NonNull PrefKeyEncryptionScheme prefKeyEncryptionScheme,
+                                           @NonNull PrefValueEncryptionScheme prefValueEncryptionScheme)
+            throws GeneralSecurityException, IOException {
         DeterministicAeadConfig.register();
+        AeadConfig.register();
 
         final Context applicationContext = context.getApplicationContext();
+        KeysetHandle daeadKeysetHandle = new AndroidKeysetManager.Builder()
+                .withKeyTemplate(prefKeyEncryptionScheme.getKeyTemplate())
+                .withSharedPref(applicationContext, KEY_KEYSET_ALIAS, fileName)
+                .withMasterKeyUri(KEYSTORE_PATH_URI + masterKeyAlias)
+                .build().getKeysetHandle();
+        KeysetHandle aeadKeysetHandle = new AndroidKeysetManager.Builder()
+                .withKeyTemplate(prefValueEncryptionScheme.getKeyTemplate())
+                .withSharedPref(applicationContext, VALUE_KEYSET_ALIAS, fileName)
+                .withMasterKeyUri(KEYSTORE_PATH_URI + masterKeyAlias)
+                .build().getKeysetHandle();
 
-        DeterministicAead daead = prefKeyEncryptionKeyset.getPrimitive(DeterministicAead.class);
-        Aead aead = prefValueEncryptionKeyset.getPrimitive(Aead.class);
+        DeterministicAead daead = daeadKeysetHandle.getPrimitive(DeterministicAead.class);
+        Aead aead = aeadKeysetHandle.getPrimitive(Aead.class);
 
-        return new EncryptedSharedPreferencesCustom(fileName,
+        return new EncryptedSharedPreferences(fileName, masterKeyAlias,
                 applicationContext.getSharedPreferences(fileName, Context.MODE_PRIVATE), aead,
                 daead);
     }
@@ -168,12 +214,12 @@ public final class EncryptedSharedPreferencesCustom implements SharedPreferences
     }
 
     private static final class Editor implements SharedPreferences.Editor {
-        private final EncryptedSharedPreferencesCustom mEncryptedSharedPreferences;
+        private final EncryptedSharedPreferences mEncryptedSharedPreferences;
         private final SharedPreferences.Editor mEditor;
         private final List<String> mKeysChanged;
         private AtomicBoolean mClearRequested = new AtomicBoolean(false);
 
-        Editor(EncryptedSharedPreferencesCustom encryptedSharedPreferences,
+        Editor(EncryptedSharedPreferences encryptedSharedPreferences,
                SharedPreferences.Editor editor) {
             mEncryptedSharedPreferences = encryptedSharedPreferences;
             mEditor = editor;
