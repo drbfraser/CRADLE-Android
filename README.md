@@ -13,7 +13,30 @@ SMS feature.
 
 # Setup
 
-Install [Android Studio](https://developer.android.com/studio/) and import the project.
+The app mostly uses Kotlin with some Java code leftover.
+
+Install [Android Studio](https://developer.android.com/studio/) and import the project by cloning
+the Git repository.
+
+# Architecture
+
+We use various components from [Android Jetpack](https://developer.android.com/jetpack) and other
+libraries:
+
+* [Room](https://developer.android.com/topic/libraries/architecture/room) is used for managing the
+SQLite3 database.
+* [ViewModels](https://developer.android.com/topic/libraries/architecture/viewmodel) are used to
+handle the bulk of the logic code in some areas of the app so that the Activities / Fragments focus
+on UI-related code.
+* The [Data Binding Library](https://developer.android.com/topic/libraries/data-binding) is used in
+areas to reduce the amount of boilerplate code.
+* The
+[Paging 3 library](https://developer.android.com/topic/libraries/architecture/paging/v3-overview) is
+used with Room for pagination of `RecyclerView`s.
+* The [Navigation component](https://developer.android.com/guide/navigation) is used in some places
+such as the new patient / reading creation Activity to navigate between fragments.
+* [Espresso](https://developer.android.com/training/testing/espresso/) is used for UI tests. Also we
+use [mockk](https://mockk.io/) for mocking in unit tests.
 
 ## Pre-push Git hook
 
