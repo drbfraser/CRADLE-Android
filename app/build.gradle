@@ -202,6 +202,8 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
     // JSON library for testing
     //   The actual one is baked into the Android SDK so it fails if we try to test it
+    //   Note: There is a reason for why Google decided to rewrite org.json: The licensing for
+    //   org.json is not considered free (it has the don't-use-for-evil clause).
     testImplementation "org.json:json:20200518"
     testImplementation "io.mockk:mockk:1.10.2"
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
