@@ -30,6 +30,8 @@ handle the bulk of the logic code in some areas of the app so that the Activitie
 on UI-related code.
 * The [Data Binding Library](https://developer.android.com/topic/libraries/data-binding) is used in
 areas to reduce the amount of boilerplate code.
+* [WorkManager](https://developer.android.com/topic/libraries/architecture/workmanager) is used to
+run syncing in the background.
 * The
 [Paging 3 library](https://developer.android.com/topic/libraries/architecture/paging/v3-overview) is
 used with Room for pagination of `RecyclerView`s.
