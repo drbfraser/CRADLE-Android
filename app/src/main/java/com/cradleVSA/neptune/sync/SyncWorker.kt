@@ -55,11 +55,12 @@ class SyncWorker @WorkerInject constructor(
         CHECKING_SERVER_PATIENTS,
         UPLOADING_PATIENTS,
         DOWNLOADING_PATIENTS,
-        /** Checking the server for patients by uploading an empty list */
+        /**
+         * Checking the server for new readings, referrals, assessments by uploading an empty list
+         */
         CHECKING_SERVER_READINGS,
         UPLOADING_READINGS,
-        DOWNLOADING_READINGS,
-        DONE
+        DOWNLOADING_READINGS
     }
 
     companion object {
@@ -159,21 +160,18 @@ class SyncWorker @WorkerInject constructor(
         if (readingsLeftToUpload > 0) {
             Log.wtf(
                 TAG,
-                "THERE ARE $readingsLeftToUpload readings" +
-                    " LEFT TO UPLOAD"
+                "There are $readingsLeftToUpload readings left to upload"
             )
             if (readingResult is Success) {
                 // If it's successful, then all the readings must have been uploaded anyway
                 val numMarked = readingManager.markAllReadingsAsUploaded()
-                Log.wtf(
+                Log.d(
                     TAG,
                     "DEBUG: Readings now marked? " +
                         "${numMarked == readingsLeftToUpload}"
                 )
             }
         }
-
-        setProgress(workDataOf(PROGRESS_CURRENT_STATE to State.DONE.name))
 
         return if (readingResult is Success) {
             sharedPreferences.edit(commit = true) {
@@ -195,7 +193,7 @@ class SyncWorker @WorkerInject constructor(
             if (patientsToUpload.isEmpty()) {
                 workDataOf(PROGRESS_CURRENT_STATE to State.CHECKING_SERVER_PATIENTS.name)
             } else {
-                workDataOf(PROGRESS_CURRENT_STATE to State.DOWNLOADING_PATIENTS.name)
+                workDataOf(PROGRESS_CURRENT_STATE to State.UPLOADING_PATIENTS.name)
             }
         )
         Log.d(TAG, "preparing to upload ${patientsToUpload.size} patients")
@@ -240,22 +238,17 @@ class SyncWorker @WorkerInject constructor(
                                             buffer = ArrayList(CHANNEL_BUFFER_CAPACITY)
                                         }
                                         patientsDownloaded++
-                                        rateLimitRunner.runSuspend {
-                                            setProgress(
-                                                workDataOf(
-                                                    PROGRESS_CURRENT_STATE to State.DOWNLOADING_PATIENTS.name,
-                                                    PROGRESS_NUMBER_SO_FAR to patientsDownloaded,
-                                                    PROGRESS_TOTAL_NUMBER to totalPatients
-                                                )
-                                            )
-                                        }
-                                    }
-                                    setProgress(
-                                        workDataOf(
-                                            PROGRESS_CURRENT_STATE to State.DOWNLOADING_PATIENTS.name,
-                                            PROGRESS_NUMBER_SO_FAR to patientsDownloaded,
-                                            PROGRESS_TOTAL_NUMBER to totalPatients
+                                        reportProgress(
+                                            state = State.DOWNLOADING_PATIENTS,
+                                            progress = patientsDownloaded,
+                                            total = totalPatients,
                                         )
+                                    }
+                                    reportProgress(
+                                        state = State.DOWNLOADING_PATIENTS,
+                                        progress = patientsDownloaded,
+                                        total = totalPatients,
+                                        bypassRateLimit = true
                                     )
                                     if (buffer.isNotEmpty()) channel.send(buffer)
                                     channel.close()
@@ -299,7 +292,7 @@ class SyncWorker @WorkerInject constructor(
             if (readingsToUpload.isEmpty()) {
                 workDataOf(PROGRESS_CURRENT_STATE to State.CHECKING_SERVER_READINGS.name)
             } else {
-                workDataOf(PROGRESS_CURRENT_STATE to State.DOWNLOADING_READINGS.name)
+                workDataOf(PROGRESS_CURRENT_STATE to State.UPLOADING_READINGS.name)
             }
         )
         return@withContext restApi.syncReadings(
@@ -363,15 +356,11 @@ class SyncWorker @WorkerInject constructor(
 
                                     totalDownloaded++
                                     numReadingsDownloaded++
-                                    rateLimitRunner.runSuspend {
-                                        setProgress(
-                                            workDataOf(
-                                                PROGRESS_CURRENT_STATE to State.DOWNLOADING_READINGS.name,
-                                                PROGRESS_NUMBER_SO_FAR to totalDownloaded,
-                                                PROGRESS_TOTAL_NUMBER to total
-                                            )
-                                        )
-                                    }
+                                    reportProgress(
+                                        State.DOWNLOADING_READINGS,
+                                        progress = totalDownloaded,
+                                        total = total,
+                                    )
                                 }
                                 if (buffer.isNotEmpty()) channel.send(buffer)
                                 channel.close()
@@ -395,15 +384,11 @@ class SyncWorker @WorkerInject constructor(
                                     channel.send(it)
                                     totalDownloaded++
                                     numReferralsDownloaded++
-                                    rateLimitRunner.runSuspend {
-                                        setProgress(
-                                            workDataOf(
-                                                PROGRESS_CURRENT_STATE to State.DOWNLOADING_READINGS.name,
-                                                PROGRESS_NUMBER_SO_FAR to totalDownloaded,
-                                                PROGRESS_TOTAL_NUMBER to total
-                                            )
-                                        )
-                                    }
+                                    reportProgress(
+                                        State.DOWNLOADING_READINGS,
+                                        progress = totalDownloaded,
+                                        total = total,
+                                    )
                                 }
                                 channel.close()
                                 databaseJob.join()
@@ -427,22 +412,17 @@ class SyncWorker @WorkerInject constructor(
                                     channel.send(it)
                                     totalDownloaded++
                                     numAssessmentsDownloaded++
-                                    rateLimitRunner.runSuspend {
-                                        setProgress(
-                                            workDataOf(
-                                                PROGRESS_CURRENT_STATE to State.DOWNLOADING_READINGS.name,
-                                                PROGRESS_NUMBER_SO_FAR to totalDownloaded,
-                                                PROGRESS_TOTAL_NUMBER to total
-                                            )
-                                        )
-                                    }
-                                }
-                                setProgress(
-                                    workDataOf(
-                                        PROGRESS_CURRENT_STATE to State.DOWNLOADING_READINGS.name,
-                                        PROGRESS_NUMBER_SO_FAR to totalDownloaded,
-                                        PROGRESS_TOTAL_NUMBER to total
+                                    reportProgress(
+                                        State.DOWNLOADING_READINGS,
+                                        progress = totalDownloaded,
+                                        total = total,
                                     )
+                                }
+                                reportProgress(
+                                    State.DOWNLOADING_READINGS,
+                                    progress = totalDownloaded,
+                                    total = total,
+                                    bypassRateLimit = true
                                 )
                                 channel.close()
                                 databaseJob.join()
@@ -461,6 +441,33 @@ class SyncWorker @WorkerInject constructor(
                     "$numReferralsDownloaded referrals and " +
                     "$numAssessmentsDownloaded assessments."
             )
+        }
+    }
+
+    private suspend fun reportProgress(
+        state: State,
+        progress: Int,
+        total: Int,
+        bypassRateLimit: Boolean = false
+    ) {
+        if (bypassRateLimit) {
+            setProgress(
+                workDataOf(
+                    PROGRESS_CURRENT_STATE to state.name,
+                    PROGRESS_NUMBER_SO_FAR to progress,
+                    PROGRESS_TOTAL_NUMBER to total
+                )
+            )
+        } else {
+            rateLimitRunner.runSuspend {
+                setProgress(
+                    workDataOf(
+                        PROGRESS_CURRENT_STATE to state.name,
+                        PROGRESS_NUMBER_SO_FAR to progress,
+                        PROGRESS_TOTAL_NUMBER to total
+                    )
+                )
+            }
         }
     }
 

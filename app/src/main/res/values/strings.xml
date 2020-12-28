@@ -503,7 +503,6 @@
     <string name="sync_activity_status_downloading_patients">Downloading patients</string>
     <string name="sync_activity_status_uploading_readings_referrals">Uploading readings and referrals</string>
     <string name="sync_activity_status_downloading_readings_referrals_and_assessments">Downloading readings, referrals, and assessments</string>
-    <string name="sync_activity_status_finished_syncing">Finished syncing with the server</string>
     <string name="sync_activity_status_checking_for_new_patients">Checking for new patient updates</string>
     <string name="sync_activity_status_checking_for_new_readings_referrals_and_assessments">Checking for new readings, referrals, and assessments</string>
     <string name="sync_activity_no_internet_connection_please_check_back_later">No internet connection; please check back later</string>

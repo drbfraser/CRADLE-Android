@@ -2,7 +2,6 @@ package com.cradleVSA.neptune.view
 
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ProgressBar
@@ -62,7 +61,6 @@ class SyncActivity : AppCompatActivity() {
         }
 
         viewModel.syncStatus.observe(this) { workInfo ->
-            Log.d(TAG, "workInfo: $workInfo")
             workInfo ?: return@observe
             val syncStatusText = findViewById<TextView>(R.id.sync_status_text)
             val syncProgressBar = findViewById<ProgressBar>(R.id.sync_progress_bar)
@@ -129,10 +127,20 @@ class SyncActivity : AppCompatActivity() {
                 }
 
                 val newStateString = when (state) {
-                    SyncWorker.State.STARTING -> getString(R.string.sync_activity_status_beginning_upload)
-                    SyncWorker.State.UPLOADING_PATIENTS -> getString(R.string.sync_activity_status_uploading_patients)
+                    SyncWorker.State.STARTING -> {
+                        getString(R.string.sync_activity_status_beginning_upload)
+                    }
+                    SyncWorker.State.CHECKING_SERVER_PATIENTS -> getString(
+                        R.string.sync_activity_status_checking_for_new_patients
+                    )
+                    SyncWorker.State.UPLOADING_PATIENTS -> {
+                        getString(R.string.sync_activity_status_uploading_patients)
+                    }
                     SyncWorker.State.DOWNLOADING_PATIENTS -> getString(
                         R.string.sync_activity_status_downloading_patients
+                    )
+                    SyncWorker.State.CHECKING_SERVER_READINGS -> getString(
+                        R.string.sync_activity_status_checking_for_new_readings_referrals_and_assessments
                     )
                     SyncWorker.State.UPLOADING_READINGS -> getString(
                         R.string.sync_activity_status_uploading_readings_referrals
@@ -140,15 +148,7 @@ class SyncActivity : AppCompatActivity() {
                     SyncWorker.State.DOWNLOADING_READINGS -> getString(
                         R.string.sync_activity_status_downloading_readings_referrals_and_assessments
                     )
-                    SyncWorker.State.DONE -> getString(R.string.sync_activity_status_finished_syncing)
-                    SyncWorker.State.CHECKING_SERVER_PATIENTS -> getString(
-                        R.string.sync_activity_status_checking_for_new_patients
-                    )
-                    SyncWorker.State.CHECKING_SERVER_READINGS -> {
-                        getString(R.string.sync_activity_status_checking_for_new_readings_referrals_and_assessments)
-                    }
                 }
-                Log.d(TAG, "new state: $state")
                 if (syncStatusText.text != newStateString) {
                     syncStatusText.text = newStateString
                 }
