@@ -5,11 +5,14 @@ import android.app.Application
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.util.Log
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.wonderkiln.blurkit.BlurKit
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import javax.inject.Inject
 
 /**
  * Allow access to Dagger single instance of Component
@@ -17,8 +20,15 @@ import kotlinx.coroutines.Dispatchers
  */
 @Suppress("EmptyFunctionBlock")
 @HiltAndroidApp
-class MyApp : Application() {
+class MyApp : Application(), Configuration.Provider {
     var isDisableBlurKit = false
+
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
+
+    override fun getWorkManagerConfiguration(): Configuration = Configuration.Builder()
+        .setWorkerFactory(workerFactory)
+        .build()
 
     /**
      * Meant for coroutines that should outlive the lifetime of Fragments, Activities, etc.

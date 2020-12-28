@@ -108,6 +108,12 @@ interface ReadingDao {
     suspend fun getAllUnUploadedReadings(): List<Reading>
 
     /**
+     * Number of readings which have not yet been uploaded to the server.
+     */
+    @Query("SELECT COUNT(readingId) FROM Reading WHERE isUploadedToServer = 0")
+    suspend fun getNumberOfUnUploadedReadings(): Int
+
+    /**
      * Returns number of readings that were marked as uploaded
      */
     @Query("UPDATE Reading SET isUploadedToServer = 1 WHERE isUploadedToServer = 0")

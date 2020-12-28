@@ -4,7 +4,7 @@ import android.content.SharedPreferences
 import android.util.Log
 import androidx.core.content.edit
 import com.cradleVSA.neptune.manager.LoginManager
-import com.cradleVSA.neptune.sync.SyncStepper
+import com.cradleVSA.neptune.sync.SyncWorker
 
 /**
  * Handles migrations to values stored in SharedPreferences.
@@ -154,19 +154,19 @@ class SharedPreferencesMigration constructor(
         (oldVersion < ADD_READING_SYNC_TIMESTAMP).runIfTrue {
             // Set the reading sync to the previous sync time
             if (
-                !sharedPreferences.contains(SyncStepper.LAST_PATIENT_SYNC) ||
-                sharedPreferences.contains(SyncStepper.LAST_READING_SYNC)
+                !sharedPreferences.contains(SyncWorker.LAST_PATIENT_SYNC) ||
+                sharedPreferences.contains(SyncWorker.LAST_READING_SYNC)
             ) {
                 return@runIfTrue
             }
 
-            val lastSyncTime = sharedPreferences.getLong(SyncStepper.LAST_PATIENT_SYNC, -1L)
+            val lastSyncTime = sharedPreferences.getLong(SyncWorker.LAST_PATIENT_SYNC, -1L)
             if (lastSyncTime == -1L) {
                 return@runIfTrue
             }
 
             sharedPreferences.edit(commit = true) {
-                putLong(SyncStepper.LAST_READING_SYNC, lastSyncTime)
+                putLong(SyncWorker.LAST_READING_SYNC, lastSyncTime)
             }
         }
 

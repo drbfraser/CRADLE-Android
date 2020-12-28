@@ -126,6 +126,12 @@ class PatientManager @Inject constructor(
      * Get patients.
      */
     suspend fun getPatientsForUpload(): List<Patient> = patientDao.getPatientsForUpload()
+
+    /**
+     * Get patients.
+     */
+    suspend fun getNumberOfPatientsForUpload(): List<Patient> = patientDao.getPatientsForUpload()
+
     /**
      * Uploads a patient and associated readings to the server.
      *

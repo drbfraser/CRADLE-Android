@@ -190,12 +190,6 @@
     <string name="not_available_n_slash_a">N/A</string>
     <string name="education_activity_title">Help</string>
     <string name="video_activity_title">CRADLE VSA Instructions</string>
-    <string name="sync_activity_title">Sync everything</string>
-    <string name="sync_activity_sync_progress_text">Sync in progress! Please wait for it to complete.</string>
-    <string name="sync_activity_upload_status">Request completed %1$d out of %2$d</string>
-    <string name="sync_activity_sync_complete">Sync complete</string>
-    <string name="sync_activity_sync_progress_percent">Syncing: %1$d%% Please wait for it to complete.</string>
-    <string name="sync_activity_error_line">Error: %1$s</string>
     <string name="symptoms">Symptoms</string>
     <string name="missing_required_patient_vitals">Missing required patient vitals</string>
     <string name="missing_vitals_blood_pressure">Blood pressure (systolic, diastolic, heart rate)</string>
@@ -252,7 +246,6 @@
     <string name="stats_activity_total_number_of_traffic_lights">Total number of traffic lights</string>
     <string name="stats_activity_no_readings_text">Please create some readings to see stats</string>
     <string name="stats_activity_this_month_you_have_made_header">This month, you have made</string>
-    <string name="sync_activity_sync_button">Sync</string>
     <string name="video_activity_header">CRADLE VSA Training Video</string>
     <string name="video_activity_app_credits">App developed by Team Neptune</string>
     <string name="camera_fragment_instructions_header">Hold the phone steady and take photo of CRADLE VSA reading</string>
@@ -494,6 +487,33 @@
     <string name="activity_poster_view_action_bar_title">Educational poster</string>
     <string name="activity_poster_view_clinic_poster_title">Clinic poster</string>
     <string name="activity_poster_view_community_poster_title">Community poster</string>
+
+    <string name="sync_activity_title">Sync</string>
+    <string name="sync_activity_sync_button">Sync</string>
+    <string name="sync_activity_d_patients_and_d_readings_to_upload">There are %1$d patients and %2$d readings to upload.</string>
+    <string name="sync_activity_d_patients_and_d_reading_to_upload">There are %1$d patients and %2$d reading to upload.</string>
+    <string name="sync_activity_d_patient_and_d_readings_to_upload">There is %1$d patient and %2$d readings to upload.</string>
+    <string name="sync_activity_d_patient_and_d_reading_to_upload">There is %1$d patient and %2$d reading to upload.</string>
+    <string name="sync_activity_nothing_to_upload">There is nothing to upload.</string>
+    <string name="sync_activity_date_never">Never</string>
+    <string name="sync_activity_waiting_to_sync_last_synced__s">Waiting to sync. Last sync: %1$s</string>
+    <string name="sync_activity_d_out_of_d_downloaded">%1$d out of %2$d</string>
+    <string name="sync_activity_status_beginning_upload">Beginning upload</string>
+    <string name="sync_activity_status_uploading_patients">Uploading patients</string>
+    <string name="sync_activity_status_downloading_patients">Downloading patients</string>
+    <string name="sync_activity_status_uploading_readings_referrals">Uploading readings and referrals</string>
+    <string name="sync_activity_status_downloading_readings_referrals_and_assessments">Downloading readings, referrals, and assessments</string>
+    <string name="sync_activity_status_finished_syncing">Finished syncing with the server</string>
+    <string name="sync_activity_status_checking_for_new_patients">Checking for new patient updates</string>
+    <string name="sync_activity_status_checking_for_new_readings_referrals_and_assessments">Checking for new readings, referrals, and assessments</string>
+    <string name="sync_activity_no_internet_connection_please_check_back_later">No internet connection; please check back later</string>
+    <string name="sync_activity_sync_status_header">Sync status</string>
+    <string name="sync_activity_press_the_sync_button_to_sync_patients_and_readings_with_the_server">Press the sync button to sync patients and readings with the server.</string>
+    <string name="sync_activity_sync_failed">Sync failed!</string>
+    <string name="sync_worker_failure_server_sent_error_code_d__s">Last sync failed: Server sent error code %1$d. %2$s</string>
+    <string name="sync_worker_failure_exception_during_sync_s__s">Last sync failed: Exception during sync (%1$s): %2$s</string>
+    <string name="sync_worker_success">Last sync successful</string>
+
 
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>

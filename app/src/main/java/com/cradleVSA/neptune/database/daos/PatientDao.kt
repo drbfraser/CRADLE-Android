@@ -104,6 +104,9 @@ ORDER BY latestReadingDate DESC, name COLLATE NOCASE ASC
     @Query("SELECT * FROM Patient WHERE base IS NULL")
     suspend fun getPatientsForUpload(): List<Patient>
 
+    @Query("SELECT COUNT(id) FROM Patient WHERE base IS NULL")
+    suspend fun getNumberOfPatientsForUpload(): Int
+
     /**
      * get a list of patient Ids
      */

@@ -15,7 +15,7 @@ import com.cradleVSA.neptune.model.Reading
 import com.cradleVSA.neptune.net.Failure
 import com.cradleVSA.neptune.net.RestApi
 import com.cradleVSA.neptune.net.Success
-import com.cradleVSA.neptune.sync.SyncStepper
+import com.cradleVSA.neptune.sync.SyncWorker
 import com.cradleVSA.neptune.utilitiles.SharedPreferencesMigration
 import io.mockk.coEvery
 import io.mockk.every
@@ -375,16 +375,16 @@ internal class LoginManagerTests {
                 fakeSharedPreferences[mockContext.getString(R.string.key_vht_name)]
             ) { "bad first name" }
 
-            assert(fakeSharedPreferences.containsKey(SyncStepper.LAST_PATIENT_SYNC)) {
+            assert(fakeSharedPreferences.containsKey(SyncWorker.LAST_PATIENT_SYNC)) {
                 "missing last patient sync time"
             }
-            assert(fakeSharedPreferences[SyncStepper.LAST_PATIENT_SYNC]!! as Long > 100L) {
+            assert(fakeSharedPreferences[SyncWorker.LAST_PATIENT_SYNC]!! as Long > 100L) {
                 "last patient sync time too small"
             }
-            assert(fakeSharedPreferences.containsKey(SyncStepper.LAST_READING_SYNC)) {
+            assert(fakeSharedPreferences.containsKey(SyncWorker.LAST_READING_SYNC)) {
                 "missing last reading sync time"
             }
-            assert(fakeSharedPreferences[SyncStepper.LAST_READING_SYNC]!! as Long > 100L) {
+            assert(fakeSharedPreferences[SyncWorker.LAST_READING_SYNC]!! as Long > 100L) {
                 "last reading sync time too small"
             }
 
@@ -489,7 +489,7 @@ internal class LoginManagerTests {
             assertEquals(0, fakePatientDatabase.size) { "nothing should be added" }
             assertEquals(0, fakeReadingDatabase.size) { "nothing should be added" }
 
-            assert(!fakeSharedPreferences.containsKey(SyncStepper.LAST_PATIENT_SYNC)) {
+            assert(!fakeSharedPreferences.containsKey(SyncWorker.LAST_PATIENT_SYNC)) {
                 "sync time should not be stored for a failed, incomplete download; otherwise," +
                     "the user will no longer be able to sync"
             }

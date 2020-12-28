@@ -14,7 +14,7 @@ import com.cradleVSA.neptune.net.Failure
 import com.cradleVSA.neptune.net.NetworkException
 import com.cradleVSA.neptune.net.RestApi
 import com.cradleVSA.neptune.net.Success
-import com.cradleVSA.neptune.sync.SyncStepper
+import com.cradleVSA.neptune.sync.SyncWorker
 import com.cradleVSA.neptune.utilitiles.SharedPreferencesMigration
 import com.cradleVSA.neptune.utilitiles.UnixTimestamp
 import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
@@ -245,8 +245,8 @@ class LoginManager @Inject constructor(
             joinAll(patientsResultAsync, healthFacilityResultAsync)
             if (patientsResultAsync.await() is Success) {
                 sharedPreferences.edit(commit = true) {
-                    putLong(SyncStepper.LAST_PATIENT_SYNC, loginTime)
-                    putLong(SyncStepper.LAST_READING_SYNC, loginTime)
+                    putLong(SyncWorker.LAST_PATIENT_SYNC, loginTime)
+                    putLong(SyncWorker.LAST_READING_SYNC, loginTime)
                 }
             }
 

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.cradleVSA.neptune">
     <!-- Use "old" Camera API for support for devices running < v5.0. -->
     <uses-permission android:name="android.permission.CAMERA" /> <!-- Removed autofocus because preventing install on some older phones. -->
@@ -70,5 +71,12 @@
             android:name=".view.ui.settings.SettingsActivity"
             android:label="Settings"
             android:screenOrientation="portrait" />
+
+        <provider
+            android:name="androidx.work.impl.WorkManagerInitializer"
+            android:authorities="${applicationId}.workmanager-init"
+            android:exported="false"
+            android:multiprocess="true"
+            tools:node="remove"/>
     </application>
 </manifest>

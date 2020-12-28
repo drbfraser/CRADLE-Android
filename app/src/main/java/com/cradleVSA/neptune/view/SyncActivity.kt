@@ -1,73 +1,157 @@
 package com.cradleVSA.neptune.view
 
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
-import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.databinding.DataBindingUtil
 import com.cradleVSA.neptune.R
-import com.cradleVSA.neptune.sync.SyncStepper
-import com.cradleVSA.neptune.sync.SyncStepperCallback
-import com.cradleVSA.neptune.sync.TotalRequestStatus
+import com.cradleVSA.neptune.databinding.ActivitySyncBinding
+import com.cradleVSA.neptune.sync.SyncWorker
+import com.cradleVSA.neptune.utilitiles.DateUtil
+import com.cradleVSA.neptune.viewmodel.SyncViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
-import kotlin.math.roundToInt
-import kotlin.system.measureTimeMillis
+import javax.inject.Inject
 
 /**
  * TODO: redesign
  */
 @AndroidEntryPoint
-class SyncActivity : AppCompatActivity(), SyncStepperCallback {
+class SyncActivity : AppCompatActivity() {
+    private val viewModel: SyncViewModel by viewModels()
 
-    companion object {
-        private const val TAG = "SyncActivity"
-        private const val NUM_STEPS_FOR_SYNC = 3.0
+    private var binding: ActivitySyncBinding? = null
+
+    @Inject
+    lateinit var sharedPreferences: SharedPreferences
+
+    override fun onStop() {
+        super.onStop()
+        viewModel.onStop()
     }
 
-    private val syncStepper by lazy {
-        SyncStepper(this@SyncActivity, this@SyncActivity)
+    override fun onResume() {
+        super.onResume()
+        viewModel.onResume()
     }
-
-    private lateinit var uploadStatusTextView: TextView
-    private lateinit var downloadStatusTextView: TextView
-
-    private lateinit var syncText: TextView
-
-    private val progressPercent =
-        ProgressPercent(NUM_STEPS_FOR_SYNC)
-    private lateinit var progressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_sync)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_sync)
+        binding?.apply {
+            viewModel = this@SyncActivity.viewModel
+            lifecycleOwner = this@SyncActivity
+            executePendingBindings()
+        }
 
-        uploadStatusTextView = findViewById(R.id.uploadStatusTxt)
-        downloadStatusTextView = findViewById(R.id.downloadStatusTxt)
+        setSupportActionBar(findViewById(R.id.toolbar4))
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            title = getString(R.string.sync_activity_title)
+        }
 
-        progressBar = findViewById(R.id.syncProgressBar)
-        syncText = findViewById(R.id.syncText)
+        val syncButton = findViewById<Button>(R.id.sync_button)
+        syncButton.setOnClickListener {
+            syncButton.isEnabled = false
+            viewModel.startSyncing()
+        }
 
-        setSupportActionBar(findViewById(R.id.toolbar2))
-        supportActionBar?.title = getString(R.string.sync_activity_title)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        viewModel.syncStatus.observe(this) { workInfo ->
+            Log.d(TAG, "workInfo: $workInfo")
+            workInfo ?: return@observe
+            val syncStatusText = findViewById<TextView>(R.id.sync_status_text)
+            val syncProgressBar = findViewById<ProgressBar>(R.id.sync_progress_bar)
+            val downloadProgressText = findViewById<TextView>(R.id.download_progress_text_view)
+            val lastSyncStatusText = findViewById<TextView>(R.id.latest_sync_status_text_view)
 
-        findViewById<Button>(R.id.uploadEverythingButton).setOnClickListener {
-            syncText.text = getString(R.string.sync_activity_sync_progress_text)
-            progressBar.visibility = View.VISIBLE
-            // TODO: launch this in the background as a service or use WorkManager.
-            //  User shouldn't be expected to leave the screen on and keep this
-            //  activity on to sync. MainScope() also doesn't get cancelled properly.
-            MainScope().launch {
-                it.visibility = View.GONE
-                val totalTimeTaken = measureTimeMillis {
-                    syncStepper.doSync(this@SyncActivity)
+            if (workInfo.state.isFinished) {
+                syncProgressBar.visibility = View.INVISIBLE
+                downloadProgressText.visibility = View.INVISIBLE
+
+                val lastSyncTime = sharedPreferences.getLong(SyncWorker.LAST_PATIENT_SYNC, -1L)
+                val date = if (lastSyncTime == -1L) {
+                    getString(R.string.sync_activity_date_never)
+                } else {
+                    DateUtil.getConciseDateString(lastSyncTime, false)
                 }
-                Log.d(TAG, "Total sync time taken: $totalTimeTaken")
+
+                syncStatusText.text = getString(
+                    R.string.sync_activity_waiting_to_sync_last_synced__s,
+                    date
+                )
+
+                lastSyncStatusText.apply {
+                    text = SyncWorker.getSyncResultMessage(workInfo)
+                    visibility = View.VISIBLE
+                }
+            } else {
+                lastSyncStatusText.apply {
+                    text = ""
+                    visibility = View.INVISIBLE
+                }
+                val state = SyncWorker.getState(workInfo)
+                val progressPair = SyncWorker.getProgress(workInfo)
+                syncProgressBar.apply {
+                    if (progressPair == null) {
+                        isIndeterminate = true
+                    } else {
+                        isIndeterminate = false
+                        max = progressPair.second
+                        progress = progressPair.first
+                    }
+
+                    if (visibility != View.VISIBLE) {
+                        visibility = View.VISIBLE
+                    }
+                }
+
+                downloadProgressText.apply {
+                    if (progressPair == null) {
+                        if (visibility != View.INVISIBLE) {
+                            visibility = View.INVISIBLE
+                        }
+                    } else {
+                        text = getString(
+                            R.string.sync_activity_d_out_of_d_downloaded,
+                            progressPair.first,
+                            progressPair.second
+                        )
+
+                        if (visibility != View.VISIBLE) {
+                            visibility = View.VISIBLE
+                        }
+                    }
+                }
+
+                val newStateString = when (state) {
+                    SyncWorker.State.STARTING -> getString(R.string.sync_activity_status_beginning_upload)
+                    SyncWorker.State.UPLOADING_PATIENTS -> getString(R.string.sync_activity_status_uploading_patients)
+                    SyncWorker.State.DOWNLOADING_PATIENTS -> getString(
+                        R.string.sync_activity_status_downloading_patients
+                    )
+                    SyncWorker.State.UPLOADING_READINGS -> getString(
+                        R.string.sync_activity_status_uploading_readings_referrals
+                    )
+                    SyncWorker.State.DOWNLOADING_READINGS -> getString(
+                        R.string.sync_activity_status_downloading_readings_referrals_and_assessments
+                    )
+                    SyncWorker.State.DONE -> getString(R.string.sync_activity_status_finished_syncing)
+                    SyncWorker.State.CHECKING_SERVER_PATIENTS -> getString(
+                        R.string.sync_activity_status_checking_for_new_patients
+                    )
+                    SyncWorker.State.CHECKING_SERVER_READINGS -> {
+                        getString(R.string.sync_activity_status_checking_for_new_readings_referrals_and_assessments)
+                    }
+                }
+                Log.d(TAG, "new state: $state")
+                if (syncStatusText.text != newStateString) {
+                    syncStatusText.text = newStateString
+                }
             }
         }
     }
@@ -77,86 +161,7 @@ class SyncActivity : AppCompatActivity(), SyncStepperCallback {
         return super.onSupportNavigateUp()
     }
 
-    override fun onFetchDataCompleted(success: Boolean) {
-        progressPercent.current++
-        setProgressPercent()
-    }
-
-    override fun onNewPatientAndReadingUploading(uploadStatus: TotalRequestStatus) {
-        uploadStatusTextView.text = getString(
-            R.string.sync_activity_upload_status,
-            uploadStatus.numUploaded + uploadStatus.numFailed,
-            uploadStatus.totalNum
-        )
-    }
-
-    override fun onNewPatientAndReadingDownloading(downloadStatus: TotalRequestStatus) {
-        downloadStatusTextView.text =
-            "Request completed ${downloadStatus.numUploaded + downloadStatus.numFailed} " +
-            "out of  ${downloadStatus.totalNum}"
-    }
-
-    override fun onNewPatientAndReadingUploadFinish(uploadStatus: TotalRequestStatus) {
-        progressPercent.current++
-        uploadStatusTextView.text =
-            "Successfully made ${uploadStatus.numUploaded} out of ${uploadStatus.totalNum} requests"
-        setStatusArrow(uploadStatus.allRequestsSuccess(), R.id.ivUploadStatus)
-        setProgressPercent()
-    }
-
-    override fun onNewPatientAndReadingDownloadFinish(downloadStatus: TotalRequestStatus) {
-        progressPercent.current++
-        // TODO: Extract strings
-        downloadStatusTextView.text =
-            "Successfully made  ${downloadStatus.numUploaded} out of ${downloadStatus.totalNum} requests"
-        setStatusArrow(downloadStatus.allRequestsSuccess(), R.id.ivDownloadStatus)
-        setProgressPercent()
-    }
-
-    override fun onFinish(errorCodes: HashMap<Int?, String?>) {
-        progressBar.visibility = View.INVISIBLE
-
-        if (errorCodes.isEmpty()) {
-            syncText.text = getString(R.string.sync_activity_sync_complete)
-        } else {
-            syncText.setTextColor(resources.getColor(R.color.error))
-            val stringBuilder = StringBuilder()
-            errorCodes.entries.forEach {
-                stringBuilder.append(getString(R.string.sync_activity_error_line, it.value))
-                    .append("\n")
-            }
-            syncText.text = stringBuilder.toString()
-        }
-    }
-
-    private fun setStatusArrow(success: Boolean, id: Int) {
-        val iv = findViewById<ImageView>(id)
-        if (success) {
-            iv.setImageResource(R.drawable.arrow_right_with_check)
-        } else {
-            iv.setImageResource(R.drawable.arrow_right_with_x)
-        }
-    }
-
-    private fun setProgressPercent() {
-        syncText.text = getString(
-            R.string.sync_activity_sync_progress_percent,
-            progressPercent.getPercent().roundToInt()
-        )
-    }
-}
-
-/**
- * Very simple class to get overall progress percent
- */
-data class ProgressPercent(var overall: Double) {
-    var current: Double = 0.0
-
-    fun getPercent(): Double {
-        return current / overall * DECIMAL_TO_PERCENT
-    }
-
     companion object {
-        const val DECIMAL_TO_PERCENT = 100
+        private const val TAG = "SyncActivity"
     }
 }
