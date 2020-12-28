@@ -86,7 +86,8 @@ class SyncViewModel @ViewModelInject constructor(
         )
 
         val numberToUploadString = when {
-            numberOfPatientsToUpload > 1 && numberOfReadingsToUpload > 1 -> {
+            numberOfPatientsToUpload != 1 && numberOfReadingsToUpload != 1 &&
+                (numberOfPatientsToUpload + numberOfReadingsToUpload != 0) -> {
                 context.getString(
                     R.string.sync_activity_d_patients_and_d_readings_to_upload,
                     numberOfPatientsToUpload,
