@@ -30,15 +30,18 @@ import com.cradleVSA.neptune.net.Success
 import com.cradleVSA.neptune.utilitiles.RateLimitRunner
 import com.cradleVSA.neptune.utilitiles.UnixTimestamp
 import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
-import com.fasterxml.jackson.core.json.ReaderBasedJsonParser
-import com.fasterxml.jackson.core.json.UTF8StreamJsonParser
-import com.fasterxml.jackson.databind.JsonNode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.IOException
 
+/**
+ * A Worker that syncs the local [Patient]s and [Reading]s (and [Referral]s sent by SMS) with
+ * the CRADLE server. The data that is on the phone but not on the server is first uploaded, then
+ * new data from the server is downloaded. Syncing is done using a timestamp passed as a parameter
+ * when accessing the API.
+ */
 class SyncWorker @WorkerInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
@@ -77,6 +80,10 @@ class SyncWorker @WorkerInject constructor(
 
         private const val RESULT_MESSAGE = "error_message"
 
+        /**
+         * Given a [WorkInfo] instance from WorkManager's getWorkInfo* methods for observing
+         * intermediate progress, it gets the current syncing state.
+         */
         fun getState(workInfo: WorkInfo) = State
             .valueOf(workInfo.progress.getString(PROGRESS_CURRENT_STATE) ?: State.STARTING.name)
 
@@ -101,6 +108,10 @@ class SyncWorker @WorkerInject constructor(
             }
         }
 
+        /**
+         * Given a *finished* [WorkInfo] instance from WorkManager's getWorkInfo* method, it gets
+         * the message of the sync result.
+         */
         fun getSyncResultMessage(workInfo: WorkInfo): String? = workInfo.outputData.getString(
             RESULT_MESSAGE
         )
@@ -136,18 +147,16 @@ class SyncWorker @WorkerInject constructor(
                     " LEFT TO UPLOAD"
             )
         }
-        when (patientResult) {
-            is Success -> {
-                sharedPreferences.edit(commit = true) {
-                    putLong(LAST_PATIENT_SYNC, syncTimestampToSave)
-                }
-                Log.d(TAG, "Success, moving on to syncing readings")
+
+        if (patientResult is Success) {
+            sharedPreferences.edit(commit = true) {
+                putLong(LAST_PATIENT_SYNC, syncTimestampToSave)
             }
-            else -> {
-                return Result.failure(
-                    workDataOf(RESULT_MESSAGE to getResultMessage(patientResult))
-                )
-            }
+            Log.d(TAG, "Patient sync is a success, moving on to syncing readings")
+        } else {
+            return Result.failure(
+                workDataOf(RESULT_MESSAGE to getResultMessage(patientResult))
+            )
         }
 
         val lastReadingSyncTime = sharedPreferences.getLong(
@@ -255,20 +264,10 @@ class SyncWorker @WorkerInject constructor(
                                     databaseJob.join()
                                 }
                                 PatientSyncField.FACILITIES.text -> {
-                                    // TODO: Read or ignore facilities
-                                    nextToken()
-                                    val tree = readValueAsTree<JsonNode>().toPrettyString()
-                                    withContext(Dispatchers.Main) {
-                                        Log.d(
-                                            TAG,
-                                            "$parser: " +
-                                                "ReaderBasedJsonParser? " +
-                                                "${parser is ReaderBasedJsonParser}, " +
-                                                "UTF8StreamJsonParser? " +
-                                                "${parser is UTF8StreamJsonParser}, " +
-                                                "The health facilities list is $tree"
-                                        )
-                                    }
+                                    // TODO: Either have a sync endpoint for new facilities, or
+                                    //  remove this and just redownload facilities from server.
+                                    // nextToken()
+                                    // val tree = readValueAsTree<JsonNode>().toPrettyString()
                                 }
                             }
                         }
@@ -299,9 +298,7 @@ class SyncWorker @WorkerInject constructor(
             readingsToUpload,
             lastSyncTimestamp = lastSyncTime
         ) { inputStream ->
-            withContext(Dispatchers.Main) {
-                Log.d(TAG, "Parsing readings now")
-            }
+            Log.d(TAG, "Parsing readings now")
             var numReadingsDownloaded = 0
             var numReferralsDownloaded = 0
             var numAssessmentsDownloaded = 0
@@ -317,17 +314,14 @@ class SyncWorker @WorkerInject constructor(
                         when (currentName) {
                             ReadingSyncField.TOTAL.text -> {
                                 total = nextIntValue(0)
-                                withContext(Dispatchers.Main) {
-                                    Log.d(TAG, "There are $total readings + referrals + followups")
-                                }
+                                Log.d(TAG, "There are $total readings + referrals + followups")
+
                                 if (total == 0) {
                                     return@use
                                 }
                             }
                             ReadingSyncField.READINGS.text -> {
-                                withContext(Dispatchers.Main) {
-                                    Log.d(TAG, "Starting to parse readings array")
-                                }
+                                Log.d(TAG, "Starting to parse readings array")
 
                                 val channel = Channel<List<Reading>>()
                                 val databaseJob = launch {
@@ -367,9 +361,7 @@ class SyncWorker @WorkerInject constructor(
                                 databaseJob.join()
                             }
                             ReadingSyncField.NEW_REFERRALS.text -> {
-                                withContext(Dispatchers.Main) {
-                                    Log.d(TAG, "Starting to parse NEW_REFERRALS array")
-                                }
+                                Log.d(TAG, "Starting to parse NEW_REFERRALS array")
 
                                 // TODO: refactor
                                 val channel = Channel<Referral>()
@@ -394,12 +386,9 @@ class SyncWorker @WorkerInject constructor(
                                 databaseJob.join()
                             }
                             ReadingSyncField.NEW_FOLLOW_UPS.text -> {
-                                withContext(Dispatchers.Main) {
-                                    Log.d(TAG, "Starting to parse NEW_FOLLOW_UPS array")
-                                }
+                                Log.d(TAG, "Starting to parse NEW_FOLLOW_UPS array")
 
                                 // TODO: refactor
-
                                 val channel = Channel<Assessment>()
                                 val databaseJob = launch {
                                     database.withTransaction {

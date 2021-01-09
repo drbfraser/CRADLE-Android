@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import androidx.work.WorkInfo
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.databinding.ActivitySyncBinding
 import com.cradleVSA.neptune.sync.SyncWorker
@@ -60,33 +61,15 @@ class SyncActivity : AppCompatActivity() {
             viewModel.startSyncing()
         }
 
+        showLastSyncStatus(null)
         viewModel.syncStatus.observe(this) { workInfo ->
-            workInfo ?: return@observe
             val syncStatusText = findViewById<TextView>(R.id.sync_status_text)
             val syncProgressBar = findViewById<ProgressBar>(R.id.sync_progress_bar)
             val downloadProgressText = findViewById<TextView>(R.id.download_progress_text_view)
             val lastSyncStatusText = findViewById<TextView>(R.id.latest_sync_status_text_view)
 
-            if (workInfo.state.isFinished) {
-                syncProgressBar.visibility = View.INVISIBLE
-                downloadProgressText.visibility = View.INVISIBLE
-
-                val lastSyncTime = sharedPreferences.getLong(SyncWorker.LAST_PATIENT_SYNC, -1L)
-                val date = if (lastSyncTime == -1L) {
-                    getString(R.string.sync_activity_date_never)
-                } else {
-                    DateUtil.getConciseDateString(lastSyncTime, false)
-                }
-
-                syncStatusText.text = getString(
-                    R.string.sync_activity_waiting_to_sync_last_synced__s,
-                    date
-                )
-
-                lastSyncStatusText.apply {
-                    text = SyncWorker.getSyncResultMessage(workInfo)
-                    visibility = View.VISIBLE
-                }
+            if (workInfo == null || workInfo.state.isFinished) {
+                showLastSyncStatus(workInfo)
             } else {
                 lastSyncStatusText.apply {
                     text = ""
@@ -152,6 +135,38 @@ class SyncActivity : AppCompatActivity() {
                 if (syncStatusText.text != newStateString) {
                     syncStatusText.text = newStateString
                 }
+            }
+        }
+    }
+
+    private fun showLastSyncStatus(workInfo: WorkInfo?) {
+        val syncProgressBar = findViewById<ProgressBar>(R.id.sync_progress_bar)
+        val downloadProgressText = findViewById<TextView>(R.id.download_progress_text_view)
+        val syncStatusText = findViewById<TextView>(R.id.sync_status_text)
+        val lastSyncStatusText = findViewById<TextView>(R.id.latest_sync_status_text_view)
+
+        syncProgressBar.visibility = View.INVISIBLE
+        downloadProgressText.visibility = View.INVISIBLE
+
+        val lastSyncTime = sharedPreferences.getLong(
+            SyncWorker.LAST_PATIENT_SYNC,
+            SyncWorker.LAST_SYNC_DEFAULT
+        )
+        val date = if (lastSyncTime == SyncWorker.LAST_SYNC_DEFAULT) {
+            getString(R.string.sync_activity_date_never)
+        } else {
+            DateUtil.getConciseDateString(lastSyncTime, false)
+        }
+
+        syncStatusText.text = getString(
+            R.string.sync_activity_waiting_to_sync_last_synced__s,
+            date
+        )
+
+        workInfo?.let {
+            lastSyncStatusText.apply {
+                text = SyncWorker.getSyncResultMessage(it)
+                visibility = View.VISIBLE
             }
         }
     }
