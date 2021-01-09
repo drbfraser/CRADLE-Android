@@ -154,7 +154,7 @@ class SyncViewModel @ViewModelInject constructor(
         sharedPreferences.edit {
             putString(LAST_SYNC_JOB_UUID, workRequest.id.toString())
         }
-        workManager.enqueueUniqueWork(WORK_NAME, ExistingWorkPolicy.APPEND, workRequest)
+        workManager.enqueueUniqueWork(WORK_NAME, ExistingWorkPolicy.APPEND_OR_REPLACE, workRequest)
         currentWorkUuid.value = workRequest.id
         Log.d(TAG, "Work ${workRequest.id} enqueued")
     }
