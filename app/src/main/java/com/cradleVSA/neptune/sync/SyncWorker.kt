@@ -41,6 +41,10 @@ import java.io.IOException
  * the CRADLE server. The data that is on the phone but not on the server is first uploaded, then
  * new data from the server is downloaded. Syncing is done using a timestamp passed as a parameter
  * when accessing the API.
+ *
+ * TODO: Make sure that patients or readings can't be edited or created while syncing is in
+ *  progress.
+ * TODO: Use SyncWorker to perform periodic sync.
  */
 class SyncWorker @WorkerInject constructor(
     @Assisted context: Context,
