@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkRequest
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -15,8 +16,9 @@ import javax.inject.Inject
 class NetworkWatcher @Inject constructor(
     @ApplicationContext context: Context
 ) : ConnectivityManager.NetworkCallback() {
-    private val connectivityManager: ConnectivityManager =
-        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    private val connectivityManager: ConnectivityManager = ContextCompat
+        .getSystemService(context, ConnectivityManager::class.java)
+        ?: error("missing ConnectivityManager")
 
     private val _isConnectedToInternet = MutableLiveData<Boolean>()
     val isConnectedToInternet: LiveData<Boolean> = _isConnectedToInternet

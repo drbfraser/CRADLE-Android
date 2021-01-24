@@ -14,6 +14,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
@@ -177,7 +178,8 @@ class PatientsActivity : AppCompatActivity() {
         menuInflater.inflate(R.menu.menu_patients, menu)
 
         // Associate searchable configuration with the SearchView
-        val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
+        val searchManager = ContextCompat.getSystemService(this, SearchManager::class.java)
+            ?: error("missing SearchManager")
         val searchView = menu.findItem(R.id.searchPatients).actionView as SearchView
         this.searchView = searchView
 

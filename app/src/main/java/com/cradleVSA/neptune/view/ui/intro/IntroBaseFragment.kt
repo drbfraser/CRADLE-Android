@@ -2,8 +2,8 @@ package com.cradleVSA.neptune.view.ui.intro
 
 import android.content.Context
 import android.util.Log
-import android.view.inputmethod.InputMethodManager
 import androidx.fragment.app.Fragment
+import com.cradleVSA.neptune.ext.hideKeyboard
 
 /**
  * Base class for other ReadingFragments
@@ -26,13 +26,7 @@ abstract class IntroBaseFragment : Fragment() {
         Keyboard support
      */
     fun hideKeyboard() {
-        // SOURCE: https://stackoverflow.com/questions/1109022/close-hide-the-android-soft-keyboard
-        val view = this.requireActivity().currentFocus
-        if (view != null) {
-            val imm =
-                requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(view.windowToken, 0)
-        }
+        this.requireActivity().currentFocus?.hideKeyboard()
     }
 
     /*

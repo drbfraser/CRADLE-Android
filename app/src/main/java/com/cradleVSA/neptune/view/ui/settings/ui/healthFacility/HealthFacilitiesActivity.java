@@ -10,6 +10,7 @@ import android.view.MenuItem;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -97,7 +98,8 @@ public class HealthFacilitiesActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu_health_facility, menu);
 
         // Associate searchable configuration with the SearchView
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchManager searchManager = ContextCompat
+                .getSystemService(this, SearchManager.class);
         searchView = (SearchView) menu.findItem(R.id.searchHealthFacility)
                 .getActionView();
         searchView.setSearchableInfo(searchManager
