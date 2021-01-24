@@ -7,7 +7,7 @@ import com.cradleVSA.neptune.model.marshal
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import org.threeten.bp.ZonedDateTime
+import java.time.ZonedDateTime
 
 /**
  * Describes types which may be used as fields for retrieving and storing

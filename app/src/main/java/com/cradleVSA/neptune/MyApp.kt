@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.util.Log
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
-import com.jakewharton.threetenabp.AndroidThreeTen
 import com.wonderkiln.blurkit.BlurKit
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
@@ -37,10 +36,6 @@ class MyApp : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
-
-        // Initialize the time library:
-        // https://github.com/JakeWharton/ThreeTenABP
-        AndroidThreeTen.init(this)
 
         // Disable rotation
         // source: https://stackoverflow.com/questions/6745797/how-to-set-entire-application-in-portrait-mode-only/9784269#9784269

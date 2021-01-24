@@ -106,8 +106,9 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = '1.8'
-        targetCompatibility = '1.8'
+        coreLibraryDesugaringEnabled true
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
     kotlinOptions {
         jvmTarget = "1.8"
@@ -126,6 +127,8 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.1'
+
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'androidx.vectordrawable:vectordrawable:1.1.0'
@@ -169,10 +172,6 @@ dependencies {
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.11.3"
 
     implementation "com.squareup.okhttp3:okhttp:4.9.0"
-
-    // Time: Backport of Java 8's interfaces for Android
-    // https://github.com/JakeWharton/ThreeTenABP
-    implementation 'com.jakewharton.threetenabp:threetenabp:1.2.4'
 
     // TensorFlow (for OCR of CRADLE screen)
     // implementation 'org.tensorflow:tensorflow-lite:0.0.0-nightly'

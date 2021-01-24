@@ -1,11 +1,9 @@
 package com.cradleVSA.neptune.utilitiles;
 
-import org.threeten.bp.Instant;
-import org.threeten.bp.ZoneId;
-import org.threeten.bp.ZonedDateTime;
-import org.threeten.bp.format.DateTimeFormatter;
-
-import java.util.Calendar;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class DateUtil {
     public static String getDateString(ZonedDateTime date) {
@@ -90,7 +88,7 @@ public class DateUtil {
             return "";
         }
         Instant i = Instant.ofEpochSecond(date);
-        ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(i, ZoneId.of(Calendar.getInstance().getTimeZone().getID()));
+        ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(i, ZoneId.systemDefault());
 
         DateTimeFormatter formatter;
         formatter = DateTimeFormatter.ofPattern("MMM d, yyyy '@' h:mm a");
