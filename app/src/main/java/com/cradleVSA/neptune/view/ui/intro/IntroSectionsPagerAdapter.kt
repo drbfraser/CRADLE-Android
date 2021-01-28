@@ -26,12 +26,11 @@ class IntroSectionsPagerAdapter(
             // getItem is called to instantiate the fragment for the given page.
             // Return instance of required fragments
             thisFragment = when (position) {
-                TAB_NUMBER_WELCOME -> WelcomeFragment.newInstance()
                 TAB_NUMBER_PERMISSIONS -> PermissionsFragment.newInstance()
                 TAB_NUMBER_PRIVACY_POLICY -> PrivacyPolicyFragment.newInstance()
                 else -> {
                     Util.ensure(false)
-                    WelcomeFragment.newInstance()
+                    PermissionsFragment.newInstance()
                 }
             }
             fragments[position] = thisFragment
@@ -50,13 +49,11 @@ class IntroSectionsPagerAdapter(
     }
 
     companion object {
-        const val TAB_NUMBER_WELCOME = 0
-        const val TAB_NUMBER_PERMISSIONS = 1
-        const val TAB_NUMBER_PRIVACY_POLICY = 2
+        const val TAB_NUMBER_PERMISSIONS = 0
+        const val TAB_NUMBER_PRIVACY_POLICY = 1
 
         @StringRes
         private val tabTitles = intArrayOf(
-            R.string.intro_tab_welcome,
             R.string.intro_tab_permissions,
             R.string.intro_tab_privacy_policy
         )
