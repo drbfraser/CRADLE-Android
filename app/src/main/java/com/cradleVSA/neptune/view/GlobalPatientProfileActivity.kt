@@ -65,8 +65,9 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         progressDialog.setMessage(getString(R.string.global_patient_profile_add_dialog_message))
         progressDialog.show()
 
+        // TODO checkout null-assertions here
         lifecycleScope.launch {
-            val result = patientManager.associatePatientWithUser(currPatient.id)
+            val result = patientManager.associatePatientWithUser(currPatient!!.id)
             if (result.failed) {
                 progressDialog.cancel()
                 Toast.makeText(
@@ -85,7 +86,8 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
      */
     private suspend fun addThePatientInfoToLocalDb(progressDialog: ProgressDialog) {
         patientManager.addPatientWithReadings(
-            currPatient,
+            // TODO ensure we do the right thing regarding null assertions
+            currPatient!!,
             patientReadings,
             areReadingsFromServer = true
         )
@@ -130,7 +132,8 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
             patientReadings = result.value.readings
             setupAddToMyPatientList()
             setupToolBar()
-            populatePatientInfo(currPatient)
+            // TODO ensure we do the right thing regarding null assertions
+            populatePatientInfo(currPatient!!)
             setupReadingsRecyclerView()
             setupLineChart()
             progressDialog.cancel()
