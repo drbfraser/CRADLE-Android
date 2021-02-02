@@ -10,38 +10,32 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.RadioGroup
 import android.widget.TextView
-
 import androidx.annotation.Nullable
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.manager.PatientManager
 import com.cradleVSA.neptune.manager.ReadingManager
 import com.cradleVSA.neptune.model.Patient
 import com.cradleVSA.neptune.model.Reading
 import com.cradleVSA.neptune.utilitiles.Util
+import com.cradleVSA.neptune.view.DashBoardActivity.Companion.READING_ACTIVITY_DONE
+import com.cradleVSA.neptune.view.ReadingActivity.Companion.makeIntentForEditReading
+import com.cradleVSA.neptune.view.ReadingActivity.Companion.makeIntentForNewReadingExistingPatient
+import com.cradleVSA.neptune.view.ReadingActivity.Companion.makeIntentForRecheck
 import com.cradleVSA.neptune.viewmodel.ReadingRecyclerViewAdapter
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
-
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.runBlocking
 import java.text.ParseException
 import java.util.ArrayList
 import java.util.Comparator
-
 import javax.inject.Inject
-
-import dagger.hilt.android.AndroidEntryPoint
-
-import com.cradleVSA.neptune.view.DashBoardActivity.Companion.READING_ACTIVITY_DONE
-import com.cradleVSA.neptune.view.ReadingActivity.Companion.makeIntentForEditReading
-import com.cradleVSA.neptune.view.ReadingActivity.Companion.makeIntentForNewReadingExistingPatient
-import com.cradleVSA.neptune.view.ReadingActivity.Companion.makeIntentForRecheck
-import kotlinx.coroutines.runBlocking
 
 /**
  * Note:
@@ -143,7 +137,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         if (intent.hasExtra(EXTRA_PATIENT_ID)) {
             val patientId = intent.getStringExtra(EXTRA_PATIENT_ID)
             // Assertion that patientId is not null should be safe due to hasExtra check
-            currPatient = runBlocking{ patientManager.getPatientById(patientId!!) }
+            currPatient = runBlocking { patientManager.getPatientById(patientId!!) }
             return currPatient != null
         }
         currPatient = (intent.getSerializableExtra(EXTRA_PATIENT) as Patient?)
@@ -158,7 +152,7 @@ open class PatientProfileActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         if (!getLocalPatient()) {
-            //not a local patient, might be a child class
+            // not a local patient, might be a child class
             return
         }
         setupLineChart()
@@ -174,11 +168,13 @@ open class PatientProfileActivity : AppCompatActivity() {
                 val ageDisplayString: String
                 ageDisplayString = if (patient.isExactDob == null || !patient.isExactDob!!) {
                     getString(
-                        R.string.patient_profile_age_about_n_years_old, ageFromDob
+                        R.string.patient_profile_age_about_n_years_old,
+                        ageFromDob
                     )
                 } else {
                     getString(
-                        R.string.patient_profile_age_n_years_old, ageFromDob
+                        R.string.patient_profile_age_n_years_old,
+                        ageFromDob
                     )
                 }
                 patientAge.text = ageDisplayString
@@ -220,17 +216,17 @@ open class PatientProfileActivity : AppCompatActivity() {
      */
     fun setupGestationalInfo(patient: Patient) {
         val radioGroup = findViewById<RadioGroup>(R.id.gestationradioGroup)
-        radioGroup.setOnCheckedChangeListener{radioGroup1: RadioGroup?, index: Int ->
-            var `val`: Double? = null
+        radioGroup.setOnCheckedChangeListener { radioGroup1: RadioGroup?, index: Int ->
+            var ageVal: Double?
             if (index == R.id.monthradiobutton) {
-                `val` = patient.gestationalAge?.age?.asMonths()
+                ageVal = patient.gestationalAge?.age?.asMonths()
             } else {
-                `val` = patient.gestationalAge?.age?.asWeeks()
+                ageVal = patient.gestationalAge?.age?.asWeeks()
             }
-            if (`val`!! < 0) {
+            if (ageVal!! < 0) {
                 gestationalAge.setText(R.string.not_available_n_slash_a)
             } else {
-                gestationalAge.text = "%.2f".format(`val`)
+                gestationalAge.text = "%.2f".format(ageVal)
             }
         }
         radioGroup.check(R.id.monthradiobutton)
@@ -244,7 +240,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         val dBPs: ArrayList<Entry> = ArrayList()
         val bPMs: ArrayList<Entry> = ArrayList()
 
-        //put data sets in chronological order
+        // put data sets in chronological order
         var index = patientReadings.size
         for (reading in patientReadings) {
             sBPs.add(0, Entry(index.toFloat(), reading.bloodPressure.systolic.toFloat()))
@@ -300,8 +296,7 @@ open class PatientProfileActivity : AppCompatActivity() {
     }
 
     private fun getThisPatientsReadings(): List<Reading> {
-        val readings: List<Reading> =
-           runBlocking{ readingManager.getReadingsByPatientId(currPatient!!.id) }
+        val readings: List<Reading> = runBlocking { readingManager.getReadingsByPatientId(currPatient!!.id) }
         val comparator: Comparator<Reading> = Reading.DescendingDateComparator
         return readings.sortedWith(comparator)
     }
@@ -312,7 +307,8 @@ open class PatientProfileActivity : AppCompatActivity() {
         createButton.visibility = View.VISIBLE
         createButton.setOnClickListener { v: View? ->
             val intent = makeIntentForNewReadingExistingPatient(
-                this@PatientProfileActivity, currPatient!!.id
+                this@PatientProfileActivity,
+                currPatient!!.id
             )
             startActivityForResult(intent, READING_ACTIVITY_DONE)
         }
@@ -329,24 +325,26 @@ open class PatientProfileActivity : AppCompatActivity() {
 
         // set adapter
         listAdapter = ReadingRecyclerViewAdapter(patientReadings)
-        listAdapter.setOnClickElementListener(object : ReadingRecyclerViewAdapter.OnClickElement {
-            override fun onClick(readingId: String?) {
-                val intent =
-                    makeIntentForEditReading(this@PatientProfileActivity, readingId)
-                startActivityForResult(intent, READING_ACTIVITY_DONE)
-            }
+        listAdapter.setOnClickElementListener(
+            object : ReadingRecyclerViewAdapter.OnClickElement {
+                override fun onClick(readingId: String?) {
+                    val intent =
+                        makeIntentForEditReading(this@PatientProfileActivity, readingId)
+                    startActivityForResult(intent, READING_ACTIVITY_DONE)
+                }
 
-            override fun onLongClick(readingId: String?): Boolean {
-                runBlocking { askToDeleteReading(readingId) }
-                return true
-            }
+                override fun onLongClick(readingId: String?): Boolean {
+                    runBlocking { askToDeleteReading(readingId) }
+                    return true
+                }
 
-            override fun onClickRecheckReading(readingId: String?) {
-                val intent =
-                    makeIntentForRecheck(this@PatientProfileActivity, readingId)
-                startActivityForResult(intent, READING_ACTIVITY_DONE)
+                override fun onClickRecheckReading(readingId: String?) {
+                    val intent =
+                        makeIntentForRecheck(this@PatientProfileActivity, readingId)
+                    startActivityForResult(intent, READING_ACTIVITY_DONE)
+                }
             }
-        })
+        )
         readingRecyclerview.adapter = listAdapter
     }
 
@@ -385,6 +383,4 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupReadingsRecyclerView()
         setupLineChart()
     }
-
-
 }
