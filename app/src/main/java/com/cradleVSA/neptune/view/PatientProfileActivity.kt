@@ -43,23 +43,40 @@ import com.cradleVSA.neptune.view.ReadingActivity.Companion.makeIntentForNewRead
 import com.cradleVSA.neptune.view.ReadingActivity.Companion.makeIntentForRecheck
 import kotlinx.coroutines.runBlocking
 
+/**
+ * Note:
+ * This class was translated from Java to Kotlin by an inexperienced person.
+ * I'm still learning the eccentricities of Kotlin and having to think in an asynchronous
+ * mindset for the first time, so there may be places this class could be improved.
+ * Particularly, calls to runBlocking in non-suspend functions (like onResume)
+ * might be a source of slowdown.
+ *
+ * The currPatient variable is marked as "potentially null"/not lateinit
+ * and asserted as not null when passed into many functions. At this point in time
+ * I believe these calls to be OK (or at least no worse than the Java versions previously)
+ * but at the slightest hint of issues due to NPE, everywhere using "currPatient!!"
+ * should be overhauled.
+ *
+ * 2021-02-01
+ */
+
 @AndroidEntryPoint
 open class PatientProfileActivity : AppCompatActivity() {
 
-    lateinit var patientID: TextView
-    lateinit var patientName: TextView
-    lateinit var patientAge: TextView
-    lateinit var patientSex: TextView
-    lateinit var villageNo: TextView
-    lateinit var householdNo: TextView
-    lateinit var patientZone: TextView
-    lateinit var pregnant: TextView
-    lateinit var gestationalAge: TextView
-    lateinit var pregnancyInfoLayout: LinearLayout
+    private lateinit var patientID: TextView
+    private lateinit var patientName: TextView
+    private lateinit var patientAge: TextView
+    private lateinit var patientSex: TextView
+    private lateinit var villageNo: TextView
+    private lateinit var householdNo: TextView
+    private lateinit var patientZone: TextView
+    private lateinit var pregnant: TextView
+    private lateinit var gestationalAge: TextView
+    private lateinit var pregnancyInfoLayout: LinearLayout
 
     lateinit var readingRecyclerview: RecyclerView
     var currPatient: Patient? = null
-    lateinit var patientReadings: kotlin.collections.List<Reading>
+    lateinit var patientReadings: List<Reading>
 
     // Data Model
     @Inject
@@ -72,8 +89,8 @@ open class PatientProfileActivity : AppCompatActivity() {
     lateinit var sharedPreferences: SharedPreferences
 
     companion object {
-        private val EXTRA_PATIENT = "patient"
-        private val EXTRA_PATIENT_ID = "patientId"
+        private const val EXTRA_PATIENT = "patient"
+        private const val EXTRA_PATIENT_ID = "patientId"
 
         fun makeIntentForPatient(context: Context?, patient: Patient?): Intent? {
             val intent = Intent(context, PatientProfileActivity::class.java)
@@ -88,7 +105,6 @@ open class PatientProfileActivity : AppCompatActivity() {
         }
     }
 
-    // TODO: More Java-Kotlin weirdness when populating patient info.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_patient_profile)
@@ -110,29 +126,27 @@ open class PatientProfileActivity : AppCompatActivity() {
     }
 
     private fun initAllFields() {
-        patientID = findViewById<TextView>(R.id.patientId)
-        patientName = findViewById<TextView>(R.id.patientName)
-        patientAge = findViewById<TextView>(R.id.patientAge)
-        patientSex = findViewById<TextView>(R.id.patientSex)
-        villageNo = findViewById<TextView>(R.id.patientVillage)
-        householdNo = findViewById<TextView>(R.id.patientHouseholdNumber)
-        patientZone = findViewById<TextView>(R.id.patientZone)
-        pregnant = findViewById<TextView>(R.id.textView20)
-        gestationalAge = findViewById<TextView>(R.id.gestationalAge)
-        pregnancyInfoLayout = findViewById<LinearLayout>(R.id.pregnancyLayout)
-        readingRecyclerview = findViewById<RecyclerView>(R.id.readingRecyclerview)
+        patientID = findViewById(R.id.patientId)
+        patientName = findViewById(R.id.patientName)
+        patientAge = findViewById(R.id.patientAge)
+        patientSex = findViewById(R.id.patientSex)
+        villageNo = findViewById(R.id.patientVillage)
+        householdNo = findViewById(R.id.patientHouseholdNumber)
+        patientZone = findViewById(R.id.patientZone)
+        pregnant = findViewById(R.id.textView20)
+        gestationalAge = findViewById(R.id.gestationalAge)
+        pregnancyInfoLayout = findViewById(R.id.pregnancyLayout)
+        readingRecyclerview = findViewById(R.id.readingRecyclerview)
     }
 
-    // TODO - marking patientID as non-null before - look into Kotlin pitfalls about that!
-    // Not sure if there's a better Kotlin way of doing this function, perhaps - code reviewers don't let this go by without refactor
     open fun getLocalPatient(): Boolean {
         if (intent.hasExtra(EXTRA_PATIENT_ID)) {
             val patientId = intent.getStringExtra(EXTRA_PATIENT_ID)
+            // Assertion that patientId is not null should be safe due to hasExtra check
             currPatient = runBlocking{ patientManager.getPatientById(patientId!!) }
             return currPatient != null
         }
-        // Bare string here looks bad too
-        currPatient = (intent.getSerializableExtra("patient") as Patient?)!!
+        currPatient = (intent.getSerializableExtra(EXTRA_PATIENT) as Patient?)
         return currPatient != null
     }
 
@@ -188,11 +202,11 @@ open class PatientProfileActivity : AppCompatActivity() {
             pregnant.setText(R.string.no)
             pregnancyInfoLayout.visibility = View.GONE
         }
-        if (!patient.drugHistory.isEmpty()) {
+        if (patient.drugHistory.isNotEmpty()) {
             val drugHistory = findViewById<TextView>(R.id.drugHistroyTxt)
             drugHistory.text = patient.drugHistory
         }
-        if (!patient.medicalHistory.isEmpty()) {
+        if (patient.medicalHistory.isNotEmpty()) {
             val medHistory = findViewById<TextView>(R.id.medHistoryText)
             medHistory.text = patient.medicalHistory
         }
@@ -204,20 +218,14 @@ open class PatientProfileActivity : AppCompatActivity() {
      *
      * @param patient current patient
      */
-    // TODO: non-null assertion call in patient gestational age "getters". Fix Kotlin->Java weirdness.
-    // "if x != null" maight be able to be removed
     fun setupGestationalInfo(patient: Patient) {
         val radioGroup = findViewById<RadioGroup>(R.id.gestationradioGroup)
         radioGroup.setOnCheckedChangeListener{radioGroup1: RadioGroup?, index: Int ->
-            var `val`: Double? = -1.0
+            var `val`: Double? = null
             if (index == R.id.monthradiobutton) {
-                if (patient.gestationalAge != null) {
-                    `val` = patient.gestationalAge?.age?.asMonths()
-                }
+                `val` = patient.gestationalAge?.age?.asMonths()
             } else {
-                if (patient.gestationalAge != null) {
-                    `val` = patient.gestationalAge?.age?.asWeeks()
-                }
+                `val` = patient.gestationalAge?.age?.asWeeks()
             }
             if (`val`!! < 0) {
                 gestationalAge.setText(R.string.not_available_n_slash_a)
@@ -291,13 +299,11 @@ open class PatientProfileActivity : AppCompatActivity() {
         lineChart.invalidate()
     }
 
-    // Once again a TODO here - I think the return null assertion could be done better
-    // by someone with a better Kotlin understanding. currPatient call too.
-    private fun getThisPatientsReadings(): kotlin.collections.List<Reading> {
-        val readings: kotlin.collections.List<Reading> =
+    private fun getThisPatientsReadings(): List<Reading> {
+        val readings: List<Reading> =
            runBlocking{ readingManager.getReadingsByPatientId(currPatient!!.id) }
-        val comparator: Comparator<Reading>? = Reading.DescendingDateComparator
-        return readings.sortedWith(comparator!!)
+        val comparator: Comparator<Reading> = Reading.DescendingDateComparator
+        return readings.sortedWith(comparator)
     }
 
     private fun setupCreatePatientReadingButton() {
@@ -312,7 +318,6 @@ open class PatientProfileActivity : AppCompatActivity() {
         }
     }
 
-    // TODO before merge - ask Paul about when runBlocking can be legitimately used vs. being hacky
     open fun setupReadingsRecyclerView() {
         patientReadings = getThisPatientsReadings()
 
@@ -350,7 +355,7 @@ open class PatientProfileActivity : AppCompatActivity() {
      *
      * @param readingId id of the reading to delete
      */
-    suspend private fun askToDeleteReading(readingId: String?) {
+    private suspend fun askToDeleteReading(readingId: String?) {
         val dialog: AlertDialog.Builder = AlertDialog.Builder(this)
             .setMessage(R.string.activity_patient_profile_delete_reading_dialog_title)
             .setIcon(android.R.drawable.ic_dialog_alert)
@@ -360,7 +365,7 @@ open class PatientProfileActivity : AppCompatActivity() {
                 runBlocking { readingManager.deleteReadingById(readingId!!) }
                 updateUi()
             }
-            .setNegativeButton(android.R.string.no, null)
+            .setNegativeButton(android.R.string.cancel, null)
         dialog.show()
     }
 
