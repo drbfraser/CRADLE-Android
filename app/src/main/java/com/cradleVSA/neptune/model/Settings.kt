@@ -4,8 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.cradleVSA.neptune.BuildConfig
 import com.cradleVSA.neptune.R
-import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
+import javax.inject.Singleton
 
 // Implementation note: this class and all it's properties are marked `open`
 // so that we can mock them out for testing.
@@ -13,9 +12,10 @@ import javax.inject.Inject
 /**
  * Holds app-wide settings which are persisted in Android's shared preference.
  */
-open class Settings @Inject constructor(
+@Singleton
+open class Settings constructor(
     val sharedPreferences: SharedPreferences,
-    @ApplicationContext val context: Context
+    val context: Context
 ) {
 
     /* Network */

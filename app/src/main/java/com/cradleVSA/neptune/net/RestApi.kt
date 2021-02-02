@@ -16,7 +16,7 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.InputStream
 import java.net.HttpURLConnection
-import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Provides type-safe methods for interacting with the CRADLE server API.
@@ -32,7 +32,8 @@ import javax.inject.Inject
  * threw an exception when sending the request or handling the response.
  * A timeout is one such cause of an exception for example.
  */
-class RestApi @Inject constructor(
+@Singleton
+class RestApi constructor(
     private val sharedPreferences: SharedPreferences,
     private val urlManager: UrlManager,
     private val http: Http

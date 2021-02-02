@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import android.util.Log
 import androidx.annotation.MainThread
 import androidx.core.content.edit
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
@@ -23,22 +22,25 @@ import com.cradleVSA.neptune.ext.setValueOnMainThread
 import com.cradleVSA.neptune.manager.NetworkWatcher
 import com.cradleVSA.neptune.sync.SyncWorker
 import com.cradleVSA.neptune.view.SyncActivity
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.UUID
+import javax.inject.Inject
 
 /**
  * ViewModel for [SyncActivity]
  */
-class SyncViewModel @ViewModelInject constructor(
+@HiltViewModel
+class SyncViewModel @Inject constructor(
     private val patientDao: PatientDao,
     private val readingDao: ReadingDao,
     private val networkWatcher: NetworkWatcher,
     private val sharedPreferences: SharedPreferences,
+    private val workManager: WorkManager,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
-    private val workManager = WorkManager.getInstance(context)
 
     /**
      * The [UUID] for the current unique syncing job.

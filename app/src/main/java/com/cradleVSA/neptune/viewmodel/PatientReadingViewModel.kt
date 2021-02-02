@@ -9,7 +9,6 @@ import androidx.annotation.IdRes
 import androidx.annotation.MainThread
 import androidx.collection.ArrayMap
 import androidx.collection.arrayMapOf
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
@@ -47,6 +46,7 @@ import com.cradleVSA.neptune.utilitiles.Months
 import com.cradleVSA.neptune.utilitiles.Weeks
 import com.cradleVSA.neptune.view.ReadingActivity
 import com.cradleVSA.neptune.viewmodel.PatientReadingViewModel.LiveDataInitializationManager
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -62,6 +62,7 @@ import java.text.DecimalFormat
 import java.time.ZonedDateTime
 import java.util.UUID
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 import kotlin.reflect.KProperty
 
 // The index of the gestational age units inside of the string.xml array, R.array.reading_ga_units
@@ -98,8 +99,8 @@ private val DEBUG = BuildConfig.DEBUG
  * @see PatientReadingViewModel.AdviceManager
  */
 
-@SuppressWarnings("LargeClass")
-class PatientReadingViewModel @ViewModelInject constructor(
+@HiltViewModel
+class PatientReadingViewModel @Inject constructor(
     private val readingManager: ReadingManager,
     private val patientManager: PatientManager,
     private val referralUploadManager: ReferralUploadManager,
