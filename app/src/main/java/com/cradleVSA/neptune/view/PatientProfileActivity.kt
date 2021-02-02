@@ -39,19 +39,11 @@ import javax.inject.Inject
 
 /**
  * Note:
- * This class was translated from Java to Kotlin by an inexperienced person.
- * I'm still learning the eccentricities of Kotlin and having to think in an asynchronous
- * mindset for the first time, so there may be places this class could be improved.
- * Particularly, calls to runBlocking in non-suspend functions (like onResume)
- * might be a source of slowdown.
+ * This class was translated from Java to Kotlin which may account for any stylistic
+ * differences between it and other Kotlin-native classes.
  *
- * The currPatient variable is marked as "potentially null"/not lateinit
- * and asserted as not null when passed into many functions. At this point in time
- * I believe these calls to be OK (or at least no worse than the Java versions previously)
- * but at the slightest hint of issues due to NPE, everywhere using "currPatient!!"
- * should be overhauled.
- *
- * 2021-02-01
+ * The currPatient variable is marked as "potentially null" may open this class up to NPEs in
+ * the future, and the usage of runBlocking is not ideal for performance.
  */
 
 @AndroidEntryPoint
