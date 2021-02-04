@@ -78,13 +78,13 @@ open class PatientProfileActivity : AppCompatActivity() {
         private const val EXTRA_PATIENT = "patient"
         private const val EXTRA_PATIENT_ID = "patientId"
 
-        fun makeIntentForPatient(context: Context?, patient: Patient?): Intent? {
+        fun makeIntentForPatient(context: Context, patient: Patient): Intent {
             val intent = Intent(context, PatientProfileActivity::class.java)
             intent.putExtra(EXTRA_PATIENT, patient)
             return intent
         }
 
-        fun makeIntentForPatientId(context: Context?, patientId: String?): Intent? {
+        fun makeIntentForPatientId(context: Context, patientId: String): Intent {
             val intent = Intent(context, PatientProfileActivity::class.java)
             intent.putExtra(EXTRA_PATIENT_ID, patientId)
             return intent
