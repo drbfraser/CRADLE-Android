@@ -61,7 +61,7 @@ open class PatientProfileActivity : AppCompatActivity() {
     private lateinit var pregnancyInfoLayout: LinearLayout
 
     lateinit var readingRecyclerview: RecyclerView
-    var currPatient: Patient? = null
+    lateinit var currPatient: Patient
     lateinit var patientReadings: List<Reading>
 
     // Data Model
@@ -99,7 +99,7 @@ open class PatientProfileActivity : AppCompatActivity() {
             // Not a local patient, might be a child class so we let the child do the init stuff
             return
         }
-        populatePatientInfo(currPatient!!)
+        populatePatientInfo(currPatient)
         setupReadingsRecyclerView()
         setupCreatePatientReadingButton()
         setupLineChart()
@@ -126,14 +126,19 @@ open class PatientProfileActivity : AppCompatActivity() {
     }
 
     open fun getLocalPatient(): Boolean {
+        val tmpPatient: Patient?
         if (intent.hasExtra(EXTRA_PATIENT_ID)) {
-            val patientId = intent.getStringExtra(EXTRA_PATIENT_ID)
-            // Assertion that patientId is not null should be safe due to hasExtra check
-            currPatient = runBlocking { patientManager.getPatientById(patientId!!) }
-            return currPatient != null
+            // Assertion here should be safe due to hasExtra check
+            val patientId: String = intent.getStringExtra(EXTRA_PATIENT_ID)!!
+            tmpPatient = runBlocking { patientManager.getPatientById(patientId) }
+        } else {
+            tmpPatient = (intent.getSerializableExtra(EXTRA_PATIENT) as Patient?)
         }
-        currPatient = (intent.getSerializableExtra(EXTRA_PATIENT) as Patient?)
-        return currPatient != null
+
+        if (tmpPatient != null) {
+            currPatient = tmpPatient
+        }
+        return tmpPatient != null
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -209,16 +214,16 @@ open class PatientProfileActivity : AppCompatActivity() {
     fun setupGestationalInfo(patient: Patient) {
         val radioGroup = findViewById<RadioGroup>(R.id.gestationradioGroup)
         radioGroup.setOnCheckedChangeListener { radioGroup1: RadioGroup?, index: Int ->
-            var ageVal: Double?
-            if (index == R.id.monthradiobutton) {
-                ageVal = patient.gestationalAge?.age?.asMonths()
+            var ageVal: Double? = if (index == R.id.monthradiobutton) {
+                patient.gestationalAge?.age?.asMonths()
             } else {
-                ageVal = patient.gestationalAge?.age?.asWeeks()
+                patient.gestationalAge?.age?.asWeeks()
             }
-            if (ageVal!! < 0) {
-                gestationalAge.setText(R.string.not_available_n_slash_a)
+
+            gestationalAge.text = if (ageVal!! < 0) {
+                getText(R.string.not_available_n_slash_a)
             } else {
-                gestationalAge.text = "%.2f".format(ageVal)
+                "%.2f".format(ageVal)
             }
         }
         radioGroup.check(R.id.monthradiobutton)
@@ -266,29 +271,29 @@ open class PatientProfileActivity : AppCompatActivity() {
         dBPDataSet.mode = LineDataSet.Mode.CUBIC_BEZIER
         sBPDataSet.mode = LineDataSet.Mode.CUBIC_BEZIER
 
-        lineChart.setDrawBorders(false)
-        lineChart.setDrawGridBackground(false)
-        lineChart.axisRight.setDrawLabels(false)
-        lineChart.axisRight.setDrawGridLines(false)
-        lineChart.xAxis.setDrawGridLines(true)
-        lineChart.axisLeft.setDrawGridLines(true)
-
         val lineData = LineData(sBPDataSet, dBPDataSet, bPMDataSet)
-
         lineData.isHighlightEnabled = false
 
-        lineChart.xAxis.setDrawAxisLine(true)
-        lineChart.data = lineData
-        lineChart.xAxis.isEnabled = false
-        lineChart.description.text = getString(
-            R.string.activity_patient_profile_line_chart_description,
-            patientReadings.size
-        )
-        lineChart.invalidate()
+        lineChart.apply{
+            setDrawBorders(false)
+            setDrawGridBackground(false)
+            axisRight.setDrawLabels(false)
+            axisRight.setDrawGridLines(false)
+            xAxis.setDrawGridLines(true)
+            axisLeft.setDrawGridLines(true)
+            xAxis.setDrawAxisLine(true)
+            data = lineData
+            xAxis.isEnabled = false
+            description.text = getString(
+                R.string.activity_patient_profile_line_chart_description,
+                patientReadings.size
+            )
+            invalidate()
+        }
     }
 
     private fun getThisPatientsReadings(): List<Reading> {
-        val readings: List<Reading> = runBlocking { readingManager.getReadingsByPatientId(currPatient!!.id) }
+        val readings: List<Reading> = runBlocking { readingManager.getReadingsByPatientId(currPatient.id) }
         val comparator: Comparator<Reading> = Reading.DescendingDateComparator
         return readings.sortedWith(comparator)
     }
@@ -300,7 +305,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         createButton.setOnClickListener { v: View? ->
             val intent = makeIntentForNewReadingExistingPatient(
                 this@PatientProfileActivity,
-                currPatient!!.id
+                currPatient.id
             )
             startActivityForResult(intent, READING_ACTIVITY_DONE)
         }
