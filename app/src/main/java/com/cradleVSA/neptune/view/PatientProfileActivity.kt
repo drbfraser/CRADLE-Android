@@ -162,15 +162,14 @@ open class PatientProfileActivity : AppCompatActivity() {
         if (!Util.stringNullOrEmpty(patient.dob)) {
             try {
                 val ageFromDob = Patient.calculateAgeFromDateString(patient.dob!!)
-                val ageDisplayString: String
-                ageDisplayString = if (patient.isExactDob == null || !patient.isExactDob!!) {
+                val ageDisplayString = if (patient.isExactDob == true) {
                     getString(
-                        R.string.patient_profile_age_about_n_years_old,
+                        R.string.patient_profile_age_n_years_old,
                         ageFromDob
                     )
                 } else {
                     getString(
-                        R.string.patient_profile_age_n_years_old,
+                        R.string.patient_profile_age_about_n_years_old,
                         ageFromDob
                     )
                 }
@@ -274,7 +273,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         val lineData = LineData(sBPDataSet, dBPDataSet, bPMDataSet)
         lineData.isHighlightEnabled = false
 
-        lineChart.apply{
+        lineChart.apply {
             setDrawBorders(false)
             setDrawGridBackground(false)
             axisRight.setDrawLabels(false)
@@ -357,7 +356,7 @@ open class PatientProfileActivity : AppCompatActivity() {
             .setPositiveButton(
                 R.string.activity_patient_profile_delete_reading_dialog_delete_button
             ) { _, _ ->
-                runBlocking{readingManager.deleteReadingById(readingId!!)}
+                runBlocking { readingManager.deleteReadingById(readingId!!) }
                 updateUi()
             }
             .setNegativeButton(android.R.string.cancel, null)
