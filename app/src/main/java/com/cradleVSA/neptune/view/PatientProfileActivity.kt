@@ -350,14 +350,14 @@ open class PatientProfileActivity : AppCompatActivity() {
      *
      * @param readingId id of the reading to delete
      */
-    private suspend fun askToDeleteReading(readingId: String?) {
+    private fun askToDeleteReading(readingId: String?) {
         val dialog: AlertDialog.Builder = AlertDialog.Builder(this)
             .setMessage(R.string.activity_patient_profile_delete_reading_dialog_title)
             .setIcon(android.R.drawable.ic_dialog_alert)
             .setPositiveButton(
                 R.string.activity_patient_profile_delete_reading_dialog_delete_button
             ) { dialog1, whichButton ->
-                runBlocking { readingManager.deleteReadingById(readingId!!) }
+                runBlocking{readingManager.deleteReadingById(readingId!!)}
                 updateUi()
             }
             .setNegativeButton(android.R.string.cancel, null)
