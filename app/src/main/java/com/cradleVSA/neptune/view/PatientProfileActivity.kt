@@ -213,8 +213,8 @@ open class PatientProfileActivity : AppCompatActivity() {
      */
     fun setupGestationalInfo(patient: Patient) {
         val radioGroup = findViewById<RadioGroup>(R.id.gestationradioGroup)
-        radioGroup.setOnCheckedChangeListener { radioGroup1: RadioGroup?, index: Int ->
-            var ageVal: Double? = if (index == R.id.monthradiobutton) {
+        radioGroup.setOnCheckedChangeListener { _: RadioGroup?, index: Int ->
+            val ageVal: Double? = if (index == R.id.monthradiobutton) {
                 patient.gestationalAge?.age?.asMonths()
             } else {
                 patient.gestationalAge?.age?.asWeeks()
@@ -302,7 +302,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         val createButton =
             findViewById<Button>(R.id.newPatientReadingButton)
         createButton.visibility = View.VISIBLE
-        createButton.setOnClickListener { v: View? ->
+        createButton.setOnClickListener { _: View? ->
             val intent = makeIntentForNewReadingExistingPatient(
                 this@PatientProfileActivity,
                 currPatient.id
@@ -356,7 +356,7 @@ open class PatientProfileActivity : AppCompatActivity() {
             .setIcon(android.R.drawable.ic_dialog_alert)
             .setPositiveButton(
                 R.string.activity_patient_profile_delete_reading_dialog_delete_button
-            ) { dialog1, whichButton ->
+            ) { _, _ ->
                 runBlocking{readingManager.deleteReadingById(readingId!!)}
                 updateUi()
             }
