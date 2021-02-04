@@ -72,30 +72,41 @@ class SyncWorker @WorkerInject constructor(
 
     companion object {
         private const val TAG = "SyncWorker"
-        private const val CHANNEL_BUFFER_CAPACITY = 250
 
+        /** SharedPreferences key for last time patients were synced */
         const val LAST_PATIENT_SYNC = "lastSyncTime"
+        /** SharedPreferences key for last time readings were synced */
         const val LAST_READING_SYNC = "lastSyncTimeReadings"
+        /** Default last sync timestamp. Note that using 0 will result in server rejecting param */
         const val LAST_SYNC_DEFAULT = 1L
 
+        /** The key for current syncing state in the [WorkInfo] progress */
         private const val PROGRESS_CURRENT_STATE = "currentState"
+        /** The key for total number to download in the [WorkInfo] progress */
         private const val PROGRESS_TOTAL_NUMBER = "total"
+        /** The key for number to downloaded so far in the [WorkInfo] progress */
         private const val PROGRESS_NUMBER_SO_FAR = "number_so_far"
-
-        private const val RESULT_MESSAGE = "error_message"
+        /** The key for result of the syncing stored in the finished[WorkInfo] */
+        private const val RESULT_MESSAGE = "result_message"
 
         /**
          * Given a [WorkInfo] instance from WorkManager's getWorkInfo* methods for observing
          * intermediate progress, it gets the current syncing state.
          */
-        fun getState(workInfo: WorkInfo) = State
-            .valueOf(workInfo.progress.getString(PROGRESS_CURRENT_STATE) ?: State.STARTING.name)
+        fun getState(workInfo: WorkInfo) = workInfo
+            .progress
+            .getString(PROGRESS_CURRENT_STATE)?.let { State.valueOf(it) } ?: State.STARTING
 
         /**
          * Get the progress for the current state in the [workInfo]'s progress.
          *
-         * e.g., for downloading, it will be the number of patients or readings downloaded out of
-         * the total number that are downloaded
+         * The returned [Pair] contains the progress for the current state (e.g., for downloading,
+         * it will be the number of patients or readings downloaded out of the total number that are
+         * downloaded). The [Pair] will be null if and only if there is no progress with the current
+         * state (e.g., there might be nothing to download).
+         *
+         * For now, there is no uploading progress; only downloading has progress associated with
+         * it.
          */
         fun getProgress(workInfo: WorkInfo): Pair<Int, Int>? {
             val progress = workInfo.progress.getInt(PROGRESS_NUMBER_SO_FAR, -1)
@@ -123,8 +134,10 @@ class SyncWorker @WorkerInject constructor(
 
     /**
      * To rate limit download updates.
+     * This is needed in order to make the progress reporting work, because the parsing is way
+     * too fast for the updates.
      */
-    private val rateLimitRunner = RateLimitRunner(seconds = 0.05)
+    private val rateLimitRunner = RateLimitRunner(seconds = 0.075)
 
     override suspend fun doWork(): Result {
         Log.d(TAG, "doWork()")
@@ -231,25 +244,18 @@ class SyncWorker @WorkerInject constructor(
                                     }
                                 }
                                 PatientSyncField.PATIENTS.text -> {
-                                    val channel = Channel<List<Patient>>()
+                                    val channel = Channel<Patient>()
                                     val databaseJob = launch {
                                         database.withTransaction {
-                                            for (patientList in channel) {
-                                                for (patient in patientList) {
-                                                    patientManager.add(patient)
-                                                }
+                                            for (patient in channel) {
+                                                patientManager.add(patient)
                                             }
-                                            Log.d(TAG, "patient  database job is done")
+                                            Log.d(TAG, "patient database job is done")
                                         }
                                     }
 
-                                    var buffer = ArrayList<Patient>(CHANNEL_BUFFER_CAPACITY)
                                     parseObjectArray<Patient>(reader) {
-                                        buffer.add(it)
-                                        if (buffer.size >= CHANNEL_BUFFER_CAPACITY - 1) {
-                                            channel.send(buffer)
-                                            buffer = ArrayList(CHANNEL_BUFFER_CAPACITY)
-                                        }
+                                        channel.send(it)
                                         patientsDownloaded++
                                         reportProgress(
                                             state = State.DOWNLOADING_PATIENTS,
@@ -263,7 +269,6 @@ class SyncWorker @WorkerInject constructor(
                                         total = totalPatients,
                                         bypassRateLimit = true
                                     )
-                                    if (buffer.isNotEmpty()) channel.send(buffer)
                                     channel.close()
                                     databaseJob.join()
                                 }
@@ -327,16 +332,14 @@ class SyncWorker @WorkerInject constructor(
                             ReadingSyncField.READINGS.text -> {
                                 Log.d(TAG, "Starting to parse readings array")
 
-                                val channel = Channel<List<Reading>>()
+                                val channel = Channel<Reading>()
                                 val databaseJob = launch {
                                     database.withTransaction {
-                                        for (readingList in channel) {
-                                            for (reading in readingList) {
-                                                readingManager.addReading(
-                                                    reading,
-                                                    isReadingFromServer = true
-                                                )
-                                            }
+                                        for (reading in channel) {
+                                            readingManager.addReading(
+                                                reading,
+                                                isReadingFromServer = true
+                                            )
                                         }
                                     }
                                 }
@@ -344,14 +347,8 @@ class SyncWorker @WorkerInject constructor(
                                 // Channels have some non-significant overhead, so we use a local
                                 // buffer.
                                 // TODO: Refactor this channel download stuff
-                                var buffer = ArrayList<Reading>(CHANNEL_BUFFER_CAPACITY)
                                 parseObjectArray<Reading>(readerForReading) {
-                                    buffer.add(it)
-                                    if (buffer.size >= CHANNEL_BUFFER_CAPACITY - 1) {
-                                        channel.send(buffer)
-                                        buffer = ArrayList(CHANNEL_BUFFER_CAPACITY)
-                                    }
-
+                                    channel.send(it)
                                     totalDownloaded++
                                     numReadingsDownloaded++
                                     reportProgress(
@@ -360,7 +357,6 @@ class SyncWorker @WorkerInject constructor(
                                         total = total,
                                     )
                                 }
-                                if (buffer.isNotEmpty()) channel.send(buffer)
                                 channel.close()
                                 databaseJob.join()
                             }
