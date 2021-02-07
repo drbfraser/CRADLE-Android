@@ -780,16 +780,6 @@ class PatientReadingViewModel @ViewModelInject constructor(
     /** Used in two-way Data Binding with VitalSignsFragment */
     val bloodPressureHeartRateInput = MutableLiveData<Int?>()
 
-    /** Used in two-way Data Binding with VitalSignsFragment */
-    val respiratoryRate: MutableLiveData<Int?> =
-        readingBuilder.get<Int?>(Reading::respiratoryRate)
-    /** Used in two-way Data Binding with VitalSignsFragment */
-    val oxygenSaturation: MutableLiveData<Int?> =
-        readingBuilder.get<Int?>(Reading::oxygenSaturation)
-    /** Used in two-way Data Binding with VitalSignsFragment */
-    val temperature: MutableLiveData<Int?> =
-        readingBuilder.get<Int?>(Reading::temperature)
-
     /**
      * Implicitly in two-way Data Binding with VitalSignsFragment
      * Has all of the below as sources.
@@ -1047,9 +1037,6 @@ class PatientReadingViewModel @ViewModelInject constructor(
                     arrayOf(
                         isPatientValid,
                         bloodPressure,
-                        respiratoryRate,
-                        oxygenSaturation,
-                        temperature,
                         isUsingUrineTest,
                         urineTest
                     ).forEach { isNextButtonEnabled.removeSource(it) }
@@ -1085,9 +1072,6 @@ class PatientReadingViewModel @ViewModelInject constructor(
                                 )
                                 launchVitalSignsFragmentVerifyJob()
                                 addSource(bloodPressure) { launchVitalSignsFragmentVerifyJob() }
-                                addSource(respiratoryRate) { launchVitalSignsFragmentVerifyJob() }
-                                addSource(oxygenSaturation) { launchVitalSignsFragmentVerifyJob() }
-                                addSource(temperature) { launchVitalSignsFragmentVerifyJob() }
                                 addSource(isUsingUrineTest) { launchVitalSignsFragmentVerifyJob() }
                                 addSource(urineTest) { launchVitalSignsFragmentVerifyJob() }
                             }
@@ -1128,19 +1112,6 @@ class PatientReadingViewModel @ViewModelInject constructor(
         private suspend fun verifyVitalSignsFragment(): Boolean = withContext(Dispatchers.Default) {
             val bloodPressureValid = bloodPressure.value?.isValidInstance(app) ?: false
             if (!bloodPressureValid) return@withContext false
-            yield()
-
-            val extraVitalSignsMap = arrayMapOf(
-                Reading::respiratoryRate to respiratoryRate,
-                Reading::oxygenSaturation to oxygenSaturation,
-                Reading::temperature to temperature
-            )
-            for ((property, liveData) in extraVitalSignsMap) {
-                val (isValid, _) = Reading.isValueValid(property, liveData.value, app)
-                if (!isValid) {
-                    return@withContext false
-                }
-            }
             yield()
 
             return@withContext if (isUsingUrineTest.value != false) {
@@ -1857,27 +1828,6 @@ class PatientReadingViewModel @ViewModelInject constructor(
                         value = it,
                         propertyToCheck = BloodPressure::heartRate,
                         verifier = BloodPressure.Companion
-                    )
-                }
-                addSource(respiratoryRate) {
-                    testValueForValidityAndSetErrorMapAsync(
-                        value = it,
-                        propertyToCheck = Reading::respiratoryRate,
-                        verifier = Reading.Companion
-                    )
-                }
-                addSource(oxygenSaturation) {
-                    testValueForValidityAndSetErrorMapAsync(
-                        value = it,
-                        propertyToCheck = Reading::oxygenSaturation,
-                        verifier = Reading.Companion
-                    )
-                }
-                addSource(temperature) {
-                    testValueForValidityAndSetErrorMapAsync(
-                        value = it,
-                        propertyToCheck = Reading::temperature,
-                        verifier = Reading.Companion
                     )
                 }
 
