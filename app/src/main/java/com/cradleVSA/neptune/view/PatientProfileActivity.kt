@@ -317,10 +317,8 @@ open class PatientProfileActivity : AppCompatActivity() {
         val layoutManager: RecyclerView.LayoutManager = LinearLayoutManager(this)
         readingRecyclerview.layoutManager = layoutManager
         readingRecyclerview.isNestedScrollingEnabled = false
-        val listAdapter: ReadingRecyclerViewAdapter
 
-        // set adapter
-        listAdapter = ReadingRecyclerViewAdapter(patientReadings)
+        val listAdapter = ReadingRecyclerViewAdapter(patientReadings)
         listAdapter.setOnClickElementListener(
             object : ReadingRecyclerViewAdapter.OnClickElement {
                 override fun onClick(readingId: String?) {
