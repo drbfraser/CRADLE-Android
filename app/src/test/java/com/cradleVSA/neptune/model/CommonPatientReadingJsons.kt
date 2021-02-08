@@ -203,9 +203,6 @@ object CommonPatientReadingJsons {
         {
             "bpDiastolic": 97,
             "heartRateBPM": 78,
-            "respiratoryRate": 65,
-            "oxygenSaturation": 98,
-            "temperature": 35,
             "patientId": "3459834789348",
             "readingId": "ca84ac2d-953f-4f5e-ae24-e0a6e8af7c94",
             "symptoms": [
@@ -251,9 +248,6 @@ object CommonPatientReadingJsons {
                 Reading(
                     bloodPressure = BloodPressure(119, 97, 78),
                     dateTimeTaken = 1604883580L,
-                    respiratoryRate = 65,
-                    oxygenSaturation = 98,
-                    temperature = 35,
                     patientId = "3459834789348",
                     id = "ca84ac2d-953f-4f5e-ae24-e0a6e8af7c94",
                     symptoms = listOf(
@@ -358,10 +352,7 @@ object CommonPatientReadingJsons {
                 "urineTestGlu": "+",
                 "urineTestPro": "++",
                 "urineTestBlood": "+"
-            },
-            "respiratoryRate": 65,
-            "oxygenSaturation": 95,
-            "temperature": 44
+            }
         }
     ]
 }
@@ -426,10 +417,7 @@ object CommonPatientReadingJsons {
                         protein = "++",
                         blood = "+"
                     ),
-                    dateRecheckVitalsNeeded = 1604981973L,
-                    respiratoryRate = 65,
-                    oxygenSaturation = 95,
-                    temperature = 44
+                    dateRecheckVitalsNeeded = 1604981973L
                 )
             )
         )
@@ -478,10 +466,7 @@ object CommonPatientReadingJsons {
             "isFlaggedForFollowup": true,
             "referral": null,
             "followup": null,
-            "urineTests": null,
-            "respiratoryRate": 65,
-            "oxygenSaturation": 55,
-            "temperature": 37
+            "urineTests": null
         }
     ]
 }
@@ -515,10 +500,7 @@ object CommonPatientReadingJsons {
                     isFlaggedForFollowUp = true,
                     referral = null,
                     followUp = null,
-                    urineTest = null,
-                    respiratoryRate = 65,
-                    oxygenSaturation = 55,
-                    temperature = 37
+                    urineTest = null
                 )
             )
         )
