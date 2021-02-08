@@ -35,7 +35,7 @@ import org.json.JSONArray
 @Database(
     entities = [Reading::class, Patient::class, HealthFacility::class],
     views = [LocalSearchPatient::class],
-    version = 8,
+    version = 9,
     exportSchema = true
 )
 @TypeConverters(DatabaseTypeConverters::class)
@@ -491,7 +491,7 @@ CREATE TABLE IF NOT EXISTS `new_Patient` (
 
     /**
      * Version 9:
-     * Add remove Reading fields (respiratoryRate, oxygenSaturation, temperature)
+     * remove Reading fields (respiratoryRate, oxygenSaturation, temperature)
      */
     private val MIGRATION_8_9 = object : Migration(8, 9) {
         override fun migrate(database: SupportSQLiteDatabase) {
@@ -502,30 +502,31 @@ CREATE TABLE IF NOT EXISTS `new_Patient` (
                         followUp, dateRecheckVitalsNeeded, isFlaggedForFollowUp, previousReadingIds, 
                         metadata, isUploadedToServer
                     );
-                    
+                """.trimIndent())
+                execSQL(""" 
                     INSERT INTO Reading_backup SELECT 
                         patientId, dateTimeTaken, bloodPressure, urineTest, symptoms, referral, 
                         followUp, dateRecheckVitalsNeeded, isFlaggedForFollowUp, previousReadingIds, 
                         metadata, isUploadedToServer
                     from Reading;
-                    
-                    DROP TABLE Reading;
-                    
+                """.trimIndent())
+                execSQL("DROP TABLE Reading;")
+                execSQL("""
                     CREATE TABLE Reading(
                         patientId, dateTimeTaken, bloodPressure, urineTest, symptoms, referral, 
                         followUp, dateRecheckVitalsNeeded, isFlaggedForFollowUp, previousReadingIds, 
                         metadata, isUploadedToServer
                     );
-                    
+                """.trimIndent())
+                execSQL("""
                     INSERT INTO Reading SELECT 
                         patientId, dateTimeTaken, bloodPressure, urineTest, symptoms, referral, 
                         followUp, dateRecheckVitalsNeeded, isFlaggedForFollowUp, previousReadingIds, 
                         metadata, isUploadedToServer
                     FROM Reading_backup;
-                    
-                    DROP TABLE Reading_backup;
-                """.trimIndent()
-                )
+                """.trimIndent())
+
+                execSQL("DROP TABLE Reading_backup;")
             }
         }
     }
