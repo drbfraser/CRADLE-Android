@@ -17,7 +17,6 @@ import com.cradleVSA.neptune.ext.jackson.writeBooleanField
 import com.cradleVSA.neptune.ext.jackson.writeIntField
 import com.cradleVSA.neptune.ext.jackson.writeLongField
 import com.cradleVSA.neptune.ext.jackson.writeObjectField
-import com.cradleVSA.neptune.ext.jackson.writeOptIntField
 import com.cradleVSA.neptune.ext.jackson.writeOptLongField
 import com.cradleVSA.neptune.ext.jackson.writeOptObjectField
 import com.cradleVSA.neptune.ext.jackson.writeStringField
@@ -67,9 +66,6 @@ private const val SECONDS_IN_MIN = 60
  * associated with.
  * @property dateTimeTaken Unix time at which this reading was taken.
  * @property bloodPressure The result of a blood pressure test.
- * @property respiratoryRate The respiratory rate in breaths per minute.
- * @property oxygenSaturation The oxygen saturation as a percent.
- * @property temperature The temperature in degrees Celsius.
  * @property urineTest The result of a urine test.
  * @property symptoms A list of symptoms that the patient has at the time this
  * reading was taken.
@@ -203,9 +199,6 @@ data class Reading(
                 val patientId = get(ReadingField.PATIENT_ID)!!.textValue()
                 val dateTimeTaken = get(ReadingField.DATE_TIME_TAKEN)!!.longValue()
                 val bloodPressure = BloodPressure.deserialize(this)
-                val respiratoryRate = get(ReadingField.RESPIRATORY_RATE)?.intValue()
-                val oxygenSaturation = get(ReadingField.OXYGEN_SATURATION)?.intValue()
-                val temperature = get(ReadingField.TEMPERATURE.text)?.intValue()
                 val urineTest = getOptObject<UrineTest>(ReadingField.URINE_TEST, p.codec)
                 val symptoms = getOptObjectArray<String>(ReadingField.SYMPTOMS, p.codec)
                     ?: emptyList()
@@ -239,12 +232,6 @@ data class Reading(
     }
 
     companion object : Verifier<Reading> {
-        private const val RESPIRATORY_RATE_MIN = 0
-        private const val RESPIRATORY_RATE_MAX = 120
-        private const val OXYGEN_SATURATION_MIN = 0
-        private const val OXYGEN_SATURATION_MAX = 100
-        private const val TEMPERATURE_MIN = 30
-        private const val TEMPERATURE_MAX = 45
 
         @Suppress("NestedBlockDepth")
         override fun isValueValid(
@@ -665,9 +652,6 @@ private enum class ReadingField(override val text: String) : Field {
     ID("readingId"),
     PATIENT_ID("patientId"),
     DATE_TIME_TAKEN("dateTimeTaken"),
-    RESPIRATORY_RATE("respiratoryRate"),
-    OXYGEN_SATURATION("oxygenSaturation"),
-    TEMPERATURE("temperature"),
     URINE_TEST("urineTests"),
     SYMPTOMS("symptoms"),
     DATE_RECHECK_VITALS_NEEDED("dateRecheckVitalsNeeded"),

@@ -496,35 +496,43 @@ CREATE TABLE IF NOT EXISTS `new_Patient` (
     private val MIGRATION_8_9 = object : Migration(8, 9) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.run {
-                execSQL("""
+                execSQL(
+                    """
                     CREATE TEMPORARY TABLE Reading_backup(
                         patientId, dateTimeTaken, bloodPressure, urineTest, symptoms, referral, 
                         followUp, dateRecheckVitalsNeeded, isFlaggedForFollowUp, previousReadingIds, 
                         metadata, isUploadedToServer
                     );
-                """.trimIndent())
-                execSQL(""" 
+                    """.trimIndent()
+                )
+                execSQL(
+                    """ 
                     INSERT INTO Reading_backup SELECT 
                         patientId, dateTimeTaken, bloodPressure, urineTest, symptoms, referral, 
                         followUp, dateRecheckVitalsNeeded, isFlaggedForFollowUp, previousReadingIds, 
                         metadata, isUploadedToServer
                     from Reading;
-                """.trimIndent())
+                    """.trimIndent()
+                )
                 execSQL("DROP TABLE Reading;")
-                execSQL("""
+                execSQL(
+                    """
                     CREATE TABLE Reading(
                         patientId, dateTimeTaken, bloodPressure, urineTest, symptoms, referral, 
                         followUp, dateRecheckVitalsNeeded, isFlaggedForFollowUp, previousReadingIds, 
                         metadata, isUploadedToServer
                     );
-                """.trimIndent())
-                execSQL("""
+                    """.trimIndent()
+                )
+                execSQL(
+                    """
                     INSERT INTO Reading SELECT 
                         patientId, dateTimeTaken, bloodPressure, urineTest, symptoms, referral, 
                         followUp, dateRecheckVitalsNeeded, isFlaggedForFollowUp, previousReadingIds, 
                         metadata, isUploadedToServer
                     FROM Reading_backup;
-                """.trimIndent())
+                    """.trimIndent()
+                )
 
                 execSQL("DROP TABLE Reading_backup;")
             }
