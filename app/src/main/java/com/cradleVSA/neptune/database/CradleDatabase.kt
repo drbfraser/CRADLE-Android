@@ -87,7 +87,8 @@ internal object Migrations {
             MIGRATION_4_5,
             MIGRATION_5_6,
             MIGRATION_6_7,
-            MIGRATION_7_8
+            MIGRATION_7_8,
+            MIGRATION_8_9
         )
     }
 
@@ -484,6 +485,47 @@ CREATE TABLE IF NOT EXISTS `new_Patient` (
                         )
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * Version 9:
+     * Add remove Reading fields (respiratoryRate, oxygenSaturation, temperature)
+     */
+    private val MIGRATION_8_9 = object : Migration(8, 9) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.run {
+                execSQL("""
+                    CREATE TEMPORARY TABLE Reading_backup(
+                        patientId, dateTimeTaken, bloodPressure, urineTest, symptoms, referral, 
+                        followUp, dateRecheckVitalsNeeded, isFlaggedForFollowUp, previousReadingIds, 
+                        metadata, isUploadedToServer
+                    );
+                    
+                    INSERT INTO Reading_backup SELECT 
+                        patientId, dateTimeTaken, bloodPressure, urineTest, symptoms, referral, 
+                        followUp, dateRecheckVitalsNeeded, isFlaggedForFollowUp, previousReadingIds, 
+                        metadata, isUploadedToServer
+                    from Reading;
+                    
+                    DROP TABLE Reading;
+                    
+                    CREATE TABLE Reading(
+                        patientId, dateTimeTaken, bloodPressure, urineTest, symptoms, referral, 
+                        followUp, dateRecheckVitalsNeeded, isFlaggedForFollowUp, previousReadingIds, 
+                        metadata, isUploadedToServer
+                    );
+                    
+                    INSERT INTO Reading SELECT 
+                        patientId, dateTimeTaken, bloodPressure, urineTest, symptoms, referral, 
+                        followUp, dateRecheckVitalsNeeded, isFlaggedForFollowUp, previousReadingIds, 
+                        metadata, isUploadedToServer
+                    FROM Reading_backup;
+                    
+                    DROP TABLE Reading_backup;
+                """.trimIndent()
+                )
             }
         }
     }
