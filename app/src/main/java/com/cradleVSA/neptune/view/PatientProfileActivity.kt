@@ -126,13 +126,12 @@ open class PatientProfileActivity : AppCompatActivity() {
     }
 
     open fun getLocalPatient(): Boolean {
-        val tmpPatient: Patient?
-        if (intent.hasExtra(EXTRA_PATIENT_ID)) {
+        val tmpPatient = if (intent.hasExtra(EXTRA_PATIENT_ID)) {
             // Assertion here should be safe due to hasExtra check
             val patientId: String = intent.getStringExtra(EXTRA_PATIENT_ID)!!
-            tmpPatient = runBlocking { patientManager.getPatientById(patientId) }
+            runBlocking { patientManager.getPatientById(patientId) }
         } else {
-            tmpPatient = (intent.getSerializableExtra(EXTRA_PATIENT) as Patient?)
+            intent.getSerializableExtra(EXTRA_PATIENT) as Patient?
         }
 
         if (tmpPatient != null) {
