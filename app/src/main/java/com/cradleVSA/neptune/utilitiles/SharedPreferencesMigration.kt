@@ -3,8 +3,6 @@ package com.cradleVSA.neptune.utilitiles
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.core.content.edit
-import com.cradleVSA.neptune.manager.LoginManager
-import com.cradleVSA.neptune.sync.SyncWorker
 
 /**
  * Handles migrations to values stored in SharedPreferences.
@@ -128,12 +126,12 @@ class SharedPreferencesMigration constructor(
         }
 
         (oldVersion < CHANGE_USER_ID_TO_INT).runIfTrue {
-            if (!sharedPreferences.contains(LoginManager.USER_ID_KEY)) {
+            if (!sharedPreferences.contains("userId")) {
                 return@runIfTrue
             }
 
             val idAsString = try {
-                sharedPreferences.getString(LoginManager.USER_ID_KEY, "")
+                sharedPreferences.getString("userId", "")
             } catch (e: ClassCastException) {
                 throw MigrationException("userId isn't a string")
             }
@@ -146,27 +144,27 @@ class SharedPreferencesMigration constructor(
                 ?: throw MigrationException("userId isn't a numeric string")
 
             sharedPreferences.edit(commit = true) {
-                remove(LoginManager.USER_ID_KEY)
-                putInt(LoginManager.USER_ID_KEY, idAsInt)
+                remove("userId")
+                putInt("userId", idAsInt)
             }
         }
 
         (oldVersion < ADD_READING_SYNC_TIMESTAMP).runIfTrue {
             // Set the reading sync to the previous sync time
             if (
-                !sharedPreferences.contains(SyncWorker.LAST_PATIENT_SYNC) ||
-                sharedPreferences.contains(SyncWorker.LAST_READING_SYNC)
+                !sharedPreferences.contains("lastSyncTime") ||
+                sharedPreferences.contains("lastSyncTimeReadings")
             ) {
                 return@runIfTrue
             }
 
-            val lastSyncTime = sharedPreferences.getLong(SyncWorker.LAST_PATIENT_SYNC, -1L)
+            val lastSyncTime = sharedPreferences.getLong("lastSyncTime", -1L)
             if (lastSyncTime == -1L) {
                 return@runIfTrue
             }
 
             sharedPreferences.edit(commit = true) {
-                putLong(SyncWorker.LAST_READING_SYNC, lastSyncTime)
+                putLong("lastSyncTimeReadings", lastSyncTime)
             }
         }
 
