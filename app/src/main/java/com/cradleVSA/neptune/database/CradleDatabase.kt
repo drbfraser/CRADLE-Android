@@ -35,7 +35,7 @@ import org.json.JSONArray
 @Database(
     entities = [Reading::class, Patient::class, HealthFacility::class],
     views = [LocalSearchPatient::class],
-    version = 8,
+    version = 9,
     exportSchema = true
 )
 @TypeConverters(DatabaseTypeConverters::class)
@@ -87,7 +87,8 @@ internal object Migrations {
             MIGRATION_4_5,
             MIGRATION_5_6,
             MIGRATION_6_7,
-            MIGRATION_7_8
+            MIGRATION_7_8,
+            MIGRATION_8_9
         )
     }
 
@@ -484,6 +485,56 @@ CREATE TABLE IF NOT EXISTS `new_Patient` (
                         )
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * Version 9:
+     * remove Reading fields (respiratoryRate, oxygenSaturation, temperature)
+     */
+    private val MIGRATION_8_9 = object : Migration(8, 9) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.run {
+                execSQL(
+                    """
+                    CREATE TEMPORARY TABLE Reading_backup(
+                        patientId, dateTimeTaken, bloodPressure, urineTest, symptoms, referral, 
+                        followUp, dateRecheckVitalsNeeded, isFlaggedForFollowUp, previousReadingIds, 
+                        metadata, isUploadedToServer
+                    );
+                    """.trimIndent()
+                )
+                execSQL(
+                    """ 
+                    INSERT INTO Reading_backup SELECT 
+                        patientId, dateTimeTaken, bloodPressure, urineTest, symptoms, referral, 
+                        followUp, dateRecheckVitalsNeeded, isFlaggedForFollowUp, previousReadingIds, 
+                        metadata, isUploadedToServer
+                    from Reading;
+                    """.trimIndent()
+                )
+                execSQL("DROP TABLE Reading;")
+                execSQL(
+                    """
+                    CREATE TABLE Reading(
+                        patientId, dateTimeTaken, bloodPressure, urineTest, symptoms, referral, 
+                        followUp, dateRecheckVitalsNeeded, isFlaggedForFollowUp, previousReadingIds, 
+                        metadata, isUploadedToServer
+                    );
+                    """.trimIndent()
+                )
+                execSQL(
+                    """
+                    INSERT INTO Reading SELECT 
+                        patientId, dateTimeTaken, bloodPressure, urineTest, symptoms, referral, 
+                        followUp, dateRecheckVitalsNeeded, isFlaggedForFollowUp, previousReadingIds, 
+                        metadata, isUploadedToServer
+                    FROM Reading_backup;
+                    """.trimIndent()
+                )
+
+                execSQL("DROP TABLE Reading_backup;")
             }
         }
     }

@@ -17,7 +17,6 @@ import com.cradleVSA.neptune.ext.jackson.writeBooleanField
 import com.cradleVSA.neptune.ext.jackson.writeIntField
 import com.cradleVSA.neptune.ext.jackson.writeLongField
 import com.cradleVSA.neptune.ext.jackson.writeObjectField
-import com.cradleVSA.neptune.ext.jackson.writeOptIntField
 import com.cradleVSA.neptune.ext.jackson.writeOptLongField
 import com.cradleVSA.neptune.ext.jackson.writeOptObjectField
 import com.cradleVSA.neptune.ext.jackson.writeStringField
@@ -67,9 +66,6 @@ private const val SECONDS_IN_MIN = 60
  * associated with.
  * @property dateTimeTaken Unix time at which this reading was taken.
  * @property bloodPressure The result of a blood pressure test.
- * @property respiratoryRate The respiratory rate in breaths per minute.
- * @property oxygenSaturation The oxygen saturation as a percent.
- * @property temperature The temperature in degrees Celsius.
  * @property urineTest The result of a urine test.
  * @property symptoms A list of symptoms that the patient has at the time this
  * reading was taken.
@@ -106,9 +102,6 @@ data class Reading(
     @ColumnInfo var patientId: String,
     @ColumnInfo var dateTimeTaken: Long,
     @ColumnInfo var bloodPressure: BloodPressure,
-    @ColumnInfo var respiratoryRate: Int? = null,
-    @ColumnInfo var oxygenSaturation: Int? = null,
-    @ColumnInfo var temperature: Int? = null,
     @ColumnInfo var urineTest: UrineTest?,
     @ColumnInfo var symptoms: List<String>,
 
@@ -188,9 +181,6 @@ data class Reading(
                 gen.writeObjectField(ReadingField.SYMPTOMS, symptoms)
                 gen.writeOptObjectField(ReadingField.REFERRAL, referral)
                 gen.writeOptObjectField(ReadingField.FOLLOWUP, followUp)
-                gen.writeOptIntField(ReadingField.RESPIRATORY_RATE, respiratoryRate)
-                gen.writeOptIntField(ReadingField.OXYGEN_SATURATION, oxygenSaturation)
-                gen.writeOptIntField(ReadingField.TEMPERATURE, temperature)
                 gen.writeOptObjectField(ReadingField.URINE_TEST, urineTest)
                 gen.writeStringField(
                     ReadingField.PREVIOUS_READING_IDS,
@@ -209,9 +199,6 @@ data class Reading(
                 val patientId = get(ReadingField.PATIENT_ID)!!.textValue()
                 val dateTimeTaken = get(ReadingField.DATE_TIME_TAKEN)!!.longValue()
                 val bloodPressure = BloodPressure.deserialize(this)
-                val respiratoryRate = get(ReadingField.RESPIRATORY_RATE)?.intValue()
-                val oxygenSaturation = get(ReadingField.OXYGEN_SATURATION)?.intValue()
-                val temperature = get(ReadingField.TEMPERATURE.text)?.intValue()
                 val urineTest = getOptObject<UrineTest>(ReadingField.URINE_TEST, p.codec)
                 val symptoms = getOptObjectArray<String>(ReadingField.SYMPTOMS, p.codec)
                     ?: emptyList()
@@ -232,9 +219,6 @@ data class Reading(
                     patientId = patientId,
                     dateTimeTaken = dateTimeTaken,
                     bloodPressure = bloodPressure,
-                    respiratoryRate = respiratoryRate,
-                    oxygenSaturation = oxygenSaturation,
-                    temperature = temperature,
                     urineTest = urineTest,
                     symptoms = symptoms,
                     referral = referral,
@@ -248,12 +232,6 @@ data class Reading(
     }
 
     companion object : Verifier<Reading> {
-        private const val RESPIRATORY_RATE_MIN = 0
-        private const val RESPIRATORY_RATE_MAX = 120
-        private const val OXYGEN_SATURATION_MIN = 0
-        private const val OXYGEN_SATURATION_MAX = 100
-        private const val TEMPERATURE_MIN = 30
-        private const val TEMPERATURE_MAX = 45
 
         @Suppress("NestedBlockDepth")
         override fun isValueValid(
@@ -279,35 +257,6 @@ data class Reading(
                     }
                 }
             }
-            Reading::respiratoryRate, Reading::oxygenSaturation, Reading::temperature ->
-                with(value as? Int?) {
-                    return if (this == null) {
-                        // Optional, so we allow null to pass as valid.
-                        Pair(true, "")
-                    } else {
-                        val (min, max) = when (property) {
-                            Reading::respiratoryRate -> {
-                                RESPIRATORY_RATE_MIN to RESPIRATORY_RATE_MAX
-                            }
-                            Reading::oxygenSaturation -> {
-                                OXYGEN_SATURATION_MIN to OXYGEN_SATURATION_MAX
-                            }
-                            Reading::temperature -> {
-                                TEMPERATURE_MIN to TEMPERATURE_MAX
-                            }
-                            else -> return@with Pair(false, "")
-                        }
-
-                        if (min <= this && this <= max) {
-                            Pair(true, "")
-                        } else {
-                            Pair(
-                                false,
-                                context.getString(R.string.error_must_be_between_n_and_m, min, max)
-                            )
-                        }
-                    }
-                }
             Reading::urineTest -> Pair(true, "")
             else -> Pair(true, "")
         }
@@ -703,9 +652,6 @@ private enum class ReadingField(override val text: String) : Field {
     ID("readingId"),
     PATIENT_ID("patientId"),
     DATE_TIME_TAKEN("dateTimeTaken"),
-    RESPIRATORY_RATE("respiratoryRate"),
-    OXYGEN_SATURATION("oxygenSaturation"),
-    TEMPERATURE("temperature"),
     URINE_TEST("urineTests"),
     SYMPTOMS("symptoms"),
     DATE_RECHECK_VITALS_NEEDED("dateRecheckVitalsNeeded"),
