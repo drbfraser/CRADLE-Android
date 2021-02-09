@@ -1,7 +1,6 @@
 package com.cradleVSA.neptune.viewmodel
 
 import androidx.annotation.MainThread
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
@@ -9,8 +8,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import com.cradleVSA.neptune.manager.HealthFacilityManager
 import com.cradleVSA.neptune.model.HealthFacility
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class ReferralDialogViewModel @ViewModelInject constructor(
+@HiltViewModel
+class ReferralDialogViewModel @Inject constructor(
     healthFacilityManager: HealthFacilityManager
 ) : ViewModel() {
     val healthFacilityToUse = MediatorLiveData<String>()

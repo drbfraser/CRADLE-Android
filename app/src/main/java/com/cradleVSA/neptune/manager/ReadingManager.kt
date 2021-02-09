@@ -12,7 +12,7 @@ import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Service for interfacing with readings stored in the database.
@@ -26,11 +26,9 @@ import javax.inject.Inject
  * the `Async` variant. For methods which return a value, the `Blocking`
  * variants may be used but remember that those will block the current thread.
  *
- *Added [suspend] function so that there is compile time error when inserting on DB through
- * main thread rather than run time error
  */
-@Suppress("RedundantSuspendModifier")
-class ReadingManager @Inject constructor(
+@Singleton
+class ReadingManager constructor(
     private val readingDao: ReadingDao,
     private val restApi: RestApi
 ) {

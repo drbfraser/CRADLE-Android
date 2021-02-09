@@ -4,8 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.core.content.edit
-import androidx.hilt.Assisted
-import androidx.hilt.work.WorkerInject
+import androidx.hilt.work.HiltWorker
 import androidx.room.withTransaction
 import androidx.work.CoroutineWorker
 import androidx.work.WorkInfo
@@ -30,6 +29,8 @@ import com.cradleVSA.neptune.net.Success
 import com.cradleVSA.neptune.utilitiles.RateLimitRunner
 import com.cradleVSA.neptune.utilitiles.UnixTimestamp
 import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
@@ -46,7 +47,8 @@ import java.io.IOException
  *  progress.
  * TODO: Use SyncWorker to perform periodic sync.
  */
-class SyncWorker @WorkerInject constructor(
+@HiltWorker
+class SyncWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
     private val restApi: RestApi,

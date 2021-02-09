@@ -3,12 +3,14 @@ package com.cradleVSA.neptune.manager
 import android.util.Log
 import com.cradleVSA.neptune.model.Settings
 import javax.inject.Inject
+import javax.inject.Singleton
 
 // TODO: Lots of duplicate properties in here, need to clean them out
 
 /**
  * Constructs the various URLs required for communicating with the server.
  */
+@Singleton
 class UrlManager @Inject constructor(val settings: Settings) {
 
     /**
