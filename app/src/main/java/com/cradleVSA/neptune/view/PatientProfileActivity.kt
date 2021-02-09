@@ -42,8 +42,7 @@ import javax.inject.Inject
  * This class was translated from Java to Kotlin which may account for any stylistic
  * differences between it and other Kotlin-native classes.
  *
- * The currPatient variable is marked as "potentially null" may open this class up to NPEs in
- * the future, and the usage of runBlocking is not ideal for performance.
+ * The usage of runBlocking is not ideal for performance.
  */
 
 @AndroidEntryPoint
@@ -291,6 +290,7 @@ open class PatientProfileActivity : AppCompatActivity() {
     }
 
     private fun getThisPatientsReadings(): List<Reading> {
+        // TODO: as per MOB-270, we should not have database retrieval operations within runBlocking.
         val readings: List<Reading> = runBlocking { readingManager.getReadingsByPatientId(currPatient.id) }
         val comparator: Comparator<Reading> = Reading.DescendingDateComparator
         return readings.sortedWith(comparator)
