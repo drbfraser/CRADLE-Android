@@ -115,6 +115,7 @@ android {
     }
     buildFeatures {
         dataBinding true
+        viewBinding true
     }
 
     sourceSets {
@@ -128,6 +129,14 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.1'
+
+    def camerax_version = "1.1.0-alpha01"
+    // CameraX core library using camera2 implementation
+    implementation "androidx.camera:camera-camera2:$camerax_version"
+    // CameraX Lifecycle Library
+    implementation "androidx.camera:camera-lifecycle:$camerax_version"
+    // CameraX View class
+    implementation "androidx.camera:camera-view:1.0.0-alpha21"
 
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
