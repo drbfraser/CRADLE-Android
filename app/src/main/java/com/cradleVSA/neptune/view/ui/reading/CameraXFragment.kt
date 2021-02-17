@@ -2,11 +2,11 @@ package com.cradleVSA.neptune.view.ui.reading
 
 import android.os.Bundle
 import android.util.Log
-import android.util.Size
 import android.view.LayoutInflater
 import android.view.Surface
 import android.view.View
 import android.view.ViewGroup
+import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
@@ -23,7 +23,7 @@ import kotlinx.coroutines.asExecutor
 
 private const val TAG = "CameraXFragment"
 
-class CameraXFragment: Fragment() {
+class CameraXFragment : Fragment() {
     /**
      * ViewModel is scoped to the [ReadingActivity] that this Fragment is attached to; therefore,
      * this is shared by all Fragments.
@@ -59,42 +59,48 @@ class CameraXFragment: Fragment() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
 
         val analyzer = OcrAnalyzer(
-            requireContext(), 
-            "seven_seg_ssd.tflite",
+            requireContext(),
             { map -> Log.d(TAG, "Analysis: $map") },
-            { bitmap1, bitmap2, bitmap3 -> activity?.runOnUiThread {
-                _binding?.apply {
-                    debugImageView.setImageBitmap(bitmap1)
-                    debugImageView2.setImageBitmap(bitmap2)
-                    debugImageView3.setImageBitmap(bitmap3)
+            { bitmap1, bitmap2, bitmap3 ->
+                activity?.runOnUiThread {
+                    _binding?.apply {
+                        debugImageView.setImageBitmap(bitmap1)
+                        debugImageView2.setImageBitmap(bitmap2)
+                        debugImageView3.setImageBitmap(bitmap3)
+                    }
                 }
-            }  },
-            { string -> activity?.runOnUiThread {
-                Log.d(TAG, string)
-            }  },
+            },
+            { string ->
+                activity?.runOnUiThread {
+                    Log.d(TAG, string)
+                }
+            },
         )
 
-        cameraProviderFuture.addListener({
-            val cameraProvider = cameraProviderFuture.get()
-            val cameraSelector = CameraSelector.Builder()
-                .requireLensFacing(CameraSelector.LENS_FACING_BACK)
-                .build()
-            val preview = Preview.Builder().build()
-                .apply { setSurfaceProvider(binding.previewView.surfaceProvider) }
+        cameraProviderFuture.addListener(
+            {
+                val cameraProvider = cameraProviderFuture.get()
+                val cameraSelector = CameraSelector.Builder()
+                    .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+                    .build()
+                val preview = Preview.Builder().build()
+                    .apply { setSurfaceProvider(binding.previewView.surfaceProvider) }
 
-            val imageAnalysis = ImageAnalysis.Builder()
-                .setTargetResolution(Size(1280, 720))
-                .setTargetRotation(Surface.ROTATION_0)
-                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                .build()
-            imageAnalysis.setAnalyzer(Dispatchers.Default.asExecutor(), analyzer)
+                val imageAnalysis = ImageAnalysis.Builder()
+                    .setTargetRotation(Surface.ROTATION_0)
+                    .setTargetAspectRatio(AspectRatio.RATIO_4_3)
+                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                    .build()
+                imageAnalysis.setAnalyzer(Dispatchers.Default.asExecutor(), analyzer)
 
-            val camera = cameraProvider.bindToLifecycle(
-                viewLifecycleOwner,
-                cameraSelector,
-                imageAnalysis,
-                preview
-            )
-        }, ContextCompat.getMainExecutor(requireContext()))
+                cameraProvider.bindToLifecycle(
+                    viewLifecycleOwner,
+                    cameraSelector,
+                    imageAnalysis,
+                    preview
+                )
+            },
+            ContextCompat.getMainExecutor(requireContext())
+        )
     }
 }

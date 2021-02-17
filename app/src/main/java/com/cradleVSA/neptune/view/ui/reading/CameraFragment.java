@@ -87,10 +87,10 @@ public class CameraFragment extends Fragment {
                 writeBitMapToFile(bmp, pictureFileFull.getPath());
 
                 // extract number images
-                writePhotoRegionToFileRelativeToOverlay(bmp, pictureFile, CradleOverlay.OverlayRegion.OVERLAY_REGION_SCREEN);
-                writePhotoRegionToFileRelativeToOverlay(bmp, pictureFileSys, CradleOverlay.OverlayRegion.OVERLAY_REGION_SYS);
-                writePhotoRegionToFileRelativeToOverlay(bmp, pictureFileDia, CradleOverlay.OverlayRegion.OVERLAY_REGION_DIA);
-                writePhotoRegionToFileRelativeToOverlay(bmp, pictureFileHr, CradleOverlay.OverlayRegion.OVERLAY_REGION_HR);
+                writePhotoRegionToFileRelativeToOverlay(bmp, pictureFile, CradleOverlay.OverlayRegion.SCREEN);
+                writePhotoRegionToFileRelativeToOverlay(bmp, pictureFileSys, CradleOverlay.OverlayRegion.SYS);
+                writePhotoRegionToFileRelativeToOverlay(bmp, pictureFileDia, CradleOverlay.OverlayRegion.DIA);
+                writePhotoRegionToFileRelativeToOverlay(bmp, pictureFileHr, CradleOverlay.OverlayRegion.HR);
 
 
                 // DEBUG: Test image recognition

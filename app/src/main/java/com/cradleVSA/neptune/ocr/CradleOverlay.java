@@ -71,13 +71,13 @@ public class CradleOverlay {
 
     private static RectF getRegionCoordsRelativeToFullImage(OverlayRegion region) {
         switch (region) {
-            case OVERLAY_REGION_SCREEN:
+            case SCREEN:
                 return new RectF(OVERLAY_X_LEFT_px, OVERLAY_Y_TOP_px, OVERLAY_X_RIGHT_px, OVERLAY_Y_BOTTOM_px);
-            case OVERLAY_REGION_SYS:
+            case SYS:
                 return new RectF(OVERLAY_X_DIGITS_LEFT_px, OVERLAY_Y_SYS_TOP_px, OVERLAY_X_RIGHT_px, OVERLAY_Y_SYS_BOTTOM_px);
-            case OVERLAY_REGION_DIA:
+            case DIA:
                 return new RectF(OVERLAY_X_DIGITS_LEFT_px, OVERLAY_Y_DIA_TOP_px, OVERLAY_X_RIGHT_px, OVERLAY_Y_DIA_BOTTOM_px);
-            case OVERLAY_REGION_HR:
+            case HR:
                 return new RectF(OVERLAY_X_DIGITS_LEFT_px, OVERLAY_Y_HR_TOP_px, OVERLAY_X_RIGHT_px, OVERLAY_Y_HR_BOTTOM_px);
             default:
                 Util.ensure(false);
@@ -173,10 +173,10 @@ public class CradleOverlay {
 
 
     public enum OverlayRegion {
-        OVERLAY_REGION_SCREEN,
-        OVERLAY_REGION_SYS,
-        OVERLAY_REGION_DIA,
-        OVERLAY_REGION_HR,
+        SCREEN,
+        SYS,
+        DIA,
+        HR,
     }
 
     // TODO: TESTING ONLY

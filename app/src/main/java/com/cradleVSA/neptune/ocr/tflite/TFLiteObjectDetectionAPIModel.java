@@ -224,17 +224,4 @@ public class TFLiteObjectDetectionAPIModel implements Classifier {
 //    Trace.endSection(); // "recognizeImage"
         return recognitions;
     }
-
-    @Override
-    public void enableStatLogging(final boolean logStats) {
-    }
-
-    @Override
-    public String getStatString() {
-        return "";
-    }
-
-    @Override
-    public void close() {
-    }
 }
