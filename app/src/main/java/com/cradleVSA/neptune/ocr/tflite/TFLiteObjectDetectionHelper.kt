@@ -42,8 +42,12 @@ class TFLiteObjectDetectionHelper(context: Context) : Classifier {
 
     private val labels: List<String> = FileUtil.loadLabels(context, LABEL_FILE_NAME)
 
+    /**
+     * Creates an input tensor from the given [bitmap] for use in an [Interpreter], which uses
+     * tensors in the form of [ByteBuffer]s.
+     */
     @Suppress("MagicNumber")
-    private fun normalizeRGBData(
+    private fun createTensorFromImage(
         bitmap: Bitmap,
     ): ByteBuffer {
         val frameToCropTransform = TFImageUtils.getTransformationMatrix(
@@ -83,8 +87,6 @@ class TFLiteObjectDetectionHelper(context: Context) : Classifier {
         // Quantized uses 1 byte per channel; floating point uses 4 bytes per channel
         val numBytesPerChannel = if (QUANTIZED_MODEL) 1 else 4
 
-        // Pre-process the image data from 0-255 int to normalized float based
-        // on the provided parameters.
         val inputImageData = ByteBuffer.allocateDirect(
             NN_INPUT_SIZE * NN_INPUT_SIZE * 3 * numBytesPerChannel
         ).apply {
@@ -101,6 +103,8 @@ class TFLiteObjectDetectionHelper(context: Context) : Classifier {
                         put((pixelValue and 0xFF).toByte())
                     } else {
                         // Float model
+                        // Pre-process the image data from 0-255 int to normalized float based
+                        // on the provided parameters.
                         putFloat(((pixelValue shr 16 and 0xFF) - IMAGE_MEAN) / IMAGE_STD)
                         putFloat(((pixelValue shr 8 and 0xFF) - IMAGE_MEAN) / IMAGE_STD)
                         putFloat(((pixelValue and 0xFF) - IMAGE_MEAN) / IMAGE_STD)
@@ -114,7 +118,7 @@ class TFLiteObjectDetectionHelper(context: Context) : Classifier {
 
     @Suppress("MagicNumber")
     override fun recognizeImage(bitmap: Bitmap): List<Classifier.Recognition> {
-        val tfImageBuffer: ByteBuffer = normalizeRGBData(bitmap)
+        val tfImageBuffer: ByteBuffer = createTensorFromImage(bitmap)
         // This preprocesses the image as a tensor in ByteBuffer form.
         // https://www.tensorflow.org/lite/inference_with_metadata/lite_support
         // val tfImageBuffer = TensorImage(DataType.UINT8).apply { load(bitmap) }
