@@ -49,7 +49,35 @@
         app:layout_constraintBottom_toBottomOf="parent"
         android:contentDescription="Take picture" />
 
+    <ImageView
+        android:id="@+id/debugSystolicImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ocrPreviewLayout"
+        app:srcCompat="@drawable/arrow_right_with_x" />
+
+    <ImageView
+        android:id="@+id/debugDiastolicImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/debugSystolicImageView"
+        app:srcCompat="@drawable/arrow_right_with_x" />
+
+    <ImageView
+        android:id="@+id/debugHeartRateImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        android:visibility="visible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/debugDiastolicImageView"
+        app:srcCompat="@drawable/arrow_right_with_x" />
+
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/ocrPreviewLayout"
         android:layout_width="match_parent"
         android:layout_height="128dp"
         android:layout_marginStart="32dp"

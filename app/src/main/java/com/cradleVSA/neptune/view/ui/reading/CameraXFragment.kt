@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.Surface
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -76,9 +75,6 @@ class CameraXFragment : Fragment() {
         binding?.cameraCaptureButton?.setOnClickListener {
             val currentOcrResult = ocrViewModel.ocrResult.value ?: return@setOnClickListener
             findNavController().popBackStack()
-
-            Toast.makeText(requireContext(), "Using OcrResult: $currentOcrResult. To int, they are ${currentOcrResult.systolic.toIntOrNull()}", Toast.LENGTH_SHORT).show()
-
             viewModel.apply {
                 viewModelScope.launch {
                     // FIXME: Timing issues. If we don't delay, something from the
@@ -113,9 +109,9 @@ class CameraXFragment : Fragment() {
             { bitmap1, bitmap2, bitmap3 ->
                 activity?.runOnUiThread {
                     binding?.apply {
-                        //debugImageView.setImageBitmap(bitmap1)
-                        //debugImageView2.setImageBitmap(bitmap2)
-                        //debugImageView3.setImageBitmap(bitmap3)
+                        debugSystolicImageView.setImageBitmap(bitmap1)
+                        debugDiastolicImageView.setImageBitmap(bitmap2)
+                        debugHeartRateImageView.setImageBitmap(bitmap3)
                     }
                 }
             },
