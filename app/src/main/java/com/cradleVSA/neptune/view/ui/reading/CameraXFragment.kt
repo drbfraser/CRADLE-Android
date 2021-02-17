@@ -1,7 +1,6 @@
 package com.cradleVSA.neptune.view.ui.reading
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.Surface
 import android.view.View
@@ -39,6 +38,7 @@ class CameraXFragment : Fragment() {
 
     private val ocrViewModel: OcrFragmentViewModel by viewModels()
 
+    // TODO: Look into declaring executors for the whole app and use it from there?
     private val analysisExecutor = Executors.newSingleThreadExecutor()
 
     private var binding: FragmentCameraNewBinding? = null
@@ -114,12 +114,7 @@ class CameraXFragment : Fragment() {
                         debugHeartRateImageView.setImageBitmap(bitmap3)
                     }
                 }
-            },
-            { string ->
-                activity?.runOnUiThread {
-                    Log.d(TAG, string)
-                }
-            },
+            }
         )
 
         cameraProviderFuture.addListener(
@@ -136,7 +131,7 @@ class CameraXFragment : Fragment() {
                     .setTargetAspectRatio(AspectRatio.RATIO_4_3)
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .build()
-                imageAnalysis.setAnalyzer(analysisExecutor, analyzer)
+                    .apply { setAnalyzer(analysisExecutor, analyzer) }
 
                 cameraProvider.bindToLifecycle(
                     viewLifecycleOwner,
