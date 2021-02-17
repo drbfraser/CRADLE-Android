@@ -43,6 +43,10 @@ class CameraXFragment : Fragment() {
 
     private var binding: FragmentCameraNewBinding? = null
 
+    private var analyzer: OcrAnalyzer? = null
+
+    private var cameraProvider: ProcessCameraProvider? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -95,15 +99,21 @@ class CameraXFragment : Fragment() {
         binding = null
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onPause() {
+        super.onPause()
+        cameraProvider?.unbindAll()
+        analyzer?.close()
+    }
+
+    override fun onResume() {
+        super.onResume()
         initCamera()
     }
 
     private fun initCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
 
-        val analyzer = OcrAnalyzer(
+        analyzer = OcrAnalyzer(
             requireContext(),
             { ocrResult -> ocrViewModel.ocrResult.postValue(ocrResult) },
             { bitmap1, bitmap2, bitmap3 ->
@@ -119,26 +129,30 @@ class CameraXFragment : Fragment() {
 
         cameraProviderFuture.addListener(
             {
-                val cameraProvider = cameraProviderFuture.get()
+                cameraProvider = cameraProviderFuture.get()
                 val cameraSelector = CameraSelector.Builder()
                     .requireLensFacing(CameraSelector.LENS_FACING_BACK)
                     .build()
                 val preview = Preview.Builder().build()
                     .apply { setSurfaceProvider(binding?.previewView?.surfaceProvider) }
 
-                val imageAnalysis = ImageAnalysis.Builder()
-                    .setTargetRotation(Surface.ROTATION_0)
-                    .setTargetAspectRatio(AspectRatio.RATIO_4_3)
-                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                    .build()
-                    .apply { setAnalyzer(analysisExecutor, analyzer) }
+                val imageAnalysis = analyzer?.let {
+                     ImageAnalysis.Builder()
+                        .setTargetRotation(Surface.ROTATION_0)
+                        .setTargetAspectRatio(AspectRatio.RATIO_4_3)
+                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        .build()
+                        .apply { setAnalyzer(analysisExecutor, it) }
+                }
 
-                cameraProvider.bindToLifecycle(
-                    viewLifecycleOwner,
-                    cameraSelector,
-                    imageAnalysis,
-                    preview
-                )
+                cameraProvider?.apply {
+                    unbindAll()
+                    if (imageAnalysis != null) {
+                        bindToLifecycle(viewLifecycleOwner, cameraSelector, imageAnalysis, preview)
+                    } else {
+                        bindToLifecycle(viewLifecycleOwner, cameraSelector, preview)
+                    }
+                }
             },
             ContextCompat.getMainExecutor(requireContext())
         )

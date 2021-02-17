@@ -16,11 +16,12 @@ package com.cradleVSA.neptune.ocr.tflite
 
 import android.graphics.Bitmap
 import android.graphics.RectF
+import java.io.Closeable
 
 /**
  * Generic interface for interacting with different recognition engines.
  */
-interface Classifier {
+interface Classifier : Closeable {
     fun recognizeImage(bitmap: Bitmap): List<Recognition>
 
     /**

@@ -224,4 +224,8 @@ public class TFLiteObjectDetectionAPIModel implements Classifier {
 //    Trace.endSection(); // "recognizeImage"
         return recognitions;
     }
+
+    @Override
+    public void close() throws IOException {
+    }
 }

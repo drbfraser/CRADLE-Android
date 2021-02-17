@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import com.cradleVSA.neptune.ocr.tflite.Classifier
 import com.cradleVSA.neptune.ocr.tflite.TFLiteObjectDetectionHelper
+import java.io.Closeable
 import java.util.ArrayList
 import java.util.Collections
 import kotlin.math.abs
@@ -16,7 +17,7 @@ private const val FILTER_RESULT_BY_CENTER_PERCENT = 0.15f
 /**
  * Handles getting digits from running OCR on a picture of the CRADLE screen.
  */
-class CradleScreenOcrDetector(context: Context) {
+class CradleScreenOcrDetector(context: Context) : Closeable {
     private val classifier: Classifier = TFLiteObjectDetectionHelper(context)
 
     /**
@@ -165,6 +166,10 @@ class CradleScreenOcrDetector(context: Context) {
             text += result.title
         }
         return text
+    }
+
+    override fun close() {
+        classifier.close()
     }
 }
 

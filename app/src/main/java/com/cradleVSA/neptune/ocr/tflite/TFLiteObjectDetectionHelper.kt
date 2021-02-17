@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.RectF
+import android.os.Build
 import android.util.Log
 import com.cradleVSA.neptune.utilitiles.TFImageUtils
 import org.tensorflow.lite.Interpreter
@@ -35,10 +36,29 @@ private const val IMAGE_STD = 128.0f
  * - https://github.com/tensorflow/examples/tree/master/lite/examples/image_classification/android
  */
 class TFLiteObjectDetectionHelper(context: Context) : Classifier {
-    private val interpreter: Interpreter = Interpreter(
-        FileUtil.loadMappedFile(context, MODEL_FILENAME),
-        Interpreter.Options().addDelegate(NnApiDelegate())
-    )
+    /**
+     * Use Android Neural Network API if available. TensorFlow recommends using this for Android
+     * Pie or above. https://www.tensorflow.org/lite/performance/nnapi
+     */
+    private val nnApiDelegate: NnApiDelegate? =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            NnApiDelegate()
+        } else {
+            null
+        }
+
+    private var interpreter: Interpreter? =
+        if (nnApiDelegate != null) {
+            Interpreter(
+                FileUtil.loadMappedFile(context, MODEL_FILENAME),
+                Interpreter.Options().addDelegate(nnApiDelegate)
+            )
+        } else {
+            Interpreter(
+                FileUtil.loadMappedFile(context, MODEL_FILENAME),
+                Interpreter.Options()
+            )
+        }
 
     private val labels: List<String> = FileUtil.loadLabels(context, LABEL_FILE_NAME)
 
@@ -144,8 +164,8 @@ class TFLiteObjectDetectionHelper(context: Context) : Classifier {
             3 to numDetections
         )
 
-        // Run TFLite
-        interpreter.runForMultipleInputsOutputs(inputArray, outputMap)
+        // Run TFLite, but don't do anything if it's closed
+        interpreter?.runForMultipleInputsOutputs(inputArray, outputMap) ?: return emptyList()
 
         // Show the best detections after scaling them back to the input size.
         return (0 until NUM_DETECTIONS).map { i ->
@@ -174,5 +194,11 @@ class TFLiteObjectDetectionHelper(context: Context) : Classifier {
 
             Classifier.Recognition("$i", title, scores, detection)
         }
+    }
+
+    override fun close() {
+        interpreter?.close()
+        interpreter = null
+        nnApiDelegate?.close()
     }
 }

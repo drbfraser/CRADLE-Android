@@ -8,12 +8,13 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import com.cradleVSA.neptune.model.BloodPressure
 import com.cradleVSA.neptune.utilitiles.TFImageUtils
+import java.io.Closeable
 
 class OcrAnalyzer constructor(
     someContext: Context,
     private val onAnalysisFinished: (OcrResult) -> Unit,
     private val debugBitmapBlock: (Bitmap, Bitmap, Bitmap) -> Unit,
-) : ImageAnalysis.Analyzer {
+) : ImageAnalysis.Analyzer, Closeable {
     private val context = someContext.applicationContext
 
     private val cradleOcrDetector = CradleScreenOcrDetector(context)
@@ -152,5 +153,9 @@ class OcrAnalyzer constructor(
                 ?: ByteArray(buffer.capacity()).also { yuvBytes[i] = it }
             buffer.get(currentYuvBytes)
         }
+    }
+
+    override fun close() {
+        cradleOcrDetector.close()
     }
 }
