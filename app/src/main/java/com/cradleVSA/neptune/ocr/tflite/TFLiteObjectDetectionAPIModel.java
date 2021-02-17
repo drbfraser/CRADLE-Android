@@ -237,13 +237,4 @@ public class TFLiteObjectDetectionAPIModel implements Classifier {
     @Override
     public void close() {
     }
-
-    public void setNumThreads(int num_threads) {
-        if (tfLite != null) tfLite.setNumThreads(num_threads);
-    }
-
-    @Override
-    public void setUseNNAPI(boolean isChecked) {
-        if (tfLite != null) tfLite.setUseNNAPI(isChecked);
-    }
 }
