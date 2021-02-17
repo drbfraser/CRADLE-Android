@@ -18,8 +18,7 @@ import com.cradleVSA.neptune.databinding.FragmentCameraNewBinding
 import com.cradleVSA.neptune.ocr.OcrAnalyzer
 import com.cradleVSA.neptune.view.ReadingActivity
 import com.cradleVSA.neptune.viewmodel.PatientReadingViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.asExecutor
+import java.util.concurrent.Executors
 
 private const val TAG = "CameraXFragment"
 
@@ -29,6 +28,8 @@ class CameraXFragment : Fragment() {
      * this is shared by all Fragments.
      */
     private val viewModel: PatientReadingViewModel by activityViewModels()
+
+    private val analysisExecutor = Executors.newSingleThreadExecutor()
 
     private var _binding: FragmentCameraNewBinding? = null
     // valid iff fragment lifecycle between onCreateView and onDestroyView
@@ -98,7 +99,7 @@ class CameraXFragment : Fragment() {
                     .setTargetAspectRatio(AspectRatio.RATIO_4_3)
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .build()
-                imageAnalysis.setAnalyzer(Dispatchers.Default.asExecutor(), analyzer)
+                imageAnalysis.setAnalyzer(analysisExecutor, analyzer)
 
                 cameraProvider.bindToLifecycle(
                     viewLifecycleOwner,
