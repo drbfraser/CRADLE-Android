@@ -12,7 +12,7 @@ class OcrAnalyzer constructor(
     context: Context,
     private val onAnalysisFinished: (Map<CradleOverlay.OverlayRegion, String>) -> Unit,
     private val debugBitmapBlock: (Bitmap, Bitmap, Bitmap) -> Unit,
-    private val debugPrintBlock: (String) -> Unit
+    private val debugPrintBlock: (String) -> Unit,
 ) : ImageAnalysis.Analyzer {
 
     private val cradleOcrDetector = CradleScreenOcrDetector(context)
@@ -22,7 +22,7 @@ class OcrAnalyzer constructor(
             // ImageAnalysis uses YUV_420_888 format
             val rgbBytes = convertYUVPlanesToARGB8888(imageProxy)
             val readyImage = createNonRotatedImage(imageProxy, rgbBytes)
-            val allRecognitions = cradleOcrDetector.getResultsFromImage(readyImage)
+            val allRecognitions = cradleOcrDetector.getResultsFromImage(readyImage, debugBitmapBlock)
             onAnalysisFinished(allRecognitions)
         }
     }

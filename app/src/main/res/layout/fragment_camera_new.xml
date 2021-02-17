@@ -13,6 +13,14 @@
     </androidx.camera.view.PreviewView>
 
     <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0.8"
+        android:scaleType="fitEnd"
+        app:srcCompat="@drawable/cradle_overlay_8bit" />
+
+    <ImageView
         android:id="@+id/debugImageView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -31,5 +39,15 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         app:srcCompat="@drawable/arrow_right_with_x" />
+
+    <TextView
+        android:id="@+id/resultTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:text="sdfsf"
+        android:textColor="@color/purple"
+        android:textSize="14sp"
+        android:textStyle="bold" />
 
 </FrameLayout>

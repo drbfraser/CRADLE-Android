@@ -60,7 +60,14 @@ class CameraXFragment : Fragment() {
 
         val analyzer = OcrAnalyzer(
             requireContext(),
-            { map -> Log.d(TAG, "Analysis: $map") },
+            { map ->
+                Log.d(TAG, "Analysis: $map")
+                activity?.runOnUiThread {
+                    _binding?.apply {
+                        resultTextView.text = map.toString()
+                    }
+                }
+            },
             { bitmap1, bitmap2, bitmap3 ->
                 activity?.runOnUiThread {
                     _binding?.apply {

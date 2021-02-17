@@ -2,15 +2,17 @@ package com.cradleVSA.neptune.ocr.tflite
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.RectF
-import org.tensorflow.lite.DataType
+import android.util.Log
+import com.cradleVSA.neptune.utilitiles.TFImageUtils
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.nnapi.NnApiDelegate
 import org.tensorflow.lite.support.common.FileUtil
-import org.tensorflow.lite.support.common.ops.NormalizeOp
 import org.tensorflow.lite.support.image.ImageProcessor
-import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.image.ops.ResizeOp
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 private const val TAG = "TFLiteHelper"
 private const val LABEL_FILE_NAME = "seven_seg_labelmap.txt"
@@ -48,19 +50,89 @@ class TFLiteObjectDetectionHelper(context: Context) : Classifier {
                 ResizeOp(
                     NN_INPUT_SIZE,
                     NN_INPUT_SIZE,
-                    ResizeOp.ResizeMethod.NEAREST_NEIGHBOR
+                    ResizeOp.ResizeMethod.BILINEAR
                 )
             )
-            .add(NormalizeOp(0f, 1f))
+            // .add(NormalizeOp(0f, 1f))
             .build()
     }
 
     @Suppress("MagicNumber")
+    private fun normalizeRGBData(
+        bitmap: Bitmap,
+    ): ByteBuffer {
+
+        val frameToCropTransform = TFImageUtils.getTransformationMatrix(
+            bitmap.width, bitmap.height,
+            NN_INPUT_SIZE, NN_INPUT_SIZE,
+            0,
+            true
+        )
+
+        val resizedImage = Bitmap.createBitmap(
+            NN_INPUT_SIZE,
+            NN_INPUT_SIZE,
+            Bitmap.Config.ARGB_8888
+        )
+        val canvas = Canvas(resizedImage)
+        canvas.drawBitmap(bitmap, frameToCropTransform, null)
+
+        Log.d(
+            TAG,
+            "Resized image has dimensions (wxh) ${resizedImage.width} x ${resizedImage.height}"
+        )
+
+        val imageData = IntArray(NN_INPUT_SIZE * NN_INPUT_SIZE).also {
+            resizedImage.getPixels(
+                it,
+                0,
+                resizedImage.width,
+                0,
+                0,
+                resizedImage.width,
+                resizedImage.height
+            )
+        }
+
+        // Quantized uses 1 byte per channel; floating point uses 4 bytes per channel
+        val numBytesPerChannel = if (QUANTIZED_MODEL) 1 else 4
+
+        // Pre-process the image data from 0-255 int to normalized float based
+        // on the provided parameters.
+        val inputImageData = ByteBuffer.allocateDirect(
+            NN_INPUT_SIZE * NN_INPUT_SIZE * 3 * numBytesPerChannel
+        ).apply {
+            order(ByteOrder.nativeOrder())
+        }
+        for (i in 0 until NN_INPUT_SIZE) {
+            for (j in 0 until NN_INPUT_SIZE) {
+                val pixelValue: Int = imageData[i * NN_INPUT_SIZE + j]
+                inputImageData.apply {
+                    if (QUANTIZED_MODEL) {
+                        // Quantized model
+                        put((pixelValue shr 16 and 0xFF).toByte())
+                        put((pixelValue shr 8 and 0xFF).toByte())
+                        put((pixelValue and 0xFF).toByte())
+                    } else {
+                        // Float model
+                        putFloat(((pixelValue shr 16 and 0xFF) - IMAGE_MEAN) / IMAGE_STD)
+                        putFloat(((pixelValue shr 8 and 0xFF) - IMAGE_MEAN) / IMAGE_STD)
+                        putFloat(((pixelValue and 0xFF) - IMAGE_MEAN) / IMAGE_STD)
+                    }
+                }
+            }
+        }
+
+        return inputImageData
+    }
+
+    @Suppress("MagicNumber")
     override fun recognizeImage(bitmap: Bitmap): List<Classifier.Recognition> {
+        val tfImageBuffer: ByteBuffer = normalizeRGBData(bitmap)
         // This preprocesses the image as a tensor in ByteBuffer form.
         // https://www.tensorflow.org/lite/inference_with_metadata/lite_support
-        val tfImageBuffer = TensorImage(DataType.UINT8).apply { load(bitmap) }
-        val tfImage = imageProcessor.process(tfImageBuffer)
+        //val tfImageBuffer = TensorImage(DataType.UINT8).apply { load(bitmap) }
+        //val tfImage = imageProcessor.process(tfImageBuffer)
 
         // Copy the input data into TensorFlow.
         // Array of shape [Batchsize, NUM_DETECTIONS,4]. Contains the location of detected boxes
@@ -74,7 +146,7 @@ class TFLiteObjectDetectionHelper(context: Context) : Classifier {
         // numDetections: array of shape [Batchsize]. This contains the number of detected boxes
         val numDetections = FloatArray(1)
 
-        val inputArray = arrayOf<Any>(tfImage.buffer)
+        val inputArray = arrayOf<Any>(tfImageBuffer)
         val outputMap = mapOf(
             0 to outputLocations,
             1 to outputClasses,

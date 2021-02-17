@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import com.cradleVSA.neptune.ocr.tflite.Classifier
 import com.cradleVSA.neptune.ocr.tflite.TFLiteObjectDetectionHelper
 import java.util.ArrayList
+import java.util.Collections
 import kotlin.math.abs
 import kotlin.math.sign
 
@@ -32,7 +33,10 @@ class CradleScreenOcrDetector(context: Context) {
      *      OverlayRegion.DIA -> "86"
      *      OverlayRegion.HR -> "67"
      */
-    fun getResultsFromImage(imageOfCradleScreen: Bitmap): Map<CradleOverlay.OverlayRegion, String> {
+    fun getResultsFromImage(
+        imageOfCradleScreen: Bitmap,
+        debugBitmapBlock: (Bitmap, Bitmap, Bitmap) -> Unit
+    ): Map<CradleOverlay.OverlayRegion, String> {
         val sysBitmap = CradleOverlay.extractBitmapRegionFromCameraImage(
             imageOfCradleScreen,
             CradleOverlay.OverlayRegion.SYS
@@ -45,6 +49,7 @@ class CradleScreenOcrDetector(context: Context) {
             imageOfCradleScreen,
             CradleOverlay.OverlayRegion.HR
         )
+        debugBitmapBlock(sysBitmap, diaBitmap, heartRateBitmap)
 
         val bitmaps = mapOf(
             CradleOverlay.OverlayRegion.SYS to sysBitmap,
@@ -98,5 +103,62 @@ class CradleScreenOcrDetector(context: Context) {
         // Extract text from all that's left (left to right)
         processed.sortWith(sortByXComparator)
         return processed.joinToString(separator = "") { it.title }
+    }
+
+    private fun extractTextFromResultsOld(
+        results: List<Classifier.Recognition>,
+        imageHeight: Float
+    ): String {
+        // FUTURE: Filter by aspect ratio as well?
+        // REVISIT: Anything with confidence 20-50% likely means something is messed up; warn user?
+        val sortByX: java.util.Comparator<in Classifier.Recognition?> =
+            java.util.Comparator<Classifier.Recognition?> { r1, r2 ->
+                Math.signum(r1.location!!.centerX() - r2.location!!.centerX())
+                    .toInt()
+            }
+        val processed: ArrayList<Classifier.Recognition> = ArrayList(results)
+
+        // Filter list of results by:
+        // .. confidence %
+        for (i in processed.indices.reversed()) {
+            val result = processed[i]
+            if (result.confidence < MINIMUM_CONFIDENCE) {
+                processed.removeAt(i)
+            }
+        }
+
+        // .. height of regions must be "on same line"
+        if (processed.size > 1) {
+//            Collections.sort(processed, sortByY);
+//            Classifier.Recognition middleResult = processed.get(processed.size() / 2);
+//            float medianY = middleResult.getLocation().centerY();
+//
+            var yClosestToCentre = 0f
+            var smallestError = 9999f
+            val actualMiddle = imageHeight / 2
+            for (result in processed) {
+                val error: Float = Math.abs(actualMiddle - result.location!!.centerY())
+                if (error < smallestError) {
+                    yClosestToCentre = result.location!!.centerY()
+                    smallestError = error
+                }
+            }
+            val tolerance: Float = imageHeight * FILTER_RESULT_BY_CENTER_PERCENT
+            for (i in processed.indices.reversed()) {
+                val result = processed[i]
+                val centerY: Float = result.location!!.centerY()
+                if (centerY > yClosestToCentre + tolerance || centerY < yClosestToCentre - tolerance) {
+                    processed.removeAt(i)
+                }
+            }
+        }
+
+        // Extract text from all that's left (left to right)
+        Collections.sort(processed, sortByX)
+        var text = ""
+        for (result in processed) {
+            text += result.title
+        }
+        return text
     }
 }
