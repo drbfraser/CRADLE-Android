@@ -74,7 +74,11 @@
             app:popExitAnim="@anim/slide_out_to_right" />
         <action
             android:id="@+id/action_vitalSignsFragment_to_cameraXFragment"
-            app:destination="@id/cameraXFragment" />
+            app:destination="@id/cameraXFragment"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/fade_out" />
     </fragment>
     <fragment
         android:id="@+id/cameraFragment"

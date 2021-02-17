@@ -10,7 +10,7 @@ import com.cradleVSA.neptune.utilitiles.TFImageUtils
 
 class OcrAnalyzer constructor(
     context: Context,
-    private val onAnalysisFinished: (Map<CradleOverlay.OverlayRegion, String>) -> Unit,
+    private val onAnalysisFinished: (OcrResult) -> Unit,
     private val debugBitmapBlock: (Bitmap, Bitmap, Bitmap) -> Unit,
     private val debugPrintBlock: (String) -> Unit,
 ) : ImageAnalysis.Analyzer {

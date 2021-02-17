@@ -20,15 +20,14 @@ class CradleScreenOcrDetector(context: Context) {
     private val classifier: Classifier = TFLiteObjectDetectionHelper(context)
 
     /**
-     * Runs OCR on an image of the entire CRADLE screen. It is expected that the
-     * [imageOfCradleScreen] has no rotation and taken from portrait mode. The returned [Map]
-     * contains a mapping of the row type to the predicted String of the row.
+     * Runs OCR on an image of the entire CRADLE screen and returns the classified result. It is
+     * expected that the [imageOfCradleScreen] has no rotation and taken from portrait mode.
      *
      * For example, if the CRADLE VSA device screen looks like this:
      *      134 (systolic)
      *       86 (diastolic)
      *       67 (heartrate / PUL)
-     * then the best result is that the returned map will be
+     * then the bes0t result is that the returned map will be
      *      OverlayRegion.SYS -> "134"
      *      OverlayRegion.DIA -> "86"
      *      OverlayRegion.HR -> "67"
@@ -36,7 +35,7 @@ class CradleScreenOcrDetector(context: Context) {
     fun getResultsFromImage(
         imageOfCradleScreen: Bitmap,
         debugBitmapBlock: (Bitmap, Bitmap, Bitmap) -> Unit
-    ): Map<CradleOverlay.OverlayRegion, String> {
+    ): OcrResult {
         val sysBitmap = CradleOverlay.extractBitmapRegionFromCameraImage(
             imageOfCradleScreen,
             CradleOverlay.OverlayRegion.SYS
@@ -62,14 +61,19 @@ class CradleScreenOcrDetector(context: Context) {
             val text = extractTextFromResults(recognitions, croppedBitmap.height.toFloat())
             allRecognitions[region] = text
         }
-        return allRecognitions
+        return OcrResult(
+            systolic = allRecognitions[CradleOverlay.OverlayRegion.SYS]!!,
+            diastolic = allRecognitions[CradleOverlay.OverlayRegion.DIA]!!,
+            heartRate = allRecognitions[CradleOverlay.OverlayRegion.HR]!!,
+        )
     }
 
-    private val sortByXComparator: java.util.Comparator<Classifier.Recognition> =
+    private val sortByXComparator: Comparator<Classifier.Recognition> =
         Comparator { r1, r2 -> sign(r1.location!!.centerX() - r2.location!!.centerX()).toInt() }
 
     /**
      * Interprets the OCR recognition results for one row of the CRADLE screen into a String.
+     * The list of [results] contains a digit in each element.
      */
     private fun extractTextFromResults(
         results: List<Classifier.Recognition>,
@@ -105,6 +109,7 @@ class CradleScreenOcrDetector(context: Context) {
         return processed.joinToString(separator = "") { it.title }
     }
 
+    @Suppress("MagicNumber")
     private fun extractTextFromResultsOld(
         results: List<Classifier.Recognition>,
         imageHeight: Float
@@ -162,3 +167,5 @@ class CradleScreenOcrDetector(context: Context) {
         return text
     }
 }
+
+data class OcrResult(val systolic: String, val diastolic: String, val heartRate: String)

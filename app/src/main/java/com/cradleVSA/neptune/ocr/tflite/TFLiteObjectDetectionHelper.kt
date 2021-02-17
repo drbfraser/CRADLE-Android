@@ -9,8 +9,6 @@ import com.cradleVSA.neptune.utilitiles.TFImageUtils
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.nnapi.NnApiDelegate
 import org.tensorflow.lite.support.common.FileUtil
-import org.tensorflow.lite.support.image.ImageProcessor
-import org.tensorflow.lite.support.image.ops.ResizeOp
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -44,27 +42,15 @@ class TFLiteObjectDetectionHelper(context: Context) : Classifier {
 
     private val labels: List<String> = FileUtil.loadLabels(context, LABEL_FILE_NAME)
 
-    private val imageProcessor: ImageProcessor by lazy {
-        ImageProcessor.Builder()
-            .add(
-                ResizeOp(
-                    NN_INPUT_SIZE,
-                    NN_INPUT_SIZE,
-                    ResizeOp.ResizeMethod.BILINEAR
-                )
-            )
-            // .add(NormalizeOp(0f, 1f))
-            .build()
-    }
-
     @Suppress("MagicNumber")
     private fun normalizeRGBData(
         bitmap: Bitmap,
     ): ByteBuffer {
-
         val frameToCropTransform = TFImageUtils.getTransformationMatrix(
-            bitmap.width, bitmap.height,
-            NN_INPUT_SIZE, NN_INPUT_SIZE,
+            bitmap.width,
+            bitmap.height,
+            NN_INPUT_SIZE,
+            NN_INPUT_SIZE,
             0,
             true
         )
@@ -131,8 +117,8 @@ class TFLiteObjectDetectionHelper(context: Context) : Classifier {
         val tfImageBuffer: ByteBuffer = normalizeRGBData(bitmap)
         // This preprocesses the image as a tensor in ByteBuffer form.
         // https://www.tensorflow.org/lite/inference_with_metadata/lite_support
-        //val tfImageBuffer = TensorImage(DataType.UINT8).apply { load(bitmap) }
-        //val tfImage = imageProcessor.process(tfImageBuffer)
+        // val tfImageBuffer = TensorImage(DataType.UINT8).apply { load(bitmap) }
+        // val tfImage = imageProcessor.process(tfImageBuffer)
 
         // Copy the input data into TensorFlow.
         // Array of shape [Batchsize, NUM_DETECTIONS,4]. Contains the location of detected boxes
