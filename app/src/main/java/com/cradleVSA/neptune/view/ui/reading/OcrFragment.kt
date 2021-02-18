@@ -37,6 +37,7 @@ private const val TAG = "OcrFragment"
  *
  * TODO: Look into using androidx.camera.view.PreviewView again but with the 3 views that the
  *  user aligns.
+ * TODO: Add back debug info that shows the score for each digit using BorderedText, etc.
  */
 @AndroidEntryPoint
 class OcrFragment : Fragment() {
