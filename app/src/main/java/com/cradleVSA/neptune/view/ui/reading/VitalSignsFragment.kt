@@ -58,7 +58,7 @@ class VitalSignsFragment : Fragment() {
 
         view.findViewById<Button>(R.id.cradle_vsa_take_photo_button)?.setOnClickListener(
             Navigation.createNavigateOnClickListener(
-                R.id.action_vitalSignsFragment_to_cameraXFragment,
+                R.id.action_vitalSignsFragment_to_ocrFragment,
                 null
             )
         )

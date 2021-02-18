@@ -122,12 +122,12 @@ class ReadingActivity : AppCompatActivity() {
             val nextButton = bottomNavBar?.getViewById(R.id.reading_next_button) as? Button
             if (
                 destination.id == R.id.cameraFragment ||
-                destination.id == R.id.cameraXFragment ||
+                destination.id == R.id.ocrFragment ||
                 destination.id == R.id.adviceFragment
             ) {
                 if (
                     destination.id == R.id.cameraFragment ||
-                    destination.id == R.id.cameraXFragment
+                    destination.id == R.id.ocrFragment
                 ) {
                     supportActionBar?.apply {
                         if (isShowing) {

@@ -20,7 +20,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import com.cradle.neptune.viewmodel.OcrFragmentViewModel
 import com.cradleVSA.neptune.R
-import com.cradleVSA.neptune.databinding.FragmentCameraNewBinding
+import com.cradleVSA.neptune.databinding.FragmentOcrBinding
 import com.cradleVSA.neptune.ocr.OcrAnalyzer
 import com.cradleVSA.neptune.view.ReadingActivity
 import com.cradleVSA.neptune.viewmodel.PatientReadingViewModel
@@ -29,10 +29,17 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
 
-private const val TAG = "CameraXFragment"
+private const val TAG = "OcrFragment"
 
+/**
+ * A Fragment that does OCR on the CRADLE VSA device to extract the readings into Strings of numbers
+ * the app can process.
+ *
+ * TODO: Look into using androidx.camera.view.PreviewView again but with the 3 views that the
+ *  user aligns.
+ */
 @AndroidEntryPoint
-class CameraXFragment : Fragment() {
+class OcrFragment : Fragment() {
     /**
      * ViewModel is scoped to the [ReadingActivity] that this Fragment is attached to; therefore,
      * this is shared by all Fragments.
@@ -44,7 +51,7 @@ class CameraXFragment : Fragment() {
     // TODO: Look into declaring executors for the whole app and use it from there?
     private val analysisExecutor = Executors.newSingleThreadExecutor()
 
-    private var binding: FragmentCameraNewBinding? = null
+    private var binding: FragmentOcrBinding? = null
 
     private var analyzer: OcrAnalyzer? = null
 
@@ -57,7 +64,7 @@ class CameraXFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentCameraNewBinding.inflate(inflater, container, false)
+        binding = FragmentOcrBinding.inflate(inflater, container, false)
         return binding!!.root
     }
 
@@ -67,16 +74,12 @@ class CameraXFragment : Fragment() {
         ocrViewModel.ocrResult.observe(viewLifecycleOwner) {
             binding?.apply {
                 useOcrResultsButton.isEnabled = it != null
-
-                val notAvailable = if (it == null) {
-                    context?.getString(R.string.not_available_n_slash_a) ?: ""
-                } else {
-                    ""
-                }
-
-                systolicOcrTextView.text = it?.systolic ?: notAvailable
-                diastolicOcrTextView.text = it?.diastolic ?: notAvailable
-                heartRateOcrTextView.text = it?.heartRate ?: notAvailable
+                systolicOcrTextView.text = it?.systolic
+                    ?: context?.getString(R.string.not_available_n_slash_a) ?: ""
+                diastolicOcrTextView.text = it?.diastolic
+                    ?: context?.getString(R.string.not_available_n_slash_a) ?: ""
+                heartRateOcrTextView.text = it?.heartRate
+                    ?: context?.getString(R.string.not_available_n_slash_a) ?: ""
             }
         }
 

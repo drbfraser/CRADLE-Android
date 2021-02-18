@@ -514,7 +514,7 @@
     <string name="sync_worker_success">Last sync successful</string>
 
     <string name="ocr_fragment_title">OCR</string>
-    <string name="ocr_fragment_description">Align the CRADLE VSA screen with the corresponding areas and press USE when the readings look correct.</string>
+    <string name="ocr_fragment_description">Align the CRADLE VSA screen with the corresponding areas and press USE when the readings look correct. The last measured blood pressure values can be retrieved by turning the CRADLE VSA off and holding the ON/OFF button until memory appears.</string>
     <string name="ocr_fragment_systolic_ocr_result_sys_s">SYS: %1$s</string>
     <string name="ocr_fragment_systolic_image_content_description">A capture of the systolic reading on the device screen</string>
     <string name="ocr_fragment_diastolic_ocr_result_dia_s">DIA: %1$s</string>

@@ -73,8 +73,8 @@
             app:popEnterAnim="@anim/slide_in_from_left"
             app:popExitAnim="@anim/slide_out_to_right" />
         <action
-            android:id="@+id/action_vitalSignsFragment_to_cameraXFragment"
-            app:destination="@id/cameraXFragment"
+            android:id="@+id/action_vitalSignsFragment_to_ocrFragment"
+            app:destination="@id/ocrFragment"
             app:enterAnim="@anim/fade_in"
             app:exitAnim="@anim/fade_out"
             app:popEnterAnim="@anim/fade_in"
@@ -92,7 +92,7 @@
         android:label="AdviceFragment"
         tools:layout="@layout/fragment_advice"/>
     <fragment
-        android:id="@+id/cameraXFragment"
-        android:name="com.cradleVSA.neptune.view.ui.reading.CameraXFragment"
-        android:label="CameraXFragment" />
+        android:id="@+id/ocrFragment"
+        android:name="com.cradleVSA.neptune.view.ui.reading.OcrFragment"
+        android:label="OcrFragment" />
 </navigation>
