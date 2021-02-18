@@ -1,170 +1,205 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  ~ Copyright 2020 Google LLC
-  ~
-  ~ Licensed under the Apache License, Version 2.0 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~
-  ~     https://www.apache.org/licenses/LICENSE-2.0
-  ~
-  ~ Unless required by applicable law or agreed to in writing, software
-  ~ distributed under the License is distributed on an "AS IS" BASIS,
-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~ See the License for the specific language governing permissions and
-  ~ limitations under the License.
-  -->
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/camera_container"
-    android:background="@android:color/black"
+    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <androidx.camera.view.PreviewView
-        android:id="@+id/previewView"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_alignParentBottom="true"
+        android:fitsSystemWindows="true">
 
-        <TextView
-            android:id="@+id/textView52"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="TextView" />
-    </androidx.camera.view.PreviewView>
+            android:orientation="vertical">
 
-    <!-- Camera control buttons -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="16dp">
 
-    <ImageButton
-        android:id="@+id/camera_capture_button"
-        android:layout_width="92dp"
-        android:layout_height="92dp"
-        android:layout_marginBottom="80dp"
-        android:scaleType="fitCenter"
-        android:background="@drawable/ic_shutter"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:contentDescription="Take picture" />
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/reading_flow_card_margin"
+                    android:paddingBottom="8dp">
 
-    <ImageView
-        android:id="@+id/debugSystolicImageView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ocrPreviewLayout"
-        app:srcCompat="@drawable/arrow_right_with_x" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/ocr_info_title"
+                        style="@style/TextAppearance.Cradle.H2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/ocr_fragment_title"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/debugDiastolicImageView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/debugSystolicImageView"
-        app:srcCompat="@drawable/arrow_right_with_x" />
+                    <TextView
+                        android:id="@+id/textView33"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/ocr_fragment_description"
+                        android:textAppearance="@style/TextAppearance.Cradle.Body1"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/ocr_info_title" />
 
-    <ImageView
-        android:id="@+id/debugHeartRateImageView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
-        android:visibility="visible"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/debugDiastolicImageView"
-        app:srcCompat="@drawable/arrow_right_with_x" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/ocrPreviewLayout"
-        android:layout_width="match_parent"
-        android:layout_height="128dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="32dp"
-        android:background="@drawable/ocr_info_background"
-        android:backgroundTint="#FFFFFF"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="16dp">
 
-        <androidx.constraintlayout.widget.Barrier
-            android:id="@+id/barrier"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:barrierDirection="end"
-            app:constraint_referenced_ids="textView48,textView50,textView51"
-            tools:layout_editor_absoluteX="160dp"
-            tools:layout_editor_absoluteY="10dp" />
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/reading_flow_card_margin"
+                    android:paddingBottom="8dp">
 
-        <TextView
-            android:id="@+id/textView48"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="36dp"
-            android:layout_marginTop="8dp"
-            android:text="Systolic (SYS)"
-            android:textAppearance="@style/TextAppearance.Cradle.Body1"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toTopOf="@+id/textView50"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_chainStyle="spread_inside" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/systolicLabelTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/ocr_fragment_systolic_reading_label"
+                        android:textAppearance="@style/TextAppearance.Cradle.H2"
+                        app:layout_constraintBottom_toBottomOf="@+id/systolicImageView"
+                        app:layout_constraintEnd_toStartOf="@+id/guideline4"
+                        app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/textView50"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Diastolic (DIA)"
-            android:textAppearance="@style/TextAppearance.Cradle.Body1"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toTopOf="@+id/textView51"
-            app:layout_constraintStart_toStartOf="@+id/textView48"
-            app:layout_constraintTop_toBottomOf="@+id/textView48" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/diastolicLabelTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/ocr_fragment_diastolic_reading_label"
+                        android:textAppearance="@style/TextAppearance.Cradle.H2"
+                        app:layout_constraintBottom_toBottomOf="@+id/diastolicImageView"
+                        app:layout_constraintEnd_toStartOf="@+id/guideline4"
+                        app:layout_constraintTop_toTopOf="@+id/diastolicImageView" />
 
-        <TextView
-            android:id="@+id/textView51"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:text="Heart rate (PUL)"
-            android:textAppearance="@style/TextAppearance.Cradle.Body1"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/textView50"
-            app:layout_constraintTop_toBottomOf="@+id/textView50" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/heartRateLabelTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/ocr_fragment_heart_rate_reading_label"
+                        android:textAppearance="@style/TextAppearance.Cradle.H2"
+                        app:layout_constraintBottom_toBottomOf="@+id/heartRateImageView"
+                        app:layout_constraintEnd_toStartOf="@+id/guideline4"
+                        app:layout_constraintTop_toTopOf="@+id/heartRateImageView" />
 
-        <TextView
-            android:id="@+id/systolicOcrResultTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:textAppearance="@style/TextAppearance.Cradle.Body1"
-            app:layout_constraintBaseline_toBaselineOf="@+id/textView48"
-            app:layout_constraintStart_toEndOf="@+id/barrier"
-            tools:text="131" />
+                    <ImageView
+                        android:id="@+id/systolicImageView"
+                        android:layout_width="@dimen/ocr_fragment_camera_width"
+                        android:layout_height="@dimen/ocr_fragment_camera_height"
+                        android:layout_marginTop="16dp"
+                        android:contentDescription="@string/ocr_fragment_systolic_image_content_description"
+                        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/diastolicOcrResultTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:textAppearance="@style/TextAppearance.Cradle.Body1"
-            app:layout_constraintBaseline_toBaselineOf="@+id/textView50"
-            app:layout_constraintStart_toEndOf="@+id/barrier"
-            tools:text="100" />
+                    <ImageView
+                        android:id="@+id/diastolicImageView"
+                        android:layout_width="@dimen/ocr_fragment_camera_width"
+                        android:layout_height="@dimen/ocr_fragment_camera_height"
+                        android:layout_marginTop="24dp"
+                        android:contentDescription="@string/ocr_fragment_diastolic_image_content_description"
+                        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/systolicImageView" />
 
-        <TextView
-            android:id="@+id/heartRateOcrResultTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:textAppearance="@style/TextAppearance.Cradle.Body1"
-            app:layout_constraintBaseline_toBaselineOf="@+id/textView51"
-            app:layout_constraintStart_toEndOf="@+id/barrier"
-            tools:text="100" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+                    <ImageView
+                        android:id="@+id/heartRateImageView"
+                        android:layout_width="@dimen/ocr_fragment_camera_width"
+                        android:layout_height="@dimen/ocr_fragment_camera_height"
+                        android:layout_marginTop="24dp"
+                        android:contentDescription="@string/ocr_fragment_heart_rate_image_content_description"
+                        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/diastolicImageView" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+                    <androidx.constraintlayout.widget.Guideline
+                        android:id="@+id/guideline2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        app:layout_constraintGuide_percent="0.5"
+                        app:layout_constraintStart_toStartOf="parent" />
+
+                    <Button
+                        android:id="@+id/useOcrResultsButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:enabled="false"
+                        android:text="@string/ocr_fragment_use_result_button"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/heartRateImageView" />
+
+                    <androidx.constraintlayout.widget.Guideline
+                        android:id="@+id/guideline4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintGuide_percent="0.65" />
+
+                    <TextView
+                        android:id="@+id/systolicOcrTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:textAppearance="@style/TextAppearance.Cradle.Body1"
+                        android:textSize="18sp"
+                        app:layout_constraintBaseline_toBaselineOf="@+id/systolicLabelTextView"
+                        app:layout_constraintStart_toStartOf="@+id/guideline4"
+                        tools:text="133" />
+
+                    <TextView
+                        android:id="@+id/diastolicOcrTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:textAppearance="@style/TextAppearance.Cradle.Body1"
+                        android:textSize="18sp"
+                        app:layout_constraintBaseline_toBaselineOf="@+id/diastolicLabelTextView"
+                        app:layout_constraintStart_toStartOf="@+id/guideline4"
+                        tools:text="65" />
+
+                    <TextView
+                        android:id="@+id/heartRateOcrTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:textAppearance="@style/TextAppearance.Cradle.Body1"
+                        android:textSize="18sp"
+                        app:layout_constraintBaseline_toBaselineOf="@+id/heartRateLabelTextView"
+                        app:layout_constraintStart_toStartOf="@+id/guideline4"
+                        tools:text="87" />
+
+                    <ProgressBar
+                        android:id="@+id/ocrProgressBar"
+                        style="?android:attr/progressBarStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </ScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

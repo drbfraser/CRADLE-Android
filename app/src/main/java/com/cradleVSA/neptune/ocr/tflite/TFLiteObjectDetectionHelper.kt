@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.RectF
 import android.os.Build
 import android.util.Log
+import androidx.annotation.GuardedBy
 import com.cradleVSA.neptune.utilitiles.TFImageUtils
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.nnapi.NnApiDelegate
@@ -47,6 +48,9 @@ class TFLiteObjectDetectionHelper(context: Context) : Classifier {
             null
         }
 
+    private val interpreterLock = Object()
+
+    @GuardedBy("interpreterLock")
     private var interpreter: Interpreter? =
         if (nnApiDelegate != null) {
             Interpreter(
@@ -165,7 +169,9 @@ class TFLiteObjectDetectionHelper(context: Context) : Classifier {
         )
 
         // Run TFLite, but don't do anything if it's closed
-        interpreter?.runForMultipleInputsOutputs(inputArray, outputMap) ?: return emptyList()
+        synchronized(interpreterLock) {
+            interpreter?.runForMultipleInputsOutputs(inputArray, outputMap) ?: return emptyList()
+        }
 
         // Show the best detections after scaling them back to the input size.
         return (0 until NUM_DETECTIONS).map { i ->
@@ -197,8 +203,10 @@ class TFLiteObjectDetectionHelper(context: Context) : Classifier {
     }
 
     override fun close() {
-        interpreter?.close()
-        interpreter = null
-        nnApiDelegate?.close()
+        synchronized(interpreterLock) {
+            interpreter?.close()
+            interpreter = null
+            nnApiDelegate?.close()
+        }
     }
 }

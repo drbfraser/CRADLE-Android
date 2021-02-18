@@ -8,15 +8,16 @@ import android.view.ViewGroup
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import com.cradle.neptune.viewmodel.OcrFragmentViewModel
+import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.databinding.FragmentCameraNewBinding
 import com.cradleVSA.neptune.ocr.OcrAnalyzer
 import com.cradleVSA.neptune.view.ReadingActivity
@@ -60,12 +61,18 @@ class CameraXFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         ocrViewModel.ocrResult.observe(viewLifecycleOwner) {
-            it ?: return@observe
-
             binding?.apply {
-                systolicOcrResultTextView.text = it.systolic
-                diastolicOcrResultTextView.text = it.diastolic
-                heartRateOcrResultTextView.text = it.heartRate
+                useOcrResultsButton.isEnabled = it != null
+
+                val notAvailable = if (it == null) {
+                    context?.getString(R.string.not_available_n_slash_a) ?: ""
+                } else {
+                    ""
+                }
+
+                systolicOcrTextView.text = it?.systolic ?: notAvailable
+                diastolicOcrTextView.text = it?.diastolic ?: notAvailable
+                heartRateOcrTextView.text = it?.heartRate ?: notAvailable
             }
         }
 
@@ -76,7 +83,7 @@ class CameraXFragment : Fragment() {
             bloodPressure.observe(viewLifecycleOwner) {}
         }
 
-        binding?.cameraCaptureButton?.setOnClickListener {
+        binding?.useOcrResultsButton?.setOnClickListener {
             val currentOcrResult = ocrViewModel.ocrResult.value ?: return@setOnClickListener
             findNavController().popBackStack()
             viewModel.apply {
@@ -116,12 +123,13 @@ class CameraXFragment : Fragment() {
         analyzer = OcrAnalyzer(
             requireContext(),
             { ocrResult -> ocrViewModel.ocrResult.postValue(ocrResult) },
-            { bitmap1, bitmap2, bitmap3 ->
+            { systolicBitmap, diastolicBitmap, heartrateBitmap ->
                 activity?.runOnUiThread {
                     binding?.apply {
-                        debugSystolicImageView.setImageBitmap(bitmap1)
-                        debugDiastolicImageView.setImageBitmap(bitmap2)
-                        debugHeartRateImageView.setImageBitmap(bitmap3)
+                        ocrProgressBar.isVisible = false
+                        systolicImageView.setImageBitmap(systolicBitmap)
+                        diastolicImageView.setImageBitmap(diastolicBitmap)
+                        heartRateImageView.setImageBitmap(heartrateBitmap)
                     }
                 }
             }
@@ -133,11 +141,9 @@ class CameraXFragment : Fragment() {
                 val cameraSelector = CameraSelector.Builder()
                     .requireLensFacing(CameraSelector.LENS_FACING_BACK)
                     .build()
-                val preview = Preview.Builder().build()
-                    .apply { setSurfaceProvider(binding?.previewView?.surfaceProvider) }
 
                 val imageAnalysis = analyzer?.let {
-                     ImageAnalysis.Builder()
+                    ImageAnalysis.Builder()
                         .setTargetRotation(Surface.ROTATION_0)
                         .setTargetAspectRatio(AspectRatio.RATIO_4_3)
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -148,9 +154,9 @@ class CameraXFragment : Fragment() {
                 cameraProvider?.apply {
                     unbindAll()
                     if (imageAnalysis != null) {
-                        bindToLifecycle(viewLifecycleOwner, cameraSelector, imageAnalysis, preview)
+                        bindToLifecycle(viewLifecycleOwner, cameraSelector, imageAnalysis)
                     } else {
-                        bindToLifecycle(viewLifecycleOwner, cameraSelector, preview)
+                        bindToLifecycle(viewLifecycleOwner, cameraSelector)
                     }
                 }
             },

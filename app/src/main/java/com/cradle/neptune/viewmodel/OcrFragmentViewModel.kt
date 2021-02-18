@@ -5,5 +5,5 @@ import androidx.lifecycle.ViewModel
 import com.cradleVSA.neptune.ocr.OcrResult
 
 class OcrFragmentViewModel : ViewModel() {
-    val ocrResult = MutableLiveData<OcrResult>()
+    val ocrResult = MutableLiveData<OcrResult?>(null)
 }
