@@ -16,6 +16,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import com.cradleVSA.neptune.R
@@ -30,6 +31,7 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
 
 private const val TAG = "OcrFragment"
+private const val CONFIRMATION_DELAY_MILLIS = 1500L
 
 /**
  * A Fragment that does OCR on the CRADLE VSA device to extract the readings into Strings of numbers
@@ -47,6 +49,7 @@ class OcrFragment : Fragment() {
      */
     private val viewModel: PatientReadingViewModel by activityViewModels()
 
+    /** A ViewModel for OCR-specific info / state **/
     private val ocrViewModel: OcrFragmentViewModel by viewModels()
 
     // TODO: Look into declaring executors for the whole app and use it from there?
@@ -71,6 +74,7 @@ class OcrFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        toggleConfirmationState(false)
 
         ocrViewModel.ocrResult.observe(viewLifecycleOwner) {
             binding?.apply {
@@ -93,6 +97,14 @@ class OcrFragment : Fragment() {
 
         binding?.apply {
             useOcrResultsButton.setOnClickListener {
+                toggleConfirmationState(true)
+            }
+
+            noButton.setOnClickListener {
+                toggleConfirmationState(false)
+            }
+
+            yesResultsCorrectButton.setOnClickListener {
                 val currentOcrResult = ocrViewModel.ocrResult.value ?: return@setOnClickListener
                 findNavController().popBackStack()
                 viewModel.apply {
@@ -112,10 +124,72 @@ class OcrFragment : Fragment() {
             flashlightButton.setOnClickListener {
                 camera?.apply {
                     if (!cameraInfo.hasFlashUnit()) return@setOnClickListener
-                    cameraControl.enableTorch(cameraInfo.torchState.value != TorchState.ON)
+                    val enableTorch = cameraInfo.torchState.value != TorchState.ON
+                    cameraControl.enableTorch(enableTorch)
+                    ocrViewModel.useFlashlight.value = enableTorch
                 }
             }
         }
+    }
+
+    /**
+     * Toggles between showing the use button and the yes and no confirmation buttons.
+     * Function handles releasing the camera and stopping the analysis if [isConfirming] is true,
+     * and reinitializing the camera if [isConfirming] false.
+     */
+    private fun toggleConfirmationState(isConfirming: Boolean) {
+        binding?.apply {
+            if (isConfirming) {
+                stopCameraAndAnalysis()
+
+                flashlightButton.isEnabled = false
+                // Show the yes and no buttons; enable them after a delay.
+                useOcrResultsButton.apply {
+                    isVisible = false
+                    isEnabled = false
+                }
+                confirmationTextView.isVisible = true
+                yesResultsCorrectButton.apply {
+                    isEnabled = false
+                    isVisible = true
+                }
+                noButton.apply {
+                    isEnabled = false
+                    isVisible = true
+                }
+                lifecycleScope.launch {
+                    delay(CONFIRMATION_DELAY_MILLIS)
+                    yesResultsCorrectButton.isEnabled = true
+                    noButton.isEnabled = true
+                }
+            } else {
+                // Clear out the previous result
+                ocrViewModel.ocrResult.value = null
+
+                flashlightButton.isEnabled = true
+                useOcrResultsButton.isVisible = true
+                confirmationTextView.isVisible = false
+                yesResultsCorrectButton.apply {
+                    isEnabled = false
+                    isVisible = false
+                }
+                noButton.apply {
+                    isEnabled = false
+                    isVisible = false
+                }
+
+                initCamera()
+            }
+        }
+    }
+
+    private fun stopCameraAndAnalysis() {
+        analyzer?.doAnalysis = false
+        analyzer?.close()
+        analyzer = null
+        cameraProvider?.unbindAll()
+        cameraProvider = null
+        camera = null
     }
 
     override fun onDestroyView() {
@@ -125,8 +199,7 @@ class OcrFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
-        cameraProvider?.unbindAll()
-        analyzer?.close()
+        stopCameraAndAnalysis()
     }
 
     override fun onResume() {
@@ -135,10 +208,12 @@ class OcrFragment : Fragment() {
     }
 
     private fun initCamera() {
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
+        val thisContext = context ?: return
+
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(thisContext)
 
         analyzer = OcrAnalyzer(
-            requireContext(),
+            thisContext,
             { ocrResult -> ocrViewModel.ocrResult.postValue(ocrResult) },
             { systolicBitmap, diastolicBitmap, heartrateBitmap ->
                 activity?.runOnUiThread {
@@ -178,9 +253,12 @@ class OcrFragment : Fragment() {
                 }.also {
                     it ?: return@also
                     binding?.flashlightButton?.isEnabled = it.cameraInfo.hasFlashUnit()
+                    if (ocrViewModel.useFlashlight.value == true) {
+                        it.cameraControl.enableTorch(true)
+                    }
                 }
             },
-            ContextCompat.getMainExecutor(requireContext())
+            ContextCompat.getMainExecutor(thisContext)
         )
     }
 }

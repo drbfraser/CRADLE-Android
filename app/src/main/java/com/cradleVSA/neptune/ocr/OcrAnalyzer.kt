@@ -11,7 +11,6 @@ import java.io.Closeable
 
 /**
  * For use with the CameraX API to analyze images for OCR extraction of CRADLE device VSA readings.
- *
  */
 class OcrAnalyzer constructor(
     someContext: Context,
@@ -24,14 +23,23 @@ class OcrAnalyzer constructor(
 
     private var previousOcrResult: OcrResult? = null
 
+    /**
+     * Whether to run analysis or not.
+     */
+    var doAnalysis: Boolean = true
+
     override fun analyze(image: ImageProxy) {
+        if (!doAnalysis) return
+
         image.use { imageProxy ->
             // ImageAnalysis uses YUV_420_888 format
             val rgbBytes = convertYUVPlanesToARGB8888(imageProxy)
             val readyImage = createNonRotatedImage(imageProxy, rgbBytes)
 
             cradleOcrDetector.getResultsFromImage(readyImage, submitSysDiaPulImagesBlock)?.let {
-                onAnalysisFinished(it)
+                if (doAnalysis) {
+                    onAnalysisFinished(it)
+                }
             }
         }
     }

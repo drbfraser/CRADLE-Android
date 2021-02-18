@@ -58,7 +58,6 @@ class TFLiteObjectDetectionHelper(context: Context) : Classifier {
             }
         )
 
-
     private val labels: List<String> = FileUtil.loadLabels(context, LABEL_FILE_NAME)
 
     /**
