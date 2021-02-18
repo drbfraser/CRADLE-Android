@@ -18,11 +18,11 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
-import com.cradle.neptune.viewmodel.OcrFragmentViewModel
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.databinding.FragmentOcrBinding
 import com.cradleVSA.neptune.ocr.OcrAnalyzer
 import com.cradleVSA.neptune.view.ReadingActivity
+import com.cradleVSA.neptune.viewmodel.OcrFragmentViewModel
 import com.cradleVSA.neptune.viewmodel.PatientReadingViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay

@@ -7,7 +7,6 @@ import com.cradleVSA.neptune.ocr.tflite.Classifier
 import com.cradleVSA.neptune.ocr.tflite.TFLiteObjectDetectionHelper
 import java.io.Closeable
 import java.util.ArrayList
-import java.util.Collections
 import kotlin.math.abs
 import kotlin.math.sign
 
@@ -23,6 +22,9 @@ class CradleScreenOcrDetector(ctx: Context) : Closeable {
 
     private val classifier: Classifier = TFLiteObjectDetectionHelper(context)
 
+    /**
+     * Stores the previous [OcrResult]. This must be full of valid values.
+     */
     private var previousOcrResult: OcrResult? = null
 
     /**
@@ -36,11 +38,11 @@ class CradleScreenOcrDetector(ctx: Context) : Closeable {
      * then the best result will be OcrResult(134, 86, 67).
      *
      * This can return null if none of the readings are valid. The [OcrResult]s returned by this
-     * function have their values validated using [BloodPressure.isValueValid]
+     * function have their values validated using [BloodPressure.isValueValid].
      */
     fun getResultsFromImage(
         imageOfCradleScreen: Bitmap,
-        debugBitmapBlock: (Bitmap, Bitmap, Bitmap) -> Unit
+        outputBitmapBlock: ((Bitmap, Bitmap, Bitmap) -> Unit)?
     ): OcrResult? {
         val sysBitmap = CradleOverlay.extractBitmapRegionFromCameraImage(
             imageOfCradleScreen,
@@ -54,7 +56,8 @@ class CradleScreenOcrDetector(ctx: Context) : Closeable {
             imageOfCradleScreen,
             CradleOverlay.OverlayRegion.HR
         )
-        debugBitmapBlock(sysBitmap, diaBitmap, heartRateBitmap)
+        // Submit bitmaps to UI if needed.
+        outputBitmapBlock?.invoke(sysBitmap, diaBitmap, heartRateBitmap)
 
         val bitmaps = mapOf(
             CradleOverlay.OverlayRegion.SYS to sysBitmap,
@@ -106,7 +109,8 @@ class CradleScreenOcrDetector(ctx: Context) : Closeable {
                 ?: error("not possible")
             val tolerance = imageHeight * FILTER_RESULT_BY_CENTER_PERCENT
 
-            // Filter only those that are within the tolerance of the smallest error
+            // Filter only those that are within the tolerance of the digit that's closest
+            // to the centre
             processed.filter {
                 val centerY = it.location!!.centerY()
                 yClosestToCentre - tolerance <= centerY && centerY <= yClosestToCentre + tolerance
@@ -114,13 +118,15 @@ class CradleScreenOcrDetector(ctx: Context) : Closeable {
         }
 
         // Extract text from all that's left (left to right)
+        // Present the digits in a natural format by sorting them by the x-coordinate first.
         processed.sortWith(sortByXComparator)
         return processed.joinToString(separator = "") { it.title }
     }
 
     /**
      * Validates the [newOcrResult] and only returns an OcrResult with valid results. For any
-     * fields that are invalid, it will use the previous field value for the [OcrResult].
+     * fields that are invalid, it will use the [previousOcrResult].
+     * Returns null if there are no previous valid results and [newOcrResult] is invalid.
      */
     private fun getValidOcrResult(newOcrResult: OcrResult): OcrResult? {
         val isNewSystolicValid = BloodPressure.isValueValid(
@@ -155,64 +161,6 @@ class CradleScreenOcrDetector(ctx: Context) : Closeable {
                 if (isNewHeartRateValid) newOcrResult.heartRate else lastOcrResult.heartRate,
             )
         }
-    }
-
-    @Suppress("MagicNumber")
-    private fun extractTextFromResultsOld(
-        results: List<Classifier.Recognition>,
-        imageHeight: Float
-    ): String {
-        // FUTURE: Filter by aspect ratio as well?
-        // REVISIT: Anything with confidence 20-50% likely means something is messed up; warn user?
-        val sortByX: java.util.Comparator<in Classifier.Recognition?> =
-            java.util.Comparator<Classifier.Recognition?> { r1, r2 ->
-                Math.signum(r1.location!!.centerX() - r2.location!!.centerX())
-                    .toInt()
-            }
-        val processed: ArrayList<Classifier.Recognition> = ArrayList(results)
-
-        // Filter list of results by:
-        // .. confidence %
-        for (i in processed.indices.reversed()) {
-            val result = processed[i]
-            if (result.confidence < MINIMUM_CONFIDENCE) {
-                processed.removeAt(i)
-            }
-        }
-
-        // .. height of regions must be "on same line"
-        if (processed.size > 1) {
-//            Collections.sort(processed, sortByY);
-//            Classifier.Recognition middleResult = processed.get(processed.size() / 2);
-//            float medianY = middleResult.getLocation().centerY();
-//
-            var yClosestToCentre = 0f
-            var smallestError = 9999f
-            val actualMiddle = imageHeight / 2
-            for (result in processed) {
-                val error: Float = Math.abs(actualMiddle - result.location!!.centerY())
-                if (error < smallestError) {
-                    yClosestToCentre = result.location!!.centerY()
-                    smallestError = error
-                }
-            }
-            val tolerance: Float = imageHeight * FILTER_RESULT_BY_CENTER_PERCENT
-            for (i in processed.indices.reversed()) {
-                val result = processed[i]
-                val centerY: Float = result.location!!.centerY()
-                if (centerY > yClosestToCentre + tolerance || centerY < yClosestToCentre - tolerance) {
-                    processed.removeAt(i)
-                }
-            }
-        }
-
-        // Extract text from all that's left (left to right)
-        Collections.sort(processed, sortByX)
-        var text = ""
-        for (result in processed) {
-            text += result.title
-        }
-        return text
     }
 
     override fun close() {

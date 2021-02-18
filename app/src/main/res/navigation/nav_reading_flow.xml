@@ -61,10 +61,10 @@
         <action
             android:id="@+id/action_vitalSignsFragment_to_cameraFragment"
             app:destination="@id/cameraFragment"
-            app:enterAnim="@anim/fragment_fade_enter"
-            app:exitAnim="@anim/fragment_fade_exit"
-            app:popEnterAnim="@anim/fragment_close_enter"
-            app:popExitAnim="@anim/fragment_close_exit" />
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/fade_out" />
         <action
             android:id="@+id/action_vitalSignsFragment_to_adviceFragment"
             app:destination="@id/adviceFragment"

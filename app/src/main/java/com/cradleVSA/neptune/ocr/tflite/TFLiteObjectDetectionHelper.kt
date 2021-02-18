@@ -5,7 +5,6 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.RectF
 import android.os.Build
-import android.util.Log
 import androidx.annotation.GuardedBy
 import com.cradleVSA.neptune.utilitiles.TFImageUtils
 import org.tensorflow.lite.Interpreter
@@ -52,17 +51,13 @@ class TFLiteObjectDetectionHelper(context: Context) : Classifier {
 
     @GuardedBy("interpreterLock")
     private var interpreter: Interpreter? =
-        if (nnApiDelegate != null) {
-            Interpreter(
-                FileUtil.loadMappedFile(context, MODEL_FILENAME),
-                Interpreter.Options().addDelegate(nnApiDelegate)
-            )
-        } else {
-            Interpreter(
-                FileUtil.loadMappedFile(context, MODEL_FILENAME),
-                Interpreter.Options()
-            )
-        }
+        Interpreter(
+            FileUtil.loadMappedFile(context, MODEL_FILENAME),
+            Interpreter.Options().apply {
+                nnApiDelegate?.let { addDelegate(it) }
+            }
+        )
+
 
     private val labels: List<String> = FileUtil.loadLabels(context, LABEL_FILE_NAME)
 
@@ -88,13 +83,7 @@ class TFLiteObjectDetectionHelper(context: Context) : Classifier {
             NN_INPUT_SIZE,
             Bitmap.Config.ARGB_8888
         )
-        val canvas = Canvas(resizedImage)
-        canvas.drawBitmap(bitmap, frameToCropTransform, null)
-
-        Log.d(
-            TAG,
-            "Resized image has dimensions (wxh) ${resizedImage.width} x ${resizedImage.height}"
-        )
+        Canvas(resizedImage).drawBitmap(bitmap, frameToCropTransform, null)
 
         val imageData = IntArray(NN_INPUT_SIZE * NN_INPUT_SIZE).also {
             resizedImage.getPixels(
@@ -143,10 +132,6 @@ class TFLiteObjectDetectionHelper(context: Context) : Classifier {
     @Suppress("MagicNumber")
     override fun recognizeImage(bitmap: Bitmap): List<Classifier.Recognition> {
         val tfImageBuffer: ByteBuffer = createTensorFromImage(bitmap)
-        // This preprocesses the image as a tensor in ByteBuffer form.
-        // https://www.tensorflow.org/lite/inference_with_metadata/lite_support
-        // val tfImageBuffer = TensorImage(DataType.UINT8).apply { load(bitmap) }
-        // val tfImage = imageProcessor.process(tfImageBuffer)
 
         // Copy the input data into TensorFlow.
         // Array of shape [Batchsize, NUM_DETECTIONS,4]. Contains the location of detected boxes

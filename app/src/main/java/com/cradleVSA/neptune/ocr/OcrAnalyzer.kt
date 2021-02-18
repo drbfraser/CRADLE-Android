@@ -9,10 +9,14 @@ import androidx.camera.core.ImageProxy
 import com.cradleVSA.neptune.utilitiles.TFImageUtils
 import java.io.Closeable
 
+/**
+ * For use with the CameraX API to analyze images for OCR extraction of CRADLE device VSA readings.
+ *
+ */
 class OcrAnalyzer constructor(
     someContext: Context,
     private val onAnalysisFinished: (OcrResult) -> Unit,
-    private val debugBitmapBlock: (Bitmap, Bitmap, Bitmap) -> Unit,
+    private val submitSysDiaPulImagesBlock: (Bitmap, Bitmap, Bitmap) -> Unit,
 ) : ImageAnalysis.Analyzer, Closeable {
     private val context = someContext.applicationContext
 
@@ -26,7 +30,7 @@ class OcrAnalyzer constructor(
             val rgbBytes = convertYUVPlanesToARGB8888(imageProxy)
             val readyImage = createNonRotatedImage(imageProxy, rgbBytes)
 
-            cradleOcrDetector.getResultsFromImage(readyImage, debugBitmapBlock)?.let {
+            cradleOcrDetector.getResultsFromImage(readyImage, submitSysDiaPulImagesBlock)?.let {
                 onAnalysisFinished(it)
             }
         }
@@ -73,11 +77,11 @@ class OcrAnalyzer constructor(
         )
     }
 
+    @Suppress("MagicNumber")
     private fun convertYUVPlanesToARGB8888(
         image: ImageProxy
     ): IntArray {
         val planes = image.planes
-        @Suppress("MagicNumber")
         val yuvBytes = arrayOfNulls<ByteArray>(3)
         fillBytes(planes, yuvBytes)
         val yRowStride = planes[0].rowStride

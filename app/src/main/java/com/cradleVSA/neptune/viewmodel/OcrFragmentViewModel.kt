@@ -1,4 +1,4 @@
-package com.cradle.neptune.viewmodel
+package com.cradleVSA.neptune.viewmodel
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
