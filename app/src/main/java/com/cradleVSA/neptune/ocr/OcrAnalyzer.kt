@@ -6,7 +6,6 @@ import android.graphics.Matrix
 import android.view.Surface
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
-import com.cradleVSA.neptune.model.BloodPressure
 import com.cradleVSA.neptune.utilitiles.TFImageUtils
 import java.io.Closeable
 
@@ -27,49 +26,9 @@ class OcrAnalyzer constructor(
             val rgbBytes = convertYUVPlanesToARGB8888(imageProxy)
             val readyImage = createNonRotatedImage(imageProxy, rgbBytes)
 
-            getValidOcrResult(
-                cradleOcrDetector.getResultsFromImage(readyImage, debugBitmapBlock)
-            )?.let {
+            cradleOcrDetector.getResultsFromImage(readyImage, debugBitmapBlock)?.let {
                 onAnalysisFinished(it)
-                previousOcrResult = it
             }
-        }
-    }
-
-    /**
-     * Validates the [newOcrResult] and only returns an OcrResult with valid results. For any
-     * fields that are invalid, it will use the previous field value for the [OcrResult].
-     */
-    private fun getValidOcrResult(newOcrResult: OcrResult): OcrResult? {
-        val isNewSystolicValid = BloodPressure.isValueValid(
-            BloodPressure::systolic,
-            newOcrResult.systolic.toIntOrNull(),
-            context
-        ).first
-        val isNewDiastolicValid = BloodPressure.isValueValid(
-            BloodPressure::diastolic,
-            newOcrResult.diastolic.toIntOrNull(),
-            context
-        ).first
-        val isNewHeartRateValid = BloodPressure.isValueValid(
-            BloodPressure::heartRate,
-            newOcrResult.heartRate.toIntOrNull(),
-            context
-        ).first
-
-        val lastOcrResult = previousOcrResult
-        return if (lastOcrResult == null) {
-            if (isNewSystolicValid && isNewDiastolicValid && isNewHeartRateValid) {
-                newOcrResult
-            } else {
-                null
-            }
-        } else {
-            OcrResult(
-                if (isNewSystolicValid) newOcrResult.systolic else lastOcrResult.systolic,
-                if (isNewDiastolicValid) newOcrResult.diastolic else lastOcrResult.diastolic,
-                if (isNewHeartRateValid) newOcrResult.heartRate else lastOcrResult.heartRate,
-            )
         }
     }
 

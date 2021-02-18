@@ -2,6 +2,7 @@ package com.cradleVSA.neptune.ocr
 
 import android.content.Context
 import android.graphics.Bitmap
+import com.cradleVSA.neptune.model.BloodPressure
 import com.cradleVSA.neptune.ocr.tflite.Classifier
 import com.cradleVSA.neptune.ocr.tflite.TFLiteObjectDetectionHelper
 import java.io.Closeable
@@ -17,8 +18,12 @@ private const val FILTER_RESULT_BY_CENTER_PERCENT = 0.15f
 /**
  * Handles getting digits from running OCR on a picture of the CRADLE screen.
  */
-class CradleScreenOcrDetector(context: Context) : Closeable {
+class CradleScreenOcrDetector(ctx: Context) : Closeable {
+    private val context = ctx.applicationContext
+
     private val classifier: Classifier = TFLiteObjectDetectionHelper(context)
+
+    private var previousOcrResult: OcrResult? = null
 
     /**
      * Runs OCR on an image of the entire CRADLE screen and returns the classified result. It is
@@ -28,15 +33,15 @@ class CradleScreenOcrDetector(context: Context) : Closeable {
      *      134 (systolic)
      *       86 (diastolic)
      *       67 (heartrate / PUL)
-     * then the bes0t result is that the returned map will be
-     *      OverlayRegion.SYS -> "134"
-     *      OverlayRegion.DIA -> "86"
-     *      OverlayRegion.HR -> "67"
+     * then the best result will be OcrResult(134, 86, 67).
+     *
+     * This can return null if none of the readings are valid. The [OcrResult]s returned by this
+     * function have their values validated using [BloodPressure.isValueValid]
      */
     fun getResultsFromImage(
         imageOfCradleScreen: Bitmap,
         debugBitmapBlock: (Bitmap, Bitmap, Bitmap) -> Unit
-    ): OcrResult {
+    ): OcrResult? {
         val sysBitmap = CradleOverlay.extractBitmapRegionFromCameraImage(
             imageOfCradleScreen,
             CradleOverlay.OverlayRegion.SYS
@@ -62,11 +67,14 @@ class CradleScreenOcrDetector(context: Context) : Closeable {
             val text = extractTextFromResults(recognitions, croppedBitmap.height.toFloat())
             allRecognitions[region] = text
         }
-        return OcrResult(
+        val newOcrResult = OcrResult(
             systolic = allRecognitions[CradleOverlay.OverlayRegion.SYS]!!,
             diastolic = allRecognitions[CradleOverlay.OverlayRegion.DIA]!!,
             heartRate = allRecognitions[CradleOverlay.OverlayRegion.HR]!!,
         )
+
+        return getValidOcrResult(newOcrResult)
+            ?.also { previousOcrResult = it }
     }
 
     private val sortByXComparator: Comparator<Classifier.Recognition> =
@@ -108,6 +116,45 @@ class CradleScreenOcrDetector(context: Context) : Closeable {
         // Extract text from all that's left (left to right)
         processed.sortWith(sortByXComparator)
         return processed.joinToString(separator = "") { it.title }
+    }
+
+    /**
+     * Validates the [newOcrResult] and only returns an OcrResult with valid results. For any
+     * fields that are invalid, it will use the previous field value for the [OcrResult].
+     */
+    private fun getValidOcrResult(newOcrResult: OcrResult): OcrResult? {
+        val isNewSystolicValid = BloodPressure.isValueValid(
+            BloodPressure::systolic,
+            newOcrResult.systolic.toIntOrNull(),
+            context
+        ).first
+        val isNewDiastolicValid = BloodPressure.isValueValid(
+            BloodPressure::diastolic,
+            newOcrResult.diastolic.toIntOrNull(),
+            context
+        ).first
+        val isNewHeartRateValid = BloodPressure.isValueValid(
+            BloodPressure::heartRate,
+            newOcrResult.heartRate.toIntOrNull(),
+            context
+        ).first
+
+        val lastOcrResult = previousOcrResult
+        return if (lastOcrResult == null) {
+            // For the first OCR result, only return a non-null result if all the values are valid.
+            if (isNewSystolicValid && isNewDiastolicValid && isNewHeartRateValid) {
+                newOcrResult
+            } else {
+                null
+            }
+        } else {
+            // Only return valid values. Use the previous value if not valid.
+            OcrResult(
+                if (isNewSystolicValid) newOcrResult.systolic else lastOcrResult.systolic,
+                if (isNewDiastolicValid) newOcrResult.diastolic else lastOcrResult.diastolic,
+                if (isNewHeartRateValid) newOcrResult.heartRate else lastOcrResult.heartRate,
+            )
+        }
     }
 
     @Suppress("MagicNumber")
