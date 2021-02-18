@@ -6,8 +6,10 @@ import android.view.Surface
 import android.view.View
 import android.view.ViewGroup
 import androidx.camera.core.AspectRatio
+import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.TorchState
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
@@ -48,6 +50,8 @@ class CameraXFragment : Fragment() {
 
     private var cameraProvider: ProcessCameraProvider? = null
 
+    private var camera: Camera? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -83,19 +87,28 @@ class CameraXFragment : Fragment() {
             bloodPressure.observe(viewLifecycleOwner) {}
         }
 
-        binding?.useOcrResultsButton?.setOnClickListener {
-            val currentOcrResult = ocrViewModel.ocrResult.value ?: return@setOnClickListener
-            findNavController().popBackStack()
-            viewModel.apply {
-                viewModelScope.launch {
-                    // FIXME: Timing issues. If we don't delay, something from the
-                    //  VitalSignsFragment will ignore these new inputs.
-                    @Suppress("MagicNumber")
-                    delay(250L)
+        binding?.apply {
+            useOcrResultsButton.setOnClickListener {
+                val currentOcrResult = ocrViewModel.ocrResult.value ?: return@setOnClickListener
+                findNavController().popBackStack()
+                viewModel.apply {
+                    viewModelScope.launch {
+                        // FIXME: Timing issues. If we don't delay, something from the
+                        //  VitalSignsFragment will ignore these new inputs.
+                        @Suppress("MagicNumber")
+                        delay(250L)
 
-                    bloodPressureSystolicInput.value = currentOcrResult.systolic.toIntOrNull()
-                    bloodPressureDiastolicInput.value = currentOcrResult.diastolic.toIntOrNull()
-                    bloodPressureHeartRateInput.value = currentOcrResult.heartRate.toIntOrNull()
+                        bloodPressureSystolicInput.value = currentOcrResult.systolic.toIntOrNull()
+                        bloodPressureDiastolicInput.value = currentOcrResult.diastolic.toIntOrNull()
+                        bloodPressureHeartRateInput.value = currentOcrResult.heartRate.toIntOrNull()
+                    }
+                }
+            }
+
+            flashlightButton.setOnClickListener {
+                camera?.apply {
+                    if (!cameraInfo.hasFlashUnit()) return@setOnClickListener
+                    cameraControl.enableTorch(cameraInfo.torchState.value != TorchState.ON)
                 }
             }
         }
@@ -151,13 +164,16 @@ class CameraXFragment : Fragment() {
                         .apply { setAnalyzer(analysisExecutor, it) }
                 }
 
-                cameraProvider?.apply {
+                camera = cameraProvider?.run {
                     unbindAll()
                     if (imageAnalysis != null) {
                         bindToLifecycle(viewLifecycleOwner, cameraSelector, imageAnalysis)
                     } else {
                         bindToLifecycle(viewLifecycleOwner, cameraSelector)
                     }
+                }.also {
+                    it ?: return@also
+                    binding?.flashlightButton?.isEnabled = it.cameraInfo.hasFlashUnit()
                 }
             },
             ContextCompat.getMainExecutor(requireContext())
