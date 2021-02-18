@@ -63,6 +63,9 @@ class OcrFragment : Fragment() {
 
     private var camera: Camera? = null
 
+    private val isConfirming: Boolean
+        get() = binding?.useOcrResultsButton?.isEnabled == false
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -204,7 +207,9 @@ class OcrFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        initCamera()
+        if (!isConfirming) {
+            initCamera()
+        }
     }
 
     private fun initCamera() {
