@@ -78,15 +78,22 @@ class PatientsActivity : AppCompatActivity() {
         // Pad the bottom of the recyclerView based on the height of the floating button (MOB-123)
         val searchButtonObserver = globalSearchButton.viewTreeObserver
         if (searchButtonObserver.isAlive) {
-            searchButtonObserver.addOnGlobalLayoutListener(object: ViewTreeObserver.OnGlobalLayoutListener {
-                override fun onGlobalLayout() {
-                    patientRecyclerview.setPadding(patientRecyclerview.paddingLeft, patientRecyclerview.paddingTop, patientRecyclerview.paddingRight, globalSearchButton.height * 2)
-                    val removeObserver = globalSearchButton.viewTreeObserver
-                    if (removeObserver.isAlive) {
-                        removeObserver.removeOnGlobalLayoutListener(this)
+            searchButtonObserver.addOnGlobalLayoutListener(
+                object : ViewTreeObserver.OnGlobalLayoutListener {
+                    override fun onGlobalLayout() {
+                        patientRecyclerview.setPadding(
+                            patientRecyclerview.paddingLeft,
+                            patientRecyclerview.paddingTop,
+                            patientRecyclerview.paddingRight,
+                            globalSearchButton.height * 2
+                        )
+                        val removeObserver = globalSearchButton.viewTreeObserver
+                        if (removeObserver.isAlive) {
+                            removeObserver.removeOnGlobalLayoutListener(this)
+                        }
                     }
                 }
-            })
+            )
         }
 
         val emptyMessage = findViewById<TextView>(R.id.emptyView)
