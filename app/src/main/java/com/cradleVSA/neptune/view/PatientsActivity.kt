@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.ViewTreeObserver
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -69,6 +70,32 @@ class PatientsActivity : AppCompatActivity() {
             )
             this.adapter = localSearchPatientAdapter
         }
+
+        setupGlobalPatientSearchButton()
+        val globalSearchButton =
+            findViewById<ExtendedFloatingActionButton>(R.id.globalPatientSearch)
+
+        // Pad the bottom of the recyclerView based on the height of the floating button (MOB-123)
+        val searchButtonObserver = globalSearchButton.viewTreeObserver
+        if (searchButtonObserver.isAlive) {
+            searchButtonObserver.addOnGlobalLayoutListener(
+                object : ViewTreeObserver.OnGlobalLayoutListener {
+                    override fun onGlobalLayout() {
+                        patientRecyclerview.setPadding(
+                            patientRecyclerview.paddingLeft,
+                            patientRecyclerview.paddingTop,
+                            patientRecyclerview.paddingRight,
+                            globalSearchButton.height * 2
+                        )
+                        val removeObserver = globalSearchButton.viewTreeObserver
+                        if (removeObserver.isAlive) {
+                            removeObserver.removeOnGlobalLayoutListener(this)
+                        }
+                    }
+                }
+            )
+        }
+
         val emptyMessage = findViewById<TextView>(R.id.emptyView)
         val progressBar = findViewById<ProgressBar>(R.id.patients_list_progress_bar)
         val retryButton = findViewById<Button>(R.id.retry_button)
@@ -117,8 +144,6 @@ class PatientsActivity : AppCompatActivity() {
             setDisplayHomeAsUpEnabled(true)
             title = getString(R.string.activity_patients_title)
         }
-
-        setupGlobalPatientSearchButton()
 
         onBackPressedDispatcher.addCallback(this, closeSearchViewCallback)
 
