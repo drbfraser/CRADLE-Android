@@ -3,6 +3,7 @@ package com.cradleVSA.neptune.view
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
+import android.view.Menu
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
@@ -59,6 +60,12 @@ class StatsActivity : AppCompatActivity() {
 
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
+        return true
+    }
+
+    // For filtering by month, etc.
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_stats, menu)
         return true
     }
 
