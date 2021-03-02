@@ -174,6 +174,58 @@
         </androidx.cardview.widget.CardView>
 
         <androidx.cardview.widget.CardView
+            android:id="@+id/patientsReferredCard"
+            android:layout_width="150dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="8dp"
+            app:cardPreventCornerOverlap="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/assmentCard">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/patientsReferredTvStats"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="0"
+                    android:textColor="@color/black"
+                    android:textSize="24sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:ignore="HardcodedText" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="3dp"
+                    android:background="@color/colorPrimaryLight"
+                    app:layout_constraintEnd_toEndOf="@+id/patientsReferredTvStats"
+                    app:layout_constraintStart_toStartOf="@+id/patientsReferredTvStats"
+                    app:layout_constraintTop_toBottomOf="@+id/patientsReferredTvStats" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:text="@string/stats_activity_patients_referred"
+                    android:textAllCaps="false"
+                    android:textColor="@color/black"
+                    app:layout_constraintBottom_toBottomOf="@+id/patientsReferredTvStats"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/patientsReferredTvStats"
+                    app:layout_constraintTop_toTopOf="@+id/patientsReferredTvStats" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
             android:id="@+id/linechartCard"
             android:layout_width="0dp"
             android:layout_height="300dp"
@@ -186,7 +238,7 @@
             app:cardPreventCornerOverlap="true"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/assmentCard">
+            app:layout_constraintTop_toBottomOf="@+id/patientsReferredCard">
 
             <com.github.mikephil.charting.charts.LineChart
                 android:id="@+id/lineChart"
@@ -318,7 +370,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/referralCard" />
+            app:layout_constraintTop_toBottomOf="@+id/patientsReferredCard" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
