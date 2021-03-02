@@ -241,11 +241,13 @@
     <string name="patient_profile_week">Week</string>
     <string name="patient_profile_none_caps">NONE</string>
     <string name="patient_profile_add_to_my_patients_list_button">Add to my patients list</string>
-    <string name="stats_activity_referrals">Referrals</string>
+    <string name="stats_activity_unique_readings">Unique Readings</string>
+    <string name="stats_activity_total_readings">Total Readings</string>
+    <string name="stats_activity_referrals_sent">Referrals Sent</string>
     <string name="stats_activity_referrals_assessed">Referrals Assessed</string>
     <string name="stats_activity_total_number_of_traffic_lights">Total number of traffic lights</string>
     <string name="stats_activity_no_readings_text">Please create some readings to see stats</string>
-    <string name="stats_activity_this_month_you_have_made_header">This month, you have made</string>
+    <string name="stats_activity_this_month_you_have_header">This month, there were...</string>
     <string name="video_activity_header">CRADLE VSA Training Video</string>
     <string name="video_activity_app_credits">App developed by Team Neptune</string>
     <string name="camera_fragment_instructions_header">Hold the phone steady and take photo of CRADLE VSA reading</string>

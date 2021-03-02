@@ -14,15 +14,69 @@
         tools:context=".view.StatsActivity">
 
         <androidx.cardview.widget.CardView
+            android:id="@+id/uniqueReadingCard"
+            android:layout_width="150dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="32dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="8dp"
+            app:cardPreventCornerOverlap="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/readingCard"
+            app:layout_constraintTop_toBottomOf="@+id/textView32">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/uniqueReadingTvStats"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="0"
+                    android:textColor="@color/black"
+                    android:textSize="24sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:ignore="HardcodedText" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="3dp"
+                    android:background="@color/colorPrimaryLight"
+                    app:layout_constraintEnd_toEndOf="@+id/uniqueReadingTvStats"
+                    app:layout_constraintStart_toStartOf="@+id/uniqueReadingTvStats"
+                    app:layout_constraintTop_toBottomOf="@+id/uniqueReadingTvStats" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:text="@string/stats_activity_unique_readings"
+                    android:textAllCaps="false"
+                    android:textColor="@color/black"
+                    app:layout_constraintBottom_toBottomOf="@+id/uniqueReadingTvStats"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/uniqueReadingTvStats"
+                    app:layout_constraintTop_toTopOf="@+id/uniqueReadingTvStats" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
             android:id="@+id/referralCard"
-            android:layout_width="120dp"
+            android:layout_width="150dp"
             android:layout_height="100dp"
             android:layout_marginStart="32dp"
             android:layout_marginTop="16dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="8dp"
             app:cardPreventCornerOverlap="true"
-            app:layout_constraintEnd_toStartOf="@+id/readingCard"
+            app:layout_constraintEnd_toStartOf="@+id/assmentCard"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/readingCard">
 
@@ -41,7 +95,7 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    tools:ignore="HardcodedText"/>
+                    tools:ignore="HardcodedText" />
 
                 <View
                     android:layout_width="0dp"
@@ -52,11 +106,11 @@
                     app:layout_constraintTop_toBottomOf="@+id/refTvStats" />
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_marginEnd="8dp"
-                    android:text="@string/stats_activity_referrals"
+                    android:text="@string/stats_activity_referrals_sent"
                     android:textAllCaps="false"
                     android:textColor="@color/black"
                     app:layout_constraintBottom_toBottomOf="@+id/refTvStats"
@@ -68,7 +122,7 @@
 
         <androidx.cardview.widget.CardView
             android:id="@+id/assmentCard"
-            android:layout_width="120dp"
+            android:layout_width="150dp"
             android:layout_height="100dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="32dp"
@@ -106,7 +160,7 @@
 
                 <TextView
                     android:layout_width="0dp"
-                    android:layout_height="0dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_marginEnd="8dp"
                     android:text="@string/stats_activity_referrals_assessed"
@@ -190,7 +244,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
-            android:text="@string/stats_activity_this_month_you_have_made_header"
+            android:text="@string/stats_activity_this_month_you_have_header"
             android:textColor="@color/black"
             android:textSize="18sp"
             android:textStyle="bold"
@@ -199,22 +253,23 @@
 
         <androidx.cardview.widget.CardView
             android:id="@+id/readingCard"
-            android:layout_width="120dp"
+            android:layout_width="150dp"
             android:layout_height="100dp"
+            android:layout_marginStart="32dp"
             android:layout_marginTop="16dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="8dp"
             app:cardPreventCornerOverlap="true"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/uniqueReadingCard"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView32">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="98dp">
 
                 <TextView
-                    android:id="@+id/readingTvStats"
+                    android:id="@+id/totalReadingTvStats"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
@@ -230,22 +285,22 @@
                     android:layout_width="0dp"
                     android:layout_height="3dp"
                     android:background="@color/colorPrimaryLight"
-                    app:layout_constraintEnd_toEndOf="@+id/readingTvStats"
-                    app:layout_constraintStart_toStartOf="@+id/readingTvStats"
-                    app:layout_constraintTop_toBottomOf="@+id/readingTvStats" />
+                    app:layout_constraintEnd_toEndOf="@+id/totalReadingTvStats"
+                    app:layout_constraintStart_toStartOf="@+id/totalReadingTvStats"
+                    app:layout_constraintTop_toBottomOf="@+id/totalReadingTvStats" />
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_marginEnd="8dp"
-                    android:text="@string/menu_readings"
+                    android:text="@string/stats_activity_total_readings"
                     android:textAllCaps="false"
                     android:textColor="@color/black"
-                    app:layout_constraintBottom_toBottomOf="@+id/readingTvStats"
+                    app:layout_constraintBottom_toBottomOf="@+id/totalReadingTvStats"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/readingTvStats"
-                    app:layout_constraintTop_toTopOf="@+id/readingTvStats" />
+                    app:layout_constraintStart_toEndOf="@+id/totalReadingTvStats"
+                    app:layout_constraintTop_toTopOf="@+id/totalReadingTvStats" />
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
 
