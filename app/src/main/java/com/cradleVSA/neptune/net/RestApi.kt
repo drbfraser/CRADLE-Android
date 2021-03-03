@@ -9,8 +9,10 @@ import com.cradleVSA.neptune.model.GlobalPatient
 import com.cradleVSA.neptune.model.Patient
 import com.cradleVSA.neptune.model.PatientAndReadings
 import com.cradleVSA.neptune.model.Reading
+import com.cradleVSA.neptune.model.Statistics
 import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
 import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper.createWriter
+import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -182,6 +184,21 @@ class RestApi constructor(
                 inputStreamReader = { JacksonMapper.createReader<Assessment>().readValue(it) }
             )
         }
+
+    /**
+     * Requests all statistics between two input UNIX timestamps.
+     *
+     * @param date1 UNIX timestamp of the beginning cutoff
+     * @param date2 UNIX timestamp of the end cutoff
+     * @return Statistics object for the requested dates
+     *
+     * TODO: revisit after endpoint is finished and maybe add facility and user id filtering.
+     */
+    fun getStatisticsBetween(date1: Long, date2: Long): Statistics {
+        // TODO: hook this up to the endpoint and do async network IO
+        val hardcodedDataExample = "{\"patients_referred\":2,\"sent_referrals\":58,\"days_with_readings\":5,\"unique_patient_readings\":102,\"total_readings\":295,\"color_readings\":{\"GREEN\":116,\"RED_DOWN\":4,\"RED_UP\":58,\"YELLOW_DOWN\":22,\"YELLOW_UP\":95}}"
+        return JacksonMapper.mapper.readValue(hardcodedDataExample);
+    }
 
     /**
      * Uploads a new patient along with associated readings to the server.

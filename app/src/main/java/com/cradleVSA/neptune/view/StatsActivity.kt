@@ -13,6 +13,8 @@ import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.manager.ReadingManager
 import com.cradleVSA.neptune.model.Reading
 import com.cradleVSA.neptune.model.ReadingAnalysis
+import com.cradleVSA.neptune.model.Statistics
+import com.cradleVSA.neptune.net.RestApi
 import com.cradleVSA.neptune.utilitiles.BarGraphValueFormatter
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.LineChart
@@ -27,6 +29,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.w3c.dom.Text
 import java.util.ArrayList
 import java.util.Collections
 import javax.inject.Inject
@@ -37,21 +40,26 @@ class StatsActivity : AppCompatActivity() {
     @Inject
     lateinit var readingManager: ReadingManager
     lateinit var readings: List<Reading>
+    lateinit var statsData: Statistics
+    @Inject
+    lateinit var restApi: RestApi
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_stats)
 
         lifecycleScope.launch {
+            val unixTime = System.currentTimeMillis() / 1000L;
+            statsData = restApi.getStatisticsBetween(unixTime - 2592000000L, unixTime);
             // TODO: Do this as a database query or a database view. Taking all the readings and
             //  them sorting them in memory is not efficient. Reading objects also contain
             //  information that is irrelevant for StatsActivity.
             readings = withContext(Dispatchers.IO) { readingManager.getAllReadings() }
             Collections.sort(readings, Reading.AscendingDataComparator)
             if (readings.isNotEmpty()) {
-                setupBasicStats()
+                setupBasicStats(statsData)
                 setupLineChart()
-                setupBarChart()
+                setupBarChart(statsData)
             }
         }
         if (supportActionBar != null) {
@@ -85,25 +93,25 @@ class StatsActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupBasicStats() {
+    private fun setupBasicStats(statsData: Statistics) {
         val emptyView = findViewById<TextView>(R.id.emptyView)
         emptyView.visibility = View.GONE
-        val totalReadings = readings.size
-        var totalRef = 0
-        for (i in 0 until totalReadings) {
-            if (readings[i].isReferredToHealthFacility) {
-                totalRef++
-            }
-        }
-        val readingTV = findViewById<TextView>(R.id.totalReadingTvStats)
-        readingTV.text = totalReadings.toString()
-        val refTV = findViewById<TextView>(R.id.refTvStats)
-        refTV.text = totalRef.toString()
-        // todo do the same for the referrals
+        val totalReadingTV = findViewById<TextView>(R.id.totalReadingTvStats)
+        val uniqueReadingTV = findViewById<TextView>(R.id.uniqueReadingTvStats)
+        val referralsSentTV = findViewById<TextView>(R.id.refTvStats)
+        val referralsAssessedTV = findViewById<TextView>(R.id.assessmentTvStats)
+        val patientsReferredTV = findViewById<TextView>(R.id.patientsReferredTvStats)
+
+        totalReadingTV.text = statsData.total_readings.toString()
+        uniqueReadingTV.text = statsData.unique_patient_readings.toString()
+        referralsSentTV.text = statsData.sent_referrals.toString()
+        // TODO: one of the following NEEDS to be "days with readings"
+        referralsAssessedTV.text = statsData.patients_referred.toString()
+        patientsReferredTV.text = statsData.patients_referred.toString()
     }
 
     @Suppress("MagicNumber")
-    private fun setupBarChart() {
+    private fun setupBarChart(statsData: Statistics) {
         val barChart = findViewById<BarChart>(R.id.bargraph)
         val barCard = findViewById<CardView>(R.id.bargraphCard)
         barCard.visibility = View.VISIBLE
@@ -133,6 +141,9 @@ class StatsActivity : AppCompatActivity() {
                 yellowDown++
             }
         }
+
+
+
         greenEntry.add(BarEntry(1.toFloat(), green.toFloat()))
         yellowUpEntry.add(BarEntry(2.toFloat(), yellowup.toFloat()))
         yellowDownEntry.add(BarEntry(3.toFloat(), yellowDown.toFloat()))
