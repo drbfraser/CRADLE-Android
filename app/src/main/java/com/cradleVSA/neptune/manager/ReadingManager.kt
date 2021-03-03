@@ -206,4 +206,8 @@ class ReadingManager constructor(
             }
             result.map { Unit }
         }
+
+    suspend fun setDateRecheckVitalsNeededToNull(readingId: String) {
+        readingDao.setDateRecheckVitalsNeededToNull(readingId)
+    }
 }

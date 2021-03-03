@@ -222,6 +222,7 @@ class PatientReadingViewModel @Inject constructor(
                             add(reading.id)
                             previousReadingIds.value = this
                         }
+                        readingManager.setDateRecheckVitalsNeededToNull(readingId)
                     }
                     else -> {
                         error("invalid launch reason")
@@ -975,7 +976,8 @@ class PatientReadingViewModel @Inject constructor(
             yield()
 
             // Add data for now in order to get it to build. This needs to be set with the
-            // proper values after pressing SAVE READING.
+            // proper values after pressing
+            // SAVE READING.
             readingBuilder.apply {
                 set(Reading::patientId, originalPatient?.id ?: patientId.value)
                 // These will only populate the fields with null if there's nothing in there already.
