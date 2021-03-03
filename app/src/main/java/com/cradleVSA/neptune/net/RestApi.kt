@@ -194,10 +194,14 @@ class RestApi constructor(
      *
      * TODO: revisit after endpoint is finished and maybe add facility and user id filtering.
      */
+
     fun getStatisticsBetween(date1: Long, date2: Long): Statistics {
         // TODO: hook this up to the endpoint and do async network IO
-        val hardcodedDataExample = "{\"patients_referred\":2,\"sent_referrals\":58,\"days_with_readings\":5,\"unique_patient_readings\":102,\"total_readings\":295,\"color_readings\":{\"GREEN\":116,\"RED_DOWN\":4,\"RED_UP\":58,\"YELLOW_DOWN\":22,\"YELLOW_UP\":95}}"
-        return JacksonMapper.mapper.readValue(hardcodedDataExample);
+        val hardcodedDataExample = "{\"patients_referred\":2,\"sent_referrals\":58," +
+            "\"days_with_readings\":5,\"unique_patient_readings\":102,\"total_readings\"" +
+            ":295,\"color_readings\":{\"GREEN\":116,\"RED_DOWN\":4,\"RED_UP\":58,\"YELLOW_DOWN\"" +
+            ":22,\"YELLOW_UP\":95}}"
+        return JacksonMapper.mapper.readValue(hardcodedDataExample)
     }
 
     /**

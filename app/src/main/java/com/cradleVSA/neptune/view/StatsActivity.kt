@@ -29,7 +29,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.w3c.dom.Text
 import java.util.ArrayList
 import java.util.Collections
 import javax.inject.Inject
@@ -44,13 +43,14 @@ class StatsActivity : AppCompatActivity() {
     @Inject
     lateinit var restApi: RestApi
 
+    @Suppress("MagicNumber")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_stats)
 
         lifecycleScope.launch {
-            val unixTime = System.currentTimeMillis() / 1000L;
-            statsData = restApi.getStatisticsBetween(unixTime - 2592000000L, unixTime);
+            val unixTime = System.currentTimeMillis() / 1000L
+            statsData = restApi.getStatisticsBetween(unixTime - 2592000000L, unixTime)
             // TODO: Do this as a database query or a database view. Taking all the readings and
             //  them sorting them in memory is not efficient. Reading objects also contain
             //  information that is irrelevant for StatsActivity.
@@ -102,12 +102,12 @@ class StatsActivity : AppCompatActivity() {
         val referralsAssessedTV = findViewById<TextView>(R.id.assessmentTvStats)
         val patientsReferredTV = findViewById<TextView>(R.id.patientsReferredTvStats)
 
-        totalReadingTV.text = statsData.total_readings.toString()
-        uniqueReadingTV.text = statsData.unique_patient_readings.toString()
-        referralsSentTV.text = statsData.sent_referrals.toString()
+        totalReadingTV.text = statsData.totalReadings.toString()
+        uniqueReadingTV.text = statsData.uniquePatientReadings.toString()
+        referralsSentTV.text = statsData.sentReferrals.toString()
         // TODO: one of the following NEEDS to be "days with readings"
-        referralsAssessedTV.text = statsData.patients_referred.toString()
-        patientsReferredTV.text = statsData.patients_referred.toString()
+        referralsAssessedTV.text = statsData.patientsReferred.toString()
+        patientsReferredTV.text = statsData.patientsReferred.toString()
     }
 
     @Suppress("MagicNumber")
@@ -141,8 +141,6 @@ class StatsActivity : AppCompatActivity() {
                 yellowDown++
             }
         }
-
-
 
         greenEntry.add(BarEntry(1.toFloat(), green.toFloat()))
         yellowUpEntry.add(BarEntry(2.toFloat(), yellowup.toFloat()))
