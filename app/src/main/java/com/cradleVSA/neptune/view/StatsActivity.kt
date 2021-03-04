@@ -121,25 +121,11 @@ class StatsActivity : AppCompatActivity() {
             ArrayList()
         val redUpEntry: ArrayList<BarEntry> = ArrayList()
         val redDownEntry: ArrayList<BarEntry> = ArrayList()
-        var green = 0
-        var yellowup = 0
-        var yellowDown = 0
-        var redDown = 0
-        val redUp = 0
-        for (i in readings.indices) {
-            val analysis = readings[i].bloodPressure.analysis
-            if (analysis === ReadingAnalysis.RED_DOWN) {
-                redDown++
-            } else if (analysis === ReadingAnalysis.GREEN) {
-                green++
-            } else if (analysis === ReadingAnalysis.RED_UP) {
-                redDown++
-            } else if (analysis === ReadingAnalysis.YELLOW_UP) {
-                yellowup++
-            } else if (analysis === ReadingAnalysis.YELLOW_DOWN) {
-                yellowDown++
-            }
-        }
+        val green = statsData.colorReadings.greenReadings
+        val yellowup = statsData.colorReadings.yellowUpReadings
+        val yellowDown = statsData.colorReadings.yellowDownReadings
+        val redDown = statsData.colorReadings.redDownReadings
+        val redUp = statsData.colorReadings.redUpReadings
 
         greenEntry.add(BarEntry(1.toFloat(), green.toFloat()))
         yellowUpEntry.add(BarEntry(2.toFloat(), yellowup.toFloat()))
