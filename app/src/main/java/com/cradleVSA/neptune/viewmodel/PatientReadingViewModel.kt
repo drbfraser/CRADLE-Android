@@ -1296,7 +1296,6 @@ class PatientReadingViewModel @Inject constructor(
         return saveResult
     }
 
-
     /**
      * This is here so that the Fragments don't have to access [saveManager].
      *
