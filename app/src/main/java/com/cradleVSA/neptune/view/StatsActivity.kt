@@ -12,7 +12,6 @@ import androidx.lifecycle.lifecycleScope
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.manager.ReadingManager
 import com.cradleVSA.neptune.model.Reading
-import com.cradleVSA.neptune.model.ReadingAnalysis
 import com.cradleVSA.neptune.model.Statistics
 import com.cradleVSA.neptune.net.RestApi
 import com.cradleVSA.neptune.utilitiles.BarGraphValueFormatter
