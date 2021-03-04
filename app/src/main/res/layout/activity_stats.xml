@@ -174,7 +174,7 @@
         </androidx.cardview.widget.CardView>
 
         <androidx.cardview.widget.CardView
-            android:id="@+id/patientsReferredCard"
+            android:id="@+id/daysWithReadingsCard"
             android:layout_width="150dp"
             android:layout_height="100dp"
             android:layout_marginTop="16dp"
@@ -190,7 +190,7 @@
                 android:layout_height="match_parent">
 
                 <TextView
-                    android:id="@+id/patientsReferredTvStats"
+                    android:id="@+id/daysWithReadingsTvStats"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
@@ -206,22 +206,22 @@
                     android:layout_width="0dp"
                     android:layout_height="3dp"
                     android:background="@color/colorPrimaryLight"
-                    app:layout_constraintEnd_toEndOf="@+id/patientsReferredTvStats"
-                    app:layout_constraintStart_toStartOf="@+id/patientsReferredTvStats"
-                    app:layout_constraintTop_toBottomOf="@+id/patientsReferredTvStats" />
+                    app:layout_constraintEnd_toEndOf="@+id/daysWithReadingsTvStats"
+                    app:layout_constraintStart_toStartOf="@+id/daysWithReadingsTvStats"
+                    app:layout_constraintTop_toBottomOf="@+id/daysWithReadingsTvStats" />
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_marginEnd="8dp"
-                    android:text="@string/stats_activity_patients_referred"
+                    android:text="@string/stats_activity_days_with_readings"
                     android:textAllCaps="false"
                     android:textColor="@color/black"
-                    app:layout_constraintBottom_toBottomOf="@+id/patientsReferredTvStats"
+                    app:layout_constraintBottom_toBottomOf="@+id/daysWithReadingsTvStats"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/patientsReferredTvStats"
-                    app:layout_constraintTop_toTopOf="@+id/patientsReferredTvStats" />
+                    app:layout_constraintStart_toEndOf="@+id/daysWithReadingsTvStats"
+                    app:layout_constraintTop_toTopOf="@+id/daysWithReadingsTvStats" />
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
 
@@ -238,7 +238,7 @@
             app:cardPreventCornerOverlap="true"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/patientsReferredCard">
+            app:layout_constraintTop_toBottomOf="@+id/daysWithReadingsCard">
 
             <com.github.mikephil.charting.charts.LineChart
                 android:id="@+id/lineChart"
@@ -370,7 +370,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/patientsReferredCard" />
+            app:layout_constraintTop_toBottomOf="@+id/daysWithReadingsCard" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

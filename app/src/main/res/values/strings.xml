@@ -246,6 +246,7 @@
     <string name="stats_activity_referrals_sent">Referrals Sent</string>
     <string name="stats_activity_referrals_assessed">Referrals Assessed</string>
     <string name="stats_activity_patients_referred">Patients Referred</string>
+    <string name="stats_activity_days_with_readings">Days With Readings</string>
     <string name="stats_activity_total_number_of_traffic_lights">Total number of traffic lights</string>
     <string name="stats_activity_no_readings_text">Please create some readings to see stats</string>
     <string name="stats_activity_this_month_you_have_header">This month, there were...</string>

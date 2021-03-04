@@ -100,14 +100,13 @@ class StatsActivity : AppCompatActivity() {
         val uniqueReadingTV = findViewById<TextView>(R.id.uniqueReadingTvStats)
         val referralsSentTV = findViewById<TextView>(R.id.refTvStats)
         val referralsAssessedTV = findViewById<TextView>(R.id.assessmentTvStats)
-        val patientsReferredTV = findViewById<TextView>(R.id.patientsReferredTvStats)
+        val daysWithReadingsTV = findViewById<TextView>(R.id.daysWithReadingsTvStats)
 
         totalReadingTV.text = statsData.totalReadings.toString()
         uniqueReadingTV.text = statsData.uniquePatientReadings.toString()
         referralsSentTV.text = statsData.sentReferrals.toString()
-        // TODO: one of the following NEEDS to be "days with readings"
         referralsAssessedTV.text = statsData.patientsReferred.toString()
-        patientsReferredTV.text = statsData.patientsReferred.toString()
+        daysWithReadingsTV.text = statsData.daysWithReadings.toString()
     }
 
     @Suppress("MagicNumber")
