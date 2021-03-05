@@ -1,7 +1,6 @@
 package com.cradleVSA.neptune.viewmodel;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.cradleVSA.neptune.R;
 import com.cradleVSA.neptune.ext.ContextUtil;
-import com.cradleVSA.neptune.manager.LoginManager;
 import com.cradleVSA.neptune.model.Assessment;
 import com.cradleVSA.neptune.model.Reading;
 import com.cradleVSA.neptune.model.ReadingAnalysis;
@@ -189,7 +187,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             myViewHolder.diagnosis.setText(readingFollowUp.getDiagnosis());
             myViewHolder.treatment.setText(readingFollowUp.getTreatment());
             myViewHolder.hcName.setText(Integer.toString(readingFollowUp.getHealthCareWorkerId()));
-            if (currReading.component7() == null) {
+            if (currReading.component7() == null || currReading.component7().getUserId() == null) {
                 myViewHolder.referredBy.setText(R.string.patient_profile_reading_unknown_referrer); // FIXME: no longer have referred by field
             }
             else {
