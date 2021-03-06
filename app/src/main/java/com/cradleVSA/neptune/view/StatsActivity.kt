@@ -42,10 +42,13 @@ class StatsActivity : AppCompatActivity() {
     @Inject
     lateinit var restApi: RestApi
 
+    // TODO: discuss what the initial values of the date range should be.
+    // These currently correspond to right now in MS, and current time minus 30 days in MS
+    @Suppress("MagicNumber")
     var startTimeEpoch: Long = System.currentTimeMillis() / 1000L
+    @Suppress("MagicNumber")
     var endTimeEpoch: Long = startTimeEpoch - 2592000000L
 
-    @Suppress("MagicNumber")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_stats)
@@ -59,7 +62,7 @@ class StatsActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         lifecycleScope.launch {
-            statsData = restApi.getStatisticsBetween(startTimeEpoch , endTimeEpoch)
+            statsData = restApi.getStatisticsBetween(startTimeEpoch, endTimeEpoch)
             setupBasicStats(statsData)
             setupBarChart(statsData)
             // TODO: Do this as a database query or a database view. Taking all the readings and
@@ -71,7 +74,6 @@ class StatsActivity : AppCompatActivity() {
                 setupLineChart()
             }
         }
-
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -97,7 +99,8 @@ class StatsActivity : AppCompatActivity() {
                     // TODO: change text in header to human-readable, this is just for testing now
                     statsHeaderTv.text = getString(
                         R.string.stats_activity_epoch_header,
-                        startTimeEpoch, endTimeEpoch
+                        startTimeEpoch,
+                        endTimeEpoch
                     )
                     onResume()
                 }
