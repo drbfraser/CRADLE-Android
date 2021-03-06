@@ -249,7 +249,8 @@
     <string name="stats_activity_days_with_readings">Days With Readings</string>
     <string name="stats_activity_total_number_of_traffic_lights">Total number of traffic lights</string>
     <string name="stats_activity_no_readings_text">Please create some readings to see stats</string>
-    <string name="stats_activity_this_month_you_have_header">This month, there were...</string>
+    <string name="stats_activity_this_month_you_have_header">This month, there were…</string>
+    <string name="stats_activity_epoch_header">Between %1$d and %2$d, there were…</string>
     <string name="video_activity_header">CRADLE VSA Training Video</string>
     <string name="video_activity_app_credits">App developed by Team Neptune</string>
     <string name="camera_fragment_instructions_header">Hold the phone steady and take photo of CRADLE VSA reading</string>

@@ -42,29 +42,36 @@ class StatsActivity : AppCompatActivity() {
     @Inject
     lateinit var restApi: RestApi
 
+    var startTimeEpoch: Long = System.currentTimeMillis() / 1000L
+    var endTimeEpoch: Long = startTimeEpoch - 2592000000L
+
     @Suppress("MagicNumber")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_stats)
 
+        if (supportActionBar != null) {
+            supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+            supportActionBar!!.title = "Statistics"
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
         lifecycleScope.launch {
-            val unixTime = System.currentTimeMillis() / 1000L
-            statsData = restApi.getStatisticsBetween(unixTime - 2592000000L, unixTime)
+            statsData = restApi.getStatisticsBetween(startTimeEpoch , endTimeEpoch)
+            setupBasicStats(statsData)
+            setupBarChart(statsData)
             // TODO: Do this as a database query or a database view. Taking all the readings and
             //  them sorting them in memory is not efficient. Reading objects also contain
             //  information that is irrelevant for StatsActivity.
             readings = withContext(Dispatchers.IO) { readingManager.getAllReadings() }
             Collections.sort(readings, Reading.AscendingDataComparator)
             if (readings.isNotEmpty()) {
-                setupBasicStats(statsData)
                 setupLineChart()
-                setupBarChart(statsData)
             }
         }
-        if (supportActionBar != null) {
-            supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-            supportActionBar!!.title = "Statistics"
-        }
+
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -83,6 +90,17 @@ class StatsActivity : AppCompatActivity() {
             R.id.stats_settings -> {
                 val rangePickerBuilder = MaterialDatePicker.Builder.dateRangePicker()
                 val rangePicker = rangePickerBuilder.build()
+                rangePicker.addOnPositiveButtonClickListener {
+                    startTimeEpoch = it.first ?: startTimeEpoch
+                    endTimeEpoch = it.second ?: endTimeEpoch
+                    val statsHeaderTv = findViewById<TextView>(R.id.textView32)
+                    // TODO: change text in header to human-readable, this is just for testing now
+                    statsHeaderTv.text = getString(
+                        R.string.stats_activity_epoch_header,
+                        startTimeEpoch, endTimeEpoch
+                    )
+                    onResume()
+                }
                 rangePicker.show(supportFragmentManager, rangePicker.toString())
                 return true
             }
