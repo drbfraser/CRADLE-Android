@@ -147,6 +147,8 @@ class PatientReadingViewModel @Inject constructor(
 
     private var originalPatient: Patient? = null
 
+    private var originalReadingId: String = ""
+
     /**
      * If not creating a new patient, the patient and reading requested will be asynchronously
      * initialized, and then [isInitialized] will emit true if no errors occur.
@@ -212,7 +214,7 @@ class PatientReadingViewModel @Inject constructor(
                     }
                     ReadingActivity.LaunchReason.LAUNCH_REASON_RECHECK -> {
                         decompose(patient)
-
+                        originalReadingId = readingId
                         // If we are rechecking vitals, then readingId is the ID of the previous
                         // reading. We derive the previous reading IDs from the previous reading,
                         // and add the previous reading onto it. Note: The most recent reading
@@ -1286,15 +1288,26 @@ class PatientReadingViewModel @Inject constructor(
         referralOption: ReferralOption,
         referralComment: String,
         healthFacilityName: String
-    ): Pair<ReadingFlowSaveResult, PatientAndReadings?> =
-        saveManager.saveWithReferral(referralOption, referralComment, healthFacilityName)
+    ): Pair<ReadingFlowSaveResult, PatientAndReadings?> {
+        val saveResult = saveManager.saveWithReferral(referralOption, referralComment, healthFacilityName)
+        if (saveResult.first == ReadingFlowSaveResult.SAVE_SUCCESSFUL) {
+            readingManager.setDateRecheckVitalsNeededToNull(originalReadingId)
+        }
+        return saveResult
+    }
 
     /**
      * This is here so that the Fragments don't have to access [saveManager].
      *
      * @see [SaveManager.save]
      */
-    suspend fun save(): ReadingFlowSaveResult = saveManager.save()
+    suspend fun save(): ReadingFlowSaveResult {
+        val saveResult = saveManager.save()
+        if (saveResult == ReadingFlowSaveResult.SAVE_SUCCESSFUL) {
+            readingManager.setDateRecheckVitalsNeededToNull(originalReadingId)
+        }
+        return saveResult
+    }
 
     /**
      * Manages the saving of the patient / reading, including sending referrals to the server or
