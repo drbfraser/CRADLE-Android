@@ -14,7 +14,6 @@ buildscript {
 
     repositories {
         google()
-        jcenter()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:4.1.2'
@@ -42,7 +41,24 @@ allprojects {
 
     repositories {
         google()
-        jcenter()
+        mavenCentral()
+        jcenter {
+            // JCenter is being deprecated.
+            // https://jfrog.com/blog/into-the-sunset-bintray-jcenter-gocenter-and-chartcenter/
+            // Restrict us from using it for any new dependencies; only allow the usage of JCenter
+            // for these dependencies that have not been migrated off of it.
+            // TODO: Remove JCenter all together when all packages here have migrated off of it.
+            content {
+                includeModule("org.tensorflow", "tensorflow-lite")
+                // We don't use BlurKit, so this can be removed later.
+                includeModule("com.wonderkiln", "blurkit")
+                // Required for detekt
+                includeModule("org.jetbrains.kotlinx", "kotlinx-html-jvm")
+                // TODO: Remove trouve4j from here when Android Gradle Plugin is updated
+                //  https://youtrack.jetbrains.com/issue/IDEA-261387
+                includeModule("org.jetbrains.trove4j", "trove4j")
+            }
+        }
         maven { url 'https://jitpack.io' }
     }
 }
