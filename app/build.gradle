@@ -211,8 +211,3 @@ dependencies {
     detekt "io.gitlab.arturbosch.detekt:detekt-formatting:$detekt_version"
     detekt "io.gitlab.arturbosch.detekt:detekt-cli:$detekt_version"
 }
-
-repositories {
-    mavenCentral()
-}
-
