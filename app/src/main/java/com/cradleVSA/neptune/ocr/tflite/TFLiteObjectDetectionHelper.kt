@@ -18,7 +18,7 @@ private const val LABEL_FILE_NAME = "seven_seg_labelmap.txt"
 private const val MODEL_FILENAME = "seven_seg_ssd.tflite"
 
 // Only return this many results.
-private const val NUM_DETECTIONS = 6 // 10;
+private const val NUM_DETECTIONS = 6
 
 private const val NN_INPUT_SIZE = 200
 private const val QUANTIZED_MODEL = true
@@ -129,7 +129,7 @@ class TFLiteObjectDetectionHelper(context: Context) : Classifier {
     }
 
     @Suppress("MagicNumber")
-    override fun recognizeImage(bitmap: Bitmap): List<Classifier.Recognition> {
+    override fun recognizeItemsInImage(bitmap: Bitmap): List<Classifier.Recognition> {
         val tfImageBuffer: ByteBuffer = createTensorFromImage(bitmap)
 
         // Copy the input data into TensorFlow.

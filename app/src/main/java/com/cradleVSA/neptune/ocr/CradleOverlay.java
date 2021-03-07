@@ -3,6 +3,7 @@ package com.cradleVSA.neptune.ocr;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.RectF;
+import android.util.Log;
 
 import com.cradleVSA.neptune.utilitiles.ImageUtils;
 import com.cradleVSA.neptune.utilitiles.Util;
@@ -14,6 +15,8 @@ import com.cradleVSA.neptune.utilitiles.Util;
  */
 public class CradleOverlay {
     private static final String TAG = "CradleOverlay";
+    private static final boolean DEBUG = false;
+
     // from photoshop
     private static final int RAW_OVERLAY_WIDTH_px = 800;
     private static final int RAW_OVERLAY_HEIGHT_px = 1305;
@@ -125,8 +128,11 @@ public class CradleOverlay {
     }
 
     private static Bitmap extractBitmapToRect(Bitmap bmp, RectF rect) {
-        // Log.d(TAG, String.format("Extracting region p1: %.1f,%.1f;  p2:%.1f/%d, %.1f/%d   (/width and /height)",
-        //       rect.left, rect.top, rect.right, bmp.getWidth(), rect.bottom, bmp.getHeight()));
+        if (DEBUG) {
+            Log.d(TAG, String.format(
+                    "Extracting region p1: %.1f,%.1f;  p2:%.1f/%d, %.1f/%d   (/width and /height)",
+                    rect.left, rect.top, rect.right, bmp.getWidth(), rect.bottom, bmp.getHeight()));
+        }
 
         // extract region, managing bounds on image
         return ImageUtils.extractBitmapRegion(bmp,

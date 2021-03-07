@@ -22,7 +22,7 @@ import java.io.Closeable
  * Generic interface for interacting with different recognition engines.
  */
 interface Classifier : Closeable {
-    fun recognizeImage(bitmap: Bitmap): List<Recognition>
+    fun recognizeItemsInImage(bitmap: Bitmap): List<Recognition>
 
     /**
      * An immutable result returned by a Classifier describing what was recognized.

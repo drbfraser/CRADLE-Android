@@ -50,8 +50,7 @@ allprojects {
             // TODO: Remove JCenter all together when all packages here have migrated off of it.
             content {
                 includeModule("org.tensorflow", "tensorflow-lite")
-                // We don't use BlurKit, so this can be removed later.
-                includeModule("com.wonderkiln", "blurkit")
+                includeModule("org.tensorflow", "tensorflow-lite-support")
                 // Required for detekt
                 includeModule("org.jetbrains.kotlinx", "kotlinx-html-jvm")
                 // TODO: Remove trouve4j from here when Android Gradle Plugin is updated

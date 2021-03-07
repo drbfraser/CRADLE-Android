@@ -66,7 +66,7 @@ class CradleScreenOcrDetector(ctx: Context) : Closeable {
         )
         val allRecognitions = mutableMapOf<CradleOverlay.OverlayRegion, String>()
         for ((region, croppedBitmap) in bitmaps) {
-            val recognitions = classifier.recognizeImage(croppedBitmap)
+            val recognitions = classifier.recognizeItemsInImage(croppedBitmap)
             val text = extractTextFromResults(recognitions, croppedBitmap.height.toFloat())
             allRecognitions[region] = text
         }
