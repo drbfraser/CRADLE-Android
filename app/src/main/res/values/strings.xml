@@ -513,6 +513,19 @@
     <string name="sync_worker_failure_exception_during_sync_s__s">Last sync failed: Exception during sync (%1$s): %2$s</string>
     <string name="sync_worker_success">Last sync successful</string>
 
+    <string name="ocr_fragment_title">OCR</string>
+    <string name="ocr_fragment_description">Align the CRADLE VSA screen with the corresponding areas and press USE when the readings look correct. The last measured blood pressure values can be retrieved by turning the CRADLE VSA off and holding the ON/OFF button until memory appears.</string>
+    <string name="ocr_fragment_systolic_ocr_result_sys_s">SYS: %1$s</string>
+    <string name="ocr_fragment_systolic_image_content_description">A capture of the systolic reading on the device screen</string>
+    <string name="ocr_fragment_diastolic_ocr_result_dia_s">DIA: %1$s</string>
+    <string name="ocr_fragment_diastolic_image_content_description">A capture of the diastolic reading on the device screen</string>
+    <string name="ocr_fragment_heart_rate_ocr_result_pul_s">PUL: %1$s</string>
+    <string name="ocr_fragment_heart_rate_image_content_description">A capture of the heart reading reading on the device screen</string>
+    <string name="ocr_fragment_use_result_button">Use</string>
+    <string name="ocr_fragment_systolic_reading_label">SYS</string>
+    <string name="ocr_fragment_diastolic_reading_label">DIA</string>
+    <string name="ocr_fragment_heart_rate_reading_label">PUL</string>
+    <string name="ocr_fragment_toggle_flashlight">Toggle flashlight</string>
 
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>

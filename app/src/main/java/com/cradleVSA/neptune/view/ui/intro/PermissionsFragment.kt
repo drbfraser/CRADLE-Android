@@ -30,6 +30,12 @@ class PermissionsFragment : IntroBaseFragment() {
         return inflater.inflate(R.layout.fragment_intro_permissions, container, false)
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        // Make sure next button is disabled, since this is the first fragment
+        activityCallbackListener!!.setNextButtonEnabled(areAllPermissionsGranted(context))
+    }
+
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?
@@ -49,11 +55,7 @@ class PermissionsFragment : IntroBaseFragment() {
         updateDisplay()
 
         // Disable NEXT button until all granted
-        activityCallbackListener!!.setNextButtonEnabled(
-            areAllPermissionsGranted(
-                requireContext()
-            )
-        )
+        activityCallbackListener!!.setNextButtonEnabled(areAllPermissionsGranted(requireContext()))
     }
 
     override fun onMyBeingHidden(): Boolean {
@@ -97,6 +99,9 @@ class PermissionsFragment : IntroBaseFragment() {
         btn.setOnClickListener { requestAllPermissions() }
     }
 
+    /**
+     * TODO: Stop using this deprecated way of requesting permissions
+     */
     private fun requestAllPermissions() {
         requestPermissions(
             requiredPermissions,

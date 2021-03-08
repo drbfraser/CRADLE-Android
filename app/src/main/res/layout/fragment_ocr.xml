@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentBottom="true"
+        android:fitsSystemWindows="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="16dp">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/reading_flow_card_margin"
+                    android:paddingBottom="8dp">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/ocr_info_title"
+                        style="@style/TextAppearance.Cradle.H2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/ocr_fragment_title"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/textView33"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/ocr_fragment_description"
+                        android:textAppearance="@style/TextAppearance.Cradle.Body1"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/ocr_info_title" />
+
+                    <Button
+                        android:id="@+id/flashlightButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:enabled="false"
+                        android:text="@string/ocr_fragment_toggle_flashlight"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/textView33" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="16dp">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/reading_flow_card_margin"
+                    android:animateLayoutChanges="true"
+                    android:paddingBottom="8dp">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/systolicLabelTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/ocr_fragment_systolic_reading_label"
+                        android:textAppearance="@style/TextAppearance.Cradle.H2"
+                        app:layout_constraintBottom_toBottomOf="@+id/systolicImageView"
+                        app:layout_constraintEnd_toStartOf="@+id/guideline4"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/diastolicLabelTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/ocr_fragment_diastolic_reading_label"
+                        android:textAppearance="@style/TextAppearance.Cradle.H2"
+                        app:layout_constraintBottom_toBottomOf="@+id/diastolicImageView"
+                        app:layout_constraintEnd_toStartOf="@+id/guideline4"
+                        app:layout_constraintTop_toTopOf="@+id/diastolicImageView" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/heartRateLabelTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/ocr_fragment_heart_rate_reading_label"
+                        android:textAppearance="@style/TextAppearance.Cradle.H2"
+                        app:layout_constraintBottom_toBottomOf="@+id/heartRateImageView"
+                        app:layout_constraintEnd_toStartOf="@+id/guideline4"
+                        app:layout_constraintTop_toTopOf="@+id/heartRateImageView" />
+
+                    <ImageView
+                        android:id="@+id/systolicImageView"
+                        android:layout_width="@dimen/ocr_fragment_camera_width"
+                        android:layout_height="@dimen/ocr_fragment_camera_height"
+                        android:layout_marginTop="16dp"
+                        android:contentDescription="@string/ocr_fragment_systolic_image_content_description"
+                        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <ImageView
+                        android:id="@+id/diastolicImageView"
+                        android:layout_width="@dimen/ocr_fragment_camera_width"
+                        android:layout_height="@dimen/ocr_fragment_camera_height"
+                        android:layout_marginTop="24dp"
+                        android:contentDescription="@string/ocr_fragment_diastolic_image_content_description"
+                        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/systolicImageView" />
+
+                    <ImageView
+                        android:id="@+id/heartRateImageView"
+                        android:layout_width="@dimen/ocr_fragment_camera_width"
+                        android:layout_height="@dimen/ocr_fragment_camera_height"
+                        android:layout_marginTop="24dp"
+                        android:contentDescription="@string/ocr_fragment_heart_rate_image_content_description"
+                        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/diastolicImageView" />
+
+                    <androidx.constraintlayout.widget.Guideline
+                        android:id="@+id/guideline2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        app:layout_constraintGuide_percent="0.5"
+                        app:layout_constraintStart_toStartOf="parent" />
+
+                    <Button
+                        android:id="@+id/useOcrResultsButton"
+                        android:layout_width="0dp"
+                        android:layout_height="72dp"
+                        android:layout_marginTop="8dp"
+                        android:enabled="false"
+                        android:text="@string/ocr_fragment_use_result_button"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/confirmationTextView" />
+
+                    <androidx.constraintlayout.widget.Guideline
+                        android:id="@+id/guideline4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintGuide_percent="0.65" />
+
+                    <TextView
+                        android:id="@+id/systolicOcrTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:textAppearance="@style/TextAppearance.Cradle.Body1"
+                        android:textSize="18sp"
+                        app:layout_constraintBaseline_toBaselineOf="@+id/systolicLabelTextView"
+                        app:layout_constraintStart_toStartOf="@+id/guideline4"
+                        tools:text="133" />
+
+                    <TextView
+                        android:id="@+id/diastolicOcrTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:textAppearance="@style/TextAppearance.Cradle.Body1"
+                        android:textSize="18sp"
+                        app:layout_constraintBaseline_toBaselineOf="@+id/diastolicLabelTextView"
+                        app:layout_constraintStart_toStartOf="@+id/guideline4"
+                        tools:text="65" />
+
+                    <TextView
+                        android:id="@+id/heartRateOcrTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:textAppearance="@style/TextAppearance.Cradle.Body1"
+                        android:textSize="18sp"
+                        app:layout_constraintBaseline_toBaselineOf="@+id/heartRateLabelTextView"
+                        app:layout_constraintStart_toStartOf="@+id/guideline4"
+                        tools:text="87" />
+
+                    <ProgressBar
+                        android:id="@+id/ocrProgressBar"
+                        style="?android:attr/progressBarStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintBottom_toBottomOf="@+id/heartRateImageView"
+                        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="@+id/systolicImageView" />
+
+                    <TextView
+                        android:id="@+id/confirmationTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="Are these results correct?"
+                        android:textAppearance="@style/TextAppearance.Cradle.Body1"
+                        android:visibility="visible"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/heartRateImageView" />
+
+                    <Button
+                        android:id="@+id/yesResultsCorrectButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="8dp"
+                        android:text="Yes"
+                        android:visibility="gone"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/confirmationTextView"
+                        tools:visibility="visible" />
+
+                    <Button
+                        android:id="@+id/noButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:text="No"
+                        android:visibility="gone"
+                        app:layout_constraintBaseline_toBaselineOf="@+id/yesResultsCorrectButton"
+                        app:layout_constraintStart_toStartOf="parent"
+                        tools:visibility="visible" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </ScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
