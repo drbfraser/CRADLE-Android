@@ -8,4 +8,6 @@
     <dimen name="reading_flow_card_margin">12dp</dimen>
     <dimen name="reading_flow_previous_reading_item_margin">8dp</dimen>
     <dimen name="reading_flow_previous_reading_item_padding">8dp</dimen>
+    <dimen name="ocr_fragment_camera_width">128dp</dimen>
+    <dimen name="ocr_fragment_camera_height">84dp</dimen>
 </resources>

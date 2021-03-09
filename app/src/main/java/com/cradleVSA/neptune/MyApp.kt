@@ -4,10 +4,8 @@ import android.app.Activity
 import android.app.Application
 import android.content.pm.ActivityInfo
 import android.os.Bundle
-import android.util.Log
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
-import com.wonderkiln.blurkit.BlurKit
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -58,15 +56,5 @@ class MyApp : Application(), Configuration.Provider {
                 override fun onActivityDestroyed(activity: Activity) {}
             }
         )
-
-        // Blur-Effect
-        // encountered bug in the field: init() throwing a android.support.v8.renderscript.RSRuntimeException
-        // for at least one user.
-        try {
-            BlurKit.init(this)
-        } catch (e: Exception) {
-            Log.e("MyApp", "Failed initializing BlurKit.", e)
-            isDisableBlurKit = true
-        }
     }
 }

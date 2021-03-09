@@ -56,28 +56,17 @@
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
-                        <TextView
-                            android:id="@+id/ocr_not_available_text_view"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="@string/fragment_vital_signs_ocr_not_available_message"
-                            android:textAppearance="@style/TextAppearance.Cradle.Body1"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/cradle_vsa_card_title_textview" />
-
                         <Button
                             android:id="@+id/cradle_vsa_take_photo_button"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:enabled="false"
+                            android:enabled="true"
                             android:text="@string/fragment_vital_signs_take_picture_button"
                             app:icon="@drawable/ic_baseline_camera_alt_24"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/ocr_not_available_text_view" />
+                            app:layout_constraintTop_toBottomOf="@+id/cradle_vsa_card_title_textview" />
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:id="@+id/systolic_input"

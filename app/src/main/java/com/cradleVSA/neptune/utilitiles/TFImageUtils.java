@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 
 /**
  * Utility class for manipulating images.
+ * Ref: Some parts are from https://github.com/tensorflow/examples
  */
 public class TFImageUtils {
     // This value is 2 ^ 18 - 1, and is used to clamp the RGB values before their ranges

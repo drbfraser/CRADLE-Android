@@ -181,7 +181,11 @@ class IntroActivity : AppCompatActivity(), MyIntroFragmentInteractionListener {
     }
 
     override fun setNextButtonEnabled(enabled: Boolean) {
-        findViewById<View>(R.id.ivNext).isEnabled = enabled
+        findViewById<View>(R.id.ivNext).apply {
+            isEnabled = enabled
+            @Suppress("MagicNumber")
+            alpha = if (enabled) 1.0f else 0.5f
+        }
         findViewById<View>(R.id.txtNext).isEnabled = enabled
     }
 
