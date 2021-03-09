@@ -149,11 +149,6 @@ data class Reading(
             }
         }
 
-    /**
-     * True if this reading has an associated referral attached to it.
-     */
-    val hasReferral get() = referral != null
-
     override fun isValueForPropertyValid(
         property: KProperty<*>,
         value: Any?,
