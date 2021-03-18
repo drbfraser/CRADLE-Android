@@ -100,6 +100,7 @@ class StatsActivity : AppCompatActivity() {
                     // TODO: change text in header to human-readable, this is just for testing now
                     statsHeaderTv.text = getString(
                         R.string.stats_activity_epoch_header,
+                        @Suppress("MagicNumber")
                         floor(((endTimeEpoch - startTimeEpoch) / 86400000).toDouble()).toInt()
                     )
                     onResume()
