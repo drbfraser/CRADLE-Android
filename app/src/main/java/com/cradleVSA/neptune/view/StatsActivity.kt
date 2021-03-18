@@ -31,6 +31,7 @@ import kotlinx.coroutines.withContext
 import java.util.ArrayList
 import java.util.Collections
 import javax.inject.Inject
+import kotlin.math.floor
 
 @Suppress("LargeClass")
 @AndroidEntryPoint
@@ -99,8 +100,7 @@ class StatsActivity : AppCompatActivity() {
                     // TODO: change text in header to human-readable, this is just for testing now
                     statsHeaderTv.text = getString(
                         R.string.stats_activity_epoch_header,
-                        startTimeEpoch,
-                        endTimeEpoch
+                        floor(((endTimeEpoch - startTimeEpoch) / 86400000).toDouble()).toInt()
                     )
                     onResume()
                 }

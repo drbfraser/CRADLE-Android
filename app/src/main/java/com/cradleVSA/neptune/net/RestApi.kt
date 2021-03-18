@@ -197,11 +197,18 @@ class RestApi constructor(
 
     fun getStatisticsBetween(date1: Long, date2: Long): Statistics {
         // TODO: hook this up to the endpoint and do async network IO
-        val hardcodedDataExample = "{\"patients_referred\":2,\"sent_referrals\":58," +
+        val testData = listOf("{\"patients_referred\":2,\"sent_referrals\":58," +
             "\"days_with_readings\":5,\"unique_patient_readings\":102,\"total_readings\"" +
             ":295,\"color_readings\":{\"GREEN\":116,\"RED_DOWN\":4,\"RED_UP\":58,\"YELLOW_DOWN\"" +
-            ":22,\"YELLOW_UP\":95}}"
-        return JacksonMapper.mapper.readValue(hardcodedDataExample)
+            ":22,\"YELLOW_UP\":95}}", "{\"patients_referred\":5,\"sent_referrals\":93," +
+            "\"days_with_readings\":8,\"unique_patient_readings\":122,\"total_readings\"" +
+            ":285,\"color_readings\":{\"GREEN\":136,\"RED_DOWN\":44,\"RED_UP\":68,\"YELLOW_DOWN\"" +
+            ":42,\"YELLOW_UP\":15}}", "{\"patients_referred\":35,\"sent_referrals\":9," +
+            "\"days_with_readings\":48,\"unique_patient_readings\":192,\"total_readings\"" +
+            ":485,\"color_readings\":{\"GREEN\":36,\"RED_DOWN\":424,\"RED_UP\":648,\"YELLOW_DOWN\"" +
+            ":22,\"YELLOW_UP\":18}}")
+        val index = (0..2).random()
+        return JacksonMapper.mapper.readValue(testData[index])
     }
 
     /**
