@@ -157,5 +157,4 @@ interface ReadingDao {
      */
     @Query("UPDATE Reading SET isUploadedToServer = 0 WHERE readingId = :readingId")
     suspend fun setIsUploadedToServerToZero(readingId: String)
-
 }
