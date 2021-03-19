@@ -13,6 +13,7 @@ import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.manager.ReadingManager
 import com.cradleVSA.neptune.model.Reading
 import com.cradleVSA.neptune.model.Statistics
+import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.net.RestApi
 import com.cradleVSA.neptune.utilitiles.BarGraphValueFormatter
 import com.github.mikephil.charting.charts.BarChart
@@ -39,7 +40,7 @@ class StatsActivity : AppCompatActivity() {
     @Inject
     lateinit var readingManager: ReadingManager
     lateinit var readings: List<Reading>
-    lateinit var statsData: Statistics
+    lateinit var statsData: NetworkResult<Statistics>
     @Inject
     lateinit var restApi: RestApi
 
@@ -63,9 +64,11 @@ class StatsActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         lifecycleScope.launch {
-            statsData = restApi.getStatisticsBetween(startTimeEpoch, endTimeEpoch)
-            setupBasicStats(statsData)
-            setupBarChart(statsData)
+            statsData = restApi.getAllStatisticsBetween(startTimeEpoch, endTimeEpoch)
+            if (!statsData.failed) {
+                setupBasicStats(statsData.unwrapped!!)
+                setupBarChart(statsData.unwrapped!!)
+            }
             // TODO: Do this as a database query or a database view. Taking all the readings and
             //  them sorting them in memory is not efficient. Reading objects also contain
             //  information that is irrelevant for StatsActivity.

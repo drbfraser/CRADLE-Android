@@ -1,6 +1,7 @@
 package com.cradleVSA.neptune.manager
 
 import android.util.Log
+import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.Settings
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -123,6 +124,24 @@ class UrlManager @Inject constructor(val settings: Settings) {
      * get a single reading by id
      */
     fun getReadingById(id: String): String = "$base/readings/$id"
+
+    /**
+     * Get statistics for a given facility ID between two dates
+     */
+    fun getStatisticsForFacilityBetween(date1: Long, date2: Long, filterFacility: String): String =
+        "$base/stats/facility/$filterFacility?from=$date1&to=$date2"
+
+    /**
+     * Get statistics for a given user ID between two dates
+     */
+    fun getStatisticsForUserBetween(date1: Long, date2: Long, filterUser: Int): String =
+        "$base/stats/user/$filterUser?from=$date1&to=$date2"
+
+    /**
+     * Get statistics for all users/facilities between two dates
+     */
+    fun getAllStatisticsBetween(date1: Long, date2: Long): String =
+        "$base/stats/all?from=$date1&to=$date2"
 
     /**
      * get a patient info only

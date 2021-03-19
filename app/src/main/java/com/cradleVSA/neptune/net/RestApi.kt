@@ -6,6 +6,7 @@ import com.cradleVSA.neptune.manager.LoginResponse
 import com.cradleVSA.neptune.manager.UrlManager
 import com.cradleVSA.neptune.model.Assessment
 import com.cradleVSA.neptune.model.GlobalPatient
+import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.Patient
 import com.cradleVSA.neptune.model.PatientAndReadings
 import com.cradleVSA.neptune.model.Reading
@@ -186,34 +187,60 @@ class RestApi constructor(
         }
 
     /**
-     * Requests all statistics between two input UNIX timestamps.
+     * Requests all statistics between two input UNIX timestamps, for a given Facility.
+     *
+     * @param date1 UNIX timestamp of the beginning cutoff
+     * @param date2 UNIX timestamp of the end cutoff
+     * @param filterFacility input health facility to get statistics for
+     * @return Statistics object for the requested dates
+     */
+
+    suspend fun getStatisticsForFacilityBetween(date1: Long, date2: Long, filterFacility: HealthFacility): NetworkResult<Statistics> =
+        withContext(IO) {
+            http.makeRequest(
+                method = Http.Method.GET,
+                url = urlManager.getStatisticsForFacilityBetween(date1, date2, filterFacility.id),
+                headers = headers,
+                inputStreamReader = { JacksonMapper.mapper.readValue(it) }
+            )
+        }
+
+    /**
+     * Requests all statistics between two input UNIX timestamps, for a given user ID.
+     *
+     * @param date1 UNIX timestamp of the beginning cutoff
+     * @param date2 UNIX timestamp of the end cutoff
+     * @param userID the integer representation of user to get statistics for
+     * @return Statistics object for the requested dates
+     */
+
+    suspend fun getStatisticsForUserBetween(date1: Long, date2: Long, userID: Int): NetworkResult<Statistics> =
+        withContext(IO) {
+                http.makeRequest(
+                    method = Http.Method.GET,
+                    url = urlManager.getStatisticsForUserBetween(date1, date2, userID),
+                    headers = headers,
+                    inputStreamReader = { JacksonMapper.mapper.readValue(it) }
+                )
+            }
+
+    /**
+     * Requests all statistics between two input UNIX timestamps, for all facilities and users.
      *
      * @param date1 UNIX timestamp of the beginning cutoff
      * @param date2 UNIX timestamp of the end cutoff
      * @return Statistics object for the requested dates
-     *
-     * TODO: revisit after endpoint is finished and maybe add facility and user id filtering.
      */
 
-    fun getStatisticsBetween(date1: Long, date2: Long): Statistics {
-        // TODO: hook this up to the endpoint and do async network IO
-        val testData = listOf(
-            "{\"patients_referred\":2,\"sent_referrals\":58," +
-                "\"days_with_readings\":5,\"unique_patient_readings\":102,\"total_readings\"" +
-                ":295,\"color_readings\":{\"GREEN\":116,\"RED_DOWN\":4,\"RED_UP\":58,\"YELLOW_DOWN\"" +
-                ":22,\"YELLOW_UP\":95}}",
-            "{\"patients_referred\":5,\"sent_referrals\":93," +
-                "\"days_with_readings\":8,\"unique_patient_readings\":122,\"total_readings\"" +
-                ":285,\"color_readings\":{\"GREEN\":136,\"RED_DOWN\":44,\"RED_UP\":68,\"YELLOW_DOWN\"" +
-                ":42,\"YELLOW_UP\":15}}",
-            "{\"patients_referred\":35,\"sent_referrals\":9," +
-                "\"days_with_readings\":48,\"unique_patient_readings\":192,\"total_readings\"" +
-                ":485,\"color_readings\":{\"GREEN\":36,\"RED_DOWN\":424,\"RED_UP\":648,\"YELLOW_DOWN\"" +
-                ":22,\"YELLOW_UP\":18}}"
-        )
-        val index = (0..2).random()
-        return JacksonMapper.mapper.readValue(testData[index])
-    }
+    suspend fun getAllStatisticsBetween(date1: Long, date2: Long): NetworkResult<Statistics> =
+        withContext(IO) {
+            http.makeRequest(
+                method = Http.Method.GET,
+                url = urlManager.getAllStatisticsBetween(date1, date2),
+                headers = headers,
+                inputStreamReader = { JacksonMapper.mapper.readValue(it) }
+            )
+        }
 
     /**
      * Uploads a new patient along with associated readings to the server.
