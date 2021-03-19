@@ -210,4 +210,8 @@ class ReadingManager constructor(
     suspend fun setDateRecheckVitalsNeededToNull(readingId: String) {
         readingDao.setDateRecheckVitalsNeededToNull(readingId)
     }
+
+    suspend fun setIsUploadedToServerToZero(readingId: String) {
+        readingDao.setIsUploadedToServerToZero(readingId)
+    }
 }
