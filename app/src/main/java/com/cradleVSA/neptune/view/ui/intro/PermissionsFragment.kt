@@ -44,6 +44,9 @@ class PermissionsFragment : IntroBaseFragment() {
         mView = view
         updateDisplay()
         setupGrantPermissions()
+        if (areAllPermissionsGranted(requireContext())) {
+            activityCallbackListener!!.advanceToNextPage()
+        }
     }
 
     override fun onMyBeingDisplayed() {
