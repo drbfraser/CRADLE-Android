@@ -47,9 +47,9 @@ class StatsActivity : AppCompatActivity() {
     // TODO: discuss what the initial values of the date range should be.
     // These currently correspond to right now in MS, and current time minus 30 days in MS
     @Suppress("MagicNumber")
-    var startTimeEpoch: Long = System.currentTimeMillis() / 1000L
+    var endTimeEpoch: Long = System.currentTimeMillis() / 1000L
     @Suppress("MagicNumber")
-    var endTimeEpoch: Long = startTimeEpoch - 2592000000L
+    var startTimeEpoch: Long = endTimeEpoch - 2592000L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
