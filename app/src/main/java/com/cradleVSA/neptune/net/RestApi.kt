@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.InputStream
+import java.math.BigInteger
 import java.net.HttpURLConnection
 import javax.inject.Singleton
 
@@ -300,7 +301,7 @@ class RestApi constructor(
      */
     suspend fun syncPatients(
         listOfPatients: List<Patient>,
-        lastSyncTimestamp: Long = 1L,
+        lastSyncTimestamp: BigInteger = BigInteger.valueOf(1L),
         inputStreamReader: suspend (InputStream) -> Unit
     ): NetworkResult<Unit> =
         withContext(IO) {
@@ -324,7 +325,7 @@ class RestApi constructor(
      */
     suspend fun syncReadings(
         listOfReadings: List<Reading>,
-        lastSyncTimestamp: Long = 1L,
+        lastSyncTimestamp: BigInteger = BigInteger.valueOf(1L),
         inputStreamReader: suspend (InputStream) -> Unit
     ): NetworkResult<Unit> =
         withContext(IO) {

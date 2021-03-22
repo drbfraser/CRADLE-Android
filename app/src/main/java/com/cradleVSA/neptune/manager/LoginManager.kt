@@ -245,8 +245,8 @@ class LoginManager @Inject constructor(
             joinAll(patientsResultAsync, healthFacilityResultAsync)
             if (patientsResultAsync.await() is Success) {
                 sharedPreferences.edit(commit = true) {
-                    putLong(SyncWorker.LAST_PATIENT_SYNC, loginTime)
-                    putLong(SyncWorker.LAST_READING_SYNC, loginTime)
+                    putString(SyncWorker.LAST_PATIENT_SYNC, loginTime.toString())
+                    putString(SyncWorker.LAST_READING_SYNC, loginTime.toString())
                 }
             }
 

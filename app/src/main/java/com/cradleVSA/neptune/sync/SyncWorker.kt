@@ -36,6 +36,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.IOException
+import java.math.BigInteger
 
 /**
  * A Worker that syncs the local [Patient]s and [Reading]s (and [Referral]s sent by SMS) with
@@ -80,7 +81,7 @@ class SyncWorker @AssistedInject constructor(
         /** SharedPreferences key for last time readings were synced */
         const val LAST_READING_SYNC = "lastSyncTimeReadings"
         /** Default last sync timestamp. Note that using 0 will result in server rejecting param */
-        const val LAST_SYNC_DEFAULT = 1L
+        const val LAST_SYNC_DEFAULT = "1"
 
         /** The key for current syncing state in the [WorkInfo] progress */
         private const val PROGRESS_CURRENT_STATE = "currentState"
@@ -145,15 +146,17 @@ class SyncWorker @AssistedInject constructor(
         Log.d(TAG, "doWork()")
         setProgress(workDataOf(PROGRESS_CURRENT_STATE to State.STARTING.name))
 
-        val lastPatientSyncTime = sharedPreferences.getLong(
-            LAST_PATIENT_SYNC,
-            LAST_SYNC_DEFAULT
+        val lastPatientSyncTime = BigInteger(
+            sharedPreferences.getString(
+                LAST_PATIENT_SYNC,
+                LAST_SYNC_DEFAULT.toString()
+            )!!
         )
         // We only use the timestamp right before the internet call is made.
         // We do not use the timestamp after syncing is done; there could be a case where someone
         // edits a patient or adds a reading etc. during the sync; those changes will never the
         // phone if we only use a timestamp after the sync.
-        val syncTimestampToSave: Long = UnixTimestamp.now
+        val syncTimestampToSave: BigInteger = UnixTimestamp.now
 
         val patientsToUpload: List<Patient> = patientManager.getPatientsForUpload()
         val patientResult = syncPatients(patientsToUpload, lastPatientSyncTime)
@@ -169,7 +172,7 @@ class SyncWorker @AssistedInject constructor(
 
         if (patientResult is Success) {
             sharedPreferences.edit(commit = true) {
-                putLong(LAST_PATIENT_SYNC, syncTimestampToSave)
+                putString(LAST_PATIENT_SYNC, syncTimestampToSave.toString())
             }
             Log.d(TAG, "Patient sync is a success, moving on to syncing readings")
         } else {
@@ -178,9 +181,11 @@ class SyncWorker @AssistedInject constructor(
             )
         }
 
-        val lastReadingSyncTime = sharedPreferences.getLong(
-            LAST_READING_SYNC,
-            LAST_SYNC_DEFAULT
+        val lastReadingSyncTime = BigInteger(
+            sharedPreferences.getString(
+                LAST_READING_SYNC,
+                LAST_SYNC_DEFAULT
+            )!!
         )
         val readingsToUpload = readingManager.getUnUploadedReadings()
         val readingResult = syncReadings(readingsToUpload, lastReadingSyncTime)
@@ -203,7 +208,7 @@ class SyncWorker @AssistedInject constructor(
 
         return if (readingResult is Success) {
             sharedPreferences.edit(commit = true) {
-                putLong(LAST_READING_SYNC, syncTimestampToSave)
+                putString(LAST_READING_SYNC, syncTimestampToSave.toString())
             }
             Result.success(
                 workDataOf(RESULT_MESSAGE to getResultMessage(readingResult))
@@ -215,7 +220,7 @@ class SyncWorker @AssistedInject constructor(
 
     private suspend fun syncPatients(
         patientsToUpload: List<Patient>,
-        lastSyncTime: Long
+        lastSyncTime: BigInteger
     ): NetworkResult<Unit> = withContext(Dispatchers.Default) {
         setProgress(
             if (patientsToUpload.isEmpty()) {
@@ -295,7 +300,7 @@ class SyncWorker @AssistedInject constructor(
 
     private suspend fun syncReadings(
         readingsToUpload: List<Reading>,
-        lastSyncTime: Long
+        lastSyncTime: BigInteger
     ): NetworkResult<Unit> = withContext(Dispatchers.Default) {
         Log.d(TAG, "preparing to upload ${readingsToUpload.size} readings")
         setProgress(
