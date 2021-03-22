@@ -81,7 +81,7 @@ class PatientTests {
             name = "AB",
             dob = "1989-10-24",
             isExactDob = true,
-            gestationalAge = GestationalAgeWeeks(28),
+            gestationalAge = GestationalAgeWeeks(Weeks(28)),
             sex = Sex.FEMALE,
             isPregnant = true,
             zone = "9945",
