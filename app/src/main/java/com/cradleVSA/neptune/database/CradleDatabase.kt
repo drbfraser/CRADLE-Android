@@ -35,7 +35,7 @@ import org.json.JSONArray
 @Database(
     entities = [Reading::class, Patient::class, HealthFacility::class],
     views = [LocalSearchPatient::class],
-    version = 9,
+    version = 10,
     exportSchema = true
 )
 @TypeConverters(DatabaseTypeConverters::class)
