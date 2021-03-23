@@ -44,10 +44,12 @@ class StatsActivity : AppCompatActivity() {
     @Inject
     lateinit var restApi: RestApi
 
+    val MSEC_IN_SEC = 1000L
+
     // TODO: discuss what the initial values of the date range should be.
     // These currently correspond to right now in MS, and current time minus 30 days in MS
     @Suppress("MagicNumber")
-    var endTimeEpoch: Long = System.currentTimeMillis() / 1000L
+    var endTimeEpoch: Long = System.currentTimeMillis() / MSEC_IN_SEC
     @Suppress("MagicNumber")
     var startTimeEpoch: Long = endTimeEpoch - 2592000L
 
@@ -89,14 +91,18 @@ class StatsActivity : AppCompatActivity() {
                 val rangePickerBuilder = MaterialDatePicker.Builder.dateRangePicker()
                 val rangePicker = rangePickerBuilder.build()
                 rangePicker.addOnPositiveButtonClickListener {
-                    startTimeEpoch = it.first ?: startTimeEpoch
-                    endTimeEpoch = it.second ?: endTimeEpoch
+                    it.first?.let{
+                        startTimeEpoch = it / MSEC_IN_SEC
+                    }
+                    it.second?.let {
+                        endTimeEpoch = it / MSEC_IN_SEC
+                    }
                     val statsHeaderTv = findViewById<TextView>(R.id.textView32)
                     // TODO: change text in header to human-readable, this is just for testing now
                     statsHeaderTv.text = getString(
                         R.string.stats_activity_epoch_header,
                         @Suppress("MagicNumber")
-                        floor(((endTimeEpoch - startTimeEpoch) / 86400000).toDouble()).toInt()
+                        floor(((endTimeEpoch - startTimeEpoch) / 86400).toDouble()).toInt()
                     )
                     onResume()
                 }

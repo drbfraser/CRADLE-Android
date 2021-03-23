@@ -364,7 +364,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
-            android:text="@string/stats_activity_no_readings_text"
+            android:text="@string/stats_activity_fetching_data"
             android:textAlignment="center"
             android:textColor="@color/black"
             android:textSize="18sp"
