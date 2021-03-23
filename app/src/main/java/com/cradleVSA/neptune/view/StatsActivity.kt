@@ -69,14 +69,6 @@ class StatsActivity : AppCompatActivity() {
                 setupBasicStats(statsData.unwrapped!!)
                 setupBarChart(statsData.unwrapped!!)
             }
-            // TODO: Do this as a database query or a database view. Taking all the readings and
-            //  them sorting them in memory is not efficient. Reading objects also contain
-            //  information that is irrelevant for StatsActivity.
-            readings = withContext(Dispatchers.IO) { readingManager.getAllReadings() }
-            Collections.sort(readings, Reading.AscendingDataComparator)
-            if (readings.isNotEmpty()) {
-                setupLineChart()
-            }
         }
     }
 
@@ -189,76 +181,5 @@ class StatsActivity : AppCompatActivity() {
         barChart.legend.isEnabled = false
         barChart.isHighlightPerTapEnabled = false
         barChart.invalidate()
-    }
-
-    private fun setupLineChart() {
-        val lineChart = findViewById<LineChart>(R.id.lineChart)
-        val linecard = findViewById<CardView>(R.id.linechartCard)
-        linecard.visibility = View.VISIBLE
-        val diastolicEntry: MutableList<Entry> =
-            ArrayList()
-        val systolicEntry: MutableList<Entry> =
-            ArrayList()
-        val heartrateEntry: MutableList<Entry> =
-            ArrayList()
-        // start at 0
-        for (i in readings.indices) {
-            val (_, _, _, bloodPressure) = readings[i]
-            diastolicEntry.add(
-                Entry(
-                    (i + 1).toFloat(),
-                    bloodPressure.diastolic.toFloat()
-                )
-            )
-            systolicEntry.add(
-                Entry(
-                    (i + 1).toFloat(),
-                    bloodPressure.systolic.toFloat()
-                )
-            )
-            heartrateEntry.add(
-                Entry(
-                    (i + 1).toFloat(),
-                    bloodPressure.heartRate.toFloat()
-                )
-            )
-        }
-        val diastolicDataSet = LineDataSet(diastolicEntry, "BP Diastolic")
-        val systolicDataSet = LineDataSet(systolicEntry, "BP Systolic")
-        val heartRateDataSet = LineDataSet(heartrateEntry, "Heart Rate BPM")
-        diastolicDataSet.color = resources.getColor(R.color.colorAccent)
-        systolicDataSet.color = resources.getColor(R.color.purple)
-        heartRateDataSet.color = resources.getColor(R.color.orange)
-        diastolicDataSet.setCircleColor(resources.getColor(R.color.colorAccent))
-        systolicDataSet.setCircleColor(resources.getColor(R.color.purple))
-        heartRateDataSet.setCircleColor(resources.getColor(R.color.orange))
-
-        // this is to make the curve smooth
-        diastolicDataSet.setDrawCircleHole(false)
-        diastolicDataSet.setDrawCircles(false)
-        diastolicDataSet.mode = LineDataSet.Mode.CUBIC_BEZIER
-        systolicDataSet.setDrawCircleHole(false)
-        systolicDataSet.setDrawCircles(false)
-        systolicDataSet.mode = LineDataSet.Mode.CUBIC_BEZIER
-        heartRateDataSet.setDrawCircleHole(false)
-        heartRateDataSet.setDrawCircles(false)
-        heartRateDataSet.mode = LineDataSet.Mode.CUBIC_BEZIER
-
-        // remove unneccessy background lines
-        lineChart.setDrawBorders(false)
-        lineChart.setDrawGridBackground(false)
-        lineChart.axisRight.setDrawLabels(false)
-        lineChart.axisRight.setDrawGridLines(false)
-        lineChart.xAxis.setDrawGridLines(false)
-        lineChart.axisLeft.setDrawGridLines(false)
-        val lineData = LineData(diastolicDataSet, systolicDataSet, heartRateDataSet)
-        lineData.setDrawValues(false)
-        lineData.isHighlightEnabled = false
-        lineChart.xAxis.setDrawAxisLine(true)
-        lineChart.data = lineData
-        lineChart.xAxis.isEnabled = false
-        lineChart.description.text =
-            "Cardiovascular Data from last " + readings.size + " readings"
-        lineChart.invalidate()
     }
 }
