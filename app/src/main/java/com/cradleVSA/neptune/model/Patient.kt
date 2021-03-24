@@ -557,9 +557,9 @@ sealed class GestationalAge(val timestamp: Long) : Marshal<JSONObject>, Serializ
 
         // These need to be marked static so we can share them with implementors.
         @JvmStatic
-        protected val UNIT_VALUE_WEEKS = "GESTATIONAL_AGE_UNITS_WEEKS"
+        protected val UNIT_VALUE_WEEKS = "WEEKS"
         @JvmStatic
-        protected val UNIT_VALUE_MONTHS = "GESTATIONAL_AGE_UNITS_MONTHS"
+        protected val UNIT_VALUE_MONTHS = "MONTHS"
 
         /**
          * Constructs a [GestationalAge] variant from a [JSONObject].
