@@ -178,9 +178,7 @@ class SharedPreferencesMigration constructor(
 
         (oldVersion < CHANGE_TIMESTAMPS_TO_STRING).runIfTrue {
             // Change timestamps to Strings, as they are stored post-BigInt update
-            if (!sharedPreferences.contains(SyncWorker.LAST_PATIENT_SYNC)) {
-                return@runIfTrue
-            } else {
+            if (sharedPreferences.contains(SyncWorker.LAST_PATIENT_SYNC)) {
                 val syncTimeAsLong = try {
                     sharedPreferences.getLong(SyncWorker.LAST_PATIENT_SYNC, -1L)
                 } catch (e: ClassCastException) {
@@ -200,9 +198,7 @@ class SharedPreferencesMigration constructor(
                 }
             }
 
-            if (!sharedPreferences.contains(SyncWorker.LAST_READING_SYNC)) {
-                return@runIfTrue
-            } else {
+            if (sharedPreferences.contains(SyncWorker.LAST_READING_SYNC)) {
                 val syncTimeReadingsAsLong = try {
                     sharedPreferences.getLong(SyncWorker.LAST_READING_SYNC, -1L)
                 } catch (e: ClassCastException) {
