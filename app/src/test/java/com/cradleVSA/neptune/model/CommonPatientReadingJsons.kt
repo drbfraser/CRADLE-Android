@@ -187,7 +187,7 @@ object CommonPatientReadingJsons {
 {
     "patientName": "Test patient",
     "patientSex": "FEMALE",
-    "gestationalAgeUnit": "GESTATIONAL_AGE_UNITS_WEEKS",
+    "gestationalAgeUnit": "WEEKS",
     "medicalHistory": "Some med history.",
     "zone": "634",
     "isExactDob": true,
@@ -297,7 +297,7 @@ object CommonPatientReadingJsons {
     "patientName": "Name",
     "patientSex": "OTHER",
     "isPregnant": true,
-    "gestationalAgeUnit": "GESTATIONAL_AGE_UNITS_MONTHS",
+    "gestationalAgeUnit": "MONTHS",
     "gestationalTimestamp": 1584245042,
     "medicalHistory": "med hustory",
     "drugHistory": "History",
