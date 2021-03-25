@@ -3,6 +3,8 @@ package com.cradleVSA.neptune.utilitiles
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.core.content.edit
+import com.cradleVSA.neptune.sync.SyncWorker
+import java.math.BigInteger
 
 /**
  * Handles migrations to values stored in SharedPreferences.
@@ -16,7 +18,7 @@ import androidx.core.content.edit
  *
  *  <map>
  *      <string name="loginEmail">admin123@admin.com</string>
- *      <long name="lastSyncTime" value="1604971619" />
+ *      <string name="lastSyncTime">1604971619</string>
  *      <int name="cradle_shared_preferences_version" value="1" />
  *      <string name="setting_vht_name">Admin</string>
  *      <int name="userId" value="1" />
@@ -54,9 +56,15 @@ class SharedPreferencesMigration constructor(
         private const val ADD_READING_SYNC_TIMESTAMP = 2
 
         /**
+         * Timestamps in SharedPreferences were previously stored as a Long; needs to be changed
+         * so that it's stored as Strings for use with BigInteger.
+         */
+        private const val CHANGE_TIMESTAMPS_TO_STRING = 3
+
+        /**
          * The latest version. This MUST be changed so that it's the latest version
          */
-        const val LATEST_SHARED_PREF_VERSION = 2
+        const val LATEST_SHARED_PREF_VERSION = 3
 
         const val KEY_SHARED_PREFERENCE_VERSION = "cradle_shared_preferences_version"
     }
@@ -165,6 +173,53 @@ class SharedPreferencesMigration constructor(
 
             sharedPreferences.edit(commit = true) {
                 putLong("lastSyncTimeReadings", lastSyncTime)
+            }
+        }
+
+        (oldVersion < CHANGE_TIMESTAMPS_TO_STRING).runIfTrue {
+            // Change timestamps to Strings, as they are stored post-BigInt update
+            if (!sharedPreferences.contains(SyncWorker.LAST_PATIENT_SYNC)) {
+                return@runIfTrue
+            } else {
+                val syncTimeAsLong = try {
+                    sharedPreferences.getLong(SyncWorker.LAST_PATIENT_SYNC, -1L)
+                } catch (e: ClassCastException) {
+                    throw MigrationException("lastTimeSync isn't a Long")
+                }
+
+                if (syncTimeAsLong == -1L) {
+                    throw MigrationException("bad lastTimeSync stored")
+                }
+
+                val syncTimeAsBigInt = BigInteger.valueOf(syncTimeAsLong)
+                    ?: throw MigrationException("Long could not be converted to a BigInteger")
+
+                sharedPreferences.edit(commit = true) {
+                    remove(SyncWorker.LAST_PATIENT_SYNC)
+                    putString(SyncWorker.LAST_PATIENT_SYNC, syncTimeAsBigInt.toString())
+                }
+            }
+
+            if (!sharedPreferences.contains(SyncWorker.LAST_READING_SYNC)) {
+                return@runIfTrue
+            } else {
+                val syncTimeReadingsAsLong = try {
+                    sharedPreferences.getLong(SyncWorker.LAST_READING_SYNC, -1L)
+                } catch (e: ClassCastException) {
+                    throw MigrationException("lastTimeSyncReadings isn't a Long")
+                }
+
+                if (syncTimeReadingsAsLong == -1L) {
+                    throw MigrationException("bad lastTimeSyncReadings stored")
+                }
+
+                val syncTimeReadingsAsBigInt = BigInteger.valueOf(syncTimeReadingsAsLong)
+                    ?: throw MigrationException("Long could not be converted to a BigInteger")
+
+                sharedPreferences.edit(commit = true) {
+                    remove(SyncWorker.LAST_READING_SYNC)
+                    putString(SyncWorker.LAST_READING_SYNC, syncTimeReadingsAsBigInt.toString())
+                }
             }
         }
 
