@@ -1,5 +1,7 @@
 package com.cradleVSA.neptune.utilitiles
 
+import java.math.BigInteger
+
 object UnixTimestamp {
 
     private const val MS_IN_SECOND = 1000L
@@ -7,8 +9,8 @@ object UnixTimestamp {
     /**
      * The current time as a unix timestamp.
      */
-    val now: Long
-        get() = System.currentTimeMillis() / MS_IN_SECOND
+    val now: BigInteger
+        get() = BigInteger.valueOf(System.currentTimeMillis() / MS_IN_SECOND)
 
     /**
      * Returns a unix timestamp for as specific duration of time in the past
@@ -17,6 +19,6 @@ object UnixTimestamp {
      * @param duration an amount of time
      * @return a unix timestamp
      */
-    fun ago(duration: Duration): Long =
-        now - duration.seconds.value
+    fun ago(duration: Duration): BigInteger =
+        now - BigInteger.valueOf(duration.seconds.value)
 }
