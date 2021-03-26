@@ -93,6 +93,12 @@ data class Referral(
 }
 
 /**
+ * The information that is expected by the SMS relay app.
+ * TODO: Ensure that removing "referralId" doesn't break the SMS relay app.
+ */
+data class SmsReferral(val referralId: String, val patient: PatientAndReadings)
+
+/**
  * JSON keys for [Referral] fields.
  */
 private enum class ReferralField(override val text: String) : Field {
