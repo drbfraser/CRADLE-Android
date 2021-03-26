@@ -251,6 +251,10 @@
     <string name="stats_activity_fetching_data">Please wait, fetching statistics…</string>
     <string name="stats_activity_this_month_you_have_header">This month, there were…</string>
     <string name="stats_activity_epoch_header">In the %1$d day range, there were…</string>
+    <string name="stats_activity_filter_header">Choose a filtering option</string>
+    <string name="stats_activity_filter_showAll">Show statistics for all readings</string>
+    <string name="stats_activity_filter_byUserID">Show statistics for the current user</string>
+    <string name="stats_activity_filter_byFacilityID">Show statistics for the current facility</string>
     <string name="video_activity_header">CRADLE VSA Training Video</string>
     <string name="video_activity_app_credits">App developed by Team Neptune</string>
     <string name="camera_fragment_instructions_header">Hold the phone steady and take photo of CRADLE VSA reading</string>

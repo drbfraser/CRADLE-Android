@@ -6,6 +6,8 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AlertDialog.Builder
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.lifecycle.lifecycleScope
@@ -17,20 +19,13 @@ import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.net.RestApi
 import com.cradleVSA.neptune.utilitiles.BarGraphValueFormatter
 import com.github.mikephil.charting.charts.BarChart
-import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.ArrayList
-import java.util.Collections
 import javax.inject.Inject
 import kotlin.math.floor
 
@@ -45,13 +40,15 @@ class StatsActivity : AppCompatActivity() {
     lateinit var restApi: RestApi
 
     val MSEC_IN_SEC = 1000L
+    var FilterOptions_checkedItem = 0 // Persistent (within activity) choice of filter option.
 
     // TODO: discuss what the initial values of the date range should be.
+    // Also TODO: Set up an Options menu via widget (perhaps a custom AlertDialog?)
     // These currently correspond to right now in MS, and current time minus 30 days in MS
     @Suppress("MagicNumber")
     var endTimeEpoch: Long = System.currentTimeMillis() / MSEC_IN_SEC
     @Suppress("MagicNumber")
-    var startTimeEpoch: Long = endTimeEpoch - 2592000L
+    var startTimeEpoch: Long = endTimeEpoch - 2592000L // 30 days in seconds
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,10 +84,11 @@ class StatsActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.stats_settings -> {
+            R.id.stats_time_picker -> {
                 val rangePickerBuilder = MaterialDatePicker.Builder.dateRangePicker()
                 val rangePicker = rangePickerBuilder.build()
                 rangePicker.addOnPositiveButtonClickListener {
+                    // rangePicker returns values in msec... and the API expects values in seconds.
                     it.first?.let{
                         startTimeEpoch = it / MSEC_IN_SEC
                     }
@@ -107,6 +105,33 @@ class StatsActivity : AppCompatActivity() {
                     onResume()
                 }
                 rangePicker.show(supportFragmentManager, rangePicker.toString())
+                return true
+            }
+            R.id.stats_filters -> {
+                val builder = AlertDialog.Builder(this@StatsActivity)
+                builder.setTitle(getString(R.string.stats_activity_filter_header))
+
+                // Use a radio button list for choosing the filtering method.
+                val filterOptions = arrayOf(getString(R.string.stats_activity_filter_showAll),
+                    getString(R.string.stats_activity_filter_byUserID),
+                    getString(R.string.stats_activity_filter_byFacilityID))
+                var tmpCheckedItem = 0;
+                builder.setSingleChoiceItems(filterOptions, FilterOptions_checkedItem) { dialog, which ->
+                    // For now, save the enum value - only change filter options
+                    // (and thus force a new network request) when "OK" is chosen.
+                    tmpCheckedItem = which
+                }
+
+                builder.setPositiveButton("OK") { dialog, which ->
+                    // OK was clicked, save the choice
+                    // (and reload only if we are saving a new option):
+                    FilterOptions_checkedItem = tmpCheckedItem
+                }
+                // Ignore any changes on "cancel"
+                builder.setNegativeButton("Cancel", null)
+                
+                val dialog = builder.create()
+                dialog.show()
                 return true
             }
             else -> {
