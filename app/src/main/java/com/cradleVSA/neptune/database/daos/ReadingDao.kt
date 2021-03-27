@@ -69,7 +69,6 @@ interface ReadingDao {
     @Delete
     suspend fun delete(reading: Reading?)
 
-
     /**
      * Returns the first reading whose reading ID is equal to [id].
      *

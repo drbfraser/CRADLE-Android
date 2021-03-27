@@ -28,10 +28,8 @@ import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import java.util.ArrayList
 import javax.inject.Inject
 import kotlin.math.floor
@@ -49,18 +47,20 @@ class StatsActivity : AppCompatActivity() {
     lateinit var restApi: RestApi
     lateinit var healthFacilityViewModel: HealthFacilityViewModel
 
-    val MSEC_IN_SEC = 1000L
-    val FilterOptions_showAll = 0
-    val FilterOptions_filterUser = 1
-    val FilterOptions_filterByFacility = 2
-    var FilterOptions_checkedItem = FilterOptions_showAll // Persistent (within activity) choice of filter option.
-    var FilterOptions_facility: HealthFacility? = null
+    @Suppress("MagicNumber")
+    val msecInSec = 1000L // This is the conversion value.
+
+    val filterOptionsShowAll = 0
+    val filterOptionsFilterUser = 1
+    val filterOptionsFilterByFacility = 2
+    var filterOptionsCheckedItem = filterOptionsShowAll // Persistent (within activity) choice of filter option.
+    var filterOptionsSavedFacility: HealthFacility? = null
 
     // TODO: discuss what the initial values of the date range should be.
     // Also TODO: Set up an Options menu via widget (perhaps a custom AlertDialog?)
     // These currently correspond to right now in MS, and current time minus 30 days in MS
     @Suppress("MagicNumber")
-    var endTimeEpoch: Long = System.currentTimeMillis() / MSEC_IN_SEC
+    var endTimeEpoch: Long = System.currentTimeMillis() / msecInSec
     @Suppress("MagicNumber")
     var startTimeEpoch: Long = endTimeEpoch - 2592000L // 30 days in seconds
 
@@ -78,28 +78,31 @@ class StatsActivity : AppCompatActivity() {
         super.onResume()
         lifecycleScope.launch {
             var statsData: NetworkResult<Statistics>? = null
-            when(FilterOptions_checkedItem) {
-                FilterOptions_showAll -> {
+            when (filterOptionsCheckedItem) {
+                filterOptionsShowAll -> {
                     // Get all stats:
                     statsData = restApi.getAllStatisticsBetween(startTimeEpoch, endTimeEpoch)
                 }
-                FilterOptions_filterUser -> {
+                filterOptionsFilterUser -> {
                     // Get stats for the current user ID:
                     // TODO: Determine a sane failure value for USER_ID_KEY
                     statsData = restApi.getStatisticsForUserBetween(
-                        startTimeEpoch, endTimeEpoch, sharedPreferences.getInt(
-                            LoginManager.USER_ID_KEY, -1
+                        startTimeEpoch,
+                        endTimeEpoch,
+                        sharedPreferences.getInt(
+                            LoginManager.USER_ID_KEY,
+                            -1
                         )
                     )
                 }
-                FilterOptions_filterByFacility -> {
+                filterOptionsFilterByFacility -> {
                     // Get stats for the currently saved Facility:
-                    FilterOptions_facility?.let{
+                    filterOptionsSavedFacility?.let {
                         statsData = restApi.getStatisticsForFacilityBetween(startTimeEpoch, endTimeEpoch, it)
                     }
                 }
             }
-            statsData?.let{
+            statsData?.let {
                 if (!it.failed) {
                     setupBasicStats(it.unwrapped!!)
                     setupBarChart(it.unwrapped!!)
@@ -127,10 +130,10 @@ class StatsActivity : AppCompatActivity() {
                 rangePicker.addOnPositiveButtonClickListener {
                     // rangePicker returns values in msec... and the API expects values in seconds.
                     it.first?.let {
-                        startTimeEpoch = it / MSEC_IN_SEC
+                        startTimeEpoch = it / msecInSec
                     }
                     it.second?.let {
-                        endTimeEpoch = it / MSEC_IN_SEC
+                        endTimeEpoch = it / msecInSec
                     }
                     val statsHeaderTv = findViewById<TextView>(R.id.textView32)
                     // TODO: change text in header to human-readable, this is just for testing now
@@ -154,15 +157,15 @@ class StatsActivity : AppCompatActivity() {
                     getString(R.string.stats_activity_filter_byUserID),
                     getString(R.string.stats_activity_filter_byFacilityID)
                 )
-                var tmpCheckedItem = 0;
+                var tmpCheckedItem = 0
                 builder.setSingleChoiceItems(
                     filterOptions,
-                    FilterOptions_checkedItem
+                    filterOptionsCheckedItem
                 ) { dialog, which ->
                     // For now, save the enum value - only change filter options
                     // (and thus force a new network request) when "OK" is chosen.
                     tmpCheckedItem = which
-                    if (tmpCheckedItem == FilterOptions_filterByFacility) {
+                    if (tmpCheckedItem == filterOptionsFilterByFacility) {
                         // Do another AlertDialog for picking the Facility:
                         setupFacilityDialog()
                     }
@@ -171,8 +174,8 @@ class StatsActivity : AppCompatActivity() {
                 builder.setPositiveButton("OK") { dialog, which ->
                     // OK was clicked, save the choice
                     // (and reload only if we are saving a new option):
-                    if (tmpCheckedItem != FilterOptions_checkedItem) {
-                        FilterOptions_checkedItem = tmpCheckedItem
+                    if (tmpCheckedItem != filterOptionsCheckedItem) {
+                        filterOptionsCheckedItem = tmpCheckedItem
                         onResume()
                     }
                 }
@@ -205,7 +208,7 @@ class StatsActivity : AppCompatActivity() {
             var dialog: AlertDialog? = null
 
             val healthFacilities = healthFacilityViewModel.getAllSelectedFacilities()
-            val facilityNameArray = healthFacilities.map{it.name}.toTypedArray()
+            val facilityNameArray = healthFacilities.map { it.name }.toTypedArray()
 
             builder.setSingleChoiceItems(facilityNameArray, checkedItemIndex) { dialog, which ->
                 // For now, save the enum value - only change filter options
@@ -215,7 +218,7 @@ class StatsActivity : AppCompatActivity() {
 
             builder.setPositiveButton("OK") { dialog, which ->
                 // OK was clicked, save the facility:
-                FilterOptions_facility = healthFacilities?.get(checkedItemIndex)
+                filterOptionsSavedFacility = healthFacilities?.get(checkedItemIndex)
             }
 
             // Ignore any changes on "cancel"

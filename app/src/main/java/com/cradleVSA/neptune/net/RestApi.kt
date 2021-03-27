@@ -196,7 +196,11 @@ class RestApi constructor(
      * @return Statistics object for the requested dates
      */
 
-    suspend fun getStatisticsForFacilityBetween(date1: Long, date2: Long, filterFacility: HealthFacility): NetworkResult<Statistics> =
+    suspend fun getStatisticsForFacilityBetween(
+        date1: Long,
+        date2: Long,
+        filterFacility: HealthFacility
+    ): NetworkResult<Statistics> =
         withContext(IO) {
             http.makeRequest(
                 method = Http.Method.GET,
@@ -215,15 +219,19 @@ class RestApi constructor(
      * @return Statistics object for the requested dates
      */
 
-    suspend fun getStatisticsForUserBetween(date1: Long, date2: Long, userID: Int): NetworkResult<Statistics> =
+    suspend fun getStatisticsForUserBetween(
+        date1: Long,
+        date2: Long,
+        userID: Int
+    ): NetworkResult<Statistics> =
         withContext(IO) {
-                http.makeRequest(
-                    method = Http.Method.GET,
-                    url = urlManager.getStatisticsForUserBetween(date1, date2, userID),
-                    headers = headers,
-                    inputStreamReader = { JacksonMapper.mapper.readValue(it) }
-                )
-            }
+            http.makeRequest(
+                method = Http.Method.GET,
+                url = urlManager.getStatisticsForUserBetween(date1, date2, userID),
+                headers = headers,
+                inputStreamReader = { JacksonMapper.mapper.readValue(it) }
+            )
+        }
 
     /**
      * Requests all statistics between two input UNIX timestamps, for all facilities and users.
@@ -233,7 +241,10 @@ class RestApi constructor(
      * @return Statistics object for the requested dates
      */
 
-    suspend fun getAllStatisticsBetween(date1: Long, date2: Long): NetworkResult<Statistics> =
+    suspend fun getAllStatisticsBetween(
+        date1: Long,
+        date2: Long
+    ): NetworkResult<Statistics> =
         withContext(IO) {
             http.makeRequest(
                 method = Http.Method.GET,

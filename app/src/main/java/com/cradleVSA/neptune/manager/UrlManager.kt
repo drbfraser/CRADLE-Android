@@ -1,7 +1,6 @@
 package com.cradleVSA.neptune.manager
 
 import android.util.Log
-import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.Settings
 import java.math.BigInteger
 import javax.inject.Inject
