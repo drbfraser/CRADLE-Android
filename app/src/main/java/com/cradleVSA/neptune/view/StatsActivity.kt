@@ -1,5 +1,6 @@
 package com.cradleVSA.neptune.view
 
+import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
 import android.view.Menu
@@ -7,24 +8,30 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AlertDialog.Builder
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.cradleVSA.neptune.R
+import com.cradleVSA.neptune.manager.LoginManager
 import com.cradleVSA.neptune.manager.ReadingManager
+import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.Reading
 import com.cradleVSA.neptune.model.Statistics
 import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.net.RestApi
 import com.cradleVSA.neptune.utilitiles.BarGraphValueFormatter
+import com.cradleVSA.neptune.viewmodel.HealthFacilityViewModel
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.util.ArrayList
 import javax.inject.Inject
 import kotlin.math.floor
@@ -34,13 +41,20 @@ import kotlin.math.floor
 class StatsActivity : AppCompatActivity() {
     @Inject
     lateinit var readingManager: ReadingManager
+    @Inject
+    lateinit var sharedPreferences: SharedPreferences
     lateinit var readings: List<Reading>
     lateinit var statsData: NetworkResult<Statistics>
     @Inject
     lateinit var restApi: RestApi
+    lateinit var healthFacilityViewModel: HealthFacilityViewModel
 
     val MSEC_IN_SEC = 1000L
-    var FilterOptions_checkedItem = 0 // Persistent (within activity) choice of filter option.
+    val FilterOptions_showAll = 0
+    val FilterOptions_filterUser = 1
+    val FilterOptions_filterByFacility = 2
+    var FilterOptions_checkedItem = FilterOptions_showAll // Persistent (within activity) choice of filter option.
+    var FilterOptions_facility: HealthFacility? = null
 
     // TODO: discuss what the initial values of the date range should be.
     // Also TODO: Set up an Options menu via widget (perhaps a custom AlertDialog?)
@@ -63,10 +77,33 @@ class StatsActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         lifecycleScope.launch {
-            statsData = restApi.getAllStatisticsBetween(startTimeEpoch, endTimeEpoch)
-            if (!statsData.failed) {
-                setupBasicStats(statsData.unwrapped!!)
-                setupBarChart(statsData.unwrapped!!)
+            var statsData: NetworkResult<Statistics>? = null
+            when(FilterOptions_checkedItem) {
+                FilterOptions_showAll -> {
+                    // Get all stats:
+                    statsData = restApi.getAllStatisticsBetween(startTimeEpoch, endTimeEpoch)
+                }
+                FilterOptions_filterUser -> {
+                    // Get stats for the current user ID:
+                    // TODO: Determine a sane failure value for USER_ID_KEY
+                    statsData = restApi.getStatisticsForUserBetween(
+                        startTimeEpoch, endTimeEpoch, sharedPreferences.getInt(
+                            LoginManager.USER_ID_KEY, -1
+                        )
+                    )
+                }
+                FilterOptions_filterByFacility -> {
+                    // Get stats for the currently saved Facility:
+                    FilterOptions_facility?.let{
+                        statsData = restApi.getStatisticsForFacilityBetween(startTimeEpoch, endTimeEpoch, it)
+                    }
+                }
+            }
+            statsData?.let{
+                if (!it.failed) {
+                    setupBasicStats(it.unwrapped!!)
+                    setupBarChart(it.unwrapped!!)
+                }
             }
         }
     }
@@ -89,7 +126,7 @@ class StatsActivity : AppCompatActivity() {
                 val rangePicker = rangePickerBuilder.build()
                 rangePicker.addOnPositiveButtonClickListener {
                     // rangePicker returns values in msec... and the API expects values in seconds.
-                    it.first?.let{
+                    it.first?.let {
                         startTimeEpoch = it / MSEC_IN_SEC
                     }
                     it.second?.let {
@@ -112,24 +149,36 @@ class StatsActivity : AppCompatActivity() {
                 builder.setTitle(getString(R.string.stats_activity_filter_header))
 
                 // Use a radio button list for choosing the filtering method.
-                val filterOptions = arrayOf(getString(R.string.stats_activity_filter_showAll),
+                val filterOptions = arrayOf(
+                    getString(R.string.stats_activity_filter_showAll),
                     getString(R.string.stats_activity_filter_byUserID),
-                    getString(R.string.stats_activity_filter_byFacilityID))
+                    getString(R.string.stats_activity_filter_byFacilityID)
+                )
                 var tmpCheckedItem = 0;
-                builder.setSingleChoiceItems(filterOptions, FilterOptions_checkedItem) { dialog, which ->
+                builder.setSingleChoiceItems(
+                    filterOptions,
+                    FilterOptions_checkedItem
+                ) { dialog, which ->
                     // For now, save the enum value - only change filter options
                     // (and thus force a new network request) when "OK" is chosen.
                     tmpCheckedItem = which
+                    if (tmpCheckedItem == FilterOptions_filterByFacility) {
+                        // Do another AlertDialog for picking the Facility:
+                        setupFacilityDialog()
+                    }
                 }
 
                 builder.setPositiveButton("OK") { dialog, which ->
                     // OK was clicked, save the choice
                     // (and reload only if we are saving a new option):
-                    FilterOptions_checkedItem = tmpCheckedItem
+                    if (tmpCheckedItem != FilterOptions_checkedItem) {
+                        FilterOptions_checkedItem = tmpCheckedItem
+                        onResume()
+                    }
                 }
                 // Ignore any changes on "cancel"
                 builder.setNegativeButton("Cancel", null)
-                
+
                 val dialog = builder.create()
                 dialog.show()
                 return true
@@ -138,6 +187,41 @@ class StatsActivity : AppCompatActivity() {
                 return super.onOptionsItemSelected(item)
             }
         }
+    }
+
+    private fun setupFacilityDialog() {
+        val builder = AlertDialog.Builder(this@StatsActivity)
+        builder.setTitle(getString(R.string.stats_activity_pickFacility_header))
+
+        // Use a radio button list for choosing the health facility.
+        if (!this::healthFacilityViewModel.isInitialized) {
+            healthFacilityViewModel = ViewModelProvider(this)
+                .get(HealthFacilityViewModel::class.java)
+        }
+
+        runBlocking {
+            var facilityIDs: Array<String?>?
+            var checkedItemIndex = 0
+            var dialog: AlertDialog? = null
+
+            val healthFacilities = healthFacilityViewModel.getAllSelectedFacilities()
+            val facilityNameArray = healthFacilities.map{it.name}.toTypedArray()
+
+            builder.setSingleChoiceItems(facilityNameArray, checkedItemIndex) { dialog, which ->
+                // For now, save the enum value - only change filter options
+                // (and thus force a new network request) when "OK" is chosen.
+                checkedItemIndex = which
+            }
+
+            builder.setPositiveButton("OK") { dialog, which ->
+                // OK was clicked, save the facility:
+                FilterOptions_facility = healthFacilities?.get(checkedItemIndex)
+            }
+
+            // Ignore any changes on "cancel"
+            builder.setNegativeButton("Cancel", null)
+        }
+        builder.create().show()
     }
 
     private fun setupBasicStats(statsData: Statistics) {

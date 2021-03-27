@@ -20,6 +20,8 @@ class HealthFacilityViewModel @Inject constructor(
 
     fun getAllFacilities() = healthFacilityManager.getLiveList
 
+    suspend fun getAllSelectedFacilities() = healthFacilityManager.getAllSelectedByUser()
+
     fun updateFacility(healthFacility: HealthFacility) {
         viewModelScope.launch { healthFacilityManager.update(healthFacility) }
     }

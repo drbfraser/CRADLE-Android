@@ -200,7 +200,7 @@ class RestApi constructor(
         withContext(IO) {
             http.makeRequest(
                 method = Http.Method.GET,
-                url = urlManager.getStatisticsForFacilityBetween(date1, date2, filterFacility.id),
+                url = urlManager.getStatisticsForFacilityBetween(date1, date2, filterFacility.name),
                 headers = headers,
                 inputStreamReader = { JacksonMapper.mapper.readValue(it) }
             )
