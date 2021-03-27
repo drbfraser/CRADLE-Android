@@ -1,5 +1,7 @@
 package com.cradleVSA.neptune.model
 
+import java.math.BigInteger
+
 /**
  * Contains JSONObjects and JSONArrays for [PatientAndReadings].
  *
@@ -185,7 +187,7 @@ object CommonPatientReadingJsons {
 {
     "patientName": "Test patient",
     "patientSex": "FEMALE",
-    "gestationalAgeUnit": "GESTATIONAL_AGE_UNITS_WEEKS",
+    "gestationalAgeUnit": "WEEKS",
     "medicalHistory": "Some med history.",
     "zone": "634",
     "isExactDob": true,
@@ -232,7 +234,7 @@ object CommonPatientReadingJsons {
                 isPregnant = true,
                 name = "Test patient",
                 id = "3459834789348",
-                gestationalAge = GestationalAgeWeeks(1590969549L),
+                gestationalAge = GestationalAgeWeeks(BigInteger.valueOf(1590969549L)),
                 drugHistory = "Some drug history",
                 dob = "2002-01-08",
                 villageNumber = "133",
@@ -295,7 +297,7 @@ object CommonPatientReadingJsons {
     "patientName": "Name",
     "patientSex": "OTHER",
     "isPregnant": true,
-    "gestationalAgeUnit": "GESTATIONAL_AGE_UNITS_MONTHS",
+    "gestationalAgeUnit": "MONTHS",
     "gestationalTimestamp": 1584245042,
     "medicalHistory": "med hustory",
     "drugHistory": "History",
@@ -364,7 +366,7 @@ object CommonPatientReadingJsons {
                 name = "Name",
                 sex = Sex.OTHER,
                 isPregnant = true,
-                gestationalAge = GestationalAgeMonths(timestamp = 1584245042L),
+                gestationalAge = GestationalAgeMonths(timestamp = BigInteger.valueOf(1584245042L)),
                 medicalHistory = "med hustory",
                 drugHistory = "History",
                 zone = "8828",

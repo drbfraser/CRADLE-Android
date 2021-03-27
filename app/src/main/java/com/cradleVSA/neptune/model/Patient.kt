@@ -38,6 +38,7 @@ import kotlinx.parcelize.Parcelize
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.Serializable
+import java.math.BigInteger
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -544,7 +545,7 @@ enum class Sex {
  * @see GestationalAgeMonths
  * @property timestamp The UNIX timestamp (in seconds)
  */
-sealed class GestationalAge(val timestamp: Long) : Marshal<JSONObject>, Serializable {
+sealed class GestationalAge(val timestamp: BigInteger) : Marshal<JSONObject>, Serializable {
     /**
      * The age in weeks and days.
      *
@@ -557,9 +558,9 @@ sealed class GestationalAge(val timestamp: Long) : Marshal<JSONObject>, Serializ
 
         // These need to be marked static so we can share them with implementors.
         @JvmStatic
-        protected val UNIT_VALUE_WEEKS = "GESTATIONAL_AGE_UNITS_WEEKS"
+        protected val UNIT_VALUE_WEEKS = "WEEKS"
         @JvmStatic
-        protected val UNIT_VALUE_MONTHS = "GESTATIONAL_AGE_UNITS_MONTHS"
+        protected val UNIT_VALUE_MONTHS = "MONTHS"
 
         /**
          * Constructs a [GestationalAge] variant from a [JSONObject].
@@ -571,8 +572,8 @@ sealed class GestationalAge(val timestamp: Long) : Marshal<JSONObject>, Serializ
             val units = data.stringField(PatientField.GESTATIONAL_AGE_UNIT)
             val value = data.longField(PatientField.GESTATIONAL_AGE_VALUE)
             return when (units) {
-                UNIT_VALUE_WEEKS -> GestationalAgeWeeks(value)
-                UNIT_VALUE_MONTHS -> GestationalAgeMonths(value)
+                UNIT_VALUE_WEEKS -> GestationalAgeWeeks(BigInteger.valueOf(value))
+                UNIT_VALUE_MONTHS -> GestationalAgeMonths(BigInteger.valueOf(value))
                 else -> throw JSONException("invalid value for ${PatientField.GESTATIONAL_AGE_UNIT.text}")
             }
         }
@@ -584,8 +585,8 @@ sealed class GestationalAge(val timestamp: Long) : Marshal<JSONObject>, Serializ
             val units = get(PatientField.GESTATIONAL_AGE_UNIT)!!.asText()
             val value = get(PatientField.GESTATIONAL_AGE_VALUE)!!.asLong()
             return when (units) {
-                UNIT_VALUE_WEEKS -> GestationalAgeWeeks(value)
-                UNIT_VALUE_MONTHS -> GestationalAgeMonths(value)
+                UNIT_VALUE_WEEKS -> GestationalAgeWeeks(BigInteger.valueOf(value))
+                UNIT_VALUE_MONTHS -> GestationalAgeMonths(BigInteger.valueOf(value))
                 else -> throw JSONException("invalid value for ${PatientField.GESTATIONAL_AGE_UNIT.text}")
             }
         }
@@ -650,7 +651,7 @@ sealed class GestationalAge(val timestamp: Long) : Marshal<JSONObject>, Serializ
 /**
  * Variant of [GestationalAge] which stores age in number of weeks.
  */
-class GestationalAgeWeeks(timestamp: Long) : GestationalAge(timestamp), Serializable {
+class GestationalAgeWeeks(timestamp: BigInteger) : GestationalAge(timestamp), Serializable {
     override val age: WeeksAndDays
         get() {
             val seconds = Seconds(UnixTimestamp.now - timestamp)
@@ -673,7 +674,7 @@ class GestationalAgeWeeks(timestamp: Long) : GestationalAge(timestamp), Serializ
 /**
  * Variant of [GestationalAge] which stores age in number of months.
  */
-class GestationalAgeMonths(timestamp: Long) : GestationalAge(timestamp), Serializable {
+class GestationalAgeMonths(timestamp: BigInteger) : GestationalAge(timestamp), Serializable {
     /**
      * Back up the months value as a String. This is not marshalled.
      *
