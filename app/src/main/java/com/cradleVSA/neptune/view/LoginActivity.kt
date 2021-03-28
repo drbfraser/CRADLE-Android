@@ -4,11 +4,13 @@ import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.media.Image
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.StringRes
@@ -33,6 +35,7 @@ import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection.HTTP_UNAUTHORIZED
 import javax.inject.Inject
 import javax.net.ssl.SSLHandshakeException
+import com.cradleVSA.neptune.view.ui.settings.SettingsActivity.Companion.makeLaunchIntent
 
 @AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
@@ -55,6 +58,7 @@ class LoginActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_login)
         setupLogin()
+        setupSettings()
     }
 
     private fun showMessageIfPresent() {
@@ -168,6 +172,14 @@ class LoginActivity : AppCompatActivity() {
                 .setMessage(R.string.login_activity_device_is_outdated_dialog_message)
                 .setPositiveButton(android.R.string.ok, null)
                 .show()
+        }
+    }
+
+    private fun setupSettings() {
+        val intent = makeLaunchIntent(this@LoginActivity)
+        val settingsButton = findViewById<ImageButton>(R.id.loginSettingsButton)
+        settingsButton.setOnClickListener {
+            startActivity(intent)
         }
     }
 
