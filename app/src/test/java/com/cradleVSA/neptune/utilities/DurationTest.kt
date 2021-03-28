@@ -38,13 +38,13 @@ class DurationTest {
             12.0001, 12.01, 12.1, 12.2, 12.3, 12.4, 12.5, 12.5555, 12.6, 12.7, 12.8, 12.9, 12.99,
             12.999
         ).forEach {
-                val secondsUsingDouble = Months(it).seconds.value
-                assert(Months(12).seconds.value <= secondsUsingDouble)
-                assert(secondsUsingDouble <= Months(13).seconds.value)
+            val secondsUsingDouble = Months(it)
+            assert(Months(12) <= secondsUsingDouble)
+            assert(secondsUsingDouble <= Months(13))
 
-                val expectedSeconds = (it * SECONDS_PER_MONTH).toLong()
-                assertEquals(expectedSeconds, secondsUsingDouble)
-            }
+            val expectedSeconds = (it * SECONDS_PER_MONTH).toLong()
+            assertEquals(expectedSeconds, secondsUsingDouble.seconds.value)
+        }
     }
 
     @Test
