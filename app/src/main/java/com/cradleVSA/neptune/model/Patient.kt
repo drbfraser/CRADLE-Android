@@ -38,6 +38,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import kotlinx.parcelize.Parcelize
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.IOException
 import java.io.Serializable
 import java.math.BigInteger
 import java.text.ParseException
@@ -602,7 +603,11 @@ sealed class GestationalAge(val timestamp: BigInteger) : Marshal<JSONObject>, Se
                 UNIT_VALUE_WEEKS -> GestationalAgeWeeks(BigInteger.valueOf(value))
                 UNIT_VALUE_MONTHS -> GestationalAgeMonths(BigInteger.valueOf(value))
                 UNIT_VALUE_DAYS -> GestationalAgeDays(BigInteger.valueOf(value))
-                else -> throw JSONException("invalid value for ${PatientField.GESTATIONAL_AGE_UNIT.text}")
+                else -> {
+                    throw InvalidUnitsException(
+                        "invalid value for ${PatientField.GESTATIONAL_AGE_UNIT.text}"
+                    )
+                }
             }
         }
 
@@ -617,7 +622,7 @@ sealed class GestationalAge(val timestamp: BigInteger) : Marshal<JSONObject>, Se
                 UNIT_VALUE_MONTHS -> GestationalAgeMonths(BigInteger.valueOf(value))
                 UNIT_VALUE_DAYS -> GestationalAgeDays(BigInteger.valueOf(value))
                 else -> {
-                    throw JSONException(
+                    throw InvalidUnitsException(
                         "invalid value for ${PatientField.GESTATIONAL_AGE_UNIT.text}"
                     )
                 }
@@ -680,6 +685,8 @@ sealed class GestationalAge(val timestamp: BigInteger) : Marshal<JSONObject>, Se
     override fun toString(): String {
         return "GestationalAge($age, value=$timestamp)"
     }
+
+    class InvalidUnitsException(message: String) : IOException(message)
 }
 
 private const val DAYS_PER_WEEK = 7
