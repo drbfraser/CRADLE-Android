@@ -1292,6 +1292,7 @@ class PatientReadingViewModel @Inject constructor(
         val saveResult = saveManager.saveWithReferral(referralOption, referralComment, healthFacilityName)
         if (saveResult.first == ReadingFlowSaveResult.SAVE_SUCCESSFUL) {
             readingManager.setDateRecheckVitalsNeededToNull(originalReadingId)
+            readingManager.setIsUploadedToServerToZero(originalReadingId)
         }
         return saveResult
     }
@@ -1305,6 +1306,7 @@ class PatientReadingViewModel @Inject constructor(
         val saveResult = saveManager.save()
         if (saveResult == ReadingFlowSaveResult.SAVE_SUCCESSFUL) {
             readingManager.setDateRecheckVitalsNeededToNull(originalReadingId)
+            readingManager.setIsUploadedToServerToZero(originalReadingId)
         }
         return saveResult
     }
