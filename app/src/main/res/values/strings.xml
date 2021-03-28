@@ -53,6 +53,7 @@
     </string-array>
 
     <string-array name="reading_ga_units">
+        <item>Days</item>
         <item>Weeks</item>
         <item>Months</item>
         <!--TODO: re-add this: <item>Last menstrual period</item> -->

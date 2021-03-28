@@ -1,5 +1,6 @@
 package com.cradleVSA.neptune.model
 
+import com.cradleVSA.neptune.utilitiles.Days
 import com.cradleVSA.neptune.utilitiles.Months
 import com.cradleVSA.neptune.utilitiles.Weeks
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -46,6 +47,21 @@ internal class GestationalAgeTest {
             // (expectedWeeks * 7) days, and there are 30 days per month,
             val expectedMonths: Double = (weeks * 7) / 30.0
             assertEquals(expectedMonths, months, 0.0000000001)
+        }
+    }
+
+    /**
+     * Simulates input in the patient info fragment, inputting days for the gestational age and
+     * expecting to get the same days back.
+     */
+    @Test
+    fun simulateInputInPatientInfoFragment_days() {
+        for (_days in 0..500) {
+            val days: Long = _days.toLong()
+            val gestationalAgeDays = GestationalAgeDays(Days(days))
+
+            assertEquals(days % 7, gestationalAgeDays.age.days)
+            assertEquals(days / 7, gestationalAgeDays.age.weeks)
         }
     }
 

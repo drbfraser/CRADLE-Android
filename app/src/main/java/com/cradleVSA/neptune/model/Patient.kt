@@ -21,6 +21,7 @@ import com.cradleVSA.neptune.ext.jackson.writeStringField
 import com.cradleVSA.neptune.ext.longField
 import com.cradleVSA.neptune.ext.put
 import com.cradleVSA.neptune.ext.stringField
+import com.cradleVSA.neptune.utilitiles.Days
 import com.cradleVSA.neptune.utilitiles.Months
 import com.cradleVSA.neptune.utilitiles.Seconds
 import com.cradleVSA.neptune.utilitiles.UnixTimestamp
@@ -582,6 +583,8 @@ sealed class GestationalAge(val timestamp: BigInteger) : Marshal<JSONObject>, Se
 
         // These need to be marked static so we can share them with implementors.
         @JvmStatic
+        protected val UNIT_VALUE_DAYS = "DAYS"
+        @JvmStatic
         protected val UNIT_VALUE_WEEKS = "WEEKS"
         @JvmStatic
         protected val UNIT_VALUE_MONTHS = "MONTHS"
@@ -598,6 +601,7 @@ sealed class GestationalAge(val timestamp: BigInteger) : Marshal<JSONObject>, Se
             return when (units) {
                 UNIT_VALUE_WEEKS -> GestationalAgeWeeks(BigInteger.valueOf(value))
                 UNIT_VALUE_MONTHS -> GestationalAgeMonths(BigInteger.valueOf(value))
+                UNIT_VALUE_DAYS -> GestationalAgeDays(BigInteger.valueOf(value))
                 else -> throw JSONException("invalid value for ${PatientField.GESTATIONAL_AGE_UNIT.text}")
             }
         }
@@ -611,7 +615,12 @@ sealed class GestationalAge(val timestamp: BigInteger) : Marshal<JSONObject>, Se
             return when (units) {
                 UNIT_VALUE_WEEKS -> GestationalAgeWeeks(BigInteger.valueOf(value))
                 UNIT_VALUE_MONTHS -> GestationalAgeMonths(BigInteger.valueOf(value))
-                else -> throw JSONException("invalid value for ${PatientField.GESTATIONAL_AGE_UNIT.text}")
+                UNIT_VALUE_DAYS -> GestationalAgeDays(BigInteger.valueOf(value))
+                else -> {
+                    throw JSONException(
+                        "invalid value for ${PatientField.GESTATIONAL_AGE_UNIT.text}"
+                    )
+                }
             }
         }
 
@@ -619,10 +628,11 @@ sealed class GestationalAge(val timestamp: BigInteger) : Marshal<JSONObject>, Se
          * Nested serialization into the given [gen]
          */
         fun serialize(gen: JsonGenerator, gestationalAge: GestationalAge) {
-            val units = if (gestationalAge is GestationalAgeMonths) {
-                UNIT_VALUE_MONTHS
-            } else {
-                UNIT_VALUE_WEEKS
+            // TODO: figure Jackson sealed classes and how it can work with deserialization
+            val units = when (gestationalAge) {
+                is GestationalAgeDays -> UNIT_VALUE_DAYS
+                is GestationalAgeWeeks -> UNIT_VALUE_WEEKS
+                is GestationalAgeMonths -> UNIT_VALUE_MONTHS
             }
             gen.writeStringField(PatientField.GESTATIONAL_AGE_UNIT, units)
             gen.writeStringField(
@@ -672,6 +682,32 @@ sealed class GestationalAge(val timestamp: BigInteger) : Marshal<JSONObject>, Se
     }
 }
 
+private const val DAYS_PER_WEEK = 7
+
+/**
+ * Variant of [GestationalAge] which stores age in number of days.
+ */
+class GestationalAgeDays(timestamp: BigInteger) : GestationalAge(timestamp), Serializable {
+    override val age: WeeksAndDays
+        get() {
+            val seconds = Seconds(UnixTimestamp.now - timestamp)
+            val days = Days(seconds).value
+            return WeeksAndDays(weeks = days / DAYS_PER_WEEK, days = days % DAYS_PER_WEEK)
+        }
+
+    constructor(duration: Days) : this(UnixTimestamp.ago(duration))
+
+    override fun marshal(): JSONObject = with(JSONObject()) {
+        // For legacy interop we store the value as a string instead of an int.
+        put(PatientField.GESTATIONAL_AGE_VALUE, timestamp.toString())
+        put(PatientField.GESTATIONAL_AGE_UNIT, UNIT_VALUE_DAYS)
+    }
+
+    override fun toString(): String {
+        return "GestationalAgeDays($age, value=$timestamp)"
+    }
+}
+
 /**
  * Variant of [GestationalAge] which stores age in number of weeks.
  */
@@ -699,17 +735,6 @@ class GestationalAgeWeeks(timestamp: BigInteger) : GestationalAge(timestamp), Se
  * Variant of [GestationalAge] which stores age in number of months.
  */
 class GestationalAgeMonths(timestamp: BigInteger) : GestationalAge(timestamp), Serializable {
-    /**
-     * Back up the months value as a String. This is not marshalled.
-     *
-     * The user can enter an arbitrary decimal into the gestational age input. However, Due to the
-     * various round-off errors that can occur when using WeeksAndDays#asMonths, an input may change
-     * suddenly and confuse the user (e.g., after putting in 6 months, going to Summary tab, and
-     * then going back to the Patient info tab, the value that gets shown to the user is along the
-     * lines of "6.0000000000000000001").
-     *
-     * TODO: Fix this when the fragments are rearchitected/redesigned
-     */
     private var inputMonths: Months? = null
 
     constructor(duration: Months) : this(UnixTimestamp.ago(duration)) {
@@ -737,7 +762,6 @@ class GestationalAgeMonths(timestamp: BigInteger) : GestationalAge(timestamp), S
  * A temporal duration expressed in weeks and days.
  */
 data class WeeksAndDays(val weeks: Long, val days: Long) : Serializable {
-
     /**
      * This value in number of weeks.
      */
@@ -748,6 +772,8 @@ data class WeeksAndDays(val weeks: Long, val days: Long) : Serializable {
      */
     fun asMonths(): Double =
         (weeks.toDouble() / WEEKS_PER_MONTH) + (days.toDouble() / DAYS_PER_MONTH)
+
+    fun asTotalDays(): Long = weeks * DAYS_PER_WEEK.toLong() + days
 
     companion object {
         const val DAYS_PER_MONTH = 30
