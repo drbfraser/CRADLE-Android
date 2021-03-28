@@ -25,6 +25,7 @@ import com.cradleVSA.neptune.utilitiles.Months
 import com.cradleVSA.neptune.utilitiles.Seconds
 import com.cradleVSA.neptune.utilitiles.UnixTimestamp
 import com.cradleVSA.neptune.utilitiles.Weeks
+import com.cradleVSA.neptune.utilitiles.WeeksAndDays
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
@@ -732,43 +733,6 @@ class GestationalAgeMonths(timestamp: BigInteger) : GestationalAge(timestamp), S
     override fun toString(): String {
         return "GestationalAgeMonths($age, value=$timestamp)"
     }
-}
-
-/**
- * A temporal duration expressed in weeks and days.
- */
-data class WeeksAndDays(val weeks: Long, val days: Long) : Serializable {
-
-    /**
-     * This value in number of weeks.
-     */
-    fun asWeeks(): Double = weeks.toDouble() + (days.toDouble() / DAYS_PER_WEEK)
-
-    /**
-     * This value in number of months.
-     */
-    fun asMonths(): Double =
-        (weeks.toDouble() / WEEKS_PER_MONTH) + (days.toDouble() / DAYS_PER_MONTH)
-
-    companion object {
-        const val DAYS_PER_MONTH = 30
-        const val DAYS_PER_WEEK = 7
-        const val SECONDS_PER_DAY = 60 * 60 * 24
-        const val SECONDS_PER_WEEK = SECONDS_PER_DAY * DAYS_PER_WEEK
-        // Get as close as possible to the result of 30/7, a repeating decimal. However, due to the
-        // finiteness of Doubles, anything past 4.2857142857142857 is ignored.
-        private const val WEEKS_PER_MONTH = 4.2857142857142857
-
-        fun weeks(weeks: Long) = WeeksAndDays(weeks, 0)
-
-        fun months(months: Double): WeeksAndDays {
-            val days = DAYS_PER_MONTH * months
-            return WeeksAndDays((days / DAYS_PER_WEEK).toLong(), days.toLong() % DAYS_PER_WEEK)
-        }
-    }
-
-    override fun toString(): String = "WeeksAndDays(weeks=$weeks, days=$days, " +
-        "asWeeks()=${asWeeks()}, asMonths()=${asMonths()})"
 }
 
 /**
