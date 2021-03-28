@@ -42,7 +42,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         val readingCardView: CardView = readingLayout.findViewById(R.id.readingCardView)
         val readImg = readingLayout.findViewById<ImageButton>(R.id.readingImg)
         val helpButton =
-            findViewById<FloatingActionButton>(R.id.fabHelpDashboard)
+            findViewById<FloatingActionButton>(R.id.fabEducationDashboard)
         readingCardView.setOnClickListener(this)
         readImg.setOnClickListener(this)
         syncCardview.setOnClickListener(this)
@@ -84,7 +84,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
             }
             R.id.patientCardview, R.id.patientImg -> startActivity(PatientsActivity.makeIntent(this))
             R.id.syncCardView, R.id.syncImg -> startActivity(Intent(this, SyncActivity::class.java))
-            R.id.fabHelpDashboard -> startActivity(Intent(this, EducationActivity::class.java))
+            R.id.fabEducationDashboard -> startActivity(Intent(this, EducationActivity::class.java))
             R.id.statCardView, R.id.statImg -> startActivity(
                 Intent(
                     this,
