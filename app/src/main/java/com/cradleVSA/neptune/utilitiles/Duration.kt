@@ -17,12 +17,22 @@ private const val SECONDS_PER_MONTH =
 /**
  * A duration of time in a specific unit.
  */
-sealed class Duration {
-    abstract val seconds: Seconds
+interface Duration {
+    val seconds: Seconds
+
+    /**
+     * Returns -1 if this < [other], 0 if this == [other] and if this > [other].
+     */
+    operator fun compareTo(other: Duration): Int = when {
+        seconds.value < other.seconds.value -> -1
+        seconds.value == other.seconds.value -> 0
+        else -> 1
+    }
 }
 
-data class Seconds(val value: Long) : Duration() {
-    override val seconds = this
+inline class Seconds(val value: Long) : Duration {
+    override val seconds
+        get() = this
 
     // Flooring is acceptable for seconds.
     constructor(double: Double) : this(double.toLong())
@@ -32,16 +42,24 @@ data class Seconds(val value: Long) : Duration() {
     constructor(bigInt: BigInteger) : this(bigInt.toLong())
 }
 
-data class Weeks(val value: Long) : Duration() {
-    override val seconds = Seconds(value * SECONDS_PER_WEEK)
+inline class Weeks(val value: Long) : Duration {
+    override val seconds
+        get() = Seconds(value * SECONDS_PER_WEEK)
 
-    constructor(seconds: Seconds) : this(seconds.value / SECONDS_PER_WEEK)
+    companion object {
+        fun fromSeconds(seconds: Seconds) = Weeks(seconds.value / SECONDS_PER_WEEK)
+    }
 }
 
-data class Months(val value: Double) : Duration() {
-    override val seconds = Seconds(value * SECONDS_PER_MONTH)
+inline class Months(val value: Double) : Duration {
+    override val seconds
+        get() = Seconds(value * SECONDS_PER_MONTH)
 
     constructor(value: Long) : this(value.toDouble())
 
-    constructor(seconds: Seconds) : this(seconds.value / SECONDS_PER_MONTH.toDouble())
+    companion object {
+        fun fromSeconds(seconds: Seconds) = Months(
+            seconds.value / SECONDS_PER_MONTH.toDouble()
+        )
+    }
 }

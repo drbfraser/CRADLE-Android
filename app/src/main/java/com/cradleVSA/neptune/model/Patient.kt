@@ -691,7 +691,7 @@ class GestationalAgeWeeks(timestamp: BigInteger) : GestationalAge(timestamp), Se
     override val age: WeeksAndDays
         get() {
             val seconds = Seconds(UnixTimestamp.now - timestamp)
-            return WeeksAndDays.weeks(Weeks(seconds).value)
+            return WeeksAndDays.weeks(Weeks.fromSeconds(seconds).value)
         }
 
     constructor(duration: Weeks) : this(UnixTimestamp.ago(duration))
@@ -720,7 +720,7 @@ class GestationalAgeMonths(timestamp: BigInteger) : GestationalAge(timestamp), S
     override val age: WeeksAndDays
         get() {
             val seconds = Seconds(UnixTimestamp.now - timestamp)
-            return WeeksAndDays.months(Months(seconds).value)
+            return WeeksAndDays.months(Months.fromSeconds(seconds).value)
         }
 
     override fun marshal(): JSONObject = with(JSONObject()) {
