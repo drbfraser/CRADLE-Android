@@ -115,7 +115,7 @@ internal class LoginManagerTests {
             val response = LoginResponse(
                 token = TEST_AUTH_TOKEN,
                 email = TEST_USER_EMAIL,
-                roles = arrayOf("VHT"),
+                role = "VHT",
                 userId = TEST_USER_ID,
                 firstName = TEST_FIRST_NAME,
                 healthFacilityName = TEST_USER_FACILITY_NAME
