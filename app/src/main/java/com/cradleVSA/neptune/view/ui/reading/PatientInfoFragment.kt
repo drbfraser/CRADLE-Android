@@ -32,13 +32,6 @@ import java.util.TimeZone
 
 private const val TAG = "PatientInfoFragment"
 
-private const val GA_UNIT_INDEX_WEEKS = 0
-private const val GA_UNIT_INDEX_MONTHS = 1
-
-private const val PATIENT_SEX_MALE = 0
-private const val PATIENT_SEX_FEMALE = 1
-private const val PATIENT_SEX_OTHER = 2
-
 private const val FRAGMENT_TAG_DATE_PICKER = "DatePicker"
 
 /**
