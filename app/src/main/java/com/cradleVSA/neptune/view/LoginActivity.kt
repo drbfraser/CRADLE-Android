@@ -176,10 +176,10 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun setupSettings() {
-        val intent = makeLaunchIntent(this@LoginActivity)
-        intent.putExtra(ADVANCED_SETTINGS_KEY, true)
         val settingsButton = findViewById<ImageButton>(R.id.loginSettingsButton)
         settingsButton.setOnClickListener {
+            val intent = makeLaunchIntent(this@LoginActivity)
+            intent.putExtra(ADVANCED_SETTINGS_KEY, true)
             startActivity(intent)
         }
     }
