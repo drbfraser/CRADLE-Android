@@ -571,19 +571,19 @@ CREATE TABLE IF NOT EXISTS `new_Patient` (
             database.execSQL("DROP VIEW `LocalSearchPatient`")
             database.execSQL(
                 """
-CREATE VIEW `LocalSearchPatient` AS SELECT
-  p.name,
-  p.id,
-  p.villageNumber,
-  r.bloodPressure as latestBloodPressure,
-  MAX(r.dateTimeTaken) as latestReadingDate,
-  p.lastEdited,
-  r.referral
-FROM
-  Patient as p
-  LEFT JOIN Reading AS r ON p.id = r.patientId
-GROUP BY 
-  IFNULL(r.patientId, p.id)
+                CREATE VIEW `LocalSearchPatient` AS SELECT
+                  p.name,
+                  p.id,
+                  p.villageNumber,
+                  r.bloodPressure as latestBloodPressure,
+                  MAX(r.dateTimeTaken) as latestReadingDate,
+                  p.lastEdited,
+                  r.referral
+                FROM
+                  Patient as p
+                  LEFT JOIN Reading AS r ON p.id = r.patientId
+                GROUP BY 
+                  IFNULL(r.patientId, p.id)
                 """.trimIndent()
             )
         }
