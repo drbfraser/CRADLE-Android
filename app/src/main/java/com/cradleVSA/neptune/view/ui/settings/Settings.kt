@@ -30,21 +30,17 @@ import javax.inject.Inject
 class SettingsActivity : AppCompatActivity() {
 
     companion object {
-        private var launchAdvancedSettings: Boolean = false
+        const val ADVANCED_SETTINGS_KEY: String = "advanced settings"
 
         fun makeLaunchIntent(context: Context): Intent = Intent(context, SettingsActivity::class.java)
-
-        fun makeAdvancedSettingsLaunchIntent(context: Context): Intent {
-            launchAdvancedSettings = true
-            return Intent(context, SettingsActivity::class.java)
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val launchAdvancedSettings: Boolean = intent.getBooleanExtra(ADVANCED_SETTINGS_KEY, false)
+
         if (launchAdvancedSettings) {
-            launchAdvancedSettings = false
             supportFragmentManager
                 .beginTransaction()
                 .replace(android.R.id.content, AdvancedSettingsFragment())
