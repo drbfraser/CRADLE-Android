@@ -37,6 +37,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import kotlinx.parcelize.Parcelize
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.IOException
 import java.io.Serializable
 import java.math.BigInteger
 import java.text.ParseException
@@ -598,7 +599,11 @@ sealed class GestationalAge(val timestamp: BigInteger) : Marshal<JSONObject>, Se
             return when (units) {
                 UNIT_VALUE_WEEKS -> GestationalAgeWeeks(BigInteger.valueOf(value))
                 UNIT_VALUE_MONTHS -> GestationalAgeMonths(BigInteger.valueOf(value))
-                else -> throw JSONException("invalid value for ${PatientField.GESTATIONAL_AGE_UNIT.text}")
+                else -> {
+                    throw InvalidUnitsException(
+                        "invalid value for ${PatientField.GESTATIONAL_AGE_UNIT.text}"
+                    )
+                }
             }
         }
 
@@ -611,7 +616,11 @@ sealed class GestationalAge(val timestamp: BigInteger) : Marshal<JSONObject>, Se
             return when (units) {
                 UNIT_VALUE_WEEKS -> GestationalAgeWeeks(BigInteger.valueOf(value))
                 UNIT_VALUE_MONTHS -> GestationalAgeMonths(BigInteger.valueOf(value))
-                else -> throw JSONException("invalid value for ${PatientField.GESTATIONAL_AGE_UNIT.text}")
+                else -> {
+                    throw InvalidUnitsException(
+                        "invalid value for ${PatientField.GESTATIONAL_AGE_UNIT.text}"
+                    )
+                }
             }
         }
 
@@ -619,6 +628,7 @@ sealed class GestationalAge(val timestamp: BigInteger) : Marshal<JSONObject>, Se
          * Nested serialization into the given [gen]
          */
         fun serialize(gen: JsonGenerator, gestationalAge: GestationalAge) {
+            // TODO: figure Jackson sealed classes and how it can work with deserialization
             val units = if (gestationalAge is GestationalAgeMonths) {
                 UNIT_VALUE_MONTHS
             } else {
@@ -670,6 +680,8 @@ sealed class GestationalAge(val timestamp: BigInteger) : Marshal<JSONObject>, Se
     override fun toString(): String {
         return "GestationalAge($age, value=$timestamp)"
     }
+
+    class InvalidUnitsException(message: String) : IOException(message)
 }
 
 /**
@@ -699,17 +711,6 @@ class GestationalAgeWeeks(timestamp: BigInteger) : GestationalAge(timestamp), Se
  * Variant of [GestationalAge] which stores age in number of months.
  */
 class GestationalAgeMonths(timestamp: BigInteger) : GestationalAge(timestamp), Serializable {
-    /**
-     * Back up the months value as a String. This is not marshalled.
-     *
-     * The user can enter an arbitrary decimal into the gestational age input. However, Due to the
-     * various round-off errors that can occur when using WeeksAndDays#asMonths, an input may change
-     * suddenly and confuse the user (e.g., after putting in 6 months, going to Summary tab, and
-     * then going back to the Patient info tab, the value that gets shown to the user is along the
-     * lines of "6.0000000000000000001").
-     *
-     * TODO: Fix this when the fragments are rearchitected/redesigned
-     */
     private var inputMonths: Months? = null
 
     constructor(duration: Months) : this(UnixTimestamp.ago(duration)) {
