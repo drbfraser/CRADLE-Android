@@ -21,7 +21,8 @@ import com.cradleVSA.neptune.manager.LoginManager
 import com.cradleVSA.neptune.net.Failure
 import com.cradleVSA.neptune.net.NetworkException
 import com.cradleVSA.neptune.net.Success
-import com.cradleVSA.neptune.view.ui.settings.SettingsActivity.Companion.makeAdvancedSettingsLaunchIntent
+import com.cradleVSA.neptune.view.ui.settings.SettingsActivity.Companion.ADVANCED_SETTINGS_KEY
+import com.cradleVSA.neptune.view.ui.settings.SettingsActivity.Companion.makeLaunchIntent
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException
 import com.google.android.gms.common.GooglePlayServicesRepairableException
@@ -175,7 +176,8 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun setupSettings() {
-        val intent = makeAdvancedSettingsLaunchIntent(this@LoginActivity)
+        val intent = makeLaunchIntent(this@LoginActivity)
+        intent.putExtra(ADVANCED_SETTINGS_KEY, true)
         val settingsButton = findViewById<ImageButton>(R.id.loginSettingsButton)
         settingsButton.setOnClickListener {
             startActivity(intent)
