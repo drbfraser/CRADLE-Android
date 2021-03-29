@@ -182,6 +182,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
 @AndroidEntryPoint
 class AdvancedSettingsFragment : PreferenceFragmentCompat() {
+    companion object {
+        fun makeLaunchIntent(context: Context) = Intent(context, AdvancedSettingsFragment::class.java)
+    }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         Log.v(this::class.simpleName, "Loading advanced settings from resource")
