@@ -24,6 +24,8 @@ import com.cradleVSA.neptune.model.Reading
 import com.cradleVSA.neptune.utilitiles.DateUtil
 import org.json.JSONArray
 
+const val CURRENT_DATABASE_VERSION = 11
+
 /**
  * An interface for the local CRADLE database.
  *
@@ -35,7 +37,7 @@ import org.json.JSONArray
 @Database(
     entities = [Reading::class, Patient::class, HealthFacility::class],
     views = [LocalSearchPatient::class],
-    version = 11,
+    version = CURRENT_DATABASE_VERSION,
     exportSchema = true
 )
 @TypeConverters(DatabaseTypeConverters::class)
