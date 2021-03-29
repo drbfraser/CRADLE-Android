@@ -35,7 +35,7 @@ import org.json.JSONArray
 @Database(
     entities = [Reading::class, Patient::class, HealthFacility::class],
     views = [LocalSearchPatient::class],
-    version = 10,
+    version = 11,
     exportSchema = true
 )
 @TypeConverters(DatabaseTypeConverters::class)
@@ -89,7 +89,8 @@ internal object Migrations {
             MIGRATION_6_7,
             MIGRATION_7_8,
             MIGRATION_8_9,
-            MIGRATION_9_10
+            MIGRATION_9_10,
+            MIGRATION_10_11,
         )
     }
 
@@ -552,6 +553,35 @@ CREATE TABLE IF NOT EXISTS `new_Patient` (
                 """
                 UPDATE Patient
                 SET gestationalAge=REPLACE(gestationalAge, 'GESTATIONAL_AGE_UNITS_', '')
+                """.trimIndent()
+            )
+        }
+    }
+
+    /**
+     * Version 11:
+     * Update the [LocalSearchPatient] view so that it lists more than 1 patient without any
+     * readings and includes the last edited field. The previous view was grouping by NULL, so
+     * multiple patients with no readings will be all grouped together.
+     */
+    private val MIGRATION_10_11 = object : Migration(10, 11) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("DROP VIEW `LocalSearchPatient`")
+            database.execSQL(
+                """
+CREATE VIEW `LocalSearchPatient` AS SELECT
+  p.name,
+  p.id,
+  p.villageNumber,
+  r.bloodPressure as latestBloodPressure,
+  MAX(r.dateTimeTaken) as latestReadingDate,
+  p.lastEdited,
+  r.referral
+FROM
+  Patient as p
+  LEFT JOIN Reading AS r ON p.id = r.patientId
+GROUP BY 
+  IFNULL(r.patientId, p.id)
                 """.trimIndent()
             )
         }
