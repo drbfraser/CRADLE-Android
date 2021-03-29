@@ -81,13 +81,14 @@ interface PatientDao {
     /**
      * Gets all patients in a local database in [LocalSearchPatient] form for displaying in a list.
      *
-     * The result will be sorted in descending order by latest reading date (or last edited time, so
-     * that we don't shove patients without any readings to the bottom), and then by name.
+     * The result will be sorted in descending order by latest reading date and then by name (more
+     * applicable for patients without a reading). Patients that don't have a reading will be
+     * placed below all other patients that have readings.
      */
     @Query(
         """
 SELECT * FROM LocalSearchPatient
-ORDER BY IFNULL(latestReadingDate, lastEdited) DESC, name COLLATE NOCASE ASC
+ORDER BY latestReadingDate DESC, name COLLATE NOCASE ASC
     """
     )
     fun allLocalSearchPatientsByDate(): PagingSource<Int, LocalSearchPatient>
@@ -96,8 +97,9 @@ ORDER BY IFNULL(latestReadingDate, lastEdited) DESC, name COLLATE NOCASE ASC
      * Searches the database, using % (with SQLite concatenation, ||) to make sure we search for
      * the names or IDs where the query is contained inside of them.
      *
-     * The result will be sorted in descending order by latest reading date (or last edited time, so
-     * that we don't shove patients without any readings to the bottom), and then by name.
+     * The result will be sorted in descending order by latest reading date, and then by name (more
+     * applicable for patients without a reading). Patients that don't have a reading will be
+     * placed below all other patients that have readings.
      */
     @Query(
         """
@@ -105,7 +107,7 @@ SELECT * FROM LocalSearchPatient
 WHERE
   name LIKE '%' || :query || '%'
   OR id LIKE '%' || :query || '%'
-ORDER BY IFNULL(latestReadingDate, lastEdited) DESC, name COLLATE NOCASE ASC
+ORDER BY latestReadingDate DESC, name COLLATE NOCASE ASC
 """
     )
     fun localSearchPatientsByNameOrId(query: String): PagingSource<Int, LocalSearchPatient>
