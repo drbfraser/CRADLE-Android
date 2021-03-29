@@ -25,7 +25,6 @@ import com.cradleVSA.neptune.manager.ReadingManager
 import com.cradleVSA.neptune.manager.ReferralUploadManager
 import com.cradleVSA.neptune.model.BloodPressure
 import com.cradleVSA.neptune.model.GestationalAge
-import com.cradleVSA.neptune.model.GestationalAgeDays
 import com.cradleVSA.neptune.model.GestationalAgeMonths
 import com.cradleVSA.neptune.model.GestationalAgeWeeks
 import com.cradleVSA.neptune.model.Patient
@@ -42,7 +41,6 @@ import com.cradleVSA.neptune.model.Verifier
 import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.net.Success
 import com.cradleVSA.neptune.utilitiles.DateUtil
-import com.cradleVSA.neptune.utilitiles.Days
 import com.cradleVSA.neptune.utilitiles.LiveDataDynamicModelBuilder
 import com.cradleVSA.neptune.utilitiles.Months
 import com.cradleVSA.neptune.utilitiles.Weeks
@@ -68,9 +66,8 @@ import javax.inject.Inject
 import kotlin.reflect.KProperty
 
 // The index of the gestational age units inside of the string.xml array, R.array.reading_ga_units
-private const val GEST_AGE_UNIT_DAYS_INDEX = 0
-private const val GEST_AGE_UNIT_WEEKS_INDEX = 1
-private const val GEST_AGE_UNIT_MONTHS_INDEX = 2
+private const val GEST_AGE_UNIT_WEEKS_INDEX = 0
+private const val GEST_AGE_UNIT_MONTHS_INDEX = 1
 
 private val DEBUG = BuildConfig.DEBUG
 
@@ -95,11 +92,6 @@ private val DEBUG = BuildConfig.DEBUG
  *
  * The ViewModel should be initialized before the Fragments are created.
  *
- * TODO: The current implementation of gestational age days is a minimal working example.
- *  We need to adhere to the proposed design for gestational age input in the UI.
- *  i.e. have a "Weeks and days" option for unit with two text input boxes, one for weeks and one
- *  for days. See tickets MOB-76 and see CRDL-134 for mockups
- *
  * @see PatientReadingViewModel.LiveDataInitializationManager
  * @see PatientReadingViewModel.NavigationManager
  * @see PatientReadingViewModel.ErrorMessageManager
@@ -113,9 +105,7 @@ class PatientReadingViewModel @Inject constructor(
     private val patientManager: PatientManager,
     private val referralUploadManager: ReferralUploadManager,
     private val sharedPreferences: SharedPreferences,
-    @SuppressLint("StaticFieldLeak")
-    @ApplicationContext
-    private val app: Context
+    @ApplicationContext private val app: Context
 ) : ViewModel() {
     private val patientBuilder = LiveDataDynamicModelBuilder()
     private val readingBuilder = LiveDataDynamicModelBuilder()
@@ -125,12 +115,10 @@ class PatientReadingViewModel @Inject constructor(
      */
     var idlingResource: CountingIdlingResource? = null
 
-    private val daysUnitString = app.resources
-        .getStringArray(R.array.reading_ga_units)[GEST_AGE_UNIT_DAYS_INDEX]
-    private val weeksUnitString = app.resources
-        .getStringArray(R.array.reading_ga_units)[GEST_AGE_UNIT_WEEKS_INDEX]
     private val monthsUnitString = app.resources
         .getStringArray(R.array.reading_ga_units)[GEST_AGE_UNIT_MONTHS_INDEX]
+    private val weeksUnitString = app.resources
+        .getStringArray(R.array.reading_ga_units)[GEST_AGE_UNIT_WEEKS_INDEX]
 
     lateinit var reasonForLaunch: ReadingActivity.LaunchReason
         private set
@@ -537,11 +525,7 @@ class PatientReadingViewModel @Inject constructor(
                             DecimalFormat("#.####").format(gestationalAge.age.asMonths())
                         }
                         is GestationalAgeWeeks -> {
-                            // This also makes the default units in weeks.
                             gestationalAge.age.weeks.toString()
-                        }
-                        is GestationalAgeDays -> {
-                            gestationalAge.age.asTotalDays().toString()
                         }
                         else -> {
                             // If it's missing, default to nothing.
@@ -553,12 +537,11 @@ class PatientReadingViewModel @Inject constructor(
 
             // Populate the gestational age units input field.
             patientGestationalAgeUnits.apply {
-                value = when (patientGestationalAge.value) {
-                    is GestationalAgeMonths -> monthsUnitString
-                    is GestationalAgeWeeks -> weeksUnitString
-                    is GestationalAgeDays -> daysUnitString
-                    // Default to weeks
-                    else -> weeksUnitString
+                value = if (patientGestationalAge.value is GestationalAgeMonths) {
+                    monthsUnitString
+                } else {
+                    // This also makes the default units in weeks.
+                    weeksUnitString
                 }
             }
 
@@ -574,8 +557,6 @@ class PatientReadingViewModel @Inject constructor(
                         GestationalAgeMonths((value as GestationalAge).timestamp)
                     } else if (it == weeksUnitString && currentValue !is GestationalAgeWeeks) {
                         GestationalAgeWeeks((value as GestationalAge).timestamp)
-                    } else if (it == weeksUnitString && currentValue !is GestationalAgeWeeks) {
-                        GestationalAgeDays((value as GestationalAge).timestamp)
                     } else {
                         Log.d(TAG, "DEBUG: patientGestationalAge units source: didn't do anything")
                         return@addSource
@@ -597,12 +578,9 @@ class PatientReadingViewModel @Inject constructor(
                     value = if (currentUnitsString == monthsUnitString) {
                         val userInput: Double = it.toDoubleOrNull() ?: 0.0
                         GestationalAgeMonths(Months(userInput))
-                    } else if (currentUnitsString == weeksUnitString) {
-                        val userInput: Long = it.toLongOrNull() ?: 0L
-                        GestationalAgeWeeks(Weeks(userInput))
                     } else {
                         val userInput: Long = it.toLongOrNull() ?: 0L
-                        GestationalAgeDays(Days(userInput))
+                        GestationalAgeWeeks(Weeks(userInput))
                     }
                 }
                 addSource(patientIsPregnant) { isPregnant ->
