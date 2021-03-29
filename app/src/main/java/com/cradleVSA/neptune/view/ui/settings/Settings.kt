@@ -30,7 +30,7 @@ import javax.inject.Inject
 class SettingsActivity : AppCompatActivity() {
 
     companion object {
-        private var launchingContext:Context? = null
+        private var launchingContext: Context? = null
 
         fun makeLaunchIntent(context: Context): Intent {
             launchingContext = context
@@ -41,7 +41,7 @@ class SettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if(launchingContext!!.javaClass == LoginActivity::class.java) {
+        if (launchingContext!!.javaClass == LoginActivity::class.java) {
             supportFragmentManager
                 .beginTransaction()
                 .replace(android.R.id.content, AdvancedSettingsFragment())
