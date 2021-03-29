@@ -18,14 +18,14 @@ internal class GestationalAgeTest {
             val months: Long = _months.toLong()
             val gestationalAgeMonths = GestationalAgeMonths(Months(months))
 
-            assertEquals(months.toDouble(), gestationalAgeMonths.age.asMonths(), 0.0000000001)
+            assertEquals(months.toDouble(), gestationalAgeMonths.ageFromNow.asMonths(), 0.0000000001)
 
-            val weeks = gestationalAgeMonths.age.asWeeks()
+            val weeks = gestationalAgeMonths.ageFromNow.asWeeks()
             // We use 30 days per month,
             val expectedWeeks: Double = (30 * months) / 7.0
             assertEquals(expectedWeeks, weeks, 0.0000000001)
 
-            val weeksWholeNumber = gestationalAgeMonths.age.weeks.toDouble()
+            val weeksWholeNumber = gestationalAgeMonths.ageFromNow.weeks.toDouble()
             assertEquals(floor(expectedWeeks), weeksWholeNumber, 0.0000000001)
         }
     }
@@ -40,9 +40,9 @@ internal class GestationalAgeTest {
             val weeks: Long = _weeks.toLong()
             val gestationalAgeWeeks = GestationalAgeWeeks(Weeks(weeks))
 
-            assertEquals(weeks.toDouble(), gestationalAgeWeeks.age.asWeeks(), 0.0000000001)
+            assertEquals(weeks.toDouble(), gestationalAgeWeeks.ageFromNow.asWeeks(), 0.0000000001)
 
-            val months = gestationalAgeWeeks.age.asMonths()
+            val months = gestationalAgeWeeks.ageFromNow.asMonths()
             // (expectedWeeks * 7) days, and there are 30 days per month,
             val expectedMonths: Double = (weeks * 7) / 30.0
             assertEquals(expectedMonths, months, 0.0000000001)
@@ -58,7 +58,7 @@ internal class GestationalAgeTest {
         val twoWeeksAndOneDayAsMonth = Months(0.5)
         val gestationalAgeMonths = GestationalAgeMonths(twoWeeksAndOneDayAsMonth)
         // error("${System.currentTimeMillis() / 1000L - twoWeeksAndOneDayAsMonth.seconds.value} vs ${gestationalAgeMonths.timestamp}")
-        assertEquals(2, gestationalAgeMonths.age.weeks)
-        assertEquals(1, gestationalAgeMonths.age.days)
+        assertEquals(2, gestationalAgeMonths.ageFromNow.weeks)
+        assertEquals(1, gestationalAgeMonths.ageFromNow.days)
     }
 }

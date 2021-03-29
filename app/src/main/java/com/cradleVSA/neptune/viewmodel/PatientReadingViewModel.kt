@@ -522,10 +522,10 @@ class PatientReadingViewModel @Inject constructor(
                     when (val gestationalAge = patientGestationalAge.value) {
                         is GestationalAgeMonths -> {
                             // We don't want to show an excessive amount of decimal places.
-                            DecimalFormat("#.####").format(gestationalAge.age.asMonths())
+                            DecimalFormat("#.####").format(gestationalAge.ageFromNow.asMonths())
                         }
                         is GestationalAgeWeeks -> {
-                            gestationalAge.age.weeks.toString()
+                            gestationalAge.ageFromNow.weeks.toString()
                         }
                         else -> {
                             // If it's missing, default to nothing.
