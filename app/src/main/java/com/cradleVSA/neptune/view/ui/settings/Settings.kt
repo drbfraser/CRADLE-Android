@@ -28,17 +28,30 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class SettingsActivity : AppCompatActivity() {
+
     companion object {
-        fun makeLaunchIntent(context: Context) = Intent(context, SettingsActivity::class.java)
+        private var launchingContext:Context? = null
+
+        fun makeLaunchIntent(context: Context): Intent {
+            launchingContext = context
+            return Intent(context, SettingsActivity::class.java)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        supportFragmentManager
-            .beginTransaction()
-            .replace(android.R.id.content, SettingsFragment())
-            .commit()
+        if(launchingContext!!.javaClass == LoginActivity::class.java) {
+            supportFragmentManager
+                .beginTransaction()
+                .replace(android.R.id.content, AdvancedSettingsFragment())
+                .commit()
+        } else {
+            supportFragmentManager
+                .beginTransaction()
+                .replace(android.R.id.content, SettingsFragment())
+                .commit()
+        }
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
@@ -182,9 +195,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
 @AndroidEntryPoint
 class AdvancedSettingsFragment : PreferenceFragmentCompat() {
-    companion object {
-        fun makeLaunchIntent(context: Context) = Intent(context, AdvancedSettingsFragment::class.java)
-    }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         Log.v(this::class.simpleName, "Loading advanced settings from resource")
