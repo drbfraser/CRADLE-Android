@@ -94,11 +94,8 @@ inline class WeeksAndDays(val totalDays: Long) : Duration, Serializable {
         // finiteness of Doubles, anything past 4.2857142857142857 is ignored.
         private const val WEEKS_PER_MONTH = 4.2857142857142857
 
-        fun weeks(weeks: Long) = WeeksAndDays(weeks, 0)
-
-        fun months(months: Double): WeeksAndDays {
-            val days = DAYS_PER_MONTH * months
-            return WeeksAndDays((days / DAYS_PER_WEEK).toLong(), days.toLong() % DAYS_PER_WEEK)
+        fun fromSeconds(seconds: Seconds): WeeksAndDays {
+            return WeeksAndDays(seconds.value / SECONDS_PER_DAY)
         }
     }
 

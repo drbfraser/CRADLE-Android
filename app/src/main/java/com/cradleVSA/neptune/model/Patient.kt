@@ -690,10 +690,7 @@ sealed class GestationalAge(val timestamp: BigInteger) : Marshal<JSONObject>, Se
  */
 class GestationalAgeWeeks(timestamp: BigInteger) : GestationalAge(timestamp), Serializable {
     override val age: WeeksAndDays
-        get() {
-            val seconds = Seconds(UnixTimestamp.now - timestamp)
-            return WeeksAndDays.weeks(Weeks.fromSeconds(seconds).value)
-        }
+        get() = WeeksAndDays.fromSeconds(Seconds(UnixTimestamp.now - timestamp))
 
     constructor(duration: Weeks) : this(UnixTimestamp.ago(duration))
 
@@ -719,10 +716,7 @@ class GestationalAgeMonths(timestamp: BigInteger) : GestationalAge(timestamp), S
     }
 
     override val age: WeeksAndDays
-        get() {
-            val seconds = Seconds(UnixTimestamp.now - timestamp)
-            return WeeksAndDays.months(Months.fromSeconds(seconds).value)
-        }
+        get() = WeeksAndDays.fromSeconds(Seconds(UnixTimestamp.now - timestamp))
 
     override fun marshal(): JSONObject = with(JSONObject()) {
         // For legacy interop we store the value as a string instead of an int.
