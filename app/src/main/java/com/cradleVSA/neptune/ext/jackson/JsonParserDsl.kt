@@ -23,7 +23,7 @@ inline fun JsonParser.parseObject(
 }
 
 /**
- * Parses an array of objects of type [T]. The [block] is called on every object in the array
+ * Parses an array of objects of type [T]. The [onEachObject] is called on every object in the array
  * that is being parsed. If [throwIfNotArray] is true, then an [IOException] is thrown if not
  * parsing an array.
  *
@@ -47,7 +47,7 @@ inline fun JsonParser.parseObject(
 inline fun <T> JsonParser.parseObjectArray(
     objectReader: ObjectReader,
     throwIfNotArray: Boolean = true,
-    block: (T) -> Unit,
+    onEachObject: (T) -> Unit,
 ) {
     if (nextToken() != JsonToken.START_ARRAY) {
         if (throwIfNotArray) {
@@ -59,6 +59,6 @@ inline fun <T> JsonParser.parseObjectArray(
     if (nextToken() == JsonToken.END_ARRAY) return
 
     objectReader.readValues<T>(this).use { iterator ->
-        iterator.forEachJackson { block(it) }
+        iterator.forEachJackson { onEachObject(it) }
     }
 }
