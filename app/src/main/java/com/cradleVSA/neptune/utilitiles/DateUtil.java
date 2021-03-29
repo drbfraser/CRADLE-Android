@@ -1,11 +1,17 @@
 package com.cradleVSA.neptune.utilitiles;
 
+import android.util.Log;
+
+import java.math.BigInteger;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class DateUtil {
+
+    private static final String TAG = "DateUtil";
+
     public static String getDateString(ZonedDateTime date) {
         if (date == null) {
             return "";
@@ -33,9 +39,14 @@ public class DateUtil {
      *                           it will use MMM d, yyyy format
      * @return A concise date string.
      */
-    public static String getConciseDateString(Long unixDate, boolean useYMDOrderForFull) {
+    public static String getConciseDateString(BigInteger unixDate, boolean useYMDOrderForFull) {
+        if ((unixDate.compareTo(BigInteger.valueOf(Long.MAX_VALUE))) > 0) {
+          Log.e(TAG, "Input date is beyond the range of values supported by this utility " +
+                  "- undefined behavior ahead");
+        }
         final ZonedDateTime now = ZonedDateTime.now();
-        final ZonedDateTime dateFromUnix = getZoneTimeFromLong(unixDate);
+        // With our previous comparison and log, I think it's fine to take the longValue:
+        final ZonedDateTime dateFromUnix = getZoneTimeFromLong(unixDate.longValue());
 
         if (dateFromUnix == null) {
             return "";
@@ -58,6 +69,16 @@ public class DateUtil {
         }
 
         return dateFromUnix.format(formatter);
+    }
+
+    /**
+     * @param longDate           The Unix timestamp to use, represented by a Long
+     * @param useYMDOrderForFull If true, the full date will use YYYY-MM-DD format, else
+     *                           it will use MMM d, yyyy format
+     * @return A concise date string.
+     */
+    public static String getConciseDateString(Long longDate, boolean useYMDOrderForFull) {
+        return getConciseDateString(BigInteger.valueOf(longDate), useYMDOrderForFull);
     }
 
     /**

@@ -35,7 +35,7 @@ import org.json.JSONArray
 @Database(
     entities = [Reading::class, Patient::class, HealthFacility::class],
     views = [LocalSearchPatient::class],
-    version = 9,
+    version = 10,
     exportSchema = true
 )
 @TypeConverters(DatabaseTypeConverters::class)
@@ -88,7 +88,8 @@ internal object Migrations {
             MIGRATION_5_6,
             MIGRATION_6_7,
             MIGRATION_7_8,
-            MIGRATION_8_9
+            MIGRATION_8_9,
+            MIGRATION_9_10
         )
     }
 
@@ -536,6 +537,23 @@ CREATE TABLE IF NOT EXISTS `new_Patient` (
 
                 execSQL("DROP TABLE Reading_backup;")
             }
+        }
+    }
+
+    /**
+     * Version 10:
+     * Change gestational age unit values in [Patient] to match new backend enum values.
+     *  - GESTATIONAL_AGE_UNITS_WEEKS to WEEKS
+     *  - GESTATIONAL_AGE_UNITS_MONTHS to MONTHS
+     */
+    private val MIGRATION_9_10 = object : Migration(9, 10) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL(
+                """
+                UPDATE Patient
+                SET gestationalAge=REPLACE(gestationalAge, 'GESTATIONAL_AGE_UNITS_', '')
+                """.trimIndent()
+            )
         }
     }
 }

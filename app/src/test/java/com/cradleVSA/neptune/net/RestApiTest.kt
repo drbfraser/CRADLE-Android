@@ -51,12 +51,11 @@ internal class RestApiTest {
                             JSONObject("""
                             {
                                 "email": "vht@vht.com",
-                                "roles": ["VHT"],
+                                "role": "VHT",
                                 "firstName": "TestVHT",
                                 "healthFacilityName": "H0000",
                                 "isLoggedIn": true,
                                 "userId": 3,
-                                "vhtList": [],
                                 "token": "test-token",
                                 "refresh": "test-refresh-token"
                             }
@@ -136,7 +135,7 @@ internal class RestApiTest {
 
         val expectedLoginResponseForVht = LoginResponse(
             email = "vht@vht.com",
-            roles = arrayOf("VHT"),
+            role = "VHT",
             firstName = "TestVHT",
             healthFacilityName = "H0000",
             userId = 3,

@@ -36,6 +36,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import java.io.IOException
 import java.io.InputStream
+import java.math.BigInteger
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 import kotlin.time.ExperimentalTime
@@ -114,7 +115,7 @@ internal class LoginManagerTests {
             val response = LoginResponse(
                 token = TEST_AUTH_TOKEN,
                 email = TEST_USER_EMAIL,
-                roles = arrayOf("VHT"),
+                role = "VHT",
                 userId = TEST_USER_ID,
                 firstName = TEST_FIRST_NAME,
                 healthFacilityName = TEST_USER_FACILITY_NAME
@@ -378,13 +379,13 @@ internal class LoginManagerTests {
             assert(fakeSharedPreferences.containsKey(SyncWorker.LAST_PATIENT_SYNC)) {
                 "missing last patient sync time"
             }
-            assert(fakeSharedPreferences[SyncWorker.LAST_PATIENT_SYNC]!! as Long > 100L) {
+            assert(BigInteger(fakeSharedPreferences[SyncWorker.LAST_PATIENT_SYNC] as String).toLong() > 100L) {
                 "last patient sync time too small"
             }
             assert(fakeSharedPreferences.containsKey(SyncWorker.LAST_READING_SYNC)) {
                 "missing last reading sync time"
             }
-            assert(fakeSharedPreferences[SyncWorker.LAST_READING_SYNC]!! as Long > 100L) {
+            assert(BigInteger(fakeSharedPreferences[SyncWorker.LAST_READING_SYNC]!! as String).toLong() > 100L) {
                 "last reading sync time too small"
             }
 

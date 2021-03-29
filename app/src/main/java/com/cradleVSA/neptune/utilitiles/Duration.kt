@@ -1,5 +1,7 @@
 package com.cradleVSA.neptune.utilitiles
 
+import java.math.BigInteger
+
 private const val SECONDS_PER_MINUTE = 60
 private const val MINUTES_PER_HOUR = 60
 private const val HOURS_PER_DAY = 24
@@ -24,6 +26,10 @@ data class Seconds(val value: Long) : Duration() {
 
     // Flooring is acceptable for seconds.
     constructor(double: Double) : this(double.toLong())
+
+    // BigInteger to Long conversion should be acceptable as a Duration out of
+    // Long range is unrealistic.
+    constructor(bigInt: BigInteger) : this(bigInt.toLong())
 }
 
 data class Weeks(val value: Long) : Duration() {

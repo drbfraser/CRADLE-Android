@@ -146,6 +146,15 @@ interface ReadingDao {
     @Query("DELETE FROM Reading")
     suspend fun deleteAllReading()
 
+    /**
+     * set dateRecheckVitalsNeeded field to null
+     */
     @Query("UPDATE Reading SET dateRecheckVitalsNeeded = NULL WHERE readingId = :readingId")
     suspend fun setDateRecheckVitalsNeededToNull(readingId: String)
+
+    /**
+     * mark the reading as needing to be uploaded to the server
+     */
+    @Query("UPDATE Reading SET isUploadedToServer = 0 WHERE readingId = :readingId")
+    suspend fun setIsUploadedToServerToZero(readingId: String)
 }

@@ -16,6 +16,7 @@ import com.cradleVSA.neptune.sync.SyncWorker
 import com.cradleVSA.neptune.utilitiles.DateUtil
 import com.cradleVSA.neptune.viewmodel.SyncViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import java.math.BigInteger
 import javax.inject.Inject
 
 /**
@@ -148,11 +149,13 @@ class SyncActivity : AppCompatActivity() {
         syncProgressBar.visibility = View.INVISIBLE
         downloadProgressText.visibility = View.INVISIBLE
 
-        val lastSyncTime = sharedPreferences.getLong(
-            SyncWorker.LAST_PATIENT_SYNC,
-            SyncWorker.LAST_SYNC_DEFAULT
+        val lastSyncTime = BigInteger(
+            sharedPreferences.getString(
+                SyncWorker.LAST_PATIENT_SYNC,
+                SyncWorker.LAST_SYNC_DEFAULT.toString()
+            )!!
         )
-        val date = if (lastSyncTime == SyncWorker.LAST_SYNC_DEFAULT) {
+        val date = if (lastSyncTime.toString() == SyncWorker.LAST_SYNC_DEFAULT) {
             getString(R.string.sync_activity_date_never)
         } else {
             DateUtil.getConciseDateString(lastSyncTime, false)

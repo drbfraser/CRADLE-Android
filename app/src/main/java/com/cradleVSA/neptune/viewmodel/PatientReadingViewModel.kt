@@ -525,7 +525,6 @@ class PatientReadingViewModel @Inject constructor(
                             DecimalFormat("#.####").format(gestationalAge.age.asMonths())
                         }
                         is GestationalAgeWeeks -> {
-                            // This also makes the default units in weeks.
                             gestationalAge.age.weeks.toString()
                         }
                         else -> {
@@ -552,18 +551,20 @@ class PatientReadingViewModel @Inject constructor(
                     // If we received an update to the units used, convert the GestationalAge object
                     // into the right type.
                     it ?: return@addSource
+                    val currentValue = value ?: return@addSource
 
-                    if (it == monthsUnitString && value is GestationalAgeWeeks) {
-                        value = GestationalAgeMonths((value as GestationalAge).timestamp)
-                        // Zero out the input when changing units.
-                        patientGestationalAgeInput.value = "0"
-                    } else if (it == weeksUnitString && value is GestationalAgeMonths) {
-                        value = GestationalAgeWeeks((value as GestationalAge).timestamp)
-                        // Zero out the input when changing units.
-                        patientGestationalAgeInput.value = "0"
+                    value = if (it == monthsUnitString && currentValue !is GestationalAgeMonths) {
+                        GestationalAgeMonths((value as GestationalAge).timestamp)
+                    } else if (it == weeksUnitString && currentValue !is GestationalAgeWeeks) {
+                        GestationalAgeWeeks((value as GestationalAge).timestamp)
                     } else {
                         Log.d(TAG, "DEBUG: patientGestationalAge units source: didn't do anything")
+                        return@addSource
                     }
+
+                    Log.d(TAG, "DEBUG: patientGestationalAge units source: clearing gest age input")
+                    // Zero out the input when changing units.
+                    patientGestationalAgeInput.value = "0"
                 }
                 addSource(patientGestationalAgeInput) {
                     // If the user typed something in, create a new GestationalAge object with the
@@ -1292,6 +1293,7 @@ class PatientReadingViewModel @Inject constructor(
         val saveResult = saveManager.saveWithReferral(referralOption, referralComment, healthFacilityName)
         if (saveResult.first == ReadingFlowSaveResult.SAVE_SUCCESSFUL) {
             readingManager.setDateRecheckVitalsNeededToNull(originalReadingId)
+            readingManager.setIsUploadedToServerToZero(originalReadingId)
         }
         return saveResult
     }
@@ -1305,6 +1307,7 @@ class PatientReadingViewModel @Inject constructor(
         val saveResult = saveManager.save()
         if (saveResult == ReadingFlowSaveResult.SAVE_SUCCESSFUL) {
             readingManager.setDateRecheckVitalsNeededToNull(originalReadingId)
+            readingManager.setIsUploadedToServerToZero(originalReadingId)
         }
         return saveResult
     }
