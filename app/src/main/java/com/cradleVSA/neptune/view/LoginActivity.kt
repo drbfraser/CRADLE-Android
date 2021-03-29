@@ -35,7 +35,8 @@ import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection.HTTP_UNAUTHORIZED
 import javax.inject.Inject
 import javax.net.ssl.SSLHandshakeException
-import com.cradleVSA.neptune.view.ui.settings.SettingsActivity.Companion.makeLaunchIntent
+//import com.cradleVSA.neptune.view.ui.settings.SettingsActivity.Companion.makeLaunchIntent
+import com.cradleVSA.neptune.view.ui.settings.AdvancedSettingsFragment.Companion.makeLaunchIntent
 
 @AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
