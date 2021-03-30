@@ -166,6 +166,7 @@
     <string name="logging_in">Logging in</string>
     <string name="login_successful">Login successful!</string>
     <string name="login_error">Invalid email or password.</string>
+    <string name="login_activity_no_internet">No internet available</string>
     <string name="activity_patients_no_patients_message">You don\'t have any patients right now.\n Go to the dashboard to create a new patient.</string>
     <string name="pregnant_question">Pregnant?</string>
     <string name="create_new_reading">Create New Reading</string>
@@ -212,6 +213,9 @@
     <string name="global_patient_search_add_patient_dialog_message">Are you sure you want to add this patient as your own?</string>
     <string name="global_patient_search_adding_to_your_patient_list">Adding to your patient list.</string>
     <string name="global_patient_search_unable_to_make_user_patient_relationship">Unable to make user-patient relationship</string>
+    <string name="global_patient_search_no_internet_available_to_search">No internet connection available to search on the server</string>
+    <string name="global_patient_search_no_internet_available_to_associate">No internet connection available to associate you with the patient</string>
+    <string name="global_patient_search_no_internet_available_to_get_info">No internet connection available to get information about the patient</string>
     <string name="global_patient_profile_dialog_title">Are you sure?</string>
     <string name="global_patient_profile_dialog_message">This is not reversible</string>
     <string name="global_patient_profile_add_dialog_message">Adding to your patients list</string>
@@ -220,6 +224,8 @@
     <string name="global_patient_profile_fetch_patient_fail">Unable to fetch patient information</string>
     <string name="global_patient_profile_you_must_add_to_list_before_editing">You must add this patient to your patient lists before editing anything</string>
     <string name="global_patient_profile_you_must_add_to_list_before_reading">You must add this patient to your patients list before creating a new reading</string>
+    <string name="global_patient_profile_internet_needed_to_associate">No internet connection. Internet is needed to associate you with this patient.</string>
+
     <plurals name="settings_n_configured_health_facilities">
         <item quantity="one">%1$d configured health facility</item>
         <item quantity="other">%1$d configured health facilities</item>
@@ -534,7 +540,7 @@
     <string name="ocr_fragment_diastolic_ocr_result_dia_s">DIA: %1$s</string>
     <string name="ocr_fragment_diastolic_image_content_description">A capture of the diastolic reading on the device screen</string>
     <string name="ocr_fragment_heart_rate_ocr_result_pul_s">PUL: %1$s</string>
-    <string name="ocr_fragment_heart_rate_image_content_description">A capture of the heart reading reading on the device screen</string>
+    <string name="ocr_fragment_heart_rate_image_content_description">A capture of the heart beat reading on the device screen</string>
     <string name="ocr_fragment_use_result_button">Use</string>
     <string name="ocr_fragment_systolic_reading_label">SYS</string>
     <string name="ocr_fragment_diastolic_reading_label">DIA</string>

@@ -75,7 +75,7 @@ class ReferralDialogFragment : DialogFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         isCancelable = false
         val dataBinding = DataBindingUtil.inflate<ReferralDialogBinding>(
             inflater,
@@ -90,6 +90,7 @@ class ReferralDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding?.viewModel = referralDialogViewModel
+        binding?.readingViewModel = viewModel
         binding?.launchReason = launchReason
         binding?.lifecycleOwner = viewLifecycleOwner
         super.onViewCreated(view, savedInstanceState)

@@ -9,12 +9,14 @@ import android.os.Bundle
 import android.view.View.VISIBLE
 import android.widget.Button
 import android.widget.Toast
+import androidx.annotation.StringRes
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.model.GlobalPatient
 import com.cradleVSA.neptune.net.Success
+import com.cradleVSA.neptune.utilitiles.livedata.NetworkAvailableLiveData
 import com.cradleVSA.neptune.viewmodel.ReadingRecyclerViewAdapter
 import com.cradleVSA.neptune.viewmodel.ReadingRecyclerViewAdapter.OnClickElement
 import com.google.android.material.snackbar.Snackbar
@@ -28,6 +30,8 @@ import kotlinx.coroutines.withContext
  */
 @AndroidEntryPoint
 class GlobalPatientProfileActivity : PatientProfileActivity() {
+
+    private lateinit var isNetworkAvailable: NetworkAvailableLiveData
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,8 +48,15 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
      */
     private fun setupAddToMyPatientList() {
         val addToMyListButton = findViewById<Button>(R.id.addToMyPatientButton)
+        isNetworkAvailable = NetworkAvailableLiveData(this)
+        isNetworkAvailable.observe(this) {}
+
         addToMyListButton.visibility = VISIBLE
         addToMyListButton.setOnClickListener {
+            if (!isInternetAvailable(R.string.global_patient_profile_internet_needed_to_associate)) {
+                return@setOnClickListener
+            }
+
             AlertDialog.Builder(this)
                 .setTitle(R.string.global_patient_profile_dialog_title)
                 .setMessage(getString(R.string.global_patient_profile_dialog_message))
@@ -56,10 +67,22 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         }
     }
 
+    private fun isInternetAvailable(@StringRes res: Int): Boolean {
+        if (isNetworkAvailable.value != true) {
+            Toast.makeText(this, res, Toast.LENGTH_LONG).show()
+            return false
+        }
+        return true
+    }
+
     /**
      * adds current patient to the current vht list.
      */
     private fun setupAddingPatientLocally() {
+        if (!isInternetAvailable(R.string.global_patient_profile_internet_needed_to_associate)) {
+            return
+        }
+
         val progressDialog = ProgressDialog(this)
         progressDialog.setCancelable(false)
         progressDialog.setMessage(getString(R.string.global_patient_profile_add_dialog_message))

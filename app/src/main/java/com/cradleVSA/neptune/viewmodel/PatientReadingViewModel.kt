@@ -44,6 +44,7 @@ import com.cradleVSA.neptune.utilitiles.DateUtil
 import com.cradleVSA.neptune.utilitiles.LiveDataDynamicModelBuilder
 import com.cradleVSA.neptune.utilitiles.Months
 import com.cradleVSA.neptune.utilitiles.Weeks
+import com.cradleVSA.neptune.utilitiles.livedata.NetworkAvailableLiveData
 import com.cradleVSA.neptune.view.ReadingActivity
 import com.cradleVSA.neptune.viewmodel.PatientReadingViewModel.LiveDataInitializationManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -105,7 +106,8 @@ class PatientReadingViewModel @Inject constructor(
     private val patientManager: PatientManager,
     private val referralUploadManager: ReferralUploadManager,
     private val sharedPreferences: SharedPreferences,
-    @ApplicationContext private val app: Context
+    @ApplicationContext @SuppressLint("StaticFieldLeak")
+    private val app: Context
 ) : ViewModel() {
     private val patientBuilder = LiveDataDynamicModelBuilder()
     private val readingBuilder = LiveDataDynamicModelBuilder()
@@ -873,6 +875,8 @@ class PatientReadingViewModel @Inject constructor(
         navigationManager.setInputEnabledState(isEnabled)
     }
 
+    val isNetworkAvailable = NetworkAvailableLiveData(app)
+
     /**
      * The [NavigationManager] handles the navigation in the Activity / Fragments.
      *
@@ -937,12 +941,19 @@ class PatientReadingViewModel @Inject constructor(
                     // Opportunistically check if a patient with the same ID exists on the server.
                     // This only serves to lower the probability that a duplicate ID will be used,
                     // as it obviously doesn't work when the user has no internet.
-                    val existingOnServer = patientManager.downloadPatientInfoFromServer(patient.id)
-                    if (existingOnServer is Success) {
-                        // Send back the patient to give the user an option to
-                        // download the patient with all of their readings.
-                        return@withContext ReadingFlowError.ERROR_PATIENT_ID_IN_USE_ON_SERVER to
-                            existingOnServer.value
+                    if (isNetworkAvailable.value == true) {
+                        Log.d(TAG, "checking if patient ID is in use on the server")
+                        val existingOnServer =
+                            patientManager.downloadPatientInfoFromServer(patient.id)
+                        if (existingOnServer is Success) {
+                            // Send back the patient to give the user an option to
+                            // download the patient with all of their readings.
+                            Log.d(TAG, "patient ID already in use on the server")
+                            return@withContext ReadingFlowError.ERROR_PATIENT_ID_IN_USE_ON_SERVER to
+                                existingOnServer.value
+                        }
+                    } else {
+                        Log.d(TAG, "skipping patient ID on server check due to no internet")
                     }
 
                     return@withContext ReadingFlowError.NO_ERROR to null
