@@ -128,7 +128,7 @@ class SyncViewModel @Inject constructor(
         }
     }
 
-    val isConnectedToInternet: LiveData<Boolean> = NetworkAvailableLiveData(context)
+    val isConnectedToInternet = NetworkAvailableLiveData(context)
 
     @MainThread
     fun startSyncing() {

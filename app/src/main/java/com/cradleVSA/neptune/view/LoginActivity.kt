@@ -14,6 +14,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.ext.hideKeyboard
@@ -21,6 +22,7 @@ import com.cradleVSA.neptune.manager.LoginManager
 import com.cradleVSA.neptune.net.Failure
 import com.cradleVSA.neptune.net.NetworkException
 import com.cradleVSA.neptune.net.Success
+import com.cradleVSA.neptune.utilitiles.livedata.NetworkAvailableLiveData
 import com.cradleVSA.neptune.view.ui.settings.SettingsActivity.Companion.ADVANCED_SETTINGS_KEY
 import com.cradleVSA.neptune.view.ui.settings.SettingsActivity.Companion.makeLaunchIntent
 import com.google.android.gms.common.GoogleApiAvailability
@@ -45,6 +47,8 @@ class LoginActivity : AppCompatActivity() {
 
     @Inject
     lateinit var loginManager: LoginManager
+
+    private lateinit var isNetworkAvailable: NetworkAvailableLiveData
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -92,9 +96,18 @@ class LoginActivity : AppCompatActivity() {
         val emailET = findViewById<EditText>(R.id.emailEditText)
         val passwordET = findViewById<EditText>(R.id.passwordEditText)
         val errorText = findViewById<TextView>(R.id.invalidLoginText)
+        val noInternetText = findViewById<TextView>(R.id.internetAvailabilityTextView)
         val loginButton = findViewById<Button>(R.id.loginButton)
 
-        loginButton.setOnClickListener { _ ->
+        isNetworkAvailable = NetworkAvailableLiveData(this).apply {
+            observe(this@LoginActivity) { netAvailable ->
+                netAvailable ?: return@observe
+                loginButton.isEnabled = netAvailable
+                noInternetText.isVisible = !netAvailable
+            }
+        }
+
+        loginButton.setOnClickListener {
             errorText.visibility = View.GONE
             val progressDialog = progressDialog
             passwordET.hideKeyboard()

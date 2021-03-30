@@ -9,6 +9,9 @@
         <import type="com.cradleVSA.neptune.view.ReadingActivity.LaunchReason" />
 
         <variable
+            name="readingViewModel"
+            type="com.cradleVSA.neptune.viewmodel.PatientReadingViewModel" />
+        <variable
             name="viewModel"
             type="com.cradleVSA.neptune.viewmodel.ReferralDialogViewModel" />
         <variable
@@ -135,7 +138,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
                     android:layout_marginBottom="8dp"
-                    android:enabled="@{viewModel.areSendButtonsEnabled &amp;&amp; !viewModel.isSending}"
+                    android:enabled="@{viewModel.areSendButtonsEnabled &amp;&amp; !viewModel.isSending &amp;&amp; readingViewModel.isNetworkAvailable}"
                     android:text="@string/referral_dialog_button_send_web"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
