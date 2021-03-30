@@ -10,12 +10,19 @@ import io.mockk.mockk
 import okhttp3.mockwebserver.MockWebServer
 
 object MockWebServerUtils {
+    /**
+     * Creates a mocked [RestApi] instance with a [MockWebServer]. The [RestApi] will use the given
+     * [sharedPreferences] (mocked) if given, otherwise it will default to empty mocked one.
+     *
+     * The [webServerBlock] allows for setting up the [MockWebServer].
+     */
     fun createRestApiWithMockedServer(
+        sharedPreferences: SharedPreferences? = null,
         webServerBlock: MockWebServer.() -> Unit
     ): Pair<RestApi, MockWebServer> {
         val mockServer = MockWebServer().apply { webServerBlock() }
 
-        val mockSharedPrefs = mockk<SharedPreferences>()
+        val mockSharedPrefs = sharedPreferences ?: mockk()
 
         val mockSettings = mockk<Settings> {
             every { networkHostname } returns mockServer.url("").host

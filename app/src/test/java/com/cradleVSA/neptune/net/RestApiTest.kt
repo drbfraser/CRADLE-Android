@@ -35,9 +35,11 @@ internal class RestApiTest {
                             login.getString("email") to login.getString("password")
                         } catch (e: JSONException) {
                             setResponseCode(400)
-                            setBody("""
-                            {"message": "Bad request parameters"}
-                        """.trimIndent())
+                            setBody(
+                                """
+                                    {"message": "Bad request parameters"}
+                                """.trimIndent()
+                            )
                             return@apply
                         }
 
