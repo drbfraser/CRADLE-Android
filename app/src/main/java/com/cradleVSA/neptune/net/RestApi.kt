@@ -2,6 +2,7 @@ package com.cradleVSA.neptune.net
 
 import android.content.SharedPreferences
 import android.util.Log
+import com.cradleVSA.neptune.ext.jackson.forEachJackson
 import com.cradleVSA.neptune.ext.jackson.parseObject
 import com.cradleVSA.neptune.ext.jackson.parseObjectArray
 import com.cradleVSA.neptune.manager.LoginManager
@@ -9,6 +10,7 @@ import com.cradleVSA.neptune.manager.LoginResponse
 import com.cradleVSA.neptune.manager.UrlManager
 import com.cradleVSA.neptune.model.Assessment
 import com.cradleVSA.neptune.model.GlobalPatient
+import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.Patient
 import com.cradleVSA.neptune.model.PatientAndReadings
 import com.cradleVSA.neptune.model.Reading
@@ -23,9 +25,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import java.io.IOException
 import java.io.InputStream
 import java.math.BigInteger
-import java.net.HttpURLConnection
 import javax.inject.Singleton
 
 /**
@@ -80,14 +82,7 @@ class RestApi constructor(
 
     /**
      * Gets all patients and associated readings for the current user
-     * from the server.
-     *
-     * For memory efficiency, the [InputStream] from the [HttpURLConnection]
-     * is parsed by the [inputStreamWriter]. It's expected that the
-     * [Patient]s and [Reading]s parsed are inserted into the database during
-     * parsing so that there are not a lot of [Patient] and [Reading] objects
-     * stuck in memory. The [inputStreamWriter] isn't expected to close
-     * the given [InputStream].
+     * from the server. The parsed results will be sent in the resulting [patientChannel].
      *
      * Only the patient's managed by this user will be returned in the [InputStream].
      * A patient is considered "managed" if it has an association with the logged-in
@@ -100,14 +95,28 @@ class RestApi constructor(
      * or [NetworkException] if parsing or the connection fails.
      */
     suspend fun getAllPatientsStreaming(
-        inputStreamWriter: suspend (InputStream) -> Unit
+        patientChannel: SendChannel<PatientAndReadings>
     ): NetworkResult<Unit> = withContext(IO) {
         http.makeRequest(
             method = Http.Method.GET,
             url = urlManager.getAllPatients,
             headers = headers,
-            inputStreamReader = inputStreamWriter
-        )
+            inputStreamReader = { inputStream ->
+                // Parse JSON strings directly from the input stream to avoid dealing with a
+                // ByteArray of an entire JSON array in memory and trying to convert that into a
+                // String.
+                val reader = JacksonMapper.readerForPatientAndReadings
+                reader.readValues<PatientAndReadings>(inputStream).use { iterator ->
+                    iterator.forEachJackson { patientChannel.send(it) }
+                }
+            }
+        ).also {
+            if (it is Success) {
+                patientChannel.close()
+            } else {
+                patientChannel.close(SyncException("failed to download all associated patients"))
+            }
+        }
     }
 
     /**
@@ -290,18 +299,27 @@ class RestApi constructor(
 
     /**
      * Requests a list of all available health facilities from the server.
-     *
-     * @return a list of health facilities
      */
     suspend fun getAllHealthFacilities(
-        inputStreamReader: suspend (InputStream) -> Unit
+        healthFacilityChannel: SendChannel<HealthFacility>
     ): NetworkResult<Unit> = withContext(IO) {
         http.makeRequest(
             method = Http.Method.GET,
             url = urlManager.healthFacilities,
             headers = headers,
-            inputStreamReader = inputStreamReader,
-        )
+            inputStreamReader = { inputStream ->
+                val reader = JacksonMapper.readerForHealthFacility
+                reader.readValues<HealthFacility>(inputStream).use { iterator ->
+                    iterator.forEachJackson { healthFacilityChannel.send(it) }
+                }
+            },
+        ).also {
+            if (it is Success) {
+                healthFacilityChannel.close()
+            } else {
+                healthFacilityChannel.close(SyncException("health facility download failed"))
+            }
+        }
     }
 
     /**
@@ -504,4 +522,4 @@ class RestApi constructor(
         }
 }
 
-class SyncException(message: String) : Exception(message)
+class SyncException(message: String) : IOException(message)

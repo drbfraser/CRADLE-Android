@@ -3,26 +3,32 @@ package com.cradleVSA.neptune.manager
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
-import androidx.room.withTransaction
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.database.CradleDatabase
 import com.cradleVSA.neptune.database.daos.PatientDao
 import com.cradleVSA.neptune.database.daos.ReadingDao
+import com.cradleVSA.neptune.ext.jackson.forEachJackson
 import com.cradleVSA.neptune.model.CommonPatientReadingJsons
 import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.Patient
+import com.cradleVSA.neptune.model.PatientAndReadings
 import com.cradleVSA.neptune.model.Reading
 import com.cradleVSA.neptune.net.Failure
+import com.cradleVSA.neptune.net.NetworkException
 import com.cradleVSA.neptune.net.RestApi
 import com.cradleVSA.neptune.net.Success
+import com.cradleVSA.neptune.net.SyncException
 import com.cradleVSA.neptune.sync.SyncWorker
+import com.cradleVSA.neptune.testutils.MockDependencyUtils
 import com.cradleVSA.neptune.utilitiles.SharedPreferencesMigration
+import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestCoroutineDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -35,10 +41,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import java.io.IOException
-import java.io.InputStream
 import java.math.BigInteger
 import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
 import kotlin.time.ExperimentalTime
 import kotlin.time.seconds
 
@@ -128,9 +132,13 @@ internal class LoginManagerTests {
             getAllHealthFacilities(any())
         } coAnswers {
             // Simulate the network sending over the JSON as a stream of bytes.
-            val block = firstArg<suspend (InputStream) -> Unit>()
+            val channel = firstArg<SendChannel<HealthFacility>>()
             val jsonStream = HEALTH_FACILITY_JSON.byteInputStream()
-            block(jsonStream)
+            val reader = JacksonMapper.readerForHealthFacility
+            reader.readValues<HealthFacility>(jsonStream).use { iterator ->
+                iterator.forEachJackson { channel.send(it) }
+            }
+            channel.close()
             if (streamingWillSucceed) {
                 Success(Unit, 200)
             } else {
@@ -142,200 +150,74 @@ internal class LoginManagerTests {
             getAllPatientsStreaming(any())
         } coAnswers {
             // Simulate the network sending over the JSON as a stream of bytes.
-            val block = firstArg<suspend (InputStream) -> Unit>()
+            val patientsChannel = firstArg<SendChannel<PatientAndReadings>>()
             val json = CommonPatientReadingJsons.allPatientsJsonExpectedPair.first
             val jsonStream = if (streamingWillSucceed) {
                 json.byteInputStream()
             } else {
-                "${json.substring(0, json.length / 2)} a}})".byteInputStream()
+                // mess it up somehow
+                "${json}ThisMessessItUp".byteInputStream()
             }
 
-            // Simulate Http class catching IOExceptions
             try {
-                block(jsonStream)
+                val reader = JacksonMapper.readerForPatientAndReadings
+                reader.readValues<PatientAndReadings>(jsonStream).use { iterator ->
+                    iterator.forEachJackson { patientsChannel.send(it) }
+                }
             } catch (e: IOException) {
+                // Simulate Http class catching IOExceptions
+                patientsChannel.close(SyncException(e.message ?: ""))
+                return@coAnswers NetworkException(e)
             }
 
             if (streamingWillSucceed) {
+                patientsChannel.close()
                 Success(Unit, 200)
             } else {
+                patientsChannel.close(SyncException("failure"))
                 Failure(ByteArray(0), 500)
             }
         }
     }
 
-    private val fakeSharedPreferences = mutableMapOf<String, Any?>()
-    private val fakeHealthFacilityDatabase = mutableListOf<HealthFacility>()
-    private val fakePatientDatabase = mutableListOf<Patient>()
-    private val fakeReadingDatabase = mutableListOf<Reading>()
+    private val fakePatientDatabase: MutableList<Patient>
+    private val fakeReadingDatabase: MutableList<Reading>
 
     private var isMockkStaticDone = false
     private val lock = ReentrantLock()
 
-    private fun createMockDatabase() = lock.withLock{
-        mockk<CradleDatabase> {
-            // https://stackoverflow.com/a/56652529 - if we don't do this, test will hang forever
-            if (!isMockkStaticDone) {
-                mockkStatic("androidx.room.RoomDatabaseKt")
-                isMockkStaticDone = true
-            }
+    private val mockDatabase: CradleDatabase
+    private val mockPatientDao: PatientDao
+    private val mockReadingDao: ReadingDao
+    private val fakeSharedPreferences: MutableMap<String, Any?>
+    private val mockSharedPrefs: SharedPreferences
+    private val fakeHealthFacilityDatabase: MutableList<HealthFacility>
 
-            // FIXME: With multiple coroutines using withTransaction in LoginManager, there
-            //  will be suspend lambdas that don't get called at all, because when a lambda is
-            //  captured, it overrides any lambdas that was there before. To work around this,
-            //  we don't test parallel downloads in LoginManager.
-            coEvery { withTransaction(captureLambda<suspend () -> Unit>()) } coAnswers {
-                var isTransactionSuccessful = false
-                try {
-                    lambda<suspend () -> Unit>().captured.invoke()
-                    isTransactionSuccessful = true
-                } finally {
-                    if (!isTransactionSuccessful) {
-                        // Simulate rollback
-                        fakeHealthFacilityDatabase.clear()
-                        fakePatientDatabase.clear()
-                        fakeReadingDatabase.clear()
-                    }
-                }
-            }
+    init {
+        val (map, sharedPrefs) = MockDependencyUtils.createMockSharedPreferences()
+        fakeSharedPreferences = map
+        mockSharedPrefs = sharedPrefs
 
-            every { clearAllTables() } answers {
-                fakeHealthFacilityDatabase.clear()
-                fakePatientDatabase.clear()
-                fakeReadingDatabase.clear()
-            }
-            every { close() } returns Unit
+        val mockDatabaseStuff = MockDependencyUtils.createMockDatabase()
+        mockDatabaseStuff.run {
+            mockDatabase = mockedDatabase
+            mockPatientDao = mockedPatientDao
+            mockReadingDao = mockedReadingDao
+            fakePatientDatabase = underlyingPatientDatabase
+            fakeReadingDatabase = underlyingReadingDatabase
+            fakeHealthFacilityDatabase = underlyingHealthFacilityDatabase
         }
     }
 
-    private val mockPatientDao = mockk<PatientDao> {
-        coEvery { insert(any()) } answers {
-            fakePatientDatabase.add(firstArg())
-            5L
-        }
-
-        coEvery { updateOrInsertIfNotExists(any()) } answers {
-            val patient = firstArg<Patient>()
-            var indexOfPatient = -1
-            run loop@{
-                fakePatientDatabase.forEachIndexed { currentIndex, p ->
-                    if (p == patient) {
-                        indexOfPatient = currentIndex
-                        return@loop
-                    }
-                }
-            }
-            fakePatientDatabase.apply {
-                if (indexOfPatient == -1) {
-                    add(firstArg())
-                } else {
-                    removeAt(indexOfPatient)
-                    add(indexOfPatient, patient)
-                }
-            }
-        }
-    }
-    private val mockReadingDao = mockk<ReadingDao> {
-        coEvery { insertAll(any()) } answers {
-            val readings = firstArg<List<Reading>>()
-            readings.forEach { reading ->
-                fakePatientDatabase.find { it.id == reading.patientId }
-                    ?: error(
-                        "foreign key constraint: trying to insert reading for nonexistent patient" +
-                            "; patientId ${reading.patientId} not in fake database.\n" +
-                            "reading=$reading\n" +
-                            "fakePatientDatabase=$fakePatientDatabase\n" +
-                            "fakeReadingDatabase=$fakeReadingDatabase"
-                    )
-            }
-            fakeReadingDatabase.addAll(readings)
-        }
-        coEvery { insert(any()) } answers {
-            val reading: Reading = firstArg()
-            fakePatientDatabase.find { it.id == reading.patientId }
-                ?: error(
-                    "foreign key constraint: trying to insert reading for nonexistent patient; " +
-                        "patientId ${reading.patientId} not in fake database.\n" +
-                        "reading=$reading\n" +
-                        "fakePatientDatabase=$fakePatientDatabase\n" +
-                        "fakeReadingDatabase=$fakeReadingDatabase"
-                )
-            fakeReadingDatabase.add(reading)
-        }
-    }
-
-    private fun <T> putInFakeSharedPreference(key: String?, value: T?) {
-        key ?: return
-        fakeSharedPreferences[key] = value
-    }
-
-    private val mockSharedPrefs = mockk<SharedPreferences> {
-        every { edit() } returns mockk editor@{
-            every { putString(any(), any()) } answers {
-                putInFakeSharedPreference<String?>(firstArg(), secondArg())
-                this@editor
-            }
-
-            every { getString(any(), any()) } answers {
-                val stringValue = fakeSharedPreferences[firstArg()] as String?
-                if (stringValue == null && !fakeSharedPreferences.contains(firstArg())) {
-                    secondArg()
-                } else {
-                    stringValue
-                }
-            }
-
-            every { putInt(any(), any()) } answers {
-                putInFakeSharedPreference<Int?>(firstArg(), secondArg())
-                this@editor
-            }
-
-            every { putLong(any(), any()) } answers {
-                putInFakeSharedPreference<Long?>(firstArg(), secondArg())
-                this@editor
-            }
-
-            every { contains(any()) } answers { fakeSharedPreferences.containsKey(firstArg()) }
-
-            every { commit() } returns true
-            every { apply() } returns Unit
-            every { clear() } answers {
-                fakeSharedPreferences.clear()
-                this@editor
-            }
-        }
-    }
+    private val mockHealthManager = HealthFacilityManager(mockDatabase)
 
     private val fakePatientManager = PatientManager(
-        createMockDatabase(),
+        mockDatabase,
         mockPatientDao,
         mockReadingDao,
         createMockRestApi()
     )
 
-    private val mockHealthManager = mockk<HealthFacilityManager> {
-        coEvery {
-            addAll(any())
-        } answers {
-            val healthFacilities: List<HealthFacility> = arg(0) ?: return@answers
-            healthFacilities.forEach { facilityToBeAdded ->
-                fakeHealthFacilityDatabase.find { it.id == facilityToBeAdded.id }.let {
-                    fakeHealthFacilityDatabase.remove(it)
-                }
-            }
-            fakeHealthFacilityDatabase.addAll(healthFacilities)
-        }
-        coEvery {
-            add(any())
-        } answers {
-            val healthFacility = firstArg<HealthFacility>()
-            // Replace
-            fakeHealthFacilityDatabase.find { it.id == healthFacility.id }.let {
-                fakeHealthFacilityDatabase.remove(it)
-            }
-            fakeHealthFacilityDatabase.add(firstArg())
-        }
-    }
     private val mockContext = mockk<Context>(relaxed = true) {
         every { getString(R.string.key_vht_name) } returns "firstName"
     }
@@ -365,7 +247,7 @@ internal class LoginManagerTests {
             val loginManager = LoginManager(
                 createMockRestApi(),
                 mockSharedPrefs,
-                createMockDatabase(),
+                mockDatabase,
                 fakePatientManager,
                 mockHealthManager,
                 mockContext
@@ -482,10 +364,13 @@ internal class LoginManagerTests {
     @Test
     fun `login with right credentials, server 500 error during download, nothing should be added`() {
         runBlocking {
+            mockDatabase.clearAllTables()
+
+
             val loginManager = LoginManager(
                 createMockRestApi(streamingWillSucceed = false),
                 mockSharedPrefs,
-                createMockDatabase(),
+                mockDatabase,
                 fakePatientManager,
                 mockHealthManager,
                 mockContext
@@ -507,7 +392,6 @@ internal class LoginManagerTests {
             assert(loginManager.isLoggedIn())
 
             // withTransaction should make it so that the changes are not committed.
-            assertEquals(0, fakeHealthFacilityDatabase.size) { "nothing should be added" }
             assertEquals(0, fakePatientDatabase.size) { "nothing should be added" }
             assertEquals(0, fakeReadingDatabase.size) { "nothing should be added" }
 
@@ -524,7 +408,7 @@ internal class LoginManagerTests {
             val loginManager = LoginManager(
                 createMockRestApi(),
                 mockSharedPrefs,
-                createMockDatabase(),
+                mockDatabase,
                 fakePatientManager,
                 mockHealthManager,
                 mockContext
