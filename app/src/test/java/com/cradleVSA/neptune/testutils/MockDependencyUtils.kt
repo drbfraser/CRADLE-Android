@@ -104,7 +104,7 @@ object MockDependencyUtils {
 
     var isMockkStaticForDatabaseKtDone = false
 
-    fun createMockDatabase(): MockedDatabaseCollection {
+    fun createMockedDatabaseDependencies(): MockedDatabaseDependencies {
         val fakePatientDatabase = mutableListOf<Patient>()
         val fakeReadingDatabase = mutableListOf<Reading>()
         val fakeHealthFacilityDatabase = mutableListOf<HealthFacility>()
@@ -212,7 +212,7 @@ object MockDependencyUtils {
             every { close() } returns Unit
         }
 
-        return MockedDatabaseCollection(
+        return MockedDatabaseDependencies(
             mockDatabase,
             mockPatientDao,
             mockReadingDao,
@@ -223,7 +223,7 @@ object MockDependencyUtils {
         )
     }
 
-    data class MockedDatabaseCollection(
+    data class MockedDatabaseDependencies(
         val mockedDatabase: CradleDatabase,
         val mockedPatientDao: PatientDao,
         val mockedReadingDao: ReadingDao,
