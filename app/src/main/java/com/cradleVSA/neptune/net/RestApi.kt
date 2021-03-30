@@ -21,9 +21,9 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.cradleVSA.neptune.model.Referral
 import com.cradleVSA.neptune.sync.PatientSyncField
 import com.cradleVSA.neptune.sync.ReadingSyncField
+import com.cradleVSA.neptune.sync.SyncWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -84,20 +84,25 @@ class RestApi constructor(
 
     /**
      * Gets all patients and associated readings for the current user
-     * from the server. The parsed results will be sent in the resulting [patientChannel].
+     * from the server. The parsed results will be sent in the resulting
+     * [patientAndReadingsChannel].
      *
-     * Only the patient's managed by this user will be returned in the [InputStream].
+     * Only the patient managed by this user will be returned in the [InputStream].
      * A patient is considered "managed" if it has an association with the logged-in
      * user. An association is automatically made when a patient is created
      * by this user, or it can be manually made by the [associatePatientToUser]
      * method. To query unmanaged (global) patients, use [searchForPatient]
      * or [getPatient].
      *
-     * @return A [Success] if the parsing succeeds, otherwise a [Failure]
-     * or [NetworkException] if parsing or the connection fails.
+     * [patientAndReadingsChannel] will be failed (see [SendChannel.close]) if [Failure] or
+     * [NetworkException] is returned, so using any of the Channels can result in a [SyncException]
+     * that should be caught by anything handling the Channels.
+     *
+     * @return A [Success] if the parsing succeeds, otherwise a [Failure] or [NetworkException] if
+     * parsing or the connection fails.
      */
-    suspend fun getAllPatientsStreaming(
-        patientChannel: SendChannel<PatientAndReadings>
+    suspend fun getAllPatients(
+        patientAndReadingsChannel: SendChannel<PatientAndReadings>
     ): NetworkResult<Unit> = withContext(IO) {
         http.makeRequest(
             method = Http.Method.GET,
@@ -109,14 +114,14 @@ class RestApi constructor(
                 // String.
                 val reader = JacksonMapper.readerForPatientAndReadings
                 reader.readValues<PatientAndReadings>(inputStream).use { iterator ->
-                    iterator.forEachJackson { patientChannel.send(it) }
+                    iterator.forEachJackson { patientAndReadingsChannel.send(it) }
                 }
             }
         ).also {
             if (it is Success) {
-                patientChannel.close()
+                patientAndReadingsChannel.close()
             } else {
-                patientChannel.close(SyncException("failed to download all associated patients"))
+                patientAndReadingsChannel.close(SyncException("failed to download all associated patients"))
             }
         }
     }
@@ -348,7 +353,7 @@ class RestApi constructor(
      *
      * The act of associating a patient with this user tells the server that
      * the patient is "managed" by this user and will show up in responses to
-     * the [getAllPatientsStreaming] method.
+     * the [getAllPatients] method.
      *
      * @param id id of the patient to associate
      * @return whether the request was successful or not
@@ -368,6 +373,10 @@ class RestApi constructor(
 
     /**
      * Requests a list of all available health facilities from the server.
+     *
+     * [healthFacilityChannel] will be failed (see [SendChannel.close]) if [Failure] or
+     * [NetworkException] is returned, so using any of the Channels can result in a [SyncException]
+     * that should be caught by anything handling the Channels.
      */
     suspend fun getAllHealthFacilities(
         healthFacilityChannel: SendChannel<HealthFacility>
@@ -396,10 +405,20 @@ class RestApi constructor(
      * the patients have been synced with the server. The given [patientsToUpload] should be
      * new patients. Sync conflicts are handled by the server.
      *
+     * The API will first accept our [patientsToUpload], and then the server will respond with new
+     * patients between now and [lastSyncTimestamp]. What the server sends back will be parsed and
+     * send through [patientChannel]. Note that the server response includes the same patients in
+     * [patientsToUpload]; by downloading them again, this is how we eventually set [Patient.base].
+     *
      * Parsed patients are sent through the [patientChannel], with progress reporting done by
      * [reportProgressBlock] (first parameter is number of patients downloaded, second is number
      * of patients in total). The [patientChannel] is closed when patient downloading is complete.
-     * [patientChannel] will be failed if [Failure] or [NetworkException] is returned.
+     *
+     * [patientChannel] will be failed (see [SendChannel.close]) if [Failure] or
+     * [NetworkException] is returned, so using any of the Channels can result in a [SyncException]
+     * that should be caught by anything handling the Channels.
+     *
+     * @sample SyncWorker.syncPatients
      */
     suspend fun syncPatients(
         patientsToUpload: List<Patient>,
@@ -463,17 +482,28 @@ class RestApi constructor(
      * new readings, or readings for which the rechecking vitals date should be updated. Sync
      * conflicts are handled by the server.
      *
+     * The API will first accept our [readingsToUpload], and then the server will respond with
+     * new [Reading]s, [Referral]s, and [Assessment]s between now and [lastSyncTimestamp]. What the
+     * server sends back will be parsed and sent through [readingChannel], [referralChannel], and
+     * [assessmentChannel]. Note that the server response includes [Reading]s in [readingsToUpload];
+     * by downloading them again, that is how we eventually set [Reading.isUploadedToServer].
+     *
      * The channels will have parsed information passed into them. Only one channel will be
-     * populated at a time. When finishing parsing one array in the JSON, the current channel will
-     * close and the next channel will be the focus. Progress reporting is done by
-     * [reportProgressBlock] (first parameter is number of total items downloaded, second is number
-     * of items in total; items is the sum of readings, referrals, and assessments).
+     * populated at a time, since the parsing is sequential. When finishing parsing one array in the
+     * JSON, the current channel will close and the next channel will be the focus. Progress
+     * reporting is done by [reportProgressBlock] (first parameter is number of total items
+     * downloaded, second is number of items in total; items is the sum of readings, referrals, and
+     * assessments).
      *
      * The order of the focusing (and thus closing) is [readingChannel], then [referralChannel],
-     * then [assessmentChannel]. This order is determined by the API response order. Channels will
-     * be failed if [Failure] or [NetworkException] is returned.
+     * then [assessmentChannel]. (We're following the API response order.)
+     *
+     * Any of the Channels will be failed (see [SendChannel.close]) if [Failure] or
+     * [NetworkException] is returned, so using any of the Channels can result in a [SyncException]
+     * that should be caught by anything handling the Channels.
+     *
+     * @sample SyncWorker.syncReadings
      */
-    @ExperimentalCoroutinesApi
     suspend fun syncReadings(
         readingsToUpload: List<Reading>,
         lastSyncTimestamp: BigInteger = BigInteger.valueOf(1L),
@@ -481,97 +511,96 @@ class RestApi constructor(
         referralChannel: SendChannel<Referral>,
         assessmentChannel: SendChannel<Assessment>,
         reportProgressBlock: suspend (Int, Int) -> Unit,
-    ): NetworkResult<Unit> =
-        withContext(IO) {
-            val body = createWriter<List<Reading>>().writeValueAsBytes(readingsToUpload)
-            http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.getReadingsSync(lastSyncTimestamp),
-                headers = headers,
-                requestBody = buildJsonRequestBody(body)
-            ) { inputStream ->
-                Log.d(TAG, "Parsing readings now")
+    ): NetworkResult<Unit> = withContext(IO) {
+        val body = createWriter<List<Reading>>().writeValueAsBytes(readingsToUpload)
+        http.makeRequest(
+            method = Http.Method.POST,
+            url = urlManager.getReadingsSync(lastSyncTimestamp),
+            headers = headers,
+            requestBody = buildJsonRequestBody(body)
+        ) { inputStream ->
+            Log.d(TAG, "Parsing readings now")
 
-                var numReadingsDownloaded = 0
-                var numReferralsDownloaded = 0
-                var numAssessmentsDownloaded = 0
+            var numReadingsDownloaded = 0
+            var numReferralsDownloaded = 0
+            var numAssessmentsDownloaded = 0
 
-                val readerForReading = JacksonMapper.createReader<Reading>()
-                val readerForReferral = JacksonMapper.createReader<Referral>()
-                val readerForAssessment = JacksonMapper.createReader<Assessment>()
+            val readerForReading = JacksonMapper.createReader<Reading>()
+            val readerForReferral = JacksonMapper.createReader<Referral>()
+            val readerForAssessment = JacksonMapper.createReader<Assessment>()
 
-                readerForReading.createParser(inputStream).use { parser ->
-                    var totalDownloaded = 0
-                    var totalToDownload = 0
-                    parser.parseObject {
-                        when (currentName) {
-                            ReadingSyncField.TOTAL.text -> {
-                                totalToDownload = nextIntValue(0)
-                                Log.d(TAG, "There are $totalToDownload readings + referrals + followups")
-                                if (totalToDownload == 0) {
-                                    // don't bother parsing if there's nothing to parse
-                                    return@use
-                                }
+            readerForReading.createParser(inputStream).use { parser ->
+                var totalDownloaded = 0
+                var totalToDownload = 0
+                parser.parseObject {
+                    when (currentName) {
+                        ReadingSyncField.TOTAL.text -> {
+                            totalToDownload = nextIntValue(0)
+                            Log.d(TAG, "There are $totalToDownload readings + referrals + followups")
+                            if (totalToDownload == 0) {
+                                // don't bother parsing if there's nothing to parse
+                                return@use
                             }
-                            ReadingSyncField.READINGS.text -> {
-                                Log.d(TAG, "Starting to parse readings array")
-                                parseObjectArray<Reading>(readerForReading) {
-                                    readingChannel.send(it)
-                                    totalDownloaded++
-                                    numReadingsDownloaded++
-                                    reportProgressBlock(totalDownloaded, totalToDownload)
-                                }
-                                readingChannel.close()
+                        }
+                        ReadingSyncField.READINGS.text -> {
+                            Log.d(TAG, "Starting to parse readings array")
+                            parseObjectArray<Reading>(readerForReading) {
+                                readingChannel.send(it)
+                                totalDownloaded++
+                                numReadingsDownloaded++
+                                reportProgressBlock(totalDownloaded, totalToDownload)
                             }
-                            ReadingSyncField.NEW_REFERRALS.text -> {
-                                Log.d(TAG, "Starting to parse NEW_REFERRALS array")
-                                parseObjectArray<Referral>(readerForReferral) {
-                                    referralChannel.send(it)
-                                    totalDownloaded++
-                                    numReferralsDownloaded++
-                                    reportProgressBlock(totalDownloaded, totalToDownload)
-                                }
-                                referralChannel.close()
+                            readingChannel.close()
+                        }
+                        ReadingSyncField.NEW_REFERRALS.text -> {
+                            Log.d(TAG, "Starting to parse NEW_REFERRALS array")
+                            parseObjectArray<Referral>(readerForReferral) {
+                                referralChannel.send(it)
+                                totalDownloaded++
+                                numReferralsDownloaded++
+                                reportProgressBlock(totalDownloaded, totalToDownload)
                             }
-                            ReadingSyncField.NEW_FOLLOW_UPS.text -> {
-                                Log.d(TAG, "Starting to parse NEW_FOLLOW_UPS array")
-                                parseObjectArray<Assessment>(readerForAssessment) {
-                                    assessmentChannel.send(it)
-                                    totalDownloaded++
-                                    numAssessmentsDownloaded++
-                                    reportProgressBlock(totalDownloaded, totalToDownload)
-                                }
-                                assessmentChannel.close()
+                            referralChannel.close()
+                        }
+                        ReadingSyncField.NEW_FOLLOW_UPS.text -> {
+                            Log.d(TAG, "Starting to parse NEW_FOLLOW_UPS array")
+                            parseObjectArray<Assessment>(readerForAssessment) {
+                                assessmentChannel.send(it)
+                                totalDownloaded++
+                                numAssessmentsDownloaded++
+                                reportProgressBlock(totalDownloaded, totalToDownload)
                             }
+                            assessmentChannel.close()
                         }
                     }
                 }
+            }
 
-                withContext(Dispatchers.Main) {
-                    Log.d(
-                        TAG,
-                        "DEBUG: Downloaded $numReadingsDownloaded readings, " +
-                            "$numReferralsDownloaded referrals and " +
-                            "$numAssessmentsDownloaded assessments."
-                    )
-                }
-                Unit
-            }.also {
-                if (it is Success) {
-                    // In case we return early, these need to be closed. These are idempotent
-                    // operations, so it doesn't do anything on Successes where we don't return
-                    // early.
-                    readingChannel.close()
-                    referralChannel.close()
-                    assessmentChannel.close()
-                } else {
-                    // Fail these channels if not successful (note: idempotent operations)
-                    readingChannel.close(SyncException("failed to sync readings"))
-                    referralChannel.close(SyncException("failed to sync referrals"))
-                    assessmentChannel.close(SyncException("failed to sync assessments"))
-                }
+            withContext(Dispatchers.Main) {
+                Log.d(
+                    TAG,
+                    "DEBUG: Downloaded $numReadingsDownloaded readings, " +
+                        "$numReferralsDownloaded referrals and " +
+                        "$numAssessmentsDownloaded assessments."
+                )
+            }
+            Unit
+        }.also {
+            if (it is Success) {
+                // In case we return early, these need to be closed. These are idempotent
+                // operations, so it doesn't do anything on Successes where we don't return
+                // early.
+                readingChannel.close()
+                referralChannel.close()
+                assessmentChannel.close()
+            } else {
+                // Fail these channels if not successful (note: idempotent operations)
+                readingChannel.close(SyncException("failed to sync readings"))
+                referralChannel.close(SyncException("failed to sync referrals"))
+                assessmentChannel.close(SyncException("failed to sync assessments"))
             }
         }
+    }
 
     /**
      * The common headers used for most API requests.

@@ -214,7 +214,7 @@ class LoginManager @Inject constructor(
                 Log.d(TAG, "patient & reading database job failed")
             }
         }
-        val result = restApi.getAllPatientsStreaming(channel)
+        val result = restApi.getAllPatients(channel)
 
         when (result) {
             is Success -> {
