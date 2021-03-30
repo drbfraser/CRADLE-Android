@@ -8,6 +8,16 @@
     android:theme="@style/AppTheme.NoActionBar"
     tools:context=".view.LoginActivity">
 
+    <ImageButton
+        android:id="@+id/loginSettingsButton"
+        android:layout_width="42dp"
+        android:layout_height="41dp"
+        android:backgroundTint="#00FFFFFF"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/baseline_settings_white_36"
+        android:contentDescription="TODO" />
+
     <androidx.cardview.widget.CardView
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -141,4 +151,5 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

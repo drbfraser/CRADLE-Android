@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.StringRes
@@ -20,6 +21,8 @@ import com.cradleVSA.neptune.manager.LoginManager
 import com.cradleVSA.neptune.net.Failure
 import com.cradleVSA.neptune.net.NetworkException
 import com.cradleVSA.neptune.net.Success
+import com.cradleVSA.neptune.view.ui.settings.SettingsActivity.Companion.ADVANCED_SETTINGS_KEY
+import com.cradleVSA.neptune.view.ui.settings.SettingsActivity.Companion.makeLaunchIntent
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException
 import com.google.android.gms.common.GooglePlayServicesRepairableException
@@ -55,6 +58,7 @@ class LoginActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_login)
         setupLogin()
+        setupSettings()
     }
 
     private fun showMessageIfPresent() {
@@ -168,6 +172,15 @@ class LoginActivity : AppCompatActivity() {
                 .setMessage(R.string.login_activity_device_is_outdated_dialog_message)
                 .setPositiveButton(android.R.string.ok, null)
                 .show()
+        }
+    }
+
+    private fun setupSettings() {
+        val settingsButton = findViewById<ImageButton>(R.id.loginSettingsButton)
+        settingsButton.setOnClickListener {
+            val intent = makeLaunchIntent(this@LoginActivity)
+            intent.putExtra(ADVANCED_SETTINGS_KEY, true)
+            startActivity(intent)
         }
     }
 

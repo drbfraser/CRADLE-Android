@@ -28,17 +28,29 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class SettingsActivity : AppCompatActivity() {
+
     companion object {
-        fun makeLaunchIntent(context: Context) = Intent(context, SettingsActivity::class.java)
+        const val ADVANCED_SETTINGS_KEY: String = "advanced settings"
+
+        fun makeLaunchIntent(context: Context): Intent = Intent(context, SettingsActivity::class.java)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        supportFragmentManager
-            .beginTransaction()
-            .replace(android.R.id.content, SettingsFragment())
-            .commit()
+        val launchAdvancedSettings: Boolean = intent.getBooleanExtra(ADVANCED_SETTINGS_KEY, false)
+
+        if (launchAdvancedSettings) {
+            supportFragmentManager
+                .beginTransaction()
+                .replace(android.R.id.content, AdvancedSettingsFragment())
+                .commit()
+        } else {
+            supportFragmentManager
+                .beginTransaction()
+                .replace(android.R.id.content, SettingsFragment())
+                .commit()
+        }
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
