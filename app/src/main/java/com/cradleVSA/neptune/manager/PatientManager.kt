@@ -11,9 +11,6 @@ import com.cradleVSA.neptune.net.Failure
 import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.net.RestApi
 import com.cradleVSA.neptune.net.Success
-import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import javax.inject.Inject
 
@@ -46,20 +43,18 @@ class PatientManager @Inject constructor(
         reading: Reading,
         isReadingFromServer: Boolean,
     ) {
-        withContext(IO) {
-            if (patient.id != reading.patientId) {
-                throw IllegalArgumentException(
-                    "reading's patient ID doesn't match with given patient's ID"
-                )
-            }
+        if (patient.id != reading.patientId) {
+            throw IllegalArgumentException(
+                "reading's patient ID doesn't match with given patient's ID"
+            )
+        }
 
-            database.withTransaction {
-                patientDao.updateOrInsertIfNotExists(patient)
-                if (isReadingFromServer) {
-                    reading.isUploadedToServer = true
-                }
-                readingDao.insert(reading)
+        database.withTransaction {
+            patientDao.updateOrInsertIfNotExists(patient)
+            if (isReadingFromServer) {
+                reading.isUploadedToServer = true
             }
+            readingDao.insert(reading)
         }
     }
 
@@ -87,40 +82,14 @@ class PatientManager @Inject constructor(
     }
 
     /**
-     * delete a patient by id
-     */
-    suspend fun delete(id: String) {
-        withContext(IO) {
-            patientDao.deleteById(id)
-        }
-    }
-
-    /**
-     * delete all the patients
-     */
-    suspend fun deleteAll() = withContext(IO) { patientDao.deleteAllPatients() }
-
-    /**
      * get a list of patient ids for all patients.
      */
-    suspend fun getPatientIdsOnly(): List<String> = withContext(IO) {
-        patientDao.getPatientIdsList()
-    }
+    suspend fun getPatientIdsOnly(): List<String> = patientDao.getPatientIdsList()
 
     /**
      * get individual patient by id if exists
      */
-    suspend fun getPatientById(id: String): Patient? = withContext(IO) {
-        patientDao.getPatientById(id)
-    }
-
-    @Deprecated(
-        message = "Should be removed when PatientProfileActivity is converted to Kotlin",
-        replaceWith = ReplaceWith("getPatientById")
-    )
-    fun getPatientByIdBlocking(id: String): Patient? = runBlocking(IO) {
-        patientDao.getPatientById(id)
-    }
+    suspend fun getPatientById(id: String): Patient? = patientDao.getPatientById(id)
 
     /**
      * Get patients.
@@ -142,18 +111,17 @@ class PatientManager @Inject constructor(
      * @param patientAndReadings the patient to upload
      * @return whether the upload succeeded or not
      */
-    suspend fun uploadNewPatient(patientAndReadings: PatientAndReadings): NetworkResult<Unit> =
-        withContext(IO) {
-            val result = restApi.postPatient(patientAndReadings)
-            if (result is Success) {
-                // Update the patient's `base` field if successfully uploaded
-                val patient = patientAndReadings.patient
-                patient.base = patient.lastEdited
-                add(patient)
-            }
-
-            result.map { Unit }
+    suspend fun uploadNewPatient(patientAndReadings: PatientAndReadings): NetworkResult<Unit> {
+        val result = restApi.postPatient(patientAndReadings)
+        if (result is Success) {
+            // Update the patient's `base` field if successfully uploaded
+            val patient = patientAndReadings.patient
+            patient.base = patient.lastEdited
+            add(patient)
         }
+
+        return result.map { }
+    }
 
     /**
      * Uploads an edited patient to the server.
@@ -165,27 +133,24 @@ class PatientManager @Inject constructor(
      * @param patient the patient to upload
      * @return whether the upload succeeded or not
      */
-    suspend fun updatePatientOnServer(patient: Patient): NetworkResult<Unit> =
-        withContext(IO) {
-            val result = restApi.putPatient(patient)
-            if (result is Success) {
-                // Update the patient's `base` field if successfully uploaded
-                patient.base = patient.lastEdited
-                add(patient)
-            }
-
-            result.map { Unit }
+    suspend fun updatePatientOnServer(patient: Patient): NetworkResult<Unit> {
+        val result = restApi.putPatient(patient)
+        if (result is Success) {
+            // Update the patient's `base` field if successfully uploaded
+            patient.base = patient.lastEdited
+            add(patient)
         }
 
-    suspend fun downloadEditedPatientInfoFromServer(patientId: String): NetworkResult<Unit> =
-        withContext(IO) {
-            val result = restApi.getPatientInfo(patientId)
-            if (result is Success) {
-                add(result.value)
-            }
+        return result.map { }
+    }
 
-            result.map { Unit }
+    suspend fun downloadEditedPatientInfoFromServer(patientId: String): NetworkResult<Unit> {
+        val result = restApi.getPatientInfo(patientId)
+        if (result is Success) {
+            add(result.value)
         }
+        return result.map { }
+    }
 
     /**
      * Downloads just the demographic information about a patient with ID of [patientId] from
@@ -228,10 +193,10 @@ class PatientManager @Inject constructor(
      */
     suspend fun downloadAssociateAndSavePatient(
         patientId: String
-    ): NetworkResult<PatientAndReadings> = withContext(IO) {
+    ): NetworkResult<PatientAndReadings> {
         val downloadResult = downloadPatientAndReading(patientId)
         if (downloadResult !is Success) {
-            return@withContext downloadResult
+            return downloadResult
         }
         // Safe to cancel here since we only downloaded patients + readings
         // After this point, we shouldn't have cancellation points, because we want the
@@ -242,13 +207,13 @@ class PatientManager @Inject constructor(
         val associateResult = associatePatientWithUser(downloadedPatient.id)
         if (associateResult !is Success) {
             // If association failed, we shouldn't add the patient and readings to our database.
-            return@withContext associateResult.cast<PatientAndReadings>()
+            return associateResult.cast()
         }
 
         // Otherwise, association was successful, so add to the database
         val downloadedReadings = downloadResult.value.readings
         addPatientWithReadings(downloadedPatient, downloadedReadings, areReadingsFromServer = true)
 
-        return@withContext downloadResult
+        return downloadResult
     }
 }
