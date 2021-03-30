@@ -1,12 +1,9 @@
 package com.cradleVSA.neptune.net
 
-import android.content.SharedPreferences
 import android.util.Log
 import com.cradleVSA.neptune.manager.LoginResponse
-import com.cradleVSA.neptune.manager.UrlManager
-import com.cradleVSA.neptune.model.Settings
+import com.cradleVSA.neptune.testutils.MockWebServerUtils
 import io.mockk.every
-import io.mockk.mockk
 import io.mockk.mockkStatic
 import kotlinx.coroutines.runBlocking
 import okhttp3.mockwebserver.Dispatcher
@@ -26,29 +23,32 @@ internal class RestApiTest {
     /**
      * A server where only the user "vht@vht.com" with "vht123" has actual data.
      */
-    private val mockServer = MockWebServer().apply server@{
-        dispatcher = object : Dispatcher() {
-            override fun dispatch(request: RecordedRequest) = when (request.path) {
-                "/api/user/auth" -> MockResponse().apply {
-                    val login = JSONObject(request.body.readString(Charsets.UTF_8))
-                    val (email, password) = try {
-                        login.getString("email") to login.getString("password")
-                    } catch (e: JSONException) {
-                        setResponseCode(400)
-                        setBody("""
+    private val mockServer: MockWebServer
+    private val restApi: RestApi
+    init {
+        val (api, server) = MockWebServerUtils.createRestApiWithMockedServer {
+            dispatcher = object : Dispatcher() {
+                override fun dispatch(request: RecordedRequest) = when (request.path) {
+                    "/api/user/auth" -> MockResponse().apply {
+                        val login = JSONObject(request.body.readString(Charsets.UTF_8))
+                        val (email, password) = try {
+                            login.getString("email") to login.getString("password")
+                        } catch (e: JSONException) {
+                            setResponseCode(400)
+                            setBody("""
                             {"message": "Bad request parameters"}
                         """.trimIndent())
-                        return@apply
-                    }
+                            return@apply
+                        }
 
-                    val response: JSONObject = try {
-                        if (email == "vht@vht.com") {
-                            if (password != "vht123") {
-                                throw GeneralSecurityException()
-                            }
+                        val response: JSONObject = try {
+                            if (email == "vht@vht.com") {
+                                if (password != "vht123") {
+                                    throw GeneralSecurityException()
+                                }
 
-                            // sync with the actual endpoint
-                            JSONObject("""
+                                // sync with the actual endpoint
+                                JSONObject("""
                             {
                                 "email": "vht@vht.com",
                                 "role": "VHT",
@@ -60,45 +60,32 @@ internal class RestApiTest {
                                 "refresh": "test-refresh-token"
                             }
                             """.trimIndent())
-                        } else {
-                            throw GeneralSecurityException()
+                            } else {
+                                throw GeneralSecurityException()
+                            }
+                        } catch (e: GeneralSecurityException) {
+                            setResponseCode(401)
+                            setBody(
+                                JSONObject()
+                                    .put("message", "Invalid email or password")
+                                    .toString()
+                            )
+                            return@apply
                         }
-                    } catch (e: GeneralSecurityException) {
-                        setResponseCode(401)
-                        setBody(
-                            JSONObject()
-                                .put("message", "Invalid email or password")
-                                .toString()
-                        )
-                        return@apply
+
+                        setResponseCode(200)
+                        setBody(response.toString())
                     }
 
-                    setResponseCode(200)
-                    setBody(response.toString())
-                }
-
-                else -> {
-                    MockResponse().setResponseCode(404)
+                    else -> {
+                        MockResponse().setResponseCode(404)
+                    }
                 }
             }
         }
+        restApi = api
+        mockServer = server
     }
-
-    private val mockSharedPrefs = mockk<SharedPreferences>()
-
-    private val mockSettings = mockk<Settings> {
-        every { networkHostname } returns mockServer.url("").host
-        every { networkPort } returns mockServer.port.toString()
-        every { networkUseHttps } returns false
-    }
-
-    private val fakeUrlManager = UrlManager(mockSettings)
-
-    private val restApi = RestApi(
-        sharedPreferences = mockSharedPrefs,
-        urlManager = fakeUrlManager,
-        http = Http()
-    )
 
     @BeforeEach
     fun setUp() {
