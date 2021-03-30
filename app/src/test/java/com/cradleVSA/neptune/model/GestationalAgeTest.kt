@@ -3,10 +3,22 @@ package com.cradleVSA.neptune.model
 import com.cradleVSA.neptune.utilitiles.Months
 import com.cradleVSA.neptune.utilitiles.Weeks
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
 import kotlin.math.floor
 
 internal class GestationalAgeTest {
+    @Test
+    fun `test equality`() {
+        val timestampA = 50.toBigInteger()
+        val timestampB = 51.toBigInteger()
+        assertEquals(GestationalAgeWeeks(timestampA), GestationalAgeWeeks(timestampA))
+        assertEquals(GestationalAgeMonths(timestampA), GestationalAgeMonths(timestampA))
+        assertNotEquals(GestationalAgeWeeks(timestampA), GestationalAgeMonths(timestampA))
+        assertNotEquals(GestationalAgeMonths(timestampA), GestationalAgeMonths(timestampB))
+        assertNotEquals(GestationalAgeWeeks(timestampA), GestationalAgeWeeks(timestampB))
+        assertNotEquals(GestationalAgeWeeks(timestampA), GestationalAgeMonths(timestampB))
+    }
 
     /**
      * Simulates input in the patient info fragment, inputting months for the gestational age and
