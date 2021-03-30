@@ -31,16 +31,6 @@ class SyncActivity : AppCompatActivity() {
     @Inject
     lateinit var sharedPreferences: SharedPreferences
 
-    override fun onStop() {
-        super.onStop()
-        viewModel.onStop()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        viewModel.onResume()
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_sync)
