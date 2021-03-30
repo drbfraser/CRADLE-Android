@@ -18,12 +18,13 @@ SELECT
   p.villageNumber,
   r.bloodPressure as latestBloodPressure,
   MAX(r.dateTimeTaken) as latestReadingDate,
+  p.lastEdited,
   r.referral
 FROM
   Patient as p
   LEFT JOIN Reading AS r ON p.id = r.patientId
 GROUP BY 
-  r.patientId
+  IFNULL(r.patientId, p.id)
 """
 )
 data class LocalSearchPatient(
@@ -32,6 +33,7 @@ data class LocalSearchPatient(
     val villageNumber: String?,
     val latestBloodPressure: BloodPressure?,
     val latestReadingDate: Long?,
+    val lastEdited: Long?,
     val referral: Referral?
 ) {
     fun getLatestRetestAnalysis(): ReadingAnalysis? = latestBloodPressure?.analysis

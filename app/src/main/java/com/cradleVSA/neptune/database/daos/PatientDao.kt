@@ -78,6 +78,13 @@ interface PatientDao {
     @Query("DELETE FROM Patient WHERE id = :patientId")
     suspend fun deleteById(patientId: String): Int
 
+    /**
+     * Gets all patients in a local database in [LocalSearchPatient] form for displaying in a list.
+     *
+     * The result will be sorted in descending order by latest reading date and then by name (more
+     * applicable for patients without a reading). Patients that don't have a reading will be
+     * placed below all other patients that have readings.
+     */
     @Query(
         """
 SELECT * FROM LocalSearchPatient
@@ -89,6 +96,10 @@ ORDER BY latestReadingDate DESC, name COLLATE NOCASE ASC
     /**
      * Searches the database, using % (with SQLite concatenation, ||) to make sure we search for
      * the names or IDs where the query is contained inside of them.
+     *
+     * The result will be sorted in descending order by latest reading date, and then by name (more
+     * applicable for patients without a reading). Patients that don't have a reading will be
+     * placed below all other patients that have readings.
      */
     @Query(
         """
