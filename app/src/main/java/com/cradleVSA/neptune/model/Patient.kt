@@ -25,6 +25,7 @@ import com.cradleVSA.neptune.utilitiles.Months
 import com.cradleVSA.neptune.utilitiles.Seconds
 import com.cradleVSA.neptune.utilitiles.UnixTimestamp
 import com.cradleVSA.neptune.utilitiles.Weeks
+import com.cradleVSA.neptune.utilitiles.WeeksAndDays
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
@@ -263,14 +264,14 @@ data class Patient(
                 // to see where the logic is derived from, run
                 // $ cat cradle-platform/server/validation/patients.py
                 // $ cat cradle-platform/client/src/pages/newReading/demographic/index.tsx
-                if (this.age.weeks < 1) {
+                if (this.ageFromNow.weeks < 1) {
                     return Pair(
                         false,
                         context.getString(R.string.patient_error_gestation_must_be_not_zero)
                     )
                 }
 
-                if (this.age.weeks > GESTATIONAL_AGE_WEEKS_MAX) {
+                if (this.ageFromNow.weeks > GESTATIONAL_AGE_WEEKS_MAX) {
                     return if (this is GestationalAgeWeeks) {
                         Pair(
                             false,
@@ -572,12 +573,10 @@ enum class Sex {
  */
 sealed class GestationalAge(val timestamp: BigInteger) : Marshal<JSONObject>, Serializable {
     /**
-     * The age in weeks and days.
-     *
-     * Implementors must be able to convert whatever internal value they store
-     * into this format.
+     * The age in [WeeksAndDays] from the current Unix timestamp.
      */
-    abstract val age: WeeksAndDays
+    val ageFromNow: WeeksAndDays
+        get() = WeeksAndDays.fromSeconds(Seconds(UnixTimestamp.now - timestamp))
 
     companion object : Unmarshal<GestationalAge, JSONObject> {
 
@@ -598,7 +597,7 @@ sealed class GestationalAge(val timestamp: BigInteger) : Marshal<JSONObject>, Se
             val value = data.longField(PatientField.GESTATIONAL_AGE_VALUE)
             return when (units) {
                 UNIT_VALUE_WEEKS -> GestationalAgeWeeks(BigInteger.valueOf(value))
-                UNIT_VALUE_MONTHS -> GestationalAgeMonths(BigInteger.valueOf(value))
+                UNIT_VALUE_MONTHS, "DAYS" -> GestationalAgeMonths(BigInteger.valueOf(value))
                 else -> {
                     throw InvalidUnitsException(
                         "invalid value for ${PatientField.GESTATIONAL_AGE_UNIT.text}"
@@ -615,7 +614,7 @@ sealed class GestationalAge(val timestamp: BigInteger) : Marshal<JSONObject>, Se
             val value = get(PatientField.GESTATIONAL_AGE_VALUE)!!.asLong()
             return when (units) {
                 UNIT_VALUE_WEEKS -> GestationalAgeWeeks(BigInteger.valueOf(value))
-                UNIT_VALUE_MONTHS -> GestationalAgeMonths(BigInteger.valueOf(value))
+                UNIT_VALUE_MONTHS, "DAYS" -> GestationalAgeMonths(BigInteger.valueOf(value))
                 else -> {
                     throw InvalidUnitsException(
                         "invalid value for ${PatientField.GESTATIONAL_AGE_UNIT.text}"
@@ -673,12 +672,12 @@ sealed class GestationalAge(val timestamp: BigInteger) : Marshal<JSONObject>, Se
 
     override fun hashCode(): Int {
         var result = timestamp.hashCode()
-        result = 31 * result + age.hashCode()
+        result = 31 * result + ageFromNow.hashCode()
         return result
     }
 
     override fun toString(): String {
-        return "GestationalAge($age, value=$timestamp)"
+        return "GestationalAge($ageFromNow, value=$timestamp)"
     }
 
     class InvalidUnitsException(message: String) : IOException(message)
@@ -688,12 +687,6 @@ sealed class GestationalAge(val timestamp: BigInteger) : Marshal<JSONObject>, Se
  * Variant of [GestationalAge] which stores age in number of weeks.
  */
 class GestationalAgeWeeks(timestamp: BigInteger) : GestationalAge(timestamp), Serializable {
-    override val age: WeeksAndDays
-        get() {
-            val seconds = Seconds(UnixTimestamp.now - timestamp)
-            return WeeksAndDays.weeks(Weeks(seconds).value)
-        }
-
     constructor(duration: Weeks) : this(UnixTimestamp.ago(duration))
 
     override fun marshal(): JSONObject = with(JSONObject()) {
@@ -703,7 +696,7 @@ class GestationalAgeWeeks(timestamp: BigInteger) : GestationalAge(timestamp), Se
     }
 
     override fun toString(): String {
-        return "GestationalAgeWeeks($age, value=$timestamp)"
+        return "GestationalAgeWeeks($ageFromNow, value=$timestamp)"
     }
 }
 
@@ -717,12 +710,6 @@ class GestationalAgeMonths(timestamp: BigInteger) : GestationalAge(timestamp), S
         inputMonths = duration
     }
 
-    override val age: WeeksAndDays
-        get() {
-            val seconds = Seconds(UnixTimestamp.now - timestamp)
-            return WeeksAndDays.months(Months(seconds).value)
-        }
-
     override fun marshal(): JSONObject = with(JSONObject()) {
         // For legacy interop we store the value as a string instead of an int.
         put(PatientField.GESTATIONAL_AGE_VALUE, timestamp.toString())
@@ -730,45 +717,8 @@ class GestationalAgeMonths(timestamp: BigInteger) : GestationalAge(timestamp), S
     }
 
     override fun toString(): String {
-        return "GestationalAgeMonths($age, value=$timestamp)"
+        return "GestationalAgeMonths($ageFromNow, value=$timestamp)"
     }
-}
-
-/**
- * A temporal duration expressed in weeks and days.
- */
-data class WeeksAndDays(val weeks: Long, val days: Long) : Serializable {
-
-    /**
-     * This value in number of weeks.
-     */
-    fun asWeeks(): Double = weeks.toDouble() + (days.toDouble() / DAYS_PER_WEEK)
-
-    /**
-     * This value in number of months.
-     */
-    fun asMonths(): Double =
-        (weeks.toDouble() / WEEKS_PER_MONTH) + (days.toDouble() / DAYS_PER_MONTH)
-
-    companion object {
-        const val DAYS_PER_MONTH = 30
-        const val DAYS_PER_WEEK = 7
-        const val SECONDS_PER_DAY = 60 * 60 * 24
-        const val SECONDS_PER_WEEK = SECONDS_PER_DAY * DAYS_PER_WEEK
-        // Get as close as possible to the result of 30/7, a repeating decimal. However, due to the
-        // finiteness of Doubles, anything past 4.2857142857142857 is ignored.
-        private const val WEEKS_PER_MONTH = 4.2857142857142857
-
-        fun weeks(weeks: Long) = WeeksAndDays(weeks, 0)
-
-        fun months(months: Double): WeeksAndDays {
-            val days = DAYS_PER_MONTH * months
-            return WeeksAndDays((days / DAYS_PER_WEEK).toLong(), days.toLong() % DAYS_PER_WEEK)
-        }
-    }
-
-    override fun toString(): String = "WeeksAndDays(weeks=$weeks, days=$days, " +
-        "asWeeks()=${asWeeks()}, asMonths()=${asMonths()})"
 }
 
 /**

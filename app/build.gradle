@@ -113,6 +113,11 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    kotlin {
+        sourceSets.all {
+            languageSettings.enableLanguageFeature("InlineClasses")
+        }
+    }
     buildFeatures {
         dataBinding true
         viewBinding true

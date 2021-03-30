@@ -212,9 +212,9 @@ open class PatientProfileActivity : AppCompatActivity() {
         val radioGroup = findViewById<RadioGroup>(R.id.gestationradioGroup)
         radioGroup.setOnCheckedChangeListener { _: RadioGroup?, index: Int ->
             val ageVal: Double? = if (index == R.id.monthradiobutton) {
-                patient.gestationalAge?.age?.asMonths()
+                patient.gestationalAge?.ageFromNow?.asMonths()
             } else {
-                patient.gestationalAge?.age?.asWeeks()
+                patient.gestationalAge?.ageFromNow?.asWeeks()
             }
 
             gestationalAge.text = if (ageVal!! < 0) {
