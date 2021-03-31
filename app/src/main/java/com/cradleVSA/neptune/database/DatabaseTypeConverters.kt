@@ -9,6 +9,7 @@ import com.cradleVSA.neptune.model.ReadingMetadata
 import com.cradleVSA.neptune.model.Referral
 import com.cradleVSA.neptune.model.Sex
 import com.cradleVSA.neptune.model.UrineTest
+import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -19,11 +20,17 @@ class DatabaseTypeConverters {
 
     @TypeConverter
     fun gestationalAgeToString(gestationalAge: GestationalAge?): String? =
-        gestationalAge?.marshal()?.toString()
+        JacksonMapper.writerForGestAge.writeValueAsString(gestationalAge)
 
     @TypeConverter
     fun stringToGestationalAge(string: String?): GestationalAge? =
-        string?.let { if (it == "null") null else GestationalAge.unmarshal(JSONObject(it)) }
+        string?.let {
+            if (it == "null") {
+                null
+            } else {
+                JacksonMapper.readerForGestAge.readValue<GestationalAge>(it)
+            }
+        }
 
     @TypeConverter
     fun stringToSex(string: String): Sex = enumValueOf(string)
