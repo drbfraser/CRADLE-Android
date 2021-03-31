@@ -1,6 +1,7 @@
 package com.cradleVSA.neptune.utilitiles.jackson
 
 import androidx.annotation.VisibleForTesting
+import com.cradleVSA.neptune.model.GestationalAge
 import com.cradleVSA.neptune.model.GlobalPatient
 import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.Patient
@@ -41,6 +42,10 @@ object JacksonMapper {
     val readerForPatient: ObjectReader by lazy { mapper.readerFor(Patient::class.java) }
 
     val writerForPatient: ObjectWriter by lazy { mapper.writerFor(Patient::class.java) }
+
+    val readerForGestAge: ObjectReader by lazy { mapper.readerFor(GestationalAge::class.java) }
+
+    val writerForGestAge: ObjectWriter by lazy { mapper.writerFor(GestationalAge::class.java) }
 
     fun createGlobalPatientsListReader(): ObjectReader =
         mapper.readerForListOf(GlobalPatient::class.java)
