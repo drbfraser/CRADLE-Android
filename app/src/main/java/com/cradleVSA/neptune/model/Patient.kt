@@ -470,27 +470,15 @@ data class Patient(
 
 /**
  * A database view containing a patient and all readings associated with it.
- *
- * Note that the default constructor for this class is required for
- * constructing from DAO objects but should never be used by user code.
  */
 @JsonSerialize(using = PatientAndReadings.Serializer::class)
 @JsonDeserialize(using = PatientAndReadings.Deserializer::class)
-class PatientAndReadings() {
+data class PatientAndReadings(
     @Embedded
-    lateinit var patient: Patient
-
+    val patient: Patient,
     @Relation(parentColumn = "id", entityColumn = "patientId")
-    lateinit var readings: List<Reading>
-
-    constructor(patient: Patient, readings: List<Reading>) : this() {
-        // Note that this cannot be a primary constructor as the `patient` and
-        // `reading` members cannot be constructor parameters as this is
-        // forbidden by the `@Relation` annotation.
-        this.patient = patient
-        this.readings = readings
-    }
-
+    val readings: List<Reading>
+) {
     class Serializer : StdSerializer<PatientAndReadings>(PatientAndReadings::class.java) {
         override fun serialize(
             patientAndReadings: PatientAndReadings,
