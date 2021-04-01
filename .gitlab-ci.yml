@@ -31,6 +31,7 @@ build:
   tags:
     - build
   artifacts:
+    expire_in: 1 hour
     paths:
       - latest_db_version.json
 
@@ -68,6 +69,7 @@ test:
   script:
     - ./gradlew test
   artifacts:
+    expire_in: 1 hour
     reports:
       junit: app/build/test-results/**/TEST-*.xml
   tags:
