@@ -1,7 +1,6 @@
 package com.cradleVSA.neptune.database
 
 import androidx.room.TypeConverter
-import com.cradleVSA.neptune.ext.toList
 import com.cradleVSA.neptune.model.Assessment
 import com.cradleVSA.neptune.model.BloodPressure
 import com.cradleVSA.neptune.model.GestationalAge
@@ -10,7 +9,7 @@ import com.cradleVSA.neptune.model.Referral
 import com.cradleVSA.neptune.model.Sex
 import com.cradleVSA.neptune.model.UrineTest
 import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
-import org.json.JSONArray
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.json.JSONObject
 
 /**
@@ -39,19 +38,12 @@ class DatabaseTypeConverters {
     fun sexToString(sex: Sex): String = sex.name
 
     @TypeConverter
-    fun fromStringList(list: List<String>?): String? {
-        if (list == null) {
-            return null
-        }
-
-        return JSONArray()
-            .apply { list.forEach { put(it) } }
-            .toString()
-    }
+    fun fromStringList(list: List<String>?): String? =
+        list?.let { JacksonMapper.mapper.writeValueAsString(it) }
 
     @TypeConverter
     fun toStringList(string: String?): List<String>? = string?.let {
-        JSONArray(it).toList(JSONArray::getString)
+        JacksonMapper.mapper.readValue<List<String>>(it)
     }
 
     @TypeConverter
