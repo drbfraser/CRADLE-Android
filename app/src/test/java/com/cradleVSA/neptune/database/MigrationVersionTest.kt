@@ -1,6 +1,7 @@
 package com.cradleVSA.neptune.database
 
 import androidx.room.RoomDatabase
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class MigrationVersionTest {
@@ -15,5 +16,10 @@ class MigrationVersionTest {
                 "missing path from db version $currentVersion to db version $CURRENT_DATABASE_VERSION"
             }
         }
+    }
+
+    @Test
+    fun `test the maximum migration is actually current database version`() {
+        assertEquals(CURRENT_DATABASE_VERSION, Migrations.ALL_MIGRATIONS.maxOf { it.endVersion })
     }
 }
