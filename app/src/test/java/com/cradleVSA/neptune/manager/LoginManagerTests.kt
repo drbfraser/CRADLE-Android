@@ -213,6 +213,27 @@ internal class LoginManagerTests {
             fakePatientDatabase.add(firstArg())
             5L
         }
+
+        coEvery { updateOrInsertIfNotExists(any()) } answers {
+            val patient = firstArg<Patient>()
+            var indexOfPatient = -1
+            run loop@{
+                fakePatientDatabase.forEachIndexed { currentIndex, p ->
+                    if (p == patient) {
+                        indexOfPatient = currentIndex
+                        return@loop
+                    }
+                }
+            }
+            fakePatientDatabase.apply {
+                if (indexOfPatient == -1) {
+                    add(firstArg())
+                } else {
+                    removeAt(indexOfPatient)
+                    add(indexOfPatient, patient)
+                }
+            }
+        }
     }
     private val mockReadingDao = mockk<ReadingDao> {
         coEvery { insertAll(any()) } answers {
