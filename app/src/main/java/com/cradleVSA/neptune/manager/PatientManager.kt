@@ -64,19 +64,14 @@ class PatientManager @Inject constructor(
     suspend fun addPatientWithReadings(
         patient: Patient,
         readings: List<Reading>,
-        areReadingsFromServer: Boolean,
-        isPatientNew: Boolean = false
+        areReadingsFromServer: Boolean
     ) {
         if (areReadingsFromServer) {
             readings.forEach { it.isUploadedToServer = true }
         }
 
         database.withTransaction {
-            if (isPatientNew) {
-                patientDao.insert(patient)
-            } else {
-                patientDao.updateOrInsertIfNotExists(patient)
-            }
+            patientDao.updateOrInsertIfNotExists(patient)
             readingDao.insertAll(readings)
         }
     }

@@ -127,8 +127,7 @@ class LoginManager @Inject constructor(
                             patientManager.addPatientWithReadings(
                                 patientAndReadings.patient,
                                 patientAndReadings.readings,
-                                areReadingsFromServer = true,
-                                isPatientNew = true
+                                areReadingsFromServer = true
                             )
                         }
                         Log.d(TAG, "patient & reading database job is done")
