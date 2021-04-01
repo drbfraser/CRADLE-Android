@@ -7,6 +7,7 @@ import androidx.room.withTransaction
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
+import com.cradleVSA.neptune.database.daos.PatientDao
 import com.cradleVSA.neptune.model.Assessment
 import com.cradleVSA.neptune.model.BloodPressure
 import com.cradleVSA.neptune.model.GestationalAgeMonths
@@ -300,6 +301,57 @@ class DaoTests {
             assertEquals(listOf(reading), readingDao.getAllReadingEntities())
             assertEquals(1, patientDao.getPatientIdsList().size)
             assertEquals(1, readingDao.getAllReadingEntities().size)
+        }
+    }
+
+    /**
+     * Creates two different patients and tests [PatientDao.getPatientAndReadingsById].
+     * It makes sure it only returns readings for the patient and that it returns all of them.
+     */
+    @Test
+    fun patientDao_getPatientAndAllAssociatedReadings() {
+        runBlocking {
+            val database = getRoomDatabase()
+            val patientDao = database.patientDao()
+            val readingDao = database.readingDao()
+            assertEquals(0, patientDao.getPatientIdsList().size)
+            assertEquals(0, readingDao.getAllReadingEntities().size)
+
+            val (patientA, readingForA) = createPatientAndReading(patientId = "1")
+            val anotherReadingForA = createReading(patientId = patientA.id)
+            database.withTransaction {
+                patientDao.insert(patientA)
+                readingDao.insert(readingForA)
+                readingDao.insert(anotherReadingForA)
+            }
+            assertEquals(patientA, patientDao.getPatientById(patientA.id))
+            assertEquals(listOf(readingForA, anotherReadingForA), readingDao.getAllReadingEntities())
+            assertEquals(1, patientDao.getPatientIdsList().size)
+
+            val (patientB, readingForB) = createPatientAndReading(patientId = "2")
+            val anotherReadingForB = createReading(patientId = patientB.id)
+            database.withTransaction {
+                patientDao.insert(patientB)
+                readingDao.insert(readingForB)
+                readingDao.insert(anotherReadingForB)
+            }
+            assertEquals(patientB, patientDao.getPatientById(patientB.id))
+            assertEquals(listOf(readingForB, anotherReadingForB), readingDao.getAllReadingByPatientId(patientB.id))
+            assertEquals(2, patientDao.getPatientIdsList().size)
+            assertEquals(
+                listOf(readingForA, anotherReadingForA, readingForB, anotherReadingForB),
+                readingDao.getAllReadingEntities()
+            )
+
+            val patientAWithReadings = patientDao.getPatientAndReadingsById(patientA.id)
+                ?: error("missing patient A")
+            assertEquals(patientA, patientAWithReadings.patient)
+            assertEquals(listOf(readingForA, anotherReadingForA), patientAWithReadings.readings)
+
+            val patientBWithReadings = patientDao.getPatientAndReadingsById(patientB.id)
+                ?: error("missing patient B")
+            assertEquals(patientB, patientBWithReadings.patient)
+            assertEquals(listOf(readingForB, anotherReadingForB), patientBWithReadings.readings)
         }
     }
 
