@@ -11,6 +11,7 @@ import android.os.Build
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
+import com.cradleVSA.neptune.ext.isConnected
 
 /**
  * A [LiveData] that emits whether the device is connected to the internet.
@@ -69,6 +70,11 @@ class NetworkAvailableLiveData(context: Context) : LiveData<Boolean>() {
         }
     }
 
+    /**
+     * Fall back to true if the ConnectivityManager is unavailable for some reason.
+     */
+    private fun isConnected(): Boolean = connectivityManager?.isConnected() ?: true
+
     override fun onActive() {
         connectivityManager ?: return
         if (isCallbackSupported) {
@@ -99,30 +105,10 @@ class NetworkAvailableLiveData(context: Context) : LiveData<Boolean>() {
         }
     }
 
-    private fun isConnected(): Boolean = connectivityManager?.run {
-        if (USE_NON_DEPRECATED_CONNECTIVITY_MANAGER_METHODS &&
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-        ) {
-            getNetworkCapabilities(activeNetwork)
-                ?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-                ?: false
-        } else {
-            // We're just using the same method as NetworkStateTracker in androidx.work at this
-            // point.
-            // activeNetworkInfo deprecated in API 29 (Q):
-            // https://developer.android.com/reference/android/net/ConnectivityManager#getActiveNetworkInfo()
-            // isConnected deprecated in API 29 (Q):
-            // https://developer.android.com/reference/android/net/NetworkInfo#isConnected()
-            // If these get removed, let's see what androidx.work does.
-            activeNetworkInfo?.isConnected ?: false
-        }
-    } ?: false
-
     companion object {
         private const val TAG = "NetworkAvailableLiveDat"
         /** The defaultNetworkCallback is only available on >= API 24 */
         private const val DEFAULT_NETWORK_CALLBACK_SUPPORTED_API_LEVEL = 24
-        private const val USE_NON_DEPRECATED_CONNECTIVITY_MANAGER_METHODS = false
         private val isCallbackSupported =
             Build.VERSION.SDK_INT >= DEFAULT_NETWORK_CALLBACK_SUPPORTED_API_LEVEL
     }

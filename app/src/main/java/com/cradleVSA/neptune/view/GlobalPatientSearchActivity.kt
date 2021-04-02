@@ -3,6 +3,7 @@ package com.cradleVSA.neptune.view
 import android.app.AlertDialog
 import android.app.ProgressDialog
 import android.content.Intent
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
@@ -11,17 +12,18 @@ import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.ext.hideKeyboard
+import com.cradleVSA.neptune.ext.isConnected
 import com.cradleVSA.neptune.manager.PatientManager
 import com.cradleVSA.neptune.manager.ReadingManager
 import com.cradleVSA.neptune.model.GlobalPatient
 import com.cradleVSA.neptune.net.RestApi
 import com.cradleVSA.neptune.net.Success
-import com.cradleVSA.neptune.utilitiles.livedata.NetworkAvailableLiveData
 import com.cradleVSA.neptune.viewmodel.GlobalPatientAdapter
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -55,13 +57,13 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
     // local patient set to compare against
     private lateinit var localPatientSetDeferred: Deferred<HashSet<String>>
 
-    private lateinit var isNetworkAvailable: NetworkAvailableLiveData
+    private var connectivityManager: ConnectivityManager? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        connectivityManager = ContextCompat.getSystemService(this, ConnectivityManager::class.java)
+
         setContentView(R.layout.activity_global_patient_search)
-        isNetworkAvailable = NetworkAvailableLiveData(this)
-        isNetworkAvailable.observe(this) {}
 
         localPatientSetDeferred = lifecycleScope.async(Dispatchers.Default) {
             patientManager.getPatientIdsOnly().toHashSet()
@@ -261,7 +263,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
     }
 
     private fun isThereInternet(@StringRes res: Int): Boolean {
-        if (isNetworkAvailable.value != true) {
+        if (connectivityManager?.isConnected() == false) {
             Toast.makeText(this, res, Toast.LENGTH_LONG).show()
             return false
         }
