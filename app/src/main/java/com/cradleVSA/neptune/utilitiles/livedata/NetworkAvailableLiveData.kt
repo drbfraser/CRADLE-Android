@@ -8,6 +8,7 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.os.Build
+import android.os.Looper
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
@@ -43,6 +44,12 @@ class NetworkAvailableLiveData(context: Context) : LiveData<Boolean>() {
             connectivityBroadcastReceiver = null
             defaultNetworkCallback = null
         } else {
+            if (Looper.getMainLooper().thread == Thread.currentThread()) {
+                value = isConnected()
+            } else {
+                postValue(isConnected())
+            }
+
             if (isCallbackSupported) {
                 connectivityBroadcastReceiver = null
                 defaultNetworkCallback = object : ConnectivityManager.NetworkCallback() {
