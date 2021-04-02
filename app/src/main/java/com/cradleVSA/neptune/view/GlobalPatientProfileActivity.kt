@@ -5,18 +5,20 @@ import android.app.ProgressDialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.view.View.VISIBLE
 import android.widget.Button
 import android.widget.Toast
 import androidx.annotation.StringRes
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleVSA.neptune.R
+import com.cradleVSA.neptune.ext.isConnected
 import com.cradleVSA.neptune.model.GlobalPatient
 import com.cradleVSA.neptune.net.Success
-import com.cradleVSA.neptune.utilitiles.livedata.NetworkAvailableLiveData
 import com.cradleVSA.neptune.viewmodel.ReadingRecyclerViewAdapter
 import com.cradleVSA.neptune.viewmodel.ReadingRecyclerViewAdapter.OnClickElement
 import com.google.android.material.snackbar.Snackbar
@@ -31,10 +33,11 @@ import kotlinx.coroutines.withContext
 @AndroidEntryPoint
 class GlobalPatientProfileActivity : PatientProfileActivity() {
 
-    private lateinit var isNetworkAvailable: NetworkAvailableLiveData
+    private var connectivityManager: ConnectivityManager? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        connectivityManager = ContextCompat.getSystemService(this, ConnectivityManager::class.java)
         getGlobalPatient()
     }
 
@@ -48,8 +51,6 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
      */
     private fun setupAddToMyPatientList() {
         val addToMyListButton = findViewById<Button>(R.id.addToMyPatientButton)
-        isNetworkAvailable = NetworkAvailableLiveData(this)
-        isNetworkAvailable.observe(this) {}
 
         addToMyListButton.visibility = VISIBLE
         addToMyListButton.setOnClickListener {
@@ -68,7 +69,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
     }
 
     private fun isInternetAvailable(@StringRes res: Int): Boolean {
-        if (isNetworkAvailable.value != true) {
+        if (connectivityManager?.isConnected() == false) {
             Toast.makeText(this, res, Toast.LENGTH_LONG).show()
             return false
         }
