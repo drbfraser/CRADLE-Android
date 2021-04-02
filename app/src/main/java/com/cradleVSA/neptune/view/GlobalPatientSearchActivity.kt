@@ -3,18 +3,22 @@ package com.cradleVSA.neptune.view
 import android.app.AlertDialog
 import android.app.ProgressDialog
 import android.content.Intent
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.ext.hideKeyboard
+import com.cradleVSA.neptune.ext.isConnected
 import com.cradleVSA.neptune.manager.PatientManager
 import com.cradleVSA.neptune.manager.ReadingManager
 import com.cradleVSA.neptune.model.GlobalPatient
@@ -53,8 +57,12 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
     // local patient set to compare against
     private lateinit var localPatientSetDeferred: Deferred<HashSet<String>>
 
+    private var connectivityManager: ConnectivityManager? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        connectivityManager = ContextCompat.getSystemService(this, ConnectivityManager::class.java)
+
         setContentView(R.layout.activity_global_patient_search)
 
         localPatientSetDeferred = lifecycleScope.async(Dispatchers.Default) {
@@ -96,6 +104,10 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
      * Makes an api call to fetch for a list of patients based on the query
      */
     private fun searchServerForThePatients(searchUrl: String) {
+        if (!isThereInternet(R.string.global_patient_search_no_internet_available_to_search)) {
+            return
+        }
+
         val progressDialog = getProgressDialog(
             getString(R.string.global_patient_search_fetching_the_patients)
         )
@@ -162,6 +174,11 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
                         ).show()
                         return
                     }
+
+                    if (!isThereInternet(R.string.global_patient_search_no_internet_available_to_associate)) {
+                        return
+                    }
+
                     val alertDialog =
                         AlertDialog.Builder(this@GlobalPatientSearchActivity)
                             .setTitle(R.string.global_patient_search_add_patient_dialog_title)
@@ -192,6 +209,10 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
                 }
             }
         } else {
+            if (!isThereInternet(R.string.global_patient_search_no_internet_available_to_get_info)) {
+                return
+            }
+
             val intent = GlobalPatientProfileActivity.makeIntent(
                 this@GlobalPatientSearchActivity,
                 patient
@@ -239,6 +260,14 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         progressDialog.setMessage(message)
         progressDialog.setCancelable(false)
         return progressDialog
+    }
+
+    private fun isThereInternet(@StringRes res: Int): Boolean {
+        if (connectivityManager?.isConnected() == false) {
+            Toast.makeText(this, res, Toast.LENGTH_LONG).show()
+            return false
+        }
+        return true
     }
 
     companion object {

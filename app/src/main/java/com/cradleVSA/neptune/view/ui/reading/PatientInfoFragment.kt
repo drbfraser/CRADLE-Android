@@ -38,7 +38,6 @@ private const val FRAGMENT_TAG_DATE_PICKER = "DatePicker"
  * Logic for the UI fragment which collects patient information when creating
  * or updating a reading.
  */
-@Suppress("LargeClass")
 class PatientInfoFragment : Fragment() {
     /**
      * ViewModel is scoped to the [ReadingActivity] that this Fragment is attached to; therefore,
@@ -77,6 +76,8 @@ class PatientInfoFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        viewModel.isNetworkAvailable.observe(viewLifecycleOwner) {}
 
         lifecycleScope.apply {
             launch { setupAndObserveAgeInfo(view) }

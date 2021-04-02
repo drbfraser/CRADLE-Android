@@ -19,8 +19,8 @@ import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.database.daos.PatientDao
 import com.cradleVSA.neptune.database.daos.ReadingDao
 import com.cradleVSA.neptune.ext.setValueOnMainThread
-import com.cradleVSA.neptune.manager.NetworkWatcher
 import com.cradleVSA.neptune.sync.SyncWorker
+import com.cradleVSA.neptune.utilitiles.livedata.NetworkAvailableLiveData
 import com.cradleVSA.neptune.view.SyncActivity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -36,7 +36,6 @@ import javax.inject.Inject
 class SyncViewModel @Inject constructor(
     private val patientDao: PatientDao,
     private val readingDao: ReadingDao,
-    private val networkWatcher: NetworkWatcher,
     private val sharedPreferences: SharedPreferences,
     private val workManager: WorkManager,
     @ApplicationContext private val context: Context
@@ -72,10 +71,6 @@ class SyncViewModel @Inject constructor(
         }
     }
     val patientAndReadingsToUploadText: LiveData<String> = _patientsAndReadingsToUploadText
-
-    init {
-        networkWatcher.startListeningToNetwork()
-    }
 
     private suspend fun updatePatientAndReadingsToUploadString() {
         val numberOfPatientsToUpload = patientDao.getNumberOfPatientsForUpload()
@@ -133,20 +128,7 @@ class SyncViewModel @Inject constructor(
         }
     }
 
-    val isConnectedToInternet: LiveData<Boolean> = networkWatcher.isConnectedToInternet
-
-    fun onResume() {
-        networkWatcher.startListeningToNetwork()
-    }
-
-    fun onStop() {
-        networkWatcher.stopListeningToNetwork()
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        networkWatcher.stopListeningToNetwork()
-    }
+    val isConnectedToInternet = NetworkAvailableLiveData(context)
 
     @MainThread
     fun startSyncing() {
