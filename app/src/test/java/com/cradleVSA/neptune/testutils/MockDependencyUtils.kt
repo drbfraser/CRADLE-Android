@@ -58,7 +58,7 @@ object MockDependencyUtils {
                 }
 
                 every { contains(any()) } answers { sharedPreferencesMap.containsKey(firstArg()) }
-
+                every { all } returns sharedPreferencesMap
                 every { commit() } returns true
                 every { apply() } returns Unit
                 every { clear() } answers {
@@ -143,6 +143,9 @@ object MockDependencyUtils {
                     }
                 }
             }
+            coEvery { getPatientsForUpload() } answers {
+                fakePatientDatabase.filter { it.base == null }
+            }
         }
 
         val mockReadingDao = mockk<ReadingDao> {
@@ -171,6 +174,9 @@ object MockDependencyUtils {
                             "fakeReadingDatabase=$fakeReadingDatabase"
                     )
                 fakeReadingDatabase.add(reading)
+            }
+            coEvery { getAllUnUploadedReadings() } answers {
+                fakeReadingDatabase.filter { !it.isUploadedToServer }
             }
         }
 
