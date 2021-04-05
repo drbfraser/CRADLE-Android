@@ -7,29 +7,29 @@ import androidx.core.content.edit
 import androidx.room.withTransaction
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.database.CradleDatabase
-import com.cradleVSA.neptune.ext.jackson.forEachJackson
 import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.PatientAndReadings
 import com.cradleVSA.neptune.net.Failure
 import com.cradleVSA.neptune.net.NetworkException
+import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.net.RestApi
 import com.cradleVSA.neptune.net.Success
+import com.cradleVSA.neptune.net.SyncException
 import com.cradleVSA.neptune.sync.SyncWorker
 import com.cradleVSA.neptune.utilitiles.SharedPreferencesMigration
 import com.cradleVSA.neptune.utilitiles.UnixTimestamp
-import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
 import com.cradleVSA.neptune.utilitiles.nullIfEmpty
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import java.io.IOException
 import java.net.HttpURLConnection.HTTP_OK
 import javax.inject.Inject
 
@@ -117,66 +117,7 @@ class LoginManager @Inject constructor(
             // We will use this later as the last synced timestamp.
             val loginTime = UnixTimestamp.now
 
-            val patientsResultAsync = async {
-                val startTime = System.currentTimeMillis()
-
-                val channel = Channel<PatientAndReadings>()
-                val databaseJob = launch {
-                    database.withTransaction {
-                        for (patientAndReadings in channel) {
-                            patientManager.addPatientWithReadings(
-                                patientAndReadings.patient,
-                                patientAndReadings.readings,
-                                areReadingsFromServer = true
-                            )
-                        }
-                        Log.d(TAG, "patient & reading database job is done")
-                    }
-                }
-                val result = restApi.getAllPatientsStreaming { inputStream ->
-                    // Parse JSON strings directly from the HTTPUrlConnection's input stream to avoid
-                    // dealing with a ByteArray of an entire JSON array in memory and trying to convert
-                    // that into a String.
-                    val reader = JacksonMapper.readerForPatientAndReadings
-                    try {
-                        reader.readValues<PatientAndReadings>(inputStream).use { iterator ->
-                            iterator.forEachJackson { channel.send(it) }
-                        }
-                    } catch (e: IOException) {
-                        Log.e(TAG, "exception while reading patients", e)
-                        // Propagate exceptions to the Http class so that it can log it
-                        throw e
-                    }
-                }
-
-                when (result) {
-                    is Success -> {
-                        channel.close()
-                        Log.d(TAG, "Patient and readings download successful!")
-                    }
-                    is Failure -> {
-                        channel.cancel()
-                        Log.e(
-                            TAG,
-                            "Patient and readings download failed, got status code: " +
-                                "${result.statusCode}"
-                        )
-                    }
-                    is NetworkException -> {
-                        channel.cancel()
-                        Log.e(
-                            TAG,
-                            "Patient and readings download failed, encountered exception",
-                            result.cause
-                        )
-                    }
-                }
-
-                databaseJob.join()
-                val endTime = System.currentTimeMillis()
-                Log.d(TAG, "Patient/readings download overall took ${endTime - startTime} ms")
-                return@async result
-            }
+            val patientsResultAsync = async { downloadPatients() }
 
             // for unit testing purposes
             if (!parallelDownload) {
@@ -187,57 +128,7 @@ class LoginManager @Inject constructor(
             //       be removed by the user?
             // TODO: Show some dialog to select a health facility
             val healthFacilityResultAsync = async {
-                val defaultHealthFacilityName = loginResult.value.healthFacilityName
-
-                val channel = Channel<HealthFacility>()
-                val databaseJob = launch {
-                    database.withTransaction {
-                        for (healthFacility in channel) {
-                            if (healthFacility.name == defaultHealthFacilityName) {
-                                healthFacility.isUserSelected = true
-                            }
-                            healthFacilityManager.add(healthFacility)
-                        }
-                        Log.d(TAG, "health facility database job is done")
-                    }
-                }
-                val result = restApi.getAllHealthFacilities { inputStream ->
-                    val reader = JacksonMapper.readerForHealthFacility
-                    try {
-                        reader.readValues<HealthFacility>(inputStream).use { iterator ->
-                            iterator.forEachJackson { channel.send(it) }
-                        }
-                    } catch (e: IOException) {
-                        Log.e(TAG, "exception while reading health facilities", e)
-                        // Propagate exceptions to the Http class so that it can log it
-                        throw e
-                    }
-                }
-
-                when (result) {
-                    is Success -> {
-                        channel.close()
-                        Log.d(TAG, "Health facility download successful!")
-                    }
-                    is Failure -> {
-                        channel.cancel()
-                        Log.e(
-                            TAG,
-                            "Health facility download failed, got status code: " +
-                                "${result.statusCode}"
-                        )
-                    }
-                    is NetworkException -> {
-                        channel.cancel()
-                        Log.e(
-                            TAG,
-                            "Health facility download failed, encountered exception",
-                            result.cause
-                        )
-                    }
-                }
-                databaseJob.join()
-                return@async result
+                downloadHealthFacilities(loginResult.value.healthFacilityName)
             }
 
             joinAll(patientsResultAsync, healthFacilityResultAsync)
@@ -253,6 +144,86 @@ class LoginManager @Inject constructor(
             //  handles the initial login, and then the patient and health facility download can
             //  be done in another activity/fragment.
             return@withContext Success(Unit, HTTP_OK)
+        }
+    }
+
+    private suspend fun downloadHealthFacilities(
+        defaultHealthFacilityName: String?
+    ): NetworkResult<Unit> = coroutineScope {
+        val channel = Channel<HealthFacility>()
+        val databaseJob = launch {
+            try {
+                database.withTransaction {
+                    for (healthFacility in channel) {
+                        if (healthFacility.name == defaultHealthFacilityName) {
+                            healthFacility.isUserSelected = true
+                        }
+                        healthFacilityManager.add(healthFacility)
+                    }
+                    Log.d(TAG, "health facility database job is done")
+                }
+            } catch (e: SyncException) {
+                Log.e(TAG, "failed to download health facilities", e)
+            }
+        }
+        val result = restApi.getAllHealthFacilities(channel)
+
+        closeOrCancelChannelByResult(result, channel)
+        databaseJob.join()
+        return@coroutineScope result
+    }
+
+    private suspend fun downloadPatients(): NetworkResult<Unit> = coroutineScope {
+        val startTime = System.currentTimeMillis()
+
+        val channel = Channel<PatientAndReadings>()
+        val databaseJob = launch {
+            try {
+                database.withTransaction {
+                    for (patientAndReadings in channel) {
+                        patientManager.addPatientWithReadings(
+                            patientAndReadings.patient,
+                            patientAndReadings.readings,
+                            areReadingsFromServer = true
+                        )
+                    }
+                    Log.d(TAG, "patient & reading database job is successful")
+                }
+            } catch (e: SyncException) {
+                Log.d(TAG, "patient & reading database job failed")
+            }
+        }
+        val result = restApi.getAllPatients(channel)
+        closeOrCancelChannelByResult(result, channel)
+        databaseJob.join()
+        val endTime = System.currentTimeMillis()
+        Log.d(TAG, "Patient/readings download overall took ${endTime - startTime} ms")
+        return@coroutineScope result
+    }
+
+    /**
+     * Close the channel for type [T] if the [result] is a [Success], otherwise cancels it.
+     * Note: [RestApi] already handles channel closing, so it's likely this function isn't really
+     * useful.
+     */
+    private inline fun <reified T> closeOrCancelChannelByResult(
+        result: NetworkResult<Unit>,
+        channel: Channel<T>
+    ) {
+        val prefix = T::class.java.simpleName
+        when (result) {
+            is Success -> {
+                channel.close()
+                Log.d(TAG, "$prefix download successful!")
+            }
+            is Failure -> {
+                channel.cancel()
+                Log.e(TAG, "$prefix download failed; status code: ${result.statusCode}")
+            }
+            is NetworkException -> {
+                channel.cancel()
+                Log.e(TAG, "$prefix download failed; exception", result.cause)
+            }
         }
     }
 
