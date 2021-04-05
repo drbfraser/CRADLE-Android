@@ -10,9 +10,9 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.cradleVSA.neptune.R
+import com.cradleVSA.neptune.manager.HealthFacilityManager
 import com.cradleVSA.neptune.manager.LoginManager
 import com.cradleVSA.neptune.manager.ReadingManager
 import com.cradleVSA.neptune.model.HealthFacility
@@ -21,7 +21,6 @@ import com.cradleVSA.neptune.model.Statistics
 import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.net.RestApi
 import com.cradleVSA.neptune.utilitiles.BarGraphValueFormatter
-import com.cradleVSA.neptune.viewmodel.HealthFacilityViewModel
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
@@ -45,7 +44,8 @@ class StatsActivity : AppCompatActivity() {
     lateinit var statsData: NetworkResult<Statistics>
     @Inject
     lateinit var restApi: RestApi
-    lateinit var healthFacilityViewModel: HealthFacilityViewModel
+    @Inject
+    lateinit var healthFacilityManager: HealthFacilityManager
 
     @Suppress("MagicNumber")
     val msecInSec = 1000L // This is the conversion value.
@@ -197,17 +197,12 @@ class StatsActivity : AppCompatActivity() {
         builder.setTitle(getString(R.string.stats_activity_pickFacility_header))
 
         // Use a radio button list for choosing the health facility.
-        if (!this::healthFacilityViewModel.isInitialized) {
-            healthFacilityViewModel = ViewModelProvider(this)
-                .get(HealthFacilityViewModel::class.java)
-        }
-
         runBlocking {
             var facilityIDs: Array<String?>?
             var checkedItemIndex = 0
             var dialog: AlertDialog? = null
 
-            val healthFacilities = healthFacilityViewModel.getAllSelectedFacilities()
+            val healthFacilities = healthFacilityManager.getAllSelectedByUser()
             val facilityNameArray = healthFacilities.map { it.name }.toTypedArray()
 
             builder.setSingleChoiceItems(facilityNameArray, checkedItemIndex) { dialog, which ->
