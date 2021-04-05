@@ -31,17 +31,20 @@
 
             <TextView
                 android:id="@+id/patientName"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:layout_marginTop="2dp"
-                android:textAlignment="center"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="8dp"
+                android:textAlignment="textStart"
                 android:textColor="@color/black"
                 android:textSize="30sp"
                 android:textStyle="bold"
+                app:layout_constraintEnd_toStartOf="@+id/addToMyPatientFab"
+                app:layout_constraintHorizontal_bias="0.026"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:text="BR" />
+                tools:text="@string/patient_name_john_smith" />
 
             <TextView
                 android:id="@+id/textView8"
