@@ -70,7 +70,7 @@ class StatsActivity : AppCompatActivity() {
 
         if (supportActionBar != null) {
             supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-            supportActionBar!!.title = "Statistics"
+            supportActionBar!!.title = getString(R.string.dashboard_statistics)
         }
     }
 
