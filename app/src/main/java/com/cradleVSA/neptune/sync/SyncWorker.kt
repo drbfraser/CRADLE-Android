@@ -289,20 +289,14 @@ class SyncWorker @AssistedInject constructor(
         launch {
             try {
                 database.withTransaction {
-                    database.withTransaction {
-                        for (reading in readingChannel) {
-                            readingManager.addReading(reading, isReadingFromServer = true)
-                        }
+                    for (reading in readingChannel) {
+                        readingManager.addReading(reading, isReadingFromServer = true)
                     }
-                    database.withTransaction {
-                        for (referral in referralChannel) {
-                            readingManager.addReferral(referral)
-                        }
+                    for (referral in referralChannel) {
+                        readingManager.addReferral(referral)
                     }
-                    database.withTransaction {
-                        for (assessment in assessmentChannel) {
-                            readingManager.addAssessment(assessment)
-                        }
+                    for (assessment in assessmentChannel) {
+                        readingManager.addAssessment(assessment)
                     }
                 }
             } catch (e: SyncException) {
