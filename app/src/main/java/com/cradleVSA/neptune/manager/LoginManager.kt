@@ -168,28 +168,7 @@ class LoginManager @Inject constructor(
         }
         val result = restApi.getAllHealthFacilities(channel)
 
-        when (result) {
-            is Success -> {
-                channel.close()
-                Log.d(TAG, "Health facility download successful!")
-            }
-            is Failure -> {
-                channel.cancel()
-                Log.e(
-                    TAG,
-                    "Health facility download failed, got status code: " +
-                        "${result.statusCode}"
-                )
-            }
-            is NetworkException -> {
-                channel.cancel()
-                Log.e(
-                    TAG,
-                    "Health facility download failed, encountered exception",
-                    result.cause
-                )
-            }
-        }
+        closeOrCancelChannelByResult(result, channel)
         databaseJob.join()
         return@coroutineScope result
     }
@@ -215,34 +194,37 @@ class LoginManager @Inject constructor(
             }
         }
         val result = restApi.getAllPatients(channel)
-
-        when (result) {
-            is Success -> {
-                channel.close()
-                Log.d(TAG, "Patient and readings download successful!")
-            }
-            is Failure -> {
-                channel.cancel()
-                Log.e(
-                    TAG,
-                    "Patient and readings download failed, got status code: " +
-                        "${result.statusCode}"
-                )
-            }
-            is NetworkException -> {
-                channel.cancel()
-                Log.e(
-                    TAG,
-                    "Patient and readings download failed, encountered exception",
-                    result.cause
-                )
-            }
-        }
-
+        closeOrCancelChannelByResult(result, channel)
         databaseJob.join()
         val endTime = System.currentTimeMillis()
         Log.d(TAG, "Patient/readings download overall took ${endTime - startTime} ms")
         return@coroutineScope result
+    }
+
+    /**
+     * Close the channel for type [T] if the [result] is a [Success], otherwise cancels it.
+     * Note: [RestApi] already handles channel closing, so it's likely this function isn't really
+     * useful.
+     */
+    private inline fun <reified T> closeOrCancelChannelByResult(
+        result: NetworkResult<Unit>,
+        channel: Channel<T>
+    ) {
+        val prefix = T::class.java.simpleName
+        when (result) {
+            is Success -> {
+                channel.close()
+                Log.d(TAG, "$prefix download successful!")
+            }
+            is Failure -> {
+                channel.cancel()
+                Log.e(TAG, "$prefix download failed; status code: ${result.statusCode}")
+            }
+            is NetworkException -> {
+                channel.cancel()
+                Log.e(TAG, "$prefix download failed; exception", result.cause)
+            }
+        }
     }
 
     suspend fun logout(): Unit = withContext(Dispatchers.IO) {
