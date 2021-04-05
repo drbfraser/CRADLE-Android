@@ -94,23 +94,22 @@ class LoginManager @Inject constructor(
             //
             // If we failed to login, return immediately
             val loginResult = restApi.authenticate(email, password)
-            when (loginResult) {
-                is Success -> {
-                    val (token, userId) = loginResult.value.token to loginResult.value.userId
-                    val name = loginResult.value.firstName?.nullIfEmpty()
+            if (loginResult is Success) {
+                val (token, userId) = loginResult.value.token to loginResult.value.userId
+                val name = loginResult.value.firstName?.nullIfEmpty()
 
-                    sharedPreferences.edit(commit = true) {
-                        putString(TOKEN_KEY, token)
-                        putInt(USER_ID_KEY, userId)
-                        putString(EMAIL_KEY, email)
-                        putString(context.getString(R.string.key_vht_name), name)
-                        putInt(
-                            SharedPreferencesMigration.KEY_SHARED_PREFERENCE_VERSION,
-                            SharedPreferencesMigration.LATEST_SHARED_PREF_VERSION
-                        )
-                    }
+                sharedPreferences.edit(commit = true) {
+                    putString(TOKEN_KEY, token)
+                    putInt(USER_ID_KEY, userId)
+                    putString(EMAIL_KEY, email)
+                    putString(context.getString(R.string.key_vht_name), name)
+                    putInt(
+                        SharedPreferencesMigration.KEY_SHARED_PREFERENCE_VERSION,
+                        SharedPreferencesMigration.LATEST_SHARED_PREF_VERSION
+                    )
                 }
-                else -> return@withContext loginResult.cast()
+            } else {
+                return@withContext loginResult.cast()
             }
 
             // Once successfully logged in, download the user's patients and health
@@ -128,8 +127,7 @@ class LoginManager @Inject constructor(
                             patientManager.addPatientWithReadings(
                                 patientAndReadings.patient,
                                 patientAndReadings.readings,
-                                areReadingsFromServer = true,
-                                isPatientNew = true
+                                areReadingsFromServer = true
                             )
                         }
                         Log.d(TAG, "patient & reading database job is done")
@@ -250,6 +248,10 @@ class LoginManager @Inject constructor(
                 }
             }
 
+            // TODO: Actually report any failures instead of lettting the user pass
+            //  It might be better to just split the login manager so that this function just
+            //  handles the initial login, and then the patient and health facility download can
+            //  be done in another activity/fragment.
             return@withContext Success(Unit, HTTP_OK)
         }
     }

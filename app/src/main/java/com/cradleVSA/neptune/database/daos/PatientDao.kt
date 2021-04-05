@@ -1,5 +1,6 @@
 package com.cradleVSA.neptune.database.daos
 
+import androidx.annotation.VisibleForTesting
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Delete
@@ -33,6 +34,7 @@ interface PatientDao {
      * into the database. -1 might occur if the [patient] already exists.
      */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @VisibleForTesting
     suspend fun insert(patient: Patient): Long
 
     /**
