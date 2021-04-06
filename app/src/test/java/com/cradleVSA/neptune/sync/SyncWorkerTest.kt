@@ -92,15 +92,6 @@ class SyncWorkerTest {
         val (api, server) = MockWebServerUtils.createRestApiWithMockedServer(mockSharedPrefs) {
             dispatcher = object : Dispatcher() {
                 override fun dispatch(request: RecordedRequest) = MockResponse().apply response@{
-                    val validateQueryArgsFunction: (String) -> Long? = {
-                        request.path!!.split('=').run {
-                            if (size != 2) {
-                                return@run null
-                            }
-                            get(1).toLongOrNull()
-                        }
-                    }
-
                     if (request.path?.matches("/api/sync/patients\\?since=([^&]+)".toRegex()) == true) {
                         if (request.headers["Authorization"] != "Bearer $TEST_AUTH_TOKEN") {
                             setResponseCode(401)
@@ -108,7 +99,8 @@ class SyncWorkerTest {
                             return@response
                         }
 
-                        val syncTime = validateQueryArgsFunction(request.path!!)
+                        val syncTime = request.requestUrl?.queryParameter("since")
+                            ?.toLongOrNull()
                         if (syncTime == null) {
                             setResponseCode(500)
                             return@response
@@ -131,7 +123,8 @@ class SyncWorkerTest {
                             return@response
                         }
 
-                        val syncTime = validateQueryArgsFunction(request.path!!)
+                        val syncTime = request.requestUrl?.queryParameter("since")
+                            ?.toLongOrNull()
                         if (syncTime == null) {
                             setResponseCode(500)
                             return@response
