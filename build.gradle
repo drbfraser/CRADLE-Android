@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '1.4.30'
+    ext.kotlin_version = '1.4.32'
     ext.detekt_version = '1.14.1'
     // Important: Android Studio will not detect updates for Hilt; `hilt_version` should be checked
     // manually for updates alongside `hilt_jetpack_version`. Otherwise, we may run into issues
@@ -9,21 +9,21 @@ buildscript {
     // just constantly fails to build with vague errors that can look like
     // "error:[Dagger/MissingBinding] ... cannot be provided without an @Provides-annotated method"
     // :(
-    ext.hilt_version = '2.32-alpha'
+    ext.hilt_version = '2.33-beta'
     ext.hilt_jetpack_version = '1.0.0-alpha03'
 
     repositories {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.2'
+        classpath 'com.android.tools.build:gradle:4.1.3'
         classpath "de.mannodermaus.gradle.plugins:android-junit5:1.6.2.0"
         // TODO: Before this is ever used in production with real patient data, we need to evaluate
         //       Google's privacy policy for these things, since we're going to be dealing with
         //       personal and medical data. Likely better to just remove it entirely.
         classpath 'com.google.gms:google-services:4.3.5'
-        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.5.0'
-        classpath 'com.google.firebase:perf-plugin:1.3.4'
+        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.5.2'
+        classpath 'com.google.firebase:perf-plugin:1.3.5'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         classpath "com.google.dagger:hilt-android-gradle-plugin:$hilt_version"

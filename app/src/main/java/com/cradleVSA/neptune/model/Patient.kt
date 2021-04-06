@@ -18,9 +18,6 @@ import com.cradleVSA.neptune.ext.jackson.writeObjectField
 import com.cradleVSA.neptune.ext.jackson.writeOptLongField
 import com.cradleVSA.neptune.ext.jackson.writeOptStringField
 import com.cradleVSA.neptune.ext.jackson.writeStringField
-import com.cradleVSA.neptune.ext.longField
-import com.cradleVSA.neptune.ext.put
-import com.cradleVSA.neptune.ext.stringField
 import com.cradleVSA.neptune.utilitiles.Months
 import com.cradleVSA.neptune.utilitiles.Seconds
 import com.cradleVSA.neptune.utilitiles.UnixTimestamp
@@ -36,8 +33,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import kotlinx.parcelize.Parcelize
-import org.json.JSONException
-import org.json.JSONObject
 import java.io.IOException
 import java.io.Serializable
 import java.math.BigInteger
@@ -398,7 +393,7 @@ data class Patient(
                 gen.writeStringField(PatientField.SEX, sex.name)
                 gen.writeBooleanField(PatientField.IS_PREGNANT, isPregnant)
                 if (isPregnant) {
-                    patient.gestationalAge?.let { GestationalAge.serialize(gen, it) }
+                    patient.gestationalAge?.let { GestationalAge.Serializer.write(gen, it) }
                 }
                 gen.writeOptStringField(PatientField.ZONE, zone)
                 gen.writeOptStringField(PatientField.VILLAGE_NUMBER, villageNumber)
@@ -433,7 +428,7 @@ data class Patient(
                 has(PatientField.GESTATIONAL_AGE_UNIT.text) &&
                 has(PatientField.GESTATIONAL_AGE_VALUE.text)
             ) {
-                GestationalAge.deserialize(this)
+                GestationalAge.Deserializer.get(this)
             } else {
                 null
             }
@@ -475,27 +470,15 @@ data class Patient(
 
 /**
  * A database view containing a patient and all readings associated with it.
- *
- * Note that the default constructor for this class is required for
- * constructing from DAO objects but should never be used by user code.
  */
 @JsonSerialize(using = PatientAndReadings.Serializer::class)
 @JsonDeserialize(using = PatientAndReadings.Deserializer::class)
-class PatientAndReadings() {
+data class PatientAndReadings(
     @Embedded
-    lateinit var patient: Patient
-
+    val patient: Patient,
     @Relation(parentColumn = "id", entityColumn = "patientId")
-    lateinit var readings: List<Reading>
-
-    constructor(patient: Patient, readings: List<Reading>) : this() {
-        // Note that this cannot be a primary constructor as the `patient` and
-        // `reading` members cannot be constructor parameters as this is
-        // forbidden by the `@Relation` annotation.
-        this.patient = patient
-        this.readings = readings
-    }
-
+    val readings: List<Reading>
+) {
     class Serializer : StdSerializer<PatientAndReadings>(PatientAndReadings::class.java) {
         override fun serialize(
             patientAndReadings: PatientAndReadings,
@@ -571,45 +554,23 @@ enum class Sex {
  * @see GestationalAgeMonths
  * @property timestamp The UNIX timestamp (in seconds)
  */
-sealed class GestationalAge(val timestamp: BigInteger) : Marshal<JSONObject>, Serializable {
+@JsonSerialize(using = GestationalAge.Serializer::class)
+@JsonDeserialize(using = GestationalAge.Deserializer::class)
+sealed class GestationalAge(val timestamp: BigInteger) : Serializable {
     /**
      * The age in [WeeksAndDays] from the current Unix timestamp.
      */
     val ageFromNow: WeeksAndDays
         get() = WeeksAndDays.fromSeconds(Seconds(UnixTimestamp.now - timestamp))
 
-    companion object : Unmarshal<GestationalAge, JSONObject> {
-
-        // These need to be marked static so we can share them with implementors.
-        @JvmStatic
-        protected val UNIT_VALUE_WEEKS = "WEEKS"
-        @JvmStatic
-        protected val UNIT_VALUE_MONTHS = "MONTHS"
-
-        /**
-         * Constructs a [GestationalAge] variant from a [JSONObject].
-         *
-         * @throws JSONException if any of the required fields are missing or
-         * if the value for the gestational age unit field is invalid.
-         */
-        override fun unmarshal(data: JSONObject): GestationalAge {
-            val units = data.stringField(PatientField.GESTATIONAL_AGE_UNIT)
-            val value = data.longField(PatientField.GESTATIONAL_AGE_VALUE)
-            return when (units) {
-                UNIT_VALUE_WEEKS -> GestationalAgeWeeks(BigInteger.valueOf(value))
-                UNIT_VALUE_MONTHS, "DAYS" -> GestationalAgeMonths(BigInteger.valueOf(value))
-                else -> {
-                    throw InvalidUnitsException(
-                        "invalid value for ${PatientField.GESTATIONAL_AGE_UNIT.text}"
-                    )
-                }
-            }
-        }
+    object Deserializer : StdDeserializer<GestationalAge>(GestationalAge::class.java) {
+        override fun deserialize(p: JsonParser, ctxt: DeserializationContext): GestationalAge =
+            p.codec.readTree<JsonNode>(p)!!.run { get(this) }
 
         /**
          * Nested deserialization from the given [jsonNode]
          */
-        fun deserialize(jsonNode: JsonNode): GestationalAge? = jsonNode.run {
+        fun get(jsonNode: JsonNode): GestationalAge = jsonNode.run {
             val units = get(PatientField.GESTATIONAL_AGE_UNIT)!!.asText()
             val value = get(PatientField.GESTATIONAL_AGE_VALUE)!!.asLong()
             return when (units) {
@@ -622,11 +583,23 @@ sealed class GestationalAge(val timestamp: BigInteger) : Marshal<JSONObject>, Se
                 }
             }
         }
+    }
+
+    object Serializer : StdSerializer<GestationalAge>(GestationalAge::class.java) {
+        override fun serialize(
+            gestationalAge: GestationalAge,
+            gen: JsonGenerator,
+            provider: SerializerProvider
+        ) {
+            gen.writeStartObject()
+            write(gen, gestationalAge)
+            gen.writeEndObject()
+        }
 
         /**
          * Nested serialization into the given [gen]
          */
-        fun serialize(gen: JsonGenerator, gestationalAge: GestationalAge) {
+        fun write(gen: JsonGenerator, gestationalAge: GestationalAge) {
             // TODO: figure Jackson sealed classes and how it can work with deserialization
             val units = if (gestationalAge is GestationalAgeMonths) {
                 UNIT_VALUE_MONTHS
@@ -641,43 +614,32 @@ sealed class GestationalAge(val timestamp: BigInteger) : Marshal<JSONObject>, Se
         }
     }
 
-    /**
-     * True if `this` and [other] are an instance of the same class and have the
-     * same [timestamp].
-     *
-     * This means that a gestational age in weeks is never equal to a
-     * gestational age in months even if they represent the same amount of time.
-     */
-    override fun equals(other: Any?): Boolean {
-        if (this.hashCode() != other.hashCode()) {
-            return false
-        }
-
-        return when (other) {
-            is GestationalAgeWeeks ->
-                if (this is GestationalAgeWeeks) {
-                    this.timestamp == other.timestamp
-                } else {
-                    false
-                }
-            is GestationalAgeMonths ->
-                if (this is GestationalAgeMonths) {
-                    this.timestamp == other.timestamp
-                } else {
-                    false
-                }
-            else -> false
-        }
-    }
-
-    override fun hashCode(): Int {
-        var result = timestamp.hashCode()
-        result = 31 * result + ageFromNow.hashCode()
-        return result
+    companion object {
+        // These need to be marked static so we can share them with implementors.
+        @JvmStatic
+        protected val UNIT_VALUE_WEEKS = "WEEKS"
+        @JvmStatic
+        protected val UNIT_VALUE_MONTHS = "MONTHS"
     }
 
     override fun toString(): String {
         return "GestationalAge($ageFromNow, value=$timestamp)"
+    }
+
+    /** Generated by Android Studio */
+    override fun hashCode(): Int {
+        return timestamp.hashCode()
+    }
+
+    /** Generated by Android Studio */
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        // this differentiates between GestationalAgeWeeks and Months
+        if (javaClass != other?.javaClass) return false
+
+        other as GestationalAge
+        if (timestamp != other.timestamp) return false
+        return true
     }
 
     class InvalidUnitsException(message: String) : IOException(message)
@@ -689,12 +651,6 @@ sealed class GestationalAge(val timestamp: BigInteger) : Marshal<JSONObject>, Se
 class GestationalAgeWeeks(timestamp: BigInteger) : GestationalAge(timestamp), Serializable {
     constructor(duration: Weeks) : this(UnixTimestamp.ago(duration))
 
-    override fun marshal(): JSONObject = with(JSONObject()) {
-        // For legacy interop we store the value as a string instead of an int.
-        put(PatientField.GESTATIONAL_AGE_VALUE, timestamp.toString())
-        put(PatientField.GESTATIONAL_AGE_UNIT, UNIT_VALUE_WEEKS)
-    }
-
     override fun toString(): String {
         return "GestationalAgeWeeks($ageFromNow, value=$timestamp)"
     }
@@ -704,17 +660,7 @@ class GestationalAgeWeeks(timestamp: BigInteger) : GestationalAge(timestamp), Se
  * Variant of [GestationalAge] which stores age in number of months.
  */
 class GestationalAgeMonths(timestamp: BigInteger) : GestationalAge(timestamp), Serializable {
-    private var inputMonths: Months? = null
-
-    constructor(duration: Months) : this(UnixTimestamp.ago(duration)) {
-        inputMonths = duration
-    }
-
-    override fun marshal(): JSONObject = with(JSONObject()) {
-        // For legacy interop we store the value as a string instead of an int.
-        put(PatientField.GESTATIONAL_AGE_VALUE, timestamp.toString())
-        put(PatientField.GESTATIONAL_AGE_UNIT, UNIT_VALUE_MONTHS)
-    }
+    constructor(duration: Months) : this(UnixTimestamp.ago(duration))
 
     override fun toString(): String {
         return "GestationalAgeMonths($ageFromNow, value=$timestamp)"

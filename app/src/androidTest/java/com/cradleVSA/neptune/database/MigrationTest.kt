@@ -30,10 +30,12 @@ import com.cradleVSA.neptune.utilitiles.Months
 import com.cradleVSA.neptune.utilitiles.Weeks
 import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
+import java.math.BigInteger
 import java.util.UUID
 
 class MigrationTests {
@@ -349,9 +351,6 @@ class MigrationTests {
             patientId = patientId,
             dateTimeTaken = unixTime,
             bloodPressure = BloodPressure(110, 70, 65),
-            respiratoryRate = null,
-            oxygenSaturation = null,
-            temperature = null,
             urineTest = UrineTest("+", "++", "NAD", "NAD", "NAD"),
             symptoms = listOf("headache", "blurred vision", "pain"),
             referral = referralForReading,
@@ -466,10 +465,35 @@ class MigrationTests {
 private class Version1CompatibleDatabaseTypeConverters {
 
     fun gestationalAgeToString(gestationalAge: GestationalAge?): String? =
-        gestationalAge?.marshal()?.toString()
+        gestationalAge?.let {
+            JSONObject().apply {
+                put("gestationalTimestamp", it.timestamp.toString())
+                put(
+                    "gestationalAgeUnit",
+                    if (it is GestationalAgeWeeks)
+                        "GESTATIONAL_AGE_UNIT_WEEKS"
+                    else
+                        "GESTATIONAL_AGE_UNIT_MONTHS"
+                )
+            }.toString()
+        }
 
     fun stringToGestationalAge(string: String?): GestationalAge? =
-        string?.let { if (it == "null") null else GestationalAge.unmarshal(JSONObject(it)) }
+        string?.let {
+            if (it == "null") {
+                null
+            } else {
+                JSONObject(it).run {
+                    val units = getString("gestationalAgeUnit")
+                    val value = getLong("gestationalTimestamp")
+                    return when (units) {
+                        "GESTATIONAL_AGE_UNIT_WEEKS" -> GestationalAgeWeeks(BigInteger.valueOf(value))
+                        "GESTATIONAL_AGE_UNIT_MONTHS" -> GestationalAgeMonths(BigInteger.valueOf(value))
+                        else -> throw JSONException("what")
+                    }
+                }
+            }
+        }
 
     fun stringToSex(string: String): Sex = enumValueOf(string)
 

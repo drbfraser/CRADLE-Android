@@ -3,7 +3,6 @@ package com.cradleVSA.neptune.manager
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
-import androidx.room.withTransaction
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.database.CradleDatabase
 import com.cradleVSA.neptune.database.daos.PatientDao
@@ -16,8 +15,10 @@ import com.cradleVSA.neptune.net.Failure
 import com.cradleVSA.neptune.net.RestApi
 import com.cradleVSA.neptune.net.Success
 import com.cradleVSA.neptune.sync.SyncWorker
+import com.cradleVSA.neptune.testutils.MockDependencyUtils
+import com.cradleVSA.neptune.testutils.MockWebServerUtils
 import com.cradleVSA.neptune.utilitiles.SharedPreferencesMigration
-import io.mockk.coEvery
+import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -28,17 +29,20 @@ import kotlinx.coroutines.test.TestCoroutineDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
+import okhttp3.mockwebserver.Dispatcher
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
+import okhttp3.mockwebserver.RecordedRequest
+import org.json.JSONException
+import org.json.JSONObject
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
-import java.io.IOException
-import java.io.InputStream
 import java.math.BigInteger
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
+import java.nio.charset.Charset
 import kotlin.time.ExperimentalTime
 import kotlin.time.seconds
 
@@ -97,224 +101,124 @@ internal class LoginManagerTests {
         private const val TEST_AUTH_TOKEN = "sOmEaUtHToken"
     }
 
-    private fun createMockRestApi(streamingWillSucceed: Boolean = true) = mockk<RestApi> {
-        coEvery {
-            authenticate(any(), any())
-        } answers {
-            val email = arg<String>(0)
-            val password = arg<String>(1)
-            if (email != TEST_USER_EMAIL) {
-                // Let's say no other user exists
-                return@answers Failure(ByteArray(1), 401)
-            }
-            // Trying to login as TEST_USER_EMAIL now.
-            if (password != TEST_USER_PASSWORD) {
-                return@answers Failure(ByteArray(1), 401)
-            }
+    private val fakePatientDatabase: MutableList<Patient>
+    private val fakeReadingDatabase: MutableList<Reading>
+    private val mockDatabase: CradleDatabase
+    private val mockPatientDao: PatientDao
+    private val mockReadingDao: ReadingDao
+    private val fakeSharedPreferences: MutableMap<String, Any?>
+    private val mockSharedPrefs: SharedPreferences
+    private val fakeHealthFacilityDatabase: MutableList<HealthFacility>
 
-            val response = LoginResponse(
-                token = TEST_AUTH_TOKEN,
-                email = TEST_USER_EMAIL,
-                role = "VHT",
-                userId = TEST_USER_ID,
-                firstName = TEST_FIRST_NAME,
-                healthFacilityName = TEST_USER_FACILITY_NAME
-            )
+    init {
+        val (map, sharedPrefs) = MockDependencyUtils.createMockSharedPreferences()
+        fakeSharedPreferences = map
+        mockSharedPrefs = sharedPrefs
 
-            Success(response, 200)
-        }
-
-        coEvery {
-            getAllHealthFacilities(any())
-        } coAnswers {
-            // Simulate the network sending over the JSON as a stream of bytes.
-            val block = firstArg<suspend (InputStream) -> Unit>()
-            val jsonStream = HEALTH_FACILITY_JSON.byteInputStream()
-            block(jsonStream)
-            if (streamingWillSucceed) {
-                Success(Unit, 200)
-            } else {
-                Failure(ByteArray(0), 500)
-            }
-        }
-
-        coEvery {
-            getAllPatientsStreaming(any())
-        } coAnswers {
-            // Simulate the network sending over the JSON as a stream of bytes.
-            val block = firstArg<suspend (InputStream) -> Unit>()
-            val json = CommonPatientReadingJsons.allPatientsJsonExpectedPair.first
-            val jsonStream = if (streamingWillSucceed) {
-                json.byteInputStream()
-            } else {
-                "${json.substring(0, json.length / 2)} a}})".byteInputStream()
-            }
-
-            // Simulate Http class catching IOExceptions
-            try {
-                block(jsonStream)
-            } catch (e: IOException) {
-            }
-
-            if (streamingWillSucceed) {
-                Success(Unit, 200)
-            } else {
-                Failure(ByteArray(0), 500)
-            }
+        val mockDatabaseStuff = MockDependencyUtils.createMockedDatabaseDependencies()
+        mockDatabaseStuff.run {
+            mockDatabase = mockedDatabase
+            mockPatientDao = mockedPatientDao
+            mockReadingDao = mockedReadingDao
+            fakePatientDatabase = underlyingPatientDatabase
+            fakeReadingDatabase = underlyingReadingDatabase
+            fakeHealthFacilityDatabase = underlyingHealthFacilityDatabase
         }
     }
 
-    private val fakeSharedPreferences = mutableMapOf<String, Any?>()
-    private val fakeHealthFacilityDatabase = mutableListOf<HealthFacility>()
-    private val fakePatientDatabase = mutableListOf<Patient>()
-    private val fakeReadingDatabase = mutableListOf<Reading>()
+    private val mockRestApi: RestApi
+    private val mockWebServer: MockWebServer
+    private var failTheLoginWithIOIssues = false
+    init {
+        val (api, server) = MockWebServerUtils.createRestApiWithMockedServer(mockSharedPrefs) {
+            dispatcher = object : Dispatcher() {
+                override fun dispatch(request: RecordedRequest) = MockResponse().apply response@{
+                    when (request.path) {
+                        "/api/user/auth" -> {
+                            try {
+                                val userLogin =
+                                    JSONObject(request.body.readString(Charset.defaultCharset()))
+                                if (userLogin.getString("email") != TEST_USER_EMAIL) {
+                                    setResponseCode(401)
+                                    return@response
+                                }
 
-    private var isMockkStaticDone = false
-    private val lock = ReentrantLock()
+                                if (userLogin.getString("password") != TEST_USER_PASSWORD) {
+                                    setResponseCode(401)
+                                    return@response
+                                }
+                            } catch (e: JSONException) {
+                                setResponseCode(500)
+                                return@response
+                            }
 
-    private fun createMockDatabase() = lock.withLock{
-        mockk<CradleDatabase> {
-            // https://stackoverflow.com/a/56652529 - if we don't do this, test will hang forever
-            if (!isMockkStaticDone) {
-                mockkStatic("androidx.room.RoomDatabaseKt")
-                isMockkStaticDone = true
-            }
+                            val json = JacksonMapper.createWriter<LoginResponse>()
+                                .writeValueAsString(
+                                    LoginResponse(
+                                        token = TEST_AUTH_TOKEN,
+                                        email = TEST_USER_EMAIL,
+                                        role = "VHT",
+                                        userId = TEST_USER_ID,
+                                        firstName = TEST_FIRST_NAME,
+                                        healthFacilityName = TEST_USER_FACILITY_NAME
+                                    )
+                                )
+                            setResponseCode(200)
+                            setBody(json)
+                        }
+                        "/api/mobile/patients" -> {
+                            if (request.headers["Authorization"] != "Bearer $TEST_AUTH_TOKEN") {
+                                setResponseCode(403)
+                                setBody(request.headers.toString())
+                                return@response
+                            }
 
-            // FIXME: With multiple coroutines using withTransaction in LoginManager, there
-            //  will be suspend lambdas that don't get called at all, because when a lambda is
-            //  captured, it overrides any lambdas that was there before. To work around this,
-            //  we don't test parallel downloads in LoginManager.
-            coEvery { withTransaction(captureLambda<suspend () -> Unit>()) } coAnswers {
-                var isTransactionSuccessful = false
-                try {
-                    lambda<suspend () -> Unit>().captured.invoke()
-                    isTransactionSuccessful = true
-                } finally {
-                    if (!isTransactionSuccessful) {
-                        // Simulate rollback
-                        fakeHealthFacilityDatabase.clear()
-                        fakePatientDatabase.clear()
-                        fakeReadingDatabase.clear()
+                            val json = CommonPatientReadingJsons.allPatientsJsonExpectedPair.first
+                            if (!failTheLoginWithIOIssues) {
+                                setResponseCode(200)
+                                setBody(json)
+                            } else {
+                                // mess it up somehow
+                                setResponseCode(200)
+                                setBody("${json.substring(0, json.length - 6)}ThisMessessItUp")
+                            }
+                        }
+                        "/api/facilities" -> {
+                            if (request.headers["Authorization"] != "Bearer $TEST_AUTH_TOKEN") {
+                                setResponseCode(403)
+                                return@response
+                            }
+
+                            val json = HEALTH_FACILITY_JSON
+                            if (!failTheLoginWithIOIssues) {
+                                setResponseCode(200)
+                                setBody(json)
+                            } else {
+                                // mess it up somehow. server says it's okay but something happened
+                                // during download
+                                setResponseCode(200)
+                                setBody("${json.substring(0, json.length - 6)}ThisMessessItUp")
+                            }
+                        }
+                        else -> setResponseCode(404)
                     }
+
                 }
             }
-
-            every { clearAllTables() } answers {
-                fakeHealthFacilityDatabase.clear()
-                fakePatientDatabase.clear()
-                fakeReadingDatabase.clear()
-            }
-            every { close() } returns Unit
         }
+        mockRestApi = api
+        mockWebServer = server
     }
 
-    private val mockPatientDao = mockk<PatientDao> {
-        coEvery { insert(any()) } answers {
-            fakePatientDatabase.add(firstArg())
-            5L
-        }
-    }
-    private val mockReadingDao = mockk<ReadingDao> {
-        coEvery { insertAll(any()) } answers {
-            val readings = firstArg<List<Reading>>()
-            readings.forEach { reading ->
-                fakePatientDatabase.find { it.id == reading.patientId }
-                    ?: error(
-                        "foreign key constraint: trying to insert reading for nonexistent patient" +
-                            "; patientId ${reading.patientId} not in fake database.\n" +
-                            "reading=$reading\n" +
-                            "fakePatientDatabase=$fakePatientDatabase\n" +
-                            "fakeReadingDatabase=$fakeReadingDatabase"
-                    )
-            }
-            fakeReadingDatabase.addAll(readings)
-        }
-        coEvery { insert(any()) } answers {
-            val reading: Reading = firstArg()
-            fakePatientDatabase.find { it.id == reading.patientId }
-                ?: error(
-                    "foreign key constraint: trying to insert reading for nonexistent patient; " +
-                        "patientId ${reading.patientId} not in fake database.\n" +
-                        "reading=$reading\n" +
-                        "fakePatientDatabase=$fakePatientDatabase\n" +
-                        "fakeReadingDatabase=$fakeReadingDatabase"
-                )
-            fakeReadingDatabase.add(reading)
-        }
-    }
-
-    private fun <T> putInFakeSharedPreference(key: String?, value: T?) {
-        key ?: return
-        fakeSharedPreferences[key] = value
-    }
-
-    private val mockSharedPrefs = mockk<SharedPreferences> {
-        every { edit() } returns mockk editor@{
-            every { putString(any(), any()) } answers {
-                putInFakeSharedPreference<String?>(firstArg(), secondArg())
-                this@editor
-            }
-
-            every { getString(any(), any()) } answers {
-                val stringValue = fakeSharedPreferences[firstArg()] as String?
-                if (stringValue == null && !fakeSharedPreferences.contains(firstArg())) {
-                    secondArg()
-                } else {
-                    stringValue
-                }
-            }
-
-            every { putInt(any(), any()) } answers {
-                putInFakeSharedPreference<Int?>(firstArg(), secondArg())
-                this@editor
-            }
-
-            every { putLong(any(), any()) } answers {
-                putInFakeSharedPreference<Long?>(firstArg(), secondArg())
-                this@editor
-            }
-
-            every { contains(any()) } answers { fakeSharedPreferences.containsKey(firstArg()) }
-
-            every { commit() } returns true
-            every { apply() } returns Unit
-            every { clear() } answers {
-                fakeSharedPreferences.clear()
-                this@editor
-            }
-        }
-    }
+    private val mockHealthManager = HealthFacilityManager(mockDatabase)
 
     private val fakePatientManager = PatientManager(
-        createMockDatabase(),
+        mockDatabase,
         mockPatientDao,
         mockReadingDao,
-        createMockRestApi()
+        mockRestApi
     )
 
-    private val mockHealthManager = mockk<HealthFacilityManager> {
-        coEvery {
-            addAll(any())
-        } answers {
-            val healthFacilities: List<HealthFacility> = arg(0) ?: return@answers
-            healthFacilities.forEach { facilityToBeAdded ->
-                fakeHealthFacilityDatabase.find { it.id == facilityToBeAdded.id }.let {
-                    fakeHealthFacilityDatabase.remove(it)
-                }
-            }
-            fakeHealthFacilityDatabase.addAll(healthFacilities)
-        }
-        coEvery {
-            add(any())
-        } answers {
-            val healthFacility = firstArg<HealthFacility>()
-            // Replace
-            fakeHealthFacilityDatabase.find { it.id == healthFacility.id }.let {
-                fakeHealthFacilityDatabase.remove(it)
-            }
-            fakeHealthFacilityDatabase.add(firstArg())
-        }
-    }
     private val mockContext = mockk<Context>(relaxed = true) {
         every { getString(R.string.key_vht_name) } returns "firstName"
     }
@@ -323,6 +227,7 @@ internal class LoginManagerTests {
     fun setUp() {
         mockkStatic(Log::class)
         every { Log.d(any(), any()) } returns 0
+        every { Log.i(any(), any()) } returns 0
         every { Log.e(any(), any()) } returns 0
         every { Log.e(any(), any(), any()) } returns 0
 
@@ -335,16 +240,19 @@ internal class LoginManagerTests {
     @AfterEach
     fun cleanUp() {
         Dispatchers.resetMain()
+        mockWebServer.shutdown()
     }
 
     @ExperimentalTime
     @Test
     fun `login with right credentials and logout`() {
+        failTheLoginWithIOIssues = false
+
         runBlocking {
             val loginManager = LoginManager(
-                createMockRestApi(),
+                mockRestApi,
                 mockSharedPrefs,
-                createMockDatabase(),
+                mockDatabase,
                 fakePatientManager,
                 mockHealthManager,
                 mockContext
@@ -377,7 +285,7 @@ internal class LoginManagerTests {
             ) { "bad first name" }
 
             assert(fakeSharedPreferences.containsKey(SyncWorker.LAST_PATIENT_SYNC)) {
-                "missing last patient sync time"
+                "missing last patient sync time; shared pref dump: $fakeSharedPreferences"
             }
             assert(BigInteger(fakeSharedPreferences[SyncWorker.LAST_PATIENT_SYNC] as String).toLong() > 100L) {
                 "last patient sync time too small"
@@ -388,11 +296,14 @@ internal class LoginManagerTests {
             assert(BigInteger(fakeSharedPreferences[SyncWorker.LAST_READING_SYNC]!! as String).toLong() > 100L) {
                 "last reading sync time too small"
             }
+            assertNotEquals(0, fakeHealthFacilityDatabase.size) {
+                "LoginManager failed to do health facility download; dumping facility db: $fakeHealthFacilityDatabase"
+            }
 
             val userSelectedHealthFacilities = fakeHealthFacilityDatabase
                 .filter { it.isUserSelected }
             assertNotEquals(0, userSelectedHealthFacilities.size) {
-                "LoginManager failed to select a health facility"
+                "LoginManager failed to select a health facility; dumping facility db: $fakeHealthFacilityDatabase"
             }
             assertEquals(1, userSelectedHealthFacilities.size) {
                 "LoginManager selected too many health health facilities"
@@ -459,12 +370,15 @@ internal class LoginManagerTests {
     }
 
     @Test
-    fun `login with right credentials, server 500 error during download, nothing should be added`() {
+    fun `login with right credentials, IO error during download, nothing should be added`() {
+        failTheLoginWithIOIssues = true
+        mockDatabase.clearAllTables()
+
         runBlocking {
             val loginManager = LoginManager(
-                createMockRestApi(streamingWillSucceed = false),
+                mockRestApi,
                 mockSharedPrefs,
-                createMockDatabase(),
+                mockDatabase,
                 fakePatientManager,
                 mockHealthManager,
                 mockContext
@@ -486,7 +400,6 @@ internal class LoginManagerTests {
             assert(loginManager.isLoggedIn())
 
             // withTransaction should make it so that the changes are not committed.
-            assertEquals(0, fakeHealthFacilityDatabase.size) { "nothing should be added" }
             assertEquals(0, fakePatientDatabase.size) { "nothing should be added" }
             assertEquals(0, fakeReadingDatabase.size) { "nothing should be added" }
 
@@ -499,11 +412,14 @@ internal class LoginManagerTests {
 
     @Test
     fun `login with wrong credentials`() {
+        failTheLoginWithIOIssues = false
+        mockDatabase.clearAllTables()
+
         runBlocking {
             val loginManager = LoginManager(
-                createMockRestApi(),
+                mockRestApi,
                 mockSharedPrefs,
-                createMockDatabase(),
+                mockDatabase,
                 fakePatientManager,
                 mockHealthManager,
                 mockContext
