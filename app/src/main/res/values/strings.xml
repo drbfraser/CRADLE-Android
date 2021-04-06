@@ -255,6 +255,7 @@
     <string name="stats_activity_filter_showAll">Show statistics for all readings</string>
     <string name="stats_activity_filter_byUserID">Show statistics for the current user</string>
     <string name="stats_activity_filter_byFacilityID">Show statistics for a health facility</string>
+    <string name="stats_activity_api_call_failed">An error occurred when getting statistics from the server. Please try again later.</string>
     <string name="stats_activity_pickFacility_header">Choose a health facility</string>
     <string name="video_activity_header">CRADLE VSA Training Video</string>
     <string name="video_activity_app_credits">App developed by Team Neptune</string>

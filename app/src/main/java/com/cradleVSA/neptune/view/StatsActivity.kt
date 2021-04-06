@@ -7,6 +7,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
@@ -57,7 +58,6 @@ class StatsActivity : AppCompatActivity() {
     var filterOptionsSavedFacility: HealthFacility? = null
 
     // TODO: discuss what the initial values of the date range should be.
-    // Also TODO: Set up an Options menu via widget (perhaps a custom AlertDialog?)
     // These currently correspond to right now in MS, and current time minus 30 days in MS
     @Suppress("MagicNumber")
     var endTimeEpoch: Long = System.currentTimeMillis() / msecInSec
@@ -106,6 +106,9 @@ class StatsActivity : AppCompatActivity() {
                 if (!it.failed) {
                     setupBasicStats(it.unwrapped!!)
                     setupBarChart(it.unwrapped!!)
+                } else {
+                    finish()
+                    Toast.makeText(applicationContext, getString(R.string.stats_activity_api_call_failed), Toast.LENGTH_LONG).show()
                 }
             }
         }
