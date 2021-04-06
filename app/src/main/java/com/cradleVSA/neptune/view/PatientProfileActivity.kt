@@ -156,7 +156,7 @@ open class PatientProfileActivity : AppCompatActivity() {
 
     fun populatePatientInfo(patient: Patient) {
         patientID.text = patient.id
-        patientName.text = patient.name
+        patientName.text = getString(R.string.patient_summary_header, patient.name)
         if (!Util.stringNullOrEmpty(patient.dob)) {
             try {
                 val ageFromDob = Patient.calculateAgeFromDateString(patient.dob!!)
