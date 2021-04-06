@@ -102,8 +102,6 @@ object MockDependencyUtils {
         return healthFacilityDatabase to mockHealthFacilityManager
     }
 
-    var isMockkStaticForDatabaseKtDone = false
-
     fun createMockedDatabaseDependencies(): MockedDatabaseDependencies {
         val fakePatientDatabase = mutableListOf<Patient>()
         val fakeReadingDatabase = mutableListOf<Reading>()
@@ -182,10 +180,7 @@ object MockDependencyUtils {
 
         val mockDatabase = mockk<CradleDatabase> {
             // https://stackoverflow.com/a/56652529 - if we don't do this, test will hang forever
-            if (!isMockkStaticForDatabaseKtDone) {
-                mockkStatic("androidx.room.RoomDatabaseKt")
-                isMockkStaticForDatabaseKtDone = true
-            }
+            mockkStatic("androidx.room.RoomDatabaseKt")
 
             every { readingDao() } returns mockReadingDao
             every { patientDao() } returns mockPatientDao

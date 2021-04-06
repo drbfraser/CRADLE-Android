@@ -19,6 +19,7 @@ import com.cradleVSA.neptune.testutils.MockDependencyUtils
 import com.cradleVSA.neptune.testutils.MockWebServerUtils
 import com.cradleVSA.neptune.utilitiles.SharedPreferencesMigration
 import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
+import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -241,6 +242,7 @@ internal class LoginManagerTests {
     fun cleanUp() {
         Dispatchers.resetMain()
         mockWebServer.shutdown()
+        clearAllMocks()
     }
 
     @ExperimentalTime

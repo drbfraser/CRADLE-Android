@@ -26,6 +26,7 @@ import com.cradleVSA.neptune.net.RestApi
 import com.cradleVSA.neptune.testutils.MockDependencyUtils
 import com.cradleVSA.neptune.testutils.MockWebServerUtils
 import com.google.common.util.concurrent.ListenableFuture
+import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -35,6 +36,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestCoroutineDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.withTimeout
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -44,6 +46,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
 import java.util.concurrent.Executors
+import kotlin.time.ExperimentalTime
+import kotlin.time.seconds
 
 class SyncWorkerTest {
     private val testMainDispatcher = TestCoroutineDispatcher()
@@ -158,7 +162,7 @@ class SyncWorkerTest {
     )
 
     private val backgroundExecutor = Executors.newSingleThreadExecutor()
-    private val serialExecutor = SerialExecutor(backgroundExecutor)
+    private val serialExecutor = mockk<SerialExecutor>()
     private val mockContext = mockk<Context>() {
         every { getString(any()) } answers { getMockStringFromResId(firstArg()) }
         every { getString(any(), *anyVararg()) } answers {
@@ -214,8 +218,10 @@ class SyncWorkerTest {
     fun cleanUp() {
         Dispatchers.resetMain()
         mockWebServer.shutdown()
+        clearAllMocks()
     }
 
+    @ExperimentalTime
     @Test
     fun `test SyncWorker`() {
         val syncWorker = SyncWorker(
@@ -229,20 +235,21 @@ class SyncWorkerTest {
         )
 
         runBlocking {
-            val result = syncWorker.doWork()
-            assert(result is ListenableWorker.Result.Success) {
-                result as ListenableWorker.Result.Failure
-                val workData = WorkInfo(
-                    UUID.randomUUID(),
-                    WorkInfo.State.FAILED,
-                    result.outputData,
-                    emptyList(),
-                    result.outputData,
-                    0
-                )
-                "failure: here is a dump ${result.outputData}"
+            withTimeout(10.seconds) {
+                val result = syncWorker.doWork()
+                assert(result is ListenableWorker.Result.Success) {
+                    result as ListenableWorker.Result.Failure
+                    val workData = WorkInfo(
+                        UUID.randomUUID(),
+                        WorkInfo.State.FAILED,
+                        result.outputData,
+                        emptyList(),
+                        result.outputData,
+                        0
+                    )
+                    "failure: here is a dump ${result.outputData}"
+                }
             }
         }
     }
-
 }
