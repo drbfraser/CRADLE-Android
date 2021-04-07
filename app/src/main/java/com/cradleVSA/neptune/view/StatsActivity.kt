@@ -22,6 +22,7 @@ import com.cradleVSA.neptune.model.Reading
 import com.cradleVSA.neptune.model.Statistics
 import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.net.RestApi
+import com.cradleVSA.neptune.net.Success
 import com.cradleVSA.neptune.utilitiles.BarGraphValueFormatter
 import com.cradleVSA.neptune.viewmodel.StatsViewModel
 import com.github.mikephil.charting.charts.BarChart
@@ -78,9 +79,9 @@ class StatsActivity : AppCompatActivity() {
         lifecycleScope.launch {
             statsData = viewModel.getStatsData(filterOptionsCheckedItem, startTimeEpoch, endTimeEpoch, filterOptionsSavedFacility)
             statsData?.let {
-                if (!it.failed) {
-                    setupBasicStats(it.unwrapped!!)
-                    setupBarChart(it.unwrapped!!)
+                if (it is Success) {
+                    setupBasicStats(it.value)
+                    setupBarChart(it.value)
                 } else {
                     finish()
                     Toast.makeText(applicationContext, getString(R.string.stats_activity_api_call_failed), Toast.LENGTH_LONG).show()
