@@ -8,6 +8,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
@@ -22,6 +23,7 @@ import com.cradleVSA.neptune.model.Statistics
 import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.net.RestApi
 import com.cradleVSA.neptune.utilitiles.BarGraphValueFormatter
+import com.cradleVSA.neptune.viewmodel.StatsViewModel
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
@@ -41,20 +43,17 @@ class StatsActivity : AppCompatActivity() {
     lateinit var readingManager: ReadingManager
     @Inject
     lateinit var sharedPreferences: SharedPreferences
-    lateinit var readings: List<Reading>
-    lateinit var statsData: NetworkResult<Statistics>
-    @Inject
-    lateinit var restApi: RestApi
     @Inject
     lateinit var healthFacilityManager: HealthFacilityManager
+    private val viewModel: StatsViewModel by viewModels()
+    var statsData: NetworkResult<Statistics>? = null
 
     @Suppress("MagicNumber")
     val msecInSec = 1000L // This is the conversion value.
 
-    val filterOptionsShowAll = 0
-    val filterOptionsFilterUser = 1
-    val filterOptionsFilterByFacility = 2
-    var filterOptionsCheckedItem = filterOptionsShowAll // Persistent (within activity) choice of filter option.
+    var filterOptionsCheckedItem: statisticsFilterOptions =
+        statisticsFilterOptions.filterOptionsShowAll
+
     var filterOptionsSavedFacility: HealthFacility? = null
 
     // TODO: discuss what the initial values of the date range should be.
@@ -77,31 +76,7 @@ class StatsActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         lifecycleScope.launch {
-            var statsData: NetworkResult<Statistics>? = null
-            when (filterOptionsCheckedItem) {
-                filterOptionsShowAll -> {
-                    // Get all stats:
-                    statsData = restApi.getAllStatisticsBetween(startTimeEpoch, endTimeEpoch)
-                }
-                filterOptionsFilterUser -> {
-                    // Get stats for the current user ID:
-                    // TODO: Determine a sane failure value for USER_ID_KEY
-                    statsData = restApi.getStatisticsForUserBetween(
-                        startTimeEpoch,
-                        endTimeEpoch,
-                        sharedPreferences.getInt(
-                            LoginManager.USER_ID_KEY,
-                            -1
-                        )
-                    )
-                }
-                filterOptionsFilterByFacility -> {
-                    // Get stats for the currently saved Facility:
-                    filterOptionsSavedFacility?.let {
-                        statsData = restApi.getStatisticsForFacilityBetween(startTimeEpoch, endTimeEpoch, it)
-                    }
-                }
-            }
+            statsData = viewModel.getStatsData(filterOptionsCheckedItem, startTimeEpoch, endTimeEpoch, filterOptionsSavedFacility)
             statsData?.let {
                 if (!it.failed) {
                     setupBasicStats(it.unwrapped!!)
@@ -163,12 +138,13 @@ class StatsActivity : AppCompatActivity() {
                 var tmpCheckedItem = 0
                 builder.setSingleChoiceItems(
                     filterOptions,
-                    filterOptionsCheckedItem
+                    filterOptionsCheckedItem.ordinal
                 ) { dialog, which ->
                     // For now, save the enum value - only change filter options
                     // (and thus force a new network request) when "OK" is chosen.
                     tmpCheckedItem = which
-                    if (tmpCheckedItem == filterOptionsFilterByFacility) {
+                    if (tmpCheckedItem ==
+                        statisticsFilterOptions.filterOptionsFilterByFacility.ordinal) {
                         // Do another AlertDialog for picking the Facility:
                         setupFacilityDialog()
                     }
@@ -177,8 +153,8 @@ class StatsActivity : AppCompatActivity() {
                 builder.setPositiveButton("OK") { dialog, which ->
                     // OK was clicked, save the choice
                     // (and reload only if we are saving a new option):
-                    if (tmpCheckedItem != filterOptionsCheckedItem) {
-                        filterOptionsCheckedItem = tmpCheckedItem
+                    if (tmpCheckedItem != filterOptionsCheckedItem.ordinal) {
+                        filterOptionsCheckedItem = statisticsFilterOptions.values()[tmpCheckedItem]
                         onResume()
                     }
                 }
@@ -298,4 +274,10 @@ class StatsActivity : AppCompatActivity() {
         barChart.isHighlightPerTapEnabled = false
         barChart.invalidate()
     }
+}
+
+enum class statisticsFilterOptions {
+    filterOptionsShowAll,
+    filterOptionsFilterUser,
+    filterOptionsFilterByFacility
 }
