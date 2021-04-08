@@ -11,6 +11,7 @@ import com.cradleVSA.neptune.model.CommonPatientReadingJsons
 import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.Patient
 import com.cradleVSA.neptune.model.Reading
+import com.cradleVSA.neptune.model.UserRole
 import com.cradleVSA.neptune.net.Failure
 import com.cradleVSA.neptune.net.RestApi
 import com.cradleVSA.neptune.net.Success
@@ -99,6 +100,7 @@ internal class LoginManagerTests {
         private const val TEST_USER_EMAIL = "test-android@example.com"
         private const val TEST_USER_PASSWORD = "password"
         private const val TEST_AUTH_TOKEN = "sOmEaUtHToken"
+        private val TEST_USER_ROLE = UserRole.VHT
     }
 
     private val fakePatientDatabase: MutableList<Patient>
@@ -220,7 +222,8 @@ internal class LoginManagerTests {
     )
 
     private val mockContext = mockk<Context>(relaxed = true) {
-        every { getString(R.string.key_vht_name) } returns "firstName"
+        every { getString(R.string.key_vht_name) } returns "setting_vht_name"
+        every { getString(R.string.key_role) } returns "setting_role"
     }
 
     @BeforeEach
@@ -283,6 +286,9 @@ internal class LoginManagerTests {
                 TEST_FIRST_NAME,
                 fakeSharedPreferences[mockContext.getString(R.string.key_vht_name)]
             ) { "bad first name" }
+
+            val role = UserRole.safeValueOf(fakeSharedPreferences[mockContext.getString(R.string.key_role)] as String)
+            assertEquals(TEST_USER_ROLE, role) { "unexpected role $role; expected $TEST_USER_ROLE" }
 
             assert(fakeSharedPreferences.containsKey(SyncWorker.LAST_PATIENT_SYNC)) {
                 "missing last patient sync time; shared pref dump: $fakeSharedPreferences"
