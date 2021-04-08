@@ -6,30 +6,38 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
+import android.widget.ImageButton
+import android.widget.ListAdapter
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import com.cradleVSA.neptune.R
+import com.cradleVSA.neptune.databinding.ActivityStatsBinding
+import com.cradleVSA.neptune.databinding.ReferralDialogBinding
 import com.cradleVSA.neptune.manager.HealthFacilityManager
-import com.cradleVSA.neptune.manager.LoginManager
 import com.cradleVSA.neptune.manager.ReadingManager
 import com.cradleVSA.neptune.model.HealthFacility
-import com.cradleVSA.neptune.model.Reading
 import com.cradleVSA.neptune.model.Statistics
 import com.cradleVSA.neptune.net.NetworkResult
-import com.cradleVSA.neptune.net.RestApi
 import com.cradleVSA.neptune.net.Success
 import com.cradleVSA.neptune.utilitiles.BarGraphValueFormatter
+import com.cradleVSA.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity
 import com.cradleVSA.neptune.viewmodel.StatsViewModel
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -127,49 +135,59 @@ class StatsActivity : AppCompatActivity() {
                 return true
             }
             R.id.stats_filters -> {
-                val builder = AlertDialog.Builder(this@StatsActivity)
-                builder.setTitle(getString(R.string.stats_activity_filter_header))
-
-                // Use a radio button list for choosing the filtering method.
-                val filterOptions = arrayOf(
-                    getString(R.string.stats_activity_filter_showAll),
-                    getString(R.string.stats_activity_filter_byUserID),
-                    getString(R.string.stats_activity_filter_byFacilityID)
-                )
-                var tmpCheckedItem = 0
-                builder.setSingleChoiceItems(
-                    filterOptions,
-                    filterOptionsCheckedItem.ordinal
-                ) { dialog, which ->
-                    // For now, save the enum value - only change filter options
-                    // (and thus force a new network request) when "OK" is chosen.
-                    tmpCheckedItem = which
-                    if (tmpCheckedItem ==
-                        statisticsFilterOptions.filterOptionsFilterByFacility.ordinal) {
-                        // Do another AlertDialog for picking the Facility:
-                        setupFacilityDialog()
-                    }
-                }
-
-                builder.setPositiveButton("OK") { dialog, which ->
-                    // OK was clicked, save the choice
-                    // (and reload only if we are saving a new option):
-                    if (tmpCheckedItem != filterOptionsCheckedItem.ordinal) {
-                        filterOptionsCheckedItem = statisticsFilterOptions.values()[tmpCheckedItem]
-                        onResume()
-                    }
-                }
-                // Ignore any changes on "cancel"
-                builder.setNegativeButton("Cancel", null)
-
-                val dialog = builder.create()
-                dialog.show()
+                setupFilterDialog()
                 return true
             }
             else -> {
                 return super.onOptionsItemSelected(item)
             }
         }
+    }
+
+    private fun setupFilterDialog() {
+        val builder = AlertDialog.Builder(this@StatsActivity)
+        builder.setTitle(getString(R.string.stats_activity_filter_header))
+
+        val dialogView = layoutInflater.inflate(R.layout.dialog_stats_filter_picker, null)
+        builder.setView(dialogView)
+
+        val statsForMeButton = dialogView.findViewById<RadioButton>(R.id.statFilterDialog_userIDButton)
+        val allStatsButton = dialogView.findViewById<RadioButton>(R.id.statFilterDialog_showAllButton)
+        val facilityButton = dialogView.findViewById<RadioButton>(R.id.statFilterDialog_healthFacilityButton)
+
+        var healthFacilityPicker = dialogView.findViewById<AutoCompleteTextView>(R.id.health_facility_auto_complete_text)
+        val healthFacilityLayout = dialogView.findViewById<TextInputLayout>(R.id.health_facility_input_layout)
+        val healthTextView = dialogView.findViewById<TextView>(R.id.filterPickerTextView)
+
+        healthFacilityLayout.visibility = View.GONE
+        healthTextView.visibility = View.GONE
+        val healthFacilityArray: Array<String>
+        runBlocking {
+            healthFacilityArray = healthFacilityManager.getAllSelectedByUser().map{ it.name }.toTypedArray()
+        }
+        healthFacilityPicker.setAdapter(ArrayAdapter<String>(this@StatsActivity, R.layout.support_simple_spinner_dropdown_item, healthFacilityArray))
+
+        val buttonGroup = dialogView.findViewById<RadioGroup>(R.id.statFilterDialog_radioGroup)
+        buttonGroup.setOnCheckedChangeListener { radioGroup: RadioGroup, checkedID: Int ->
+            when (radioGroup.checkedRadioButtonId) {
+                R.id.statFilterDialog_healthFacilityButton -> {
+                    healthFacilityLayout.visibility = View.VISIBLE
+                    healthTextView.visibility = View.VISIBLE
+                }
+                R.id.statFilterDialog_showAllButton -> {
+                    healthFacilityLayout.visibility = View.GONE
+                    healthTextView.visibility = View.GONE
+                }
+                R.id.statFilterDialog_userIDButton -> {
+                    healthFacilityLayout.visibility = View.GONE
+                    healthTextView.visibility = View.GONE
+                }
+            }
+        }
+        
+        // Ignore any changes on "cancel"
+        builder.setNegativeButton("Cancel", null)
+        builder.create().show()
     }
 
     private fun setupFacilityDialog() {
