@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.ImageButton
@@ -159,64 +160,66 @@ class StatsActivity : AppCompatActivity() {
         val healthFacilityLayout = dialogView.findViewById<TextInputLayout>(R.id.health_facility_input_layout)
         val healthTextView = dialogView.findViewById<TextView>(R.id.filterPickerTextView)
 
+        var tmpCheckedItem = statisticsFilterOptions.filterOptionsFilterUser
+        var tmpHealthFacility: HealthFacility? = null
+
         healthFacilityLayout.visibility = View.GONE
         healthTextView.visibility = View.GONE
-        val healthFacilityArray: Array<String>
+        val healthFacilityArray: List<HealthFacility>
         runBlocking {
-            healthFacilityArray = healthFacilityManager.getAllSelectedByUser().map{ it.name }.toTypedArray()
+            healthFacilityArray = healthFacilityManager.getAllSelectedByUser()
+            val facilityStringArray = healthFacilityArray.map{it.name}.toTypedArray()
+            healthFacilityPicker.setAdapter(ArrayAdapter<String>(this@StatsActivity, R.layout.support_simple_spinner_dropdown_item, facilityStringArray))
+            healthFacilityPicker.setOnItemClickListener { _, _: View, position: Int, _: Long ->
+                tmpHealthFacility = healthFacilityArray[position]
+            }
         }
-        healthFacilityPicker.setAdapter(ArrayAdapter<String>(this@StatsActivity, R.layout.support_simple_spinner_dropdown_item, healthFacilityArray))
 
         val buttonGroup = dialogView.findViewById<RadioGroup>(R.id.statFilterDialog_radioGroup)
+        buttonGroup.check(R.id.statFilterDialog_userIDButton)
+
         buttonGroup.setOnCheckedChangeListener { radioGroup: RadioGroup, checkedID: Int ->
             when (radioGroup.checkedRadioButtonId) {
                 R.id.statFilterDialog_healthFacilityButton -> {
                     healthFacilityLayout.visibility = View.VISIBLE
                     healthTextView.visibility = View.VISIBLE
+                    tmpCheckedItem = statisticsFilterOptions.filterOptionsFilterByFacility
                 }
                 R.id.statFilterDialog_showAllButton -> {
                     healthFacilityLayout.visibility = View.GONE
                     healthTextView.visibility = View.GONE
+                    tmpCheckedItem = statisticsFilterOptions.filterOptionsShowAll
                 }
                 R.id.statFilterDialog_userIDButton -> {
                     healthFacilityLayout.visibility = View.GONE
                     healthTextView.visibility = View.GONE
+                    tmpCheckedItem = statisticsFilterOptions.filterOptionsFilterUser
                 }
             }
         }
-        
+
         // Ignore any changes on "cancel"
         builder.setNegativeButton("Cancel", null)
-        builder.create().show()
-    }
+        builder.setPositiveButton("OK") { dialog, which ->
+            // OK was clicked, save the choice
+            // (and reload only if we are saving a new option):
 
-    private fun setupFacilityDialog() {
-        val builder = AlertDialog.Builder(this@StatsActivity)
-        builder.setTitle(getString(R.string.stats_activity_pickFacility_header))
-
-        // Use a radio button list for choosing the health facility.
-        runBlocking {
-            var facilityIDs: Array<String?>?
-            var checkedItemIndex = 0
-            var dialog: AlertDialog? = null
-
-            val healthFacilities = healthFacilityManager.getAllSelectedByUser()
-            val facilityNameArray = healthFacilities.map { it.name }.toTypedArray()
-
-            builder.setSingleChoiceItems(facilityNameArray, checkedItemIndex) { dialog, which ->
-                // For now, save the enum value - only change filter options
-                // (and thus force a new network request) when "OK" is chosen.
-                checkedItemIndex = which
+            if (tmpCheckedItem != filterOptionsCheckedItem) {
+                if (tmpCheckedItem == statisticsFilterOptions.filterOptionsFilterByFacility) {
+                    filterOptionsSavedFacility = tmpHealthFacility
+                }
+                filterOptionsCheckedItem = tmpCheckedItem
+                onResume()
+            } else if (tmpCheckedItem == statisticsFilterOptions.filterOptionsFilterByFacility) {
+                if (tmpHealthFacility?.name != filterOptionsSavedFacility?.name) {
+                    // If user has selected a different health facility after previously
+                    // viewing another health facility:
+                    filterOptionsSavedFacility = tmpHealthFacility
+                    onResume()
+                }
             }
-
-            builder.setPositiveButton("OK") { dialog, which ->
-                // OK was clicked, save the facility:
-                filterOptionsSavedFacility = healthFacilities?.get(checkedItemIndex)
-            }
-
-            // Ignore any changes on "cancel"
-            builder.setNegativeButton("Cancel", null)
         }
+
         builder.create().show()
     }
 

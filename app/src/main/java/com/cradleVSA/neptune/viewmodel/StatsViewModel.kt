@@ -21,12 +21,15 @@ class StatsViewModel @Inject constructor(
     private var lastStartTime: Long = 0
     private var lastEndTime: Long = 0
     private var lastFilterOptions = statisticsFilterOptions.filterOptionsShowAll
+    private var lastHealthFacility: HealthFacility? = null
 
     suspend fun getStatsData(filterOptions: statisticsFilterOptions, startTime: Long, endTime: Long,
         savedFacility: HealthFacility?): NetworkResult<Statistics>? {
         if ((filterOptions == lastFilterOptions)  && (startTime == lastStartTime)
             && (endTime == lastEndTime) && (statsData != null)) {
-            return statsData
+                if ((filterOptions == statisticsFilterOptions.filterOptionsFilterByFacility) && (lastHealthFacility?.name == savedFacility?.name)) {
+                        return statsData
+                }
         }
         when (filterOptions) {
             statisticsFilterOptions.filterOptionsShowAll -> {
@@ -55,6 +58,7 @@ class StatsViewModel @Inject constructor(
                 // Which will cause the UI to display an error.
                 // UI code should not allow choosing filter-by-facility without a valid health
                 // facility chosen though, but it's good to handle these cases.
+                lastHealthFacility = savedFacility
             }
         }
         lastStartTime = startTime
