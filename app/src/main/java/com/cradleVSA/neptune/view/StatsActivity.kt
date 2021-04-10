@@ -62,9 +62,10 @@ class StatsActivity : AppCompatActivity() {
     val msecInSec = 1000L // This is the conversion value.
 
     var filterOptionsCheckedItem: statisticsFilterOptions =
-        statisticsFilterOptions.filterOptionsShowAll
-
+        statisticsFilterOptions.filterOptionsFilterUser
     var filterOptionsSavedFacility: HealthFacility? = null
+    lateinit var headerTextPrefix: String
+    lateinit var headerText: String
 
     // TODO: discuss what the initial values of the date range should be.
     // These currently correspond to right now in MS, and current time minus 30 days in MS
@@ -81,11 +82,26 @@ class StatsActivity : AppCompatActivity() {
             supportActionBar!!.setDisplayHomeAsUpEnabled(true)
             supportActionBar!!.title = getString(R.string.dashboard_statistics)
         }
+
+        headerTextPrefix = getString(com.cradleVSA.neptune.R.string.stats_activity_month_string)
+        headerText = getString(com.cradleVSA.neptune.R.string.stats_activity_I_made_header, headerTextPrefix)
     }
 
     override fun onResume() {
         super.onResume()
         lifecycleScope.launch {
+            val statsHeaderTv = findViewById<TextView>(R.id.textView32)
+            when (filterOptionsCheckedItem) {
+                statisticsFilterOptions.filterOptionsFilterUser -> {
+                    statsHeaderTv.text = getString(R.string.stats_activity_I_made_header, headerTextPrefix)
+                }
+                statisticsFilterOptions.filterOptionsFilterByFacility -> {
+                    statsHeaderTv.text = getString(R.string.stats_activity_facility_header, headerTextPrefix, filterOptionsSavedFacility?.name)
+                }
+                statisticsFilterOptions.filterOptionsShowAll -> {
+                    statsHeaderTv.text = getString(R.string.stats_activity_all_header, headerTextPrefix)
+                }
+            }
             statsData = viewModel.getStatsData(filterOptionsCheckedItem, startTimeEpoch, endTimeEpoch, filterOptionsSavedFacility)
             statsData?.let {
                 if (it is Success) {
@@ -123,10 +139,8 @@ class StatsActivity : AppCompatActivity() {
                     it.second?.let {
                         endTimeEpoch = it / msecInSec
                     }
-                    val statsHeaderTv = findViewById<TextView>(R.id.textView32)
-                    // TODO: change text in header to human-readable, this is just for testing now
-                    statsHeaderTv.text = getString(
-                        R.string.stats_activity_epoch_header,
+                    headerTextPrefix = getString(
+                        R.string.stats_activity_epoch_string,
                         @Suppress("MagicNumber")
                         floor(((endTimeEpoch - startTimeEpoch) / 86400).toDouble()).toInt()
                     )

@@ -249,8 +249,11 @@
     <string name="stats_activity_days_with_readings">Days With Readings</string>
     <string name="stats_activity_total_number_of_traffic_lights">Total number of traffic lights</string>
     <string name="stats_activity_fetching_data">Please wait, fetching statistics…</string>
-    <string name="stats_activity_this_month_you_have_header">This month, there were…</string>
-    <string name="stats_activity_epoch_header">In the %1$d day range, there were…</string>
+    <string name="stats_activity_I_made_header">%1$s, I made…</string>
+    <string name="stats_activity_facility_header">%1$s, facility %2$s made…</string>
+    <string name="stats_activity_all_header">%1$s, all facilities and users made…</string>
+    <string name="stats_activity_epoch_string">In the %1$d day range</string>
+    <string name="stats_activity_month_string">This month</string>
     <string name="stats_activity_filter_header">Choose a filtering option</string>
     <string name="stats_activity_filter_showAll">Show statistics for all readings</string>
     <string name="stats_activity_filter_byUserID">Show statistics for me</string>
