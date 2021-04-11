@@ -1,5 +1,6 @@
 package com.cradleVSA.neptune.view
 
+import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
@@ -166,51 +167,12 @@ class StatsActivity : AppCompatActivity() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_stats_filter_picker, null)
         builder.setView(dialogView)
 
-        val statsForMeButton = dialogView.findViewById<RadioButton>(R.id.statFilterDialog_userIDButton)
-        val allStatsButton = dialogView.findViewById<RadioButton>(R.id.statFilterDialog_showAllButton)
-        val facilityButton = dialogView.findViewById<RadioButton>(R.id.statFilterDialog_healthFacilityButton)
-
-        var healthFacilityPicker = dialogView.findViewById<AutoCompleteTextView>(R.id.health_facility_auto_complete_text)
+        val healthFacilityPicker = dialogView.findViewById<AutoCompleteTextView>(R.id.health_facility_auto_complete_text)
         val healthFacilityLayout = dialogView.findViewById<TextInputLayout>(R.id.health_facility_input_layout)
         val healthTextView = dialogView.findViewById<TextView>(R.id.filterPickerTextView)
 
         var tmpCheckedItem = statisticsFilterOptions.filterOptionsFilterUser
         var tmpHealthFacility: HealthFacility? = null
-
-        healthFacilityLayout.visibility = View.GONE
-        healthTextView.visibility = View.GONE
-        val healthFacilityArray: List<HealthFacility>
-        runBlocking {
-            healthFacilityArray = healthFacilityManager.getAllSelectedByUser()
-            val facilityStringArray = healthFacilityArray.map{it.name}.toTypedArray()
-            healthFacilityPicker.setAdapter(ArrayAdapter<String>(this@StatsActivity, R.layout.support_simple_spinner_dropdown_item, facilityStringArray))
-            healthFacilityPicker.setOnItemClickListener { _, _: View, position: Int, _: Long ->
-                tmpHealthFacility = healthFacilityArray[position]
-            }
-        }
-
-        val buttonGroup = dialogView.findViewById<RadioGroup>(R.id.statFilterDialog_radioGroup)
-        buttonGroup.check(R.id.statFilterDialog_userIDButton)
-
-        buttonGroup.setOnCheckedChangeListener { radioGroup: RadioGroup, checkedID: Int ->
-            when (radioGroup.checkedRadioButtonId) {
-                R.id.statFilterDialog_healthFacilityButton -> {
-                    healthFacilityLayout.visibility = View.VISIBLE
-                    healthTextView.visibility = View.VISIBLE
-                    tmpCheckedItem = statisticsFilterOptions.filterOptionsFilterByFacility
-                }
-                R.id.statFilterDialog_showAllButton -> {
-                    healthFacilityLayout.visibility = View.GONE
-                    healthTextView.visibility = View.GONE
-                    tmpCheckedItem = statisticsFilterOptions.filterOptionsShowAll
-                }
-                R.id.statFilterDialog_userIDButton -> {
-                    healthFacilityLayout.visibility = View.GONE
-                    healthTextView.visibility = View.GONE
-                    tmpCheckedItem = statisticsFilterOptions.filterOptionsFilterUser
-                }
-            }
-        }
 
         // Ignore any changes on "cancel"
         builder.setNegativeButton("Cancel", null)
@@ -234,7 +196,50 @@ class StatsActivity : AppCompatActivity() {
             }
         }
 
-        builder.create().show()
+        val dialog = builder.create()
+
+        val statsForMeButton = dialogView.findViewById<RadioButton>(R.id.statFilterDialog_userIDButton)
+        val allStatsButton = dialogView.findViewById<RadioButton>(R.id.statFilterDialog_showAllButton)
+        val facilityButton = dialogView.findViewById<RadioButton>(R.id.statFilterDialog_healthFacilityButton)
+
+        healthFacilityLayout.visibility = View.GONE
+        healthTextView.visibility = View.GONE
+        val healthFacilityArray: List<HealthFacility>
+        runBlocking {
+            healthFacilityArray = healthFacilityManager.getAllSelectedByUser()
+            val facilityStringArray = healthFacilityArray.map{it.name}.toTypedArray()
+            healthFacilityPicker.setAdapter(ArrayAdapter<String>(this@StatsActivity, R.layout.support_simple_spinner_dropdown_item, facilityStringArray))
+            healthFacilityPicker.setOnItemClickListener { _, _: View, position: Int, _: Long ->
+                tmpHealthFacility = healthFacilityArray[position]
+                dialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = true
+            }
+        }
+
+        val buttonGroup = dialogView.findViewById<RadioGroup>(R.id.statFilterDialog_radioGroup)
+        buttonGroup.check(R.id.statFilterDialog_userIDButton)
+
+        buttonGroup.setOnCheckedChangeListener { radioGroup: RadioGroup, checkedID: Int ->
+            when (radioGroup.checkedRadioButtonId) {
+                R.id.statFilterDialog_healthFacilityButton -> {
+                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = false
+                    healthFacilityLayout.visibility = View.VISIBLE
+                    healthTextView.visibility = View.VISIBLE
+                    tmpCheckedItem = statisticsFilterOptions.filterOptionsFilterByFacility
+                }
+                R.id.statFilterDialog_showAllButton -> {
+                    healthFacilityLayout.visibility = View.GONE
+                    healthTextView.visibility = View.GONE
+                    tmpCheckedItem = statisticsFilterOptions.filterOptionsShowAll
+                }
+                R.id.statFilterDialog_userIDButton -> {
+                    healthFacilityLayout.visibility = View.GONE
+                    healthTextView.visibility = View.GONE
+                    tmpCheckedItem = statisticsFilterOptions.filterOptionsFilterUser
+                }
+            }
+        }
+
+        dialog.show()
     }
 
     private fun setupBasicStats(statsData: Statistics) {
