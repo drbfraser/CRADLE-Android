@@ -472,9 +472,9 @@ private class Version1CompatibleDatabaseTypeConverters {
                 put(
                     "gestationalAgeUnit",
                     if (it is GestationalAgeWeeks)
-                        "GESTATIONAL_AGE_UNIT_WEEKS"
+                        "GESTATIONAL_AGE_UNITS_WEEKS"
                     else
-                        "GESTATIONAL_AGE_UNIT_MONTHS"
+                        "GESTATIONAL_AGE_UNITS_MONTHS"
                 )
             }.toString()
         }

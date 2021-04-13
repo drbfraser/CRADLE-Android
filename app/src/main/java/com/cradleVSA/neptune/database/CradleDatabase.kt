@@ -504,40 +504,49 @@ CREATE TABLE IF NOT EXISTS `new_Patient` (
                 execSQL(
                     """
                     CREATE TEMPORARY TABLE Reading_backup(
-                        patientId, dateTimeTaken, bloodPressure, urineTest, symptoms, referral, 
-                        followUp, dateRecheckVitalsNeeded, isFlaggedForFollowUp, previousReadingIds, 
-                        metadata, isUploadedToServer
+                        `readingId` TEXT NOT NULL, `patientId` TEXT NOT NULL, `dateTimeTaken` INTEGER NOT NULL,
+                        `bloodPressure` TEXT NOT NULL, `urineTest` TEXT, `symptoms` TEXT NOT NULL, `referral` TEXT,
+                        `followUp` TEXT, `dateRecheckVitalsNeeded` INTEGER, `isFlaggedForFollowUp` INTEGER NOT NULL,
+                        `previousReadingIds` TEXT NOT NULL, `metadata` TEXT NOT NULL,
+                        `isUploadedToServer` INTEGER NOT NULL
                     );
                     """.trimIndent()
                 )
                 execSQL(
                     """ 
                     INSERT INTO Reading_backup SELECT 
-                        patientId, dateTimeTaken, bloodPressure, urineTest, symptoms, referral, 
-                        followUp, dateRecheckVitalsNeeded, isFlaggedForFollowUp, previousReadingIds, 
-                        metadata, isUploadedToServer
+                        readingId, patientId, dateTimeTaken, bloodPressure, urineTest, symptoms,
+                        referral, followUp, dateRecheckVitalsNeeded, isFlaggedForFollowUp,
+                        previousReadingIds, metadata, isUploadedToServer
                     from Reading;
                     """.trimIndent()
                 )
                 execSQL("DROP TABLE Reading;")
                 execSQL(
                     """
-                    CREATE TABLE Reading(
-                        patientId, dateTimeTaken, bloodPressure, urineTest, symptoms, referral, 
-                        followUp, dateRecheckVitalsNeeded, isFlaggedForFollowUp, previousReadingIds, 
-                        metadata, isUploadedToServer
+                    CREATE TABLE `Reading` (
+                        `readingId` TEXT NOT NULL, `patientId` TEXT NOT NULL, `dateTimeTaken` INTEGER NOT NULL,
+                        `bloodPressure` TEXT NOT NULL, `urineTest` TEXT, `symptoms` TEXT NOT NULL, `referral` TEXT,
+                        `followUp` TEXT, `dateRecheckVitalsNeeded` INTEGER, `isFlaggedForFollowUp` INTEGER NOT NULL,
+                        `previousReadingIds` TEXT NOT NULL, `metadata` TEXT NOT NULL,
+                        `isUploadedToServer` INTEGER NOT NULL,
+                        PRIMARY KEY(`readingId`),
+                        FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE
                     );
                     """.trimIndent()
                 )
                 execSQL(
                     """
                     INSERT INTO Reading SELECT 
-                        patientId, dateTimeTaken, bloodPressure, urineTest, symptoms, referral, 
+                        readingId, patientId, dateTimeTaken, bloodPressure, urineTest, symptoms, referral, 
                         followUp, dateRecheckVitalsNeeded, isFlaggedForFollowUp, previousReadingIds, 
                         metadata, isUploadedToServer
                     FROM Reading_backup;
                     """.trimIndent()
                 )
+
+                execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_Reading_readingId` ON `Reading` (`readingId`)")
+                execSQL("CREATE INDEX IF NOT EXISTS `index_Reading_patientId` ON `Reading` (`patientId`)")
 
                 execSQL("DROP TABLE Reading_backup;")
             }
