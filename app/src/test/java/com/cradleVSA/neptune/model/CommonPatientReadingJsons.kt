@@ -76,7 +76,8 @@ object CommonPatientReadingJsons {
                 "dateReferred": 1605753210
             },
             "followup": null,
-            "urineTests": null
+            "urineTests": null,
+            "userId": 12
         },
         {
             "readingId": "777850f0-dc71-4501-a440-1871ecea6381",
@@ -95,7 +96,8 @@ object CommonPatientReadingJsons {
             "isFlaggedForFollowup": false,
             "referral": null,
             "followup": null,
-            "urineTests": null
+            "urineTests": null,
+            "userId": 12
         }
     ]
 }
@@ -144,6 +146,7 @@ object CommonPatientReadingJsons {
                     ),
                     followUp = null,
                     urineTest = null,
+                    userId = 12
                 ),
                 Reading(
                     bloodPressure = BloodPressure(
@@ -161,7 +164,8 @@ object CommonPatientReadingJsons {
                     referral = null,
                     isFlaggedForFollowUp = false,
                     urineTest = null,
-                    previousReadingIds = listOf()
+                    previousReadingIds = listOf(),
+                    userId = 12
                 )
             )
         )
@@ -269,7 +273,8 @@ object CommonPatientReadingJsons {
                     dateRecheckVitalsNeeded = null,
                     followUp = null,
                     referral = null,
-                    isFlaggedForFollowUp = false
+                    isFlaggedForFollowUp = false,
+                    userId = null
                 )
             )
         )
@@ -361,7 +366,8 @@ object CommonPatientReadingJsons {
                 "urineTestGlu": "+",
                 "urineTestPro": "++",
                 "urineTestBlood": "+"
-            }
+            },
+            "userId": 12
         }
     ]
 }
@@ -427,7 +433,8 @@ object CommonPatientReadingJsons {
                         protein = "++",
                         blood = "+"
                     ),
-                    dateRecheckVitalsNeeded = 1604981973L
+                    dateRecheckVitalsNeeded = 1604981973L,
+                    userId = 12
                 )
             )
         )
@@ -477,7 +484,8 @@ object CommonPatientReadingJsons {
             "isFlaggedForFollowup": true,
             "referral": null,
             "followup": null,
-            "urineTests": null
+            "urineTests": null,
+            "userId": 1
         }
     ]
 }
@@ -512,7 +520,8 @@ object CommonPatientReadingJsons {
                     isFlaggedForFollowUp = true,
                     referral = null,
                     followUp = null,
-                    urineTest = null
+                    urineTest = null,
+                    userId = 1
                 )
             )
         )

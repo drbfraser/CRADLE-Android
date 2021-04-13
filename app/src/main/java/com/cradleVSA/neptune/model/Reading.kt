@@ -17,6 +17,7 @@ import com.cradleVSA.neptune.ext.jackson.writeBooleanField
 import com.cradleVSA.neptune.ext.jackson.writeIntField
 import com.cradleVSA.neptune.ext.jackson.writeLongField
 import com.cradleVSA.neptune.ext.jackson.writeObjectField
+import com.cradleVSA.neptune.ext.jackson.writeOptIntField
 import com.cradleVSA.neptune.ext.jackson.writeOptLongField
 import com.cradleVSA.neptune.ext.jackson.writeOptObjectField
 import com.cradleVSA.neptune.ext.jackson.writeStringField
@@ -112,6 +113,7 @@ data class Reading(
     @ColumnInfo var metadata: ReadingMetadata = ReadingMetadata(),
     @ColumnInfo var isUploadedToServer: Boolean = false,
     @ColumnInfo var lastEdited: Long,
+    @ColumnInfo var userId: Int?
 ) : Serializable, Verifiable<Reading> {
 
     /**
@@ -179,6 +181,7 @@ data class Reading(
                     previousReadingIds.joinToString(",")
                 )
                 gen.writeLongField(ReadingField.LAST_EDITED, lastEdited)
+                gen.writeOptIntField(ReadingField.USER_ID, userId)
 
                 gen.writeEndObject()
             }
@@ -206,6 +209,7 @@ data class Reading(
                     ?.let { it.nullIfEmpty()?.split(",") }
                     ?: emptyList()
                 val lastEdited = get(ReadingField.LAST_EDITED)!!.longValue()
+                val userId = get(ReadingField.USER_ID)?.intValue()
 
                 val metadata = ReadingMetadata()
 
@@ -222,6 +226,7 @@ data class Reading(
                     dateRecheckVitalsNeeded = dateRecheckVitalsNeeded,
                     isFlaggedForFollowUp = isFlaggedForFollowUp,
                     previousReadingIds = previousReadingIds,
+                    userId = userId,
                     metadata = metadata
                 )
             }
@@ -654,6 +659,7 @@ private enum class ReadingField(override val text: String) : Field {
     IS_FLAGGED_FOR_FOLLOWUP("isFlaggedForFollowup"),
     PREVIOUS_READING_IDS("retestOfPreviousReadingIds"),
     LAST_EDITED("lastEdited"),
+    USER_ID("userId"),
     REFERRAL("referral"),
     FOLLOWUP("followup"),
 }

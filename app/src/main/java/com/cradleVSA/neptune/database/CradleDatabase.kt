@@ -601,7 +601,7 @@ CREATE TABLE IF NOT EXISTS `new_Patient` (
 
     /**
      * Version 12:
-     * Add lastEdited to Reading table
+     * Add lastEdited and userId to Reading table
      */
     private val MIGRATION_11_12 = object : Migration(11, 12) {
         override fun migrate(database: SupportSQLiteDatabase) {
@@ -615,7 +615,7 @@ CREATE TABLE IF NOT EXISTS `new_Patient` (
                         `followUp` TEXT, `dateRecheckVitalsNeeded` INTEGER,
                         `isFlaggedForFollowUp` INTEGER NOT NULL, `previousReadingIds` TEXT NOT NULL,
                         `metadata` TEXT NOT NULL, `isUploadedToServer` INTEGER NOT NULL,
-                        `lastEdited` INTEGER NOT NULL,
+                        `lastEdited` INTEGER NOT NULL, `userId` INTEGER,
                         PRIMARY KEY(`readingId`),
                         FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE
                     )
@@ -638,6 +638,8 @@ CREATE TABLE IF NOT EXISTS `new_Patient` (
                     FROM Reading
                     """.trimIndent()
                 )
+                // Just assume userId null for now; for actual usage, we need to force users to
+                // log out to get the proper userId! (or force a sync somehow)
                 execSQL("DROP TABLE Reading")
                 execSQL("ALTER TABLE new_Reading RENAME TO Reading")
                 execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_Reading_readingId` ON `Reading` (`readingId`)")

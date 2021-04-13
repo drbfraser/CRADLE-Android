@@ -18,8 +18,10 @@ import androidx.test.espresso.idling.CountingIdlingResource
 import com.cradleVSA.neptune.BuildConfig
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.ext.getEnglishResources
+import com.cradleVSA.neptune.ext.getIntOrNull
 import com.cradleVSA.neptune.ext.setValueOnMainThread
 import com.cradleVSA.neptune.ext.withIdlingResource
+import com.cradleVSA.neptune.manager.LoginManager
 import com.cradleVSA.neptune.manager.PatientManager
 import com.cradleVSA.neptune.manager.ReadingManager
 import com.cradleVSA.neptune.manager.ReferralUploadManager
@@ -807,8 +809,9 @@ class PatientReadingViewModel @Inject constructor(
     val urineTestBloodInput = MutableLiveData<String>()
 
     /* Referral Info */
-    private val referral: MutableLiveData<Referral?> =
+    init {
         readingBuilder.get(Reading::referral, defaultValue = null)
+    }
 
     /* Reading Info */
     val readingId: MutableLiveData<String> =
@@ -823,6 +826,14 @@ class PatientReadingViewModel @Inject constructor(
 
     val metadata: MutableLiveData<ReadingMetadata> =
         readingBuilder.get(Reading::metadata, ReadingMetadata())
+
+    init {
+        // Populate the builder with the current user's userId if there is none present.
+        readingBuilder.get(
+            Reading::userId,
+            defaultValue = sharedPreferences.getIntOrNull(LoginManager.USER_ID_KEY)
+        )
+    }
 
     /**
      * Describes the age input state. If the value inside is true, that means that age is derived

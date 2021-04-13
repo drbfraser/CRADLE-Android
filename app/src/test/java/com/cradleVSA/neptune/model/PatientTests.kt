@@ -114,7 +114,9 @@ class PatientTests {
                 followUp = null,
                 urineTest = null,
                 dateRecheckVitalsNeeded = null,
-                isFlaggedForFollowUp = false
+                isFlaggedForFollowUp = false,
+                isUploadedToServer = false,
+                userId = 1
             )
         }
 
