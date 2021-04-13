@@ -153,7 +153,8 @@ class UrlManager @Inject constructor(val settings: Settings) {
      */
     fun getAssessmentById(id: String): String = "$base/assessments/$id"
 
-    val userPatientAssociation = "$base/patientAssociations"
+    val userPatientAssociation: String
+        get() = "$base/patientAssociations"
 
     companion object {
         private const val TAG = "UrlManager"
