@@ -461,6 +461,8 @@
     <string name="preference_region_summary">The country or region you are working in.</string>
     <string name="preference_name_title">Your name</string>
     <string name="preference_name_summary">No name entered</string>
+    <string name="preference_role_title">Your role</string>
+    <string name="preference_role_summary">No role available</string>
     <string name="health_facilities_activity_title">My health facilities</string>
     <string name="health_facilities_activity_add_to_list_dialog_message">Add this facility to your list?</string>
     <string name="health_facilities_activity_remove_from_list_dialog_message">Remove this facility from your list?</string>
