@@ -107,6 +107,7 @@ class PatientTests {
                 id = id,
                 patientId = patientId,
                 dateTimeTaken = 123,
+                lastEdited = 123,
                 bloodPressure = BloodPressure(110, 80, 70),
                 symptoms = emptyList(),
                 referral = null,

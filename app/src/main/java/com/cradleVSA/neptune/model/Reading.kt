@@ -104,17 +104,14 @@ data class Reading(
     @ColumnInfo var bloodPressure: BloodPressure,
     @ColumnInfo var urineTest: UrineTest?,
     @ColumnInfo var symptoms: List<String>,
-
     @ColumnInfo var referral: Referral?,
     @ColumnInfo var followUp: Assessment?,
-
     @ColumnInfo var dateRecheckVitalsNeeded: Long?,
     @ColumnInfo var isFlaggedForFollowUp: Boolean,
-
     @ColumnInfo var previousReadingIds: List<String> = emptyList(),
-
     @ColumnInfo var metadata: ReadingMetadata = ReadingMetadata(),
-    @ColumnInfo var isUploadedToServer: Boolean = false
+    @ColumnInfo var isUploadedToServer: Boolean = false,
+    @ColumnInfo var lastEdited: Long,
 ) : Serializable, Verifiable<Reading> {
 
     /**
@@ -181,6 +178,7 @@ data class Reading(
                     ReadingField.PREVIOUS_READING_IDS,
                     previousReadingIds.joinToString(",")
                 )
+                gen.writeLongField(ReadingField.LAST_EDITED, lastEdited)
 
                 gen.writeEndObject()
             }
@@ -203,16 +201,19 @@ data class Reading(
                     ?.longValue()
                 val isFlaggedForFollowUp = get(ReadingField.IS_FLAGGED_FOR_FOLLOWUP)
                     ?.booleanValue() ?: false
-                val previousReadingIds = get(ReadingField.PREVIOUS_READING_IDS.text)
+                val previousReadingIds = get(ReadingField.PREVIOUS_READING_IDS)
                     ?.textValue()
                     ?.let { it.nullIfEmpty()?.split(",") }
                     ?: emptyList()
+                val lastEdited = get(ReadingField.LAST_EDITED)!!.longValue()
+
                 val metadata = ReadingMetadata()
 
                 return@run Reading(
                     id = readingId,
                     patientId = patientId,
                     dateTimeTaken = dateTimeTaken,
+                    lastEdited = lastEdited,
                     bloodPressure = bloodPressure,
                     urineTest = urineTest,
                     symptoms = symptoms,
@@ -652,6 +653,7 @@ private enum class ReadingField(override val text: String) : Field {
     DATE_RECHECK_VITALS_NEEDED("dateRecheckVitalsNeeded"),
     IS_FLAGGED_FOR_FOLLOWUP("isFlaggedForFollowup"),
     PREVIOUS_READING_IDS("retestOfPreviousReadingIds"),
+    LAST_EDITED("lastEdited"),
     REFERRAL("referral"),
     FOLLOWUP("followup"),
 }

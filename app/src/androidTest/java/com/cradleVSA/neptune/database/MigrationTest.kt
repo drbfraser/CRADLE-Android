@@ -350,6 +350,7 @@ class MigrationTests {
             id = readingId,
             patientId = patientId,
             dateTimeTaken = unixTime,
+            lastEdited = unixTime,
             bloodPressure = BloodPressure(110, 70, 65),
             urineTest = UrineTest("+", "++", "NAD", "NAD", "NAD"),
             symptoms = listOf("headache", "blurred vision", "pain"),
