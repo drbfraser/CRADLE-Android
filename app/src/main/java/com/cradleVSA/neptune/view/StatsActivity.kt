@@ -29,6 +29,8 @@ import com.cradleVSA.neptune.manager.HealthFacilityManager
 import com.cradleVSA.neptune.manager.ReadingManager
 import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.Statistics
+import com.cradleVSA.neptune.model.UserRole
+import com.cradleVSA.neptune.model.UserRole.*
 import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.net.Success
 import com.cradleVSA.neptune.utilitiles.BarGraphValueFormatter
@@ -201,6 +203,31 @@ class StatsActivity : AppCompatActivity() {
         val statsForMeButton = dialogView.findViewById<RadioButton>(R.id.statFilterDialog_userIDButton)
         val allStatsButton = dialogView.findViewById<RadioButton>(R.id.statFilterDialog_showAllButton)
         val facilityButton = dialogView.findViewById<RadioButton>(R.id.statFilterDialog_healthFacilityButton)
+
+        // Button enable/disable based on role:
+        val roleString = sharedPreferences.getString(getString(R.string.key_role), VHT.toString())
+        roleString?.let{
+            when (UserRole.safeValueOf(it)) {
+                VHT -> {
+                    allStatsButton.isEnabled = false
+                    facilityButton.isEnabled = false
+                }
+                CHO -> {
+                    allStatsButton.isEnabled = false
+                }
+                HCW -> {
+                    allStatsButton.isEnabled = false
+                }
+                UNKNOWN -> {
+                    healthTextView.text = getString(R.string.stats_activity_unknown_role)
+                    healthTextView.setTextColor(Color.RED)
+                    healthTextView.visibility = View.VISIBLE
+                }
+                else -> {
+                    // Leave them all open for ADMIN.
+                }
+            }
+        }
 
         healthFacilityLayout.visibility = View.GONE
         healthTextView.visibility = View.GONE

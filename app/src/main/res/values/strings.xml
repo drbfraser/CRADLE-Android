@@ -266,6 +266,7 @@
     <string name="stats_activity_filter_byFacilityID">Show statistics for a health facility</string>
     <string name="stats_activity_api_call_failed">An error occurred when getting statistics from the server. Please try again later.</string>
     <string name="stats_activity_pickFacility_header">Choose a health facility.</string>
+    <string name="stats_activity_unknown_role">Unable to parse your permissions level. This may cause statistics retrieval to fail.</string>
     <string name="video_activity_header">CRADLE VSA Training Video</string>
     <string name="video_activity_app_credits">App developed by Team Neptune</string>
     <string name="camera_fragment_instructions_header">Hold the phone steady and take photo of CRADLE VSA reading</string>

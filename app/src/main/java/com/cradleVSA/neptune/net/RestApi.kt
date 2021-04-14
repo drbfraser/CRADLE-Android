@@ -22,12 +22,6 @@ import com.cradleVSA.neptune.model.Referral
 import com.cradleVSA.neptune.sync.PatientSyncField
 import com.cradleVSA.neptune.sync.ReadingSyncField
 import com.cradleVSA.neptune.sync.SyncWorker
-import com.cradleVSA.neptune.model.Referral
-import com.cradleVSA.neptune.sync.PatientSyncField
-import com.cradleVSA.neptune.sync.ReadingSyncField
-import com.cradleVSA.neptune.sync.SyncWorker
-import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
-import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper.createWriter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.channels.SendChannel
