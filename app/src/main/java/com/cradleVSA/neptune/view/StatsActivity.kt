@@ -7,11 +7,8 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
-import android.widget.ImageButton
-import android.widget.ListAdapter
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
@@ -20,21 +17,16 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
-import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import com.cradleVSA.neptune.R
-import com.cradleVSA.neptune.databinding.ActivityStatsBinding
-import com.cradleVSA.neptune.databinding.ReferralDialogBinding
 import com.cradleVSA.neptune.manager.HealthFacilityManager
 import com.cradleVSA.neptune.manager.ReadingManager
 import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.Statistics
 import com.cradleVSA.neptune.model.UserRole
-import com.cradleVSA.neptune.model.UserRole.*
 import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.net.Success
 import com.cradleVSA.neptune.utilitiles.BarGraphValueFormatter
-import com.cradleVSA.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity
 import com.cradleVSA.neptune.viewmodel.StatsViewModel
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.BarData
@@ -64,8 +56,8 @@ class StatsActivity : AppCompatActivity() {
     @Suppress("MagicNumber")
     val msecInSec = 1000L // This is the conversion value.
 
-    var filterOptionsCheckedItem: statisticsFilterOptions =
-        statisticsFilterOptions.filterOptionsFilterUser
+    var filterOptionsCheckedItem: StatisticsFilterOptions =
+        StatisticsFilterOptions.JUSTME
     var filterOptionsSavedFacility: HealthFacility? = null
     lateinit var headerTextPrefix: String
     lateinit var headerText: String
@@ -95,24 +87,37 @@ class StatsActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val statsHeaderTv = findViewById<TextView>(R.id.textView32)
             when (filterOptionsCheckedItem) {
-                statisticsFilterOptions.filterOptionsFilterUser -> {
+                StatisticsFilterOptions.JUSTME -> {
                     statsHeaderTv.text = getString(R.string.stats_activity_I_made_header, headerTextPrefix)
                 }
-                statisticsFilterOptions.filterOptionsFilterByFacility -> {
-                    statsHeaderTv.text = getString(R.string.stats_activity_facility_header, headerTextPrefix, filterOptionsSavedFacility?.name)
+                StatisticsFilterOptions.BYFACILITY -> {
+                    statsHeaderTv.text = getString(
+                        R.string.stats_activity_facility_header,
+                        headerTextPrefix,
+                        filterOptionsSavedFacility?.name
+                    )
                 }
-                statisticsFilterOptions.filterOptionsShowAll -> {
+                StatisticsFilterOptions.ALL -> {
                     statsHeaderTv.text = getString(R.string.stats_activity_all_header, headerTextPrefix)
                 }
             }
-            statsData = viewModel.getStatsData(filterOptionsCheckedItem, startTimeEpoch, endTimeEpoch, filterOptionsSavedFacility)
+            statsData = viewModel.getStatsData(
+                filterOptionsCheckedItem,
+                startTimeEpoch,
+                endTimeEpoch,
+                filterOptionsSavedFacility
+            )
             statsData?.let {
                 if (it is Success) {
                     setupBasicStats(it.value)
                     setupBarChart(it.value)
                 } else {
                     finish()
-                    Toast.makeText(applicationContext, getString(R.string.stats_activity_api_call_failed), Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        applicationContext,
+                        getString(R.string.stats_activity_api_call_failed),
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
         }
@@ -169,11 +174,13 @@ class StatsActivity : AppCompatActivity() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_stats_filter_picker, null)
         builder.setView(dialogView)
 
-        val healthFacilityPicker = dialogView.findViewById<AutoCompleteTextView>(R.id.health_facility_auto_complete_text)
+        val healthFacilityPicker = dialogView.findViewById<AutoCompleteTextView>(
+            R.id.health_facility_auto_complete_text
+        )
         val healthFacilityLayout = dialogView.findViewById<TextInputLayout>(R.id.health_facility_input_layout)
         val healthTextView = dialogView.findViewById<TextView>(R.id.filterPickerTextView)
 
-        var tmpCheckedItem = statisticsFilterOptions.filterOptionsFilterUser
+        var tmpCheckedItem = StatisticsFilterOptions.JUSTME
         var tmpHealthFacility: HealthFacility? = null
 
         // Ignore any changes on "cancel"
@@ -183,12 +190,12 @@ class StatsActivity : AppCompatActivity() {
             // (and reload only if we are saving a new option):
 
             if (tmpCheckedItem != filterOptionsCheckedItem) {
-                if (tmpCheckedItem == statisticsFilterOptions.filterOptionsFilterByFacility) {
+                if (tmpCheckedItem == StatisticsFilterOptions.BYFACILITY) {
                     filterOptionsSavedFacility = tmpHealthFacility
                 }
                 filterOptionsCheckedItem = tmpCheckedItem
                 onResume()
-            } else if (tmpCheckedItem == statisticsFilterOptions.filterOptionsFilterByFacility) {
+            } else if (tmpCheckedItem == StatisticsFilterOptions.BYFACILITY) {
                 if (tmpHealthFacility?.name != filterOptionsSavedFacility?.name) {
                     // If user has selected a different health facility after previously
                     // viewing another health facility:
@@ -205,20 +212,20 @@ class StatsActivity : AppCompatActivity() {
         val facilityButton = dialogView.findViewById<RadioButton>(R.id.statFilterDialog_healthFacilityButton)
 
         // Button enable/disable based on role:
-        val roleString = sharedPreferences.getString(getString(R.string.key_role), VHT.toString())
-        roleString?.let{
+        val roleString = sharedPreferences.getString(getString(R.string.key_role), UserRole.VHT.toString())
+        roleString?.let {
             when (UserRole.safeValueOf(it)) {
-                VHT -> {
+                UserRole.VHT -> {
                     allStatsButton.isEnabled = false
                     facilityButton.isEnabled = false
                 }
-                CHO -> {
+                UserRole.CHO -> {
                     allStatsButton.isEnabled = false
                 }
-                HCW -> {
+                UserRole.HCW -> {
                     allStatsButton.isEnabled = false
                 }
-                UNKNOWN -> {
+                UserRole.UNKNOWN -> {
                     healthTextView.text = getString(R.string.stats_activity_unknown_role)
                     healthTextView.setTextColor(Color.RED)
                     healthTextView.visibility = View.VISIBLE
@@ -234,8 +241,14 @@ class StatsActivity : AppCompatActivity() {
         val healthFacilityArray: List<HealthFacility>
         runBlocking {
             healthFacilityArray = healthFacilityManager.getAllSelectedByUser()
-            val facilityStringArray = healthFacilityArray.map{it.name}.toTypedArray()
-            healthFacilityPicker.setAdapter(ArrayAdapter<String>(this@StatsActivity, R.layout.support_simple_spinner_dropdown_item, facilityStringArray))
+            val facilityStringArray = healthFacilityArray.map { it.name }.toTypedArray()
+            healthFacilityPicker.setAdapter(
+                ArrayAdapter<String>(
+                    this@StatsActivity,
+                    R.layout.support_simple_spinner_dropdown_item,
+                    facilityStringArray
+                )
+            )
             healthFacilityPicker.setOnItemClickListener { _, _: View, position: Int, _: Long ->
                 tmpHealthFacility = healthFacilityArray[position]
                 dialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = true
@@ -251,17 +264,17 @@ class StatsActivity : AppCompatActivity() {
                     dialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = false
                     healthFacilityLayout.visibility = View.VISIBLE
                     healthTextView.visibility = View.VISIBLE
-                    tmpCheckedItem = statisticsFilterOptions.filterOptionsFilterByFacility
+                    tmpCheckedItem = StatisticsFilterOptions.BYFACILITY
                 }
                 R.id.statFilterDialog_showAllButton -> {
                     healthFacilityLayout.visibility = View.GONE
                     healthTextView.visibility = View.GONE
-                    tmpCheckedItem = statisticsFilterOptions.filterOptionsShowAll
+                    tmpCheckedItem = StatisticsFilterOptions.ALL
                 }
                 R.id.statFilterDialog_userIDButton -> {
                     healthFacilityLayout.visibility = View.GONE
                     healthTextView.visibility = View.GONE
-                    tmpCheckedItem = statisticsFilterOptions.filterOptionsFilterUser
+                    tmpCheckedItem = StatisticsFilterOptions.JUSTME
                 }
             }
         }
@@ -344,8 +357,8 @@ class StatsActivity : AppCompatActivity() {
     }
 }
 
-enum class statisticsFilterOptions {
-    filterOptionsShowAll,
-    filterOptionsFilterUser,
-    filterOptionsFilterByFacility
+enum class StatisticsFilterOptions {
+    ALL,
+    JUSTME,
+    BYFACILITY
 }

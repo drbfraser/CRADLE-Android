@@ -7,36 +7,47 @@ import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.Statistics
 import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.net.RestApi
-import com.cradleVSA.neptune.view.statisticsFilterOptions
+import com.cradleVSA.neptune.view.StatisticsFilterOptions
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class StatsViewModel @Inject constructor(
     private val restApi: RestApi
-): ViewModel() {
+) : ViewModel() {
     @Inject
     lateinit var sharedPreferences: SharedPreferences
     private var statsData: NetworkResult<Statistics>? = null
     private var lastStartTime: Long = 0
     private var lastEndTime: Long = 0
-    private var lastFilterOptions = statisticsFilterOptions.filterOptionsShowAll
+    private var lastFilterOptions = StatisticsFilterOptions.ALL
     private var lastHealthFacility: HealthFacility? = null
 
-    suspend fun getStatsData(filterOptions: statisticsFilterOptions, startTime: Long, endTime: Long,
-        savedFacility: HealthFacility?): NetworkResult<Statistics>? {
-        if ((filterOptions == lastFilterOptions)  && (startTime == lastStartTime)
-            && (endTime == lastEndTime) && (statsData != null)) {
-                if ((filterOptions == statisticsFilterOptions.filterOptionsFilterByFacility) && (lastHealthFacility?.name == savedFacility?.name)) {
-                        return statsData
+    suspend fun getStatsData(
+        filterOptions: StatisticsFilterOptions,
+        startTime: Long,
+        endTime: Long,
+        savedFacility: HealthFacility?
+    ): NetworkResult<Statistics>? {
+        if ((filterOptions == lastFilterOptions) && (startTime == lastStartTime) &&
+            (endTime == lastEndTime)
+        ) {
+            statsData?.let {
+                if (filterOptions == StatisticsFilterOptions.BYFACILITY) {
+                    if (lastHealthFacility?.name == savedFacility?.name) {
+                        return it
+                    }
+                } else {
+                    return it
                 }
+            }
         }
         when (filterOptions) {
-            statisticsFilterOptions.filterOptionsShowAll -> {
+            StatisticsFilterOptions.ALL -> {
                 // Get all stats:
                 statsData = restApi.getAllStatisticsBetween(startTime, endTime)
             }
-            statisticsFilterOptions.filterOptionsFilterUser -> {
+            StatisticsFilterOptions.JUSTME -> {
                 // Get stats for the current user ID:
                 // TODO: Determine a sane failure value for USER_ID_KEY
                 statsData = restApi.getStatisticsForUserBetween(
@@ -48,7 +59,7 @@ class StatsViewModel @Inject constructor(
                     )
                 )
             }
-            statisticsFilterOptions.filterOptionsFilterByFacility -> {
+            StatisticsFilterOptions.BYFACILITY -> {
                 // Get stats for the currently saved Facility:
                 statsData = null
                 savedFacility?.let {
