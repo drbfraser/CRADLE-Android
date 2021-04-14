@@ -1,5 +1,6 @@
 package com.cradleVSA.neptune.view
 
+import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
@@ -8,8 +9,6 @@ import androidx.lifecycle.lifecycleScope
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.manager.LoginManager
 import com.cradleVSA.neptune.manager.VersionManager
-import com.cradleVSA.neptune.net.NetworkResult
-import com.cradleVSA.neptune.net.RestApi
 import com.cradleVSA.neptune.utilitiles.SharedPreferencesMigration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
@@ -27,6 +26,8 @@ class SplashActivity : AppCompatActivity() {
 
     @Inject
     lateinit var versionManager: VersionManager
+
+    val DEFAULT_VERSION_MAJOR: Int = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,8 +47,7 @@ class SplashActivity : AppCompatActivity() {
             }
 
             delay(DELAY_MILLIS)
-            val version = versionManager.getAPIVersion()
-            Log.d("************API VERSION", version.toString())
+            getVersionInfo(this@SplashActivity)
 
             val intent = if (isMigrationSuccessful) {
                 LoginActivity.makeIntent(this@SplashActivity, shouldDisplayMessage = false)
@@ -63,6 +63,23 @@ class SplashActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
         }
+    }
+
+    suspend fun getVersionInfo(activity: SplashActivity) {
+        val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE) ?: return
+        val currentVersion = sharedPref.getInt(getString(R.string.key_version_major), DEFAULT_VERSION_MAJOR)
+        Log.d("************API Current", currentVersion.toString())
+        val version = versionManager.getAPIVersion()
+
+        val versionMajor = version.unwrapped?.version.toString().split(".")[0]
+        Log.d("************API VERSION", versionMajor)
+        with (sharedPref.edit()) {
+            putInt(getString(R.string.key_version_major), versionMajor.toInt())
+            apply()
+        }
+
+        Log.d("************API VERSION", version.toString())
+        Log.d("************API VERSION", version.unwrapped?.version.toString())
     }
 
     companion object {
