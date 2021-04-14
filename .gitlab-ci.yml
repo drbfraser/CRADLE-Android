@@ -8,7 +8,7 @@ before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
 
 # Cache Gradle files.
-cache:
+cache: &global_cache
   key: global-cache
   paths:
     - .gradle/wrapper/
@@ -73,6 +73,9 @@ validate_database_json:
 # Run local unit tests
 test:
   stage: test
+  cache:
+    <<: *global_cache
+    policy: pull
   script:
     - ./gradlew test
   rules:
