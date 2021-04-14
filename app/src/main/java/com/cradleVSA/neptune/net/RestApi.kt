@@ -22,6 +22,12 @@ import com.cradleVSA.neptune.model.Referral
 import com.cradleVSA.neptune.sync.PatientSyncField
 import com.cradleVSA.neptune.sync.ReadingSyncField
 import com.cradleVSA.neptune.sync.SyncWorker
+import com.cradleVSA.neptune.model.Referral
+import com.cradleVSA.neptune.sync.PatientSyncField
+import com.cradleVSA.neptune.sync.ReadingSyncField
+import com.cradleVSA.neptune.sync.SyncWorker
+import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
+import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper.createWriter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.channels.SendChannel
@@ -487,6 +493,7 @@ class RestApi constructor(
      * server sends back will be parsed and sent through [readingChannel], [referralChannel], and
      * [assessmentChannel]. Note that the server response includes [Reading]s in [readingsToUpload];
      * by downloading them again, that is how we eventually set [Reading.isUploadedToServer].
+<<<<<<< HEAD
      *
      * The channels will have parsed information passed into them. Only one channel will be
      * populated at a time, since the parsing is sequential. When finishing parsing one array in the
@@ -498,6 +505,19 @@ class RestApi constructor(
      * The order of the focusing (and thus closing) is [readingChannel], then [referralChannel],
      * then [assessmentChannel]. (We're following the API response order.)
      *
+=======
+     *
+     * The channels will have parsed information passed into them. Only one channel will be
+     * populated at a time, since the parsing is sequential. When finishing parsing one array in the
+     * JSON, the current channel will close and the next channel will be the focus. Progress
+     * reporting is done by [reportProgressBlock] (first parameter is number of total items
+     * downloaded, second is number of items in total; items is the sum of readings, referrals, and
+     * assessments).
+     *
+     * The order of the focusing (and thus closing) is [readingChannel], then [referralChannel],
+     * then [assessmentChannel]. (We're following the API response order.)
+     *
+>>>>>>> master
      * Any of the Channels will be failed (see [SendChannel.close]) if [Failure] or
      * [NetworkException] is returned, so using any of the Channels can result in a [SyncException]
      * that should be caught by anything handling the Channels.
