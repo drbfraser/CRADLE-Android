@@ -2,10 +2,14 @@ package com.cradleVSA.neptune.view
 
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.manager.LoginManager
+import com.cradleVSA.neptune.manager.VersionManager
+import com.cradleVSA.neptune.net.NetworkResult
+import com.cradleVSA.neptune.net.RestApi
 import com.cradleVSA.neptune.utilitiles.SharedPreferencesMigration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
@@ -21,9 +25,14 @@ class SplashActivity : AppCompatActivity() {
     @Inject
     lateinit var sharedPreferences: SharedPreferences
 
+    @Inject
+    lateinit var versionManager: VersionManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
+
+
         val isMigrationSuccessful = if (loginManager.isLoggedIn()) {
             SharedPreferencesMigration(sharedPreferences).migrate()
         } else {
@@ -31,11 +40,14 @@ class SplashActivity : AppCompatActivity() {
         }
 
         lifecycleScope.launch {
+
             if (!isMigrationSuccessful) {
                 loginManager.logout()
             }
 
             delay(DELAY_MILLIS)
+            val version = versionManager.getAPIVersion()
+            Log.d("************API VERSION", version.toString())
 
             val intent = if (isMigrationSuccessful) {
                 LoginActivity.makeIntent(this@SplashActivity, shouldDisplayMessage = false)
@@ -47,6 +59,7 @@ class SplashActivity : AppCompatActivity() {
                     displayMessageBodyRes = R.string.logout_due_to_error_dialog_message
                 )
             }
+
             startActivity(intent)
             finish()
         }
