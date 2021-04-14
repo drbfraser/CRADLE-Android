@@ -20,6 +20,8 @@ import com.cradleVSA.neptune.sync.ReadingSyncField
 import com.cradleVSA.neptune.sync.SyncWorker
 import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
 import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper.createWriter
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.channels.SendChannel
@@ -532,6 +534,22 @@ class RestApi constructor(
             }
         }
     }
+
+    suspend fun getAPIVersion(): NetworkResult<Version> =
+        withContext(IO) {
+            http.makeRequest(
+                method = Http.Method.GET,
+                url = urlManager.apiVersion,
+                headers =  headers,
+                inputStreamReader = {JacksonMapper.mapper.readValue(it)}
+            )
+        }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class Version(
+        @JsonProperty("version")
+        val version: String
+    )
 
     /**
      * The common headers used for most API requests.
