@@ -48,7 +48,7 @@ class UrlManager @Inject constructor(val settings: Settings) {
      * endpoint for getting the backend's version in semantic versioning
      */
     val apiVersion: String
-        get() = "$base/api/version"
+        get() = "$base/version"
 
     /**
      * The base server URL.
