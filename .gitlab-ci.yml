@@ -18,7 +18,7 @@ cache: &global_cache
 code_analysis:
   stage: build
   rules:
-    - if: '$CI_PIPELINE_SOURCE != "schedule"'
+    - if: '$CI_PIPELINE_SOURCE != "schedule" && $CI_MERGE_REQUEST_ID == null'
   script:
     - ./gradlew detekt
 
@@ -26,7 +26,7 @@ code_analysis:
 build:
   stage: build
   rules:
-    - if: '$CI_PIPELINE_SOURCE != "schedule"'
+    - if: '$CI_PIPELINE_SOURCE != "schedule" && $CI_MERGE_REQUEST_ID == null'
   script:
     # Remove the current database schema JSON so that it generates a valid one
     - rm app/schemas/com.cradleVSA.neptune.database.CradleDatabase/*.json
@@ -48,7 +48,7 @@ validate_database_json:
   cache: {}
   stage: test
   rules:
-    - if: '$CI_PIPELINE_SOURCE != "schedule"'
+    - if: '$CI_PIPELINE_SOURCE != "schedule" && $CI_MERGE_REQUEST_ID == null'
   needs:
     - job: build
       artifacts: true
@@ -79,7 +79,7 @@ test:
   script:
     - ./gradlew test
   rules:
-    - if: '$CI_PIPELINE_SOURCE != "schedule"'
+    - if: '$CI_PIPELINE_SOURCE != "schedule" && $CI_MERGE_REQUEST_ID == null'
   artifacts:
     expire_in: 1 hour
     reports:
