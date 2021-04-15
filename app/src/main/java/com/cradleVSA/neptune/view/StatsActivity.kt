@@ -58,11 +58,6 @@ class StatsActivity : AppCompatActivity() {
     lateinit var headerTextPrefix: String
     lateinit var headerText: String
 
-
-    // var endTimeEpoch: Long = System.currentTimeMillis() / msecInSec
-    // @Suppress("MagicNumber")
-    // var startTimeEpoch: Long = endTimeEpoch - 2592000L // 30 days in seconds
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_stats)
@@ -74,10 +69,10 @@ class StatsActivity : AppCompatActivity() {
 
         headerTextPrefix = getString(com.cradleVSA.neptune.R.string.stats_activity_month_string)
         headerText = getString(com.cradleVSA.neptune.R.string.stats_activity_I_made_header, headerTextPrefix)
+        updateUi()
     }
 
-    override fun onResume() {
-        super.onResume()
+     fun updateUi() {
         lifecycleScope.launch {
             val statsHeaderTv = findViewById<TextView>(R.id.textView32)
             statsHeaderTv.text = when (viewModel.currentFilterOption) {
@@ -85,7 +80,7 @@ class StatsActivity : AppCompatActivity() {
                     getString(R.string.stats_activity_I_made_header, headerTextPrefix)
                 }
                 StatisticsFilterOptions.BYFACILITY -> {
-                     getString(
+                    getString(
                         R.string.stats_activity_facility_header,
                         headerTextPrefix,
                         viewModel.currentHealthFacility?.name
@@ -145,7 +140,7 @@ class StatsActivity : AppCompatActivity() {
                         R.string.stats_activity_epoch_string,
                         TimeUnit.SECONDS.toDays((viewModel.endTime.subtract(viewModel.startTime)).toLong())
                     )
-                    onResume()
+                    updateUi()
                 }
                 rangePicker.show(supportFragmentManager, rangePicker.toString())
                 return true
@@ -187,13 +182,13 @@ class StatsActivity : AppCompatActivity() {
                     viewModel.currentHealthFacility = tmpHealthFacility
                 }
                 viewModel.currentFilterOption = tmpCheckedItem
-                onResume()
+                updateUi()
             } else if (tmpCheckedItem == StatisticsFilterOptions.BYFACILITY) {
                 if (tmpHealthFacility?.name != viewModel.currentHealthFacility?.name) {
                     // If user has selected a different health facility after previously
                     // viewing another health facility:
                     viewModel.currentHealthFacility = tmpHealthFacility
-                    onResume()
+                    updateUi()
                 }
             }
         }
