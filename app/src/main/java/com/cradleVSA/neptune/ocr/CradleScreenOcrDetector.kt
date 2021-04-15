@@ -97,7 +97,7 @@ class CradleScreenOcrDetector(ctx: Context) : Closeable {
 
         // Filter list of results by:
         // .. confidence %
-        processed.removeIf { it.confidence < MINIMUM_CONFIDENCE }
+        processed.filter { it.confidence >= MINIMUM_CONFIDENCE }
         if (processed.size > 1) {
             val actualMiddle = imageHeight / 2
             val yClosestToCentre = processed
