@@ -24,7 +24,6 @@ import com.cradleVSA.neptune.manager.ReadingManager
 import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.Statistics
 import com.cradleVSA.neptune.model.UserRole
-import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.net.Success
 import com.cradleVSA.neptune.utilitiles.BarGraphValueFormatter
 import com.cradleVSA.neptune.viewmodel.StatsViewModel
@@ -37,9 +36,13 @@ import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.math.BigInteger
 import java.util.ArrayList
+import java.util.Calendar.MILLISECOND
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.math.floor
+import kotlin.time.milliseconds
 
 @Suppress("LargeClass")
 @AndroidEntryPoint
@@ -51,23 +54,14 @@ class StatsActivity : AppCompatActivity() {
     @Inject
     lateinit var healthFacilityManager: HealthFacilityManager
     private val viewModel: StatsViewModel by viewModels()
-    var statsData: NetworkResult<Statistics>? = null
 
-    @Suppress("MagicNumber")
-    val msecInSec = 1000L // This is the conversion value.
-
-    var filterOptionsCheckedItem: StatisticsFilterOptions =
-        StatisticsFilterOptions.JUSTME
-    var filterOptionsSavedFacility: HealthFacility? = null
     lateinit var headerTextPrefix: String
     lateinit var headerText: String
 
-    // TODO: discuss what the initial values of the date range should be.
-    // These currently correspond to right now in MS, and current time minus 30 days in MS
-    @Suppress("MagicNumber")
-    var endTimeEpoch: Long = System.currentTimeMillis() / msecInSec
-    @Suppress("MagicNumber")
-    var startTimeEpoch: Long = endTimeEpoch - 2592000L // 30 days in seconds
+
+    // var endTimeEpoch: Long = System.currentTimeMillis() / msecInSec
+    // @Suppress("MagicNumber")
+    // var startTimeEpoch: Long = endTimeEpoch - 2592000L // 30 days in seconds
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -86,28 +80,22 @@ class StatsActivity : AppCompatActivity() {
         super.onResume()
         lifecycleScope.launch {
             val statsHeaderTv = findViewById<TextView>(R.id.textView32)
-            when (filterOptionsCheckedItem) {
+            statsHeaderTv.text = when (viewModel.currentFilterOption) {
                 StatisticsFilterOptions.JUSTME -> {
-                    statsHeaderTv.text = getString(R.string.stats_activity_I_made_header, headerTextPrefix)
+                    getString(R.string.stats_activity_I_made_header, headerTextPrefix)
                 }
                 StatisticsFilterOptions.BYFACILITY -> {
-                    statsHeaderTv.text = getString(
+                     getString(
                         R.string.stats_activity_facility_header,
                         headerTextPrefix,
-                        filterOptionsSavedFacility?.name
+                        viewModel.currentHealthFacility?.name
                     )
                 }
                 StatisticsFilterOptions.ALL -> {
-                    statsHeaderTv.text = getString(R.string.stats_activity_all_header, headerTextPrefix)
+                    getString(R.string.stats_activity_all_header, headerTextPrefix)
                 }
             }
-            statsData = viewModel.getStatsData(
-                filterOptionsCheckedItem,
-                startTimeEpoch,
-                endTimeEpoch,
-                filterOptionsSavedFacility
-            )
-            statsData?.let {
+            viewModel.getStatsData()?.let {
                 if (it is Success) {
                     setupBasicStats(it.value)
                     setupBarChart(it.value)
@@ -142,15 +130,14 @@ class StatsActivity : AppCompatActivity() {
                 rangePicker.addOnPositiveButtonClickListener {
                     // rangePicker returns values in msec... and the API expects values in seconds.
                     it.first?.let {
-                        startTimeEpoch = it / msecInSec
+                        viewModel.startTime = BigInteger.valueOf(TimeUnit.MILLISECONDS.toSeconds(it))
                     }
                     it.second?.let {
-                        endTimeEpoch = it / msecInSec
+                        viewModel.endTime = BigInteger.valueOf(TimeUnit.MILLISECONDS.toSeconds(it))
                     }
                     headerTextPrefix = getString(
                         R.string.stats_activity_epoch_string,
-                        @Suppress("MagicNumber")
-                        floor(((endTimeEpoch - startTimeEpoch) / 86400).toDouble()).toInt()
+                        TimeUnit.SECONDS.toDays((viewModel.endTime.subtract(viewModel.startTime)).toLong())
                     )
                     onResume()
                 }
@@ -184,22 +171,22 @@ class StatsActivity : AppCompatActivity() {
         var tmpHealthFacility: HealthFacility? = null
 
         // Ignore any changes on "cancel"
-        builder.setNegativeButton("Cancel", null)
-        builder.setPositiveButton("OK") { dialog, which ->
+        builder.setNegativeButton(getString(android.R.string.cancel), null)
+        builder.setPositiveButton(getString(android.R.string.ok)) { _, _ ->
             // OK was clicked, save the choice
             // (and reload only if we are saving a new option):
 
-            if (tmpCheckedItem != filterOptionsCheckedItem) {
+            if (tmpCheckedItem != viewModel.currentFilterOption) {
                 if (tmpCheckedItem == StatisticsFilterOptions.BYFACILITY) {
-                    filterOptionsSavedFacility = tmpHealthFacility
+                    viewModel.currentHealthFacility = tmpHealthFacility
                 }
-                filterOptionsCheckedItem = tmpCheckedItem
+                viewModel.currentFilterOption = tmpCheckedItem
                 onResume()
             } else if (tmpCheckedItem == StatisticsFilterOptions.BYFACILITY) {
-                if (tmpHealthFacility?.name != filterOptionsSavedFacility?.name) {
+                if (tmpHealthFacility?.name != viewModel.currentHealthFacility?.name) {
                     // If user has selected a different health facility after previously
                     // viewing another health facility:
-                    filterOptionsSavedFacility = tmpHealthFacility
+                    viewModel.currentHealthFacility = tmpHealthFacility
                     onResume()
                 }
             }

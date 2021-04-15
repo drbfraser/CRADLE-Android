@@ -223,8 +223,8 @@ class RestApi constructor(
      */
 
     suspend fun getStatisticsForFacilityBetween(
-        date1: Long,
-        date2: Long,
+        date1: BigInteger,
+        date2: BigInteger,
         filterFacility: HealthFacility
     ): NetworkResult<Statistics> =
         withContext(IO) {
@@ -246,8 +246,8 @@ class RestApi constructor(
      */
 
     suspend fun getStatisticsForUserBetween(
-        date1: Long,
-        date2: Long,
+        date1: BigInteger,
+        date2: BigInteger,
         userID: Int
     ): NetworkResult<Statistics> =
         withContext(IO) {
@@ -268,8 +268,8 @@ class RestApi constructor(
      */
 
     suspend fun getAllStatisticsBetween(
-        date1: Long,
-        date2: Long
+        date1: BigInteger,
+        date2: BigInteger
     ): NetworkResult<Statistics> =
         withContext(IO) {
             http.makeRequest(

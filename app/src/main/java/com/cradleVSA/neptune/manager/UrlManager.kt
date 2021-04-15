@@ -128,19 +128,19 @@ class UrlManager @Inject constructor(val settings: Settings) {
     /**
      * Get statistics for a given facility ID between two dates
      */
-    fun getStatisticsForFacilityBetween(date1: Long, date2: Long, filterFacility: String): String =
+    fun getStatisticsForFacilityBetween(date1: BigInteger, date2: BigInteger, filterFacility: String): String =
         "$base/stats/facility/$filterFacility?from=$date1&to=$date2"
 
     /**
      * Get statistics for a given user ID between two dates
      */
-    fun getStatisticsForUserBetween(date1: Long, date2: Long, filterUser: Int): String =
+    fun getStatisticsForUserBetween(date1: BigInteger, date2: BigInteger, filterUser: Int): String =
         "$base/stats/user/$filterUser?from=$date1&to=$date2"
 
     /**
      * Get statistics for all users/facilities between two dates
      */
-    fun getAllStatisticsBetween(date1: Long, date2: Long): String =
+    fun getAllStatisticsBetween(date1: BigInteger, date2: BigInteger): String =
         "$base/stats/all?from=$date1&to=$date2"
 
     /**
