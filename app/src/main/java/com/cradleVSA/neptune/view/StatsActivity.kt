@@ -239,7 +239,16 @@ class StatsActivity : AppCompatActivity() {
         }
 
         val buttonGroup = dialogView.findViewById<RadioGroup>(R.id.statFilterDialog_radioGroup)
-        buttonGroup.check(R.id.statFilterDialog_userIDButton)
+        when (viewModel.currentFilterOption) {
+            StatisticsFilterOptions.ALL -> buttonGroup.check(R.id.statFilterDialog_showAllButton)
+            StatisticsFilterOptions.JUSTME -> buttonGroup.check(R.id.statFilterDialog_userIDButton)
+            StatisticsFilterOptions.BYFACILITY -> {
+                buttonGroup.check(R.id.statFilterDialog_healthFacilityButton)
+                viewModel.currentHealthFacility?.let{
+                    healthFacilityPicker.setSelection(healthFacilityArray.indexOf(it))
+                }
+            }
+        }
 
         buttonGroup.setOnCheckedChangeListener { radioGroup: RadioGroup, checkedID: Int ->
             when (radioGroup.checkedRadioButtonId) {
