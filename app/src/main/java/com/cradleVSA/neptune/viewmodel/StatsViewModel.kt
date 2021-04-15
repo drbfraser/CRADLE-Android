@@ -31,9 +31,15 @@ class StatsViewModel @Inject constructor(
     var currentFilterOption = StatisticsFilterOptions.JUSTME
     var currentHealthFacility: HealthFacility? = null
 
-    fun setStartEndTimes(newStartTime: BigInteger, newEndTime: BigInteger) {
-        startTime = newStartTime
-        endTime = newEndTime
+    // The activity's RangePicker returns values in msec... and the API expects values in seconds.
+    // We must convert incoming msec Longs to seconds BigIntegers.
+    fun setStartEndTimesMsec(newStartTime: Long?, newEndTime: Long?) {
+        newStartTime?.let{
+            startTime = BigInteger.valueOf(TimeUnit.MILLISECONDS.toSeconds(it))
+        }
+        newEndTime?.let{
+            endTime = BigInteger.valueOf(TimeUnit.MILLISECONDS.toSeconds(it))
+        }
     }
 
     suspend fun getStatsData(): NetworkResult<Statistics>? {

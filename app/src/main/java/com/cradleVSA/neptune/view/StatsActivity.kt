@@ -129,12 +129,8 @@ class StatsActivity : AppCompatActivity() {
                 val rangePicker = rangePickerBuilder.build()
                 rangePicker.addOnPositiveButtonClickListener {
                     // rangePicker returns values in msec... and the API expects values in seconds.
-                    it.first?.let {
-                        viewModel.startTime = BigInteger.valueOf(TimeUnit.MILLISECONDS.toSeconds(it))
-                    }
-                    it.second?.let {
-                        viewModel.endTime = BigInteger.valueOf(TimeUnit.MILLISECONDS.toSeconds(it))
-                    }
+                    // Use the viewModel function that expects that behavior.
+                    viewModel.setStartEndTimesMsec(it.first, it.second)
                     headerTextPrefix = getString(
                         R.string.stats_activity_epoch_string,
                         TimeUnit.SECONDS.toDays((viewModel.endTime.subtract(viewModel.startTime)).toLong())
