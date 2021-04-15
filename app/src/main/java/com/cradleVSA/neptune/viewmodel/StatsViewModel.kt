@@ -2,7 +2,6 @@ package com.cradleVSA.neptune.viewmodel
 
 import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
-import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.manager.LoginManager
 import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.Statistics
@@ -25,19 +24,24 @@ class StatsViewModel @Inject constructor(
     private var savedEndTime: BigInteger = BigInteger.valueOf(0)
     private var savedHealthFacility: HealthFacility? = null
     private var savedFilterOption: StatisticsFilterOptions = StatisticsFilterOptions.JUSTME
-
     var endTime: BigInteger = UnixTimestamp.now
-    var startTime: BigInteger = endTime.subtract(BigInteger.valueOf(TimeUnit.DAYS.toSeconds(30)))
+    var startTime: BigInteger = endTime.subtract(
+        BigInteger.valueOf(
+            TimeUnit.DAYS.toSeconds(
+                DEFAULT_NUM_DAYS
+            )
+        )
+    )
     var currentFilterOption = StatisticsFilterOptions.JUSTME
     var currentHealthFacility: HealthFacility? = null
 
     // The activity's RangePicker returns values in msec... and the API expects values in seconds.
     // We must convert incoming msec Longs to seconds BigIntegers.
     fun setStartEndTimesMsec(newStartTime: Long?, newEndTime: Long?) {
-        newStartTime?.let{
+        newStartTime?.let {
             startTime = BigInteger.valueOf(TimeUnit.MILLISECONDS.toSeconds(it))
         }
-        newEndTime?.let{
+        newEndTime?.let {
             endTime = BigInteger.valueOf(TimeUnit.MILLISECONDS.toSeconds(it))
         }
     }
@@ -90,5 +94,9 @@ class StatsViewModel @Inject constructor(
         savedEndTime = endTime
         savedFilterOption = currentFilterOption
         return savedStatsData
+    }
+
+    companion object {
+        const val DEFAULT_NUM_DAYS = 30L
     }
 }

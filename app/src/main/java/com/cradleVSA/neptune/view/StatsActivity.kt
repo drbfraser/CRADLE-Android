@@ -36,13 +36,9 @@ import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import java.math.BigInteger
 import java.util.ArrayList
-import java.util.Calendar.MILLISECOND
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import kotlin.math.floor
-import kotlin.time.milliseconds
 
 @Suppress("LargeClass")
 @AndroidEntryPoint
@@ -55,8 +51,8 @@ class StatsActivity : AppCompatActivity() {
     lateinit var healthFacilityManager: HealthFacilityManager
     private val viewModel: StatsViewModel by viewModels()
 
-    lateinit var headerTextPrefix: String
-    lateinit var headerText: String
+    private lateinit var headerTextPrefix: String
+    private lateinit var headerText: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,12 +63,12 @@ class StatsActivity : AppCompatActivity() {
             supportActionBar!!.title = getString(R.string.dashboard_statistics)
         }
 
-        headerTextPrefix = getString(com.cradleVSA.neptune.R.string.stats_activity_month_string)
-        headerText = getString(com.cradleVSA.neptune.R.string.stats_activity_I_made_header, headerTextPrefix)
+        headerTextPrefix = getString(R.string.stats_activity_month_string)
+        headerText = getString(R.string.stats_activity_I_made_header, headerTextPrefix)
         updateUi()
     }
 
-     fun updateUi() {
+    private fun updateUi() {
         lifecycleScope.launch {
             val statsHeaderTv = findViewById<TextView>(R.id.textView32)
             statsHeaderTv.text = when (viewModel.currentFilterOption) {
@@ -195,7 +191,6 @@ class StatsActivity : AppCompatActivity() {
 
         val dialog = builder.create()
 
-        val statsForMeButton = dialogView.findViewById<RadioButton>(R.id.statFilterDialog_userIDButton)
         val allStatsButton = dialogView.findViewById<RadioButton>(R.id.statFilterDialog_showAllButton)
         val facilityButton = dialogView.findViewById<RadioButton>(R.id.statFilterDialog_healthFacilityButton)
 
@@ -232,7 +227,7 @@ class StatsActivity : AppCompatActivity() {
 
             val facilityStringArray = healthFacilityArray.map { it.name }.toTypedArray()
             healthFacilityPicker.setAdapter(
-                ArrayAdapter<String>(
+                ArrayAdapter(
                     this@StatsActivity,
                     R.layout.support_simple_spinner_dropdown_item,
                     facilityStringArray
@@ -245,7 +240,7 @@ class StatsActivity : AppCompatActivity() {
 
             // If we have already set a health facility previously, set it as selected
             // if it is in the list of selected health facilities:
-            viewModel.currentHealthFacility?.let{
+            viewModel.currentHealthFacility?.let {
                 // False here means do not filter other values in the dropdown
                 // based on what we setText to...
                 healthFacilityPicker.setText(it.name, false)
@@ -265,7 +260,7 @@ class StatsActivity : AppCompatActivity() {
             }
         }
 
-        buttonGroup.setOnCheckedChangeListener { radioGroup: RadioGroup, checkedID: Int ->
+        buttonGroup.setOnCheckedChangeListener { radioGroup: RadioGroup, _: Int ->
             when (radioGroup.checkedRadioButtonId) {
                 R.id.statFilterDialog_healthFacilityButton -> {
                     dialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = false
