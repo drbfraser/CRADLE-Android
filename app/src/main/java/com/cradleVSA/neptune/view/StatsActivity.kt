@@ -163,8 +163,8 @@ class StatsActivity : AppCompatActivity() {
         val healthFacilityLayout = dialogView.findViewById<TextInputLayout>(R.id.health_facility_input_layout)
         val healthTextView = dialogView.findViewById<TextView>(R.id.filterPickerTextView)
 
-        var tmpCheckedItem = StatisticsFilterOptions.JUSTME
-        var tmpHealthFacility: HealthFacility? = null
+        var tmpCheckedItem = viewModel.currentFilterOption
+        var tmpHealthFacility: HealthFacility? = viewModel.currentHealthFacility
 
         // Ignore any changes on "cancel"
         builder.setNegativeButton(getString(android.R.string.cancel), null)
@@ -224,6 +224,7 @@ class StatsActivity : AppCompatActivity() {
         val healthFacilityArray: List<HealthFacility>
         runBlocking {
             healthFacilityArray = healthFacilityManager.getAllSelectedByUser()
+
             val facilityStringArray = healthFacilityArray.map { it.name }.toTypedArray()
             healthFacilityPicker.setAdapter(
                 ArrayAdapter<String>(
@@ -236,6 +237,16 @@ class StatsActivity : AppCompatActivity() {
                 tmpHealthFacility = healthFacilityArray[position]
                 dialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = true
             }
+
+            // If we have already set a health facility previously, set it as selected
+            // if it is in the list of selected health facilities:
+            viewModel.currentHealthFacility?.let{
+                // False here means do not filter other values in the dropdown
+                // based on what we setText to...
+                healthFacilityPicker.setText(it.name, false)
+                // tmpHealthFacility is already set to viewModel.currentHealthFacility
+                // so pressing "OK" essentially has no effect.
+            }
         }
 
         val buttonGroup = dialogView.findViewById<RadioGroup>(R.id.statFilterDialog_radioGroup)
@@ -244,9 +255,8 @@ class StatsActivity : AppCompatActivity() {
             StatisticsFilterOptions.JUSTME -> buttonGroup.check(R.id.statFilterDialog_userIDButton)
             StatisticsFilterOptions.BYFACILITY -> {
                 buttonGroup.check(R.id.statFilterDialog_healthFacilityButton)
-                viewModel.currentHealthFacility?.let{
-                    healthFacilityPicker.setSelection(healthFacilityArray.indexOf(it))
-                }
+                healthFacilityLayout.visibility = View.VISIBLE
+                healthTextView.visibility = View.VISIBLE
             }
         }
 
