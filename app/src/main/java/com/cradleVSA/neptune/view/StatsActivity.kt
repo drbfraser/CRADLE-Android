@@ -107,6 +107,16 @@ class StatsActivity : AppCompatActivity() {
                         Toast.LENGTH_LONG
                     ).show()
                 }
+            } ?: run {
+                // Getting stats data from the
+                // viewModel returned null, somehow.
+                // Display the same error as above to the user.
+                finish()
+                Toast.makeText(
+                    applicationContext,
+                    getString(R.string.stats_activity_api_call_failed),
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     }
