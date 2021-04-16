@@ -71,10 +71,15 @@ class SplashActivity : AppCompatActivity() {
         Log.d("************API Current", currentVersion.toString())
         val version = versionManager.getAPIVersion()
 
-        val versionMajor = version.unwrapped?.version.toString().split(".")[0]
-        Log.d("************API VERSION", versionMajor)
+        val versionMajor = version.unwrapped?.version.toString().split(".")[0].toInt()
+
+        if (versionMajor > currentVersion) {
+            forceUpdate()
+        }
+
+        Log.d("************API VERSION", versionMajor.toString())
         with (sharedPref.edit()) {
-            putInt(getString(R.string.key_version_major), versionMajor.toInt())
+            putInt(getString(R.string.key_version_major), versionMajor)
             apply()
         }
 
@@ -82,7 +87,13 @@ class SplashActivity : AppCompatActivity() {
         Log.d("************API VERSION", version.unwrapped?.version.toString())
     }
 
+    private fun forceUpdate() {
+        TODO("Not yet implemented")
+    }
+
     companion object {
         private const val DELAY_MILLIS = 100L
     }
+
+
 }
