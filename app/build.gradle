@@ -106,7 +106,6 @@ android {
     }
 
     compileOptions {
-        coreLibraryDesugaringEnabled true
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
@@ -133,7 +132,6 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
 
     def camerax_version = "1.1.0-alpha03"
     // CameraX core library using camera2 implementation
@@ -184,6 +182,10 @@ dependencies {
 
     def okhttp_version = "4.9.1"
     implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
+
+    // Time: Backport of Java 8's interfaces for Android
+    // https://github.com/JakeWharton/ThreeTenABP
+    implementation 'com.jakewharton.threetenabp:threetenabp:1.2.4'
 
     // TensorFlow (for OCR of CRADLE screen)
     // implementation 'org.tensorflow:tensorflow-lite:0.0.0-nightly'
