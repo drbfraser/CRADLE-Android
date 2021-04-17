@@ -33,13 +33,9 @@ class UpdateManager @Inject constructor(
                 && appUpdateInfo.updatePriority() >= 5
             ) {
                 appUpdateManager.startUpdateFlowForResult(
-                    // Pass the intent that is returned by 'getAppUpdateInfo()'.
                     appUpdateInfo,
-                    // Or 'AppUpdateType.FLEXIBLE' for flexible updates.
                     AppUpdateType.IMMEDIATE,
-                    // The current activity making the update request.
                     activity,
-                    // Include a request code to later monitor this update request.
                     MY_REQUEST_CODE)
 
             }
@@ -50,8 +46,6 @@ class UpdateManager @Inject constructor(
         if (requestCode == MY_REQUEST_CODE) {
             if (resultCode != RESULT_OK) {
                 Toast.makeText(context, "Update failed", Toast.LENGTH_SHORT).show()
-                // If the update is cancelled or fails,
-                // you can request to start the update again.
             }
         }
     }
