@@ -14,7 +14,6 @@ import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.lifecycle.lifecycleScope
@@ -36,7 +35,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.math.BigInteger
 import java.util.ArrayList
 import java.util.concurrent.TimeUnit
@@ -67,25 +65,21 @@ class StatsActivity : AppCompatActivity() {
 
         headerTextPrefix = getString(R.string.stats_activity_month_string)
         headerText = getString(R.string.stats_activity_I_made_header, headerTextPrefix)
-        updateUi(viewModel.savedFilterOption, viewModel.savedHealthFacility, viewModel.savedStartTime, viewModel.savedEndTime)
+        updateUi(
+            viewModel.savedFilterOption,
+            viewModel.savedHealthFacility,
+            viewModel.savedStartTime,
+            viewModel.savedEndTime
+        )
     }
 
-    private fun updateUi(filterOption: StatisticsFilterOptions, newFacility: HealthFacility?, startTime: BigInteger, endTime: BigInteger) {
+    private fun updateUi(
+        filterOption: StatisticsFilterOptions,
+        newFacility: HealthFacility?,
+        startTime: BigInteger,
+        endTime: BigInteger
+    ) {
         lifecycleScope.launch {
-            viewModel.getStatsData(filterOption, newFacility, startTime, endTime).let {
-                if (it is Success) {
-                    setupBasicStats(it.value)
-                    setupBarChart(it.value)
-                } else {
-                    finish()
-                    Toast.makeText(
-                        applicationContext,
-                        getString(R.string.stats_activity_api_call_failed),
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-            }
-
             val statsHeaderTv = findViewById<TextView>(R.id.textView32)
             statsHeaderTv.text = when (filterOption) {
                 StatisticsFilterOptions.JUSTME -> {
@@ -100,6 +94,19 @@ class StatsActivity : AppCompatActivity() {
                 }
                 StatisticsFilterOptions.ALL -> {
                     getString(R.string.stats_activity_all_header, headerTextPrefix)
+                }
+            }
+            viewModel.getStatsData(filterOption, newFacility, startTime, endTime).let {
+                if (it is Success) {
+                    setupBasicStats(it.value)
+                    setupBarChart(it.value)
+                } else {
+                    finish()
+                    Toast.makeText(
+                        applicationContext,
+                        getString(R.string.stats_activity_api_call_failed),
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
         }
@@ -123,7 +130,7 @@ class StatsActivity : AppCompatActivity() {
                 rangePicker.addOnPositiveButtonClickListener { startEndPair ->
                     // rangePicker returns values in msec... and the API expects values in seconds.
                     // We must convert incoming msec Longs to seconds BigIntegers.
-                    startEndPair?.let { startEndPairNotNull->
+                    startEndPair?.let { startEndPairNotNull ->
                         val endDate =
                             TimeUnit.MILLISECONDS.toSeconds(startEndPairNotNull.first!!).toBigInteger()
                         val startDate =
@@ -131,7 +138,7 @@ class StatsActivity : AppCompatActivity() {
                         headerTextPrefix = getString(
                             R.string.stats_activity_epoch_string,
                             TimeUnit.SECONDS.toDays((startDate.subtract(endDate)).toLong())
-                            )
+                        )
                         updateUi(viewModel.savedFilterOption, viewModel.savedHealthFacility, startDate, endDate)
                     }
                 }
@@ -174,7 +181,12 @@ class StatsActivity : AppCompatActivity() {
                 if (tmpCheckedItem == StatisticsFilterOptions.BYFACILITY) {
                     updateUi(tmpCheckedItem, tmpHealthFacility, viewModel.savedStartTime, viewModel.savedEndTime)
                 } else {
-                    updateUi(tmpCheckedItem, viewModel.savedHealthFacility, viewModel.savedStartTime, viewModel.savedEndTime)
+                    updateUi(
+                        tmpCheckedItem,
+                        viewModel.savedHealthFacility,
+                        viewModel.savedStartTime,
+                        viewModel.savedEndTime
+                    )
                 }
             } else if (tmpCheckedItem == StatisticsFilterOptions.BYFACILITY) {
                 if (tmpHealthFacility?.name != viewModel.savedHealthFacility?.name) {

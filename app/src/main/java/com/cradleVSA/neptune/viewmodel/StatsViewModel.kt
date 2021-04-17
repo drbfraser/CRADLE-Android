@@ -33,7 +33,12 @@ class StatsViewModel @Inject constructor(
         private set
     private lateinit var healthFacilityArray: List<HealthFacility>
 
-    suspend fun getStatsData(filterOption: StatisticsFilterOptions, newFacility: HealthFacility?, startTime: BigInteger, endTime: BigInteger): NetworkResult<Statistics>? {
+    suspend fun getStatsData(
+        filterOption: StatisticsFilterOptions,
+        newFacility: HealthFacility?,
+        startTime: BigInteger,
+        endTime: BigInteger
+    ): NetworkResult<Statistics>? {
         if ((filterOption == savedFilterOption) && (startTime == savedStartTime) &&
             (endTime == savedEndTime)
         ) {
