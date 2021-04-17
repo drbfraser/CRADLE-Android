@@ -275,11 +275,13 @@ class StatsActivity : AppCompatActivity() {
                     tmpCheckedItem = StatisticsFilterOptions.BYFACILITY
                 }
                 R.id.statFilterDialog_showAllButton -> {
+                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = true
                     healthFacilityLayout.visibility = View.GONE
                     healthTextView.visibility = View.GONE
                     tmpCheckedItem = StatisticsFilterOptions.ALL
                 }
                 R.id.statFilterDialog_userIDButton -> {
+                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = true
                     healthFacilityLayout.visibility = View.GONE
                     healthTextView.visibility = View.GONE
                     tmpCheckedItem = StatisticsFilterOptions.JUSTME
