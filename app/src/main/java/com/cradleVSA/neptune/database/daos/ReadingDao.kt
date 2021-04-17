@@ -136,9 +136,6 @@ interface ReadingDao {
     @Query("DELETE FROM Reading")
     suspend fun deleteAllReading()
 
-    /**
-     * set dateRecheckVitalsNeeded field to null
-     */
     @Query("UPDATE Reading SET lastEdited = :lastEdited WHERE readingId = :readingId")
     suspend fun setLastEdited(readingId: String, lastEdited: Long)
 
