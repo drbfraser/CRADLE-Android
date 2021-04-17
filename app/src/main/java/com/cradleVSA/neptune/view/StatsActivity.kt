@@ -142,8 +142,8 @@ class StatsActivity : AppCompatActivity() {
                             TimeUnit.MILLISECONDS.toSeconds(startEndPairNotNull.second!!).toBigInteger()
                         headerTextPrefix = getString(
                             R.string.stats_activity_epoch_string,
-                            DateUtil.getDateStringFromTimestamp(startDate.toLong()),
-                            DateUtil.getDateStringFromTimestamp(endDate.toLong())
+                            DateUtil.getDateStringFromUTCTimestamp(startDate.toLong()),
+                            DateUtil.getDateStringFromUTCTimestamp(endDate.toLong())
                         )
                         updateUi(viewModel.savedFilterOption, viewModel.savedHealthFacility, startDate, endDate)
                     }

@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.TimeZone;
 
 public class DateUtil {
 
@@ -101,6 +102,15 @@ public class DateUtil {
      */
     public static String getDateStringFromTimestamp(long timestamp) {
         ZonedDateTime dateFromTimestamp = getZoneTimeFromLong(timestamp);
+        return dateFromTimestamp.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+    }
+
+    /**
+     * @param UTCTimestamp Unix timestamp in the UTC time zone.
+     * @return A date for the given timestamp in yyyy-mm-dd format.
+     */
+    public static String getDateStringFromUTCTimestamp(long UTCTimestamp) {
+        ZonedDateTime dateFromTimestamp = ZonedDateTime.ofInstant(Instant.ofEpochSecond(UTCTimestamp), ZoneId.of("UTC"));
         return dateFromTimestamp.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
     }
 
