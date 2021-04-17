@@ -9,6 +9,7 @@ import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.database.CradleDatabase
 import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.PatientAndReadings
+import com.cradleVSA.neptune.model.UserRole
 import com.cradleVSA.neptune.net.Failure
 import com.cradleVSA.neptune.net.NetworkException
 import com.cradleVSA.neptune.net.NetworkResult
@@ -95,14 +96,25 @@ class LoginManager @Inject constructor(
             // If we failed to login, return immediately
             val loginResult = restApi.authenticate(email, password)
             if (loginResult is Success) {
-                val (token, userId) = loginResult.value.token to loginResult.value.userId
-                val name = loginResult.value.firstName?.nullIfEmpty()
-
+                val loginResponse = loginResult.value
                 sharedPreferences.edit(commit = true) {
-                    putString(TOKEN_KEY, token)
-                    putInt(USER_ID_KEY, userId)
-                    putString(EMAIL_KEY, email)
-                    putString(context.getString(R.string.key_vht_name), name)
+                    putString(TOKEN_KEY, loginResponse.token)
+                    putInt(USER_ID_KEY, loginResponse.userId)
+                    putString(EMAIL_KEY, loginResponse.email)
+                    putString(
+                        context.getString(R.string.key_vht_name),
+                        loginResponse.firstName?.nullIfEmpty()
+                    )
+
+                    if (UserRole.safeValueOf(loginResponse.role) == UserRole.UNKNOWN) {
+                        Log.w(TAG, "server returned unrecognized role ${loginResponse.role}")
+                    }
+                    // Put the role in as-is anyway
+                    putString(
+                        context.getString(R.string.key_role),
+                        loginResponse.role
+                    )
+
                     putInt(
                         SharedPreferencesMigration.KEY_SHARED_PREFERENCE_VERSION,
                         SharedPreferencesMigration.LATEST_SHARED_PREF_VERSION
