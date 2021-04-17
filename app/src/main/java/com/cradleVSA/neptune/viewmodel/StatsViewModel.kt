@@ -2,6 +2,7 @@ package com.cradleVSA.neptune.viewmodel
 
 import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
+import com.cradleVSA.neptune.manager.HealthFacilityManager
 import com.cradleVSA.neptune.manager.LoginManager
 import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.Statistics
@@ -10,6 +11,7 @@ import com.cradleVSA.neptune.net.RestApi
 import com.cradleVSA.neptune.utilitiles.UnixTimestamp
 import com.cradleVSA.neptune.view.StatisticsFilterOptions
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.runBlocking
 import java.math.BigInteger
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -17,7 +19,8 @@ import javax.inject.Inject
 @HiltViewModel
 class StatsViewModel @Inject constructor(
     private val restApi: RestApi,
-    private val sharedPreferences: SharedPreferences
+    private val sharedPreferences: SharedPreferences,
+    private val healthFacilityManager: HealthFacilityManager
 ) : ViewModel() {
     private var savedStatsData: NetworkResult<Statistics>? = null
     var savedEndTime: BigInteger = UnixTimestamp.now
@@ -28,6 +31,7 @@ class StatsViewModel @Inject constructor(
         private set
     var savedFilterOption: StatisticsFilterOptions = StatisticsFilterOptions.JUSTME
         private set
+    private lateinit var healthFacilityArray: List<HealthFacility>
 
     suspend fun getStatsData(filterOption: StatisticsFilterOptions, newFacility: HealthFacility?, startTime: BigInteger, endTime: BigInteger): NetworkResult<Statistics>? {
         if ((filterOption == savedFilterOption) && (startTime == savedStartTime) &&
@@ -77,6 +81,16 @@ class StatsViewModel @Inject constructor(
         savedFilterOption = filterOption
         return savedStatsData
     }
+
+    // Lazy-init for selected health facilities.
+    fun getHealthFacilityArray(): List<HealthFacility> =
+        runBlocking {
+            if (!this@StatsViewModel::healthFacilityArray.isInitialized) {
+                healthFacilityArray =
+                    healthFacilityManager.getAllSelectedByUser()
+            }
+            healthFacilityArray
+        }
 
     companion object {
         const val DEFAULT_NUM_DAYS = 30L

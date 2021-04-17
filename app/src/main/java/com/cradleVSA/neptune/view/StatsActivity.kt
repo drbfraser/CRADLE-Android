@@ -32,6 +32,7 @@ import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -71,7 +72,7 @@ class StatsActivity : AppCompatActivity() {
 
     private fun updateUi(filterOption: StatisticsFilterOptions, newFacility: HealthFacility?, startTime: BigInteger, endTime: BigInteger) {
         lifecycleScope.launch {
-            viewModel.getStatsData(filterOption, newFacility, startTime, endTime)?.let {
+            viewModel.getStatsData(filterOption, newFacility, startTime, endTime).let {
                 if (it is Success) {
                     setupBasicStats(it.value)
                     setupBarChart(it.value)
@@ -83,16 +84,6 @@ class StatsActivity : AppCompatActivity() {
                         Toast.LENGTH_LONG
                     ).show()
                 }
-            } ?: run {
-                // Getting stats data from the
-                // viewModel returned null, somehow.
-                // Display the same error as above to the user.
-                finish()
-                Toast.makeText(
-                    applicationContext,
-                    getString(R.string.stats_activity_api_call_failed),
-                    Toast.LENGTH_LONG
-                ).show()
             }
 
             val statsHeaderTv = findViewById<TextView>(R.id.textView32)
@@ -128,8 +119,7 @@ class StatsActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.stats_time_picker -> {
-                val rangePickerBuilder = MaterialDatePicker.Builder.dateRangePicker()
-                val rangePicker = rangePickerBuilder.build()
+                val rangePicker = MaterialDatePicker.Builder.dateRangePicker().build()
                 rangePicker.addOnPositiveButtonClickListener { startEndPair ->
                     // rangePicker returns values in msec... and the API expects values in seconds.
                     // We must convert incoming msec Longs to seconds BigIntegers.
@@ -159,7 +149,7 @@ class StatsActivity : AppCompatActivity() {
     }
 
     private fun setupFilterDialog() {
-        val builder = AlertDialog.Builder(this@StatsActivity)
+        val builder = MaterialAlertDialogBuilder(this@StatsActivity)
         builder.setTitle(getString(R.string.stats_activity_filter_header))
 
         val dialogView = layoutInflater.inflate(R.layout.dialog_stats_filter_picker, null)
@@ -227,32 +217,29 @@ class StatsActivity : AppCompatActivity() {
 
         healthFacilityLayout.visibility = View.GONE
         healthTextView.visibility = View.GONE
-        val healthFacilityArray: List<HealthFacility>
-        runBlocking {
-            healthFacilityArray = healthFacilityManager.getAllSelectedByUser()
+        val healthFacilityArray = viewModel.getHealthFacilityArray()
 
-            val facilityStringArray = healthFacilityArray.map { it.name }.toTypedArray()
-            healthFacilityPicker.setAdapter(
-                ArrayAdapter(
-                    this@StatsActivity,
-                    R.layout.support_simple_spinner_dropdown_item,
-                    facilityStringArray
-                )
+        val facilityStringArray = healthFacilityArray.map { it.name }.toTypedArray()
+        healthFacilityPicker.setAdapter(
+            ArrayAdapter(
+                this@StatsActivity,
+                R.layout.support_simple_spinner_dropdown_item,
+                facilityStringArray
             )
-            healthFacilityPicker.setOnItemClickListener { _, _: View, position: Int, _: Long ->
-                tmpHealthFacility = healthFacilityArray[position]
-                dialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = true
-            }
+        )
+        healthFacilityPicker.setOnItemClickListener { _, _: View, position: Int, _: Long ->
+            tmpHealthFacility = healthFacilityArray[position]
+            dialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = true
+        }
 
-            // If we have already set a health facility previously, set it as selected
-            // if it is in the list of selected health facilities:
-            viewModel.savedHealthFacility?.let {
-                // False here means do not filter other values in the dropdown
-                // based on what we setText to...
-                healthFacilityPicker.setText(it.name, false)
-                // tmpHealthFacility is already set to viewModel.savedHealthFacility
-                // so pressing "OK" essentially has no effect.
-            }
+        // If we have already set a health facility previously, set it as selected
+        // if it is in the list of selected health facilities:
+        viewModel.savedHealthFacility?.let {
+            // False here means do not filter other values in the dropdown
+            // based on what we setText to...
+            healthFacilityPicker.setText(it.name, false)
+            // tmpHealthFacility is already set to viewModel.savedHealthFacility
+            // so pressing "OK" essentially has no effect.
         }
 
         val buttonGroup = dialogView.findViewById<RadioGroup>(R.id.statFilterDialog_radioGroup)
