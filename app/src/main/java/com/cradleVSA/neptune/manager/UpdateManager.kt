@@ -1,20 +1,12 @@
 package com.cradleVSA.neptune.manager
 
-import android.app.Activity
 import android.app.Activity.RESULT_OK
 import android.content.Context
-import android.content.SharedPreferences
 import android.widget.Toast
-import com.cradleVSA.neptune.database.CradleDatabase
-import com.cradleVSA.neptune.net.RestApi
 import com.cradleVSA.neptune.view.SplashActivity
-import com.google.android.play.core.appupdate.AppUpdateInfo
-import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
-import com.google.android.play.core.appupdate.AppUpdateOptions
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.UpdateAvailability
-import dagger.hilt.android.qualifiers.ActivityContext
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
@@ -28,16 +20,16 @@ class UpdateManager @Inject constructor(
 
     fun immediateUpdate(activity: SplashActivity) {
         appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
-            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
-                && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)
-                && appUpdateInfo.updatePriority() >= 5
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
+                appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE) &&
+                appUpdateInfo.updatePriority() >= 5
             ) {
                 appUpdateManager.startUpdateFlowForResult(
                     appUpdateInfo,
                     AppUpdateType.IMMEDIATE,
                     activity,
-                    MY_REQUEST_CODE)
-
+                    MY_REQUEST_CODE
+                )
             }
         }
     }
@@ -50,4 +42,3 @@ class UpdateManager @Inject constructor(
         }
     }
 }
-
