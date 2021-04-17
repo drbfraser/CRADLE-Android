@@ -8,7 +8,6 @@ import com.cradleVSA.neptune.ext.jackson.parseObjectArray
 import com.cradleVSA.neptune.manager.LoginManager
 import com.cradleVSA.neptune.manager.LoginResponse
 import com.cradleVSA.neptune.manager.UrlManager
-import com.cradleVSA.neptune.manager.VersionManager
 import com.cradleVSA.neptune.model.Assessment
 import com.cradleVSA.neptune.model.GlobalPatient
 import com.cradleVSA.neptune.model.HealthFacility

@@ -13,7 +13,6 @@ import javax.inject.Inject
 class UpdateManager @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
-
     private val appUpdateManager = AppUpdateManagerFactory.create(context)
     private val appUpdateInfoTask = appUpdateManager.appUpdateInfo
     private val MY_REQUEST_CODE = 1
