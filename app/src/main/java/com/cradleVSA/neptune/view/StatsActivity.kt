@@ -36,6 +36,7 @@ import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.math.BigInteger
 import java.util.ArrayList
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -65,28 +66,12 @@ class StatsActivity : AppCompatActivity() {
 
         headerTextPrefix = getString(R.string.stats_activity_month_string)
         headerText = getString(R.string.stats_activity_I_made_header, headerTextPrefix)
-        updateUi()
+        updateUi(viewModel.savedFilterOption, viewModel.savedHealthFacility, viewModel.savedStartTime, viewModel.savedEndTime)
     }
 
-    private fun updateUi() {
+    private fun updateUi(filterOption: StatisticsFilterOptions, newFacility: HealthFacility?, startTime: BigInteger, endTime: BigInteger) {
         lifecycleScope.launch {
-            val statsHeaderTv = findViewById<TextView>(R.id.textView32)
-            statsHeaderTv.text = when (viewModel.currentFilterOption) {
-                StatisticsFilterOptions.JUSTME -> {
-                    getString(R.string.stats_activity_I_made_header, headerTextPrefix)
-                }
-                StatisticsFilterOptions.BYFACILITY -> {
-                    getString(
-                        R.string.stats_activity_facility_header,
-                        headerTextPrefix,
-                        viewModel.currentHealthFacility?.name
-                    )
-                }
-                StatisticsFilterOptions.ALL -> {
-                    getString(R.string.stats_activity_all_header, headerTextPrefix)
-                }
-            }
-            viewModel.getStatsData()?.let {
+            viewModel.getStatsData(filterOption, newFacility, startTime, endTime)?.let {
                 if (it is Success) {
                     setupBasicStats(it.value)
                     setupBarChart(it.value)
@@ -109,6 +94,23 @@ class StatsActivity : AppCompatActivity() {
                     Toast.LENGTH_LONG
                 ).show()
             }
+
+            val statsHeaderTv = findViewById<TextView>(R.id.textView32)
+            statsHeaderTv.text = when (filterOption) {
+                StatisticsFilterOptions.JUSTME -> {
+                    getString(R.string.stats_activity_I_made_header, headerTextPrefix)
+                }
+                StatisticsFilterOptions.BYFACILITY -> {
+                    getString(
+                        R.string.stats_activity_facility_header,
+                        headerTextPrefix,
+                        viewModel.savedHealthFacility?.name
+                    )
+                }
+                StatisticsFilterOptions.ALL -> {
+                    getString(R.string.stats_activity_all_header, headerTextPrefix)
+                }
+            }
         }
     }
 
@@ -130,13 +132,18 @@ class StatsActivity : AppCompatActivity() {
                 val rangePicker = rangePickerBuilder.build()
                 rangePicker.addOnPositiveButtonClickListener {
                     // rangePicker returns values in msec... and the API expects values in seconds.
-                    // Use the viewModel function that expects that behavior.
-                    viewModel.setStartEndTimesMsec(it.first, it.second)
-                    headerTextPrefix = getString(
-                        R.string.stats_activity_epoch_string,
-                        TimeUnit.SECONDS.toDays((viewModel.endTime.subtract(viewModel.startTime)).toLong())
-                    )
-                    updateUi()
+                    // We must convert incoming msec Longs to seconds BigIntegers.
+                    it?.let {
+                        val endDate =
+                            BigInteger.valueOf(TimeUnit.MILLISECONDS.toSeconds(it.first!!))
+                        val startDate =
+                            BigInteger.valueOf(TimeUnit.MILLISECONDS.toSeconds(it.second!!))
+                        headerTextPrefix = getString(
+                            R.string.stats_activity_epoch_string,
+                            TimeUnit.SECONDS.toDays((startDate.subtract(endDate)).toLong())
+                            )
+                        updateUi(viewModel.savedFilterOption, viewModel.savedHealthFacility, startDate, endDate)
+                    }
                 }
                 rangePicker.show(supportFragmentManager, rangePicker.toString())
                 return true
@@ -164,8 +171,8 @@ class StatsActivity : AppCompatActivity() {
         val healthFacilityLayout = dialogView.findViewById<TextInputLayout>(R.id.health_facility_input_layout)
         val healthTextView = dialogView.findViewById<TextView>(R.id.filterPickerTextView)
 
-        var tmpCheckedItem = viewModel.currentFilterOption
-        var tmpHealthFacility: HealthFacility? = viewModel.currentHealthFacility
+        var tmpCheckedItem = viewModel.savedFilterOption
+        var tmpHealthFacility: HealthFacility? = viewModel.savedHealthFacility
 
         // Ignore any changes on "cancel"
         builder.setNegativeButton(getString(android.R.string.cancel), null)
@@ -173,18 +180,17 @@ class StatsActivity : AppCompatActivity() {
             // OK was clicked, save the choice
             // (and reload only if we are saving a new option):
 
-            if (tmpCheckedItem != viewModel.currentFilterOption) {
+            if (tmpCheckedItem != viewModel.savedFilterOption) {
                 if (tmpCheckedItem == StatisticsFilterOptions.BYFACILITY) {
-                    viewModel.currentHealthFacility = tmpHealthFacility
+                    updateUi(tmpCheckedItem, tmpHealthFacility, viewModel.savedStartTime, viewModel.savedEndTime)
+                } else {
+                    updateUi(tmpCheckedItem, viewModel.savedHealthFacility, viewModel.savedStartTime, viewModel.savedEndTime)
                 }
-                viewModel.currentFilterOption = tmpCheckedItem
-                updateUi()
             } else if (tmpCheckedItem == StatisticsFilterOptions.BYFACILITY) {
-                if (tmpHealthFacility?.name != viewModel.currentHealthFacility?.name) {
+                if (tmpHealthFacility?.name != viewModel.savedHealthFacility?.name) {
                     // If user has selected a different health facility after previously
                     // viewing another health facility:
-                    viewModel.currentHealthFacility = tmpHealthFacility
-                    updateUi()
+                    updateUi(tmpCheckedItem, tmpHealthFacility, viewModel.savedStartTime, viewModel.savedEndTime)
                 }
             }
         }
@@ -240,17 +246,17 @@ class StatsActivity : AppCompatActivity() {
 
             // If we have already set a health facility previously, set it as selected
             // if it is in the list of selected health facilities:
-            viewModel.currentHealthFacility?.let {
+            viewModel.savedHealthFacility?.let {
                 // False here means do not filter other values in the dropdown
                 // based on what we setText to...
                 healthFacilityPicker.setText(it.name, false)
-                // tmpHealthFacility is already set to viewModel.currentHealthFacility
+                // tmpHealthFacility is already set to viewModel.savedHealthFacility
                 // so pressing "OK" essentially has no effect.
             }
         }
 
         val buttonGroup = dialogView.findViewById<RadioGroup>(R.id.statFilterDialog_radioGroup)
-        when (viewModel.currentFilterOption) {
+        when (viewModel.savedFilterOption) {
             StatisticsFilterOptions.ALL -> buttonGroup.check(R.id.statFilterDialog_showAllButton)
             StatisticsFilterOptions.JUSTME -> buttonGroup.check(R.id.statFilterDialog_userIDButton)
             StatisticsFilterOptions.BYFACILITY -> {

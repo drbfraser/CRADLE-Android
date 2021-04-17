@@ -20,39 +20,28 @@ class StatsViewModel @Inject constructor(
     private val sharedPreferences: SharedPreferences
 ) : ViewModel() {
     private var savedStatsData: NetworkResult<Statistics>? = null
-    private var savedStartTime: BigInteger = BigInteger.valueOf(0)
-    private var savedEndTime: BigInteger = BigInteger.valueOf(0)
-    private var savedHealthFacility: HealthFacility? = null
-    private var savedFilterOption: StatisticsFilterOptions = StatisticsFilterOptions.JUSTME
-    var endTime: BigInteger = UnixTimestamp.now
-    var startTime: BigInteger = endTime.subtract(
+    var savedEndTime: BigInteger = UnixTimestamp.now
+        private set
+    var savedStartTime: BigInteger = savedEndTime.subtract(
         BigInteger.valueOf(
             TimeUnit.DAYS.toSeconds(
                 DEFAULT_NUM_DAYS
             )
         )
     )
-    var currentFilterOption = StatisticsFilterOptions.JUSTME
-    var currentHealthFacility: HealthFacility? = null
+        private set
+    var savedHealthFacility: HealthFacility? = null
+        private set
+    var savedFilterOption: StatisticsFilterOptions = StatisticsFilterOptions.JUSTME
+        private set
 
-    // The activity's RangePicker returns values in msec... and the API expects values in seconds.
-    // We must convert incoming msec Longs to seconds BigIntegers.
-    fun setStartEndTimesMsec(newStartTime: Long?, newEndTime: Long?) {
-        newStartTime?.let {
-            startTime = BigInteger.valueOf(TimeUnit.MILLISECONDS.toSeconds(it))
-        }
-        newEndTime?.let {
-            endTime = BigInteger.valueOf(TimeUnit.MILLISECONDS.toSeconds(it))
-        }
-    }
-
-    suspend fun getStatsData(): NetworkResult<Statistics>? {
-        if ((currentFilterOption == savedFilterOption) && (startTime == savedStartTime) &&
+    suspend fun getStatsData(filterOption: StatisticsFilterOptions, newFacility: HealthFacility?, startTime: BigInteger, endTime: BigInteger): NetworkResult<Statistics>? {
+        if ((filterOption == savedFilterOption) && (startTime == savedStartTime) &&
             (endTime == savedEndTime)
         ) {
             savedStatsData?.let {
                 if (savedFilterOption == StatisticsFilterOptions.BYFACILITY) {
-                    if (currentHealthFacility?.name == savedHealthFacility?.name) {
+                    if (newFacility?.name == savedHealthFacility?.name) {
                         return it
                     }
                 } else {
@@ -60,7 +49,7 @@ class StatsViewModel @Inject constructor(
                 }
             }
         }
-        when (currentFilterOption) {
+        when (filterOption) {
             StatisticsFilterOptions.ALL -> {
                 // Get all stats:
                 savedStatsData = restApi.getAllStatisticsBetween(startTime, endTime)
@@ -80,19 +69,19 @@ class StatsViewModel @Inject constructor(
             StatisticsFilterOptions.BYFACILITY -> {
                 // Get stats for the current Facility:
                 savedStatsData = null
-                currentHealthFacility?.let {
+                newFacility?.let {
                     savedStatsData = restApi.getStatisticsForFacilityBetween(startTime, endTime, it)
                 }
                 // If savedFacility is null, we return a null statsData value
                 // Which will cause the UI to display an error.
                 // UI code should not allow choosing filter-by-facility without a valid health
                 // facility chosen though, but it's good to handle these cases.
-                savedHealthFacility = currentHealthFacility
+                savedHealthFacility = newFacility
             }
         }
         savedStartTime = startTime
         savedEndTime = endTime
-        savedFilterOption = currentFilterOption
+        savedFilterOption = filterOption
         return savedStatsData
     }
 
