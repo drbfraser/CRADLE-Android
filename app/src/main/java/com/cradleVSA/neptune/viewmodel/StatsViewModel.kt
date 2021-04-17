@@ -22,13 +22,7 @@ class StatsViewModel @Inject constructor(
     private var savedStatsData: NetworkResult<Statistics>? = null
     var savedEndTime: BigInteger = UnixTimestamp.now
         private set
-    var savedStartTime: BigInteger = savedEndTime.subtract(
-        BigInteger.valueOf(
-            TimeUnit.DAYS.toSeconds(
-                DEFAULT_NUM_DAYS
-            )
-        )
-    )
+    var savedStartTime: BigInteger = savedEndTime - TimeUnit.DAYS.toSeconds(DEFAULT_NUM_DAYS).toBigInteger()
         private set
     var savedHealthFacility: HealthFacility? = null
         private set
@@ -68,9 +62,8 @@ class StatsViewModel @Inject constructor(
             }
             StatisticsFilterOptions.BYFACILITY -> {
                 // Get stats for the current Facility:
-                savedStatsData = null
-                newFacility?.let {
-                    savedStatsData = restApi.getStatisticsForFacilityBetween(startTime, endTime, it)
+                savedStatsData = newFacility?.let {
+                    restApi.getStatisticsForFacilityBetween(startTime, endTime, it)
                 }
                 // If savedFacility is null, we return a null statsData value
                 // Which will cause the UI to display an error.

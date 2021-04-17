@@ -135,9 +135,9 @@ class StatsActivity : AppCompatActivity() {
                     // We must convert incoming msec Longs to seconds BigIntegers.
                     startEndPair?.let { startEndPairNotNull->
                         val endDate =
-                            BigInteger.valueOf(TimeUnit.MILLISECONDS.toSeconds(startEndPairNotNull.first!!))
+                            TimeUnit.MILLISECONDS.toSeconds(startEndPairNotNull.first!!).toBigInteger()
                         val startDate =
-                            BigInteger.valueOf(TimeUnit.MILLISECONDS.toSeconds(startEndPairNotNull.second!!))
+                            TimeUnit.MILLISECONDS.toSeconds(startEndPairNotNull.second!!).toBigInteger()
                         headerTextPrefix = getString(
                             R.string.stats_activity_epoch_string,
                             TimeUnit.SECONDS.toDays((startDate.subtract(endDate)).toLong())
