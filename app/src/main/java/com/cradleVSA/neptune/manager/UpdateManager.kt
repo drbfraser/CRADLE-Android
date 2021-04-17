@@ -15,26 +15,30 @@ class UpdateManager @Inject constructor(
 ) {
     private val appUpdateManager = AppUpdateManagerFactory.create(context)
     private val appUpdateInfoTask = appUpdateManager.appUpdateInfo
-    private val MY_REQUEST_CODE = 1
+    private val requestCode = 1
+
+    companion object {
+        private const val MAX_Priority = 5
+    }
 
     fun immediateUpdate(activity: SplashActivity) {
         appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
                 appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE) &&
-                appUpdateInfo.updatePriority() >= 5
+                appUpdateInfo.updatePriority() >= MAX_Priority
             ) {
                 appUpdateManager.startUpdateFlowForResult(
                     appUpdateInfo,
                     AppUpdateType.IMMEDIATE,
                     activity,
-                    MY_REQUEST_CODE
+                    requestCode
                 )
             }
         }
     }
 
-    fun handleResult(requestCode: Int, resultCode: Int,) {
-        if (requestCode == MY_REQUEST_CODE) {
+    fun handleResult(requestCode: Int, resultCode: Int) {
+        if (requestCode == requestCode) {
             if (resultCode != RESULT_OK) {
                 Toast.makeText(context, "Update failed", Toast.LENGTH_SHORT).show()
             }
