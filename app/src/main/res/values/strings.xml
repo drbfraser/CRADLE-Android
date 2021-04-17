@@ -258,7 +258,7 @@
     <string name="stats_activity_I_made_header">%1$s, I made…</string>
     <string name="stats_activity_facility_header">%1$s, facility %2$s made…</string>
     <string name="stats_activity_all_header">%1$s, all facilities and users made…</string>
-    <string name="stats_activity_epoch_string">In the %1$d day range</string>
+    <string name="stats_activity_epoch_string">Between %1$s and %2$s</string>
     <string name="stats_activity_month_string">This month</string>
     <string name="stats_activity_filter_header">Choose a filtering option</string>
     <string name="stats_activity_filter_showAll">Show statistics for all readings</string>

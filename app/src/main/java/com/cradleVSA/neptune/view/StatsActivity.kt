@@ -25,6 +25,7 @@ import com.cradleVSA.neptune.model.Statistics
 import com.cradleVSA.neptune.model.UserRole
 import com.cradleVSA.neptune.net.Success
 import com.cradleVSA.neptune.utilitiles.BarGraphValueFormatter
+import com.cradleVSA.neptune.utilitiles.DateUtil
 import com.cradleVSA.neptune.viewmodel.StatsViewModel
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.BarData
@@ -64,7 +65,11 @@ class StatsActivity : AppCompatActivity() {
         }
 
         headerTextPrefix = getString(R.string.stats_activity_month_string)
-        headerText = getString(R.string.stats_activity_I_made_header, headerTextPrefix)
+        // There will be a redundant setting of text once on create,
+        // but otherwise the activity will display a string with $1%s in
+        // it while waiting for the data to come in.
+        val statsHeaderTv = findViewById<TextView>(R.id.textView32)
+        statsHeaderTv.text = getString(R.string.stats_activity_I_made_header, headerTextPrefix)
         updateUi(
             viewModel.savedFilterOption,
             viewModel.savedHealthFacility,
@@ -80,6 +85,19 @@ class StatsActivity : AppCompatActivity() {
         endTime: BigInteger
     ) {
         lifecycleScope.launch {
+            viewModel.getStatsData(filterOption, newFacility, startTime, endTime).let {
+                if (it is Success) {
+                    setupBasicStats(it.value)
+                    setupBarChart(it.value)
+                } else {
+                    finish()
+                    Toast.makeText(
+                        applicationContext,
+                        getString(R.string.stats_activity_api_call_failed),
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
             val statsHeaderTv = findViewById<TextView>(R.id.textView32)
             statsHeaderTv.text = when (filterOption) {
                 StatisticsFilterOptions.JUSTME -> {
@@ -94,19 +112,6 @@ class StatsActivity : AppCompatActivity() {
                 }
                 StatisticsFilterOptions.ALL -> {
                     getString(R.string.stats_activity_all_header, headerTextPrefix)
-                }
-            }
-            viewModel.getStatsData(filterOption, newFacility, startTime, endTime).let {
-                if (it is Success) {
-                    setupBasicStats(it.value)
-                    setupBarChart(it.value)
-                } else {
-                    finish()
-                    Toast.makeText(
-                        applicationContext,
-                        getString(R.string.stats_activity_api_call_failed),
-                        Toast.LENGTH_LONG
-                    ).show()
                 }
             }
         }
@@ -131,13 +136,14 @@ class StatsActivity : AppCompatActivity() {
                     // rangePicker returns values in msec... and the API expects values in seconds.
                     // We must convert incoming msec Longs to seconds BigIntegers.
                     startEndPair?.let { startEndPairNotNull ->
-                        val endDate =
-                            TimeUnit.MILLISECONDS.toSeconds(startEndPairNotNull.first!!).toBigInteger()
                         val startDate =
+                            TimeUnit.MILLISECONDS.toSeconds(startEndPairNotNull.first!!).toBigInteger()
+                        val endDate =
                             TimeUnit.MILLISECONDS.toSeconds(startEndPairNotNull.second!!).toBigInteger()
                         headerTextPrefix = getString(
                             R.string.stats_activity_epoch_string,
-                            TimeUnit.SECONDS.toDays((startDate.subtract(endDate)).toLong())
+                            DateUtil.getDateStringFromTimestamp(startDate.toLong()),
+                            DateUtil.getDateStringFromTimestamp(endDate.toLong())
                         )
                         updateUi(viewModel.savedFilterOption, viewModel.savedHealthFacility, startDate, endDate)
                     }
@@ -165,6 +171,7 @@ class StatsActivity : AppCompatActivity() {
         val healthFacilityPicker = dialogView.findViewById<AutoCompleteTextView>(
             R.id.health_facility_auto_complete_text
         )
+        var healthFacilityPickerHasSelection = false
         val healthFacilityLayout = dialogView.findViewById<TextInputLayout>(R.id.health_facility_input_layout)
         val healthTextView = dialogView.findViewById<TextView>(R.id.filterPickerTextView)
 
@@ -229,9 +236,8 @@ class StatsActivity : AppCompatActivity() {
 
         healthFacilityLayout.visibility = View.GONE
         healthTextView.visibility = View.GONE
-        val healthFacilityArray = viewModel.getHealthFacilityArray()
 
-        val facilityStringArray = healthFacilityArray.map { it.name }.toTypedArray()
+        val facilityStringArray = viewModel.healthFacilityArray.map { it.name }.toTypedArray()
         healthFacilityPicker.setAdapter(
             ArrayAdapter(
                 this@StatsActivity,
@@ -240,8 +246,9 @@ class StatsActivity : AppCompatActivity() {
             )
         )
         healthFacilityPicker.setOnItemClickListener { _, _: View, position: Int, _: Long ->
-            tmpHealthFacility = healthFacilityArray[position]
+            tmpHealthFacility = viewModel.healthFacilityArray[position]
             dialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = true
+            healthFacilityPickerHasSelection = true
         }
 
         // If we have already set a health facility previously, set it as selected
@@ -250,6 +257,7 @@ class StatsActivity : AppCompatActivity() {
             // False here means do not filter other values in the dropdown
             // based on what we setText to...
             healthFacilityPicker.setText(it.name, false)
+            healthFacilityPickerHasSelection = true
             // tmpHealthFacility is already set to viewModel.savedHealthFacility
             // so pressing "OK" essentially has no effect.
         }
@@ -268,7 +276,10 @@ class StatsActivity : AppCompatActivity() {
         buttonGroup.setOnCheckedChangeListener { radioGroup: RadioGroup, _: Int ->
             when (radioGroup.checkedRadioButtonId) {
                 R.id.statFilterDialog_healthFacilityButton -> {
-                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = false
+                    if (!healthFacilityPickerHasSelection) {
+                        // Disable positive button
+                        dialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = false
+                    }
                     healthFacilityLayout.visibility = View.VISIBLE
                     healthTextView.visibility = View.VISIBLE
                     tmpCheckedItem = StatisticsFilterOptions.BYFACILITY

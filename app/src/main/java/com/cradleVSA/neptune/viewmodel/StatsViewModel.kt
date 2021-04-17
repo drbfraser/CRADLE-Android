@@ -31,7 +31,11 @@ class StatsViewModel @Inject constructor(
         private set
     var savedFilterOption: StatisticsFilterOptions = StatisticsFilterOptions.JUSTME
         private set
-    private lateinit var healthFacilityArray: List<HealthFacility>
+    val healthFacilityArray: List<HealthFacility> by lazy {
+        runBlocking {
+            healthFacilityManager.getAllSelectedByUser()
+        }
+    }
 
     suspend fun getStatsData(
         filterOption: StatisticsFilterOptions,
@@ -86,16 +90,6 @@ class StatsViewModel @Inject constructor(
         savedFilterOption = filterOption
         return savedStatsData
     }
-
-    // Lazy-init for selected health facilities.
-    fun getHealthFacilityArray(): List<HealthFacility> =
-        runBlocking {
-            if (!this@StatsViewModel::healthFacilityArray.isInitialized) {
-                healthFacilityArray =
-                    healthFacilityManager.getAllSelectedByUser()
-            }
-            healthFacilityArray
-        }
 
     companion object {
         const val DEFAULT_NUM_DAYS = 30L
