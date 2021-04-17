@@ -130,14 +130,14 @@ class StatsActivity : AppCompatActivity() {
             R.id.stats_time_picker -> {
                 val rangePickerBuilder = MaterialDatePicker.Builder.dateRangePicker()
                 val rangePicker = rangePickerBuilder.build()
-                rangePicker.addOnPositiveButtonClickListener {
+                rangePicker.addOnPositiveButtonClickListener { startEndPair ->
                     // rangePicker returns values in msec... and the API expects values in seconds.
                     // We must convert incoming msec Longs to seconds BigIntegers.
-                    it?.let {
+                    startEndPair?.let { startEndPairNotNull->
                         val endDate =
-                            BigInteger.valueOf(TimeUnit.MILLISECONDS.toSeconds(it.first!!))
+                            BigInteger.valueOf(TimeUnit.MILLISECONDS.toSeconds(startEndPairNotNull.first!!))
                         val startDate =
-                            BigInteger.valueOf(TimeUnit.MILLISECONDS.toSeconds(it.second!!))
+                            BigInteger.valueOf(TimeUnit.MILLISECONDS.toSeconds(startEndPairNotNull.second!!))
                         headerTextPrefix = getString(
                             R.string.stats_activity_epoch_string,
                             TimeUnit.SECONDS.toDays((startDate.subtract(endDate)).toLong())
