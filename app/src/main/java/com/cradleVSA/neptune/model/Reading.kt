@@ -36,8 +36,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import org.json.JSONObject
+import org.threeten.bp.ZonedDateTime
 import java.io.Serializable
-import java.time.ZonedDateTime
 import java.util.UUID
 import kotlin.reflect.KProperty
 
