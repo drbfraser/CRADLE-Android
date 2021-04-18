@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import androidx.core.util.Pair
 import androidx.lifecycle.lifecycleScope
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.manager.HealthFacilityManager
@@ -131,7 +132,12 @@ class StatsActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.stats_time_picker -> {
-                val rangePicker = MaterialDatePicker.Builder.dateRangePicker().build()
+                val rangePicker = MaterialDatePicker.Builder.dateRangePicker().setSelection(
+                    Pair(
+                        viewModel.savedStartTime.toLong() * Companion.SEC_TO_MSEC,
+                        viewModel.savedEndTime.toLong() * Companion.SEC_TO_MSEC
+                    )
+                ).build()
                 rangePicker.addOnPositiveButtonClickListener { startEndPair ->
                     // rangePicker returns values in msec... and the API expects values in seconds.
                     // We must convert incoming msec Longs to seconds BigIntegers.
@@ -374,6 +380,10 @@ class StatsActivity : AppCompatActivity() {
         barChart.legend.isEnabled = false
         barChart.isHighlightPerTapEnabled = false
         barChart.invalidate()
+    }
+
+    companion object {
+        private const val SEC_TO_MSEC = 1000
     }
 }
 
