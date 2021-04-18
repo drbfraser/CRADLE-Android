@@ -70,16 +70,6 @@ interface ReadingDao {
     suspend fun delete(reading: Reading?)
 
     /**
-     * All of the readings in the database.
-     * Do not use this. This should only be used for (instrumented) unit tests.
-     * Calculating statistics should be done as a query or done via a raw cursor; a Reading object
-     * contains too much unneeded info.
-     */
-    @Deprecated("Do not use this. This is not memory efficient")
-    @Query("SELECT * FROM Reading")
-    suspend fun getAllReadingEntities(): List<Reading>
-
-    /**
      * Returns the first reading whose reading ID is equal to [id].
      *
      * @param id The reading id to search for.

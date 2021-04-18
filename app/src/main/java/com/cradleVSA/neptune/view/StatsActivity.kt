@@ -1,31 +1,45 @@
 package com.cradleVSA.neptune.view
 
+import android.content.DialogInterface
+import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import androidx.core.util.Pair
 import androidx.lifecycle.lifecycleScope
 import com.cradleVSA.neptune.R
+import com.cradleVSA.neptune.manager.HealthFacilityManager
 import com.cradleVSA.neptune.manager.ReadingManager
-import com.cradleVSA.neptune.model.Reading
-import com.cradleVSA.neptune.model.ReadingAnalysis
+import com.cradleVSA.neptune.model.HealthFacility
+import com.cradleVSA.neptune.model.Statistics
+import com.cradleVSA.neptune.model.UserRole
+import com.cradleVSA.neptune.net.Success
 import com.cradleVSA.neptune.utilitiles.BarGraphValueFormatter
+import com.cradleVSA.neptune.utilitiles.DateUtil
+import com.cradleVSA.neptune.viewmodel.StatsViewModel
 import com.github.mikephil.charting.charts.BarChart
-import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
+import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import java.math.BigInteger
 import java.util.ArrayList
-import java.util.Collections
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @Suppress("LargeClass")
@@ -33,27 +47,74 @@ import javax.inject.Inject
 class StatsActivity : AppCompatActivity() {
     @Inject
     lateinit var readingManager: ReadingManager
-    lateinit var readings: List<Reading>
+    @Inject
+    lateinit var sharedPreferences: SharedPreferences
+    @Inject
+    lateinit var healthFacilityManager: HealthFacilityManager
+    private val viewModel: StatsViewModel by viewModels()
+
+    private lateinit var headerTextPrefix: String
+    private lateinit var headerText: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_stats)
 
-        lifecycleScope.launch {
-            // TODO: Do this as a database query or a database view. Taking all the readings and
-            //  them sorting them in memory is not efficient. Reading objects also contain
-            //  information that is irrelevant for StatsActivity.
-            readings = withContext(Dispatchers.IO) { readingManager.getAllReadings() }
-            Collections.sort(readings, Reading.AscendingDataComparator)
-            if (readings.isNotEmpty()) {
-                setupBasicStats()
-                setupLineChart()
-                setupBarChart()
-            }
-        }
         if (supportActionBar != null) {
             supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-            supportActionBar!!.title = "Statistics"
+            supportActionBar!!.title = getString(R.string.dashboard_statistics)
+        }
+
+        headerTextPrefix = getString(R.string.stats_activity_month_string)
+        // There will be a redundant setting of text once on create,
+        // but otherwise the activity will display a string with $1%s in
+        // it while waiting for the data to come in.
+        val statsHeaderTv = findViewById<TextView>(R.id.textView32)
+        statsHeaderTv.text = getString(R.string.stats_activity_I_made_header, headerTextPrefix)
+        updateUi(
+            viewModel.savedFilterOption,
+            viewModel.savedHealthFacility,
+            viewModel.savedStartTime,
+            viewModel.savedEndTime
+        )
+    }
+
+    private fun updateUi(
+        filterOption: StatisticsFilterOptions,
+        newFacility: HealthFacility?,
+        startTime: BigInteger,
+        endTime: BigInteger
+    ) {
+        lifecycleScope.launch {
+            viewModel.getStatsData(filterOption, newFacility, startTime, endTime).let {
+                if (it is Success) {
+                    setupBasicStats(it.value)
+                    setupBarChart(it.value)
+                } else {
+                    finish()
+                    Toast.makeText(
+                        applicationContext,
+                        getString(R.string.stats_activity_api_call_failed),
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+            val statsHeaderTv = findViewById<TextView>(R.id.textView32)
+            statsHeaderTv.text = when (filterOption) {
+                StatisticsFilterOptions.JUSTME -> {
+                    getString(R.string.stats_activity_I_made_header, headerTextPrefix)
+                }
+                StatisticsFilterOptions.BYFACILITY -> {
+                    getString(
+                        R.string.stats_activity_facility_header,
+                        headerTextPrefix,
+                        viewModel.savedHealthFacility?.name
+                    )
+                }
+                StatisticsFilterOptions.ALL -> {
+                    getString(R.string.stats_activity_all_header, headerTextPrefix)
+                }
+            }
         }
     }
 
@@ -62,25 +123,209 @@ class StatsActivity : AppCompatActivity() {
         return true
     }
 
-    private fun setupBasicStats() {
-        val emptyView = findViewById<TextView>(R.id.emptyView)
-        emptyView.visibility = View.GONE
-        val totalReadings = readings.size
-        var totalRef = 0
-        for (i in 0 until totalReadings) {
-            if (readings[i].isReferredToHealthFacility) {
-                totalRef++
+    // For filtering by month, etc.
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_stats, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.stats_time_picker -> {
+                val rangePicker = MaterialDatePicker.Builder.dateRangePicker().setSelection(
+                    Pair(
+                        viewModel.savedStartTime.toLong() * Companion.SEC_TO_MSEC,
+                        viewModel.savedEndTime.toLong() * Companion.SEC_TO_MSEC
+                    )
+                ).build()
+                rangePicker.addOnPositiveButtonClickListener { startEndPair ->
+                    // rangePicker returns values in msec... and the API expects values in seconds.
+                    // We must convert incoming msec Longs to seconds BigIntegers.
+                    startEndPair?.let { startEndPairNotNull ->
+                        val startDate =
+                            TimeUnit.MILLISECONDS.toSeconds(startEndPairNotNull.first!!).toBigInteger()
+                        val endDate =
+                            TimeUnit.MILLISECONDS.toSeconds(startEndPairNotNull.second!!).toBigInteger()
+                        headerTextPrefix = getString(
+                            R.string.stats_activity_epoch_string,
+                            DateUtil.getDateStringFromUTCTimestamp(startDate.toLong()),
+                            DateUtil.getDateStringFromUTCTimestamp(endDate.toLong())
+                        )
+                        updateUi(viewModel.savedFilterOption, viewModel.savedHealthFacility, startDate, endDate)
+                    }
+                }
+                rangePicker.show(supportFragmentManager, rangePicker.toString())
+                return true
+            }
+            R.id.stats_filters -> {
+                setupFilterDialog()
+                return true
+            }
+            else -> {
+                return super.onOptionsItemSelected(item)
             }
         }
-        val readingTV = findViewById<TextView>(R.id.readingTvStats)
-        readingTV.text = totalReadings.toString()
-        val refTV = findViewById<TextView>(R.id.refTvStats)
-        refTV.text = totalRef.toString()
-        // todo do the same for the referrals
+    }
+
+    private fun setupFilterDialog() {
+        val builder = MaterialAlertDialogBuilder(this@StatsActivity)
+        builder.setTitle(getString(R.string.stats_activity_filter_header))
+
+        val dialogView = layoutInflater.inflate(R.layout.dialog_stats_filter_picker, null)
+        builder.setView(dialogView)
+
+        val healthFacilityPicker = dialogView.findViewById<AutoCompleteTextView>(
+            R.id.health_facility_auto_complete_text
+        )
+        var healthFacilityPickerHasSelection = false
+        val healthFacilityLayout = dialogView.findViewById<TextInputLayout>(R.id.health_facility_input_layout)
+        val healthTextView = dialogView.findViewById<TextView>(R.id.filterPickerTextView)
+
+        var tmpCheckedItem = viewModel.savedFilterOption
+        var tmpHealthFacility: HealthFacility? = viewModel.savedHealthFacility
+
+        // Ignore any changes on "cancel"
+        builder.setNegativeButton(getString(android.R.string.cancel), null)
+        builder.setPositiveButton(getString(android.R.string.ok)) { _, _ ->
+            // OK was clicked, save the choice
+            // (and reload only if we are saving a new option):
+
+            if (tmpCheckedItem != viewModel.savedFilterOption) {
+                if (tmpCheckedItem == StatisticsFilterOptions.BYFACILITY) {
+                    updateUi(tmpCheckedItem, tmpHealthFacility, viewModel.savedStartTime, viewModel.savedEndTime)
+                } else {
+                    updateUi(
+                        tmpCheckedItem,
+                        viewModel.savedHealthFacility,
+                        viewModel.savedStartTime,
+                        viewModel.savedEndTime
+                    )
+                }
+            } else if (tmpCheckedItem == StatisticsFilterOptions.BYFACILITY) {
+                if (tmpHealthFacility?.name != viewModel.savedHealthFacility?.name) {
+                    // If user has selected a different health facility after previously
+                    // viewing another health facility:
+                    updateUi(tmpCheckedItem, tmpHealthFacility, viewModel.savedStartTime, viewModel.savedEndTime)
+                }
+            }
+        }
+
+        val dialog = builder.create()
+
+        val allStatsButton = dialogView.findViewById<RadioButton>(R.id.statFilterDialog_showAllButton)
+        val facilityButton = dialogView.findViewById<RadioButton>(R.id.statFilterDialog_healthFacilityButton)
+
+        // Button enable/disable based on role:
+        val roleString = sharedPreferences.getString(getString(R.string.key_role), UserRole.VHT.toString())
+        roleString?.let {
+            when (UserRole.safeValueOf(it)) {
+                UserRole.VHT -> {
+                    allStatsButton.isEnabled = false
+                    facilityButton.isEnabled = false
+                }
+                UserRole.CHO -> {
+                    allStatsButton.isEnabled = false
+                }
+                UserRole.HCW -> {
+                    allStatsButton.isEnabled = false
+                }
+                UserRole.UNKNOWN -> {
+                    healthTextView.text = getString(R.string.stats_activity_unknown_role)
+                    healthTextView.setTextColor(Color.RED)
+                    healthTextView.visibility = View.VISIBLE
+                }
+                else -> {
+                    // Leave them all open for ADMIN.
+                }
+            }
+        }
+
+        healthFacilityLayout.visibility = View.GONE
+        healthTextView.visibility = View.GONE
+
+        val facilityStringArray = viewModel.healthFacilityArray.map { it.name }.toTypedArray()
+        healthFacilityPicker.setAdapter(
+            ArrayAdapter(
+                this@StatsActivity,
+                R.layout.support_simple_spinner_dropdown_item,
+                facilityStringArray
+            )
+        )
+        healthFacilityPicker.setOnItemClickListener { _, _: View, position: Int, _: Long ->
+            tmpHealthFacility = viewModel.healthFacilityArray[position]
+            dialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = true
+            healthFacilityPickerHasSelection = true
+        }
+
+        // If we have already set a health facility previously, set it as selected
+        // if it is in the list of selected health facilities:
+        viewModel.savedHealthFacility?.let {
+            // False here means do not filter other values in the dropdown
+            // based on what we setText to...
+            healthFacilityPicker.setText(it.name, false)
+            healthFacilityPickerHasSelection = true
+            // tmpHealthFacility is already set to viewModel.savedHealthFacility
+            // so pressing "OK" essentially has no effect.
+        }
+
+        val buttonGroup = dialogView.findViewById<RadioGroup>(R.id.statFilterDialog_radioGroup)
+        when (viewModel.savedFilterOption) {
+            StatisticsFilterOptions.ALL -> buttonGroup.check(R.id.statFilterDialog_showAllButton)
+            StatisticsFilterOptions.JUSTME -> buttonGroup.check(R.id.statFilterDialog_userIDButton)
+            StatisticsFilterOptions.BYFACILITY -> {
+                buttonGroup.check(R.id.statFilterDialog_healthFacilityButton)
+                healthFacilityLayout.visibility = View.VISIBLE
+                healthTextView.visibility = View.VISIBLE
+            }
+        }
+
+        buttonGroup.setOnCheckedChangeListener { radioGroup: RadioGroup, _: Int ->
+            when (radioGroup.checkedRadioButtonId) {
+                R.id.statFilterDialog_healthFacilityButton -> {
+                    if (!healthFacilityPickerHasSelection) {
+                        // Disable positive button
+                        dialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = false
+                    }
+                    healthFacilityLayout.visibility = View.VISIBLE
+                    healthTextView.visibility = View.VISIBLE
+                    tmpCheckedItem = StatisticsFilterOptions.BYFACILITY
+                }
+                R.id.statFilterDialog_showAllButton -> {
+                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = true
+                    healthFacilityLayout.visibility = View.GONE
+                    healthTextView.visibility = View.GONE
+                    tmpCheckedItem = StatisticsFilterOptions.ALL
+                }
+                R.id.statFilterDialog_userIDButton -> {
+                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = true
+                    healthFacilityLayout.visibility = View.GONE
+                    healthTextView.visibility = View.GONE
+                    tmpCheckedItem = StatisticsFilterOptions.JUSTME
+                }
+            }
+        }
+
+        dialog.show()
+    }
+
+    private fun setupBasicStats(statsData: Statistics) {
+        val emptyView = findViewById<TextView>(R.id.emptyView)
+        emptyView.visibility = View.GONE
+        val totalReadingTV = findViewById<TextView>(R.id.totalReadingTvStats)
+        val uniqueReadingTV = findViewById<TextView>(R.id.uniqueReadingTvStats)
+        val referralsSentTV = findViewById<TextView>(R.id.refTvStats)
+        val referralsAssessedTV = findViewById<TextView>(R.id.assessmentTvStats)
+        val daysWithReadingsTV = findViewById<TextView>(R.id.daysWithReadingsTvStats)
+
+        totalReadingTV.text = statsData.totalReadings.toString()
+        uniqueReadingTV.text = statsData.uniquePatientReadings.toString()
+        referralsSentTV.text = statsData.sentReferrals.toString()
+        referralsAssessedTV.text = statsData.patientsReferred.toString()
+        daysWithReadingsTV.text = statsData.daysWithReadings.toString()
     }
 
     @Suppress("MagicNumber")
-    private fun setupBarChart() {
+    private fun setupBarChart(statsData: Statistics) {
         val barChart = findViewById<BarChart>(R.id.bargraph)
         val barCard = findViewById<CardView>(R.id.bargraphCard)
         barCard.visibility = View.VISIBLE
@@ -91,25 +336,12 @@ class StatsActivity : AppCompatActivity() {
             ArrayList()
         val redUpEntry: ArrayList<BarEntry> = ArrayList()
         val redDownEntry: ArrayList<BarEntry> = ArrayList()
-        var green = 0
-        var yellowup = 0
-        var yellowDown = 0
-        var redDown = 0
-        val redUp = 0
-        for (i in readings.indices) {
-            val analysis = readings[i].bloodPressure.analysis
-            if (analysis === ReadingAnalysis.RED_DOWN) {
-                redDown++
-            } else if (analysis === ReadingAnalysis.GREEN) {
-                green++
-            } else if (analysis === ReadingAnalysis.RED_UP) {
-                redDown++
-            } else if (analysis === ReadingAnalysis.YELLOW_UP) {
-                yellowup++
-            } else if (analysis === ReadingAnalysis.YELLOW_DOWN) {
-                yellowDown++
-            }
-        }
+        val green = statsData.colorReadings.greenReadings
+        val yellowup = statsData.colorReadings.yellowUpReadings
+        val yellowDown = statsData.colorReadings.yellowDownReadings
+        val redDown = statsData.colorReadings.redDownReadings
+        val redUp = statsData.colorReadings.redUpReadings
+
         greenEntry.add(BarEntry(1.toFloat(), green.toFloat()))
         yellowUpEntry.add(BarEntry(2.toFloat(), yellowup.toFloat()))
         yellowDownEntry.add(BarEntry(3.toFloat(), yellowDown.toFloat()))
@@ -150,74 +382,13 @@ class StatsActivity : AppCompatActivity() {
         barChart.invalidate()
     }
 
-    private fun setupLineChart() {
-        val lineChart = findViewById<LineChart>(R.id.lineChart)
-        val linecard = findViewById<CardView>(R.id.linechartCard)
-        linecard.visibility = View.VISIBLE
-        val diastolicEntry: MutableList<Entry> =
-            ArrayList()
-        val systolicEntry: MutableList<Entry> =
-            ArrayList()
-        val heartrateEntry: MutableList<Entry> =
-            ArrayList()
-        // start at 0
-        for (i in readings.indices) {
-            val (_, _, _, bloodPressure) = readings[i]
-            diastolicEntry.add(
-                Entry(
-                    (i + 1).toFloat(),
-                    bloodPressure.diastolic.toFloat()
-                )
-            )
-            systolicEntry.add(
-                Entry(
-                    (i + 1).toFloat(),
-                    bloodPressure.systolic.toFloat()
-                )
-            )
-            heartrateEntry.add(
-                Entry(
-                    (i + 1).toFloat(),
-                    bloodPressure.heartRate.toFloat()
-                )
-            )
-        }
-        val diastolicDataSet = LineDataSet(diastolicEntry, "BP Diastolic")
-        val systolicDataSet = LineDataSet(systolicEntry, "BP Systolic")
-        val heartRateDataSet = LineDataSet(heartrateEntry, "Heart Rate BPM")
-        diastolicDataSet.color = resources.getColor(R.color.colorAccent)
-        systolicDataSet.color = resources.getColor(R.color.purple)
-        heartRateDataSet.color = resources.getColor(R.color.orange)
-        diastolicDataSet.setCircleColor(resources.getColor(R.color.colorAccent))
-        systolicDataSet.setCircleColor(resources.getColor(R.color.purple))
-        heartRateDataSet.setCircleColor(resources.getColor(R.color.orange))
-
-        // this is to make the curve smooth
-        diastolicDataSet.setDrawCircleHole(false)
-        diastolicDataSet.setDrawCircles(false)
-        diastolicDataSet.mode = LineDataSet.Mode.CUBIC_BEZIER
-        systolicDataSet.setDrawCircleHole(false)
-        systolicDataSet.setDrawCircles(false)
-        systolicDataSet.mode = LineDataSet.Mode.CUBIC_BEZIER
-        heartRateDataSet.setDrawCircleHole(false)
-        heartRateDataSet.setDrawCircles(false)
-        heartRateDataSet.mode = LineDataSet.Mode.CUBIC_BEZIER
-
-        // remove unneccessy background lines
-        lineChart.setDrawBorders(false)
-        lineChart.setDrawGridBackground(false)
-        lineChart.axisRight.setDrawLabels(false)
-        lineChart.axisRight.setDrawGridLines(false)
-        lineChart.xAxis.setDrawGridLines(false)
-        lineChart.axisLeft.setDrawGridLines(false)
-        val lineData = LineData(diastolicDataSet, systolicDataSet, heartRateDataSet)
-        lineData.setDrawValues(false)
-        lineData.isHighlightEnabled = false
-        lineChart.xAxis.setDrawAxisLine(true)
-        lineChart.data = lineData
-        lineChart.xAxis.isEnabled = false
-        lineChart.description.text =
-            "Cardiovascular Data from last " + readings.size + " readings"
-        lineChart.invalidate()
+    companion object {
+        private const val SEC_TO_MSEC = 1000
     }
+}
+
+enum class StatisticsFilterOptions {
+    ALL,
+    JUSTME,
+    BYFACILITY
 }

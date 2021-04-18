@@ -15,11 +15,13 @@ import com.cradleVSA.neptune.model.Patient
 import com.cradleVSA.neptune.model.PatientAndReadings
 import com.cradleVSA.neptune.model.Reading
 import com.cradleVSA.neptune.model.Referral
+import com.cradleVSA.neptune.model.Statistics
 import com.cradleVSA.neptune.sync.PatientSyncField
 import com.cradleVSA.neptune.sync.ReadingSyncField
 import com.cradleVSA.neptune.sync.SyncWorker
 import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
 import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper.createWriter
+import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.channels.SendChannel
@@ -208,6 +210,73 @@ class RestApi constructor(
                 url = urlManager.getAssessmentById(id),
                 headers = headers,
                 inputStreamReader = { JacksonMapper.createReader<Assessment>().readValue(it) }
+            )
+        }
+
+    /**
+     * Requests all statistics between two input UNIX timestamps, for a given Facility.
+     *
+     * @param date1 UNIX timestamp of the beginning cutoff
+     * @param date2 UNIX timestamp of the end cutoff
+     * @param filterFacility input health facility to get statistics for
+     * @return Statistics object for the requested dates
+     */
+
+    suspend fun getStatisticsForFacilityBetween(
+        date1: BigInteger,
+        date2: BigInteger,
+        filterFacility: HealthFacility
+    ): NetworkResult<Statistics> =
+        withContext(IO) {
+            http.makeRequest(
+                method = Http.Method.GET,
+                url = urlManager.getStatisticsForFacilityBetween(date1, date2, filterFacility.name),
+                headers = headers,
+                inputStreamReader = { JacksonMapper.mapper.readValue(it) }
+            )
+        }
+
+    /**
+     * Requests all statistics between two input UNIX timestamps, for a given user ID.
+     *
+     * @param date1 UNIX timestamp of the beginning cutoff
+     * @param date2 UNIX timestamp of the end cutoff
+     * @param userID the integer representation of user to get statistics for
+     * @return Statistics object for the requested dates
+     */
+
+    suspend fun getStatisticsForUserBetween(
+        date1: BigInteger,
+        date2: BigInteger,
+        userID: Int
+    ): NetworkResult<Statistics> =
+        withContext(IO) {
+            http.makeRequest(
+                method = Http.Method.GET,
+                url = urlManager.getStatisticsForUserBetween(date1, date2, userID),
+                headers = headers,
+                inputStreamReader = { JacksonMapper.mapper.readValue(it) }
+            )
+        }
+
+    /**
+     * Requests all statistics between two input UNIX timestamps, for all facilities and users.
+     *
+     * @param date1 UNIX timestamp of the beginning cutoff
+     * @param date2 UNIX timestamp of the end cutoff
+     * @return Statistics object for the requested dates
+     */
+
+    suspend fun getAllStatisticsBetween(
+        date1: BigInteger,
+        date2: BigInteger
+    ): NetworkResult<Statistics> =
+        withContext(IO) {
+            http.makeRequest(
+                method = Http.Method.GET,
+                url = urlManager.getAllStatisticsBetween(date1, date2),
+                headers = headers,
+                inputStreamReader = { JacksonMapper.mapper.readValue(it) }
             )
         }
 
@@ -418,6 +487,7 @@ class RestApi constructor(
      * server sends back will be parsed and sent through [readingChannel], [referralChannel], and
      * [assessmentChannel]. Note that the server response includes [Reading]s in [readingsToUpload];
      * by downloading them again, that is how we eventually set [Reading.isUploadedToServer].
+<<<<<<< HEAD
      *
      * The channels will have parsed information passed into them. Only one channel will be
      * populated at a time, since the parsing is sequential. When finishing parsing one array in the
@@ -429,6 +499,19 @@ class RestApi constructor(
      * The order of the focusing (and thus closing) is [readingChannel], then [referralChannel],
      * then [assessmentChannel]. (We're following the API response order.)
      *
+=======
+     *
+     * The channels will have parsed information passed into them. Only one channel will be
+     * populated at a time, since the parsing is sequential. When finishing parsing one array in the
+     * JSON, the current channel will close and the next channel will be the focus. Progress
+     * reporting is done by [reportProgressBlock] (first parameter is number of total items
+     * downloaded, second is number of items in total; items is the sum of readings, referrals, and
+     * assessments).
+     *
+     * The order of the focusing (and thus closing) is [readingChannel], then [referralChannel],
+     * then [assessmentChannel]. (We're following the API response order.)
+     *
+>>>>>>> master
      * Any of the Channels will be failed (see [SendChannel.close]) if [Failure] or
      * [NetworkException] is returned, so using any of the Channels can result in a [SyncException]
      * that should be caught by anything handling the Channels.

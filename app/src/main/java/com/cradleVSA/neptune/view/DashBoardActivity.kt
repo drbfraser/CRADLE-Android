@@ -9,6 +9,7 @@ import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import com.cradleVSA.neptune.R
+import com.cradleVSA.neptune.utilitiles.livedata.NetworkAvailableLiveData
 import com.cradleVSA.neptune.view.ui.settings.SettingsActivity.Companion.makeLaunchIntent
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
@@ -22,6 +23,32 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
             actionBar.setDisplayShowHomeEnabled(true)
             actionBar.setDisplayUseLogoEnabled(true)
             actionBar.title = ""
+        }
+
+        // Disable entering StatsActivity without network connectivity.
+
+        val statView = findViewById<View>(R.id.statconstraintLayout)
+        val statImg = statView.findViewById<ImageButton>(R.id.statImg)
+        val statCardview: CardView = statView.findViewById(R.id.statCardView)
+        val isNetworkAvailable = NetworkAvailableLiveData(this)
+
+        isNetworkAvailable.observe(this) {
+            when (it) {
+                true -> {
+                    statImg.alpha = Companion.OPACITY_FULL
+                    statCardview.alpha = Companion.OPACITY_FULL
+                    statView.isClickable = true
+                    statCardview.isClickable = true
+                    statImg.isClickable = true
+                }
+                false -> {
+                    statImg.alpha = Companion.OPACITY_HALF
+                    statCardview.alpha = Companion.OPACITY_HALF
+                    statView.isClickable = false
+                    statCardview.isClickable = false
+                    statImg.isClickable = false
+                }
+            }
         }
     }
 
@@ -96,5 +123,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
 
     companion object {
         const val READING_ACTIVITY_DONE = 12345
+        const val OPACITY_HALF = 0.5f
+        const val OPACITY_FULL = 1.0f
     }
 }
