@@ -2,6 +2,7 @@ package com.cradleVSA.neptune.ocr
 
 import android.content.Context
 import android.graphics.Bitmap
+import androidx.collection.arrayMapOf
 import com.cradleVSA.neptune.model.BloodPressure
 import com.cradleVSA.neptune.ocr.tflite.Classifier
 import com.cradleVSA.neptune.ocr.tflite.TFLiteObjectDetectionHelper
@@ -59,12 +60,12 @@ class CradleScreenOcrDetector(ctx: Context) : Closeable {
         // Submit bitmaps to UI if needed.
         outputBitmapBlock?.invoke(sysBitmap, diaBitmap, heartRateBitmap)
 
-        val bitmaps = mapOf(
+        val bitmaps = arrayMapOf(
             CradleOverlay.OverlayRegion.SYS to sysBitmap,
             CradleOverlay.OverlayRegion.DIA to diaBitmap,
             CradleOverlay.OverlayRegion.HR to heartRateBitmap
         )
-        val allRecognitions = mutableMapOf<CradleOverlay.OverlayRegion, String>()
+        val allRecognitions = arrayMapOf<CradleOverlay.OverlayRegion, String>()
         for ((region, croppedBitmap) in bitmaps) {
             val recognitions = classifier.recognizeItemsInImage(croppedBitmap)
             val text = extractTextFromResults(recognitions, croppedBitmap.height.toFloat())
