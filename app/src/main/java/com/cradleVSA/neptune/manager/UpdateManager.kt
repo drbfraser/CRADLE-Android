@@ -3,6 +3,7 @@ package com.cradleVSA.neptune.manager
 import android.app.Activity.RESULT_OK
 import android.content.Context
 import android.widget.Toast
+import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.view.SplashActivity
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.install.model.AppUpdateType
@@ -15,23 +16,26 @@ class UpdateManager @Inject constructor(
 ) {
     private val appUpdateManager = AppUpdateManagerFactory.create(context)
     private val appUpdateInfoTask = appUpdateManager.appUpdateInfo
-    private val requestCode = 1
 
     companion object {
-        private const val MAX_Priority = 5
+        private const val MAX_PRIORITY = 5
+        private const val REQUEST_CODE = 1
     }
 
     fun immediateUpdate(activity: SplashActivity) {
         appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
-            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
+            if ((
+                appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
                 appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE) &&
-                appUpdateInfo.updatePriority() >= MAX_Priority
+                appUpdateInfo.updatePriority() >= MAX_PRIORITY
+                ) ||
+                appUpdateInfo.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS
             ) {
                 appUpdateManager.startUpdateFlowForResult(
                     appUpdateInfo,
                     AppUpdateType.IMMEDIATE,
                     activity,
-                    requestCode
+                    REQUEST_CODE
                 )
             }
         }
@@ -40,7 +44,9 @@ class UpdateManager @Inject constructor(
     fun handleResult(requestCode: Int, resultCode: Int) {
         if (requestCode == requestCode) {
             if (resultCode != RESULT_OK) {
-                Toast.makeText(context, "Update failed", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.update_failed), Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, context.getString(R.string.update_successful), Toast.LENGTH_SHORT).show()
             }
         }
     }
