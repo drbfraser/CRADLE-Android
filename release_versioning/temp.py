@@ -37,7 +37,6 @@ def authorization():
 
     # close when you don't need it anymore; you can just copy and paste the above
     # into the console to play around with it without closing the service
-    x = '../app/release/app-release.aab'
     service.close()
 
 if __name__ == '__main__':

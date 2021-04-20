@@ -37,4 +37,10 @@ if __name__ == '__main__':
             },
         ],
         "track": "internal", # Identifier of the track.
-}
+    }
+
+    service.edits().tracks().update(packageName="com.cradleVSA.neptune", editId=app_edit["id"], track='internal', body=body).execute()
+
+    service.edits().commit(packageName="com.cradleVSA.neptune", editId=app_edit["id"]).execute()
+
+    service.close()
