@@ -5,6 +5,7 @@ import android.content.Context
 import android.widget.Toast
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.view.SplashActivity
+import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.UpdateAvailability
@@ -24,13 +25,7 @@ class UpdateManager @Inject constructor(
 
     fun immediateUpdate(activity: SplashActivity) {
         appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
-            if ((
-                appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
-                appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE) &&
-                appUpdateInfo.updatePriority() >= MAX_PRIORITY
-                ) ||
-                appUpdateInfo.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS
-            ) {
+            if (isMaxPriorityUpdateAvailable(appUpdateInfo) || isUpdateInProgress(appUpdateInfo)) {
                 appUpdateManager.startUpdateFlowForResult(
                     appUpdateInfo,
                     AppUpdateType.IMMEDIATE,
@@ -39,6 +34,16 @@ class UpdateManager @Inject constructor(
                 )
             }
         }
+    }
+
+    private fun isMaxPriorityUpdateAvailable(appUpdateInfo: AppUpdateInfo): Boolean {
+        return appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
+            appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE) &&
+            appUpdateInfo.updatePriority() >= MAX_PRIORITY
+    }
+
+    private fun isUpdateInProgress(appUpdateInfo: AppUpdateInfo): Boolean {
+        return appUpdateInfo.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS
     }
 
     fun handleResult(requestCode: Int, resultCode: Int) {
