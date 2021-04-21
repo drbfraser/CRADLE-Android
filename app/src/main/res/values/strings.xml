@@ -551,6 +551,9 @@
     <string name="ocr_fragment_diastolic_reading_label">DIA</string>
     <string name="ocr_fragment_heart_rate_reading_label">PUL</string>
     <string name="ocr_fragment_toggle_flashlight">Toggle flashlight</string>
+    <string name="ocr_fragment_confirmation_are_these_results_correct">Are these results correct?</string>
+    <string name="ocr_fragment_results_correct_yes">Yes</string>
+    <string name="ocr_fragment_results_correct_no">No</string>
     <string name="patient_name_john_smith">John Smith</string>
 
     <plurals name="unuploaded_reading_signout_message">

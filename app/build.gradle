@@ -20,6 +20,11 @@ if (!rootProject.file(filename).exists()) {
 keystoreProperties.load(new FileInputStream(rootProject.file(filename)))
 
 android {
+    lintOptions {
+        textReport true
+        textOutput 'stdout'
+    }
+
     signingConfigs {
         release {
             storeFile file(keystoreProperties['storeFile'])

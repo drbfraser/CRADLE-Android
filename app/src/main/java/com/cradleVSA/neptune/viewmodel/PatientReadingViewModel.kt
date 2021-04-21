@@ -20,7 +20,7 @@ import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.ext.getEnglishResources
 import com.cradleVSA.neptune.ext.getIntOrNull
 import com.cradleVSA.neptune.ext.setValueOnMainThread
-import com.cradleVSA.neptune.ext.withIdlingResource
+import com.cradleVSA.neptune.ext.use
 import com.cradleVSA.neptune.manager.LoginManager
 import com.cradleVSA.neptune.manager.PatientManager
 import com.cradleVSA.neptune.manager.ReadingManager
@@ -412,7 +412,7 @@ class PatientReadingViewModel @Inject constructor(
                             ?: Log.d(TAG, "isPatientValidJob: no job to cancel")
                         isPatientValidJob = viewModelScope.launch(Dispatchers.Default) {
                             // Let Espresso know we're busy
-                            withIdlingResource(idlingResource) {
+                            idlingResource.use {
                                 attemptToBuildValidPatient().let { patient ->
                                     yield()
                                     // Post the value immediately: requires main thread to do so.
@@ -1127,7 +1127,7 @@ class PatientReadingViewModel @Inject constructor(
         private fun launchVitalSignsFragmentVerifyJob() {
             vitalSignsFragmentVerifyJob?.cancel()
             vitalSignsFragmentVerifyJob = viewModelScope.launch {
-                withIdlingResource(idlingResource) {
+                idlingResource.use {
                     isNextButtonEnabledMutex.withLock {
                         val newValue = verifyVitalSignsFragment()
                         yield()

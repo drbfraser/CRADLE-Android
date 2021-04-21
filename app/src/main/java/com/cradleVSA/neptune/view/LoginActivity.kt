@@ -13,9 +13,12 @@ import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.StringRes
+import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import androidx.test.espresso.IdlingResource
+import androidx.test.espresso.idling.CountingIdlingResource
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.ext.hideKeyboard
 import com.cradleVSA.neptune.manager.LoginManager
@@ -49,6 +52,20 @@ class LoginActivity : AppCompatActivity() {
     lateinit var loginManager: LoginManager
 
     private lateinit var isNetworkAvailable: NetworkAvailableLiveData
+
+    private var idlingResource: CountingIdlingResource? = null
+
+    /**
+     * Called only from tests. Creates and returns a new [CountingIdlingResource].
+     * This is null if and only if this [ReadingActivity] is not being tested under Espresso.
+     */
+    @VisibleForTesting
+    fun getIdlingResource(): IdlingResource {
+        return idlingResource
+            ?: CountingIdlingResource("LoginActivity").also {
+                idlingResource = it
+            }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -108,6 +125,8 @@ class LoginActivity : AppCompatActivity() {
         }
 
         loginButton.setOnClickListener {
+            idlingResource?.increment()
+
             errorText.visibility = View.GONE
             val progressDialog = progressDialog
             passwordET.hideKeyboard()
@@ -163,6 +182,8 @@ class LoginActivity : AppCompatActivity() {
                         }
                     }
                 }
+
+                idlingResource?.decrement()
             }
         }
     }

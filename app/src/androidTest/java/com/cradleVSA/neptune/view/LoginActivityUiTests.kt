@@ -1,6 +1,8 @@
 package com.cradleVSA.neptune.view
 
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.IdlingRegistry
+import androidx.test.espresso.IdlingResource
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.pressImeActionButton
 import androidx.test.espresso.action.ViewActions.typeText
@@ -12,6 +14,8 @@ import androidx.test.ext.junit.rules.activityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import com.cradleVSA.neptune.R
+import org.junit.After
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -22,6 +26,21 @@ class LoginActivityUiTests {
     // https://developer.android.com/guide/components/activities/testing
     @get:Rule
     var activityScenarioRule = activityScenarioRule<LoginActivity>()
+
+    private lateinit var idlingResource: IdlingResource
+
+    @Before
+    fun before() {
+        activityScenarioRule.scenario.onActivity { activity ->
+            idlingResource = activity.getIdlingResource()
+            IdlingRegistry.getInstance().register(idlingResource)
+        }
+    }
+
+    @After
+    fun after() {
+        IdlingRegistry.getInstance().unregister(idlingResource)
+    }
 
     @Test
     fun loginActivity_invalidUsernamePassword() {

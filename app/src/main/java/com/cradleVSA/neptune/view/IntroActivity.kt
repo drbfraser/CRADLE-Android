@@ -168,6 +168,7 @@ class IntroActivity : AppCompatActivity(), MyIntroFragmentInteractionListener {
         permissions: Array<String>,
         grantResults: IntArray
     ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         val i = mPager.currentItem
         mPagerAdapter!!.getItem(i)
             .onRequestPermissionsResult(requestCode, permissions, grantResults)

@@ -1,5 +1,6 @@
 package com.cradleVSA.neptune.database.daos
 
+import androidx.annotation.VisibleForTesting
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -150,4 +151,13 @@ interface ReadingDao {
      */
     @Query("UPDATE Reading SET isUploadedToServer = 0 WHERE readingId = :readingId")
     suspend fun setIsUploadedToServerToZero(readingId: String)
+
+    /**
+     * All of the readings in the database.
+     *
+     * Do not use this. This should only be used for (instrumented) unit tests.
+     */
+    @VisibleForTesting
+    @Query("SELECT * FROM Reading")
+    suspend fun getAllReadingEntities(): List<Reading>
 }

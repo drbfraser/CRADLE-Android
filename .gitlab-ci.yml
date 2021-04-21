@@ -8,7 +8,8 @@ before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
 
 # Cache Gradle files.
-cache:
+cache: &global_cache
+  key: global-cache
   paths:
     - .gradle/wrapper/
     - .gradle/caches/
@@ -16,12 +17,16 @@ cache:
 # run static code analysis
 code_analysis:
   stage: build
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "schedule" && $CI_MERGE_REQUEST_ID == null'
   script:
     - ./gradlew detekt
 
 # Compile and assemble a debug version of the application.
 build:
   stage: build
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "schedule" && $CI_MERGE_REQUEST_ID == null'
   script:
     # Remove the current database schema JSON so that it generates a valid one
     - rm app/schemas/com.cradleVSA.neptune.database.CradleDatabase/*.json
@@ -42,6 +47,8 @@ validate_database_json:
   image: bitnami/minideb:stretch
   cache: {}
   stage: test
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "schedule" && $CI_MERGE_REQUEST_ID == null'
   needs:
     - job: build
       artifacts: true
@@ -66,11 +73,147 @@ validate_database_json:
 # Run local unit tests
 test:
   stage: test
+  cache:
+    <<: *global_cache
+    policy: pull
   script:
     - ./gradlew test
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "schedule" && $CI_MERGE_REQUEST_ID == null'
   artifacts:
     expire_in: 1 hour
     reports:
       junit: app/build/test-results/**/TEST-*.xml
   tags:
     - build
+
+######################
+# Scheduled jobs
+######################
+
+# Run Firebase Test Lab on Google Cloud for instrumented tests (database migration test, UI tests, etc.)
+# https://console.firebase.google.com/project/cradle-vsa/testlab/
+#
+# A service account needs to be created on GCP (under IAM & Admin). A key for the service account's
+# needs to be generated and stored in a pipeline variable as GCLOUD_SERVICE_ACCOUNT_KEY. See
+# https://console.cloud.google.com/iam-admin/serviceaccounts?project=cradle-vsa&supportedpurview=project.
+#
+# More references: https://firebase.google.com/docs/test-lab/android/continuous
+firebase_test_lab:
+  stage: test
+  variables:
+    GCLOUD_SDK_VERSION: 336.0.0
+
+    # (Derived from the gcloud CLI help pages)
+    # A list of DIMENSION=VALUE pairs which specify a target device to test
+    # against. This flag may be repeated to specify multiple devices.
+    #
+    # The four device dimensions are: model, version, locale, and orientation.
+    # If any dimensions are omitted, they will use a default value. The default
+    # value, and all possible values, for each dimension can be found with
+    # the list command for that dimension, such as $ gcloud firebase test
+    # android models list. --device is now the preferred way to specify test
+    # devices and may not be used in conjunction with --devices-ids,
+    # --os-version-ids, --locales, or --orientations. Omitting all of the
+    # preceding dimension-related flags will run tests against a single
+    # device using defaults for all four device dimensions.
+    #
+    # Examples:
+    #     - model=Nexus6
+    #     - version=23,orientation=portrait
+    #     - model=shamu,version=22,locale=zh_CN,orientation=default
+    #
+    # Keep in mind: The free plan has a daily quota of 5 test runs with physical devices,
+    # and 10 test runs with virtual devices. See https://firebase.google.com/docs/test-lab/usage-quotas-pricing
+    # The quotas reset at midnight PST.
+    # Also, this is a space-separated list!
+    #
+    TARGET_DEVICES: |
+      model=Pixel2,version=26
+      model=Pixel2,version=28
+      model=hwALE-H,version=21
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+  cache:
+    # TODO: Using multiple caches in a single job is available in GitLab 13.11:
+    # https://gitlab.com/gitlab-org/gitlab/-/issues/32814
+    # In the future, do something like
+    #
+    # - key: global-cache
+    # - key: "$GCLOUD_SDK_VERSION"
+    #   paths:
+    #      - google-cloud-sdk-$GCLOUD_SDK_VERSION-linux-x86_64.tar.gz
+    #
+    # with a "pull" policy for global-cache.
+    #
+    key: "test-lab-$GCLOUD_SDK_VERSION"
+    paths:
+      - google-cloud-sdk-$GCLOUD_SDK_VERSION-linux-x86_64.tar.gz
+      - .gradle/wrapper/
+      - .gradle/caches/
+  before_script:
+    - apt-get -y install jq
+    - export GRADLE_USER_HOME=`pwd`/.gradle
+  script:
+    - |
+      if [[ ! -f "google-cloud-sdk-$GCLOUD_SDK_VERSION-linux-x86_64.tar.gz" ]]; then
+        curl -O "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-$GCLOUD_SDK_VERSION-linux-x86_64.tar.gz"
+      fi
+    - tar -xzf "google-cloud-sdk-$GCLOUD_SDK_VERSION-linux-x86_64.tar.gz"
+    # Some hacky way of getting a json file to pass into the gcloud CLI.
+    - echo $GCLOUD_SERVICE_ACCOUNT_KEY > cradle-vsa-gitlab.json
+    - account=$(jq -r .client_email cradle-vsa-gitlab.json)
+    - project_id=$(jq -r .project_id cradle-vsa-gitlab.json)
+    - |
+      ./google-cloud-sdk/bin/gcloud auth activate-service-account "$account" \
+          --key-file=cradle-vsa-gitlab.json \
+          --project="$project_id"
+    - echo "Printing out available models"
+    - ./google-cloud-sdk/bin/gcloud firebase test android models list
+    - ./gradlew :app:assembleDebug
+    - ./gradlew :app:assembleDebugAndroidTest
+    - |
+      declare -a device_options
+      for device_option in $TARGET_DEVICES; do
+        device_options+=( --device="$device_option" )
+      done
+      echo "Using the following devices for testing ${device_options[@]}"
+    - |
+      ./google-cloud-sdk/bin/gcloud firebase test android run \
+          --type instrumentation \
+          --app app/build/outputs/apk/debug/app-debug.apk \
+          --test app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk \
+          "${device_options[@]}" \
+          2>&1 | tee output.log
+      result=${PIPESTATUS[0]}
+    # The exit codes are documented at https://firebase.google.com/docs/test-lab/android/command-line#script_exit_codes
+    - echo "Result is $result"
+    - exit $result
+  after_script:
+    # Download test results from the GCS bucket.
+    # We must download test results for each device that we have tested.
+    - gcs_bucket=$(sed -ne "s/^Raw results will be stored in your GCS bucket at \[https:\/\/console\.developers\.google\.com\/storage\/browser\/\(.*\)\]$/\1/p" output.log)
+    - gcs_bucket_path="gs://$gcs_bucket"
+    # Grab all subdirectories that are in this bucket. To do this, we egrep so that we extract the
+    # last non-empty subpath that ends in "/ (e.g. "gs://a/b/c/" would have the grepped result as "c").
+    # Then, for consistency reasons, we just discard the trailing "/".
+    - device_result_dirs=$(./google-cloud-sdk/bin/gsutil ls "$gcs_bucket_path" | egrep -o "[^\/]*/$" | cut -d '/' -f 1)
+    - |
+      for subdir in $device_result_dirs; do
+        echo "Getting test report for $subdir"
+        mkdir -p "gcstestresults/$subdir"
+        fullpath="$gcs_bucket_path$subdir/**/test*.xml"
+        ./google-cloud-sdk/bin/gsutil cp "$fullpath" "gcstestresults/$subdir"
+        cd "gcstestresults/$subdir"
+        for file in *.xml; do
+          # Prefix all XML files with the subdirectory name; name contains the target device fields
+          mv "$file" "$subdir-$file"
+        done
+        cd ../../
+      done
+  artifacts:
+    expire_in: 1 week
+    reports:
+      junit: gcstestresults/**/*.xml
+  tags:
+    - test-lab
