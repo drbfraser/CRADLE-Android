@@ -18,8 +18,10 @@ import androidx.test.espresso.idling.CountingIdlingResource
 import com.cradleVSA.neptune.BuildConfig
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.ext.getEnglishResources
+import com.cradleVSA.neptune.ext.getIntOrNull
 import com.cradleVSA.neptune.ext.setValueOnMainThread
 import com.cradleVSA.neptune.ext.withIdlingResource
+import com.cradleVSA.neptune.manager.LoginManager
 import com.cradleVSA.neptune.manager.PatientManager
 import com.cradleVSA.neptune.manager.ReadingManager
 import com.cradleVSA.neptune.manager.ReferralUploadManager
@@ -807,8 +809,9 @@ class PatientReadingViewModel @Inject constructor(
     val urineTestBloodInput = MutableLiveData<String>()
 
     /* Referral Info */
-    private val referral: MutableLiveData<Referral?> =
+    init {
         readingBuilder.get(Reading::referral, defaultValue = null)
+    }
 
     /* Reading Info */
     val readingId: MutableLiveData<String> =
@@ -816,11 +819,21 @@ class PatientReadingViewModel @Inject constructor(
 
     val dateTimeTaken: MutableLiveData<Long?> = readingBuilder.get<Long?>(Reading::dateTimeTaken)
 
+    val lastEdited: MutableLiveData<Long?> = readingBuilder.get<Long?>(Reading::lastEdited)
+
     private val previousReadingIds: MutableLiveData<List<String>>
         get() = readingBuilder.get<List<String>>(Reading::previousReadingIds, emptyList())
 
     val metadata: MutableLiveData<ReadingMetadata> =
         readingBuilder.get(Reading::metadata, ReadingMetadata())
+
+    init {
+        // Populate the builder with the current user's userId if there is none present.
+        readingBuilder.get(
+            Reading::userId,
+            defaultValue = sharedPreferences.getIntOrNull(LoginManager.USER_ID_KEY)
+        )
+    }
 
     /**
      * Describes the age input state. If the value inside is true, that means that age is derived
@@ -876,6 +889,18 @@ class PatientReadingViewModel @Inject constructor(
     }
 
     val isNetworkAvailable = NetworkAvailableLiveData(app)
+
+    private suspend fun populateDateFields() {
+        withContext(Dispatchers.Main) {
+            // Update date time taken if null. This may be nonnull if we're editing a reading.
+            val now = ZonedDateTime.now().toEpochSecond()
+            if (dateTimeTaken.value == null) {
+                dateTimeTaken.value = now
+            }
+            // Always update this.
+            lastEdited.value = now
+        }
+    }
 
     /**
      * The [NavigationManager] handles the navigation in the Activity / Fragments.
@@ -992,15 +1017,10 @@ class PatientReadingViewModel @Inject constructor(
             // proper values after pressing SAVE READING.
             readingBuilder.apply {
                 set(Reading::patientId, originalPatient?.id ?: patientId.value)
-                // These will only populate the fields with null if there's nothing in there already.
-                // dateTimeTaken will be updated when the save button is pressed.
-                // Update date time taken if null. This may be nonnull if we're editing a reading.
-                if (dateTimeTaken.value == null) {
-                    dateTimeTaken.value = ZonedDateTime.now().toEpochSecond()
-                }
                 get(Reading::referral, defaultValue = null)
                 get(Reading::followUp, defaultValue = null)
             }
+            populateDateFields()
 
             val validReading = withContext(Dispatchers.Default) { attemptToBuildValidReading() }
                 ?: return false
@@ -1303,8 +1323,10 @@ class PatientReadingViewModel @Inject constructor(
     ): Pair<ReadingFlowSaveResult, PatientAndReadings?> {
         val saveResult = saveManager.saveWithReferral(referralOption, referralComment, healthFacilityName)
         if (saveResult.first == ReadingFlowSaveResult.SAVE_SUCCESSFUL) {
-            readingManager.setDateRecheckVitalsNeededToNull(originalReadingId)
-            readingManager.setIsUploadedToServerToZero(originalReadingId)
+            readingManager.apply {
+                setDateRecheckVitalsNeededToNull(originalReadingId)
+                setIsUploadedToServerToZero(originalReadingId)
+            }
         }
         return saveResult
     }
@@ -1317,8 +1339,11 @@ class PatientReadingViewModel @Inject constructor(
     suspend fun save(): ReadingFlowSaveResult {
         val saveResult = saveManager.save()
         if (saveResult == ReadingFlowSaveResult.SAVE_SUCCESSFUL) {
-            readingManager.setDateRecheckVitalsNeededToNull(originalReadingId)
-            readingManager.setIsUploadedToServerToZero(originalReadingId)
+            readingManager.apply {
+                setLastEdited(originalReadingId, ZonedDateTime.now().toEpochSecond())
+                setDateRecheckVitalsNeededToNull(originalReadingId)
+                setIsUploadedToServerToZero(originalReadingId)
+            }
         }
         return saveResult
     }
@@ -1340,10 +1365,10 @@ class PatientReadingViewModel @Inject constructor(
          * Otherwise, it will return a Pair of a nullable Patient and a non-null Reading. The Patient
          * is null if it wasn't built.
          */
-        private suspend fun constructValidPatientAndReadingFromBuilders():
-            Pair<Patient?, Reading>? = withContext(Dispatchers.Default) {
+        private suspend fun constructValidPatientAndReadingFromBuilders(): Pair<Patient?, Reading>? {
+            return withContext(Dispatchers.Default) {
                 val patientAsync = async {
-                    return@async if (shouldSavePatient()) {
+                    if (shouldSavePatient()) {
                         patientLastEdited.setValueOnMainThread(ZonedDateTime.now().toEpochSecond())
                         attemptToBuildValidPatient()
                     } else {
@@ -1355,17 +1380,18 @@ class PatientReadingViewModel @Inject constructor(
                     // Try to construct a reading for saving. It should be valid, as these validated
                     // properties should have been enforced in the previous fragments
                     // (VitalSignsFragment). We get null if it's not valid.
-                    return@async attemptToBuildValidReading()
+                    attemptToBuildValidReading()
                 }
 
                 val reading = readingAsync.await() ?: return@withContext null
                 val patient = patientAsync.await()
-                return@withContext if (shouldSavePatient() && patient == null) {
+                if (shouldSavePatient() && patient == null) {
                     null
                 } else {
                     patient to reading
                 }
             }
+        }
 
         private val isSavingMutex = Mutex()
         val isSaving = MutableLiveData<Boolean>(false)

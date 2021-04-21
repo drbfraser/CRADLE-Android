@@ -146,6 +146,10 @@ class ReadingManager constructor(
         return result.map { }
     }
 
+    suspend fun setLastEdited(readingId: String, lastEdited: Long) {
+        readingDao.setLastEdited(readingId, lastEdited)
+    }
+
     suspend fun setDateRecheckVitalsNeededToNull(readingId: String) {
         readingDao.setDateRecheckVitalsNeededToNull(readingId)
     }

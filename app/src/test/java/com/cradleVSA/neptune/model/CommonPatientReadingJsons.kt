@@ -61,6 +61,7 @@ object CommonPatientReadingJsons {
             ],
             "trafficLightStatus": "YELLOW_UP",
             "dateTimeTaken": 1605753210,
+            "lastEdited": 1605753210,
             "dateRecheckVitalsNeeded": 1605754111,
             "retestOfPreviousReadingIds": "",
             "patientId": "123456",
@@ -75,7 +76,8 @@ object CommonPatientReadingJsons {
                 "dateReferred": 1605753210
             },
             "followup": null,
-            "urineTests": null
+            "urineTests": null,
+            "userId": 12
         },
         {
             "readingId": "777850f0-dc71-4501-a440-1871ecea6381",
@@ -87,13 +89,15 @@ object CommonPatientReadingJsons {
             ],
             "trafficLightStatus": "YELLOW_UP",
             "dateTimeTaken": 1604883648,
+            "lastEdited": 1604883648,
             "dateRecheckVitalsNeeded": 1605754111,
             "retestOfPreviousReadingIds": "",
             "patientId": "123456",
             "isFlaggedForFollowup": false,
             "referral": null,
             "followup": null,
-            "urineTests": null
+            "urineTests": null,
+            "userId": 12
         }
     ]
 }
@@ -125,6 +129,7 @@ object CommonPatientReadingJsons {
                     ),
                     symptoms = listOf("Feverish", "Muscle ache"),
                     dateTimeTaken = 1605753210,
+                    lastEdited = 1605753210,
                     dateRecheckVitalsNeeded = 1605754111,
                     previousReadingIds = listOf(),
                     patientId = "123456",
@@ -141,6 +146,7 @@ object CommonPatientReadingJsons {
                     ),
                     followUp = null,
                     urineTest = null,
+                    userId = 12
                 ),
                 Reading(
                     bloodPressure = BloodPressure(
@@ -149,6 +155,7 @@ object CommonPatientReadingJsons {
                         heartRate = 87
                     ),
                     dateTimeTaken = 1604883648L,
+                    lastEdited = 1604883648L,
                     patientId = "123456",
                     id = "777850f0-dc71-4501-a440-1871ecea6381",
                     symptoms = listOf("NONE"),
@@ -157,7 +164,8 @@ object CommonPatientReadingJsons {
                     referral = null,
                     isFlaggedForFollowUp = false,
                     urineTest = null,
-                    previousReadingIds = listOf()
+                    previousReadingIds = listOf(),
+                    userId = 12
                 )
             )
         )
@@ -216,6 +224,7 @@ object CommonPatientReadingJsons {
             "bpSystolic": 119,
             "trafficLightStatus": "YELLOW_UP",
             "dateTimeTaken": 1604883580,
+            "lastEdited": 1604883580,
             "urineTests": {
                 "urineTestNit": "NAD",
                 "id": 18,
@@ -250,6 +259,7 @@ object CommonPatientReadingJsons {
                 Reading(
                     bloodPressure = BloodPressure(119, 97, 78),
                     dateTimeTaken = 1604883580L,
+                    lastEdited = 1604883580L,
                     patientId = "3459834789348",
                     id = "ca84ac2d-953f-4f5e-ae24-e0a6e8af7c94",
                     symptoms = listOf(
@@ -263,7 +273,8 @@ object CommonPatientReadingJsons {
                     dateRecheckVitalsNeeded = null,
                     followUp = null,
                     referral = null,
-                    isFlaggedForFollowUp = false
+                    isFlaggedForFollowUp = false,
+                    userId = null
                 )
             )
         )
@@ -322,6 +333,7 @@ object CommonPatientReadingJsons {
             ],
             "trafficLightStatus": "YELLOW_UP",
             "dateTimeTaken": 1604981072,
+            "lastEdited": 1604981072,
             "dateRecheckVitalsNeeded": 1604981973,
             "retestOfPreviousReadingIds": "",
             "patientId": "66665",
@@ -354,7 +366,8 @@ object CommonPatientReadingJsons {
                 "urineTestGlu": "+",
                 "urineTestPro": "++",
                 "urineTestBlood": "+"
-            }
+            },
+            "userId": 12
         }
     ]
 }
@@ -387,6 +400,7 @@ object CommonPatientReadingJsons {
                     ),
                     symptoms = listOf("Unwell", "Shortness of breath"),
                     dateTimeTaken = 1604981072L,
+                    lastEdited = 1604981072L,
                     previousReadingIds = emptyList(),
                     patientId = "66665",
                     isFlaggedForFollowUp = false,
@@ -419,7 +433,8 @@ object CommonPatientReadingJsons {
                         protein = "++",
                         blood = "+"
                     ),
-                    dateRecheckVitalsNeeded = 1604981973L
+                    dateRecheckVitalsNeeded = 1604981973L,
+                    userId = 12
                 )
             )
         )
@@ -462,13 +477,15 @@ object CommonPatientReadingJsons {
             "symptoms": "",
             "trafficLightStatus": "GREEN",
             "dateTimeTaken": 1605778643,
+            "lastEdited": 1605778643,
             "dateRecheckVitalsNeeded": 1603347681,
             "retestOfPreviousReadingIds": "",
             "patientId": "6454875454",
             "isFlaggedForFollowup": true,
             "referral": null,
             "followup": null,
-            "urineTests": null
+            "urineTests": null,
+            "userId": 1
         }
     ]
 }
@@ -496,13 +513,15 @@ object CommonPatientReadingJsons {
                     bloodPressure = BloodPressure(123, 89, 85),
                     symptoms = emptyList(),
                     dateTimeTaken = 1605778643,
+                    lastEdited = 1605778643,
                     dateRecheckVitalsNeeded = 1603347681,
                     previousReadingIds = emptyList(),
                     patientId = "6454875454",
                     isFlaggedForFollowUp = true,
                     referral = null,
                     followUp = null,
-                    urineTest = null
+                    urineTest = null,
+                    userId = 1
                 )
             )
         )

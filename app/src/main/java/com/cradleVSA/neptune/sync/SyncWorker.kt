@@ -193,19 +193,15 @@ class SyncWorker @AssistedInject constructor(
             )
             if (readingResult is Success) {
                 Log.wtf(TAG, "successful reading sync but still readings left unsynced")
-                // FIXME: https://csil-git1.cs.surrey.sfu.ca/415-cradle/cradle-platform/-/blob/master/server/api/resources/sync.py#L97-103
+                // https://csil-git1.cs.surrey.sfu.ca/415-cradle/cradle-platform/-/blob/master/server/api/resources/sync.py#L97-103
                 //  The only reasons why a reading might still not be uploaded but the response from
-                //  server is still successful are that
-                //      1. The server will skip readings that are for non-existent patients.
-                //         although we should note this usually never happens, because it requires
-                //         the Android client to somehow upload a because patients on Android are
-                //         synced first before reading sync. Also, any patients that are sent
-                //         through SMS are still treated as unuploaded in case the SMS did not
-                //         actually reach the server.
-                //      2. When we upload a reading to update dateRecheckVitalsNeeded, the server
-                //         has no way to update any lastEdited timestamp. This results in syncs
-                //         not picking up on this dateRecheckVitalsNeeded change.
-                //         See ticket CRDL-256
+                //  server is still successful is that:
+                //  The server will skip readings that are for non-existent patients.
+                //  although we should note this usually never happens, because it requires
+                //  the Android client to somehow upload a because patients on Android are
+                //  synced first before reading sync. Also, any patients that are sent
+                //  through SMS are still treated as unuploaded in case the SMS did not
+                //  actually reach the server.
             }
         }
 

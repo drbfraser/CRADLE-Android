@@ -358,17 +358,17 @@ class RestApi constructor(
      * @param id id of the patient to associate
      * @return whether the request was successful or not
      */
-    suspend fun associatePatientToUser(id: String): NetworkResult<Unit> =
+    suspend fun associatePatientToUser(patientId: String): NetworkResult<Unit> =
         withContext(IO) {
             // more efficient to just construct the bytes directly
-            val body = "{\"patientId\":\"$id\"}".encodeToByteArray()
+            val body = "{\"patientId\":\"$patientId\"}".encodeToByteArray()
             http.makeRequest(
                 method = Http.Method.POST,
                 url = urlManager.userPatientAssociation,
                 headers = headers,
                 requestBody = buildJsonRequestBody(body),
                 inputStreamReader = {},
-            ).map { Unit }
+            ).map { }
         }
 
     /**
