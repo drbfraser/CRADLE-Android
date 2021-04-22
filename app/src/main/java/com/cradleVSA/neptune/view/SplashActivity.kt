@@ -1,6 +1,5 @@
 package com.cradleVSA.neptune.view
 
-import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -35,12 +34,12 @@ class SplashActivity : AppCompatActivity() {
         } else {
             true
         }
-        updateManager.immediateUpdate(this@SplashActivity)
+
         lifecycleScope.launch {
             if (!isMigrationSuccessful) {
                 loginManager.logout()
             }
-
+            updateManager.immediateUpdate(this@SplashActivity)
             delay(DELAY_MILLIS)
 
             val intent = if (isMigrationSuccessful) {
@@ -57,11 +56,6 @@ class SplashActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
         }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        updateManager.handleResult(requestCode, resultCode)
     }
 
     companion object {
