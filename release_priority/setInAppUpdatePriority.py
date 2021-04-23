@@ -52,17 +52,17 @@ if __name__ == '__main__':
 
     app_edit = service.edits().insert(packageName=PACKAGE_NAME).execute()
 
-    # you can use this to print out all tracks
     service.edits().tracks().list(packageName=PACKAGE_NAME, editId=app_edit["id"]).execute()
 
     # get a particular track
     track = service.edits().tracks().get(packageName=PACKAGE_NAME, editId=app_edit.get("id"), track=trackToUpdate).execute()
 
-    # there's a releases field; see the googleapis.github.io link 
-    # above for info about what's in a release object
+    # there's a releases field; see this link 
+    # https://googleapis.github.io/google-api-python-client/docs/dyn/androidpublisher_v3.edits.tracks.html 
+    # for info about what's in a release object
     print(track)
 
-    # set the priority for the first release in the list to whatever
+    # set the priority for the first release in the list
     track["releases"][0]["inAppUpdatePriority"] = updatePriority
     print(track)
 
@@ -70,7 +70,5 @@ if __name__ == '__main__':
     service.edits().tracks().update(packageName=PACKAGE_NAME, editId=app_edit["id"], track=trackToUpdate, body=track).execute()
     service.edits().commit(packageName=PACKAGE_NAME, editId=app_edit["id"]).execute()
 
-    # close when you don't need it anymore; you can just copy and paste the above
-    # into the console to play around with it without closing the service
     service.close()
     
