@@ -12,7 +12,13 @@ PACKAGE_NAME = "com.cradleVSA.neptune"
 
 
 def parseCommandLineArgs():
-    parser = argparse.ArgumentParser(description='update inAppUpdatePriority for releases')
+    scriptDescription = (
+    'update inAppUpdatePriority for releases\n'
+    'script requires client_secrets.json to be in the same directory which can be found at:\n'
+    'https://console.cloud.google.com/apis/api/androidpublisher.googleapis.com/credentials?project=cradle-vsa\n'
+    'login with icradle2020@gmail.com'
+    )
+    parser = argparse.ArgumentParser(description=scriptDescription, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument(f'--{TRACK_CMD_LINE}', help='The track the release is on one of [beta, alpha, internal, production]')
     parser.add_argument(f'--{UPDATE_PRIORITY_CMD_LINE}', help='The update priority for a release, a value from 0-5')
     return vars(parser.parse_args())
@@ -73,7 +79,7 @@ if __name__ == '__main__':
 
     except(KeyboardInterrupt):
         pass
-    
+
     finally:
         service.close()
     
