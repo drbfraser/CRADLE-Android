@@ -50,25 +50,30 @@ if __name__ == '__main__':
 
     service = authorizeAndGetService()
 
-    app_edit = service.edits().insert(packageName=PACKAGE_NAME).execute()
+    try:
+        app_edit = service.edits().insert(packageName=PACKAGE_NAME).execute()
 
-    service.edits().tracks().list(packageName=PACKAGE_NAME, editId=app_edit["id"]).execute()
+        service.edits().tracks().list(packageName=PACKAGE_NAME, editId=app_edit["id"]).execute()
 
-    # get a particular track
-    track = service.edits().tracks().get(packageName=PACKAGE_NAME, editId=app_edit.get("id"), track=trackToUpdate).execute()
+        # get a particular track
+        track = service.edits().tracks().get(packageName=PACKAGE_NAME, editId=app_edit.get("id"), track=trackToUpdate).execute()
 
-    # there's a releases field; see this link 
-    # https://googleapis.github.io/google-api-python-client/docs/dyn/androidpublisher_v3.edits.tracks.html 
-    # for info about what's in a release object
-    print(track)
+        # there's a releases field; see this link 
+        # https://googleapis.github.io/google-api-python-client/docs/dyn/androidpublisher_v3.edits.tracks.html 
+        # for info about what's in a release object
+        print(track)
 
-    # set the priority for the first release in the list
-    track["releases"][0]["inAppUpdatePriority"] = updatePriority
-    print(track)
+        # set the priority for the first release in the list
+        track["releases"][0]["inAppUpdatePriority"] = updatePriority
+        print(track)
 
-    # update and commit
-    service.edits().tracks().update(packageName=PACKAGE_NAME, editId=app_edit["id"], track=trackToUpdate, body=track).execute()
-    service.edits().commit(packageName=PACKAGE_NAME, editId=app_edit["id"]).execute()
+        # update and commit
+        service.edits().tracks().update(packageName=PACKAGE_NAME, editId=app_edit["id"], track=trackToUpdate, body=track).execute()
+        service.edits().commit(packageName=PACKAGE_NAME, editId=app_edit["id"]).execute()
 
-    service.close()
+    except(KeyboardInterrupt):
+        pass
+    
+    finally:
+        service.close()
     
