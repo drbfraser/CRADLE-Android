@@ -6,6 +6,8 @@ import argparse
 #Define command line arguments
 TRACK_CMD_LINE = 'track'
 UPDATE_PRIORITY_CMD_LINE = 'update_priority'
+#Define Package Name
+PACKAGE_NAME = "com.cradleVSA.neptune"
 
 
 def parseCommandLineArgs():
@@ -34,30 +36,28 @@ if __name__ == '__main__':
     args = parseCommandLineArgs()
     trackToUpdate = args[TRACK_CMD_LINE]
     updatePriority = args[UPDATE_PRIORITY_CMD_LINE]
-    print(trackToUpdate)
-    print(updatePriority)
 
     service = authorizeAndGetService()
 
-    app_edit = service.edits().insert(packageName="com.cradleVSA.neptune").execute()
+    app_edit = service.edits().insert(packageName="PACKAGE_NAME").execute()
 
     # you can use this to print out all tracks
-    service.edits().tracks().list(packageName="com.cradleVSA.neptune", editId=app_edit["id"]).execute()
+    service.edits().tracks().list(packageName="PACKAGE_NAME", editId=app_edit["id"]).execute()
 
     # get a particular track
-    track = service.edits().tracks().get(packageName="com.cradleVSA.neptune", editId=app_edit.get("id"), track=trackToUpdate).execute()
+    track = service.edits().tracks().get(packageName="PACKAGE_NAME", editId=app_edit.get("id"), track=trackToUpdate).execute()
 
     # there's a releases field; see the googleapis.github.io link 
     # above for info about what's in a release object
     print(track)
 
     # set the priority for the first release in the list to whatever
-    track["releases"][0]["inAppUpdatePriority"] = 5
+    track["releases"][0]["inAppUpdatePriority"] = updatePriority
     print(track)
 
     # update and commit
-    service.edits().tracks().update(packageName="com.cradleVSA.neptune", editId=app_edit["id"], track=trackToUpdate, body=track).execute()
-    service.edits().commit(packageName="com.cradleVSA.neptune", editId=app_edit["id"]).execute()
+    service.edits().tracks().update(packageName="PACKAGE_NAME", editId=app_edit["id"], track=trackToUpdate, body=track).execute()
+    service.edits().commit(packageName="PACKAGE_NAME", editId=app_edit["id"]).execute()
 
     # close when you don't need it anymore; you can just copy and paste the above
     # into the console to play around with it without closing the service
