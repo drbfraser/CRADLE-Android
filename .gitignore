@@ -90,3 +90,6 @@ keystore.properties
 
 # ProGuard usage
 usage.txt
+
+# App Update Priority
+client_secrets.json
