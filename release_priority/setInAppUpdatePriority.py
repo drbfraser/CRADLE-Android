@@ -1,6 +1,7 @@
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 import argparse
+import os.path
 
 
 #Define command line arguments
@@ -15,6 +16,14 @@ def parseCommandLineArgs():
     parser.add_argument(f'--{TRACK_CMD_LINE}', help='The track the release is on one of [beta, alpha, internal, production]')
     parser.add_argument(f'--{UPDATE_PRIORITY_CMD_LINE}', help='The update priority for a release, a value from 0-5')
     return vars(parser.parse_args())
+
+
+def checkClientSecretsExists():
+    fileExists = os.path.isfile(r'./client_secrets.json')
+    if not fileExists:
+        print('client_secrets.json does not exist in the directory, please download it at:')
+        print('https://console.cloud.google.com/apis/api/androidpublisher.googleapis.com/credentials?project=cradle-vsa')
+        quit()
 
 
 def authorizeAndGetService():
@@ -37,15 +46,17 @@ if __name__ == '__main__':
     trackToUpdate = args[TRACK_CMD_LINE]
     updatePriority = args[UPDATE_PRIORITY_CMD_LINE]
 
+    checkClientSecretsExists()
+
     service = authorizeAndGetService()
 
-    app_edit = service.edits().insert(packageName="PACKAGE_NAME").execute()
+    app_edit = service.edits().insert(packageName=PACKAGE_NAME).execute()
 
     # you can use this to print out all tracks
-    service.edits().tracks().list(packageName="PACKAGE_NAME", editId=app_edit["id"]).execute()
+    service.edits().tracks().list(packageName=PACKAGE_NAME, editId=app_edit["id"]).execute()
 
     # get a particular track
-    track = service.edits().tracks().get(packageName="PACKAGE_NAME", editId=app_edit.get("id"), track=trackToUpdate).execute()
+    track = service.edits().tracks().get(packageName=PACKAGE_NAME, editId=app_edit.get("id"), track=trackToUpdate).execute()
 
     # there's a releases field; see the googleapis.github.io link 
     # above for info about what's in a release object
@@ -56,8 +67,8 @@ if __name__ == '__main__':
     print(track)
 
     # update and commit
-    service.edits().tracks().update(packageName="PACKAGE_NAME", editId=app_edit["id"], track=trackToUpdate, body=track).execute()
-    service.edits().commit(packageName="PACKAGE_NAME", editId=app_edit["id"]).execute()
+    service.edits().tracks().update(packageName=PACKAGE_NAME, editId=app_edit["id"], track=trackToUpdate, body=track).execute()
+    service.edits().commit(packageName=PACKAGE_NAME, editId=app_edit["id"]).execute()
 
     # close when you don't need it anymore; you can just copy and paste the above
     # into the console to play around with it without closing the service
