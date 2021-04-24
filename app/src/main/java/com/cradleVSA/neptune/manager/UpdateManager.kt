@@ -12,6 +12,8 @@ import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.android.play.core.ktx.requestAppUpdateInfo
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class UpdateManager @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -31,13 +33,16 @@ class UpdateManager @Inject constructor(
                 activity,
                 AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build()
             )
-            task.addOnCompleteListener {
-                if (it.isSuccessful) {
-                    updateSuccessful = true
-                    Toast.makeText(context, context.getString(R.string.update_successful), Toast.LENGTH_SHORT).show()
-                } else {
-                    updateSuccessful = false
-                    Toast.makeText(context, context.getString(R.string.update_failed), Toast.LENGTH_SHORT).show()
+
+            updateSuccessful = suspendCoroutine<Boolean> { cont ->
+                task.addOnCompleteListener {
+                    if (it.isSuccessful) {
+                        Toast.makeText(context, context.getString(R.string.update_successful), Toast.LENGTH_SHORT).show()
+                        cont.resume(true)
+                    } else {
+                        Toast.makeText(context, context.getString(R.string.update_failed), Toast.LENGTH_SHORT).show()
+                        cont.resume(false)
+                    }
                 }
             }
         }
@@ -52,5 +57,9 @@ class UpdateManager @Inject constructor(
 
     private fun isUpdateInProgress(appUpdateInfo: AppUpdateInfo): Boolean {
         return appUpdateInfo.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS
+    }
+
+    private fun handleCompletion(listener: (Boolean) -> Unit) {
+
     }
 }
