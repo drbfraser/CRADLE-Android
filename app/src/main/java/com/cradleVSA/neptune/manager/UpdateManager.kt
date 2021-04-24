@@ -1,5 +1,6 @@
 package com.cradleVSA.neptune.manager
 
+import android.app.Activity.RESULT_OK
 import android.content.Context
 import android.widget.Toast
 import com.cradleVSA.neptune.R
@@ -36,7 +37,7 @@ class UpdateManager @Inject constructor(
 
             updateSuccessful = suspendCoroutine<Boolean> { cont ->
                 task.addOnCompleteListener {
-                    if (it.isSuccessful) {
+                    if (it.result == RESULT_OK) {
                         Toast.makeText(context, context.getString(R.string.update_successful), Toast.LENGTH_SHORT).show()
                         cont.resume(true)
                     } else {
