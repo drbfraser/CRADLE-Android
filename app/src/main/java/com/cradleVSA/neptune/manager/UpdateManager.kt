@@ -38,10 +38,18 @@ class UpdateManager @Inject constructor(
             updateSuccessful = suspendCoroutine<Boolean> { cont ->
                 task.addOnCompleteListener {
                     if (it.result == RESULT_OK) {
-                        Toast.makeText(context, context.getString(R.string.update_successful), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.update_successful),
+                            Toast.LENGTH_SHORT
+                        ).show()
                         cont.resume(true)
                     } else {
-                        Toast.makeText(context, context.getString(R.string.update_failed), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.update_failed),
+                            Toast.LENGTH_SHORT
+                        ).show()
                         cont.resume(false)
                     }
                 }
@@ -58,9 +66,5 @@ class UpdateManager @Inject constructor(
 
     private fun isUpdateInProgress(appUpdateInfo: AppUpdateInfo): Boolean {
         return appUpdateInfo.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS
-    }
-
-    private fun handleCompletion(listener: (Boolean) -> Unit) {
-
     }
 }
