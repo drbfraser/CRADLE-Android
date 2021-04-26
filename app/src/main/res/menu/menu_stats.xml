@@ -1,0 +1,17 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.cradleVSA.neptune.view.StatsActivity">
+    <item
+        android:id="@+id/stats_time_picker"
+        android:icon="@drawable/ic_schedule_24px"
+        android:orderInCategory="100"
+        android:title="@string/stats_activity_date_picker"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/stats_filters"
+        android:icon="@drawable/ic_filter_alt_24px"
+        android:orderInCategory="90"
+        android:title="@string/stats_activity_filter"
+        app:showAsAction="ifRoom" />
+</menu>

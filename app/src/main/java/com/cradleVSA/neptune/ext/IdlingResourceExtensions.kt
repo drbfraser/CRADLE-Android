@@ -3,19 +3,20 @@ package com.cradleVSA.neptune.ext
 import androidx.test.espresso.idling.CountingIdlingResource
 
 /**
- * \[idlingResource] is incremented during execution of the [block] and then
- * decremented after. This lets Espresso UI tests synchronize itself.
+ * The [CountingIdlingResource] is incremented during execution of the [block] and then
+ * decremented after. This lets Espresso UI tests synchronize itself. If the
+ * [CountingIdlingResource] is null, then it doesn't do anything.
  */
-inline fun withIdlingResource(idlingResource: CountingIdlingResource?, block: () -> Unit) {
+inline fun CountingIdlingResource?.use(block: () -> Unit) {
     // micro-optimize by not using try-finally; does it actually matter?
-    if (idlingResource == null) {
+    if (this == null) {
         block()
     } else {
-        idlingResource.increment()
+        increment()
         try {
             block()
         } finally {
-            idlingResource.decrement()
+            decrement()
         }
     }
 }

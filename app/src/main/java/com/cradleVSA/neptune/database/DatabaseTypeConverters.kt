@@ -1,7 +1,6 @@
 package com.cradleVSA.neptune.database
 
 import androidx.room.TypeConverter
-import com.cradleVSA.neptune.ext.toList
 import com.cradleVSA.neptune.model.Assessment
 import com.cradleVSA.neptune.model.BloodPressure
 import com.cradleVSA.neptune.model.GestationalAge
@@ -9,7 +8,8 @@ import com.cradleVSA.neptune.model.ReadingMetadata
 import com.cradleVSA.neptune.model.Referral
 import com.cradleVSA.neptune.model.Sex
 import com.cradleVSA.neptune.model.UrineTest
-import org.json.JSONArray
+import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.json.JSONObject
 
 /**
@@ -19,11 +19,17 @@ class DatabaseTypeConverters {
 
     @TypeConverter
     fun gestationalAgeToString(gestationalAge: GestationalAge?): String? =
-        gestationalAge?.marshal()?.toString()
+        JacksonMapper.writerForGestAge.writeValueAsString(gestationalAge)
 
     @TypeConverter
     fun stringToGestationalAge(string: String?): GestationalAge? =
-        string?.let { if (it == "null") null else GestationalAge.unmarshal(JSONObject(it)) }
+        string?.let {
+            if (it == "null") {
+                null
+            } else {
+                JacksonMapper.readerForGestAge.readValue<GestationalAge>(it)
+            }
+        }
 
     @TypeConverter
     fun stringToSex(string: String): Sex = enumValueOf(string)
@@ -32,19 +38,12 @@ class DatabaseTypeConverters {
     fun sexToString(sex: Sex): String = sex.name
 
     @TypeConverter
-    fun fromStringList(list: List<String>?): String? {
-        if (list == null) {
-            return null
-        }
-
-        return JSONArray()
-            .apply { list.forEach { put(it) } }
-            .toString()
-    }
+    fun fromStringList(list: List<String>?): String? =
+        list?.let { JacksonMapper.mapper.writeValueAsString(it) }
 
     @TypeConverter
     fun toStringList(string: String?): List<String>? = string?.let {
-        JSONArray(it).toList(JSONArray::getString)
+        JacksonMapper.mapper.readValue<List<String>>(it)
     }
 
     @TypeConverter

@@ -3,8 +3,6 @@ package com.cradleVSA.neptune.manager
 import androidx.lifecycle.LiveData
 import com.cradleVSA.neptune.database.CradleDatabase
 import com.cradleVSA.neptune.model.HealthFacility
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 /**
  *  * manager to interact with the [HealthFacility] table
@@ -19,31 +17,27 @@ class HealthFacilityManager(database: CradleDatabase) {
     /**
      * get a [HealthFacility] by id
      */
-    suspend fun getById(id: String) = withContext(Dispatchers.IO) { dao.getHealthFacilityById(id) }
+    suspend fun getById(id: String) = dao.getHealthFacilityById(id)
 
     /**
      * get all the [HealthFacility] selected by the current user.
      */
-    suspend fun getAllSelectedByUser() = withContext(Dispatchers.IO) {
-        dao.getAllUserSelectedHealthFacilities()
-    }
+    suspend fun getAllSelectedByUser() = dao.getAllUserSelectedHealthFacilities()
 
     /**
      * add a single health facility
      */
-    suspend fun add(facility: HealthFacility) = withContext(Dispatchers.IO) { dao.insert(facility) }
+    suspend fun add(facility: HealthFacility) = dao.insert(facility)
 
     /**
      * Add all the health facilities
      */
-    suspend fun addAll(facilities: List<HealthFacility>) = withContext(Dispatchers.IO) {
-        dao.insertAll(facilities)
-    }
+    suspend fun addAll(facilities: List<HealthFacility>) = dao.insertAll(facilities)
 
     /**
      * update a single Health Facility
      */
-    suspend fun update(facility: HealthFacility) = withContext(Dispatchers.IO) { dao.update(facility) }
+    suspend fun update(facility: HealthFacility) = dao.update(facility)
 
     /**
      * returns a live list of the facilities
@@ -55,9 +49,4 @@ class HealthFacilityManager(database: CradleDatabase) {
      */
     val getLiveListSelected: LiveData<List<HealthFacility>> =
         dao.getAllUserSelectedHealthFacilitiesLiveData()
-
-    /**
-     * delete all [HealthFacility] from the DB
-     */
-    suspend fun deleteAll() = withContext(Dispatchers.IO) { dao.deleteAll() }
 }

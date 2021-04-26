@@ -111,6 +111,8 @@ class AdviceFragment : Fragment() {
         viewModel.dateRecheckVitalsNeeded.observe(viewLifecycleOwner) {}
 
         view.findViewById<Button>(R.id.save_reading_button).setOnClickListener {
+            viewModel.idlingResource?.increment()
+
             it.hideKeyboard()
             viewModel.setInputEnabledState(false)
 
@@ -131,6 +133,7 @@ class AdviceFragment : Fragment() {
                         viewModel.setInputEnabledState(true)
                     }
                 }
+                viewModel.idlingResource?.decrement()
             }
         }
     }

@@ -174,6 +174,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
         findPreference(R.string.key_vht_name)
             ?.useDynamicSummary()
 
+        findPreference(R.string.key_role)
+            ?.useDynamicSummary()
+
         findPreference(R.string.key_region)
             ?.useDynamicSummary()
     }

@@ -13,8 +13,6 @@ import androidx.work.workDataOf
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.database.CradleDatabase
 import com.cradleVSA.neptune.ext.Field
-import com.cradleVSA.neptune.ext.jackson.parseObject
-import com.cradleVSA.neptune.ext.jackson.parseObjectArray
 import com.cradleVSA.neptune.manager.PatientManager
 import com.cradleVSA.neptune.manager.ReadingManager
 import com.cradleVSA.neptune.model.Assessment
@@ -26,16 +24,15 @@ import com.cradleVSA.neptune.net.NetworkException
 import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.net.RestApi
 import com.cradleVSA.neptune.net.Success
+import com.cradleVSA.neptune.net.SyncException
 import com.cradleVSA.neptune.utilitiles.RateLimitRunner
 import com.cradleVSA.neptune.utilitiles.UnixTimestamp
-import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.IOException
 import java.math.BigInteger
 
 /**
@@ -165,8 +162,7 @@ class SyncWorker @AssistedInject constructor(
             // FIXME: Clean this up
             Log.wtf(
                 TAG,
-                "DEBUG: THERE ARE $patientsLeftToUpload patients" +
-                    " LEFT TO UPLOAD"
+                "DEBUG: THERE ARE $patientsLeftToUpload PATIENTS LEFT TO UPLOAD"
             )
         }
 
@@ -196,13 +192,16 @@ class SyncWorker @AssistedInject constructor(
                 "There are $readingsLeftToUpload readings left to upload"
             )
             if (readingResult is Success) {
-                // If it's successful, then all the readings must have been uploaded anyway
-                val numMarked = readingManager.markAllReadingsAsUploaded()
-                Log.d(
-                    TAG,
-                    "DEBUG: Readings now marked? " +
-                        "${numMarked == readingsLeftToUpload}"
-                )
+                Log.wtf(TAG, "successful reading sync but still readings left unsynced")
+                // https://csil-git1.cs.surrey.sfu.ca/415-cradle/cradle-platform/-/blob/master/server/api/resources/sync.py#L97-103
+                //  The only reasons why a reading might still not be uploaded but the response from
+                //  server is still successful is that:
+                //  The server will skip readings that are for non-existent patients.
+                //  although we should note this usually never happens, because it requires
+                //  the Android client to somehow upload a because patients on Android are
+                //  synced first before reading sync. Also, any patients that are sent
+                //  through SMS are still treated as unuploaded in case the SMS did not
+                //  actually reach the server.
             }
         }
 
@@ -230,71 +229,33 @@ class SyncWorker @AssistedInject constructor(
             }
         )
         Log.d(TAG, "preparing to upload ${patientsToUpload.size} patients")
-        // TODO: Refactor this channel-download pattern
-
-        return@withContext restApi.syncPatients(
-            patientsToUpload,
-            lastSyncTimestamp = lastSyncTime
-        ) { inputStream ->
-            var patientsDownloaded = 0
-            var totalPatients = 0
-            val reader = JacksonMapper.readerForPatient
+        val channel = Channel<Patient>()
+        launch {
             try {
-                withContext(Dispatchers.IO) {
-                    reader.createParser(inputStream).use { parser ->
-                        parser.parseObject {
-                            when (currentName) {
-                                PatientSyncField.TOTAL.text -> {
-                                    totalPatients = nextIntValue(0)
-                                    if (totalPatients == 0) {
-                                        return@use
-                                    }
-                                }
-                                PatientSyncField.PATIENTS.text -> {
-                                    val channel = Channel<Patient>()
-                                    val databaseJob = launch {
-                                        database.withTransaction {
-                                            for (patient in channel) {
-                                                patientManager.add(patient)
-                                            }
-                                            Log.d(TAG, "patient database job is done")
-                                        }
-                                    }
-
-                                    parseObjectArray<Patient>(reader) {
-                                        channel.send(it)
-                                        patientsDownloaded++
-                                        reportProgress(
-                                            state = State.DOWNLOADING_PATIENTS,
-                                            progress = patientsDownloaded,
-                                            total = totalPatients,
-                                        )
-                                    }
-                                    reportProgress(
-                                        state = State.DOWNLOADING_PATIENTS,
-                                        progress = patientsDownloaded,
-                                        total = totalPatients,
-                                        bypassRateLimit = true
-                                    )
-                                    channel.close()
-                                    databaseJob.join()
-                                }
-                                PatientSyncField.FACILITIES.text -> {
-                                    // TODO: Either have a sync endpoint for new facilities, or
-                                    //  remove this and just redownload facilities from server.
-                                    // nextToken()
-                                    // val tree = readValueAsTree<JsonNode>().toPrettyString()
-                                }
-                            }
-                        }
+                database.withTransaction {
+                    for (patient in channel) {
+                        patientManager.add(patient)
                     }
                 }
-            } catch (e: IOException) {
-                Log.e(TAG, "exception while reading patients", e)
-                // Propagate exceptions to the Http class so that it can log it
-                throw e
+            } catch (e: SyncException) {
+                // Need to switch context, since Dispatchers.Default doesn't do logging
+                withContext(Dispatchers.Main) {
+                    Log.e(TAG, "patients sync failed", e)
+                }
             }
-            Log.d(TAG, "DEBUG: Downloaded $patientsDownloaded patients.")
+            withContext(Dispatchers.Main) { Log.d(TAG, "patients job done") }
+        }
+
+        restApi.syncPatients(
+            patientsToUpload,
+            lastSyncTimestamp = lastSyncTime,
+            patientChannel = channel
+        ) { current, total ->
+            reportProgress(
+                state = State.DOWNLOADING_PATIENTS,
+                progress = current,
+                total = total,
+            )
         }
     }
 
@@ -310,132 +271,43 @@ class SyncWorker @AssistedInject constructor(
                 workDataOf(PROGRESS_CURRENT_STATE to State.UPLOADING_READINGS.name)
             }
         )
-        return@withContext restApi.syncReadings(
-            readingsToUpload,
-            lastSyncTimestamp = lastSyncTime
-        ) { inputStream ->
-            Log.d(TAG, "Parsing readings now")
-            var numReadingsDownloaded = 0
-            var numReferralsDownloaded = 0
-            var numAssessmentsDownloaded = 0
 
-            val readerForReading = JacksonMapper.createReader<Reading>()
-            val readerForReferral = JacksonMapper.createReader<Referral>()
-            val readerForAssessment = JacksonMapper.createReader<Assessment>()
+        val readingChannel = Channel<Reading>()
+        val referralChannel = Channel<Referral>()
+        val assessmentChannel = Channel<Assessment>()
+
+        launch {
             try {
-                readerForReading.createParser(inputStream).use { parser ->
-                    var totalDownloaded = 0
-                    var total = 0
-                    parser.parseObject {
-                        when (currentName) {
-                            ReadingSyncField.TOTAL.text -> {
-                                total = nextIntValue(0)
-                                Log.d(TAG, "There are $total readings + referrals + followups")
-
-                                if (total == 0) {
-                                    return@use
-                                }
-                            }
-                            ReadingSyncField.READINGS.text -> {
-                                Log.d(TAG, "Starting to parse readings array")
-
-                                val channel = Channel<Reading>()
-                                val databaseJob = launch {
-                                    database.withTransaction {
-                                        for (reading in channel) {
-                                            readingManager.addReading(
-                                                reading,
-                                                isReadingFromServer = true
-                                            )
-                                        }
-                                    }
-                                }
-
-                                // Channels have some non-significant overhead, so we use a local
-                                // buffer.
-                                // TODO: Refactor this channel download stuff
-                                parseObjectArray<Reading>(readerForReading) {
-                                    channel.send(it)
-                                    totalDownloaded++
-                                    numReadingsDownloaded++
-                                    reportProgress(
-                                        State.DOWNLOADING_READINGS,
-                                        progress = totalDownloaded,
-                                        total = total,
-                                    )
-                                }
-                                channel.close()
-                                databaseJob.join()
-                            }
-                            ReadingSyncField.NEW_REFERRALS.text -> {
-                                Log.d(TAG, "Starting to parse NEW_REFERRALS array")
-
-                                // TODO: refactor
-                                val channel = Channel<Referral>()
-                                val databaseJob = launch {
-                                    database.withTransaction {
-                                        for (referral in channel) {
-                                            readingManager.addReferral(referral)
-                                        }
-                                    }
-                                }
-                                parseObjectArray<Referral>(readerForReferral) {
-                                    channel.send(it)
-                                    totalDownloaded++
-                                    numReferralsDownloaded++
-                                    reportProgress(
-                                        State.DOWNLOADING_READINGS,
-                                        progress = totalDownloaded,
-                                        total = total,
-                                    )
-                                }
-                                channel.close()
-                                databaseJob.join()
-                            }
-                            ReadingSyncField.NEW_FOLLOW_UPS.text -> {
-                                Log.d(TAG, "Starting to parse NEW_FOLLOW_UPS array")
-
-                                // TODO: refactor
-                                val channel = Channel<Assessment>()
-                                val databaseJob = launch {
-                                    database.withTransaction {
-                                        for (assessment in channel) {
-                                            readingManager.addAssessment(assessment)
-                                        }
-                                    }
-                                }
-                                parseObjectArray<Assessment>(readerForAssessment) {
-                                    channel.send(it)
-                                    totalDownloaded++
-                                    numAssessmentsDownloaded++
-                                    reportProgress(
-                                        State.DOWNLOADING_READINGS,
-                                        progress = totalDownloaded,
-                                        total = total,
-                                    )
-                                }
-                                reportProgress(
-                                    State.DOWNLOADING_READINGS,
-                                    progress = totalDownloaded,
-                                    total = total,
-                                    bypassRateLimit = true
-                                )
-                                channel.close()
-                                databaseJob.join()
-                            }
-                        }
+                database.withTransaction {
+                    for (reading in readingChannel) {
+                        readingManager.addReading(reading, isReadingFromServer = true)
+                    }
+                    for (referral in referralChannel) {
+                        readingManager.addReferral(referral)
+                    }
+                    for (assessment in assessmentChannel) {
+                        readingManager.addAssessment(assessment)
                     }
                 }
-            } catch (e: IOException) {
-                Log.e(TAG, "exception while reading readings / referrals / assessments", e)
-                // Propagate exceptions to the Http class so that it can log it
-                throw e
+            } catch (e: SyncException) {
+                // Need to switch context, since Dispatchers.Default doesn't do logging
+                withContext(Dispatchers.Main) {
+                    Log.e(TAG, "reading sync failed", e)
+                }
             }
-            Log.d(
-                TAG,
-                "DEBUG: Downloaded $numReadingsDownloaded readings, " +
-                    "$numReferralsDownloaded referrals and " +
-                    "$numAssessmentsDownloaded assessments."
+        }
+
+        restApi.syncReadings(
+            readingsToUpload,
+            lastSyncTimestamp = lastSyncTime,
+            readingChannel,
+            referralChannel,
+            assessmentChannel
+        ) { current, total ->
+            reportProgress(
+                State.DOWNLOADING_READINGS,
+                progress = current,
+                total = total,
             )
         }
     }
@@ -484,13 +356,13 @@ class SyncWorker @AssistedInject constructor(
     }
 }
 
-private enum class PatientSyncField(override val text: String) : Field {
+enum class PatientSyncField(override val text: String) : Field {
     TOTAL("total"),
     PATIENTS("patients"),
     FACILITIES("healthFacilities"),
 }
 
-private enum class ReadingSyncField(override val text: String) : Field {
+enum class ReadingSyncField(override val text: String) : Field {
     TOTAL("total"),
     READINGS("readings"),
     NEW_REFERRALS("newReferralsForOldReadings"),
