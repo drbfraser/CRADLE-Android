@@ -4,7 +4,7 @@
 
 <resources>
     <!-- Network -->
-    <string name="settings_default_server_hostname">staging.cradleplatform.com</string>
+    <string name="settings_default_server_hostname">cradleplatform.com</string>
     <string name="settings_default_server_port" />
     <string name="settings_default_server_use_https">true</string>
 
