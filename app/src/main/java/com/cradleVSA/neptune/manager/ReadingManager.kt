@@ -54,17 +54,6 @@ class ReadingManager constructor(
     suspend fun updateReading(reading: Reading) = readingDao.update(reading)
 
     /**
-     * Returns a list of all readings (and their associated patients) in the
-     * database.
-     */
-    @Deprecated(
-        """
-        Do not use this; this is memory inefficient. For stats, it should be done in the database
-    """
-    )
-    suspend fun getAllReadings(): List<Reading> = readingDao.getAllReadingEntities()
-
-    /**
      * Returns the reading (and its associated patient) with a given [id] from
      * the database. Returns `null` if unable to find such a reading.
      */
@@ -155,6 +144,10 @@ class ReadingManager constructor(
             addAssessment(result.value)
         }
         return result.map { }
+    }
+
+    suspend fun setLastEdited(readingId: String, lastEdited: Long) {
+        readingDao.setLastEdited(readingId, lastEdited)
     }
 
     suspend fun setDateRecheckVitalsNeededToNull(readingId: String) {

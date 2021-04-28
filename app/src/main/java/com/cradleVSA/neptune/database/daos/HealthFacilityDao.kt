@@ -85,6 +85,12 @@ interface HealthFacilityDao {
     fun getAllFacilitiesLiveData(): LiveData<List<HealthFacility>>
 
     /**
+     * Returns a non-live list of facilities
+     */
+    @Query("SELECT * FROM HealthFacility")
+    fun getAllFacilitiesDataSync(): List<HealthFacility>
+
+    /**
      * All health facilities which the user has selected to be visible.
      */
     @Query("SELECT * FROM HealthFacility WHERE isUserSelected = 1")

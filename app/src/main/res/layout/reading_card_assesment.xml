@@ -221,7 +221,7 @@
                 app:layout_constraintTop_toTopOf="@+id/textView28" />
 
             <TextView
-                android:id="@+id/readingTvStats"
+                android:id="@+id/totalReadingTvStats"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -241,7 +241,7 @@
                 android:textColor="@color/black"
                 android:textSize="12sp"
                 android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="@+id/readingTvStats"
+                app:layout_constraintStart_toStartOf="@+id/totalReadingTvStats"
                 app:layout_constraintTop_toBottomOf="@+id/readingdiagnosis" />
 
             <TextView
@@ -266,8 +266,8 @@
                 android:textColor="@color/black"
                 android:textSize="12sp"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/readingTvStats"
-                app:layout_constraintTop_toTopOf="@+id/readingTvStats" />
+                app:layout_constraintStart_toEndOf="@+id/totalReadingTvStats"
+                app:layout_constraintTop_toTopOf="@+id/totalReadingTvStats" />
 
             <TextView
                 android:id="@+id/readingTreatment"

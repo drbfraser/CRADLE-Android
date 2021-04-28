@@ -190,7 +190,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             if (currReading.getReferral() == null || currReading.getReferral().getUserId() == null) {
                 myViewHolder.referredBy.setText(R.string.patient_profile_reading_unknown_referrer);
             } else {
-                myViewHolder.referredBy.setText(currReading.component7().getUserId().toString());
+                myViewHolder.referredBy.setText(currReading.getReferral().getUserId().toString());
             }
             myViewHolder.assessedBy.setText(Integer.toString(readingFollowUp.getHealthCareWorkerId()));
             myViewHolder.assessmentDate.setText(DateUtil.getFullDateFromUnix(readingFollowUp.getDateAssessed()));

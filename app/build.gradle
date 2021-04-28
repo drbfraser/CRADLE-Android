@@ -20,6 +20,11 @@ if (!rootProject.file(filename).exists()) {
 keystoreProperties.load(new FileInputStream(rootProject.file(filename)))
 
 android {
+    lintOptions {
+        textReport true
+        textOutput 'stdout'
+    }
+
     signingConfigs {
         release {
             storeFile file(keystoreProperties['storeFile'])
@@ -106,7 +111,6 @@ android {
     }
 
     compileOptions {
-        coreLibraryDesugaringEnabled true
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
@@ -185,6 +189,10 @@ dependencies {
 
     def okhttp_version = "4.9.1"
     implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
+
+    // Time: Backport of Java 8's interfaces for Android
+    // https://github.com/JakeWharton/ThreeTenABP
+    implementation 'com.jakewharton.threetenabp:threetenabp:1.2.4'
 
     // TensorFlow (for OCR of CRADLE screen)
     // implementation 'org.tensorflow:tensorflow-lite:0.0.0-nightly'
