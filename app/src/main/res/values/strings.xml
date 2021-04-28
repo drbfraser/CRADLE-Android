@@ -555,6 +555,8 @@
     <string name="ocr_fragment_results_correct_yes">Yes</string>
     <string name="ocr_fragment_results_correct_no">No</string>
     <string name="patient_name_john_smith">John Smith</string>
+    <string name="update_failed">Update failed</string>
+    <string name="update_successful">Updated Sucessfully</string>
 
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>

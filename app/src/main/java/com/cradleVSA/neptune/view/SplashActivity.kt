@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.manager.LoginManager
+import com.cradleVSA.neptune.manager.UpdateManager
 import com.cradleVSA.neptune.utilitiles.SharedPreferencesMigration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
@@ -21,9 +22,13 @@ class SplashActivity : AppCompatActivity() {
     @Inject
     lateinit var sharedPreferences: SharedPreferences
 
+    @Inject
+    lateinit var updateManager: UpdateManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
+
         val isMigrationSuccessful = if (loginManager.isLoggedIn()) {
             SharedPreferencesMigration(sharedPreferences).migrate()
         } else {
@@ -34,7 +39,7 @@ class SplashActivity : AppCompatActivity() {
             if (!isMigrationSuccessful) {
                 loginManager.logout()
             }
-
+            updateManager.immediateUpdate(this@SplashActivity)
             delay(DELAY_MILLIS)
 
             val intent = if (isMigrationSuccessful) {
@@ -47,6 +52,7 @@ class SplashActivity : AppCompatActivity() {
                     displayMessageBodyRes = R.string.logout_due_to_error_dialog_message
                 )
             }
+
             startActivity(intent)
             finish()
         }

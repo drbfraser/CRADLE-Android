@@ -43,8 +43,8 @@ android {
 
     defaultConfig {
         // Update this for new tags / new builds / new releases
-        versionCode 28
-        versionName "0.4.0-alpha"
+        versionCode 41
+        versionName "0.4.12-alpha"
 
         applicationId "com.cradleVSA.neptune"
         // Android 5
@@ -137,6 +137,8 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.google.android.play:core-ktx:1.8.1'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
 
     def camerax_version = "1.1.0-alpha03"
     // CameraX core library using camera2 implementation
