@@ -475,10 +475,7 @@ class PatientReadingViewModel @Inject constructor(
 
             // Put an initial SymptomsState in _symptomsState based on the decomposed data.
             val currentSymptoms = symptoms.value ?: emptyList()
-            SymptomsState(
-                currentSymptoms,
-                app.getEnglishResources().getStringArray(R.array.reading_symptoms)
-            ).let {
+            SymptomsState(currentSymptoms, app).let {
                 _symptomsState.value = it
                 otherSymptomsInput.value = it.otherSymptoms
             }

@@ -1,6 +1,9 @@
 package com.cradleVSA.neptune.model
 
+import android.content.Context
+import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.ext.findIndex
+import com.cradleVSA.neptune.ext.getEnglishResources
 import com.cradleVSA.neptune.ext.splitAndForEach
 import java.util.Locale
 
@@ -40,8 +43,9 @@ class SymptomsState(val numberOfDefaultSymptoms: Int) {
      */
     constructor(
         symptomStrings: Collection<String>,
-        defaultEnglishSymptoms: Array<String>
-    ) : this(defaultEnglishSymptoms.size) {
+        context: Context
+    ) : this(context.getEnglishResources().getStringArray(R.array.reading_symptoms).size) {
+        val defaultEnglishSymptoms = context.getEnglishResources().getStringArray(R.array.reading_symptoms)
         if (symptomStrings.isEmpty()) {
             // At this point of the code, the SymptomsState already has all other booleans as false.
             defaultSymptomsState[0] = true
@@ -168,7 +172,7 @@ class SymptomsState(val numberOfDefaultSymptoms: Int) {
      * of all caps.
      */
     private fun trimAndLowercase(symptomString: String) =
-        symptomString.toLowerCase(Locale.getDefault()).replace(whitespaceRegex, "")
+        symptomString.lowercase(Locale.getDefault()).replace(whitespaceRegex, "")
 
     /**
      * When we see these symptoms, the [SymptomsState] has to change so that all the other symptoms

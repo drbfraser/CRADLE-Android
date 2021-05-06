@@ -1,5 +1,13 @@
 package com.cradleVSA.neptune.model
 
+import android.content.Context
+import android.content.res.Configuration
+import android.content.res.Resources
+import com.cradleVSA.neptune.R
+import com.cradleVSA.neptune.ext.getEnglishResources
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkStatic
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
@@ -748,7 +756,7 @@ class SymptomsStateTests {
     fun `constructor setup from empty user-supplied symptoms has no symptoms`() {
         val symptomsState = SymptomsState(
             symptomStrings = emptyList(),
-            defaultEnglishSymptoms = Array(DEFAULT_SIZE) { "" }
+            context = createMockContextWithArrayForEnglishSymptoms(Array(DEFAULT_SIZE) { "" })
         )
 
         /*
@@ -768,7 +776,7 @@ class SymptomsStateTests {
     fun `constructor setup user-supplied symptoms has none string`() {
         var symptomsState = SymptomsState(
             symptomStrings = listOf("some useless symptom", "nOnE"),
-            defaultEnglishSymptoms = arrayOf("none", "hello")
+            context = createMockContextWithArrayForEnglishSymptoms(arrayOf("none", "hello"))
         )
 
         /*
@@ -790,7 +798,9 @@ class SymptomsStateTests {
          */
         symptomsState = SymptomsState(
             symptomStrings = listOf("nOnE", "some useless symptom"),
-            defaultEnglishSymptoms = arrayOf("No symptoms (patient healthy)", "hello")
+            context = createMockContextWithArrayForEnglishSymptoms(
+                arrayOf("No symptoms (patient healthy)", "hello")
+            )
         )
         assert(!symptomsState.areThereDefaultSymptoms()) {"failed symptomsState: $symptomsState"}
         assert(!symptomsState.areThereOtherSymptoms()) {"failed symptomsState: $symptomsState"}
@@ -799,7 +809,9 @@ class SymptomsStateTests {
 
         symptomsState = SymptomsState(
             symptomStrings = listOf("No symptoms (patient healthy)"),
-            defaultEnglishSymptoms = arrayOf("No symptoms (patient healthy)", "hello")
+            context = createMockContextWithArrayForEnglishSymptoms(
+                arrayOf("No symptoms (patient healthy)", "hello")
+            )
         )
         /*
         Expected:
@@ -834,7 +846,7 @@ class SymptomsStateTests {
         )
         val symptomsState = SymptomsState(
             symptomStrings = symptomsFromList union symptomsNotFromList,
-            defaultEnglishSymptoms =  englishSymptoms
+            context = createMockContextWithArrayForEnglishSymptoms(englishSymptoms)
         )
 
         val expectedTrueSymptomsIndexes = arrayOf(
@@ -921,6 +933,7 @@ class SymptomsStateTests {
                 "No symptoms (patient healthy)", "Headache", "Blurred vision", "Abdominal pain",
                 "Bleeding", "Feverish", "Unwell", "Cough", "Sneezing"
             )
+            val mockedContext = createMockContextWithArrayForEnglishSymptoms(englishSymptoms)
 
             val symptomsFromList = listOf(
                 "FEVERISH", "HeAdA che", "B l urred visi    on", "Unwell ", " Bleeding"
@@ -929,9 +942,27 @@ class SymptomsStateTests {
                 "Delusions of grandeur", "Too happy", "w H a t?", "Nothing."
             )
             listOfSymptomsState.add(
-                SymptomsState(symptomsFromList union symptomsNotFromList, englishSymptoms)
+                SymptomsState(symptomsFromList union symptomsNotFromList, mockedContext)
             )
         }
         assertEquals(listOfSymptomsState[0], listOfSymptomsState[1])
+    }
+
+    private fun createMockContextWithArrayForEnglishSymptoms(
+        englishSymptoms: Array<String>
+    ): Context {
+        val mockResources = mockk<Resources> {
+            every { getStringArray(R.array.reading_symptoms) } answers {
+                englishSymptoms
+            }
+            every { configuration } returns mockk<Configuration> {
+                every { setLocale(any()) } answers {
+                }
+            }
+        }
+        mockkStatic("com.cradleVSA.neptune.ext.ContextExtensionsKt")
+        every { any<Context>().getEnglishResources() } answers { mockResources }
+
+        return mockk()
     }
 }
