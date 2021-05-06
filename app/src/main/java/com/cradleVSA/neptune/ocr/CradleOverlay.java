@@ -5,8 +5,8 @@ import android.graphics.Color;
 import android.graphics.RectF;
 import android.util.Log;
 
-import com.cradleVSA.neptune.utilitiles.ImageUtils;
-import com.cradleVSA.neptune.utilitiles.Util;
+import com.cradleVSA.neptune.utilities.ImageUtils;
+import com.cradleVSA.neptune.utilities.Util;
 
 /**
  * Supports extracting regions from an image.

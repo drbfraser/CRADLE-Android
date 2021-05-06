@@ -1,4 +1,4 @@
-package com.cradleVSA.neptune.utilitiles
+package com.cradleVSA.neptune.utilities
 
 import android.content.SharedPreferences
 import android.util.Log

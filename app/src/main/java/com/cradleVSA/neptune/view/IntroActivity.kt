@@ -8,7 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager.widget.ViewPager
 import com.cradleVSA.neptune.BuildConfig
 import com.cradleVSA.neptune.R
-import com.cradleVSA.neptune.utilitiles.Util
+import com.cradleVSA.neptune.utilities.Util
 import com.cradleVSA.neptune.view.ui.intro.IntroBaseFragment
 import com.cradleVSA.neptune.view.ui.intro.IntroSectionsPagerAdapter
 import com.cradleVSA.neptune.view.ui.intro.MyIntroFragmentInteractionListener

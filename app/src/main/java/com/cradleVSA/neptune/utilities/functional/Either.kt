@@ -1,4 +1,4 @@
-package com.cradleVSA.neptune.utilitiles.functional
+package com.cradleVSA.neptune.utilities.functional
 
 /**
  * A discriminated union of two values primarily used to return either a good

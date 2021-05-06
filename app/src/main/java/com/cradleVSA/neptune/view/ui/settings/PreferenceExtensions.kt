@@ -7,8 +7,8 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import com.cradleVSA.neptune.utilitiles.functional.Either
-import com.cradleVSA.neptune.utilitiles.functional.coalesce
+import com.cradleVSA.neptune.utilities.functional.Either
+import com.cradleVSA.neptune.utilities.functional.coalesce
 
 /**
  * Finds a preference with a key matching the value of a given resource identifier.

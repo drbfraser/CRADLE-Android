@@ -18,8 +18,8 @@ import com.cradleVSA.neptune.net.Success
 import com.cradleVSA.neptune.sync.SyncWorker
 import com.cradleVSA.neptune.testutils.MockDependencyUtils
 import com.cradleVSA.neptune.testutils.MockWebServerUtils
-import com.cradleVSA.neptune.utilitiles.SharedPreferencesMigration
-import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
+import com.cradleVSA.neptune.utilities.SharedPreferencesMigration
+import com.cradleVSA.neptune.utilities.jackson.JacksonMapper
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic

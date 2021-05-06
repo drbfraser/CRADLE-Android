@@ -1,4 +1,4 @@
-package com.cradleVSA.neptune.utilitiles
+package com.cradleVSA.neptune.utilities
 
 import androidx.annotation.MainThread
 import androidx.annotation.UiThread

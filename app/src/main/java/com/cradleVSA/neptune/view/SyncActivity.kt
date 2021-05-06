@@ -13,7 +13,7 @@ import androidx.work.WorkInfo
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.databinding.ActivitySyncBinding
 import com.cradleVSA.neptune.sync.SyncWorker
-import com.cradleVSA.neptune.utilitiles.DateUtil
+import com.cradleVSA.neptune.utilities.DateUtil
 import com.cradleVSA.neptune.viewmodel.SyncViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigInteger

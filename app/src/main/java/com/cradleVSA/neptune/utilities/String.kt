@@ -1,4 +1,4 @@
-package com.cradleVSA.neptune.utilitiles
+package com.cradleVSA.neptune.utilities
 
 /**
  * Returns `null` if this string is empty, otherwise returns the string itself.

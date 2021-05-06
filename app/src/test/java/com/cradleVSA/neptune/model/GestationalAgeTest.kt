@@ -1,7 +1,7 @@
 package com.cradleVSA.neptune.model
 
-import com.cradleVSA.neptune.utilitiles.Months
-import com.cradleVSA.neptune.utilitiles.Weeks
+import com.cradleVSA.neptune.utilities.Months
+import com.cradleVSA.neptune.utilities.Weeks
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test

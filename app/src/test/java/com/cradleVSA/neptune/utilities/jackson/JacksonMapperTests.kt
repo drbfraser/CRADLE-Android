@@ -1,6 +1,5 @@
 package com.cradleVSA.neptune.utilities.jackson
 
-import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
 import org.junit.jupiter.api.Test
 
 class JacksonMapperTests {

@@ -9,7 +9,7 @@ import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import com.cradleVSA.neptune.R
-import com.cradleVSA.neptune.utilitiles.livedata.NetworkAvailableLiveData
+import com.cradleVSA.neptune.utilities.livedata.NetworkAvailableLiveData
 import com.cradleVSA.neptune.view.ui.settings.SettingsActivity.Companion.makeLaunchIntent
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 

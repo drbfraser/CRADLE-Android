@@ -25,8 +25,8 @@ import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.Statistics
 import com.cradleVSA.neptune.model.UserRole
 import com.cradleVSA.neptune.net.Success
-import com.cradleVSA.neptune.utilitiles.BarGraphValueFormatter
-import com.cradleVSA.neptune.utilitiles.DateUtil
+import com.cradleVSA.neptune.utilities.BarGraphValueFormatter
+import com.cradleVSA.neptune.utilities.DateUtil
 import com.cradleVSA.neptune.viewmodel.StatsViewModel
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.BarData

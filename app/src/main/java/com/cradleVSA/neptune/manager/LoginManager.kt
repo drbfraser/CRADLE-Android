@@ -17,9 +17,9 @@ import com.cradleVSA.neptune.net.RestApi
 import com.cradleVSA.neptune.net.Success
 import com.cradleVSA.neptune.net.SyncException
 import com.cradleVSA.neptune.sync.SyncWorker
-import com.cradleVSA.neptune.utilitiles.SharedPreferencesMigration
-import com.cradleVSA.neptune.utilitiles.UnixTimestamp
-import com.cradleVSA.neptune.utilitiles.nullIfEmpty
+import com.cradleVSA.neptune.utilities.SharedPreferencesMigration
+import com.cradleVSA.neptune.utilities.UnixTimestamp
+import com.cradleVSA.neptune.utilities.nullIfEmpty
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers

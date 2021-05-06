@@ -25,7 +25,7 @@ import com.cradleVSA.neptune.binding.FragmentDataBindingComponent
 import com.cradleVSA.neptune.databinding.ReferralDialogBinding
 import com.cradleVSA.neptune.model.PatientAndReadings
 import com.cradleVSA.neptune.model.SmsReferral
-import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
+import com.cradleVSA.neptune.utilities.jackson.JacksonMapper
 import com.cradleVSA.neptune.view.ReadingActivity
 import com.cradleVSA.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity
 import com.cradleVSA.neptune.viewmodel.PatientReadingViewModel

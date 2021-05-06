@@ -25,9 +25,9 @@ import com.cradleVSA.neptune.model.UrineTest
 import com.cradleVSA.neptune.testutils.assertEquals
 import com.cradleVSA.neptune.testutils.assertForeignKeyConstraintException
 import com.cradleVSA.neptune.testutils.assertThrows
-import com.cradleVSA.neptune.utilitiles.DateUtil
-import com.cradleVSA.neptune.utilitiles.Months
-import com.cradleVSA.neptune.utilitiles.Weeks
+import com.cradleVSA.neptune.utilities.DateUtil
+import com.cradleVSA.neptune.utilities.Months
+import com.cradleVSA.neptune.utilities.Weeks
 import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
 import org.json.JSONException

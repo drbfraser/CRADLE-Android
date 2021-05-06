@@ -3,7 +3,7 @@ package com.cradleVSA.neptune.model
 import android.content.Context
 import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.arch.core.executor.TaskExecutor
-import com.cradleVSA.neptune.utilitiles.LiveDataDynamicModelBuilder
+import com.cradleVSA.neptune.utilities.LiveDataDynamicModelBuilder
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import org.junit.jupiter.api.AfterEach

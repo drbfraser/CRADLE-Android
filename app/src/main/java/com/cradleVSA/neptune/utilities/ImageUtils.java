@@ -1,4 +1,4 @@
-package com.cradleVSA.neptune.utilitiles;
+package com.cradleVSA.neptune.utilities;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;

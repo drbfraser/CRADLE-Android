@@ -1,7 +1,7 @@
 package com.cradleVSA.neptune.model
 
 import android.content.SharedPreferences
-import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
+import com.cradleVSA.neptune.utilities.jackson.JacksonMapper
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals

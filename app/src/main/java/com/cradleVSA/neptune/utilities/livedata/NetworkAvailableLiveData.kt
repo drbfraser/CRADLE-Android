@@ -1,4 +1,4 @@
-package com.cradleVSA.neptune.utilitiles.livedata
+package com.cradleVSA.neptune.utilities.livedata
 
 import android.content.BroadcastReceiver
 import android.content.Context

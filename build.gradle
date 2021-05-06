@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '1.4.32'
+    ext.kotlin_version = '1.5.0'
     ext.detekt_version = '1.14.1'
     // Important: Android Studio will not detect updates for Hilt; `hilt_version` should be checked
     // manually for updates alongside `hilt_jetpack_version`. Otherwise, we may run into issues
@@ -9,14 +9,14 @@ buildscript {
     // just constantly fails to build with vague errors that can look like
     // "error:[Dagger/MissingBinding] ... cannot be provided without an @Provides-annotated method"
     // :(
-    ext.hilt_version = '2.33-beta'
-    ext.hilt_jetpack_version = '1.0.0-alpha03'
+    ext.hilt_version = '2.35.1'
+    ext.hilt_jetpack_version = '1.0.0'
 
     repositories {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.3'
+        classpath 'com.android.tools.build:gradle:4.2.0'
         classpath "de.mannodermaus.gradle.plugins:android-junit5:1.6.2.0"
         // TODO: Before this is ever used in production with real patient data, we need to evaluate
         //       Google's privacy policy for these things, since we're going to be dealing with
@@ -49,13 +49,8 @@ allprojects {
             // for these dependencies that have not been migrated off of it.
             // TODO: Remove JCenter all together when all packages here have migrated off of it.
             content {
-                includeModule("org.tensorflow", "tensorflow-lite")
-                includeModule("org.tensorflow", "tensorflow-lite-support")
                 // Required for detekt
                 includeModule("org.jetbrains.kotlinx", "kotlinx-html-jvm")
-                // TODO: Remove trouve4j from here when Android Gradle Plugin is updated
-                //  https://youtrack.jetbrains.com/issue/IDEA-261387
-                includeModule("org.jetbrains.trove4j", "trove4j")
             }
         }
         maven { url 'https://jitpack.io' }
