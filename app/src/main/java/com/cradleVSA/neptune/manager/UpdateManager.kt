@@ -2,12 +2,14 @@ package com.cradleVSA.neptune.manager
 
 import android.app.Activity.RESULT_OK
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.view.SplashActivity
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.appupdate.AppUpdateOptions
+import com.google.android.play.core.install.InstallException
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.android.play.core.ktx.requestAppUpdateInfo
@@ -22,11 +24,18 @@ class UpdateManager @Inject constructor(
     private val appUpdateManager = AppUpdateManagerFactory.create(context)
 
     companion object {
+        private const val TAG = "UpdateManager"
         private const val MAX_PRIORITY = 5
     }
 
     suspend fun immediateUpdate(activity: SplashActivity): Boolean {
-        val appUpdateInfo = appUpdateManager.requestAppUpdateInfo()
+        val appUpdateInfo = try {
+            appUpdateManager.requestAppUpdateInfo()
+        } catch (e: InstallException) {
+            Log.e(TAG, "Error while checking for updates", e)
+            return false
+        }
+
         var updateSuccessful = false
         if (isMaxPriorityUpdateAvailable(appUpdateInfo) || isUpdateInProgress(appUpdateInfo)) {
             val task = appUpdateManager.startUpdateFlow(
