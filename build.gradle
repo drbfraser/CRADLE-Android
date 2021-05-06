@@ -2,7 +2,7 @@
 
 buildscript {
     ext.kotlin_version = '1.5.0'
-    ext.detekt_version = '1.14.1'
+    ext.detekt_version = '1.17.0-RC2'
     // Important: Android Studio will not detect updates for Hilt; `hilt_version` should be checked
     // manually for updates alongside `hilt_jetpack_version`. Otherwise, we may run into issues
     // where hilt_jetpack_version expects a later version of Hilt but doesn't warn you about it and
@@ -42,17 +42,6 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        jcenter {
-            // JCenter is being deprecated.
-            // https://jfrog.com/blog/into-the-sunset-bintray-jcenter-gocenter-and-chartcenter/
-            // Restrict us from using it for any new dependencies; only allow the usage of JCenter
-            // for these dependencies that have not been migrated off of it.
-            // TODO: Remove JCenter all together when all packages here have migrated off of it.
-            content {
-                // Required for detekt
-                includeModule("org.jetbrains.kotlinx", "kotlinx-html-jvm")
-            }
-        }
         maven { url 'https://jitpack.io' }
     }
 }
