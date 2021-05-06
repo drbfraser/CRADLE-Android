@@ -57,10 +57,6 @@ android {
         // testBuildType "release"
         vectorDrawables.useSupportLibrary = true
 
-        // Blur-Effect library
-        renderscriptTargetApi 24
-        renderscriptSupportModeEnabled true
-
         javaCompileOptions {
             annotationProcessorOptions {
                 // Export the Room database schema for use in testing
@@ -134,7 +130,6 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.google.android.play:core-ktx:1.8.1'
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
 
     def camerax_version = "1.1.0-alpha04"
     // CameraX core library using camera2 implementation
