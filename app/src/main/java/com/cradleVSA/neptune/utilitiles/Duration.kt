@@ -19,20 +19,17 @@ private const val SECONDS_PER_MONTH =
 /**
  * A duration of time in a specific unit.
  */
-interface Duration {
+sealed interface Duration {
     val seconds: Seconds
 
     /**
      * Returns -1 if this < [other], 0 if this == [other] and if this > [other].
      */
-    operator fun compareTo(other: Duration): Int = when {
-        seconds.value < other.seconds.value -> -1
-        seconds.value == other.seconds.value -> 0
-        else -> 1
-    }
+    operator fun compareTo(other: Duration) = seconds.value.compareTo(other.seconds.value)
 }
 
-inline class Seconds(val value: Long) : Duration {
+@JvmInline
+value class Seconds(val value: Long) : Duration {
     override val seconds
         get() = this
 
@@ -44,7 +41,8 @@ inline class Seconds(val value: Long) : Duration {
     constructor(bigInt: BigInteger) : this(bigInt.toLong())
 }
 
-inline class Weeks(val value: Long) : Duration {
+@JvmInline
+value class Weeks(val value: Long) : Duration {
     override val seconds
         get() = Seconds(value * SECONDS_PER_WEEK)
 
@@ -53,7 +51,8 @@ inline class Weeks(val value: Long) : Duration {
     }
 }
 
-inline class Months(val value: Double) : Duration {
+@JvmInline
+value class Months(val value: Double) : Duration {
     override val seconds
         get() = Seconds(value * SECONDS_PER_MONTH)
 
@@ -69,7 +68,8 @@ inline class Months(val value: Double) : Duration {
 /**
  * A temporal duration expressed in weeks and days.
  */
-inline class WeeksAndDays(val totalDays: Long) : Duration, Serializable {
+@JvmInline
+value class WeeksAndDays(val totalDays: Long) : Duration, Serializable {
     constructor(weeks: Long, days: Long) : this(weeks * DAYS_PER_WEEK + days)
 
     val days: Long get() = totalDays % DAYS_PER_WEEK
