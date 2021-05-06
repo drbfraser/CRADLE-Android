@@ -42,11 +42,11 @@ import com.cradleVSA.neptune.model.UrineTest
 import com.cradleVSA.neptune.model.Verifier
 import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.net.Success
-import com.cradleVSA.neptune.utilitiles.DateUtil
-import com.cradleVSA.neptune.utilitiles.LiveDataDynamicModelBuilder
-import com.cradleVSA.neptune.utilitiles.Months
-import com.cradleVSA.neptune.utilitiles.Weeks
-import com.cradleVSA.neptune.utilitiles.livedata.NetworkAvailableLiveData
+import com.cradleVSA.neptune.utilities.DateUtil
+import com.cradleVSA.neptune.utilities.LiveDataDynamicModelBuilder
+import com.cradleVSA.neptune.utilities.Months
+import com.cradleVSA.neptune.utilities.Weeks
+import com.cradleVSA.neptune.utilities.livedata.NetworkAvailableLiveData
 import com.cradleVSA.neptune.view.ReadingActivity
 import com.cradleVSA.neptune.viewmodel.PatientReadingViewModel.LiveDataInitializationManager
 import dagger.hilt.android.lifecycle.HiltViewModel

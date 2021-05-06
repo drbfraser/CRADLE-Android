@@ -1,7 +1,5 @@
 package com.cradleVSA.neptune.utilities
 
-import com.cradleVSA.neptune.utilitiles.DynamicModelBuilder
-import com.cradleVSA.neptune.utilitiles.dynamic
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows

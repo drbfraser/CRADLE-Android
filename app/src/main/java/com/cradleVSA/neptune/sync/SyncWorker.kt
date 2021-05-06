@@ -25,8 +25,8 @@ import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.net.RestApi
 import com.cradleVSA.neptune.net.Success
 import com.cradleVSA.neptune.net.SyncException
-import com.cradleVSA.neptune.utilitiles.RateLimitRunner
-import com.cradleVSA.neptune.utilitiles.UnixTimestamp
+import com.cradleVSA.neptune.utilities.RateLimitRunner
+import com.cradleVSA.neptune.utilities.UnixTimestamp
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers

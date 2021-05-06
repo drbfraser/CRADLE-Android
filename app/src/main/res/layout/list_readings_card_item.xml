@@ -8,7 +8,7 @@
 
     <data>
         <import type="com.cradleVSA.neptune.binding.Converter" />
-        <import type="com.cradleVSA.neptune.utilitiles.DateUtil" />
+        <import type="com.cradleVSA.neptune.utilities.DateUtil" />
         <import type="com.cradleVSA.neptune.viewmodel.ReadingAnalysisViewSupport" />
 
         <variable

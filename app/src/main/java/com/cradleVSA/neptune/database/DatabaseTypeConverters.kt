@@ -8,7 +8,7 @@ import com.cradleVSA.neptune.model.ReadingMetadata
 import com.cradleVSA.neptune.model.Referral
 import com.cradleVSA.neptune.model.Sex
 import com.cradleVSA.neptune.model.UrineTest
-import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
+import com.cradleVSA.neptune.utilities.jackson.JacksonMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.json.JSONObject
 

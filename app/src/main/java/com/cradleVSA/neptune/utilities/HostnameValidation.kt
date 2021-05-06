@@ -1,8 +1,8 @@
-package com.cradleVSA.neptune.utilitiles
+package com.cradleVSA.neptune.utilities
 
-import com.cradleVSA.neptune.utilitiles.functional.Either
-import com.cradleVSA.neptune.utilitiles.functional.Left
-import com.cradleVSA.neptune.utilitiles.functional.Right
+import com.cradleVSA.neptune.utilities.functional.Either
+import com.cradleVSA.neptune.utilities.functional.Left
+import com.cradleVSA.neptune.utilities.functional.Right
 
 /**
  * Ensures that [port] is a valid port number.

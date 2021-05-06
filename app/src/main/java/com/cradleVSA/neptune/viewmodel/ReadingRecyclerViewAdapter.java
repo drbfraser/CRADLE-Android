@@ -19,7 +19,7 @@ import com.cradleVSA.neptune.model.Reading;
 import com.cradleVSA.neptune.model.ReadingAnalysis;
 import com.cradleVSA.neptune.model.SymptomsState;
 import com.cradleVSA.neptune.model.UrineTest;
-import com.cradleVSA.neptune.utilitiles.DateUtil;
+import com.cradleVSA.neptune.utilities.DateUtil;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;

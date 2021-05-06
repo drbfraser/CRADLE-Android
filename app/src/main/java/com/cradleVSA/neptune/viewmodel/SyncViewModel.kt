@@ -20,7 +20,7 @@ import com.cradleVSA.neptune.database.daos.PatientDao
 import com.cradleVSA.neptune.database.daos.ReadingDao
 import com.cradleVSA.neptune.ext.setValueOnMainThread
 import com.cradleVSA.neptune.sync.SyncWorker
-import com.cradleVSA.neptune.utilitiles.livedata.NetworkAvailableLiveData
+import com.cradleVSA.neptune.utilities.livedata.NetworkAvailableLiveData
 import com.cradleVSA.neptune.view.SyncActivity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext

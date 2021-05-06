@@ -26,7 +26,7 @@ import com.cradleVSA.neptune.ext.optDoubleField
 import com.cradleVSA.neptune.ext.optLongField
 import com.cradleVSA.neptune.ext.optStringField
 import com.cradleVSA.neptune.ext.put
-import com.cradleVSA.neptune.utilitiles.nullIfEmpty
+import com.cradleVSA.neptune.utilities.nullIfEmpty
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext

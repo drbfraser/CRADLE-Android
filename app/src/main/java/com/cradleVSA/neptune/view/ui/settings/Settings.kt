@@ -15,8 +15,8 @@ import com.cradleVSA.neptune.manager.HealthFacilityManager
 import com.cradleVSA.neptune.manager.LoginManager
 import com.cradleVSA.neptune.manager.PatientManager
 import com.cradleVSA.neptune.manager.ReadingManager
-import com.cradleVSA.neptune.utilitiles.validateHostname
-import com.cradleVSA.neptune.utilitiles.validatePort
+import com.cradleVSA.neptune.utilities.validateHostname
+import com.cradleVSA.neptune.utilities.validatePort
 import com.cradleVSA.neptune.view.LoginActivity
 import com.cradleVSA.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder

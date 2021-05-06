@@ -8,7 +8,7 @@ import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.Statistics
 import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.net.RestApi
-import com.cradleVSA.neptune.utilitiles.UnixTimestamp
+import com.cradleVSA.neptune.utilities.UnixTimestamp
 import com.cradleVSA.neptune.view.StatisticsFilterOptions
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.runBlocking

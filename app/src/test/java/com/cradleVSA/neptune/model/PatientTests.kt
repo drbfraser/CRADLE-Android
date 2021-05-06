@@ -3,9 +3,9 @@ package com.cradleVSA.neptune.model
 import android.content.Context
 import android.text.TextUtils
 import com.cradleVSA.neptune.R
-import com.cradleVSA.neptune.utilitiles.Months
-import com.cradleVSA.neptune.utilitiles.Weeks
-import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
+import com.cradleVSA.neptune.utilities.Months
+import com.cradleVSA.neptune.utilities.Weeks
+import com.cradleVSA.neptune.utilities.jackson.JacksonMapper
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.junit5.MockKExtension

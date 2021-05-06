@@ -19,8 +19,8 @@ import com.cradleVSA.neptune.model.Statistics
 import com.cradleVSA.neptune.sync.PatientSyncField
 import com.cradleVSA.neptune.sync.ReadingSyncField
 import com.cradleVSA.neptune.sync.SyncWorker
-import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
-import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper.createWriter
+import com.cradleVSA.neptune.utilities.jackson.JacksonMapper
+import com.cradleVSA.neptune.utilities.jackson.JacksonMapper.createWriter
 import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO

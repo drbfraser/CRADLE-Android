@@ -21,7 +21,7 @@ import com.cradleVSA.neptune.ext.toList
 import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.Patient
 import com.cradleVSA.neptune.model.Reading
-import com.cradleVSA.neptune.utilitiles.DateUtil
+import com.cradleVSA.neptune.utilities.DateUtil
 import org.json.JSONArray
 
 const val CURRENT_DATABASE_VERSION = 12

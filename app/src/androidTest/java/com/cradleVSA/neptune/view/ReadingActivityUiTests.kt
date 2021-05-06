@@ -33,7 +33,7 @@ import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import com.cradleVSA.neptune.R
-import com.cradleVSA.neptune.utilitiles.UnixTimestamp
+import com.cradleVSA.neptune.utilities.UnixTimestamp
 import org.hamcrest.Description
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers.allOf

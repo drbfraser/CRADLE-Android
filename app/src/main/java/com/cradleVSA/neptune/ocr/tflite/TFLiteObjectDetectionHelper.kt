@@ -6,7 +6,7 @@ import android.graphics.Canvas
 import android.graphics.RectF
 import android.os.Build
 import androidx.annotation.GuardedBy
-import com.cradleVSA.neptune.utilitiles.TFImageUtils
+import com.cradleVSA.neptune.utilities.TFImageUtils
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.nnapi.NnApiDelegate
 import org.tensorflow.lite.support.common.FileUtil

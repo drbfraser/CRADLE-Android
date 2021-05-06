@@ -1,6 +1,6 @@
 package com.cradleVSA.neptune.model
 
-import com.cradleVSA.neptune.utilitiles.jackson.JacksonMapper
+import com.cradleVSA.neptune.utilities.jackson.JacksonMapper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.util.UUID

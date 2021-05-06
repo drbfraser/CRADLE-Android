@@ -1,4 +1,4 @@
-package com.cradleVSA.neptune.utilitiles
+package com.cradleVSA.neptune.utilities
 
 /**
  * Explicitly discards this value.

@@ -1,4 +1,4 @@
-package com.cradleVSA.neptune.utilitiles
+package com.cradleVSA.neptune.utilities
 
 /**
  * Used to mark code paths which are known to be unreachable.

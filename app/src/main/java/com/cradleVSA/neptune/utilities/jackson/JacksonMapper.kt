@@ -1,4 +1,4 @@
-package com.cradleVSA.neptune.utilitiles.jackson
+package com.cradleVSA.neptune.utilities.jackson
 
 import androidx.annotation.VisibleForTesting
 import com.cradleVSA.neptune.model.GestationalAge

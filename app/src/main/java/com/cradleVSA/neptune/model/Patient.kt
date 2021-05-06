@@ -18,11 +18,11 @@ import com.cradleVSA.neptune.ext.jackson.writeObjectField
 import com.cradleVSA.neptune.ext.jackson.writeOptLongField
 import com.cradleVSA.neptune.ext.jackson.writeOptStringField
 import com.cradleVSA.neptune.ext.jackson.writeStringField
-import com.cradleVSA.neptune.utilitiles.Months
-import com.cradleVSA.neptune.utilitiles.Seconds
-import com.cradleVSA.neptune.utilitiles.UnixTimestamp
-import com.cradleVSA.neptune.utilitiles.Weeks
-import com.cradleVSA.neptune.utilitiles.WeeksAndDays
+import com.cradleVSA.neptune.utilities.Months
+import com.cradleVSA.neptune.utilities.Seconds
+import com.cradleVSA.neptune.utilities.UnixTimestamp
+import com.cradleVSA.neptune.utilities.Weeks
+import com.cradleVSA.neptune.utilities.WeeksAndDays
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext

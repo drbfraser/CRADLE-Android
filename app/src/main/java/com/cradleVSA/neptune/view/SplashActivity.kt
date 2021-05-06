@@ -7,7 +7,7 @@ import androidx.lifecycle.lifecycleScope
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.manager.LoginManager
 import com.cradleVSA.neptune.manager.UpdateManager
-import com.cradleVSA.neptune.utilitiles.SharedPreferencesMigration
+import com.cradleVSA.neptune.utilities.SharedPreferencesMigration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

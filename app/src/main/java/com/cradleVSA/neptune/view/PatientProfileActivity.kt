@@ -20,7 +20,7 @@ import com.cradleVSA.neptune.manager.PatientManager
 import com.cradleVSA.neptune.manager.ReadingManager
 import com.cradleVSA.neptune.model.Patient
 import com.cradleVSA.neptune.model.Reading
-import com.cradleVSA.neptune.utilitiles.Util
+import com.cradleVSA.neptune.utilities.Util
 import com.cradleVSA.neptune.view.DashBoardActivity.Companion.READING_ACTIVITY_DONE
 import com.cradleVSA.neptune.view.ReadingActivity.Companion.makeIntentForEditReading
 import com.cradleVSA.neptune.view.ReadingActivity.Companion.makeIntentForNewReadingExistingPatient

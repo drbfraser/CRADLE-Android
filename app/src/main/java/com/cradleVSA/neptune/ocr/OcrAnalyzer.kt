@@ -6,7 +6,7 @@ import android.graphics.Matrix
 import android.view.Surface
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
-import com.cradleVSA.neptune.utilitiles.TFImageUtils
+import com.cradleVSA.neptune.utilities.TFImageUtils
 import java.io.Closeable
 
 /**

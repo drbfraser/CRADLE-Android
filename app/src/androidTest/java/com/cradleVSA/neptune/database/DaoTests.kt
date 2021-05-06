@@ -22,8 +22,8 @@ import com.cradleVSA.neptune.testutils.assertEquals
 import com.cradleVSA.neptune.testutils.assertForeignKeyConstraintException
 import com.cradleVSA.neptune.testutils.assertNotEquals
 import com.cradleVSA.neptune.testutils.assertThrows
-import com.cradleVSA.neptune.utilitiles.Months
-import com.cradleVSA.neptune.utilitiles.Weeks
+import com.cradleVSA.neptune.utilities.Months
+import com.cradleVSA.neptune.utilities.Weeks
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals

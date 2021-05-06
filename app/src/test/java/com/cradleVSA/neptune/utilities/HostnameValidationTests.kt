@@ -1,7 +1,5 @@
 package com.cradleVSA.neptune.utilities
 
-import com.cradleVSA.neptune.utilitiles.validateHostname
-import com.cradleVSA.neptune.utilitiles.validatePort
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 

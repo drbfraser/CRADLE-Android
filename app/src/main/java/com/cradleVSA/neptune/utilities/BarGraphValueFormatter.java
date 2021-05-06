@@ -1,4 +1,4 @@
-package com.cradleVSA.neptune.utilitiles;
+package com.cradleVSA.neptune.utilities;
 
 import com.github.mikephil.charting.formatter.ValueFormatter;
 
