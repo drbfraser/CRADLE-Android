@@ -7,7 +7,6 @@ import com.cradleVSA.neptune.model.BloodPressure
 import com.cradleVSA.neptune.ocr.tflite.Classifier
 import com.cradleVSA.neptune.ocr.tflite.TFLiteObjectDetectionHelper
 import java.io.Closeable
-import java.util.ArrayList
 import kotlin.math.abs
 import kotlin.math.sign
 
@@ -94,12 +93,15 @@ class CradleScreenOcrDetector(ctx: Context) : Closeable {
     ): String {
         // FUTURE: Filter by aspect ratio as well?
         // REVISIT: Anything with confidence 20-50% likely means something is messed up; warn user?
-        val processed: MutableList<Classifier.Recognition> = ArrayList(results)
-
         // Filter list of results by:
         // .. confidence %
-        processed.filter { it.confidence >= MINIMUM_CONFIDENCE }
-        if (processed.size > 1) {
+        val processed: List<Classifier.Recognition> = results.filter {
+            it.confidence >= MINIMUM_CONFIDENCE
+        }
+
+        // Extract text from all that's left (left to right)
+        // Present the digits in a natural format by sorting them by the x-coordinate first.
+        val filteredToleranceSequence: Sequence<Classifier.Recognition> = if (processed.size > 1) {
             val actualMiddle = imageHeight / 2
             val yClosestToCentre = processed
                 .minByOrNull {
@@ -112,16 +114,20 @@ class CradleScreenOcrDetector(ctx: Context) : Closeable {
 
             // Filter only those that are within the tolerance of the digit that's closest
             // to the centre
-            processed.filter {
-                val centerY = it.location!!.centerY()
-                yClosestToCentre - tolerance <= centerY && centerY <= yClosestToCentre + tolerance
-            }
+            processed.asSequence()
+                .filter {
+                    val centerY = it.location!!.centerY()
+                    yClosestToCentre - tolerance <= centerY && centerY <= yClosestToCentre + tolerance
+                }
+        } else {
+            processed.asSequence()
         }
 
         // Extract text from all that's left (left to right)
         // Present the digits in a natural format by sorting them by the x-coordinate first.
-        processed.sortWith(sortByXComparator)
-        return processed.joinToString(separator = "") { it.title }
+        return filteredToleranceSequence
+            .sortedWith(sortByXComparator)
+            .joinToString(separator = "") { it.title }
     }
 
     /**
