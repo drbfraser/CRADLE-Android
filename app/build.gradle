@@ -31,6 +31,7 @@ android {
             storePassword keystoreProperties['storePassword']
             keyAlias keystoreProperties['keyAlias']
             keyPassword keystoreProperties['keyPassword']
+            enableV3Signing true
         }
     }
 
