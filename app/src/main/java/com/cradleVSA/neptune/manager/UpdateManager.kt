@@ -32,7 +32,7 @@ class UpdateManager @Inject constructor(
         val appUpdateInfo = try {
             appUpdateManager.requestAppUpdateInfo()
         } catch (e: InstallException) {
-            Log.e(TAG, "Error while checking for updates", e)
+            Log.e(TAG, "Error while checking for updates, error code ${e.errorCode}", e)
             return false
         }
 
