@@ -27,23 +27,8 @@
 
 #-keep class com.cradleVSA.neptune.** { *; }
 #-keepclassmembers class com.cradleVSA.neptune.** { *; }
-
-# BlurKit and RenderScript causing crashes on Android 4.4.4
-# Caused by calling some native method
-#   E/AndroidRuntime( 6589): FATAL EXCEPTION: main
-#   E/AndroidRuntime( 6589): Process: com.cradleVSA.neptune, PID: 6589
-#   E/AndroidRuntime( 6589): java.lang.NoSuchMethodError: no static or non-static method "Landroidx/renderscript/RenderScript;.nDeviceDestroy(J)V"
-#   ...
--keepclasseswithmembernames,includedescriptorclasses class androidx.renderscript.RenderScript {
-  native <methods>;
-}
--keep class androidx.renderscript.** { *; }
--keepclasseswithmembernames,includedescriptorclasses class android.support.v8.renderscript.RenderScript {
-  native <methods>;
-}
--keep class android.support.v8.renderscript.** { *; }
-
 -keep class kotlin.Metadata { *; }
+-keepattributes RuntimeVisibleAnnotations
 -keepclassmembers class kotlin.Metadata { *; }
 -keep @kotlin.Metadata class *
 -keepclasseswithmembers @kotlin.Metadata class * { *; }
