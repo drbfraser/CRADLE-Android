@@ -9,7 +9,7 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceFragmentCompat
-import com.cradleVSA.neptune.MyApp
+import com.cradleVSA.neptune.CradleApplication
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.manager.HealthFacilityManager
 import com.cradleVSA.neptune.manager.LoginManager
@@ -182,7 +182,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     private fun onSignOut() {
-        val scope = (requireActivity().application as MyApp).appCoroutineScope
+        val scope = (requireActivity().application as CradleApplication).appCoroutineScope
         scope.launch(Dispatchers.Main) {
             loginManager.logout()
             startActivity(Intent(activity, LoginActivity::class.java))

@@ -18,7 +18,7 @@ import javax.inject.Inject
  */
 @Suppress("EmptyFunctionBlock")
 @HiltAndroidApp
-class MyApp : Application(), Configuration.Provider {
+class CradleApplication : Application(), Configuration.Provider {
     var isDisableBlurKit = false
 
     @Inject
