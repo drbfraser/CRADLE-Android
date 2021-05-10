@@ -15,11 +15,6 @@ class HealthFacilityManager(database: CradleDatabase) {
     private val dao = database.healthFacility()
 
     /**
-     * get a [HealthFacility] by id
-     */
-    suspend fun getById(id: String) = dao.getHealthFacilityById(id)
-
-    /**
      * get all the [HealthFacility] selected by the current user.
      */
     suspend fun getAllSelectedByUser() = dao.getAllUserSelectedHealthFacilities()

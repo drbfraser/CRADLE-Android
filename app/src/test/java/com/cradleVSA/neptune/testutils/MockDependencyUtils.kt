@@ -82,7 +82,7 @@ object MockDependencyUtils {
             } answers {
                 val healthFacilities: List<HealthFacility> = arg(0) ?: return@answers
                 healthFacilities.forEach { facilityToBeAdded ->
-                    healthFacilityDatabase.find { it.id == facilityToBeAdded.id }.let {
+                    healthFacilityDatabase.find { it.name == facilityToBeAdded.name }.let {
                         healthFacilityDatabase.remove(it)
                     }
                 }
@@ -93,7 +93,7 @@ object MockDependencyUtils {
             } answers {
                 val healthFacility = firstArg<HealthFacility>()
                 // Replace
-                healthFacilityDatabase.find { it.id == healthFacility.id }.let {
+                healthFacilityDatabase.find { it.name == healthFacility.name }.let {
                     healthFacilityDatabase.remove(it)
                 }
                 healthFacilityDatabase.add(firstArg())

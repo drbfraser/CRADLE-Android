@@ -1,4 +1,4 @@
-package com.cradleVSA.neptune.model
+package com.cradleVSA.neptune.database.firstversiondata.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
@@ -10,7 +10,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
 /**
  * A health facility database entity.
  *
- * @property id Identifier for this health facility; the entity's primary key.
  * @property name The name of the health facility.
  * @property location The location of the health facility.
  * @property phoneNumber The phone number associated with this health facility.
@@ -18,22 +17,21 @@ import com.fasterxml.jackson.annotation.JsonProperty
  * @property type The type of the health facility.
  * @property isUserSelected Whether the user wishes to see this health facility
  * in their drop down menu.
- *
  */
 @Entity
-data class HealthFacility(
+internal data class HealthFacility(
     @PrimaryKey @ColumnInfo @JsonProperty("healthFacilityName")
     val name: String,
     @ColumnInfo
-    val location: String,
+    val location: String = "",
     @ColumnInfo @JsonProperty("healthFacilityPhoneNumber")
-    val phoneNumber: String,
+    val phoneNumber: String = "",
     @ColumnInfo
-    val about: String,
+    val about: String = "",
     @ColumnInfo @JsonProperty("facilityType")
-    val type: String,
+    val type: String = "",
     @ColumnInfo @JsonIgnore
-    var isUserSelected: Boolean = false
+    val isUserSelected: Boolean = false
 )
 
 /**

@@ -20,6 +20,22 @@ class MigrationVersionTest {
 
     @Test
     fun `test the maximum migration is actually current database version`() {
-        assertEquals(CURRENT_DATABASE_VERSION, Migrations.ALL_MIGRATIONS.maxOf { it.endVersion })
+        if (Migrations.ALL_MIGRATIONS.isEmpty()) {
+            assert(CURRENT_DATABASE_VERSION in 0..1) {
+                "If there are no migrations, we expect the database version is either 0 or 1! " +
+                    "Instead, the CURRENT_DATABASE_VERSION is $CURRENT_DATABASE_VERSION"
+            }
+        } else {
+            assertEquals(
+                CURRENT_DATABASE_VERSION,
+                Migrations.ALL_MIGRATIONS.maxOf { it.endVersion }
+            ) {
+                """
+                    The current database version is $CURRENT_DATABASE_VERSION, but array of migrations
+                    ${Migrations::class.simpleName}.${Migrations::ALL_MIGRATIONS.name} does have the
+                     latest version as the highest migration version.
+                """.trimIndent()
+            }
+        }
     }
 }

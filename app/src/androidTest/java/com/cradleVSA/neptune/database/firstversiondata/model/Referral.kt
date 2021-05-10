@@ -1,4 +1,4 @@
-package com.cradleVSA.neptune.model
+package com.cradleVSA.neptune.database.firstversiondata.model
 
 import android.content.SharedPreferences
 import com.cradleVSA.neptune.ext.Field
@@ -10,6 +10,7 @@ import java.io.Serializable
 
 /**
  * Holds information about a referral.
+ * DO NOT EDIT
  *
  * @property comment An optional comment made by the user about this referral
  * @property healthFacilityName The name of the health facility this referral
@@ -23,7 +24,7 @@ import java.io.Serializable
  * @property isAssessed True if the referral has been assessed
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class Referral constructor(
+internal data class Referral constructor(
     @JsonProperty("comment")
     val comment: String?,
     @JsonProperty("referralHealthFacilityName")
@@ -63,9 +64,8 @@ data class Referral constructor(
 
 /**
  * The information that is expected by the SMS relay app.
- * TODO: Ensure that removing "referralId" doesn't break the SMS relay app.
  */
-data class SmsReferral(val referralId: String, val patient: PatientAndReadings)
+internal data class SmsReferral(val referralId: String, val patient: PatientAndReadings)
 
 /**
  * JSON keys for [Referral] fields.

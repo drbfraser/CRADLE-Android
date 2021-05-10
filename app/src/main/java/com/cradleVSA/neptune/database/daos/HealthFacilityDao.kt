@@ -65,14 +65,6 @@ interface HealthFacilityDao {
     suspend fun getAllHealthFacilities(): List<HealthFacility>
 
     /**
-     * Returns the first health facility from the database with the given [id]
-     *
-     * @param id The id of the health facility to retrieve.
-     */
-    @Query("SELECT * FROM HealthFacility WHERE id = :id")
-    suspend fun getHealthFacilityById(id: String): HealthFacility?
-
-    /**
      * All health facilities which the user has selected to be visible.
      */
     @Query("SELECT * FROM HealthFacility WHERE isUserSelected = 1")

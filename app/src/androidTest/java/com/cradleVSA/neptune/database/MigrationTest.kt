@@ -4,48 +4,41 @@ import android.database.sqlite.SQLiteConstraintException
 import android.database.sqlite.SQLiteDatabase
 import androidx.core.content.contentValuesOf
 import androidx.room.Room
-import androidx.room.TypeConverter
 import androidx.room.testing.MigrationTestHelper
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
-import com.cradleVSA.neptune.ext.toList
+import com.cradleVSA.neptune.database.firstversiondata.Version1TypeConverter
 import com.cradleVSA.neptune.model.Assessment
 import com.cradleVSA.neptune.model.BloodPressure
-import com.cradleVSA.neptune.model.GestationalAge
 import com.cradleVSA.neptune.model.GestationalAgeMonths
 import com.cradleVSA.neptune.model.GestationalAgeWeeks
 import com.cradleVSA.neptune.model.Patient
 import com.cradleVSA.neptune.model.Reading
-import com.cradleVSA.neptune.model.ReadingMetadata
 import com.cradleVSA.neptune.model.Referral
 import com.cradleVSA.neptune.model.Sex
 import com.cradleVSA.neptune.model.UrineTest
 import com.cradleVSA.neptune.testutils.assertEquals
 import com.cradleVSA.neptune.testutils.assertForeignKeyConstraintException
 import com.cradleVSA.neptune.testutils.assertThrows
-import com.cradleVSA.neptune.utilities.DateUtil
 import com.cradleVSA.neptune.utilities.Months
 import com.cradleVSA.neptune.utilities.Weeks
 import kotlinx.coroutines.runBlocking
-import org.json.JSONArray
-import org.json.JSONException
-import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
-import java.math.BigInteger
 import java.util.UUID
 
+private const val TEST_DB = "migration-test"
+
 class MigrationTests {
-    private val TEST_DB = "migration-test"
 
     /**
      * Cannot use the normal [DatabaseTypeConverters] class; see the comments on
-     * the [Version1CompatibleDatabaseTypeConverters]
+     * the [Version1TypeConverter]
      */
-    private val typeConverter = Version1CompatibleDatabaseTypeConverters()
+    private val v1TypeConverter = Version1TypeConverter()
 
     @Rule @JvmField
     val helper: MigrationTestHelper = MigrationTestHelper(
@@ -68,15 +61,15 @@ class MigrationTests {
     @Test
     fun migrateReadingTableFromVersion1ToLatest() {
         val patientId = "3453455"
-        val reading = createFirstVersionReading(patientId = patientId)
+        val reading = createFirstAndRecentVersionReading(patientId = patientId)
 
-        val patientWithExactDob = Patient(
+        val patientWithExactDob = com.cradleVSA.neptune.database.firstversiondata.model.Patient(
             id = patientId,
             name = "Exact dob",
             dob = "1989-10-24",
             isExactDob = true,
-            gestationalAge = GestationalAgeWeeks(Weeks(20L)),
-            sex = Sex.FEMALE,
+            gestationalAge = com.cradleVSA.neptune.database.firstversiondata.model.GestationalAgeWeeks(Weeks(20L)),
+            sex = com.cradleVSA.neptune.database.firstversiondata.model.Sex.FEMALE,
             isPregnant = true,
             zone = null,
             villageNumber = null,
@@ -90,11 +83,10 @@ class MigrationTests {
             insertFirstVersionPatient(
                 database = this,
                 patient = patientWithExactDob,
-                ageForV1 = null
             )
 
             insertFirstVersionReading(
-                database = this, reading = reading
+                database = this, reading = reading.firstVerObj
             )
             // Prepare for the next version.
             close()
@@ -106,8 +98,8 @@ class MigrationTests {
         val readingDao = getMigratedRoomDatabase().readingDao()
         runBlocking {
             assertEquals(1, readingDao.getAllReadingEntities().size)
-            readingDao.getReadingById(reading.id)?.let { readingFromMigratedDb ->
-                assertEquals(reading, readingFromMigratedDb)
+            readingDao.getReadingById(reading.firstVerObj.id)?.let { readingFromMigratedDb ->
+                assertEquals(reading.expectedRecentVerObj, readingFromMigratedDb)
             } ?: error {
                 "Missing a reading after migration. Probably ON CASCADE DELETE was invoked for " +
                     "Reading when it should not have been"
@@ -128,69 +120,115 @@ class MigrationTests {
      */
     @Test
     fun migratePatientTableFromVersion1ToLatest() {
-        val patientWithExactDob = Patient(
-            id = "1",
-            name = "Exact dob",
-            dob = "1989-10-24",
-            isExactDob = true,
-            gestationalAge = GestationalAgeWeeks(Weeks(20L)),
-            sex = Sex.FEMALE,
-            isPregnant = true,
-            zone = null,
-            villageNumber = null,
-            drugHistory = "",
-            medicalHistory = "Asthma"
+        val patientWithExactDob = FirstVersionAndRecentVersion(
+            com.cradleVSA.neptune.database.firstversiondata.model.Patient(
+                id = "1",
+                name = "Exact dob",
+                dob = "1989-10-24",
+                isExactDob = true,
+                gestationalAge = com.cradleVSA.neptune.database.firstversiondata.model.GestationalAgeWeeks(Weeks(20L)),
+                sex = com.cradleVSA.neptune.database.firstversiondata.model.Sex.FEMALE,
+                isPregnant = true,
+                zone = null,
+                villageNumber = null,
+                drugHistory = "",
+                medicalHistory = "Asthma"
+            ),
+            Patient(
+                id = "1",
+                name = "Exact dob",
+                dob = "1989-10-24",
+                isExactDob = true,
+                gestationalAge = GestationalAgeWeeks(Weeks(20L)),
+                sex = Sex.FEMALE,
+                isPregnant = true,
+                zone = null,
+                villageNumber = null,
+                drugHistory = "",
+                medicalHistory = "Asthma"
+            )
         )
-        val patientWithApproxAgeOf23 = Patient(
-            id = "2",
-            name = "Approximate age of 23",
-            dob = null,
-            isExactDob = false,
-            gestationalAge = GestationalAgeMonths(Months(4)),
-            sex = Sex.OTHER,
-            isPregnant = true,
-            zone = "zone2",
-            villageNumber = "villageNumber2",
-            drugHistory = "drug history 2",
-            medicalHistory = "drug history 2"
+        val patientWithApproxAgeOf23 = FirstVersionAndRecentVersion(
+            com.cradleVSA.neptune.database.firstversiondata.model.Patient(
+                id = "2",
+                name = "Approximate age of 23",
+                dob = null,
+                isExactDob = false,
+                gestationalAge = com.cradleVSA.neptune.database.firstversiondata.model.GestationalAgeMonths(Months(4)),
+                sex = com.cradleVSA.neptune.database.firstversiondata.model.Sex.OTHER,
+                isPregnant = true,
+                zone = "zone2",
+                villageNumber = "villageNumber2",
+                drugHistory = "drug history 2",
+                medicalHistory = "drug history 2"
+            ),
+            Patient(
+                id = "2",
+                name = "Approximate age of 23",
+                dob = null,
+                isExactDob = false,
+                gestationalAge = GestationalAgeMonths(Months(4)),
+                sex = Sex.OTHER,
+                isPregnant = true,
+                zone = "zone2",
+                villageNumber = "villageNumber2",
+                drugHistory = "drug history 2",
+                medicalHistory = "drug history 2"
+            )
         )
-        val patientWithBothDobAndAgeOf19 = Patient(
-            id = "3",
-            name = "Has both age and dob -- prefer dob",
-            dob = "1954-04-24",
-            isExactDob = true,
-            gestationalAge = null,
-            sex = Sex.MALE,
-            isPregnant = false,
-            zone = "zone3",
-            villageNumber = "villageNumber3",
-            drugHistory = "drug history 3",
-            medicalHistory = "medical history 3"
+        val patientWithBothDobAndAgeOf19 = FirstVersionAndRecentVersion(
+            com.cradleVSA.neptune.database.firstversiondata.model.Patient(
+                id = "3",
+                name = "Has both age and dob -- prefer dob",
+                dob = "1954-04-24",
+                isExactDob = true,
+                gestationalAge = null,
+                sex = com.cradleVSA.neptune.database.firstversiondata.model.Sex.MALE,
+                isPregnant = false,
+                zone = "zone3",
+                villageNumber = "villageNumber3",
+                drugHistory = "drug history 3",
+                medicalHistory = "medical history 3"
+            ),
+            Patient(
+                id = "3",
+                name = "Has both age and dob -- prefer dob",
+                dob = "1954-04-24",
+                isExactDob = true,
+                gestationalAge = null,
+                sex = Sex.MALE,
+                isPregnant = false,
+                zone = "zone3",
+                villageNumber = "villageNumber3",
+                drugHistory = "drug history 3",
+                medicalHistory = "medical history 3"
+            )
         )
-
         helper.createDatabase(TEST_DB, 1).apply {
             // db has schema version 1. Need to insert some data using SQL queries.
             // Can't use DAO classes; they expect the latest schema.
             insertFirstVersionPatient(
-                database = this, patient = patientWithExactDob, ageForV1 = null
-            )
-            insertFirstVersionReading(
-                database = this, reading = createFirstVersionReading(patientWithExactDob.id)
-            )
-
-            insertFirstVersionPatient(
-                database = this, patient = patientWithApproxAgeOf23, ageForV1 = 23
-            )
-            insertFirstVersionReading(
-                database = this, reading = createFirstVersionReading(patientWithApproxAgeOf23.id)
-            )
-
-            insertFirstVersionPatient(
-                database = this, patient = patientWithBothDobAndAgeOf19, ageForV1 = 19
+                database = this, patient = patientWithExactDob.firstVerObj
             )
             insertFirstVersionReading(
                 database = this,
-                reading = createFirstVersionReading(patientWithBothDobAndAgeOf19.id)
+                reading = createFirstAndRecentVersionReading(patientWithExactDob.firstVerObj.id).firstVerObj
+            )
+
+            insertFirstVersionPatient(
+                database = this, patient = patientWithApproxAgeOf23.firstVerObj
+            )
+            insertFirstVersionReading(
+                database = this,
+                reading = createFirstAndRecentVersionReading(patientWithApproxAgeOf23.firstVerObj.id).firstVerObj
+            )
+
+            insertFirstVersionPatient(
+                database = this, patient = patientWithBothDobAndAgeOf19.firstVerObj
+            )
+            insertFirstVersionReading(
+                database = this,
+                reading = createFirstAndRecentVersionReading(patientWithBothDobAndAgeOf19.firstVerObj.id).firstVerObj
             )
 
             // Prepare for the next version.
@@ -207,21 +245,31 @@ class MigrationTests {
 
             // Test that the isExactDob is set depending on the nullity of dob and age.
             // patientWithExactDob has a non-null dob, so the dob should be exact.
-            patientDao.getPatientById(patientWithExactDob.id)?.let { patientFromMigratedDb ->
-                assertEquals(patientWithExactDob, patientFromMigratedDb)
-            } ?: error("no patient")
+            patientDao.getPatientById(patientWithExactDob.firstVerObj.id)
+                ?.let { patientFromMigratedDb ->
+                    assertEquals(
+                        patientWithExactDob.expectedRecentVerObj,
+                        patientFromMigratedDb
+                    )
+                } ?: error("no patient")
 
             // Approximate age should have isExactDob false
             // Age is non-null but dob is null, so the dob should be not exact.
-            patientDao.getPatientById(patientWithApproxAgeOf23.id)?.let { patientFromMigratedDb ->
-                patientWithApproxAgeOf23.dob = DateUtil.getDateStringFromAge(23)
-                assertEquals(patientWithApproxAgeOf23, patientFromMigratedDb)
-            } ?: error("no patient")
+            patientDao.getPatientById(patientWithApproxAgeOf23.firstVerObj.id)
+                ?.let { patientFromMigratedDb ->
+                    assertEquals(
+                        patientWithApproxAgeOf23.expectedRecentVerObj,
+                        patientFromMigratedDb
+                    )
+                } ?: error("no patient")
 
             // Assume exact if there is somehow both age and dob
-            patientDao.getPatientById(patientWithBothDobAndAgeOf19.id)
+            patientDao.getPatientById(patientWithBothDobAndAgeOf19.firstVerObj.id)
                 ?.let { patientFromMigratedDb ->
-                    assertEquals(patientWithBothDobAndAgeOf19, patientFromMigratedDb)
+                    assertEquals(
+                        patientWithBothDobAndAgeOf19.expectedRecentVerObj,
+                        patientFromMigratedDb
+                    )
                 } ?: error("no patient")
         }
     }
@@ -234,20 +282,35 @@ class MigrationTests {
     @Test
     fun migrationTestForeignKeysAfterMigration() {
         val patientId = "3453455"
-        val reading = createFirstVersionReading(patientId = patientId)
-        val reading2 = createFirstVersionReading(patientId = patientId)
-        val patientWithExactDob = Patient(
-            id = patientId,
-            name = "Exact dob",
-            dob = "1989-10-24",
-            isExactDob = true,
-            gestationalAge = GestationalAgeWeeks(Weeks(20L)),
-            sex = Sex.FEMALE,
-            isPregnant = true,
-            zone = null,
-            villageNumber = null,
-            drugHistory = "",
-            medicalHistory = "abc"
+        val reading = createFirstAndRecentVersionReading(patientId = patientId)
+        val reading2 = createFirstAndRecentVersionReading(patientId = patientId)
+        val patientWithExactDob = FirstVersionAndRecentVersion(
+            com.cradleVSA.neptune.database.firstversiondata.model.Patient(
+                id = patientId,
+                name = "Exact dob",
+                dob = "1989-10-24",
+                isExactDob = true,
+                gestationalAge = com.cradleVSA.neptune.database.firstversiondata.model.GestationalAgeWeeks(Weeks(20L)),
+                sex = com.cradleVSA.neptune.database.firstversiondata.model.Sex.FEMALE,
+                isPregnant = true,
+                zone = null,
+                villageNumber = null,
+                drugHistory = "",
+                medicalHistory = "abc"
+            ),
+            Patient(
+                id = patientId,
+                name = "Exact dob",
+                dob = "1989-10-24",
+                isExactDob = true,
+                gestationalAge = GestationalAgeWeeks(Weeks(20L)),
+                sex = Sex.FEMALE,
+                isPregnant = true,
+                zone = null,
+                villageNumber = null,
+                drugHistory = "",
+                medicalHistory = "abc"
+            )
         )
 
         helper.createDatabase(TEST_DB, 1).apply {
@@ -255,16 +318,15 @@ class MigrationTests {
             // Can't use DAO classes; they expect the latest schema.
             insertFirstVersionPatient(
                 database = this,
-                patient = patientWithExactDob,
-                ageForV1 = null
+                patient = patientWithExactDob.firstVerObj,
             )
 
             insertFirstVersionReading(
-                database = this, reading = reading
+                database = this, reading = reading.firstVerObj
             )
 
             insertFirstVersionReading(
-                database = this, reading = reading2
+                database = this, reading = reading2.firstVerObj
             )
             // Prepare for the next version.
             close()
@@ -287,21 +349,25 @@ class MigrationTests {
                     " instead of 2"
             }
 
-            readingDao.getReadingById(reading.id)?.let { readingFromMigratedDb ->
-                assertEquals(reading, readingFromMigratedDb)
-            } ?: error {
-                "Missing a reading after migration. Probably ON CASCADE DELETE was invoked for " +
-                    "Reading when it should not have been"
-            }
-            readingDao.getReadingById(reading2.id)?.let { readingFromMigratedDb ->
-                assertEquals(reading2, readingFromMigratedDb)
-            } ?: error {
-                "Missing a reading after migration. Probably ON CASCADE DELETE was invoked for " +
-                    "Reading when it should not have been"
-            }
+            readingDao.getReadingById(reading.firstVerObj.id)
+                ?.let { readingFromMigratedDb ->
+                    assertEquals(reading.expectedRecentVerObj, readingFromMigratedDb)
+                }
+                ?: error {
+                    "Missing a reading after migration. Probably ON CASCADE DELETE was invoked for " +
+                        "Reading when it should not have been"
+                }
+            readingDao.getReadingById(reading2.firstVerObj.id)
+                ?.let { readingFromMigratedDb ->
+                assertEquals(reading2.expectedRecentVerObj, readingFromMigratedDb)
+                }
+                ?: error {
+                    "Missing a reading after migration. Probably ON CASCADE DELETE was invoked for " +
+                        "Reading when it should not have been"
+                }
 
             // Now, try inserting a reading for non-existent patient
-            val readingForNonExistentPatient = createFirstVersionReading(patientId = "NOPE")
+            val readingForNonExistentPatient = createCurrentVersionReading(patientId = "NOPE")
             val sqLiteException = assertThrows<SQLiteConstraintException> {
                 readingDao.insert(readingForNonExistentPatient)
             }
@@ -319,7 +385,93 @@ class MigrationTests {
         }
     }
 
-    private fun createFirstVersionReading(patientId: String): Reading {
+    private fun createFirstAndRecentVersionReading(
+        patientId: String
+    ) : FirstVersionAndRecentVersion<com.cradleVSA.neptune.database.firstversiondata.model.Reading, Reading> {
+        val unixTime: Long = 1595645893
+        val readingId = UUID.randomUUID().toString()
+        val firstVersionReferral = com.cradleVSA.neptune.database.firstversiondata.model.Referral(
+            comment = "This is a comment",
+            healthFacilityName = "H2230",
+            dateReferred = 1595645675L,
+            patientId = patientId,
+            readingId = readingId,
+            id = 345,
+            userId = 2,
+            isAssessed = true
+        )
+        val recentVersionReferral = Referral(
+            comment = "This is a comment",
+            healthFacilityName = "H2230",
+            dateReferred = 1595645675L,
+            patientId = patientId,
+            readingId = readingId,
+            id = 345,
+            userId = 2,
+            isAssessed = true
+        )
+        val firstVersionAssessment = com.cradleVSA.neptune.database.firstversiondata.model.Assessment(
+            id = 4535,
+            dateAssessed = 1595745946L,
+            healthCareWorkerId = 2,
+            readingId = readingId,
+            diagnosis = "This is a detailed diagnosis.",
+            treatment = "This is a treatment",
+            medicationPrescribed = "These are medications prescripted.",
+            specialInvestigations = "This is a special investiation",
+            followupNeeded = true,
+            followupInstructions = "These are things to do"
+        )
+        val recentVersionAssessment = Assessment(
+            id = 4535,
+            dateAssessed = 1595745946L,
+            healthCareWorkerId = 2,
+            readingId = readingId,
+            diagnosis = "This is a detailed diagnosis.",
+            treatment = "This is a treatment",
+            medicationPrescribed = "These are medications prescripted.",
+            specialInvestigations = "This is a special investiation",
+            followupNeeded = true,
+            followupInstructions = "These are things to do"
+        )
+
+        return FirstVersionAndRecentVersion(
+            com.cradleVSA.neptune.database.firstversiondata.model.Reading(
+                id = readingId,
+                patientId = patientId,
+                dateTimeTaken = unixTime,
+                lastEdited = unixTime,
+                bloodPressure = com.cradleVSA.neptune.database.firstversiondata.model.BloodPressure(110, 70, 65),
+                urineTest = com.cradleVSA.neptune.database.firstversiondata.model.UrineTest("+", "++", "NAD", "NAD", "NAD"),
+                symptoms = listOf("headache", "blurred vision", "pain"),
+                referral = firstVersionReferral,
+                followUp = firstVersionAssessment,
+                dateRecheckVitalsNeeded = unixTime,
+                isFlaggedForFollowUp = true,
+                previousReadingIds = listOf("1", "2", "3"),
+                isUploadedToServer = false,
+                userId = null
+            ),
+            Reading(
+                id = readingId,
+                patientId = patientId,
+                dateTimeTaken = unixTime,
+                lastEdited = unixTime,
+                bloodPressure = BloodPressure(110, 70, 65),
+                urineTest = UrineTest("+", "++", "NAD", "NAD", "NAD"),
+                symptoms = listOf("headache", "blurred vision", "pain"),
+                referral = recentVersionReferral,
+                followUp = recentVersionAssessment,
+                dateRecheckVitalsNeeded = unixTime,
+                isFlaggedForFollowUp = true,
+                previousReadingIds = listOf("1", "2", "3"),
+                isUploadedToServer = false,
+                userId = null
+            )
+        )
+    }
+
+    private fun createCurrentVersionReading(patientId: String): Reading {
         val unixTime: Long = 1595645893
         val readingId = UUID.randomUUID().toString()
         val referralForReading = Referral(
@@ -344,8 +496,6 @@ class MigrationTests {
             followupNeeded = true, followupInstructions = "These are things to do"
         )
 
-        // respiratoryRate, oxygenSaturation, temperature are required to be null, because they
-        // weren't present in the v1 schema.
         return Reading(
             id = readingId,
             patientId = patientId,
@@ -359,7 +509,6 @@ class MigrationTests {
             dateRecheckVitalsNeeded = unixTime,
             isFlaggedForFollowUp = true,
             previousReadingIds = listOf("1", "2", "3"),
-            metadata = ReadingMetadata(),
             isUploadedToServer = false,
             userId = null
         )
@@ -368,30 +517,43 @@ class MigrationTests {
     private fun insertFirstVersionReading(
         database: SupportSQLiteDatabase,
         readingTableName: String = "Reading",
-        reading: Reading,
-        // in a previous version, null was being stored as a "null" string
-        urineTestForV1: String = typeConverter.fromUrineTest(reading.urineTest) ?: "null",
-        referralForV1: String = typeConverter.fromReferral(reading.referral) ?: "null",
-        followupForV1: String = typeConverter.fromFollowUp(reading.followUp) ?: "null",
+        reading: com.cradleVSA.neptune.database.firstversiondata.model.Reading,
     ) {
         val values = reading.run {
             // Using string literals, because we need to use the property names for the v1 schema.
             // We don't do statements like Reading::id.name, since that can get affected by
             // refactoring names.
+            // @PrimaryKey
+            //     @ColumnInfo(name = "readingId")
+            //     var id: String = UUID.randomUUID().toString(),
+            //     @ColumnInfo var patientId: String,
+            //     @ColumnInfo var dateTimeTaken: Long,
+            //     @ColumnInfo var bloodPressure: BloodPressure,
+            //     @ColumnInfo var urineTest: UrineTest?,
+            //     @ColumnInfo var symptoms: List<String>,
+            //     @ColumnInfo var referral: Referral?,
+            //     @ColumnInfo var followUp: Assessment?,
+            //     @ColumnInfo var dateRecheckVitalsNeeded: Long?,
+            //     @ColumnInfo var isFlaggedForFollowUp: Boolean,
+            //     @ColumnInfo var previousReadingIds: List<String> = emptyList(),
+            //     @ColumnInfo var isUploadedToServer: Boolean = false,
+            //     @ColumnInfo var lastEdited: Long,
+            //     @ColumnInfo var userId: Int?
             contentValuesOf(
                 "readingId" to id,
                 "patientId" to patientId,
                 "dateTimeTaken" to dateTimeTaken,
-                "bloodPressure" to typeConverter.fromBloodPressure(bloodPressure),
-                "urineTest" to urineTestForV1,
-                "symptoms" to typeConverter.fromStringList(symptoms),
-                "referral" to referralForV1,
-                "followUp" to followupForV1,
+                "bloodPressure" to v1TypeConverter.fromBloodPressure(bloodPressure),
+                "urineTest" to v1TypeConverter.fromUrineTest(urineTest),
+                "symptoms" to v1TypeConverter.fromStringList(symptoms),
+                "referral" to v1TypeConverter.fromReferral(referral),
+                "followUp" to v1TypeConverter.fromFollowUp(followUp),
                 "dateRecheckVitalsNeeded" to dateRecheckVitalsNeeded,
                 "isFlaggedForFollowUp" to isFlaggedForFollowUp,
-                "previousReadingIds" to typeConverter.fromStringList(previousReadingIds),
-                "metadata" to typeConverter.fromReadingMetaData(metadata),
-                "isUploadedToServer" to isUploadedToServer
+                "previousReadingIds" to v1TypeConverter.fromStringList(previousReadingIds),
+                "isUploadedToServer" to isUploadedToServer,
+                "lastEdited" to lastEdited,
+                "userId" to userId
             )
         }
         database.insert(readingTableName, SQLiteDatabase.CONFLICT_REPLACE, values)
@@ -408,28 +570,36 @@ class MigrationTests {
     private fun insertFirstVersionPatient(
         database: SupportSQLiteDatabase,
         patientsTableName: String = "Patient",
-        patient: Patient,
-        ageForV1: Int?,
-        gestationalAgeForV1: String =
-            typeConverter.gestationalAgeToString(patient.gestationalAge) ?: "null",
+        patient: com.cradleVSA.neptune.database.firstversiondata.model.Patient
     ) {
         val values = patient.run {
-            // Using string literals, because we need to use the property names for the v1 schema.
-            // We don't do statements like Patient::id.name, since that can get affected by
-            // refactoring names.
+            //     var id: String = "",
+            //     @ColumnInfo var name: String = "",
+            //     @ColumnInfo var dob: String? = null,
+            //     @ColumnInfo var isExactDob: Boolean? = null,
+            //     @ColumnInfo var gestationalAge: GestationalAge? = null,
+            //     @ColumnInfo var sex: Sex = Sex.OTHER,
+            //     @ColumnInfo var isPregnant: Boolean = false,
+            //     @ColumnInfo var zone: String? = null,
+            //     @ColumnInfo var villageNumber: String? = null,
+            //     @ColumnInfo var householdNumber: String? = null,
+            //     @ColumnInfo var drugHistory: String = "",
+            //     @ColumnInfo var medicalHistory: String = "",
+            //     @ColumnInfo var lastEdited: Long? = null,
+            //     @ColumnInfo var base: Long? = null
             contentValuesOf(
                 "id" to id,
                 "name" to name,
                 "dob" to dob,
-                "age" to ageForV1,
-                "gestationalAge" to gestationalAgeForV1,
-                "sex" to typeConverter.sexToString(sex),
+                "isExactDob" to isExactDob,
+                "gestationalAge" to v1TypeConverter.gestationalAgeToString(gestationalAge),
+                "sex" to v1TypeConverter.sexToString(sex),
                 "isPregnant" to isPregnant,
                 "zone" to zone,
                 "villageNumber" to villageNumber,
-                // The schema prior to version 8 has these as non-null List<String>
-                "drugHistoryList" to typeConverter.fromStringList(listOf(drugHistory))!!,
-                "medicalHistoryList" to typeConverter.fromStringList(listOf(medicalHistory))!!,
+                "householdNumber" to householdNumber,
+                "drugHistory" to drugHistory,
+                "medicalHistory" to medicalHistory,
                 "lastEdited" to lastEdited,
                 "base" to base
             )
@@ -455,89 +625,4 @@ class MigrationTests {
         helper.closeWhenFinished(database)
         return database
     }
-}
-
-/**
- * A list of [TypeConverter] to save objects into Room database for version 1.
- * This must be used in case there are any changes to the original [DatabaseTypeConverters]
- * class in the future. These are the type converters that were compatible with the
- * version 1 schema. In a sense, these are time-frozen type converters.
- */
-@Suppress("unused")
-private class Version1CompatibleDatabaseTypeConverters {
-
-    fun gestationalAgeToString(gestationalAge: GestationalAge?): String? =
-        gestationalAge?.let {
-            JSONObject().apply {
-                put("gestationalTimestamp", it.timestamp.toString())
-                put(
-                    "gestationalAgeUnit",
-                    if (it is GestationalAgeWeeks)
-                        "GESTATIONAL_AGE_UNITS_WEEKS"
-                    else
-                        "GESTATIONAL_AGE_UNITS_MONTHS"
-                )
-            }.toString()
-        }
-
-    fun stringToGestationalAge(string: String?): GestationalAge? =
-        string?.let {
-            if (it == "null") {
-                null
-            } else {
-                JSONObject(it).run {
-                    val units = getString("gestationalAgeUnit")
-                    val value = getLong("gestationalTimestamp")
-                    return when (units) {
-                        "GESTATIONAL_AGE_UNIT_WEEKS" -> GestationalAgeWeeks(BigInteger.valueOf(value))
-                        "GESTATIONAL_AGE_UNIT_MONTHS" -> GestationalAgeMonths(BigInteger.valueOf(value))
-                        else -> throw JSONException("what")
-                    }
-                }
-            }
-        }
-
-    fun stringToSex(string: String): Sex = enumValueOf(string)
-
-    fun sexToString(sex: Sex): String = sex.name
-
-    fun fromStringList(list: List<String>?): String? {
-        if (list == null) {
-            return null
-        }
-        return JSONArray()
-            .apply { list.forEach { put(it) } }
-            .toString()
-    }
-
-    fun toStringList(string: String?): List<String>? = string?.let {
-        JSONArray(it).toList(JSONArray::getString)
-    }
-
-    fun toBloodPressure(string: String?): BloodPressure? =
-        string?.let { if (it == "null") null else BloodPressure.unmarshal(JSONObject(string)) }
-
-    fun fromBloodPressure(bloodPressure: BloodPressure?): String? =
-        bloodPressure?.marshal()?.toString()
-
-    fun toUrineTest(string: String?): UrineTest? =
-        string?.let { if (it == "null") null else UrineTest.unmarshal(JSONObject(it)) }
-
-    fun fromUrineTest(urineTest: UrineTest?): String? = urineTest?.marshal()?.toString()
-
-    fun toReferral(string: String?): Referral? =
-        string?.let { if (it == "null") null else Referral.unmarshal(JSONObject(it)) }
-
-    fun fromReferral(referral: Referral?): String? = referral?.marshal()?.toString()
-
-    fun toFollowUp(string: String?): Assessment? =
-        string?.let { if (it == "null") null else Assessment.unmarshal(JSONObject(it)) }
-
-    fun fromFollowUp(followUp: Assessment?): String? = followUp?.marshal()?.toString()
-
-    fun toReadingMetadata(string: String?): ReadingMetadata? =
-        string?.let { if (it == "null") null else ReadingMetadata.unmarshal(JSONObject(it)) }
-
-    fun fromReadingMetaData(readingMetadata: ReadingMetadata?): String? =
-        readingMetadata?.marshal()?.toString()
 }

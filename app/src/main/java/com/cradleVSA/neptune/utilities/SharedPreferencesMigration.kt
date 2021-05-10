@@ -3,8 +3,6 @@ package com.cradleVSA.neptune.utilities
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.core.content.edit
-import com.cradleVSA.neptune.sync.SyncWorker
-import java.math.BigInteger
 
 /**
  * Handles migrations to values stored in SharedPreferences.
@@ -45,26 +43,9 @@ class SharedPreferencesMigration constructor(
         private const val DEFAULT_VERSION = 0
 
         /**
-         * The userId in SharedPreferences was previously stored as a String; needs to be changed
-         * so that it's stored as an Int.
-         */
-        private const val CHANGE_USER_ID_TO_INT = 1
-
-        /**
-         * A sync timestamp was added for reading sync
-         */
-        private const val ADD_READING_SYNC_TIMESTAMP = 2
-
-        /**
-         * Timestamps in SharedPreferences were previously stored as a Long; needs to be changed
-         * so that it's stored as Strings for use with BigInteger.
-         */
-        private const val CHANGE_TIMESTAMPS_TO_STRING = 3
-
-        /**
          * The latest version. This MUST be changed so that it's the latest version
          */
-        const val LATEST_SHARED_PREF_VERSION = 3
+        const val LATEST_SHARED_PREF_VERSION = 0
 
         const val KEY_SHARED_PREFERENCE_VERSION = "cradle_shared_preferences_version"
     }
@@ -133,91 +114,33 @@ class SharedPreferencesMigration constructor(
             )
         }
 
-        (oldVersion < CHANGE_USER_ID_TO_INT).runIfTrue {
-            if (!sharedPreferences.contains("userId")) {
-                return@runIfTrue
-            }
+        /*
+        Add migrations here. For example:
 
-            val idAsString = try {
-                sharedPreferences.getString("userId", "")
-            } catch (e: ClassCastException) {
-                throw MigrationException("userId isn't a string")
-            }
+                (oldVersion < CHANGE_USER_ID_TO_INT).runIfTrue {
+                    if (!sharedPreferences.contains("userId")) {
+                        return@runIfTrue
+                    }
 
-            if (idAsString == null || idAsString == "") {
-                throw MigrationException("bad userId stored")
-            }
+                    val idAsString = try {
+                        sharedPreferences.getString("userId", "")
+                    } catch (e: ClassCastException) {
+                        throw MigrationException("userId isn't a string")
+                    }
 
-            val idAsInt = idAsString.toIntOrNull()
-                ?: throw MigrationException("userId isn't a numeric string")
+                    if (idAsString == null || idAsString == "") {
+                        throw MigrationException("bad userId stored")
+                    }
 
-            sharedPreferences.edit(commit = true) {
-                remove("userId")
-                putInt("userId", idAsInt)
-            }
-        }
+                    val idAsInt = idAsString.toIntOrNull()
+                        ?: throw MigrationException("userId isn't a numeric string")
 
-        (oldVersion < ADD_READING_SYNC_TIMESTAMP).runIfTrue {
-            // Set the reading sync to the previous sync time
-            if (
-                !sharedPreferences.contains("lastSyncTime") ||
-                sharedPreferences.contains("lastSyncTimeReadings")
-            ) {
-                return@runIfTrue
-            }
-
-            val lastSyncTime = sharedPreferences.getLong("lastSyncTime", -1L)
-            if (lastSyncTime == -1L) {
-                return@runIfTrue
-            }
-
-            sharedPreferences.edit(commit = true) {
-                putLong("lastSyncTimeReadings", lastSyncTime)
-            }
-        }
-
-        (oldVersion < CHANGE_TIMESTAMPS_TO_STRING).runIfTrue {
-            // Change timestamps to Strings, as they are stored post-BigInt update
-            if (sharedPreferences.contains(SyncWorker.LAST_PATIENT_SYNC)) {
-                val syncTimeAsLong = try {
-                    sharedPreferences.getLong(SyncWorker.LAST_PATIENT_SYNC, -1L)
-                } catch (e: ClassCastException) {
-                    throw MigrationException("lastTimeSync isn't a Long")
+                    sharedPreferences.edit(commit = true) {
+                        remove("userId")
+                        putInt("userId", idAsInt)
+                    }
                 }
-
-                if (syncTimeAsLong == -1L) {
-                    throw MigrationException("bad lastTimeSync stored")
-                }
-
-                val syncTimeAsBigInt = BigInteger.valueOf(syncTimeAsLong)
-                    ?: throw MigrationException("Long could not be converted to a BigInteger")
-
-                sharedPreferences.edit(commit = true) {
-                    remove(SyncWorker.LAST_PATIENT_SYNC)
-                    putString(SyncWorker.LAST_PATIENT_SYNC, syncTimeAsBigInt.toString())
-                }
-            }
-
-            if (sharedPreferences.contains(SyncWorker.LAST_READING_SYNC)) {
-                val syncTimeReadingsAsLong = try {
-                    sharedPreferences.getLong(SyncWorker.LAST_READING_SYNC, -1L)
-                } catch (e: ClassCastException) {
-                    throw MigrationException("lastTimeSyncReadings isn't a Long")
-                }
-
-                if (syncTimeReadingsAsLong == -1L) {
-                    throw MigrationException("bad lastTimeSyncReadings stored")
-                }
-
-                val syncTimeReadingsAsBigInt = BigInteger.valueOf(syncTimeReadingsAsLong)
-                    ?: throw MigrationException("Long could not be converted to a BigInteger")
-
-                sharedPreferences.edit(commit = true) {
-                    remove(SyncWorker.LAST_READING_SYNC)
-                    putString(SyncWorker.LAST_READING_SYNC, syncTimeReadingsAsBigInt.toString())
-                }
-            }
-        }
+         */
 
         Log.d(TAG, "Migrating from version $oldVersion to $LATEST_SHARED_PREF_VERSION successful")
         return true

@@ -14,7 +14,6 @@ import com.cradleVSA.neptune.model.GestationalAgeMonths
 import com.cradleVSA.neptune.model.GestationalAgeWeeks
 import com.cradleVSA.neptune.model.Patient
 import com.cradleVSA.neptune.model.Reading
-import com.cradleVSA.neptune.model.ReadingMetadata
 import com.cradleVSA.neptune.model.Referral
 import com.cradleVSA.neptune.model.Sex
 import com.cradleVSA.neptune.model.UrineTest
@@ -36,6 +35,8 @@ import java.util.UUID
 /**
  * Tests the database and its DAO objects.
  * This is an instrumented test, and has to be run on a physical or emulated device.
+ *
+ * These tests are for the current database version.
  */
 class DaoTests {
     companion object {
@@ -413,7 +414,6 @@ class DaoTests {
             dateRecheckVitalsNeeded = unixTime,
             isFlaggedForFollowUp = true,
             previousReadingIds = listOf("1", "2", "3"),
-            metadata = ReadingMetadata(),
             isUploadedToServer = false,
             userId = 1
         )
