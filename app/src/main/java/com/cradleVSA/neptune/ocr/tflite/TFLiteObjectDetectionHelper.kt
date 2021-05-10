@@ -2,16 +2,17 @@ package com.cradleVSA.neptune.ocr.tflite
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.graphics.RectF
 import android.os.Build
+import android.util.Log
 import androidx.annotation.GuardedBy
-import com.cradleVSA.neptune.utilities.TFImageUtils
+import androidx.collection.arrayMapOf
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.nnapi.NnApiDelegate
 import org.tensorflow.lite.support.common.FileUtil
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
+import org.tensorflow.lite.support.image.ImageProcessor
+import org.tensorflow.lite.support.image.TensorImage
+import org.tensorflow.lite.support.image.ops.ResizeWithCropOrPadOp
 
 private const val TAG = "TFLiteHelper"
 private const val LABEL_FILE_NAME = "seven_seg_labelmap.txt"
@@ -19,13 +20,6 @@ private const val MODEL_FILENAME = "seven_seg_ssd.tflite"
 
 // Only return this many results.
 private const val NUM_DETECTIONS = 6
-
-private const val NN_INPUT_SIZE = 200
-private const val QUANTIZED_MODEL = true
-
-// Constants for float model
-private const val IMAGE_MEAN = 128.0f
-private const val IMAGE_STD = 128.0f
 
 /**
  * Helper for using TFLite
@@ -58,79 +52,43 @@ class TFLiteObjectDetectionHelper(context: Context) : Classifier {
             }
         )
 
-    private val labels: List<String> = FileUtil.loadLabels(context, LABEL_FILE_NAME)
-
-    /**
-     * Creates an input tensor from the given [bitmap] for use in an [Interpreter], which uses
-     * tensors in the form of [ByteBuffer]s.
-     */
-    @Suppress("MagicNumber")
-    private fun createTensorFromImage(
-        bitmap: Bitmap,
-    ): ByteBuffer {
-        val frameToCropTransform = TFImageUtils.getTransformationMatrix(
-            bitmap.width,
-            bitmap.height,
-            NN_INPUT_SIZE,
-            NN_INPUT_SIZE,
-            0,
-            true
-        )
-
-        val resizedImage = Bitmap.createBitmap(
-            NN_INPUT_SIZE,
-            NN_INPUT_SIZE,
-            Bitmap.Config.ARGB_8888
-        )
-        Canvas(resizedImage).drawBitmap(bitmap, frameToCropTransform, null)
-
-        val imageData = IntArray(NN_INPUT_SIZE * NN_INPUT_SIZE).also {
-            resizedImage.getPixels(
-                it,
-                0,
-                resizedImage.width,
-                0,
-                0,
-                resizedImage.width,
-                resizedImage.height
-            )
-        }
-
-        // Quantized uses 1 byte per channel; floating point uses 4 bytes per channel
-        val numBytesPerChannel = if (QUANTIZED_MODEL) 1 else 4
-
-        val inputImageData = ByteBuffer.allocateDirect(
-            NN_INPUT_SIZE * NN_INPUT_SIZE * 3 * numBytesPerChannel
-        ).apply {
-            order(ByteOrder.nativeOrder())
-        }
-        for (i in 0 until NN_INPUT_SIZE) {
-            for (j in 0 until NN_INPUT_SIZE) {
-                val pixelValue: Int = imageData[i * NN_INPUT_SIZE + j]
-                inputImageData.apply {
-                    if (QUANTIZED_MODEL) {
-                        // Quantized model
-                        put((pixelValue shr 16 and 0xFF).toByte())
-                        put((pixelValue shr 8 and 0xFF).toByte())
-                        put((pixelValue and 0xFF).toByte())
-                    } else {
-                        // Float model
-                        // Pre-process the image data from 0-255 int to normalized float based
-                        // on the provided parameters.
-                        putFloat(((pixelValue shr 16 and 0xFF) - IMAGE_MEAN) / IMAGE_STD)
-                        putFloat(((pixelValue shr 8 and 0xFF) - IMAGE_MEAN) / IMAGE_STD)
-                        putFloat(((pixelValue and 0xFF) - IMAGE_MEAN) / IMAGE_STD)
-                    }
-                }
+    private val inputImageBuffer: TensorImage
+    private val inputImageProcessor: ImageProcessor
+    private val inputImageSizeX: Int
+    private val inputImageSizeY: Int
+    init {
+        interpreter!!.let { interpreter ->
+            val inputTensor = interpreter.getInputTensor(0)
+            inputTensor.shape().let { shape ->
+                // {1, height, width, 3}
+                inputImageSizeX = shape[2]
+                inputImageSizeY = shape[1]
             }
-        }
 
-        return inputImageData
+            inputImageBuffer = TensorImage(inputTensor.dataType())
+            inputImageProcessor = ImageProcessor.Builder()
+                .add(ResizeWithCropOrPadOp(inputImageSizeX, inputImageSizeY))
+                .build()
+
+            val outputTensors = (0 until interpreter.outputTensorCount).map { interpreter.getOutputTensor(it) }
+            val outputTensorInfo = outputTensors.map { outputTensor ->
+                """name: ${outputTensor.name()}, shape: ${outputTensor.shape().toList()}, dataType: ${outputTensor.dataType()}"""
+            }
+
+            Log.d(TAG, """
+                DEBUG: Tensor information:
+                Output tensors:
+                $outputTensorInfo
+            """.trimIndent())
+        }
     }
+
+    private val labels: List<String> = FileUtil.loadLabels(context, LABEL_FILE_NAME)
 
     @Suppress("MagicNumber")
     override fun recognizeItemsInImage(bitmap: Bitmap): List<Classifier.Recognition> {
-        val tfImageBuffer: ByteBuffer = createTensorFromImage(bitmap)
+        val tfImageBuffer: TensorImage = inputImageBuffer.load(bitmap)
+            .run { inputImageProcessor.process(inputImageBuffer) }
 
         // Copy the input data into TensorFlow.
         // Array of shape [Batchsize, NUM_DETECTIONS,4]. Contains the location of detected boxes
@@ -144,8 +102,8 @@ class TFLiteObjectDetectionHelper(context: Context) : Classifier {
         // numDetections: array of shape [Batchsize]. This contains the number of detected boxes
         val numDetections = FloatArray(1)
 
-        val inputArray = arrayOf<Any>(tfImageBuffer)
-        val outputMap = mapOf(
+        val inputArray = arrayOf<Any>(tfImageBuffer.buffer)
+        val outputMap: Map<Int, Any> = arrayMapOf(
             0 to outputLocations,
             1 to outputClasses,
             2 to outputScores,
@@ -174,11 +132,15 @@ class TFLiteObjectDetectionHelper(context: Context) : Classifier {
             val detection = outputLocations[0][i].let { locations ->
                 // The locations are an array of [0, 1] floats for
                 // [top, left, bottom, right]
+                val top = locations[0]
+                val left = locations[1]
+                val bottom = locations[2]
+                val right = locations[3]
                 RectF(
-                    locations[1] * NN_INPUT_SIZE,
-                    locations[0] * NN_INPUT_SIZE,
-                    locations[3] * NN_INPUT_SIZE,
-                    locations[2] * NN_INPUT_SIZE
+                    left * inputImageSizeX,
+                    top * inputImageSizeY,
+                    right * inputImageSizeX,
+                    bottom * inputImageSizeY
                 )
             }
 

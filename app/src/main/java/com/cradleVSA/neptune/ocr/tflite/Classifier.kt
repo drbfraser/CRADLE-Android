@@ -20,6 +20,7 @@ import java.io.Closeable
 
 /**
  * Generic interface for interacting with different recognition engines.
+ * Note: see newer code: https://github.com/tensorflow/examples/blob/master/lite/examples/image_classification/android/lib_support/src/main/java/org/tensorflow/lite/examples/classification/tflite/Classifier.java
  */
 interface Classifier : Closeable {
     fun recognizeItemsInImage(bitmap: Bitmap): List<Recognition>
