@@ -2,8 +2,7 @@
 
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    xmlns:bind="http://schemas.android.com/apk/res-auto">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
@@ -135,7 +134,7 @@
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/patient_traffic_light_image_view"
             app:layout_constraintTop_toTopOf="@+id/list_item_patient_name_text_view"
-            bind:setArrowDrawable="@{localSearchPatient.latestRetestAnalysis}"
+            setArrowDrawable="@{localSearchPatient.latestRetestAnalysis}"
             tools:srcCompat="@drawable/arrow_up" />
 
         <ImageView
@@ -149,7 +148,7 @@
             app:layout_constraintStart_toEndOf="@+id/patient_info_guideline"
             app:layout_constraintStart_toStartOf="@+id/patient_info_guideline"
             app:layout_constraintTop_toTopOf="@+id/list_item_patient_name_text_view"
-            bind:setTrafficLightDrawable="@{localSearchPatient.latestRetestAnalysis}"
+            setTrafficLightDrawable="@{localSearchPatient.latestRetestAnalysis}"
             tools:srcCompat="@drawable/status_green" />
 
         <TextView

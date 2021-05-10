@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:bind="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
@@ -81,7 +80,7 @@
                         android:layout_height="wrap_content"
                         android:inputType="none"
                         android:text="@={viewModel.healthFacilityToUse}"
-                        bind:setMaterialSpinnerItemsWithArray="@{viewModel.selectedHealthFacilitiesAsStrings}" />
+                        setMaterialSpinnerItemsWithArray="@{viewModel.selectedHealthFacilitiesAsStrings}" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <ImageButton
@@ -94,7 +93,7 @@
                     app:layout_constraintBottom_toBottomOf="@+id/health_facility_input_layout"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="@+id/health_facility_input_layout"
-                    bind:srcCompat="@drawable/ic_baseline_settings_24" />
+                    srcCompat="@drawable/ic_baseline_settings_24" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/comments_input_layout"

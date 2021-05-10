@@ -2,8 +2,7 @@
 
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    xmlns:bind="http://schemas.android.com/apk/res-auto">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
         <import type="com.cradleVSA.neptune.binding.Converter" />
@@ -84,7 +83,7 @@
                                 android:scrollbars="vertical"
                                 android:text="@={viewModel.otherSymptomsInput}"
                                 android:verticalScrollbarPosition="right"
-                                bind:loseFocuswhen="@{!viewModel.symptomsState.areThereAnySymptoms()}"
+                                loseFocuswhen="@{!viewModel.symptomsState.areThereAnySymptoms()}"
                                 tools:text="Other symptoms example" />
                         </com.google.android.material.textfield.TextInputLayout>
 

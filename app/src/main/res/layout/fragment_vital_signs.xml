@@ -2,8 +2,7 @@
 
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    xmlns:bind="http://schemas.android.com/apk/res-auto">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
         <import type="com.cradleVSA.neptune.binding.Converter" />
@@ -77,7 +76,7 @@
                             android:enabled="@{viewModel.isInputEnabled}"
                             android:hint="@string/fragment_vital_signs_systolic_label"
                             android:paddingBottom="0dp"
-                            bind:errorMessage='@{viewModel.errorMap["systolic"]}'
+                            errorMessage='@{viewModel.errorMap["systolic"]}'
                             app:helperText=" "
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
@@ -101,7 +100,7 @@
                             android:enabled="@{viewModel.isInputEnabled}"
                             android:hint="@string/fragment_vital_signs_diastolic_label"
                             android:paddingBottom="0dp"
-                            bind:errorMessage='@{viewModel.errorMap["diastolic"]}'
+                            errorMessage='@{viewModel.errorMap["diastolic"]}'
                             app:helperText=" "
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
@@ -125,7 +124,7 @@
                             android:enabled="@{viewModel.isInputEnabled}"
                             android:hint="@string/fragment_vital_signs_heart_rate_label"
                             android:paddingBottom="0dp"
-                            bind:errorMessage='@{viewModel.errorMap["heartRate"]}'
+                            errorMessage='@{viewModel.errorMap["heartRate"]}'
                             app:helperText=" "
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
@@ -192,8 +191,8 @@
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/urine_test_check_box"
-                            bind:addMandatoryStarToLabelWhen="@{viewModel.isUsingUrineTest}"
-                            bind:errorMessage='@{viewModel.errorMap["leukocytes"]}'>
+                            addMandatoryStarToLabelWhen="@{viewModel.isUsingUrineTest}"
+                            errorMessage='@{viewModel.errorMap["leukocytes"]}'>
 
                             <AutoCompleteTextView
                                 android:id="@+id/leukocytes_auto_complete_text"
@@ -201,8 +200,8 @@
                                 android:layout_height="wrap_content"
                                 android:inputType="none"
                                 android:text="@={viewModel.urineTestLeukocytesInput}"
-                                bind:makeTextEmptyWhen="@{!viewModel.isUsingUrineTest}"
-                                bind:setMaterialSpinnerItemsWithArray="@{@stringArray/urine_test_symbols}" />
+                                makeTextEmptyWhen="@{!viewModel.isUsingUrineTest}"
+                                setMaterialSpinnerItemsWithArray="@{@stringArray/urine_test_symbols}" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
@@ -218,8 +217,8 @@
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/leukocytes_input_layout"
-                            bind:addMandatoryStarToLabelWhen="@{viewModel.isUsingUrineTest}"
-                            bind:errorMessage='@{viewModel.errorMap["nitrites"]}'>
+                            addMandatoryStarToLabelWhen="@{viewModel.isUsingUrineTest}"
+                            errorMessage='@{viewModel.errorMap["nitrites"]}'>
 
                             <AutoCompleteTextView
                                 android:id="@+id/nitrites_auto_complete_text"
@@ -227,8 +226,8 @@
                                 android:layout_height="wrap_content"
                                 android:inputType="none"
                                 android:text="@={viewModel.urineTestNitritesInput}"
-                                bind:makeTextEmptyWhen="@{!viewModel.isUsingUrineTest}"
-                                bind:setMaterialSpinnerItemsWithArray="@{@stringArray/urine_test_symbols}" />
+                                makeTextEmptyWhen="@{!viewModel.isUsingUrineTest}"
+                                setMaterialSpinnerItemsWithArray="@{@stringArray/urine_test_symbols}" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
@@ -244,8 +243,8 @@
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/nitrites_input_layout"
-                            bind:addMandatoryStarToLabelWhen="@{viewModel.isUsingUrineTest}"
-                            bind:errorMessage='@{viewModel.errorMap["glucose"]}'>
+                            addMandatoryStarToLabelWhen="@{viewModel.isUsingUrineTest}"
+                            errorMessage='@{viewModel.errorMap["glucose"]}'>
 
                             <AutoCompleteTextView
                                 android:id="@+id/glucose_auto_complete_text"
@@ -253,8 +252,8 @@
                                 android:layout_height="wrap_content"
                                 android:inputType="none"
                                 android:text="@={viewModel.urineTestGlucoseInput}"
-                                bind:makeTextEmptyWhen="@{!viewModel.isUsingUrineTest}"
-                                bind:setMaterialSpinnerItemsWithArray="@{@stringArray/urine_test_symbols}" />
+                                makeTextEmptyWhen="@{!viewModel.isUsingUrineTest}"
+                                setMaterialSpinnerItemsWithArray="@{@stringArray/urine_test_symbols}" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
@@ -270,8 +269,8 @@
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/glucose_input_layout"
-                            bind:addMandatoryStarToLabelWhen="@{viewModel.isUsingUrineTest}"
-                            bind:errorMessage='@{viewModel.errorMap["protein"]}'>
+                            addMandatoryStarToLabelWhen="@{viewModel.isUsingUrineTest}"
+                            errorMessage='@{viewModel.errorMap["protein"]}'>
 
                             <AutoCompleteTextView
                                 android:id="@+id/protein_auto_complete_text"
@@ -279,8 +278,8 @@
                                 android:layout_height="wrap_content"
                                 android:inputType="none"
                                 android:text="@={viewModel.urineTestProteinInput}"
-                                bind:makeTextEmptyWhen="@{!viewModel.isUsingUrineTest}"
-                                bind:setMaterialSpinnerItemsWithArray="@{@stringArray/urine_test_symbols}" />
+                                makeTextEmptyWhen="@{!viewModel.isUsingUrineTest}"
+                                setMaterialSpinnerItemsWithArray="@{@stringArray/urine_test_symbols}" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
@@ -296,8 +295,8 @@
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/protein_input_layout"
-                            bind:addMandatoryStarToLabelWhen="@{viewModel.isUsingUrineTest}"
-                            bind:errorMessage='@{viewModel.errorMap["blood"]}'>
+                            addMandatoryStarToLabelWhen="@{viewModel.isUsingUrineTest}"
+                            errorMessage='@{viewModel.errorMap["blood"]}'>
 
                             <AutoCompleteTextView
                                 android:id="@+id/blood_auto_complete_text"
@@ -305,8 +304,8 @@
                                 android:layout_height="wrap_content"
                                 android:inputType="none"
                                 android:text="@={viewModel.urineTestBloodInput}"
-                                bind:makeTextEmptyWhen="@{!viewModel.isUsingUrineTest}"
-                                bind:setMaterialSpinnerItemsWithArray="@{@stringArray/urine_test_symbols}" />
+                                makeTextEmptyWhen="@{!viewModel.isUsingUrineTest}"
+                                setMaterialSpinnerItemsWithArray="@{@stringArray/urine_test_symbols}" />
                         </com.google.android.material.textfield.TextInputLayout>
                     </androidx.constraintlayout.widget.ConstraintLayout>
                 </com.google.android.material.card.MaterialCardView>

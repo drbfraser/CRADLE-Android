@@ -24,12 +24,10 @@ private const val TAG = "ReadingBindingAdapter"
 
 /**
  * Contains the BindingAdapters for Fragments in the Reading creation flow.
- * We use the `bind` name space just to clarify that it is part of our custom BindingAdapter set;
- * the Data Binding library in reality just ignores custom name spaces.
  */
 @Suppress("LargeClass")
 class ReadingBindingAdapters {
-    @BindingAdapter("bind:makeTextEmptyWhen")
+    @BindingAdapter("makeTextEmptyWhen")
     fun makeTextEmptyWhen(view: TextView, condition: Boolean) {
         if (condition && view.text.isNotEmpty()) {
             view.text = ""
@@ -39,7 +37,7 @@ class ReadingBindingAdapters {
     /**
      * To use this properly, make sure there is another focusable view in the layout.
      */
-    @BindingAdapter("bind:loseFocuswhen")
+    @BindingAdapter("loseFocuswhen")
     fun loseFocusWhen(view: TextView, condition: Boolean) {
         if (condition && view.hasFocus()) {
             view.clearFocus()
@@ -49,7 +47,7 @@ class ReadingBindingAdapters {
     /**
      * Adds a mandatory star to the hint text / label when true.
      */
-    @BindingAdapter("bind:addMandatoryStarToLabelWhen")
+    @BindingAdapter("addMandatoryStarToLabelWhen")
     fun addMandatoryStarToLabelWhen(view: TextInputLayout, condition: Boolean) {
         val currentHint = view.hint as? String ?: return
         if (!condition && currentHint.endsWith('*') && currentHint.isNotEmpty()) {
@@ -59,14 +57,14 @@ class ReadingBindingAdapters {
         }
     }
 
-    @BindingAdapter("bind:errorMessage")
+    @BindingAdapter("errorMessage")
     fun setError(textInputLayout: TextInputLayout, errorMessage: String?) {
         if (textInputLayout.error != errorMessage) {
             textInputLayout.error = errorMessage
         }
     }
 
-    @BindingAdapter("bind:isUsingDateOfBirth")
+    @BindingAdapter("isUsingDateOfBirth")
     fun onAgeStateChanged(
         textInputLayout: TextInputLayout,
         oldIsUsingDateOfBirth: Boolean?,
@@ -119,7 +117,7 @@ class ReadingBindingAdapters {
         }
     }
 
-    @BindingAdapter("bind:uncheckWhen")
+    @BindingAdapter("uncheckWhen")
     fun uncheckWhen(
         checkBox: CheckBox,
         shouldUncheck: Boolean?
@@ -131,7 +129,7 @@ class ReadingBindingAdapters {
         }
     }
 
-    @BindingAdapter("bind:gestationalAgeUnits")
+    @BindingAdapter("gestationalAgeUnits")
     fun onGestationalAgeUnitsChanged(
         textInputLayout: TextInputLayout,
         oldUnits: String?,
@@ -155,7 +153,7 @@ class ReadingBindingAdapters {
         }
     }
 
-    @BindingAdapter("bind:setMaterialSpinnerItemsWithArray")
+    @BindingAdapter("setMaterialSpinnerItemsWithArray")
     fun setMaterialSpinnerItemsWithArray(
         view: AutoCompleteTextView,
         oldArray: Array<String>?,
@@ -173,7 +171,7 @@ class ReadingBindingAdapters {
         view.setAdapter(adapter)
     }
 
-    @BindingAdapter("bind:setTrafficLightDrawable")
+    @BindingAdapter("setTrafficLightDrawable")
     fun setTrafficLightDrawable(view: ImageView, analysis: ReadingAnalysis?) {
         if (analysis == null) {
             view.visibility = View.INVISIBLE
@@ -182,7 +180,7 @@ class ReadingBindingAdapters {
         setImageViewFromId(view, ReadingAnalysisViewSupport.getColorCircleImageId(analysis))
     }
 
-    @BindingAdapter("bind:setArrowDrawable")
+    @BindingAdapter("setArrowDrawable")
     fun setArrowDrawable(view: ImageView, analysis: ReadingAnalysis?) {
         if (analysis == null) {
             view.visibility = View.INVISIBLE
@@ -208,7 +206,7 @@ class ReadingBindingAdapters {
         }
     }
 
-    @BindingAdapter("bind:addRecommendedToEndWhen")
+    @BindingAdapter("addRecommendedToEndWhen")
     fun addRecommendedToEndWhen(
         radioButton: RadioButton,
         oldCondition: Boolean?,

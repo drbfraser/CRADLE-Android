@@ -2,8 +2,7 @@
 
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    xmlns:bind="http://schemas.android.com/apk/res-auto">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
         <import type="com.cradleVSA.neptune.binding.Converter" />
@@ -79,7 +78,7 @@
                             app:layout_constraintHorizontal_weight="0.5"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/patient_info_title"
-                            bind:errorMessage='@{viewModel.errorMap["name"]}'>
+                            errorMessage='@{viewModel.errorMap["name"]}'>
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/patient_name_text"
@@ -105,7 +104,7 @@
                             app:layout_constraintHorizontal_weight="0.5"
                             app:layout_constraintStart_toEndOf="@+id/patient_name_layout"
                             app:layout_constraintTop_toBottomOf="@+id/patient_info_title"
-                            bind:errorMessage='@{viewModel.errorMap["id"]}'>
+                            errorMessage='@{viewModel.errorMap["id"]}'>
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/patient_id_text"
@@ -182,7 +181,7 @@
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/zone_layout"
-                            bind:errorMessage='@{viewModel.errorMap["villageNumber"]}'>
+                            errorMessage='@{viewModel.errorMap["villageNumber"]}'>
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/village_text"
@@ -209,8 +208,8 @@
                             app:startIconContentDescription="Date picker for date of birth"
                             app:startIconDrawable="@drawable/ic_baseline_calendar_today_24"
                             app:suffixText="@string/age_input_suffix_approximate_years_old"
-                            bind:errorMessage='@{viewModel.errorMap["dob"]}'
-                            bind:isUsingDateOfBirth="@{viewModel.patientIsExactDob}">
+                            errorMessage='@{viewModel.errorMap["dob"]}'
+                            isUsingDateOfBirth="@{viewModel.patientIsExactDob}">
                             <!-- Note: The age and date of birth share the same error message map key,
                                  i.e., "age". -->
 
@@ -238,7 +237,7 @@
                             app:layout_constraintEnd_toStartOf="@+id/guideline"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/age_input_layout"
-                            bind:errorMessage='@{viewModel.errorMap["sex"]}'>
+                            errorMessage='@{viewModel.errorMap["sex"]}'>
                             <!--app:suffixText="@string/age_input_suffix_approximate_years_old"> -->
 
                             <AutoCompleteTextView
@@ -247,7 +246,7 @@
                                 android:layout_height="wrap_content"
                                 android:inputType="none"
                                 android:text="@={Converter.sexToString(context, viewModel.patientSex)}"
-                                bind:setMaterialSpinnerItemsWithArray="@{@stringArray/sex}" />
+                                setMaterialSpinnerItemsWithArray="@{@stringArray/sex}" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <!-- Enabled:
@@ -265,7 +264,7 @@
                             android:text="@string/fragment_patient_info_pregnant_checkbox_label"
                             app:layout_constraintBaseline_toBaselineOf="@+id/gender_input_layout"
                             app:layout_constraintStart_toStartOf="@+id/guideline"
-                            bind:uncheckWhen="@{viewModel.patientSex == Sex.MALE}" />
+                            uncheckWhen="@{viewModel.patientSex == Sex.MALE}" />
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:id="@+id/gestational_age_layout"
@@ -280,9 +279,9 @@
                             app:layout_constraintHorizontal_bias="0.5"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/gender_input_layout"
-                            bind:addMandatoryStarToLabelWhen="@{viewModel.patientIsPregnant}"
-                            bind:errorMessage='@{viewModel.errorMap["gestationalAge"]}'
-                            bind:gestationalAgeUnits="@{viewModel.patientGestationalAgeUnits}">
+                            addMandatoryStarToLabelWhen="@{viewModel.patientIsPregnant}"
+                            errorMessage='@{viewModel.errorMap["gestationalAge"]}'
+                            gestationalAgeUnits="@{viewModel.patientGestationalAgeUnits}">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/gestational_age_text"
@@ -290,7 +289,7 @@
                                 android:layout_height="wrap_content"
                                 android:inputType="number"
                                 android:text="@={viewModel.patientGestationalAgeInput}"
-                                bind:makeTextEmptyWhen="@{viewModel.patientIsPregnant != true}"
+                                makeTextEmptyWhen="@{viewModel.patientIsPregnant != true}"
                                 tools:text="23" />
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -319,7 +318,7 @@
                                 android:inputType="none"
                                 android:text="@={viewModel.patientGestationalAgeUnits}"
                                 tools:text="weeks"
-                                bind:setMaterialSpinnerItemsWithArray="@{@stringArray/reading_ga_units}" />
+                                setMaterialSpinnerItemsWithArray="@{@stringArray/reading_ga_units}" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout

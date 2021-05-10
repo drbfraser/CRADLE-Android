@@ -3,8 +3,7 @@
 <!-- Displayed in the AdviceFragment -->
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    xmlns:bind="http://schemas.android.com/apk/res-auto">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
         <import type="com.cradleVSA.neptune.binding.Converter" />
@@ -38,7 +37,7 @@
                 android:layout_height="48dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                bind:setTrafficLightDrawable="@{analysis}"
+                setTrafficLightDrawable="@{analysis}"
                 tools:srcCompat="@drawable/status_yellow" />
 
             <ImageView
@@ -48,7 +47,7 @@
                 android:visibility="visible"
                 app:layout_constraintStart_toEndOf="@+id/traffic_light_image_view"
                 app:layout_constraintTop_toTopOf="@+id/traffic_light_image_view"
-                bind:setArrowDrawable="@{analysis}"
+                setArrowDrawable="@{analysis}"
                 tools:srcCompat="@drawable/arrow_down" />
 
             <androidx.constraintlayout.widget.Barrier
