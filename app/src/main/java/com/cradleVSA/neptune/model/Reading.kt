@@ -22,7 +22,6 @@ import com.cradleVSA.neptune.ext.jackson.writeOptObjectField
 import com.cradleVSA.neptune.ext.jackson.writeStringField
 import com.cradleVSA.neptune.utilities.nullIfEmpty
 import com.fasterxml.jackson.annotation.JsonIgnore
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParser
@@ -286,8 +285,7 @@ data class Reading(
  * @property diastolic The diastolic value (i.e., the second/bottom value).
  * @property heartRate The heart rate in beats per minute (BPM).
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class BloodPressure(
+data class BloodPressure constructor(
     @JsonProperty("bpSystolic")
     val systolic: Int,
     @JsonProperty("bpDiastolic")
@@ -298,7 +296,6 @@ data class BloodPressure(
     /**
      * The shock index for this blood pressure result.
      */
-
     @get:JsonIgnore
     private val shockIndex
         get() = if (systolic == 0) {

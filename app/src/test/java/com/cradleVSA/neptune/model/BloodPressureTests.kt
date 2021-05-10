@@ -1,6 +1,8 @@
 package com.cradleVSA.neptune.model
 
 import android.content.Context
+import com.cradleVSA.neptune.utilities.jackson.JacksonMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -63,6 +65,15 @@ class BloodPressureTests {
     fun bloodPressure_ifNormal_thenGreen() {
         val bp = BloodPressure(100, 60, 60)
         assertEquals(ReadingAnalysis.GREEN, bp.analysis)
+    }
+
+    @Test
+    fun bloodPressure_serialize() {
+        val bp = BloodPressure(100, 60, 60)
+        val mapper = JacksonMapper.mapper
+        val bpAsString = mapper.writeValueAsString(bp)
+        val bpParsed = mapper.readValue<BloodPressure>(bpAsString)
+        assertEquals(bp, bpParsed) { "bp parse failed on $bpAsString" }
     }
 
     @Test

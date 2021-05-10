@@ -1,6 +1,7 @@
 package com.cradleVSA.neptune.model
 
 import com.cradleVSA.neptune.utilities.jackson.JacksonMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -92,6 +93,10 @@ class PatientAndReadingsTests {
                 assertEquals(expectedPatientAndReadings.patient, deserializedPatient)
                 assertEquals(expectedPatientAndReadings.readings, deserializedReadings)
             } ?: error("fail")
+
+            val asString = JacksonMapper.mapper.writeValueAsString(deserializedPatientAndReadings)
+            val parsedPatientAndReadings = JacksonMapper.mapper.readValue<PatientAndReadings>(asString)
+            assertEquals(deserializedPatientAndReadings, parsedPatientAndReadings)
         }
     }
 }

@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import com.cradleVSA.neptune.ext.Field
 import com.cradleVSA.neptune.ext.getIntOrNull
 import com.cradleVSA.neptune.manager.LoginManager
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import java.io.Serializable
@@ -23,7 +24,7 @@ import java.io.Serializable
  * @property isAssessed True if the referral has been assessed
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class Referral(
+data class Referral @JsonCreator constructor(
     @JsonProperty("comment")
     val comment: String?,
     @JsonProperty("referralHealthFacilityName")

@@ -3,6 +3,7 @@ package com.cradleVSA.neptune.model
 import android.content.Context
 import androidx.lifecycle.LiveData
 import com.cradleVSA.neptune.model.Verifiable.Verifier
+import com.fasterxml.jackson.annotation.JsonIgnore
 import java.lang.reflect.InvocationTargetException
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.IllegalCallableAccessException
@@ -43,6 +44,7 @@ interface Verifiable<in T : Any> {
      * and the right value is a localized error message. The error message should be ignored if the
      * value is valid.
      */
+    @JsonIgnore
     fun isValueForPropertyValid(
         property: KProperty<*>,
         value: Any?,
@@ -60,6 +62,7 @@ interface Verifiable<in T : Any> {
      * @return whether the value in the class's [property] is valid.
      */
     @Suppress("ThrowsCount")
+    @JsonIgnore
     fun isPropertyValid(property: KProperty<*>, context: Context?): Result {
         try {
             return isValueForPropertyValid(property, property.getter.call(this), context)
@@ -87,6 +90,7 @@ interface Verifiable<in T : Any> {
      * @throws UninitializedPropertyAccessException if there are uninitialized lateinit properties
      */
     @Suppress("NestedBlockDepth")
+    @JsonIgnore
     fun getAllMembersWithInvalidValues(
         context: Context?,
         shouldIgnoreAccessibility: Boolean = true,
@@ -150,6 +154,7 @@ interface Verifiable<in T : Any> {
      * Determine if this is a valid instance as determined by [getAllMembersWithInvalidValues]
      * (which is dependent on [isValueForPropertyValid]
      */
+    @JsonIgnore
     fun isValidInstance() =
         getAllMembersWithInvalidValues(null, shouldStopAtFirstError = true).isEmpty()
 
@@ -200,6 +205,7 @@ interface Verifiable<in T : Any> {
          * properties that check other properties for validity. Optional only if not passing in an
          * instance. (The values in here take precedence if you do.)
          */
+        @JsonIgnore
         fun isValueValid(
             property: KProperty<*>,
             value: Any?,
@@ -249,6 +255,7 @@ interface Verifiable<in T : Any> {
          * @throws IllegalArgumentException if [instance] is null and no [currentValuesMap] were given.
          * We make [instance] nullable to make sure that this function can also serve as a check.
          */
+        @JsonIgnore
         fun setupDependentPropertiesMap(
             instance: Any?,
             currentValuesMap: Map<String, Any?>?,
