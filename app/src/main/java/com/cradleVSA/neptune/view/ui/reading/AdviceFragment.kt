@@ -118,14 +118,14 @@ class AdviceFragment : Fragment() {
 
             lifecycleScope.launch {
                 when (val saveResult = viewModel.save()) {
-                    ReadingFlowSaveResult.SAVE_SUCCESSFUL -> {
+                    is ReadingFlowSaveResult.SaveSuccessful -> {
                         showStatusToast(view.context, saveResult)
                         viewModel.isSaving.removeObservers(viewLifecycleOwner)
                         savingDialog?.cancel()
                         savingDialog = null
                         activity?.finish()
                     }
-                    ReadingFlowSaveResult.REFERRAL_REQUIRED -> {
+                    ReadingFlowSaveResult.ReferralRequired -> {
                         launchReferralDialog()
                     }
                     else -> {
@@ -150,7 +150,7 @@ class AdviceFragment : Fragment() {
         launchReason ?: return context.getString(R.string.fragment_advice_toast_error)
 
         return when (result) {
-            ReadingFlowSaveResult.SAVE_SUCCESSFUL -> {
+            is ReadingFlowSaveResult.SaveSuccessful -> {
                 when (launchReason) {
                     ReadingActivity.LaunchReason.LAUNCH_REASON_NEW ->
                         context.getString(R.string.fragment_advice_toast_success_new_patient)
@@ -160,7 +160,7 @@ class AdviceFragment : Fragment() {
                         context.getString(R.string.fragment_advice_toast_success_new_reading)
                 }
             }
-            ReadingFlowSaveResult.ERROR -> {
+            ReadingFlowSaveResult.ErrorConstructing -> {
                 when (launchReason) {
                     ReadingActivity.LaunchReason.LAUNCH_REASON_NEW ->
                         context.getString(R.string.fragment_advice_toast_error_new_patient)
@@ -170,10 +170,10 @@ class AdviceFragment : Fragment() {
                         context.getString(R.string.fragment_advice_toast_error_new_reading)
                 }
             }
-            ReadingFlowSaveResult.REFERRAL_REQUIRED -> {
+            ReadingFlowSaveResult.ReferralRequired -> {
                 error("no toast should be showing up for this result; just the dialog appears")
             }
-            ReadingFlowSaveResult.ERROR_UPLOADING_REFERRAL -> {
+            ReadingFlowSaveResult.ErrorUploadingReferral -> {
                 error("unreachable, because the normal save path shouldn't be uploading referrals")
             }
         }

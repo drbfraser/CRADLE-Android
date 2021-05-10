@@ -1,5 +1,7 @@
 package com.cradleVSA.neptune.manager
 
+import androidx.room.withTransaction
+import com.cradleVSA.neptune.database.CradleDatabase
 import com.cradleVSA.neptune.database.daos.ReadingDao
 import com.cradleVSA.neptune.model.Assessment
 import com.cradleVSA.neptune.model.Reading
@@ -10,6 +12,7 @@ import com.cradleVSA.neptune.net.RestApi
 import com.cradleVSA.neptune.net.Success
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
@@ -26,7 +29,8 @@ import javax.inject.Singleton
  *
  */
 @Singleton
-class ReadingManager constructor(
+class ReadingManager @Inject constructor(
+    private val database: CradleDatabase,
     private val readingDao: ReadingDao,
     private val restApi: RestApi
 ) {
@@ -146,15 +150,20 @@ class ReadingManager constructor(
         return result.map { }
     }
 
-    suspend fun setLastEdited(readingId: String, lastEdited: Long) {
-        readingDao.setLastEdited(readingId, lastEdited)
-    }
-
-    suspend fun setDateRecheckVitalsNeededToNull(readingId: String) {
-        readingDao.setDateRecheckVitalsNeededToNull(readingId)
-    }
-
-    suspend fun setIsUploadedToServerToZero(readingId: String) {
-        readingDao.setIsUploadedToServerToZero(readingId)
+    /**
+     * @param lastEdited Optional: If not null, it will set the lastEdited column in the database
+     * to the value.
+     */
+    suspend fun clearDateRecheckVitalsAndMarkForUpload(
+        readingId: String,
+        lastEdited: Long? = null
+    ) {
+        database.withTransaction {
+            readingDao.apply {
+                lastEdited?.let { setLastEdited(readingId, it) }
+                setDateRecheckVitalsNeededToNull(readingId)
+                setIsUploadedToServerToZero(readingId)
+            }
+        }
     }
 }

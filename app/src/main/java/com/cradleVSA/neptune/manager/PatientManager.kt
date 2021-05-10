@@ -13,10 +13,12 @@ import com.cradleVSA.neptune.net.RestApi
 import com.cradleVSA.neptune.net.Success
 import kotlinx.coroutines.yield
 import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Manager to interact with the [Patient] table in the database.
  */
+@Singleton
 class PatientManager @Inject constructor(
     private val database: CradleDatabase,
     private val patientDao: PatientDao,

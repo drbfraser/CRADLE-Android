@@ -40,9 +40,10 @@ class DataModule {
     @Provides
     @Singleton
     fun provideReadingManager(
+        database: CradleDatabase,
         readingDao: ReadingDao,
         restApi: RestApi
-    ) = ReadingManager(readingDao, restApi)
+    ) = ReadingManager(database, readingDao, restApi)
 
     @Provides
     @Singleton
