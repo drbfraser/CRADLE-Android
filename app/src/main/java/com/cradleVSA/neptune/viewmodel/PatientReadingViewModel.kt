@@ -39,7 +39,7 @@ import com.cradleVSA.neptune.model.RetestGroup
 import com.cradleVSA.neptune.model.Sex
 import com.cradleVSA.neptune.model.SymptomsState
 import com.cradleVSA.neptune.model.UrineTest
-import com.cradleVSA.neptune.model.Verifier
+import com.cradleVSA.neptune.model.Verifiable
 import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.net.Success
 import com.cradleVSA.neptune.utilities.DateUtil
@@ -1937,7 +1937,7 @@ class PatientReadingViewModel @Inject constructor(
         private fun testValueForValidityAndSetErrorMapAsync(
             value: Any?,
             propertyToCheck: KProperty<*>,
-            verifier: Verifier<*>,
+            verifier: Verifiable.Verifier<*>,
             propertyForErrorMapKey: KProperty<*> = propertyToCheck,
             currentValuesMap: Map<String, Any?>? = null
         ) {
@@ -1960,7 +1960,7 @@ class PatientReadingViewModel @Inject constructor(
                     }
 
                 // Get the actual validity status and any error message.
-                val (isValid, errorMessage) = verifier.isValueValid(
+                val verificationResult = verifier.isValueValid(
                     property = propertyToCheck,
                     value = value,
                     context = app,
@@ -1968,15 +1968,18 @@ class PatientReadingViewModel @Inject constructor(
                     currentValues = currentValuesMapToUse
                 )
 
-                val errorMessageForMap = if (!isValid) errorMessage else null
+                val errorMessageForMap = if (verificationResult is Verifiable.Invalid) {
+                    verificationResult.errorMessage
+                } else {
+                    null
+                }
 
-                // Many coroutines can be running.
                 errorMapMutex.withLock {
                     val currentMap = errorMap.value ?: arrayMapOf()
 
                     // Don't notify observers if the error message is the exact same message.
                     if (currentMap[propertyForErrorMapKey.name] != errorMessageForMap) {
-                        if (isValid) {
+                        if (verificationResult is Verifiable.Valid) {
                             currentMap.remove(propertyForErrorMapKey.name)
                         } else {
                             currentMap[propertyForErrorMapKey.name] = errorMessageForMap

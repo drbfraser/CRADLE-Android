@@ -117,7 +117,7 @@ interface ReadingDao {
     @RewriteQueriesToDropUnusedColumns
     @Query(
         """
-        SELECT * 
+        SELECT r.* 
         FROM Reading r 
         JOIN Patient p ON r.patientId = p.id
         WHERE p.base IS NOT NULL AND r.isUploadedToServer = 0

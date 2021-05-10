@@ -98,7 +98,9 @@ class BloodPressureTests {
                         } else {
                             val (actualSystolicValid, sysErrorMsg) = this.isPropertyValid(
                                 BloodPressure::systolic, mockContext
-                            )
+                            ).let {
+                                (it is Verifiable.Valid) to (it as? Verifiable.Invalid)?.errorMessage
+                            }
                             assertEquals((systolic in goodSystolic), actualSystolicValid) {
                                 generateAssertErrorMsg(
                                     name = BloodPressure::systolic.name, value = systolic,
@@ -113,7 +115,9 @@ class BloodPressureTests {
 
                             val (actualDiastolicValid, diasErrorMsg) = this.isPropertyValid(
                                 BloodPressure::diastolic, mockContext
-                            )
+                            ).let {
+                                (it is Verifiable.Valid) to (it as? Verifiable.Invalid)?.errorMessage
+                            }
                             assertEquals((diastolic in goodDiastolic), actualDiastolicValid) {
                                 generateAssertErrorMsg(
                                     name = BloodPressure::diastolic.name, value = diastolic,
@@ -128,7 +132,9 @@ class BloodPressureTests {
 
                             val (actualHeartrateValid, heartErrorMsg) = this.isPropertyValid(
                                 BloodPressure::heartRate, mockContext
-                            )
+                            ).let {
+                                (it is Verifiable.Valid) to (it as? Verifiable.Invalid)?.errorMessage
+                            }
                             assertEquals((heartrate in goodHeartrate), actualHeartrateValid) {
                                 generateAssertErrorMsg(
                                     name = BloodPressure::heartRate.name, value = heartrate,
@@ -178,8 +184,14 @@ class BloodPressureTests {
         )
 
     private fun generateAssertErrorMsg(
-        name: String, value: Int, lowerBound: Int, upperBound: Int, isValidExpected: Boolean,
-        actualValid: Boolean, errorMessage: String, instance: BloodPressure,
+        name: String,
+        value: Int,
+        lowerBound: Int,
+        upperBound: Int,
+        isValidExpected: Boolean,
+        actualValid: Boolean,
+        errorMessage: String?,
+        instance: BloodPressure,
         goodValuesTested: Set<Int>
     ) = "tested $name value is: $value\n" +
         "$name bounds: $lowerBound - $upperBound\n" +

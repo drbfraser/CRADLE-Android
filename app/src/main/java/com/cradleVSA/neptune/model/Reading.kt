@@ -151,8 +151,8 @@ data class Reading(
     override fun isValueForPropertyValid(
         property: KProperty<*>,
         value: Any?,
-        context: Context
-    ): Pair<Boolean, String> = isValueValid(property, value, context)
+        context: Context?
+    ): Verifiable.Result = isValueValid(property, value, context)
 
     class Serializer : StdSerializer<Reading>(Reading::class.java) {
         override fun serialize(
@@ -232,16 +232,16 @@ data class Reading(
             }
     }
 
-    companion object : Verifier<Reading> {
+    companion object : Verifiable.Verifier<Reading> {
 
         @Suppress("NestedBlockDepth")
         override fun isValueValid(
             property: KProperty<*>,
             value: Any?,
-            context: Context,
+            context: Context?,
             instance: Reading?,
             currentValues: Map<String, Any?>?
-        ): Pair<Boolean, String> = when (property) {
+        ): Verifiable.Result = when (property) {
             Reading::patientId -> {
                 // Safe to call without instance or currentValues, as id doesn't depend on anything
                 // else.
@@ -249,17 +249,24 @@ data class Reading(
             }
             Reading::bloodPressure -> with(value as? BloodPressure) {
                 return if (this == null) {
-                    Pair(true, "")
+                    Verifiable.Valid
                 } else {
                     // Derive errors from BloodPressure from its implementation.
-                    return with(getAllMembersWithInvalidValues(context)) {
-                        val isValid = isEmpty()
-                        Pair(isValid, this.joinToString(separator = ",") { it.second })
+                    return getAllMembersWithInvalidValues(context).let { invalids ->
+                        val isValid = invalids.isEmpty()
+                        if (isValid) {
+                            Verifiable.Valid
+                        } else {
+                            Verifiable.Invalid(
+                                property,
+                                invalids.joinToString(separator = ",") { it.second }
+                            )
+                        }
                     }
                 }
             }
-            Reading::urineTest -> Pair(true, "")
-            else -> Pair(true, "")
+            Reading::urineTest -> Verifiable.Valid
+            else -> Verifiable.Valid
         }
     }
 
@@ -342,14 +349,14 @@ data class BloodPressure(
         }
     }
 
-    companion object : Unmarshal<BloodPressure, JSONObject>, Verifier<BloodPressure> {
+    companion object : Unmarshal<BloodPressure, JSONObject>, Verifiable.Verifier<BloodPressure> {
         override fun isValueValid(
             property: KProperty<*>,
             value: Any?,
-            context: Context,
+            context: Context?,
             instance: BloodPressure?,
             currentValues: Map<String, Any?>?
-        ): Pair<Boolean, String> = with(value as? Int) {
+        ): Verifiable.Result = with(value as? Int) {
             // Normally, we would use a `when (property)` statement here.
             // We do a `with(value as? Int)` here because we assume that all the properties that we
             // want to check in this class are of type Int, and they're all verified in the exact
@@ -359,24 +366,24 @@ data class BloodPressure(
             if (this == null) {
                 when (property) {
                     BloodPressure::systolic -> {
-                        return@with Pair(
-                            false,
-                            context.getString(R.string.blood_pressure_error_missing_systolic)
+                        return@with Verifiable.Invalid(
+                            property,
+                            context?.getString(R.string.blood_pressure_error_missing_systolic)
                         )
                     }
                     BloodPressure::diastolic -> {
-                        return@with Pair(
-                            false,
-                            context.getString(R.string.blood_pressure_error_missing_diastolic)
+                        return@with Verifiable.Invalid(
+                            property,
+                            context?.getString(R.string.blood_pressure_error_missing_diastolic)
                         )
                     }
                     BloodPressure::heartRate -> {
-                        return@with Pair(
-                            false,
-                            context.getString(R.string.blood_pressure_error_missing_heart_rate)
+                        return@with Verifiable.Invalid(
+                            property,
+                            context?.getString(R.string.blood_pressure_error_missing_heart_rate)
                         )
                     }
-                    else -> return Pair(true, "")
+                    else -> return Verifiable.Valid
                 }
             }
             val (lowerBound, upperBound, @StringRes resId) = when (property) {
@@ -397,13 +404,13 @@ data class BloodPressure(
                 )
                 // not a verifiable property; true by default.
                 else -> {
-                    return@with Pair(true, "")
+                    return@with Verifiable.Valid
                 }
             }
             return if (lowerBound <= this && this <= upperBound) {
-                Pair(true, "")
+                Verifiable.Valid
             } else {
-                Pair(false, context.getString(resId, lowerBound, upperBound))
+                Verifiable.Invalid(property, context?.getString(resId, lowerBound, upperBound))
             }
         }
         /**
@@ -430,8 +437,8 @@ data class BloodPressure(
     override fun isValueForPropertyValid(
         property: KProperty<*>,
         value: Any?,
-        context: Context
-    ): Pair<Boolean, String> = isValueValid(property, value, context)
+        context: Context?
+    ): Verifiable.Result = isValueValid(property, value, context)
 }
 
 /**

@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import androidx.collection.ArrayMap
 import androidx.collection.arrayMapOf
 import com.cradleVSA.neptune.model.BloodPressure
+import com.cradleVSA.neptune.model.Verifiable
 import com.cradleVSA.neptune.ocr.tflite.Classifier
 import com.cradleVSA.neptune.ocr.tflite.TFLiteObjectDetectionHelper
 import java.io.Closeable
@@ -140,17 +141,17 @@ class CradleScreenOcrDetector(ctx: Context) : Closeable {
             BloodPressure::systolic,
             newOcrResult.systolic.toIntOrNull(),
             context
-        ).first
+        ) is Verifiable.Valid
         val isNewDiastolicValid = BloodPressure.isValueValid(
             BloodPressure::diastolic,
             newOcrResult.diastolic.toIntOrNull(),
             context
-        ).first
+        ) is Verifiable.Valid
         val isNewHeartRateValid = BloodPressure.isValueValid(
             BloodPressure::heartRate,
             newOcrResult.heartRate.toIntOrNull(),
             context
-        ).first
+        ) is Verifiable.Valid
 
         val lastOcrResult = previousValidOcrResult
         return if (lastOcrResult == null) {

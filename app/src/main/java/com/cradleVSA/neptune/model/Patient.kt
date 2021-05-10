@@ -96,10 +96,10 @@ data class Patient(
     override fun isValueForPropertyValid(
         property: KProperty<*>,
         value: Any?,
-        context: Context
-    ): Pair<Boolean, String> = isValueValid(property, value, context, instance = this)
+        context: Context?
+    ): Verifiable.Result = isValueValid(property, value, context, instance = this)
 
-    companion object : Verifier<Patient> {
+    companion object : Verifiable.Verifier<Patient> {
         const val ID_MAX_LENGTH = 14
 
         // This group of limits are derived from the backend database setup:
@@ -154,63 +154,74 @@ data class Patient(
         override fun isValueValid(
             property: KProperty<*>,
             value: Any?,
-            context: Context,
+            context: Context?,
             instance: Patient?,
             currentValues: Map<String, Any?>?
-        ): Pair<Boolean, String> = when (property) {
+        ): Verifiable.Result = when (property) {
             // doesn't depend on other properties
             Patient::id -> with(value as String) {
                 if (isBlank()) {
-                    return Pair(false, context.getString(R.string.patient_error_id_missing))
+                    return Verifiable.Invalid(
+                        property, context?.getString(R.string.patient_error_id_missing)
+                    )
                 }
                 if (length > ID_MAX_LENGTH) {
-                    return Pair(
-                        false,
-                        context.getString(
+                    return Verifiable.Invalid(
+                        property,
+                        context?.getString(
                             R.string.patient_error_id_too_long_max_n_digits,
                             ID_MAX_LENGTH
                         )
                     )
                 }
                 if (!isDigitsOnly()) {
-                    return Pair(false, context.getString(R.string.patient_error_id_must_be_number))
+                    return Verifiable.Invalid(property, context?.getString(R.string.patient_error_id_must_be_number))
                 }
 
-                return Pair(true, "")
+                return Verifiable.Valid
             }
 
             // doesn't depend on other properties
             Patient::name -> with(value as String) {
                 if (isBlank()) {
-                    return Pair(false, context.getString(R.string.patient_error_name_missing))
+                    return Verifiable.Invalid(
+                        property,
+                        context?.getString(R.string.patient_error_name_missing)
+                    )
                 }
                 if (!VALID_NAME_MATCHER.matches(this)) {
-                    return Pair(
-                        false,
-                        context.getString(R.string.patient_error_name_must_be_characters)
+                    return Verifiable.Invalid(
+                        property,
+                        context?.getString(R.string.patient_error_name_must_be_characters)
                     )
                 }
                 if (length > NAME_MAX_LENGTH) {
-                    return false to context.getString(
-                        R.string.error_too_long_over_n_chars,
-                        NAME_MAX_LENGTH
+                    return Verifiable.Invalid(
+                        property,
+                        context?.getString(
+                            R.string.error_too_long_over_n_chars,
+                            NAME_MAX_LENGTH
+                        )
                     )
                 }
-                return Pair(true, "")
+                return Verifiable.Valid
             }
 
             // validity of dob depends on age
             Patient::dob -> with(value as String?) {
                 if (this == null || isBlank()) {
-                    return@with Pair(false, context.getString(R.string.patient_error_age_or_dob_missing))
+                    return@with Verifiable.Invalid(
+                        property,
+                        context?.getString(R.string.patient_error_age_or_dob_missing)
+                    )
                 }
 
                 val age = try {
                     calculateAgeFromDateString(this)
                 } catch (e: ParseException) {
-                    return@with Pair(
-                        false,
-                        context.getString(
+                    return@with Verifiable.Invalid(
+                        property,
+                        context?.getString(
                             R.string.patient_error_dob_format,
                             DOB_FORMAT_SIMPLEDATETIME
                         )
@@ -218,16 +229,16 @@ data class Patient(
                 }
 
                 if (age > AGE_UPPER_BOUND || age < AGE_LOWER_BOUND) {
-                    return Pair(
-                        false,
-                        context.getString(
+                    return Verifiable.Invalid(
+                        property,
+                        context?.getString(
                             R.string.patient_error_age_between_n_and_m,
                             AGE_LOWER_BOUND,
                             AGE_UPPER_BOUND
                         )
                     )
                 }
-                return Pair(true, "")
+                return Verifiable.Valid
             }
 
             // Validity of gestational age depends on gender and pregnancy; we are requiring both to
@@ -244,121 +255,131 @@ data class Patient(
                     dependentProperties[Patient::isPregnant.name] == false
                 ) {
                     return if (this == null) {
-                        Pair(true, "")
+                        Verifiable.Valid
                     } else {
                         // Can't have gestational age if we're not pregnant.
-                        Pair(false, context.getString(R.string.patient_error_gestation_for_no_preg))
+                        Verifiable.Invalid(property, context?.getString(R.string.patient_error_gestation_for_no_preg))
                     }
                 }
                 if (this == null) {
-                    return Pair(
-                        false,
-                        context.getString(R.string.patient_error_gestational_age_missing)
+                    return Verifiable.Invalid(
+                        property,
+                        context?.getString(R.string.patient_error_gestational_age_missing)
                     )
                 }
                 // to see where the logic is derived from, run
                 // $ cat cradle-platform/server/validation/patients.py
                 // $ cat cradle-platform/client/src/pages/newReading/demographic/index.tsx
                 if (this.ageFromNow.weeks < 1) {
-                    return Pair(
-                        false,
-                        context.getString(R.string.patient_error_gestation_must_be_not_zero)
+                    return Verifiable.Invalid(
+                        property,
+                        context?.getString(R.string.patient_error_gestation_must_be_not_zero)
                     )
                 }
 
                 if (this.ageFromNow.weeks > GESTATIONAL_AGE_WEEKS_MAX) {
                     return if (this is GestationalAgeWeeks) {
-                        Pair(
-                            false,
-                            context.getString(
+                        Verifiable.Invalid(
+                            property,
+                            context?.getString(
                                 R.string.patient_error_gestation_greater_than_n_weeks,
                                 GESTATIONAL_AGE_WEEKS_MAX
                             )
                         )
                     } else {
-                        Pair(
-                            false,
-                            context.getString(
+                        Verifiable.Invalid(
+                            property,
+                            context?.getString(
                                 R.string.patient_error_gestation_greater_than_n_months,
                                 GESTATIONAL_AGE_MONTHS_MAX
                             )
                         )
                     }
                 }
-                return Pair(true, "")
+                return Verifiable.Valid
             }
 
             Patient::sex -> with(value as? Sex?) {
                 if (this != null) {
-                    Pair(true, "")
+                    Verifiable.Valid
                 } else {
-                    Pair(false, context.getString(R.string.patient_error_sex_missing))
+                    Verifiable.Invalid(property, context?.getString(R.string.patient_error_sex_missing))
                 }
             }
 
             Patient::zone -> with(value as? String?) {
                 if (this == null) {
                     // Zone is optional
-                    return true to ""
+                    return Verifiable.Valid
                 }
 
                 if (length > ZONE_MAX_LENGTH) {
-                    return false to context.getString(
-                        R.string.error_too_long_over_n_chars,
-                        ZONE_MAX_LENGTH
+                    return Verifiable.Invalid(
+                        property,
+                        context?.getString(
+                            R.string.error_too_long_over_n_chars,
+                            ZONE_MAX_LENGTH
+                        )
                     )
                 }
 
-                return true to ""
+                return Verifiable.Valid
             }
 
             Patient::villageNumber -> with(value as? String?) {
                 if (isNullOrBlank()) {
                     // Village number is optional
-                    return true to ""
+                    return Verifiable.Valid
                 }
 
                 if (!isDigitsOnly()) {
-                    return Pair(
-                        false,
-                        context.getString(R.string.patient_error_must_be_number)
+                    return Verifiable.Invalid(
+                        property,
+                        context?.getString(R.string.patient_error_must_be_number)
                     )
                 }
 
                 if (length > VILLAGE_NUMBER_MAX_LENGTH) {
-                    return false to context.getString(
-                        R.string.error_too_long_over_n_chars,
-                        VILLAGE_NUMBER_MAX_LENGTH
+                    return Verifiable.Invalid(
+                        property,
+                        context?.getString(
+                            R.string.error_too_long_over_n_chars,
+                            VILLAGE_NUMBER_MAX_LENGTH
+                        )
                     )
                 }
 
-                return true to ""
+                return Verifiable.Valid
             }
 
             Patient::householdNumber -> with(value as? String?) {
                 if (this == null) {
                     // Household number is optional, so this is valid
-                    return true to ""
+                    return Verifiable.Valid
                 }
 
                 if (!isDigitsOnly()) {
-                    return false to context.getString(R.string.patient_error_must_be_number)
-                }
-
-                if (length > HOUSEHOLD_NUMBER_MAX_LENGTH) {
-                    return false to context.getString(
-                        R.string.error_too_long_over_n_chars,
-                        HOUSEHOLD_NUMBER_MAX_LENGTH
+                    return Verifiable.Invalid(
+                        property,
+                        context?.getString(R.string.patient_error_must_be_number)
                     )
                 }
 
-                return true to ""
+                if (length > HOUSEHOLD_NUMBER_MAX_LENGTH) {
+                    return Verifiable.Invalid(
+                        property,
+                        context?.getString(
+                            R.string.error_too_long_over_n_chars,
+                            HOUSEHOLD_NUMBER_MAX_LENGTH
+                        )
+                    )
+                }
+
+                return Verifiable.Valid
             }
 
             // Default to true for all other fields / stuff that isn't implemented.
-            else -> {
-                true to ""
-            }
+            else -> Verifiable.Valid
         }
 
         /**
@@ -678,7 +699,6 @@ private enum class PatientField(override val text: String) : Field {
     NAME("patientName"),
     DOB("dob"),
     IS_EXACT_DOB("isExactDob"),
-    AGE("patientAge"),
     GESTATIONAL_AGE_UNIT("gestationalAgeUnit"),
     GESTATIONAL_AGE_VALUE("gestationalTimestamp"),
     SEX("patientSex"),

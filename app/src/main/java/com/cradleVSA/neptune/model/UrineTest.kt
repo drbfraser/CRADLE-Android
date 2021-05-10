@@ -34,7 +34,7 @@ data class UrineTest(
         put(UrineTestField.GLUCOSE, glucose)
     }
 
-    companion object FromJson : Unmarshal<UrineTest, JSONObject>, Verifier<UrineTest> {
+    companion object FromJson : Unmarshal<UrineTest, JSONObject>, Verifiable.Verifier<UrineTest> {
         /**
          * Constructs a [UrineTest] from a [JSONObject].
          *
@@ -52,35 +52,35 @@ data class UrineTest(
         override fun isValueValid(
             property: KProperty<*>,
             value: Any?,
-            context: Context,
+            context: Context?,
             instance: UrineTest?,
             currentValues: Map<String, Any?>?
-        ): Pair<Boolean, String> = with(value as? String) {
+        ): Verifiable.Result = with(value as? String) {
             // All the properties for [UrineTest} are Strings, so if the cast fails, it's
             // null and hence will fall into here.
             if (this == null || this.isBlank()) {
-                val errorMessage = when (property) {
-                    UrineTest::blood ->
-                        context.getString(R.string.urine_test_error_blood_missing)
-                    UrineTest::glucose ->
-                        context.getString(R.string.urine_test_error_glucose_missing)
-                    UrineTest::leukocytes ->
-                        context.getString(R.string.urine_test_error_leukocytes_missing)
-                    UrineTest::nitrites ->
-                        context.getString(R.string.urine_test_error_nitrites_missing)
-                    UrineTest::protein ->
-                        context.getString(R.string.urine_test_error_protein_missing)
-                    else ->
-                        context.getString(R.string.urine_test_error_invalid_value)
+                val errorMessage = context?.let {
+                    when (property) {
+                        UrineTest::blood -> it.getString(R.string.urine_test_error_blood_missing)
+                        UrineTest::glucose -> it.getString(R.string.urine_test_error_glucose_missing)
+                        UrineTest::leukocytes -> it.getString(R.string.urine_test_error_leukocytes_missing)
+                        UrineTest::nitrites -> it.getString(R.string.urine_test_error_nitrites_missing)
+                        UrineTest::protein -> it.getString(R.string.urine_test_error_protein_missing)
+                        else -> it.getString(R.string.urine_test_error_invalid_value)
+                    }
                 }
-                return false to errorMessage
+                return Verifiable.Invalid(property, errorMessage)
             }
 
-            val urineTestStrings = context.resources.getStringArray(R.array.urine_test_symbols)
+            val urineTestStrings = context?.resources?.getStringArray(R.array.urine_test_symbols)
+                ?: arrayOf("NAD", "+", "++", "+++")
             return if (this in urineTestStrings) {
-                true to ""
+                Verifiable.Valid
             } else {
-                false to context.getString(R.string.urine_test_error_invalid_value)
+                Verifiable.Invalid(
+                    property,
+                    context?.getString(R.string.urine_test_error_invalid_value)
+                )
             }
         }
     }
@@ -88,8 +88,8 @@ data class UrineTest(
     override fun isValueForPropertyValid(
         property: KProperty<*>,
         value: Any?,
-        context: Context
-    ): Pair<Boolean, String> = isValueValid(property, value, context)
+        context: Context?
+    ): Verifiable.Result = isValueValid(property, value, context)
 }
 
 /**
