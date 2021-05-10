@@ -2,6 +2,7 @@ package com.cradleVSA.neptune.ocr
 
 import android.content.Context
 import android.graphics.Bitmap
+import androidx.collection.ArrayMap
 import androidx.collection.arrayMapOf
 import com.cradleVSA.neptune.model.BloodPressure
 import com.cradleVSA.neptune.ocr.tflite.Classifier
@@ -25,7 +26,7 @@ class CradleScreenOcrDetector(ctx: Context) : Closeable {
     /**
      * Stores the previous [OcrResult]. This must be full of valid values.
      */
-    private var previousOcrResult: OcrResult? = null
+    private var previousValidOcrResult: OcrResult? = null
 
     /**
      * Runs OCR on an image of the entire CRADLE screen and returns the classified result. It is
@@ -64,7 +65,8 @@ class CradleScreenOcrDetector(ctx: Context) : Closeable {
             CradleOverlay.OverlayRegion.DIA to diaBitmap,
             CradleOverlay.OverlayRegion.HR to heartRateBitmap
         )
-        val allRecognitions = arrayMapOf<CradleOverlay.OverlayRegion, String>()
+        @Suppress("MagicNumber")
+        val allRecognitions = ArrayMap<CradleOverlay.OverlayRegion, String>(3)
         for ((region, croppedBitmap) in bitmaps) {
             val recognitions = classifier.recognizeItemsInImage(croppedBitmap)
             val text = extractTextFromResults(recognitions, croppedBitmap.height.toFloat())
@@ -77,7 +79,7 @@ class CradleScreenOcrDetector(ctx: Context) : Closeable {
         )
 
         return getValidOcrResult(newOcrResult)
-            ?.also { previousOcrResult = it }
+            ?.also { previousValidOcrResult = it }
     }
 
     private val sortByXComparator: Comparator<Classifier.Recognition> =
@@ -130,7 +132,7 @@ class CradleScreenOcrDetector(ctx: Context) : Closeable {
 
     /**
      * Validates the [newOcrResult] and only returns an OcrResult with valid results. For any
-     * fields that are invalid, it will use the [previousOcrResult].
+     * fields that are invalid, it will use the [previousValidOcrResult].
      * Returns null if there are no previous valid results and [newOcrResult] is invalid.
      */
     private fun getValidOcrResult(newOcrResult: OcrResult): OcrResult? {
@@ -150,7 +152,7 @@ class CradleScreenOcrDetector(ctx: Context) : Closeable {
             context
         ).first
 
-        val lastOcrResult = previousOcrResult
+        val lastOcrResult = previousValidOcrResult
         return if (lastOcrResult == null) {
             // For the first OCR result, only return a non-null result if all the values are valid.
             if (isNewSystolicValid && isNewDiastolicValid && isNewHeartRateValid) {
