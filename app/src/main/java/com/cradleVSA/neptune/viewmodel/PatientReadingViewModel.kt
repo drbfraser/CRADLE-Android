@@ -41,7 +41,6 @@ import com.cradleVSA.neptune.model.SymptomsState
 import com.cradleVSA.neptune.model.UrineTest
 import com.cradleVSA.neptune.model.Verifiable
 import com.cradleVSA.neptune.net.NetworkResult
-import com.cradleVSA.neptune.net.Success
 import com.cradleVSA.neptune.utilities.DateUtil
 import com.cradleVSA.neptune.utilities.LiveDataDynamicModelBuilder
 import com.cradleVSA.neptune.utilities.Months
@@ -967,7 +966,7 @@ class PatientReadingViewModel @Inject constructor(
                         Log.d(TAG, "checking if patient ID is in use on the server")
                         val existingOnServer =
                             patientManager.downloadPatientInfoFromServer(patient.id)
-                        if (existingOnServer is Success) {
+                        if (existingOnServer is NetworkResult.Success) {
                             // Send back the patient to give the user an option to
                             // download the patient with all of their readings.
                             Log.d(TAG, "patient ID already in use on the server")
@@ -1473,7 +1472,7 @@ class PatientReadingViewModel @Inject constructor(
                         // the reading.
                         val result =
                             referralUploadManager.uploadReferralViaWeb(patient, readingFromBuilder)
-                        if (result is Success) {
+                        if (result is NetworkResult.Success) {
                             // Save the patient and reading in local database
                             // Note: If patient already exists on server, then
                             // patientFromServer == patient.

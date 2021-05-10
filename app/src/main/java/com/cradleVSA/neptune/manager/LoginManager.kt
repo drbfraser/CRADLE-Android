@@ -10,16 +10,12 @@ import com.cradleVSA.neptune.database.CradleDatabase
 import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.PatientAndReadings
 import com.cradleVSA.neptune.model.UserRole
-import com.cradleVSA.neptune.net.Failure
-import com.cradleVSA.neptune.net.NetworkException
 import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.net.RestApi
-import com.cradleVSA.neptune.net.Success
 import com.cradleVSA.neptune.net.SyncException
 import com.cradleVSA.neptune.sync.SyncWorker
 import com.cradleVSA.neptune.utilities.SharedPreferencesMigration
 import com.cradleVSA.neptune.utilities.UnixTimestamp
-import com.cradleVSA.neptune.utilities.nullIfEmpty
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -76,26 +72,26 @@ class LoginManager @Inject constructor(
      * @param password the password to login with
      * @param parallelDownload whether to download patient + readings and health facilities in
      * parallel. True by default. (For unit testing purposes to get around a problem.)
-     * @return a [Success] variant if the user was able to login successfully,
-     *  otherwise a [Failure] or [NetworkException] will be returned
+     * @return a [NetworkResult.Success] variant if the user was able to login successfully,
+     *  otherwise a [[NetworkResult.Failure] or [[NetworkResult.NetworkException] will be returned
      */
     suspend fun login(
         email: String,
         password: String,
         parallelDownload: Boolean = true
-    ) = withContext(Dispatchers.Default) {
+    ): NetworkResult<Unit> = withContext(Dispatchers.Default) {
         // Prevent logging in twice
         loginMutex.withLock {
             if (isLoggedIn()) {
                 Log.w(TAG, "trying to login twice!")
-                return@withContext NetworkException(Exception("already logged in"))
+                return@withContext NetworkResult.NetworkException(Exception("already logged in"))
             }
 
             // Send a request to the authentication endpoint to login
             //
             // If we failed to login, return immediately
             val loginResult = restApi.authenticate(email, password)
-            if (loginResult is Success) {
+            if (loginResult is NetworkResult.Success) {
                 val loginResponse = loginResult.value
                 sharedPreferences.edit(commit = true) {
                     putString(TOKEN_KEY, loginResponse.token)
@@ -103,7 +99,7 @@ class LoginManager @Inject constructor(
                     putString(EMAIL_KEY, loginResponse.email)
                     putString(
                         context.getString(R.string.key_vht_name),
-                        loginResponse.firstName?.nullIfEmpty()
+                        loginResponse.firstName
                     )
 
                     if (UserRole.safeValueOf(loginResponse.role) == UserRole.UNKNOWN) {
@@ -144,7 +140,7 @@ class LoginManager @Inject constructor(
             }
 
             joinAll(patientsResultAsync, healthFacilityResultAsync)
-            if (patientsResultAsync.await() is Success) {
+            if (patientsResultAsync.await() is NetworkResult.Success) {
                 sharedPreferences.edit(commit = true) {
                     putString(SyncWorker.LAST_PATIENT_SYNC, loginTime.toString())
                     putString(SyncWorker.LAST_READING_SYNC, loginTime.toString())
@@ -155,7 +151,7 @@ class LoginManager @Inject constructor(
             //  It might be better to just split the login manager so that this function just
             //  handles the initial login, and then the patient and health facility download can
             //  be done in another activity/fragment.
-            return@withContext Success(Unit, HTTP_OK)
+            return@withContext NetworkResult.Success(Unit, HTTP_OK)
         }
     }
 
@@ -214,7 +210,7 @@ class LoginManager @Inject constructor(
     }
 
     /**
-     * Close the channel for type [T] if the [result] is a [Success], otherwise cancels it.
+     * Close the channel for type [T] if the [result] is a [NetworkResult.Success], otherwise cancels it.
      * Note: [RestApi] already handles channel closing, so it's likely this function isn't really
      * useful.
      */
@@ -224,15 +220,15 @@ class LoginManager @Inject constructor(
     ) {
         val prefix = T::class.java.simpleName
         when (result) {
-            is Success -> {
+            is NetworkResult.Success -> {
                 channel.close()
                 Log.d(TAG, "$prefix download successful!")
             }
-            is Failure -> {
+            is NetworkResult.Failure -> {
                 channel.cancel()
                 Log.e(TAG, "$prefix download failed; status code: ${result.statusCode}")
             }
-            is NetworkException -> {
+            is NetworkResult.NetworkException -> {
                 channel.cancel()
                 Log.e(TAG, "$prefix download failed; exception", result.cause)
             }

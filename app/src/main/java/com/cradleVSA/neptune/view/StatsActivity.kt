@@ -24,7 +24,7 @@ import com.cradleVSA.neptune.manager.ReadingManager
 import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.Statistics
 import com.cradleVSA.neptune.model.UserRole
-import com.cradleVSA.neptune.net.Success
+import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.utilities.BarGraphValueFormatter
 import com.cradleVSA.neptune.utilities.DateUtil
 import com.cradleVSA.neptune.viewmodel.StatsViewModel
@@ -87,7 +87,7 @@ class StatsActivity : AppCompatActivity() {
     ) {
         lifecycleScope.launch {
             viewModel.getStatsData(filterOption, newFacility, startTime, endTime).let {
-                if (it is Success) {
+                if (it is NetworkResult.Success) {
                     setupBasicStats(it.value)
                     setupBarChart(it.value)
                 } else {

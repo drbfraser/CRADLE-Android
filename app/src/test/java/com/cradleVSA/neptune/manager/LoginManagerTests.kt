@@ -12,9 +12,8 @@ import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.Patient
 import com.cradleVSA.neptune.model.Reading
 import com.cradleVSA.neptune.model.UserRole
-import com.cradleVSA.neptune.net.Failure
+import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.net.RestApi
-import com.cradleVSA.neptune.net.Success
 import com.cradleVSA.neptune.sync.SyncWorker
 import com.cradleVSA.neptune.testutils.MockDependencyUtils
 import com.cradleVSA.neptune.testutils.MockWebServerUtils
@@ -44,8 +43,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import java.math.BigInteger
 import java.nio.charset.Charset
+import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
-import kotlin.time.seconds
 
 @ExperimentalCoroutinesApi
 internal class LoginManagerTests {
@@ -261,10 +260,10 @@ internal class LoginManagerTests {
                 mockContext
             )
 
-            val result = withTimeout(10.seconds) {
+            val result = withTimeout(Duration.seconds(10)) {
                 loginManager.login(TEST_USER_EMAIL, TEST_USER_PASSWORD, parallelDownload = false)
             }
-            assert(result is Success) {
+            assert(result is NetworkResult.Success) {
                 "expected login to be successful, but it failed, with " +
                     "result $result and\n" +
                     "shared prefs map $fakeSharedPreferences"
@@ -397,7 +396,7 @@ internal class LoginManagerTests {
             )
             // Note: we say success, but this just lets us move on from the LoginActivity.
             // TODO: Need to communicate failure.
-            assert(result is Success) {
+            assert(result is NetworkResult.Success) {
                 "expected a Success, but got result $result and " +
                     "shared prefs map $fakeSharedPreferences"
             }
@@ -432,11 +431,11 @@ internal class LoginManagerTests {
             )
 
             val result = loginManager.login(TEST_USER_EMAIL, TEST_USER_PASSWORD + "wronglol")
-            assert(result is Failure) {
+            assert(result is NetworkResult.Failure) {
                 "expected a failure, but got result $result and " +
                     "shared prefs map $fakeSharedPreferences"
             }
-            val statusCode = (result as Failure).statusCode
+            val statusCode = (result as NetworkResult.Failure).statusCode
             assertEquals(401, statusCode) { "expected 401 status code, but got $statusCode" }
 
             assert(!loginManager.isLoggedIn())

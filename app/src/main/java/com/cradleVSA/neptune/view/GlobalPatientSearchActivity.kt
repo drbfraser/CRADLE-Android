@@ -22,8 +22,8 @@ import com.cradleVSA.neptune.ext.isConnected
 import com.cradleVSA.neptune.manager.PatientManager
 import com.cradleVSA.neptune.manager.ReadingManager
 import com.cradleVSA.neptune.model.GlobalPatient
+import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.net.RestApi
-import com.cradleVSA.neptune.net.Success
 import com.cradleVSA.neptune.viewmodel.GlobalPatientAdapter
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -117,16 +117,15 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
             val result = restApi.searchForPatient(searchUrl)
             progressDialog.cancel()
             searchView.hideKeyboard()
-            when (result) {
-                is Success -> setupPatientsRecycler(result.value)
-                else -> {
-                    setupPatientsRecycler(null)
-                    Snackbar.make(
-                        searchView,
-                        R.string.global_patient_search_unable_to_fetch,
-                        Snackbar.LENGTH_LONG
-                    ).show()
-                }
+            if (result is NetworkResult.Success) {
+                setupPatientsRecycler(result.value)
+            } else {
+                setupPatientsRecycler(null)
+                Snackbar.make(
+                    searchView,
+                    R.string.global_patient_search_unable_to_fetch,
+                    Snackbar.LENGTH_LONG
+                ).show()
             }
         }
     }
@@ -235,22 +234,20 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             val localPatients = localPatientSetDeferred.await()
-            when (patientManager.downloadAssociateAndSavePatient(patient.id)) {
-                is Success -> {
-                    localPatients.add(patient.id)
-                    patient.isMyPatient = true
-                    globalPatientAdapter.run {
-                        patient.index?.let { notifyItemChanged(it) } ?: notifyDataSetChanged()
-                    }
+            if (patientManager.downloadAssociateAndSavePatient(patient.id) is NetworkResult.Success) {
+                localPatients.add(patient.id)
+                patient.isMyPatient = true
+                globalPatientAdapter.run {
+                    patient.index?.let { notifyItemChanged(it) } ?: notifyDataSetChanged()
                 }
-                else -> {
-                    Toast.makeText(
-                        this@GlobalPatientSearchActivity,
-                        R.string.global_patient_search_unable_to_make_user_patient_relationship,
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
+            } else {
+                Toast.makeText(
+                    this@GlobalPatientSearchActivity,
+                    R.string.global_patient_search_unable_to_make_user_patient_relationship,
+                    Toast.LENGTH_LONG
+                ).show()
             }
+
             progressDialog.cancel()
         }
     }

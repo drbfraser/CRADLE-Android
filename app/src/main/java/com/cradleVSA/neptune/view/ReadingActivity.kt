@@ -27,7 +27,7 @@ import androidx.test.espresso.idling.CountingIdlingResource
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.databinding.ActivityReadingBinding
 import com.cradleVSA.neptune.ext.hideKeyboard
-import com.cradleVSA.neptune.net.Success
+import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.view.ui.reading.PatientIdConflictDialogFragment
 import com.cradleVSA.neptune.viewmodel.PatientReadingViewModel
 import com.cradleVSA.neptune.viewmodel.ReadingFlowError
@@ -39,7 +39,6 @@ import kotlinx.coroutines.launch
 
 private const val TAG = "ReadingActivity"
 
-@SuppressWarnings("LargeClass")
 @AndroidEntryPoint
 class ReadingActivity : AppCompatActivity() {
     private lateinit var launchReason: LaunchReason
@@ -362,7 +361,7 @@ class ReadingActivity : AppCompatActivity() {
         ).show()
         lifecycleScope.launch(Dispatchers.Main) {
             when (val result = viewModel.downloadAssociateAndSavePatient(patientId)) {
-                is Success -> {
+                is NetworkResult.Success -> {
                     Toast.makeText(
                         this@ReadingActivity,
                         R.string.reading_activity_downloading_patient_successful_toast,

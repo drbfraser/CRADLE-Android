@@ -22,14 +22,6 @@ class BloodPressureTests {
     }
 
     @Test
-    fun unmarshal_isInverseOf_marshal() {
-        val bp = BloodPressure(110, 90, 75)
-        val json = bp.marshal()
-        val actual = unmarshal(BloodPressure, json)
-        assertEquals(bp, actual)
-    }
-
-    @Test
     fun bloodPressure_ifInSevereShock_thenRedDown() {
         val bp = BloodPressure(80, 60, 160)
         // i.e, shock index = 2.0

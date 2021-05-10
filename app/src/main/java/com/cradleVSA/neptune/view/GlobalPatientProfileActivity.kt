@@ -18,7 +18,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.ext.isConnected
 import com.cradleVSA.neptune.model.GlobalPatient
-import com.cradleVSA.neptune.net.Success
+import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.viewmodel.ReadingRecyclerViewAdapter
 import com.cradleVSA.neptune.viewmodel.ReadingRecyclerViewAdapter.OnClickElement
 import com.google.android.material.snackbar.Snackbar
@@ -140,7 +140,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         progressDialog.show()
         lifecycleScope.launch {
             val result = patientManager.downloadPatientAndReading(globalPatient.id)
-            if (result !is Success) {
+            if (result !is NetworkResult.Success) {
                 progressDialog.cancel()
                 Snackbar.make(
                     readingRecyclerview,

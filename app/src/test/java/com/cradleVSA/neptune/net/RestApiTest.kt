@@ -108,17 +108,17 @@ internal class RestApiTest {
         val badLoginResult = runBlocking {
             restApi.authenticate("bad@email.com", "password")
         }
-        check(badLoginResult is Failure) { "got $badLoginResult" }
+        check(badLoginResult is NetworkResult.Failure) { "got $badLoginResult" }
         assertEquals(401, badLoginResult.statusCode)
         assertEquals(
             "Invalid email or password",
-            badLoginResult.toJson().obj!!.getString("message")
+            JSONObject(badLoginResult.body.decodeToString()).getString("message")
         )
 
         val goodLoginResult = runBlocking {
             restApi.authenticate("vht@vht.com", "vht123")
         }
-        check(goodLoginResult is Success) { "got $badLoginResult" }
+        check(goodLoginResult is NetworkResult.Success) { "got $badLoginResult" }
         assertEquals(200, goodLoginResult.statusCode)
         val loginResponse = goodLoginResult.value
 

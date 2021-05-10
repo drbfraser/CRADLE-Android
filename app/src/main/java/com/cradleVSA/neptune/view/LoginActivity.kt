@@ -22,9 +22,7 @@ import androidx.test.espresso.idling.CountingIdlingResource
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.ext.hideKeyboard
 import com.cradleVSA.neptune.manager.LoginManager
-import com.cradleVSA.neptune.net.Failure
-import com.cradleVSA.neptune.net.NetworkException
-import com.cradleVSA.neptune.net.Success
+import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.utilities.livedata.NetworkAvailableLiveData
 import com.cradleVSA.neptune.view.ui.settings.SettingsActivity.Companion.ADVANCED_SETTINGS_KEY
 import com.cradleVSA.neptune.view.ui.settings.SettingsActivity.Companion.makeLaunchIntent
@@ -138,7 +136,7 @@ class LoginActivity : AppCompatActivity() {
                 progressDialog.cancel()
 
                 when (result) {
-                    is Success -> {
+                    is NetworkResult.Success -> {
                         Toast.makeText(
                             this@LoginActivity,
                             getString(R.string.login_successful),
@@ -146,7 +144,7 @@ class LoginActivity : AppCompatActivity() {
                         ).show()
                         startIntroActivity()
                     }
-                    is Failure -> {
+                    is NetworkResult.Failure -> {
                         errorText.apply {
                             visibility = View.VISIBLE
                             text = if (result.statusCode == HTTP_UNAUTHORIZED) {
@@ -159,7 +157,7 @@ class LoginActivity : AppCompatActivity() {
                             }
                         }
                     }
-                    is NetworkException -> {
+                    is NetworkResult.NetworkException -> {
                         errorText.visibility = View.VISIBLE
                         if (result.cause is SSLHandshakeException) {
                             FirebaseCrashlytics.getInstance().recordException(result.cause)

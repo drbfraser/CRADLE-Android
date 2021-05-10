@@ -9,7 +9,7 @@ import com.cradleVSA.neptune.model.Referral
 import com.cradleVSA.neptune.model.RetestGroup
 import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.net.RestApi
-import com.cradleVSA.neptune.net.Success
+import com.cradleVSA.neptune.net.map
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -109,11 +109,9 @@ class ReadingManager @Inject constructor(
      */
     suspend fun uploadNewReadingToServer(reading: Reading): NetworkResult<Unit> {
         val result = restApi.postReading(reading)
-        when (result) {
-            is Success -> {
-                reading.isUploadedToServer = true
-                readingDao.update(reading)
-            }
+        if (result is NetworkResult.Success) {
+            reading.isUploadedToServer = true
+            readingDao.update(reading)
         }
         return result.map { }
     }
@@ -124,7 +122,7 @@ class ReadingManager @Inject constructor(
      */
     suspend fun downloadNewReadingFromServer(id: String): NetworkResult<Unit> {
         val result = restApi.getReading(id)
-        if (result is Success) {
+        if (result is NetworkResult.Success) {
             addReading(result.value, isReadingFromServer = true)
         }
         return result.map { Unit }
@@ -144,7 +142,7 @@ class ReadingManager @Inject constructor(
 
     suspend fun downloadAssessment(assessmentId: String): NetworkResult<Unit> {
         val result = restApi.getAssessment(assessmentId)
-        if (result is Success) {
+        if (result is NetworkResult.Success) {
             addAssessment(result.value)
         }
         return result.map { }

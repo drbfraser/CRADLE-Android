@@ -3,11 +3,9 @@ package com.cradleVSA.neptune.manager
 import com.cradleVSA.neptune.model.Patient
 import com.cradleVSA.neptune.model.PatientAndReadings
 import com.cradleVSA.neptune.model.Reading
-import com.cradleVSA.neptune.net.Failure
-import com.cradleVSA.neptune.net.NetworkException
 import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.net.RestApi
-import com.cradleVSA.neptune.net.Success
+import com.cradleVSA.neptune.net.map
 import java.net.HttpURLConnection.HTTP_NOT_FOUND
 import javax.inject.Inject
 
@@ -42,14 +40,14 @@ class ReferralUploadManager @Inject constructor(private val restApi: RestApi) {
         // API for this so we use the response code of the get patient info
         // API to determine whether the patient exists or not.
         val patientExists = when (val result = restApi.getPatientInfo(patient.id)) {
-            is Failure ->
+            is NetworkResult.Failure ->
                 if (result.statusCode == HTTP_NOT_FOUND) {
                     false
                 } else {
                     return result.cast()
                 }
-            is Success -> true
-            is NetworkException -> return result.cast()
+            is NetworkResult.Success -> true
+            is NetworkResult.NetworkException -> return result.cast()
         }
 
         // If the patient exists we only need to upload the reading, if not

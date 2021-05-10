@@ -7,10 +7,9 @@ import com.cradleVSA.neptune.database.daos.ReadingDao
 import com.cradleVSA.neptune.model.Patient
 import com.cradleVSA.neptune.model.PatientAndReadings
 import com.cradleVSA.neptune.model.Reading
-import com.cradleVSA.neptune.net.Failure
 import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.net.RestApi
-import com.cradleVSA.neptune.net.Success
+import com.cradleVSA.neptune.net.map
 import kotlinx.coroutines.yield
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -110,7 +109,7 @@ class PatientManager @Inject constructor(
      */
     suspend fun uploadNewPatient(patientAndReadings: PatientAndReadings): NetworkResult<Unit> {
         val result = restApi.postPatient(patientAndReadings)
-        if (result is Success) {
+        if (result is NetworkResult.Success) {
             // Update the patient's `base` field if successfully uploaded
             val patient = patientAndReadings.patient
             patient.base = patient.lastEdited
@@ -132,7 +131,7 @@ class PatientManager @Inject constructor(
      */
     suspend fun updatePatientOnServer(patient: Patient): NetworkResult<Unit> {
         val result = restApi.putPatient(patient)
-        if (result is Success) {
+        if (result is NetworkResult.Success) {
             // Update the patient's `base` field if successfully uploaded
             patient.base = patient.lastEdited
             add(patient)
@@ -143,7 +142,7 @@ class PatientManager @Inject constructor(
 
     suspend fun downloadEditedPatientInfoFromServer(patientId: String): NetworkResult<Unit> {
         val result = restApi.getPatientInfo(patientId)
-        if (result is Success) {
+        if (result is NetworkResult.Success) {
             add(result.value)
         }
         return result.map { }
@@ -192,7 +191,7 @@ class PatientManager @Inject constructor(
         patientId: String
     ): NetworkResult<PatientAndReadings> {
         val downloadResult = downloadPatientAndReading(patientId)
-        if (downloadResult !is Success) {
+        if (downloadResult !is NetworkResult.Success) {
             return downloadResult
         }
         // Safe to cancel here since we only downloaded patients + readings
@@ -202,7 +201,7 @@ class PatientManager @Inject constructor(
 
         val downloadedPatient = downloadResult.value.patient
         val associateResult = associatePatientWithUser(downloadedPatient.id)
-        if (associateResult !is Success) {
+        if (associateResult !is NetworkResult.Success) {
             // If association failed, we shouldn't add the patient and readings to our database.
             return associateResult.cast()
         }

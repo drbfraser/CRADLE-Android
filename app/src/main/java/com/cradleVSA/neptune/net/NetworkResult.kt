@@ -3,6 +3,9 @@ package com.cradleVSA.neptune.net
 import android.content.Context
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.model.Unmarshal
+import com.cradleVSA.neptune.net.NetworkResult.Failure
+import com.cradleVSA.neptune.net.NetworkResult.NetworkException
+import com.cradleVSA.neptune.net.NetworkResult.Success
 
 /**
  * The result of a network request.
@@ -17,7 +20,7 @@ import com.cradleVSA.neptune.model.Unmarshal
  *
  * @param T wrapped type of the [Success] variant
  */
-sealed class NetworkResult<T> {
+sealed interface NetworkResult<T> {
 
     companion object {
         private const val UNAUTHORIZED = 401
@@ -75,22 +78,6 @@ sealed class NetworkResult<T> {
     }
 
     /**
-     * Applies a closure [f] to transform the value field of a [Success] result.
-     *
-     * In the case of [Failure] and [NetworkException] variants, this method
-     * simply changes the type of the result. If you know that a result is
-     * a [Failure] or [NetworkResult], consider using [cast] instead.
-     *
-     * @param f transformation to apply to the result value
-     * @return a new [NetworkResult] with the transformed value
-     */
-    inline fun <U> map(f: (T) -> U): NetworkResult<U> = when (this) {
-        is Success -> Success(f(value), statusCode)
-        is Failure -> Failure(body, statusCode)
-        is NetworkException -> NetworkException(cause)
-    }
-
-    /**
      * Casts error variants of [NetworkResult] into a different inner type.
      *
      * @throws RuntimeException if `this` is a [Success] variant
@@ -116,78 +103,95 @@ sealed class NetworkResult<T> {
         this is Success -> other
         else -> this.cast()
     }
+
+    /**
+     * The result of a successful network request.
+     *
+     * A request is considered successful if the response has a status code in the
+     * 200..<300 range.
+     *
+     * @property value The result value
+     * @property statusCode Status code of the response which generated this result
+     */
+    data class Success<T>(val value: T, val statusCode: Int) : NetworkResult<T>
+
+    /**
+     * The result of a network request which made it to the server but the status
+     * code of the response indicated a failure (e.g., 404, 500, etc.).
+     *
+     * Contains the response status code along with the response body as a byte
+     * array. Note that the body is not of type [T] like in [Success] since the
+     * response for a failed request may not be the same type as the response for
+     * a successful request.
+     *
+     * @property body The body of the response
+     * @property statusCode The status code of the response
+     */
+    data class Failure<T>(val body: ByteArray, val statusCode: Int) : NetworkResult<T> {
+
+        /**
+         * Converts the response body of this failure result to some other type.
+         *
+         * @param unmarshaller an object used to unmarshall the byte array body
+         *  into a different type
+         * @return a new object which was constructed from the response body
+         */
+        fun <R, U> marshal(unmarshaller: U)
+            where U : Unmarshal<R, ByteArray> =
+            unmarshaller.unmarshal(body)
+
+        /**
+         * Converts the response body of this failure result to JSON.
+         *
+         * Whether a [JsonObject] or [JsonArray] is returned depends on the content
+         * of the response body.
+         *
+         * @return a [Json] object
+         * @throws org.json.JSONException if the response body cannot be converted
+         *  into JSON.
+         */
+        fun toJson(): Json = marshal(Json.Companion)
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as Failure<*>
+
+            if (!body.contentEquals(other.body)) return false
+            if (statusCode != other.statusCode) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = body.contentHashCode()
+            result = 31 * result + statusCode
+            return result
+        }
+    }
+
+    /**
+     * Represents an exception that occurred whilst making a network request.
+     *
+     * @property cause the exception which caused the failure
+     */
+    @JvmInline
+    value class NetworkException<T>(val cause: Exception) : NetworkResult<T>
 }
 
 /**
- * The result of a successful network request.
+ * Applies a closure [f] to transform the value field of a [NetworkResult.Success] result.
  *
- * A request is considered successful if the response has a status code in the
- * 200..<300 range.
+ * In the case of [NetworkResult.Failure] and [NetworkResult.NetworkException] variants, this method
+ * simply changes the type of the result. If you know that a result is
+ * a [NetworkResult.Failure] or [NetworkResult.NetworkException], consider using [cast] instead.
  *
- * @property value The result value
- * @property statusCode Status code of the response which generated this result
+ * @param f transformation to apply to the result value
+ * @return a new [NetworkResult] with the transformed value
  */
-data class Success<T>(val value: T, val statusCode: Int) : NetworkResult<T>()
-
-/**
- * The result of a network request which made it to the server but the status
- * code of the response indicated a failure (e.g., 404, 500, etc.).
- *
- * Contains the response status code along with the response body as a byte
- * array. Note that the body is not of type [T] like in [Success] since the
- * response for a failed request may not be the same type as the response for
- * a successful request.
- *
- * @property body The body of the response
- * @property statusCode The status code of the response
- */
-data class Failure<T>(val body: ByteArray, val statusCode: Int) : NetworkResult<T>() {
-
-    /**
-     * Converts the response body of this failure result to some other type.
-     *
-     * @param unmarshaller an object used to unmarshall the byte array body
-     *  into a different type
-     * @return a new object which was constructed from the response body
-     */
-    fun <R, U> marshal(unmarshaller: U)
-        where U : Unmarshal<R, ByteArray> =
-        unmarshaller.unmarshal(body)
-
-    /**
-     * Converts the response body of this failure result to JSON.
-     *
-     * Whether a [JsonObject] or [JsonArray] is returned depends on the content
-     * of the response body.
-     *
-     * @return a [Json] object
-     * @throws org.json.JSONException if the response body cannot be converted
-     *  into JSON.
-     */
-    fun toJson(): Json = marshal(Json.Companion)
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as Failure<*>
-
-        if (!body.contentEquals(other.body)) return false
-        if (statusCode != other.statusCode) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = body.contentHashCode()
-        result = 31 * result + statusCode
-        return result
-    }
+inline fun <T, U> NetworkResult<T>.map(f: (T) -> U): NetworkResult<U> = when (this) {
+    is NetworkResult.Success -> NetworkResult.Success(f(value), statusCode)
+    is NetworkResult.Failure -> NetworkResult.Failure(body, statusCode)
+    is NetworkResult.NetworkException -> NetworkResult.NetworkException(cause)
 }
-
-/**
- * Represents an exception that occurred whilst making a network request.
- *
- * @property cause the exception which caused the failure
- */
-data class NetworkException<T>(val cause: Exception) : NetworkResult<T>()

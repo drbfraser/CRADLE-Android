@@ -37,12 +37,12 @@ import javax.inject.Singleton
  *
  * Each method is written as a `suspend` function which is executed using the
  * [IO] dispatcher and returns a [NetworkResult]. In general, a method will
- * return a [Success] variant with the desired return value wrapped inside if
- * the server was able to successfully respond to the request. A [Failure]
+ * return a [NetworkResult.Success] variant with the desired return value wrapped inside if
+ * the server was able to successfully respond to the request. A [NetworkResult.Failure]
  * return value means that the request made it to the server, but the server
  * responded with an error and was not able to complete the request. This
  * happens when the requested resource cannot be found for example. A
- * [NetworkException] return value means that the networking driver ([Http])
+ * [NetworkResult.NetworkException] return value means that the networking driver ([Http])
  * threw an exception when sending the request or handling the response.
  * A timeout is one such cause of an exception for example.
  */
@@ -118,7 +118,7 @@ class RestApi constructor(
                 }
             }
         ).also {
-            if (it is Success) {
+            if (it is NetworkResult.Success) {
                 patientAndReadingsChannel.close()
             } else {
                 patientAndReadingsChannel.close(SyncException("failed to download all associated patients"))
@@ -392,7 +392,7 @@ class RestApi constructor(
                 }
             },
         ).also {
-            if (it is Success) {
+            if (it is NetworkResult.Success) {
                 healthFacilityChannel.close()
             } else {
                 healthFacilityChannel.close(SyncException("health facility download failed"))
@@ -465,7 +465,7 @@ class RestApi constructor(
                     }
                 }
             }.also {
-                if (it is Success) {
+                if (it is NetworkResult.Success) {
                     // In case we return early, this needs to be closed. These is an idempotent
                     // operation, so it doesn't do anything on Successes where we don't return early
                     patientChannel.close()
@@ -586,7 +586,7 @@ class RestApi constructor(
             }
             Unit
         }.also {
-            if (it is Success) {
+            if (it is NetworkResult.Success) {
                 // In case we return early, these need to be closed. These are idempotent
                 // operations, so it doesn't do anything on Successes where we don't return
                 // early.

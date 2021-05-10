@@ -56,7 +56,7 @@ internal class HttpTest {
                 )
             }
 
-            check(testRequest is Success) { "expected testRequest to be success, but got $testRequest" }
+            check(testRequest is NetworkResult.Success) { "expected testRequest to be success, but got $testRequest" }
             assertEquals(200, testRequest.statusCode)
             assertEquals("This is a test", testRequest.value.message)
         }
@@ -106,7 +106,7 @@ tortor rutrum mauris. Morbi pellentesque ex.
                 )
             }
 
-            check(testRequest is Success) { "expected testRequest to be success, but got $testRequest" }
+            check(testRequest is NetworkResult.Success) { "expected testRequest to be success, but got $testRequest" }
             assertEquals(200, testRequest.statusCode)
             assertEquals(ipsum, testRequest.value.message)
         }
@@ -147,7 +147,7 @@ tortor rutrum mauris. Morbi pellentesque ex.
                 )
             }
 
-            check(notFoundRequest is Failure) {
+            check(notFoundRequest is NetworkResult.Failure) {
                 "expected notFoundRequest to be Failure, but got $notFoundRequest"
             }
             assertEquals(404, notFoundRequest.statusCode)
@@ -168,9 +168,12 @@ tortor rutrum mauris. Morbi pellentesque ex.
                 )
             }
 
-            check(testRequest is Failure) { "expected testRequest to be Failure, but got $testRequest" }
+            check(testRequest is NetworkResult.Failure) { "expected testRequest to be Failure, but got $testRequest" }
             assertEquals(422, testRequest.statusCode)
-            assertEquals("Signature verification failed", testRequest.toJson().obj!!.get("message"))
+            assertEquals(
+                "Signature verification failed",
+                JSONObject(testRequest.body.decodeToString()).get("message")
+            )
 
             val testRequestWithAuthToken: NetworkResult<Unit> = runBlocking {
                 http.makeRequest(
@@ -181,9 +184,9 @@ tortor rutrum mauris. Morbi pellentesque ex.
                 )
             }
 
-            check(testRequestWithAuthToken is Success) {
+            check(testRequestWithAuthToken is NetworkResult.Success) {
                 "expected testRequestWithAuthToken to be Success, but got $testRequestWithAuthToken\n" +
-                    "with body ${(testRequestWithAuthToken as Failure).body.decodeToString()}"
+                    "with body ${(testRequestWithAuthToken as NetworkResult.Failure).body.decodeToString()}"
             }
             assertEquals(200, testRequestWithAuthToken.statusCode)
         }
@@ -218,7 +221,7 @@ tortor rutrum mauris. Morbi pellentesque ex.
                     inputStreamReader = { reader.readValue(it) }
                 )
             }
-            check(testRequest is NetworkException) {
+            check(testRequest is NetworkResult.NetworkException) {
                 "expected testRequest to be NetworkException, but got $testRequest"
             }
             // "General exception type used as the base class for all JsonMappingExceptions that

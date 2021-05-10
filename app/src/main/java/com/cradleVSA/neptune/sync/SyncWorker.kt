@@ -19,11 +19,8 @@ import com.cradleVSA.neptune.model.Assessment
 import com.cradleVSA.neptune.model.Patient
 import com.cradleVSA.neptune.model.Reading
 import com.cradleVSA.neptune.model.Referral
-import com.cradleVSA.neptune.net.Failure
-import com.cradleVSA.neptune.net.NetworkException
 import com.cradleVSA.neptune.net.NetworkResult
 import com.cradleVSA.neptune.net.RestApi
-import com.cradleVSA.neptune.net.Success
 import com.cradleVSA.neptune.net.SyncException
 import com.cradleVSA.neptune.utilities.RateLimitRunner
 import com.cradleVSA.neptune.utilities.UnixTimestamp
@@ -146,7 +143,7 @@ class SyncWorker @AssistedInject constructor(
         val lastPatientSyncTime = BigInteger(
             sharedPreferences.getString(
                 LAST_PATIENT_SYNC,
-                LAST_SYNC_DEFAULT.toString()
+                LAST_SYNC_DEFAULT
             )!!
         )
         // We only use the timestamp right before the internet call is made.
@@ -166,7 +163,7 @@ class SyncWorker @AssistedInject constructor(
             )
         }
 
-        if (patientResult is Success) {
+        if (patientResult is NetworkResult.Success) {
             sharedPreferences.edit(commit = true) {
                 putString(LAST_PATIENT_SYNC, syncTimestampToSave.toString())
             }
@@ -191,7 +188,7 @@ class SyncWorker @AssistedInject constructor(
                 TAG,
                 "There are $readingsLeftToUpload readings left to upload"
             )
-            if (readingResult is Success) {
+            if (readingResult is NetworkResult.Success) {
                 Log.wtf(TAG, "successful reading sync but still readings left unsynced")
                 // https://csil-git1.cs.surrey.sfu.ca/415-cradle/cradle-platform/-/blob/master/server/api/resources/sync.py#L97-103
                 //  The only reasons why a reading might still not be uploaded but the response from
@@ -205,7 +202,7 @@ class SyncWorker @AssistedInject constructor(
             }
         }
 
-        return if (readingResult is Success) {
+        return if (readingResult is NetworkResult.Success) {
             sharedPreferences.edit(commit = true) {
                 putString(LAST_READING_SYNC, syncTimestampToSave.toString())
             }
@@ -341,17 +338,17 @@ class SyncWorker @AssistedInject constructor(
 
     private fun getResultMessage(networkResult: NetworkResult<Unit>): String {
         return when (networkResult) {
-            is Failure -> applicationContext.getString(
+            is NetworkResult.Failure -> applicationContext.getString(
                 R.string.sync_worker_failure_server_sent_error_code_d__s,
                 networkResult.statusCode,
                 networkResult.getErrorMessage(applicationContext)
             )
-            is NetworkException -> applicationContext.getString(
+            is NetworkResult.NetworkException -> applicationContext.getString(
                 R.string.sync_worker_failure_exception_during_sync_s__s,
                 networkResult.cause::class.java.simpleName,
                 networkResult.cause.message
             )
-            is Success -> applicationContext.getString(R.string.sync_worker_success)
+            is NetworkResult.Success -> applicationContext.getString(R.string.sync_worker_success)
         }
     }
 }
