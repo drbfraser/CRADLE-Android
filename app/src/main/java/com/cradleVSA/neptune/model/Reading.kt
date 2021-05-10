@@ -9,7 +9,6 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.ext.Field
-import com.cradleVSA.neptune.ext.intField
 import com.cradleVSA.neptune.ext.jackson.get
 import com.cradleVSA.neptune.ext.jackson.getOptObject
 import com.cradleVSA.neptune.ext.jackson.getOptObjectArray
@@ -21,12 +20,8 @@ import com.cradleVSA.neptune.ext.jackson.writeOptIntField
 import com.cradleVSA.neptune.ext.jackson.writeOptLongField
 import com.cradleVSA.neptune.ext.jackson.writeOptObjectField
 import com.cradleVSA.neptune.ext.jackson.writeStringField
-import com.cradleVSA.neptune.ext.optBooleanField
-import com.cradleVSA.neptune.ext.optDoubleField
-import com.cradleVSA.neptune.ext.optLongField
-import com.cradleVSA.neptune.ext.optStringField
-import com.cradleVSA.neptune.ext.put
 import com.cradleVSA.neptune.utilities.nullIfEmpty
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
@@ -36,7 +31,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
-import org.json.JSONObject
 import org.threeten.bp.ZonedDateTime
 import java.io.Serializable
 import java.util.UUID
@@ -297,10 +291,13 @@ data class Reading(
  * @property heartRate The heart rate in beats per minute (BPM).
  */
 data class BloodPressure(
+    @JsonProperty("bpSystolic")
     val systolic: Int,
+    @JsonProperty("bpDiastolic")
     val diastolic: Int,
+    @JsonProperty("heartRateBPM")
     val heartRate: Int
-) : Serializable, Marshal<JSONObject>, Verifiable<BloodPressure> {
+) : Serializable, Verifiable<BloodPressure> {
     /**
      * The shock index for this blood pressure result.
      */
@@ -332,15 +329,6 @@ data class BloodPressure(
             else -> ReadingAnalysis.GREEN
         }
 
-    /**
-     * Marshals this object to JSON.
-     */
-    override fun marshal(): JSONObject = with(JSONObject()) {
-        put(BloodPressureField.SYSTOLIC, systolic)
-        put(BloodPressureField.DIASTOLIC, diastolic)
-        put(BloodPressureField.HEART_RATE, heartRate)
-    }
-
     fun serialize(gen: JsonGenerator) {
         gen.apply {
             writeIntField(BloodPressureField.SYSTOLIC, systolic)
@@ -349,7 +337,7 @@ data class BloodPressure(
         }
     }
 
-    companion object : Unmarshal<BloodPressure, JSONObject>, Verifiable.Verifier<BloodPressure> {
+    companion object : Verifiable.Verifier<BloodPressure> {
         override fun isValueValid(
             property: KProperty<*>,
             value: Any?,
@@ -412,17 +400,6 @@ data class BloodPressure(
             } else {
                 Verifiable.Invalid(property, context?.getString(resId, lowerBound, upperBound))
             }
-        }
-        /**
-         * Constructs a [BloodPressure] object from a [JSONObject].
-         *
-         * @throws JsonException if any of the required fields are missing
-         */
-        override fun unmarshal(data: JSONObject): BloodPressure {
-            val systolic = data.intField(BloodPressureField.SYSTOLIC)
-            val diastolic = data.intField(BloodPressureField.DIASTOLIC)
-            val heartRate = data.intField(BloodPressureField.HEART_RATE)
-            return BloodPressure(systolic, diastolic, heartRate)
         }
 
         fun deserialize(jsonNode: JsonNode) = jsonNode.run {
@@ -512,61 +489,17 @@ data class ReadingMetadata(
     var deviceInfo: String? = null,
     var dateLastSaved: Long? = null,
     var dateUploadedToServer: Long? = null,
-
     /* Image Data */
     var photoPath: String? = null,
     var isImageUploaded: Boolean = false,
     var totalOcrSeconds: Float? = null,
-
     /* GPS Data */
     var gpsLocation: String? = null
-) : Serializable, Marshal<JSONObject> {
+) : Serializable {
     /**
      * True if this reading has been uploaded to the server.
      */
     val isUploaded get() = dateUploadedToServer != null
-
-    override fun marshal() = with(JSONObject()) {
-        put(MetadataField.APP_VERSION, appVersion)
-        put(MetadataField.DEVICE_INFO, deviceInfo)
-        put(MetadataField.DATE_LAST_SAVED, dateLastSaved)
-        put(MetadataField.DATE_UPLOADED_TO_SERVER, dateUploadedToServer)
-        put(MetadataField.PHOTO_PATH, photoPath)
-        put(MetadataField.IS_IMAGE_UPLOADED, isImageUploaded)
-        put(MetadataField.TOTAL_OCR_SECONDS, totalOcrSeconds?.toDouble())
-        put(MetadataField.GPS_LOCATION, gpsLocation)
-    }
-
-    companion object : Unmarshal<ReadingMetadata, JSONObject> {
-        override fun unmarshal(data: JSONObject): ReadingMetadata {
-            val appVersion = data.optStringField(MetadataField.APP_VERSION)
-            val deviceInfo = data.optStringField(MetadataField.DEVICE_INFO)
-            val dateLastSaved = data.optLongField(MetadataField.DATE_LAST_SAVED)
-            val dateUploadedToServer = data.optLongField(MetadataField.DATE_UPLOADED_TO_SERVER)
-            val photoPath = data.optStringField(MetadataField.PHOTO_PATH)
-            val isImageUploaded = data.optBooleanField(MetadataField.IS_IMAGE_UPLOADED)
-
-            var totalOcrSeconds = data.optDoubleField(MetadataField.TOTAL_OCR_SECONDS)?.toFloat()
-            // The legacy implementation used -1 to represent `null` for this
-            // field so we handle that case here.
-            if (totalOcrSeconds?.let { it < 0 } == true) {
-                totalOcrSeconds = null
-            }
-
-            val gpsLocation = data.optStringField(MetadataField.GPS_LOCATION)
-
-            return ReadingMetadata(
-                appVersion = appVersion,
-                deviceInfo = deviceInfo,
-                dateLastSaved = dateLastSaved,
-                dateUploadedToServer = dateUploadedToServer,
-                photoPath = photoPath,
-                isImageUploaded = isImageUploaded,
-                totalOcrSeconds = totalOcrSeconds,
-                gpsLocation = gpsLocation
-            )
-        }
-    }
 }
 
 /**

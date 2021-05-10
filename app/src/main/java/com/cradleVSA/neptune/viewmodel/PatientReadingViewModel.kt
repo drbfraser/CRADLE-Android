@@ -1897,7 +1897,7 @@ class PatientReadingViewModel @Inject constructor(
                         testValueForValidityAndSetErrorMapAsync(
                             value = it,
                             propertyToCheck = property,
-                            verifier = UrineTest.FromJson
+                            verifier = UrineTest.Companion
                         )
                     }
                 }

@@ -1,6 +1,5 @@
 package com.cradleVSA.neptune.utilities.jackson
 
-import androidx.annotation.VisibleForTesting
 import com.cradleVSA.neptune.model.GestationalAge
 import com.cradleVSA.neptune.model.GlobalPatient
 import com.cradleVSA.neptune.model.HealthFacility
@@ -11,17 +10,13 @@ import com.fasterxml.jackson.databind.ObjectReader
 import com.fasterxml.jackson.databind.ObjectWriter
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 
-object JacksonMapper {
+internal object JacksonMapper {
     /**
      * Stores one mapper to use for the entire app.
      * https://stackoverflow.com/questions/3907929/
      * should-i-declare-jacksons-objectmapper-as-a-static-field#comment26559628_16197551
-     *
-     * Should not use this directly.
      */
-    @PublishedApi
-    @VisibleForTesting
-    internal val mapper by lazy { jacksonObjectMapper() }
+    val mapper by lazy { jacksonObjectMapper() }
 
     inline fun <reified T> createReader(): ObjectReader = mapper.readerFor(T::class.java)
 

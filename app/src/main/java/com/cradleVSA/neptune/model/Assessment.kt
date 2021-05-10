@@ -1,16 +1,8 @@
 package com.cradleVSA.neptune.model
 
 import com.cradleVSA.neptune.ext.Field
-import com.cradleVSA.neptune.ext.intField
-import com.cradleVSA.neptune.ext.longField
-import com.cradleVSA.neptune.ext.optBooleanField
-import com.cradleVSA.neptune.ext.optIntField
-import com.cradleVSA.neptune.ext.optStringField
-import com.cradleVSA.neptune.ext.put
-import com.cradleVSA.neptune.ext.stringField
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import org.json.JSONObject
 import java.io.Serializable
 
 /**
@@ -42,44 +34,7 @@ data class Assessment(
     val specialInvestigations: String?,
     val followupNeeded: Boolean,
     val followupInstructions: String?
-) : Marshal<JSONObject>, Serializable {
-
-    /**
-     * Converts this object into a [JSONObject].
-     */
-    override fun marshal() = with(JSONObject()) {
-        put(AssessmentField.ID, id)
-        put(AssessmentField.DATE_ASSESSED, dateAssessed)
-        put(AssessmentField.HEALTH_CARE_WORKER_ID, healthCareWorkerId)
-        put(AssessmentField.READING_ID, readingId)
-        put(AssessmentField.DIAGNOSIS, diagnosis)
-        put(AssessmentField.TREATMENT, treatment)
-        put(AssessmentField.MEDICATION_PRESCRIBED, medicationPrescribed)
-        put(AssessmentField.SPECIAL_INVESTIGATIONS, specialInvestigations)
-        put(AssessmentField.FOLLOW_UP_NEEDED, followupNeeded)
-        put(AssessmentField.FOLLOW_UP_INSTRUCTIONS, followupInstructions)
-    }
-
-    companion object :
-        Unmarshal<Assessment, JSONObject> {
-        /**
-         * Constructs a new instance of this class from a [JSONObject].
-         */
-        override fun unmarshal(data: JSONObject) =
-            Assessment(
-                id = data.optIntField(AssessmentField.ID),
-                dateAssessed = data.longField(AssessmentField.DATE_ASSESSED),
-                healthCareWorkerId = data.intField(AssessmentField.HEALTH_CARE_WORKER_ID),
-                readingId = data.stringField(AssessmentField.READING_ID),
-                diagnosis = data.optStringField(AssessmentField.DIAGNOSIS),
-                treatment = data.optStringField(AssessmentField.TREATMENT),
-                medicationPrescribed = data.optStringField(AssessmentField.MEDICATION_PRESCRIBED),
-                specialInvestigations = data.optStringField(AssessmentField.SPECIAL_INVESTIGATIONS),
-                followupNeeded = data.optBooleanField(AssessmentField.FOLLOW_UP_NEEDED),
-                followupInstructions = data.optStringField(AssessmentField.FOLLOW_UP_INSTRUCTIONS)
-            )
-    }
-}
+) : Serializable
 
 private enum class AssessmentField(override val text: String) : Field {
     ID("id"),

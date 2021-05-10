@@ -3,12 +3,8 @@ package com.cradleVSA.neptune.model
 import android.content.Context
 import com.cradleVSA.neptune.R
 import com.cradleVSA.neptune.ext.Field
-import com.cradleVSA.neptune.ext.put
-import com.cradleVSA.neptune.ext.stringField
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import org.json.JSONException
-import org.json.JSONObject
 import java.io.Serializable
 import kotlin.reflect.KProperty
 
@@ -22,32 +18,8 @@ data class UrineTest(
     @JsonProperty("urineTestPro") var protein: String,
     @JsonProperty("urineTestBlood") var blood: String,
     @JsonProperty("urineTestGlu") var glucose: String
-) : Serializable, Marshal<JSONObject>, Verifiable<UrineTest> {
-    /**
-     * Converts this object to JSON.
-     */
-    override fun marshal(): JSONObject = with(JSONObject()) {
-        put(UrineTestField.LEUKOCYTES, leukocytes)
-        put(UrineTestField.NITRITES, nitrites)
-        put(UrineTestField.PROTEIN, protein)
-        put(UrineTestField.BLOOD, blood)
-        put(UrineTestField.GLUCOSE, glucose)
-    }
-
-    companion object FromJson : Unmarshal<UrineTest, JSONObject>, Verifiable.Verifier<UrineTest> {
-        /**
-         * Constructs a [UrineTest] from a [JSONObject].
-         *
-         * @throws JSONException If any of the required fields are not present
-         * in [data].
-         */
-        override fun unmarshal(data: JSONObject): UrineTest = UrineTest(
-            leukocytes = data.stringField(UrineTestField.LEUKOCYTES),
-            nitrites = data.stringField(UrineTestField.NITRITES),
-            protein = data.stringField(UrineTestField.PROTEIN),
-            blood = data.stringField(UrineTestField.BLOOD),
-            glucose = data.stringField(UrineTestField.GLUCOSE)
-        )
+) : Serializable, Verifiable<UrineTest> {
+    companion object : Verifiable.Verifier<UrineTest> {
 
         override fun isValueValid(
             property: KProperty<*>,

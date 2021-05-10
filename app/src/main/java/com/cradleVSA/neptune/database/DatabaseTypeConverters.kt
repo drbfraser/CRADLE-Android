@@ -10,26 +10,22 @@ import com.cradleVSA.neptune.model.Sex
 import com.cradleVSA.neptune.model.UrineTest
 import com.cradleVSA.neptune.utilities.jackson.JacksonMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import org.json.JSONObject
 
 /**
  * A list of [TypeConverter] to save objects into room database
  */
 class DatabaseTypeConverters {
+    private inline fun <reified T> readStringValueByJackson(string: String?): T? =
+        string?.let { JacksonMapper.mapper.readValue<T>(it) }
+
+    private inline fun <reified T> writeStringByJackson(instance: T?): String? =
+        instance?.let { JacksonMapper.mapper.writeValueAsString(it) }
 
     @TypeConverter
-    fun gestationalAgeToString(gestationalAge: GestationalAge?): String? =
-        JacksonMapper.writerForGestAge.writeValueAsString(gestationalAge)
+    fun gestationalAgeToString(gestationalAge: GestationalAge?): String? = writeStringByJackson(gestationalAge)
 
     @TypeConverter
-    fun stringToGestationalAge(string: String?): GestationalAge? =
-        string?.let {
-            if (it == "null") {
-                null
-            } else {
-                JacksonMapper.readerForGestAge.readValue<GestationalAge>(it)
-            }
-        }
+    fun stringToGestationalAge(string: String?): GestationalAge? = readStringValueByJackson(string)
 
     @TypeConverter
     fun stringToSex(string: String): Sex = enumValueOf(string)
@@ -38,48 +34,38 @@ class DatabaseTypeConverters {
     fun sexToString(sex: Sex): String = sex.name
 
     @TypeConverter
-    fun fromStringList(list: List<String>?): String? =
-        list?.let { JacksonMapper.mapper.writeValueAsString(it) }
+    fun fromStringList(list: List<String>?): String? = writeStringByJackson(list)
 
     @TypeConverter
-    fun toStringList(string: String?): List<String>? = string?.let {
-        JacksonMapper.mapper.readValue<List<String>>(it)
-    }
+    fun toStringList(string: String?): List<String>? = readStringValueByJackson(string)
 
     @TypeConverter
-    fun toBloodPressure(string: String?): BloodPressure? =
-        string?.let { if (it == "null") null else BloodPressure.unmarshal(JSONObject(string)) }
+    fun toBloodPressure(string: String?): BloodPressure? = readStringValueByJackson(string)
 
     @TypeConverter
-    fun fromBloodPressure(bloodPressure: BloodPressure?): String? =
-        bloodPressure?.marshal()?.toString()
+    fun fromBloodPressure(bloodPressure: BloodPressure?): String? = writeStringByJackson(bloodPressure)
 
     @TypeConverter
-    fun toUrineTest(string: String?): UrineTest? =
-        string?.let { if (it == "null") null else UrineTest.unmarshal(JSONObject(it)) }
+    fun toUrineTest(string: String?): UrineTest? = readStringValueByJackson(string)
 
     @TypeConverter
-    fun fromUrineTest(urineTest: UrineTest?): String? = urineTest?.marshal()?.toString()
+    fun fromUrineTest(urineTest: UrineTest?): String? = writeStringByJackson(urineTest)
 
     @TypeConverter
-    fun toReferral(string: String?): Referral? =
-        string?.let { if (it == "null") null else Referral.unmarshal(JSONObject(it)) }
+    fun toReferral(string: String?): Referral? = readStringValueByJackson(string)
 
     @TypeConverter
-    fun fromReferral(referral: Referral?): String? = referral?.marshal()?.toString()
+    fun fromReferral(referral: Referral?): String? = writeStringByJackson(referral)
 
     @TypeConverter
-    fun toFollowUp(string: String?): Assessment? =
-        string?.let { if (it == "null") null else Assessment.unmarshal(JSONObject(it)) }
+    fun toFollowUp(string: String?): Assessment? = readStringValueByJackson(string)
 
     @TypeConverter
-    fun fromFollowUp(followUp: Assessment?): String? = followUp?.marshal()?.toString()
+    fun fromFollowUp(assessment: Assessment?): String? = writeStringByJackson(assessment)
 
     @TypeConverter
-    fun toReadingMetadata(string: String?): ReadingMetadata? =
-        string?.let { if (it == "null") null else ReadingMetadata.unmarshal(JSONObject(it)) }
+    fun toReadingMetadata(string: String?): ReadingMetadata? = readStringValueByJackson(string)
 
     @TypeConverter
-    fun fromReadingMetaData(readingMetadata: ReadingMetadata?): String? =
-        readingMetadata?.marshal()?.toString()
+    fun fromReadingMetaData(readingMetadata: ReadingMetadata?): String? = writeStringByJackson(readingMetadata)
 }

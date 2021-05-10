@@ -4,11 +4,8 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.cradleVSA.neptune.ext.Field
-import com.cradleVSA.neptune.ext.put
-import com.cradleVSA.neptune.ext.stringField
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
-import org.json.JSONObject
 import java.util.UUID
 
 /**
@@ -41,33 +38,7 @@ data class HealthFacility(
     var type: String = "",
     @ColumnInfo @JsonIgnore
     var isUserSelected: Boolean = false
-) : Marshal<JSONObject> {
-
-    /**
-     * Constructs a [JSONObject] from this object.
-     */
-    override fun marshal(): JSONObject = with(JSONObject()) {
-        put(HealthFacilityField.NAME, name)
-        put(HealthFacilityField.ABOUT, about)
-        put(HealthFacilityField.LOCATION, location)
-        put(HealthFacilityField.ID, id)
-        put(HealthFacilityField.TYPE, type)
-    }
-
-    companion object : Unmarshal<HealthFacility, JSONObject> {
-        /**
-         * Constructs a [HealthFacility] from a [JSONObject].
-         */
-        override fun unmarshal(data: JSONObject): HealthFacility = HealthFacility().apply {
-            name = data.stringField(HealthFacilityField.NAME)
-            about = data.stringField(HealthFacilityField.ABOUT)
-            location = data.stringField(HealthFacilityField.LOCATION)
-            phoneNumber = data.stringField(HealthFacilityField.PHONE_NUMBER)
-            // server doesnt have an id yet.. so we are creating one for local DB
-            id = UUID.randomUUID().toString()
-        }
-    }
-}
+)
 
 /**
  * The collection of JSON fields which make up a [HealthFacility] object.

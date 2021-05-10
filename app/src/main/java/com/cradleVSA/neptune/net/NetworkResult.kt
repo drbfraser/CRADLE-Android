@@ -2,7 +2,6 @@ package com.cradleVSA.neptune.net
 
 import android.content.Context
 import com.cradleVSA.neptune.R
-import com.cradleVSA.neptune.model.Unmarshal
 import com.cradleVSA.neptune.net.NetworkResult.Failure
 import com.cradleVSA.neptune.net.NetworkResult.NetworkException
 import com.cradleVSA.neptune.net.NetworkResult.Success
@@ -128,30 +127,6 @@ sealed interface NetworkResult<T> {
      * @property statusCode The status code of the response
      */
     data class Failure<T>(val body: ByteArray, val statusCode: Int) : NetworkResult<T> {
-
-        /**
-         * Converts the response body of this failure result to some other type.
-         *
-         * @param unmarshaller an object used to unmarshall the byte array body
-         *  into a different type
-         * @return a new object which was constructed from the response body
-         */
-        fun <R, U> marshal(unmarshaller: U)
-            where U : Unmarshal<R, ByteArray> =
-            unmarshaller.unmarshal(body)
-
-        /**
-         * Converts the response body of this failure result to JSON.
-         *
-         * Whether a [JsonObject] or [JsonArray] is returned depends on the content
-         * of the response body.
-         *
-         * @return a [Json] object
-         * @throws org.json.JSONException if the response body cannot be converted
-         *  into JSON.
-         */
-        fun toJson(): Json = marshal(Json.Companion)
-
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (javaClass != other?.javaClass) return false

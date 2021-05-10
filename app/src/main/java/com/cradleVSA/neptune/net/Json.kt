@@ -1,14 +1,12 @@
 package com.cradleVSA.neptune.net
 
-import com.cradleVSA.neptune.model.Marshal
-import com.cradleVSA.neptune.model.Unmarshal
 import org.json.JSONArray
 import org.json.JSONObject
 
 /**
  * Sum type which represents a blob of JSON data.
  */
-sealed class Json : Marshal<ByteArray> {
+sealed class Json {
 
     /**
      * Unwraps this JSON data as an object.
@@ -54,9 +52,9 @@ sealed class Json : Marshal<ByteArray> {
      *
      * @return the JSON data as a byte array
      */
-    final override fun marshal() = toString().toByteArray()
+    fun marshal() = toString().toByteArray()
 
-    companion object : Unmarshal<Json, ByteArray> {
+    companion object {
         /**
          * Converts a byte array into a [JsonObject] or [JsonArray].
          *
@@ -64,7 +62,7 @@ sealed class Json : Marshal<ByteArray> {
          * @return a [Json] variant
          * @throws org.json.JSONException if unable to parse [data]
          */
-        override fun unmarshal(data: ByteArray): Json {
+        fun unmarshal(data: ByteArray): Json {
             val str = String(data).trimStart()
             return if (str.firstOrNull() == '{') {
                 JsonObject(str)
