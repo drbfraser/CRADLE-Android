@@ -150,8 +150,8 @@ interface Verifiable<in T : Any> {
      * Determine if this is a valid instance as determined by [getAllMembersWithInvalidValues]
      * (which is dependent on [isValueForPropertyValid]
      */
-    fun isValidInstance(context: Context?) =
-        getAllMembersWithInvalidValues(context, shouldStopAtFirstError = true).isEmpty()
+    fun isValidInstance() =
+        getAllMembersWithInvalidValues(null, shouldStopAtFirstError = true).isEmpty()
 
     /**
      * A class / object that can verify values for properties of [Verifiable] type [T].
@@ -282,6 +282,11 @@ interface Verifiable<in T : Any> {
     @JvmInline
     value class Invalid(val errorMessage: String) : Result {
         constructor(property: KProperty<*>) : this(property.name)
+
+        /**
+         * Helper constructor that uses the property's name as the error message if the passed
+         * in message is null.
+         */
         constructor(
             property: KProperty<*>,
             errorMessage: String?

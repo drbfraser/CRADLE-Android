@@ -1142,12 +1142,12 @@ class PatientReadingViewModel @Inject constructor(
          * then it must be a valid urine test.
          */
         private suspend fun verifyVitalSignsFragment(): Boolean = withContext(Dispatchers.Default) {
-            val bloodPressureValid = bloodPressure.value?.isValidInstance(app) ?: false
+            val bloodPressureValid = bloodPressure.value?.isValidInstance() ?: false
             if (!bloodPressureValid) return@withContext false
             yield()
 
             return@withContext if (isUsingUrineTest.value != false) {
-                urineTest.value?.isValidInstance(app) ?: false
+                urineTest.value?.isValidInstance() ?: false
             } else {
                 true
             }
@@ -1200,7 +1200,7 @@ class PatientReadingViewModel @Inject constructor(
             return null
         }
 
-        if (!patient.isValidInstance(app)) {
+        if (!patient.isValidInstance()) {
             if (DEBUG) Log.d(
                 TAG,
                 "attemptToBuildValidPatient: " +
@@ -1246,7 +1246,7 @@ class PatientReadingViewModel @Inject constructor(
             return null
         }
 
-        if (!reading.isValidInstance(app)) {
+        if (!reading.isValidInstance()) {
             Log.d(
                 TAG,
                 "attemptToBuildValidReading: " +
@@ -1677,7 +1677,7 @@ class PatientReadingViewModel @Inject constructor(
         suspend fun populateAllAdviceFields(reading: Reading): Boolean =
             withContext(Dispatchers.Default) {
                 // Only build retest groups for valid readings.
-                if (!reading.isValidInstance(app)) {
+                if (!reading.isValidInstance()) {
                     currentValidReadingAndRetestGroup.setValueOnMainThread(null)
                     return@withContext false
                 }
