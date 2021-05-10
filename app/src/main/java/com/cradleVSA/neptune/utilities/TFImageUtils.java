@@ -25,7 +25,9 @@ import java.io.FileOutputStream;
 
 /**
  * Utility class for manipulating images.
- * Ref: Some parts are from https://github.com/tensorflow/examples
+ * Ref: Some parts are from
+ * https://github.com/tensorflow/tensorflow/blob/master/tensorflow/tools/android/test/src/org/tensorflow/demo/env/ImageUtils.java
+ * https://github.com/tensorflow/examples/blob/master/lite/examples/image_classification/android/app/src/main/java/org/tensorflow/lite/examples/classification/env/ImageUtils.java
  */
 public class TFImageUtils {
     // This value is 2 ^ 18 - 1, and is used to clamp the RGB values before their ranges

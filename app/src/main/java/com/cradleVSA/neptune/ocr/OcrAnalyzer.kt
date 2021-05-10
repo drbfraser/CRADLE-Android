@@ -36,11 +36,12 @@ class OcrAnalyzer constructor(
             val rgbBytes = convertYUVPlanesToARGB8888(imageProxy)
             val readyImage = createNonRotatedImage(imageProxy, rgbBytes)
 
-            cradleOcrDetector.getResultsFromImage(readyImage, submitSysDiaPulImagesBlock)?.let {
-                if (doAnalysis) {
-                    onAnalysisFinished(it)
+            cradleOcrDetector.getResultsFromImage(readyImage, submitSysDiaPulImagesBlock)
+                ?.let {
+                    if (doAnalysis) {
+                        onAnalysisFinished(it)
+                    }
                 }
-            }
         }
     }
 

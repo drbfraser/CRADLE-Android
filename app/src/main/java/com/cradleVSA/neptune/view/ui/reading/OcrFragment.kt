@@ -1,5 +1,6 @@
 package com.cradleVSA.neptune.view.ui.reading
 
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Surface
@@ -30,7 +31,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
 
-private const val TAG = "OcrFragment"
 private const val CONFIRMATION_DELAY_MILLIS = 1500L
 
 /**
@@ -212,6 +212,21 @@ class OcrFragment : Fragment() {
         }
     }
 
+    private fun showCradleReadingsCameraCapture(
+        systolicImage: Bitmap,
+        diastolicImage: Bitmap,
+        heartrateImage: Bitmap
+    ) {
+        activity?.runOnUiThread {
+            binding?.apply {
+                ocrProgressBar.isVisible = false
+                systolicImageView.setImageBitmap(systolicImage)
+                diastolicImageView.setImageBitmap(diastolicImage)
+                heartRateImageView.setImageBitmap(heartrateImage)
+            }
+        }
+    }
+
     private fun initCamera() {
         val thisContext = context ?: return
 
@@ -220,16 +235,7 @@ class OcrFragment : Fragment() {
         analyzer = OcrAnalyzer(
             thisContext,
             { ocrResult -> ocrViewModel.ocrResult.postValue(ocrResult) },
-            { systolicBitmap, diastolicBitmap, heartrateBitmap ->
-                activity?.runOnUiThread {
-                    binding?.apply {
-                        ocrProgressBar.isVisible = false
-                        systolicImageView.setImageBitmap(systolicBitmap)
-                        diastolicImageView.setImageBitmap(diastolicBitmap)
-                        heartRateImageView.setImageBitmap(heartrateBitmap)
-                    }
-                }
-            }
+            ::showCradleReadingsCameraCapture
         )
 
         cameraProviderFuture.addListener(

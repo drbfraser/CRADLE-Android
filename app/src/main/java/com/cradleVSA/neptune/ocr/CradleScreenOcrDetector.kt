@@ -99,8 +99,6 @@ class CradleScreenOcrDetector(ctx: Context) : Closeable {
             it.confidence >= MINIMUM_CONFIDENCE
         }
 
-        // Extract text from all that's left (left to right)
-        // Present the digits in a natural format by sorting them by the x-coordinate first.
         val filteredToleranceSequence: Sequence<Classifier.Recognition> = if (processed.size > 1) {
             val actualMiddle = imageHeight / 2
             val yClosestToCentre = processed
