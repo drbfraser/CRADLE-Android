@@ -32,7 +32,6 @@ import com.cradleVSA.neptune.model.GestationalAgeWeeks
 import com.cradleVSA.neptune.model.Patient
 import com.cradleVSA.neptune.model.PatientAndReadings
 import com.cradleVSA.neptune.model.Reading
-import com.cradleVSA.neptune.model.ReadingMetadata
 import com.cradleVSA.neptune.model.Referral
 import com.cradleVSA.neptune.model.RetestAdvice
 import com.cradleVSA.neptune.model.RetestGroup
@@ -819,9 +818,6 @@ class PatientReadingViewModel @Inject constructor(
 
     private val previousReadingIds: MutableLiveData<List<String>>
         get() = readingBuilder.get<List<String>>(Reading::previousReadingIds, emptyList())
-
-    val metadata: MutableLiveData<ReadingMetadata> =
-        readingBuilder.get(Reading::metadata, ReadingMetadata())
 
     init {
         // Populate the builder with the current user's userId if there is none present.
@@ -1686,7 +1682,7 @@ class PatientReadingViewModel @Inject constructor(
                 val retestGroup = readingManager.createRetestGroup(reading)
 
                 // Set the radio buttons.
-                val needDefaultForRecheckVitals = metadata.value?.dateLastSaved == null
+                val needDefaultForRecheckVitals = lastEdited.value == null
                 val retestAdvice: RetestAdvice = if (needDefaultForRecheckVitals) {
                     retestGroup.getRetestAdvice()
                 } else {

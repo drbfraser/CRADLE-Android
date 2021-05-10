@@ -24,13 +24,21 @@ import java.io.Serializable
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Referral(
+    @JsonProperty("comment")
     val comment: String?,
-    @JsonProperty("referralHealthFacilityName") val healthFacilityName: String,
+    @JsonProperty("referralHealthFacilityName")
+    val healthFacilityName: String,
+    @JsonProperty("dateReferred")
     val dateReferred: Long,
+    @JsonProperty("id")
     val id: Int?,
+    @JsonProperty("userId")
     val userId: Int?,
+    @JsonProperty("patientId")
     val patientId: String,
+    @JsonProperty("readingId")
     val readingId: String,
+    @JsonProperty("isAssessed")
     var isAssessed: Boolean
 ) : Serializable {
 

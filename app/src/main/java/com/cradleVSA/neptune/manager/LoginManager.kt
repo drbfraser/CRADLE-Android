@@ -17,6 +17,7 @@ import com.cradleVSA.neptune.sync.SyncWorker
 import com.cradleVSA.neptune.utilities.SharedPreferencesMigration
 import com.cradleVSA.neptune.utilities.UnixTimestamp
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -259,10 +260,16 @@ class LoginManager @Inject constructor(
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class LoginResponse(
+    @JsonProperty
     val email: String,
+    @JsonProperty
     val role: String,
+    @JsonProperty
     val firstName: String?,
+    @JsonProperty
     val healthFacilityName: String?,
+    @JsonProperty
     val userId: Int,
+    @JsonProperty
     val token: String
 )

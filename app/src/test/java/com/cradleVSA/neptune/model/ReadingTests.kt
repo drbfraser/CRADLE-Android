@@ -58,7 +58,6 @@ class ReadingTests {
             dateRecheckVitalsNeeded = unixTime,
             isFlaggedForFollowUp = true,
             previousReadingIds = listOf("1", "2", "3"),
-            metadata = ReadingMetadata(),
             isUploadedToServer = false,
             userId = 3
         )

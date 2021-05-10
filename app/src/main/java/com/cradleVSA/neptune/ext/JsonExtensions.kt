@@ -59,4 +59,3 @@ interface Field {
  */
 inline fun <T> JSONArray.toList(producer: (JSONArray, Int) -> T): List<T> =
     (0 until length()).map { producer(this, it) }
-

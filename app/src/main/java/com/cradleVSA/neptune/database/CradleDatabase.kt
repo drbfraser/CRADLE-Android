@@ -24,7 +24,7 @@ import com.cradleVSA.neptune.model.Reading
 import com.cradleVSA.neptune.utilities.DateUtil
 import org.json.JSONArray
 
-const val CURRENT_DATABASE_VERSION = 12
+const val CURRENT_DATABASE_VERSION = 13
 
 /**
  * An interface for the local CRADLE database.
@@ -93,7 +93,8 @@ internal object Migrations {
             MIGRATION_8_9,
             MIGRATION_9_10,
             MIGRATION_10_11,
-            MIGRATION_11_12
+            MIGRATION_11_12,
+            MIGRATION_12_13,
         )
     }
 
@@ -635,6 +636,55 @@ CREATE TABLE IF NOT EXISTS `new_Patient` (
                         `symptoms`, `referral`, `followUp`, `dateRecheckVitalsNeeded`,
                         `isFlaggedForFollowUp`, `previousReadingIds`, `metadata`,
                         `isUploadedToServer`, `dateTimeTaken`
+                    FROM Reading
+                    """.trimIndent()
+                )
+                // Just assume userId null for now; for actual usage, we need to force users to
+                // log out to get the proper userId! (or force a sync somehow)
+                execSQL("DROP TABLE Reading")
+                execSQL("ALTER TABLE new_Reading RENAME TO Reading")
+                execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_Reading_readingId` ON `Reading` (`readingId`)")
+                execSQL("CREATE INDEX IF NOT EXISTS `index_Reading_patientId` ON `Reading` (`patientId`)")
+            }
+        }
+    }
+
+    /**
+     * Version 13:
+     * Drop metadata from reading table
+     */
+    private val MIGRATION_12_13 = object : Migration(12, 13) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.apply {
+                execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS new_Reading (
+                        `readingId` TEXT NOT NULL, `patientId` TEXT NOT NULL,
+                        `dateTimeTaken` INTEGER NOT NULL, `bloodPressure` TEXT NOT NULL,
+                        `urineTest` TEXT, `symptoms` TEXT NOT NULL, `referral` TEXT,
+                        `followUp` TEXT, `dateRecheckVitalsNeeded` INTEGER,
+                        `isFlaggedForFollowUp` INTEGER NOT NULL, `previousReadingIds` TEXT NOT NULL,
+                        `isUploadedToServer` INTEGER NOT NULL,
+                        `lastEdited` INTEGER NOT NULL, `userId` INTEGER,
+                        PRIMARY KEY(`readingId`),
+                        FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE
+                    )
+                    """.trimIndent()
+                )
+                // Use `dateTimeTaken` for `lastEdited`.
+                execSQL(
+                    """
+                    INSERT INTO new_Reading (
+                        `readingId`, `patientId`, `dateTimeTaken`, `bloodPressure`, `urineTest`,
+                        `symptoms`, `referral`, `followUp`, `dateRecheckVitalsNeeded`,
+                        `isFlaggedForFollowUp`, `previousReadingIds`,
+                        `isUploadedToServer`, `lastEdited`, `userId`
+                    )
+                    SELECT
+                        `readingId`, `patientId`, `dateTimeTaken`, `bloodPressure`, `urineTest`,
+                        `symptoms`, `referral`, `followUp`, `dateRecheckVitalsNeeded`,
+                        `isFlaggedForFollowUp`, `previousReadingIds`,
+                        `isUploadedToServer`, `lastEdited`, `userId`
                     FROM Reading
                     """.trimIndent()
                 )

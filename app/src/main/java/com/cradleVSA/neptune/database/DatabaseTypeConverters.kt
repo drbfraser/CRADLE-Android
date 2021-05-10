@@ -4,7 +4,6 @@ import androidx.room.TypeConverter
 import com.cradleVSA.neptune.model.Assessment
 import com.cradleVSA.neptune.model.BloodPressure
 import com.cradleVSA.neptune.model.GestationalAge
-import com.cradleVSA.neptune.model.ReadingMetadata
 import com.cradleVSA.neptune.model.Referral
 import com.cradleVSA.neptune.model.Sex
 import com.cradleVSA.neptune.model.UrineTest
@@ -62,10 +61,4 @@ class DatabaseTypeConverters {
 
     @TypeConverter
     fun fromFollowUp(assessment: Assessment?): String? = writeStringByJackson(assessment)
-
-    @TypeConverter
-    fun toReadingMetadata(string: String?): ReadingMetadata? = readStringValueByJackson(string)
-
-    @TypeConverter
-    fun fromReadingMetaData(readingMetadata: ReadingMetadata?): String? = writeStringByJackson(readingMetadata)
 }

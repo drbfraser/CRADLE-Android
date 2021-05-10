@@ -6,6 +6,7 @@ import com.cradleVSA.neptune.model.HealthFacility
 import com.cradleVSA.neptune.model.Patient
 import com.cradleVSA.neptune.model.PatientAndReadings
 import com.cradleVSA.neptune.model.Reading
+import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.ObjectReader
 import com.fasterxml.jackson.databind.ObjectWriter
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -16,7 +17,11 @@ internal object JacksonMapper {
      * https://stackoverflow.com/questions/3907929/
      * should-i-declare-jacksons-objectmapper-as-a-static-field#comment26559628_16197551
      */
-    val mapper by lazy { jacksonObjectMapper() }
+    val mapper by lazy {
+        jacksonObjectMapper().apply {
+            disable(MapperFeature.AUTO_DETECT_FIELDS)
+        }
+    }
 
     inline fun <reified T> createReader(): ObjectReader = mapper.readerFor(T::class.java)
 

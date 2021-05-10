@@ -21,6 +21,8 @@ import com.cradleVSA.neptune.ext.jackson.writeOptLongField
 import com.cradleVSA.neptune.ext.jackson.writeOptObjectField
 import com.cradleVSA.neptune.ext.jackson.writeStringField
 import com.cradleVSA.neptune.utilities.nullIfEmpty
+import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParser
@@ -70,8 +72,6 @@ private const val SECONDS_IN_MIN = 60
  * @property isFlaggedForFollowUp Whether this patient requires a followup.
  * @property previousReadingIds A list of previous readings associated with
  * this one. By default this is empty.
- * @property metadata Some internal metadata associated with this reading. By
- * default an empty metadata object (with all `null` values) will be used.
  */
 @Entity(
     indices = [
@@ -104,7 +104,6 @@ data class Reading(
     @ColumnInfo var dateRecheckVitalsNeeded: Long?,
     @ColumnInfo var isFlaggedForFollowUp: Boolean,
     @ColumnInfo var previousReadingIds: List<String> = emptyList(),
-    @ColumnInfo var metadata: ReadingMetadata = ReadingMetadata(),
     @ColumnInfo var isUploadedToServer: Boolean = false,
     @ColumnInfo var lastEdited: Long,
     @ColumnInfo var userId: Int?
@@ -205,8 +204,6 @@ data class Reading(
                 val lastEdited = get(ReadingField.LAST_EDITED)!!.longValue()
                 val userId = get(ReadingField.USER_ID)?.intValue()
 
-                val metadata = ReadingMetadata()
-
                 return@run Reading(
                     id = readingId,
                     patientId = patientId,
@@ -220,8 +217,7 @@ data class Reading(
                     dateRecheckVitalsNeeded = dateRecheckVitalsNeeded,
                     isFlaggedForFollowUp = isFlaggedForFollowUp,
                     previousReadingIds = previousReadingIds,
-                    userId = userId,
-                    metadata = metadata
+                    userId = userId
                 )
             }
     }
@@ -290,6 +286,7 @@ data class Reading(
  * @property diastolic The diastolic value (i.e., the second/bottom value).
  * @property heartRate The heart rate in beats per minute (BPM).
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class BloodPressure(
     @JsonProperty("bpSystolic")
     val systolic: Int,
@@ -301,6 +298,8 @@ data class BloodPressure(
     /**
      * The shock index for this blood pressure result.
      */
+
+    @get:JsonIgnore
     private val shockIndex
         get() = if (systolic == 0) {
             0.0
@@ -311,6 +310,7 @@ data class BloodPressure(
     /**
      * The analysis for this blood pressure result.
      */
+    @get:JsonIgnore
     val analysis: ReadingAnalysis
         get() = when {
             // In severe shock
@@ -478,31 +478,6 @@ enum class ReadingAnalysis(private val analysisTextId: Int, private val adviceTe
 }
 
 /**
- * A collection of metadata associated with a reading.
- *
- * The data in this class is mainly for developer use and is not intended to be
- * visible to the user.
- */
-data class ReadingMetadata(
-    /* Application Data */
-    var appVersion: String? = null,
-    var deviceInfo: String? = null,
-    var dateLastSaved: Long? = null,
-    var dateUploadedToServer: Long? = null,
-    /* Image Data */
-    var photoPath: String? = null,
-    var isImageUploaded: Boolean = false,
-    var totalOcrSeconds: Float? = null,
-    /* GPS Data */
-    var gpsLocation: String? = null
-) : Serializable {
-    /**
-     * True if this reading has been uploaded to the server.
-     */
-    val isUploaded get() = dateUploadedToServer != null
-}
-
-/**
  * A list of related readings with each successive reading being a retest of
  * the last. The group as a whole can be analysed to determine if the user
  * should perform an additional retest or not.
@@ -611,18 +586,4 @@ private enum class BloodPressureField(override val text: String) : Field {
     SYSTOLIC("bpSystolic"),
     DIASTOLIC("bpDiastolic"),
     HEART_RATE("heartRateBPM"),
-}
-
-/**
- * JSON keys for [Metadata] fields.
- */
-private enum class MetadataField(override val text: String) : Field {
-    APP_VERSION("appVersion"),
-    DEVICE_INFO("deviceInfo"),
-    DATE_LAST_SAVED("dateLastSaved"),
-    DATE_UPLOADED_TO_SERVER("dateUploadedToServer"),
-    PHOTO_PATH("photoPath"),
-    IS_IMAGE_UPLOADED("isImageUploaded"),
-    TOTAL_OCR_SECONDS("totalOcrSeconds"),
-    GPS_LOCATION("gpsLocation"),
 }
