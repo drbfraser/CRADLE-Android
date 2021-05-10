@@ -422,7 +422,7 @@ style:
   MayBeConst:
     active: false
   ModifierOrder:
-    active: true
+    active: false
   NestedClassesVisibility:
     active: false
   NewLineAtEndOfFile:
