@@ -6,16 +6,16 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-        <import type="com.cradleVSA.neptune.binding.Converter" />
-        <import type="com.cradleVSA.neptune.utilities.DateUtil" />
-        <import type="com.cradleVSA.neptune.viewmodel.ReadingAnalysisViewSupport" />
+        <import type="com.cradleplatform.neptune.binding.Converter" />
+        <import type="com.cradleplatform.neptune.utilities.DateUtil" />
+        <import type="com.cradleplatform.neptune.viewmodel.ReadingAnalysisViewSupport" />
 
         <variable
             name="reading"
-            type="com.cradleVSA.neptune.model.Reading" />
+            type="com.cradleplatform.neptune.model.Reading" />
         <variable
             name="analysis"
-            type="com.cradleVSA.neptune.model.ReadingAnalysis" />
+            type="com.cradleplatform.neptune.model.ReadingAnalysis" />
     </data>
 
     <com.google.android.material.card.MaterialCardView

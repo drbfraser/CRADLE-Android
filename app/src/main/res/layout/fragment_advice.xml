@@ -5,17 +5,17 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-        <import type="com.cradleVSA.neptune.binding.Converter" />
-        <import type="com.cradleVSA.neptune.model.RetestAdvice" />
-        <import type="com.cradleVSA.neptune.view.ReadingActivity.LaunchReason"/>
+        <import type="com.cradleplatform.neptune.binding.Converter" />
+        <import type="com.cradleplatform.neptune.model.RetestAdvice" />
+        <import type="com.cradleplatform.neptune.view.ReadingActivity.LaunchReason"/>
 
         <variable
             name="viewModel"
-            type="com.cradleVSA.neptune.viewmodel.PatientReadingViewModel" />
+            type="com.cradleplatform.neptune.viewmodel.PatientReadingViewModel" />
 
         <variable
             name="launchReason"
-            type="com.cradleVSA.neptune.view.ReadingActivity.LaunchReason" />
+            type="com.cradleplatform.neptune.view.ReadingActivity.LaunchReason" />
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout

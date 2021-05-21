@@ -4,12 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-        <import type="com.cradleVSA.neptune.binding.Converter" />
+        <import type="com.cradleplatform.neptune.binding.Converter" />
         <import type="android.view.View" />
 
         <variable
             name="viewModel"
-            type="com.cradleVSA.neptune.viewmodel.SyncViewModel" />
+            type="com.cradleplatform.neptune.viewmodel.SyncViewModel" />
     </data>
 
     <LinearLayout

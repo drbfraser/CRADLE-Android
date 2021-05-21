@@ -8,7 +8,7 @@ import os.path
 TRACK_CMD_LINE = 'track'
 UPDATE_PRIORITY_CMD_LINE = 'update_priority'
 #Define Package Name
-PACKAGE_NAME = "com.cradleVSA.neptune"
+PACKAGE_NAME = "com.cradleplatform.neptune"
 
 
 def parseCommandLineArgs():

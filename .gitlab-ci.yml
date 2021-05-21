@@ -29,10 +29,10 @@ build:
     - if: '$CI_PIPELINE_SOURCE != "schedule" && $CI_MERGE_REQUEST_ID == null'
   script:
     # Remove the current database schema JSON so that it generates a valid one
-    - rm app/schemas/com.cradleVSA.neptune.database.CradleDatabase/*.json
+    - rm app/schemas/com.cradleplatform.neptune.database.CradleDatabase/*.json
     - ./gradlew assembleDebug
     - LATEST_DB_VERSION="$(scripts/get-latest-db-version.sh)"
-    - cp "app/schemas/com.cradleVSA.neptune.database.CradleDatabase/$LATEST_DB_VERSION.json" latest_db_version.json
+    - cp "app/schemas/com.cradleplatform.neptune.database.CradleDatabase/$LATEST_DB_VERSION.json" latest_db_version.json
   tags:
     - build
   artifacts:
@@ -57,7 +57,7 @@ validate_database_json:
     - cp latest_db_version.json "$LATEST_DB_VERSION.json"
     - sha256sum -b "$LATEST_DB_VERSION.json" > CHECKSUMS
     - cat CHECKSUMS
-    - cp app/schemas/com.cradleVSA.neptune.database.CradleDatabase/$LATEST_DB_VERSION.json .
+    - cp app/schemas/com.cradleplatform.neptune.database.CradleDatabase/$LATEST_DB_VERSION.json .
     - sha256sum -c CHECKSUMS
     - touch SUCCESS
   after_script:

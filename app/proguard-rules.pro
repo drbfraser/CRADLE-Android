@@ -25,8 +25,8 @@
 
 -printusage usage.txt
 
-#-keep class com.cradleVSA.neptune.** { *; }
-#-keepclassmembers class com.cradleVSA.neptune.** { *; }
+#-keep class com.cradleplatform.neptune.** { *; }
+#-keepclassmembers class com.cradleplatform.neptune.** { *; }
 -keep class kotlin.Metadata { *; }
 -keepattributes RuntimeVisibleAnnotations
 -keepclassmembers class kotlin.Metadata { *; }
