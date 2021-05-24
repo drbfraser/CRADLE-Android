@@ -47,7 +47,7 @@ android {
         versionCode 43
         versionName "0.5.1-alpha"
 
-        applicationId "com.cradleVSA.neptune"
+        applicationId "com.cradleplatform.neptune"
         // Android 5
         minSdkVersion 21
         targetSdkVersion 30

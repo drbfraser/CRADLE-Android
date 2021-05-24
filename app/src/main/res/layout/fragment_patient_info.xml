@@ -5,14 +5,14 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-        <import type="com.cradleVSA.neptune.binding.Converter" />
+        <import type="com.cradleplatform.neptune.binding.Converter" />
         <import type="android.text.InputType" />
-        <import type="com.cradleVSA.neptune.model.Sex" />
-        <import type="com.cradleVSA.neptune.model.Patient" />
+        <import type="com.cradleplatform.neptune.model.Sex" />
+        <import type="com.cradleplatform.neptune.model.Patient" />
 
         <variable
             name="viewModel"
-            type="com.cradleVSA.neptune.viewmodel.PatientReadingViewModel" />
+            type="com.cradleplatform.neptune.viewmodel.PatientReadingViewModel" />
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout

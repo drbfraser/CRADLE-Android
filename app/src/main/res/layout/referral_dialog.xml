@@ -4,18 +4,18 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-        <import type="com.cradleVSA.neptune.binding.Converter" />
-        <import type="com.cradleVSA.neptune.view.ReadingActivity.LaunchReason" />
+        <import type="com.cradleplatform.neptune.binding.Converter" />
+        <import type="com.cradleplatform.neptune.view.ReadingActivity.LaunchReason" />
 
         <variable
             name="readingViewModel"
-            type="com.cradleVSA.neptune.viewmodel.PatientReadingViewModel" />
+            type="com.cradleplatform.neptune.viewmodel.PatientReadingViewModel" />
         <variable
             name="viewModel"
-            type="com.cradleVSA.neptune.viewmodel.ReferralDialogViewModel" />
+            type="com.cradleplatform.neptune.viewmodel.ReferralDialogViewModel" />
         <variable
             name="launchReason"
-            type="com.cradleVSA.neptune.view.ReadingActivity.LaunchReason" />
+            type="com.cradleplatform.neptune.view.ReadingActivity.LaunchReason" />
     </data>
 
 

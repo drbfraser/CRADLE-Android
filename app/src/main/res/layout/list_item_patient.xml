@@ -8,11 +8,11 @@
 
         <variable
             name="localSearchPatient"
-            type="com.cradleVSA.neptune.database.views.LocalSearchPatient" />
+            type="com.cradleplatform.neptune.database.views.LocalSearchPatient" />
 
-        <import type="com.cradleVSA.neptune.utilities.DateUtil" />
-        <import type="com.cradleVSA.neptune.viewmodel.ReadingAnalysisViewSupport" />
-        <import type="com.cradleVSA.neptune.utilities.Util" />
+        <import type="com.cradleplatform.neptune.utilities.DateUtil" />
+        <import type="com.cradleplatform.neptune.viewmodel.ReadingAnalysisViewSupport" />
+        <import type="com.cradleplatform.neptune.utilities.Util" />
         <import type="android.view.View" />
     </data>
 
