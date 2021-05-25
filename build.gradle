@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '1.5.0'
+    ext.kotlin_version = '1.5.10'
     ext.detekt_version = '1.17.0-RC2'
     ext.hilt_version = '2.33-beta'
     ext.hilt_jetpack_version = '1.0.0-alpha03'
@@ -10,7 +10,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.2.0'
+        classpath 'com.android.tools.build:gradle:4.2.1'
         classpath "de.mannodermaus.gradle.plugins:android-junit5:1.6.2.0"
         // TODO: Before this is ever used in production with real patient data, we need to evaluate
         //       Google's privacy policy for these things, since we're going to be dealing with
