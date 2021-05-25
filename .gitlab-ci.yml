@@ -135,22 +135,11 @@ firebase_test_lab:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
   cache:
-    # TODO: Using multiple caches in a single job is available in GitLab 13.11:
-    # https://gitlab.com/gitlab-org/gitlab/-/issues/32814
-    # In the future, do something like
-    #
-    # - key: global-cache
-    # - key: "$GCLOUD_SDK_VERSION"
-    #   paths:
-    #      - google-cloud-sdk-$GCLOUD_SDK_VERSION-linux-x86_64.tar.gz
-    #
-    # with a "pull" policy for global-cache.
-    #
-    key: "test-lab-$GCLOUD_SDK_VERSION"
-    paths:
-      - google-cloud-sdk-$GCLOUD_SDK_VERSION-linux-x86_64.tar.gz
-      - .gradle/wrapper/
-      - .gradle/caches/
+    - key: global-cache
+      policy: pull
+    - key: "test-lab-$GCLOUD_SDK_VERSION"
+      paths:
+        - google-cloud-sdk-$GCLOUD_SDK_VERSION-linux-x86_64.tar.gz
   before_script:
     - apt-get -y install jq
     - export GRADLE_USER_HOME=`pwd`/.gradle
