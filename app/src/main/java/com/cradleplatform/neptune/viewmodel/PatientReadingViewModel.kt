@@ -728,6 +728,10 @@ class PatientReadingViewModel @Inject constructor(
     val patientMedicalHistory: MutableLiveData<String> =
         patientBuilder.get<String>(Patient::medicalHistory, defaultValue = "")
 
+    /** Used in two-way Data Binding with PatientInfoFragment */
+    val patientAllergies: MutableLiveData<String> =
+        patientBuilder.get<String>(Patient::allergy, defaultValue = "")
+
     val patientLastEdited: MutableLiveData<Long?>
         get() = patientBuilder.get<Long?>(Patient::lastEdited)
 
