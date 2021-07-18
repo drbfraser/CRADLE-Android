@@ -91,7 +91,7 @@ data class Patient(
     @ColumnInfo var householdNumber: String? = null,
     @ColumnInfo var drugHistory: String = "",
     @ColumnInfo var medicalHistory: String = "",
-    @ColumnInfo var allergy: String = "",
+    @ColumnInfo var allergy: String? = null,
     @ColumnInfo var lastEdited: Long? = null,
     @ColumnInfo var base: Long? = null
 ) : Serializable, Verifiable<Patient> {
@@ -464,7 +464,7 @@ data class Patient(
             val householdNumber = get(PatientField.HOUSEHOLD_NUMBER)?.textValue()
             val drugHistory = get(PatientField.DRUG_HISTORY)?.textValue() ?: ""
             val medicalHistory = get(PatientField.MEDICAL_HISTORY)?.textValue() ?: ""
-            val allergy = get(PatientField.ALLERGY)?.textValue() ?: ""
+            val allergy = get(PatientField.ALLERGY)?.textValue()
             val lastEdited = get(PatientField.LAST_EDITED)?.asLong()
             val base = get(PatientField.BASE)?.asLong()
 
