@@ -370,6 +370,32 @@
                                 android:verticalScrollbarPosition="right"
                                 tools:text="Medical history sample" />
                         </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/allergy_layout"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="4dp"
+                            android:enabled="@{viewModel.isInputEnabled}"
+                            android:hint="@string/allergies"
+                            android:paddingBottom="0dp"
+                            app:helperText=" "
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/medical_history_layout">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/allergy_text"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="textLongMessage|textMultiLine|textNoSuggestions"
+                                android:minLines="1"
+                                android:singleLine="false"
+                                android:text="@={viewModel.patientAllergies}"
+                                android:verticalScrollbarPosition="right"
+                                tools:text="Allergy sample" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
                     </androidx.constraintlayout.widget.ConstraintLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>

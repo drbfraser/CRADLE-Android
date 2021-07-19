@@ -64,6 +64,7 @@ import kotlin.reflect.KProperty
  * @property villageNumber The number of the village in which this patient lives.
  * @property drugHistory Drug history for the patient (paragraph form expected).
  * @property medicalHistory Medical history for the patient (paragraph form expected).
+ * @property allergy drug allergies for the patient (paragraph form expected).
  * @property lastEdited Last time patient info was edited
  * @property base Last time the patient has been synced with the server.
  *
@@ -90,6 +91,7 @@ data class Patient(
     @ColumnInfo var householdNumber: String? = null,
     @ColumnInfo var drugHistory: String = "",
     @ColumnInfo var medicalHistory: String = "",
+    @ColumnInfo var allergy: String? = null,
     @ColumnInfo var lastEdited: Long? = null,
     @ColumnInfo var base: Long? = null
 ) : Serializable, Verifiable<Patient> {
@@ -421,6 +423,7 @@ data class Patient(
                 gen.writeOptStringField(PatientField.HOUSEHOLD_NUMBER, householdNumber)
                 gen.writeOptStringField(PatientField.DRUG_HISTORY, drugHistory)
                 gen.writeOptStringField(PatientField.MEDICAL_HISTORY, medicalHistory)
+                gen.writeOptStringField(PatientField.ALLERGY, allergy)
                 gen.writeOptLongField(PatientField.LAST_EDITED, lastEdited)
                 gen.writeOptLongField(PatientField.BASE, base)
             }
@@ -461,6 +464,7 @@ data class Patient(
             val householdNumber = get(PatientField.HOUSEHOLD_NUMBER)?.textValue()
             val drugHistory = get(PatientField.DRUG_HISTORY)?.textValue() ?: ""
             val medicalHistory = get(PatientField.MEDICAL_HISTORY)?.textValue() ?: ""
+            val allergy = get(PatientField.ALLERGY)?.textValue()
             val lastEdited = get(PatientField.LAST_EDITED)?.asLong()
             val base = get(PatientField.BASE)?.asLong()
 
@@ -477,6 +481,7 @@ data class Patient(
                 householdNumber = householdNumber,
                 drugHistory = drugHistory,
                 medicalHistory = medicalHistory,
+                allergy = allergy,
                 lastEdited = lastEdited,
                 base = base
             )
@@ -708,6 +713,7 @@ private enum class PatientField(override val text: String) : Field {
     HOUSEHOLD_NUMBER("householdNumber"),
     DRUG_HISTORY("drugHistory"),
     MEDICAL_HISTORY("medicalHistory"),
+    ALLERGY("allergy"),
     LAST_EDITED("lastEdited"),
     BASE("base"),
     READINGS("readings")
