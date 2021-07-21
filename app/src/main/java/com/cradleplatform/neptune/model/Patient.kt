@@ -457,8 +457,13 @@ data class Patient(
                 null
             }
 
+            val isPregnant = if (has(PatientField.IS_PREGNANT.text)) {
+                get(PatientField.IS_PREGNANT)!!.booleanValue()
+            } else {
+                gestationalAge != null
+            }
+
             val sex = Sex.valueOf(get(PatientField.SEX)!!.textValue())
-            val isPregnant = get(PatientField.IS_PREGNANT)!!.booleanValue()
             val zone = get(PatientField.ZONE)?.textValue()
             val villageNumber = get(PatientField.VILLAGE_NUMBER)?.textValue()
             val householdNumber = get(PatientField.HOUSEHOLD_NUMBER)?.textValue()
