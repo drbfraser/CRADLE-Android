@@ -46,7 +46,7 @@ object CommonPatientReadingJsons {
     "villageNumber": "4555",
     "householdNumber": "111",
     "created": 1604883668,
-    "base": 1605687954,
+    "lastServerUpdate": 1605687954,
     "lastEdited": 1605687954,
     "userId": 12,
     "readings": [
@@ -117,7 +117,7 @@ object CommonPatientReadingJsons {
                 isExactDob = false,
                 householdNumber = "111",
                 lastEdited = 1605687954,
-                base = 1605687954
+                lastServerUpdate = 1605687954
             ),
             listOf(
                 Reading(
@@ -208,7 +208,7 @@ object CommonPatientReadingJsons {
     "dob": "2002-01-08",
     "villageNumber": "133",
     "created": 1604883600,
-    "base": 1604883600,
+    "lastServerUpdate": 1604883600,
     "readings": [
         {
             "bpDiastolic": 97,
@@ -253,7 +253,7 @@ object CommonPatientReadingJsons {
                 isExactDob = true,
                 householdNumber = "95682385",
                 lastEdited = 1604883600L,
-                base = 1604883600L,
+                lastServerUpdate = 1604883600L,
             ),
             listOf(
                 Reading(
@@ -318,7 +318,7 @@ object CommonPatientReadingJsons {
     "villageNumber": "998",
     "householdNumber": "135",
     "created": 1604981097,
-    "base": 1604981097,
+    "lastServerUpdate": 1604981097,
     "lastEdited": 1604981097,
     "userId": 12,
     "readings": [
@@ -387,7 +387,7 @@ object CommonPatientReadingJsons {
                 isExactDob = false,
                 villageNumber = "998",
                 householdNumber = "135",
-                base = 1604981097L,
+                lastServerUpdate = 1604981097L,
                 lastEdited = 1604981097L,
             ),
             readings = listOf(
@@ -465,7 +465,7 @@ object CommonPatientReadingJsons {
     "villageNumber": "566454518",
     "householdNumber": "6594",
     "created": 1605778651,
-    "base": 1605778651,
+    "lastServerUpdate": 1605778651,
     "lastEdited": 1605778651,
     "userId": 12,
     "readings": [
@@ -504,7 +504,7 @@ object CommonPatientReadingJsons {
                 isExactDob = true,
                 villageNumber = "566454518",
                 householdNumber = "6594",
-                base = 1605778651,
+                lastServerUpdate = 1605778651,
                 lastEdited = 1605778651,
             ),
             listOf(

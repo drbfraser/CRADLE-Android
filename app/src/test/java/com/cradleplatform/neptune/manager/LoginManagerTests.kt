@@ -328,7 +328,7 @@ internal class LoginManagerTests {
                 assert(it.isUploadedToServer)
             }
             fakePatientDatabase.forEach {
-                assert(it.base != null)
+                assert(it.lastServerUpdate != null)
             }
 
             // Verify that the streamed parsing via Jackson of the simulated downloading of all

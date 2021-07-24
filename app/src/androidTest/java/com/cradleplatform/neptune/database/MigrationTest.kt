@@ -146,7 +146,6 @@ class MigrationTests {
                 villageNumber = null,
                 drugHistory = "",
                 medicalHistory = "Asthma",
-                allergy = null
             )
         )
         val patientWithApproxAgeOf23 = FirstVersionAndRecentVersion(
@@ -175,7 +174,6 @@ class MigrationTests {
                 villageNumber = "villageNumber2",
                 drugHistory = "drug history 2",
                 medicalHistory = "drug history 2",
-                allergy = null
             )
         )
         val patientWithBothDobAndAgeOf19 = FirstVersionAndRecentVersion(
@@ -204,7 +202,6 @@ class MigrationTests {
                 villageNumber = "villageNumber3",
                 drugHistory = "drug history 3",
                 medicalHistory = "medical history 3",
-                allergy = null
             )
         )
         helper.createDatabase(TEST_DB, 1).apply {
@@ -313,7 +310,6 @@ class MigrationTests {
                 villageNumber = null,
                 drugHistory = "",
                 medicalHistory = "abc",
-                allergy = null
             )
         )
 
@@ -590,7 +586,7 @@ class MigrationTests {
             //     @ColumnInfo var drugHistory: String = "",
             //     @ColumnInfo var medicalHistory: String = "",
             //     @ColumnInfo var lastEdited: Long? = null,
-            //     @ColumnInfo var base: Long? = null
+            //     @ColumnInfo var lastServerUpdate: Long? = null
             contentValuesOf(
                 "id" to id,
                 "name" to name,
@@ -605,7 +601,7 @@ class MigrationTests {
                 "drugHistory" to drugHistory,
                 "medicalHistory" to medicalHistory,
                 "lastEdited" to lastEdited,
-                "base" to base
+                "lastServerUpdate" to lastServerUpdate
             )
         }
         database.insert(patientsTableName, SQLiteDatabase.CONFLICT_REPLACE, values)
