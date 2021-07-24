@@ -94,7 +94,7 @@ data class Patient(
     @ColumnInfo var isPregnant: Boolean = false,
     @ColumnInfo var pregnancyId: Int? = null,
     @ColumnInfo var pregnancyEndDate: Long? = null,
-    @ColumnInfo var pregnancyOutcome: String = "",
+    @ColumnInfo var pregnancyOutcome: String? = null,
     @ColumnInfo var zone: String? = null,
     @ColumnInfo var villageNumber: String? = null,
     @ColumnInfo var householdNumber: String? = null,
@@ -482,7 +482,7 @@ data class Patient(
             val sex = Sex.valueOf(get(PatientField.SEX)!!.textValue())
             val pregnancyId = get(PatientField.PREGNANCY_ID)?.asInt()
             val pregnancyEndDate = get(PatientField.PREGNANCY_END_DATE)?.asLong()
-            val pregnancyOutcome = get(PatientField.PREGNANCY_OUTCOME)?.textValue() ?: ""
+            val pregnancyOutcome = get(PatientField.PREGNANCY_OUTCOME)?.textValue()
             val zone = get(PatientField.ZONE)?.textValue()
             val villageNumber = get(PatientField.VILLAGE_NUMBER)?.textValue()
             val householdNumber = get(PatientField.HOUSEHOLD_NUMBER)?.textValue()
@@ -737,7 +737,7 @@ private enum class PatientField(override val text: String) : Field {
     IS_EXACT_DOB("isExactDob"),
     GESTATIONAL_AGE_UNIT("gestationalAgeUnit"),
     //TODO: Change gestationalTimestamp to pregnancyStartDate (when handling API that sends pregnancyStartDate)
-    GESTATIONAL_AGE_VALUE("gestationalTimestamp"), 
+    GESTATIONAL_AGE_VALUE("gestationalTimestamp"),
     SEX("patientSex"),
     IS_PREGNANT("isPregnant"),
     PREGNANCY_ID("pregnancyId"),

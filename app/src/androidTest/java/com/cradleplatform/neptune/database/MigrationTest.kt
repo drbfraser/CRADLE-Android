@@ -74,7 +74,8 @@ class MigrationTests {
             zone = null,
             villageNumber = null,
             drugHistory = "",
-            medicalHistory = "abc"
+            medicalHistory = "abc",
+            allergy = ""
         )
 
         helper.createDatabase(TEST_DB, 1).apply {
@@ -132,7 +133,8 @@ class MigrationTests {
                 zone = null,
                 villageNumber = null,
                 drugHistory = "",
-                medicalHistory = "Asthma"
+                medicalHistory = "Asthma",
+                allergy = ""
             ),
             Patient(
                 id = "1",
@@ -146,6 +148,7 @@ class MigrationTests {
                 villageNumber = null,
                 drugHistory = "",
                 medicalHistory = "Asthma",
+                allergy = ""
             )
         )
         val patientWithApproxAgeOf23 = FirstVersionAndRecentVersion(
@@ -160,7 +163,8 @@ class MigrationTests {
                 zone = "zone2",
                 villageNumber = "villageNumber2",
                 drugHistory = "drug history 2",
-                medicalHistory = "drug history 2"
+                medicalHistory = "drug history 2",
+                allergy = ""
             ),
             Patient(
                 id = "2",
@@ -174,6 +178,7 @@ class MigrationTests {
                 villageNumber = "villageNumber2",
                 drugHistory = "drug history 2",
                 medicalHistory = "drug history 2",
+                allergy = ""
             )
         )
         val patientWithBothDobAndAgeOf19 = FirstVersionAndRecentVersion(
@@ -188,7 +193,8 @@ class MigrationTests {
                 zone = "zone3",
                 villageNumber = "villageNumber3",
                 drugHistory = "drug history 3",
-                medicalHistory = "medical history 3"
+                medicalHistory = "medical history 3",
+                allergy = ""
             ),
             Patient(
                 id = "3",
@@ -202,6 +208,7 @@ class MigrationTests {
                 villageNumber = "villageNumber3",
                 drugHistory = "drug history 3",
                 medicalHistory = "medical history 3",
+                allergy = ""
             )
         )
         helper.createDatabase(TEST_DB, 1).apply {
@@ -296,7 +303,8 @@ class MigrationTests {
                 zone = null,
                 villageNumber = null,
                 drugHistory = "",
-                medicalHistory = "abc"
+                medicalHistory = "abc",
+                allergy = ""
             ),
             Patient(
                 id = patientId,
@@ -310,6 +318,7 @@ class MigrationTests {
                 villageNumber = null,
                 drugHistory = "",
                 medicalHistory = "abc",
+                allergy = ""
             )
         )
 
@@ -585,6 +594,7 @@ class MigrationTests {
             //     @ColumnInfo var householdNumber: String? = null,
             //     @ColumnInfo var drugHistory: String = "",
             //     @ColumnInfo var medicalHistory: String = "",
+            //     @ColumnInfo var allergy: String = "",
             //     @ColumnInfo var lastEdited: Long? = null,
             //     @ColumnInfo var lastServerUpdate: Long? = null
             contentValuesOf(
@@ -600,6 +610,7 @@ class MigrationTests {
                 "householdNumber" to householdNumber,
                 "drugHistory" to drugHistory,
                 "medicalHistory" to medicalHistory,
+                "allergy" to allergy,
                 "lastEdited" to lastEdited,
                 "lastServerUpdate" to lastServerUpdate
             )

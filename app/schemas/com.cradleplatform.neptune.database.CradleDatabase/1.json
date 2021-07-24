@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "10bc22464dfbfc5184d758aa21fed317",
+    "identityHash": "21cd4bd6fc19b250eb8fe4330fd3be3a",
     "entities": [
       {
         "tableName": "Reading",
@@ -133,7 +133,7 @@
       },
       {
         "tableName": "Patient",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `dob` TEXT, `isExactDob` INTEGER, `gestationalAge` TEXT, `sex` TEXT NOT NULL, `isPregnant` INTEGER NOT NULL, `pregnancyId` INTEGER, `pregnancyEndDate` INTEGER, `pregnancyOutcome` TEXT NOT NULL, `zone` TEXT, `villageNumber` TEXT, `householdNumber` TEXT, `drugHistory` TEXT NOT NULL, `medicalHistory` TEXT NOT NULL, `allergy` TEXT NOT NULL, `lastEdited` INTEGER, `drugLastEdited` INTEGER, `medicalLastEdited` INTEGER, `lastServerUpdate` INTEGER, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `dob` TEXT, `isExactDob` INTEGER, `gestationalAge` TEXT, `sex` TEXT NOT NULL, `isPregnant` INTEGER NOT NULL, `pregnancyId` INTEGER, `pregnancyEndDate` INTEGER, `pregnancyOutcome` TEXT, `zone` TEXT, `villageNumber` TEXT, `householdNumber` TEXT, `drugHistory` TEXT NOT NULL, `medicalHistory` TEXT NOT NULL, `allergy` TEXT NOT NULL, `lastEdited` INTEGER, `drugLastEdited` INTEGER, `medicalLastEdited` INTEGER, `lastServerUpdate` INTEGER, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -193,7 +193,7 @@
             "fieldPath": "pregnancyOutcome",
             "columnName": "pregnancyOutcome",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "zone",
@@ -333,7 +333,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '10bc22464dfbfc5184d758aa21fed317')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '21cd4bd6fc19b250eb8fe4330fd3be3a')"
     ]
   }
 }
