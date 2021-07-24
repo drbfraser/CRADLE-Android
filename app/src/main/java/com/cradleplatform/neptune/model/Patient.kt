@@ -15,6 +15,7 @@ import com.cradleplatform.neptune.ext.jackson.get
 import com.cradleplatform.neptune.ext.jackson.getOptObjectArray
 import com.cradleplatform.neptune.ext.jackson.writeBooleanField
 import com.cradleplatform.neptune.ext.jackson.writeObjectField
+import com.cradleplatform.neptune.ext.jackson.writeOptIntField
 import com.cradleplatform.neptune.ext.jackson.writeOptLongField
 import com.cradleplatform.neptune.ext.jackson.writeOptStringField
 import com.cradleplatform.neptune.ext.jackson.writeStringField
@@ -60,13 +61,18 @@ import kotlin.reflect.KProperty
  * @property gestationalAge The gestational age of this patient if applicable.
  * @property sex This patient's sex.
  * @property isPregnant Whether this patient is pregnant or not.
+ * @property pregnancyId Id of the current pregnancy saved on android
+ * @property pregnancyEndDate End date of the previous pregnancy saved on android
+ * @property pregnancyOutcome Outcome of the previous pregnancy saved on android
  * @property zone The zone in which this patient lives.
  * @property villageNumber The number of the village in which this patient lives.
  * @property drugHistory Drug history for the patient (paragraph form expected).
  * @property medicalHistory Medical history for the patient (paragraph form expected).
  * @property allergy drug allergies for the patient (paragraph form expected).
  * @property lastEdited Last time patient info was edited
- * @property base Last time the patient has been synced with the server.
+ * @property drugLastEdited Last time drug info was edited
+ * @property medicalLastEdited Last time medical info was edited
+ * @property lastServerUpdate Last time the patient has gotten updated from the server.
  *
  * TODO: Make [isExactDob] and [dob] not optional. Requires backend work to enforce it.
  */
@@ -86,6 +92,9 @@ data class Patient(
     @ColumnInfo var gestationalAge: GestationalAge? = null,
     @ColumnInfo var sex: Sex = Sex.OTHER,
     @ColumnInfo var isPregnant: Boolean = false,
+    @ColumnInfo var pregnancyId: Int? = null,
+    @ColumnInfo var pregnancyEndDate: Long? = null,
+    @ColumnInfo var pregnancyOutcome: String = "",
     @ColumnInfo var zone: String? = null,
     @ColumnInfo var villageNumber: String? = null,
     @ColumnInfo var householdNumber: String? = null,
@@ -93,7 +102,9 @@ data class Patient(
     @ColumnInfo var medicalHistory: String = "",
     @ColumnInfo var allergy: String? = null,
     @ColumnInfo var lastEdited: Long? = null,
-    @ColumnInfo var base: Long? = null
+    @ColumnInfo var drugLastEdited: Long? = null,
+    @ColumnInfo var medicalLastEdited: Long? = null,
+    @ColumnInfo var lastServerUpdate: Long? = null
 ) : Serializable, Verifiable<Patient> {
     override fun isValueForPropertyValid(
         property: KProperty<*>,
@@ -418,6 +429,9 @@ data class Patient(
                 if (isPregnant) {
                     patient.gestationalAge?.let { GestationalAge.Serializer.write(gen, it) }
                 }
+                gen.writeOptIntField(PatientField.PREGNANCY_ID, pregnancyId)
+                gen.writeOptLongField(PatientField.PREGNANCY_END_DATE, pregnancyEndDate)
+                gen.writeOptStringField(PatientField.PREGNANCY_OUTCOME, pregnancyOutcome)
                 gen.writeOptStringField(PatientField.ZONE, zone)
                 gen.writeOptStringField(PatientField.VILLAGE_NUMBER, villageNumber)
                 gen.writeOptStringField(PatientField.HOUSEHOLD_NUMBER, householdNumber)
@@ -425,7 +439,9 @@ data class Patient(
                 gen.writeOptStringField(PatientField.MEDICAL_HISTORY, medicalHistory)
                 gen.writeOptStringField(PatientField.ALLERGY, allergy)
                 gen.writeOptLongField(PatientField.LAST_EDITED, lastEdited)
-                gen.writeOptLongField(PatientField.BASE, base)
+                gen.writeOptLongField(PatientField.DRUG_LAST_EDITED, drugLastEdited)
+                gen.writeOptLongField(PatientField.MEDICAL_LAST_EDITED, medicalLastEdited)
+                gen.writeOptLongField(PatientField.LAST_SERVER_UPDATE, lastServerUpdate)
             }
         }
 
@@ -464,6 +480,9 @@ data class Patient(
             }
 
             val sex = Sex.valueOf(get(PatientField.SEX)!!.textValue())
+            val pregnancyId = get(PatientField.PREGNANCY_ID)?.asInt()
+            val pregnancyEndDate = get(PatientField.PREGNANCY_END_DATE)?.asLong()
+            val pregnancyOutcome = get(PatientField.PREGNANCY_OUTCOME)?.textValue() ?: ""
             val zone = get(PatientField.ZONE)?.textValue()
             val villageNumber = get(PatientField.VILLAGE_NUMBER)?.textValue()
             val householdNumber = get(PatientField.HOUSEHOLD_NUMBER)?.textValue()
@@ -471,7 +490,9 @@ data class Patient(
             val medicalHistory = get(PatientField.MEDICAL_HISTORY)?.textValue() ?: ""
             val allergy = get(PatientField.ALLERGY)?.textValue()
             val lastEdited = get(PatientField.LAST_EDITED)?.asLong()
-            val base = get(PatientField.BASE)?.asLong()
+            val drugLastEdited = get(PatientField.DRUG_LAST_EDITED)?.asLong()
+            val medicalLastEdited = get(PatientField.MEDICAL_LAST_EDITED)?.asLong()
+            val lastServerUpdate = get(PatientField.LAST_SERVER_UPDATE)?.asLong()
 
             return@run Patient(
                 id = id,
@@ -481,6 +502,9 @@ data class Patient(
                 gestationalAge = gestationalAge,
                 sex = sex,
                 isPregnant = isPregnant,
+                pregnancyId = pregnancyId,
+                pregnancyEndDate = pregnancyEndDate,
+                pregnancyOutcome = pregnancyOutcome,
                 zone = zone,
                 villageNumber = villageNumber,
                 householdNumber = householdNumber,
@@ -488,7 +512,9 @@ data class Patient(
                 medicalHistory = medicalHistory,
                 allergy = allergy,
                 lastEdited = lastEdited,
-                base = base
+                drugLastEdited = drugLastEdited,
+                medicalLastEdited = medicalLastEdited,
+                lastServerUpdate = lastServerUpdate
             )
         }
 
@@ -710,9 +736,12 @@ private enum class PatientField(override val text: String) : Field {
     DOB("dob"),
     IS_EXACT_DOB("isExactDob"),
     GESTATIONAL_AGE_UNIT("gestationalAgeUnit"),
-    GESTATIONAL_AGE_VALUE("gestationalTimestamp"),
+    GESTATIONAL_AGE_VALUE("pregnancyStartDate"),
     SEX("patientSex"),
     IS_PREGNANT("isPregnant"),
+    PREGNANCY_ID("pregnancyId"),
+    PREGNANCY_END_DATE("pregnancyEndDate"),
+    PREGNANCY_OUTCOME("pregnancyOutcome"),
     ZONE("zone"),
     VILLAGE_NUMBER("villageNumber"),
     HOUSEHOLD_NUMBER("householdNumber"),
@@ -720,7 +749,9 @@ private enum class PatientField(override val text: String) : Field {
     MEDICAL_HISTORY("medicalHistory"),
     ALLERGY("allergy"),
     LAST_EDITED("lastEdited"),
-    BASE("base"),
+    DRUG_LAST_EDITED("drugLastEdited"),
+    MEDICAL_LAST_EDITED("medicalLastEdited"),
+    LAST_SERVER_UPDATE("lastServerUpdate"),
     READINGS("readings")
 }
 
