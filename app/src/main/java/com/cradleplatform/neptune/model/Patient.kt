@@ -730,13 +730,14 @@ class GestationalAgeMonths(timestamp: BigInteger) : GestationalAge(timestamp), S
  * These fields are defined here to ensure that the marshal and unmarshal
  * methods use the same field names.
  */
+
+// TODO: Change gestationalTimestamp to pregnancyStartDate (when handling API that sends pregnancyStartDate)
 private enum class PatientField(override val text: String) : Field {
     ID("patientId"),
     NAME("patientName"),
     DOB("dob"),
     IS_EXACT_DOB("isExactDob"),
     GESTATIONAL_AGE_UNIT("gestationalAgeUnit"),
-    //TODO: Change gestationalTimestamp to pregnancyStartDate (when handling API that sends pregnancyStartDate)
     GESTATIONAL_AGE_VALUE("gestationalTimestamp"),
     SEX("patientSex"),
     IS_PREGNANT("isPregnant"),
