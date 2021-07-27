@@ -61,17 +61,22 @@ import kotlin.reflect.KProperty
  * @property gestationalAge The gestational age of this patient if applicable.
  * @property sex This patient's sex.
  * @property isPregnant Whether this patient is pregnant or not.
- * @property pregnancyId Id of the current pregnancy saved on android
- * @property pregnancyEndDate End date of the previous pregnancy saved on android
- * @property pregnancyOutcome Outcome of the previous pregnancy saved on android
+ * @property pregnancyId Id of either the current or previous pregnancy saved on android
+ *           prevPregnancyEndDate and outcome is only saved on database if created offline,
+ *           therefore the pregnancyId would be related to these changes that need to
+ *           be sent to server on sync.
+ *           Otherwise, pregnancyId would be related to the gestationalAge value
+ *           (when gestationalAge is set on android offline, server gives it an Id on sync)
+ * @property prevPregnancyEndDate End date of the previous pregnancy - only used when pregnancy closed offline
+ * @property prevPregnancyOutcome Outcome of the previous pregnancy - only used when pregnancy closed offline
  * @property zone The zone in which this patient lives.
  * @property villageNumber The number of the village in which this patient lives.
  * @property drugHistory Drug history for the patient (paragraph form expected).
  * @property medicalHistory Medical history for the patient (paragraph form expected).
  * @property allergy drug allergies for the patient (paragraph form expected).
- * @property lastEdited Last time patient info was edited
- * @property drugLastEdited Last time drug info was edited
- * @property medicalLastEdited Last time medical info was edited
+ * @property lastEdited Last time patient info was edited on android
+ * @property drugLastEdited Last time drug info was edited on android
+ * @property medicalLastEdited Last time medical info was edited on android
  * @property lastServerUpdate Last time the patient has gotten updated from the server.
  *
  * TODO: Make [isExactDob] and [dob] not optional. Requires backend work to enforce it.
@@ -93,8 +98,8 @@ data class Patient(
     @ColumnInfo var sex: Sex = Sex.OTHER,
     @ColumnInfo var isPregnant: Boolean = false,
     @ColumnInfo var pregnancyId: Int? = null,
-    @ColumnInfo var pregnancyEndDate: Long? = null,
-    @ColumnInfo var pregnancyOutcome: String? = null,
+    @ColumnInfo var prevPregnancyEndDate: Long? = null,
+    @ColumnInfo var prevPregnancyOutcome: String? = null,
     @ColumnInfo var zone: String? = null,
     @ColumnInfo var villageNumber: String? = null,
     @ColumnInfo var householdNumber: String? = null,
@@ -430,8 +435,8 @@ data class Patient(
                     patient.gestationalAge?.let { GestationalAge.Serializer.write(gen, it) }
                 }
                 gen.writeOptIntField(PatientField.PREGNANCY_ID, pregnancyId)
-                gen.writeOptLongField(PatientField.PREGNANCY_END_DATE, pregnancyEndDate)
-                gen.writeOptStringField(PatientField.PREGNANCY_OUTCOME, pregnancyOutcome)
+                gen.writeOptLongField(PatientField.PREGNANCY_END_DATE, prevPregnancyEndDate)
+                gen.writeOptStringField(PatientField.PREGNANCY_OUTCOME, prevPregnancyOutcome)
                 gen.writeOptStringField(PatientField.ZONE, zone)
                 gen.writeOptStringField(PatientField.VILLAGE_NUMBER, villageNumber)
                 gen.writeOptStringField(PatientField.HOUSEHOLD_NUMBER, householdNumber)
@@ -481,8 +486,8 @@ data class Patient(
 
             val sex = Sex.valueOf(get(PatientField.SEX)!!.textValue())
             val pregnancyId = get(PatientField.PREGNANCY_ID)?.asInt()
-            val pregnancyEndDate = get(PatientField.PREGNANCY_END_DATE)?.asLong()
-            val pregnancyOutcome = get(PatientField.PREGNANCY_OUTCOME)?.textValue()
+            val prevPregnancyEndDate = get(PatientField.PREGNANCY_END_DATE)?.asLong()
+            val prevPregnancyOutcome = get(PatientField.PREGNANCY_OUTCOME)?.textValue()
             val zone = get(PatientField.ZONE)?.textValue()
             val villageNumber = get(PatientField.VILLAGE_NUMBER)?.textValue()
             val householdNumber = get(PatientField.HOUSEHOLD_NUMBER)?.textValue()
@@ -503,8 +508,8 @@ data class Patient(
                 sex = sex,
                 isPregnant = isPregnant,
                 pregnancyId = pregnancyId,
-                pregnancyEndDate = pregnancyEndDate,
-                pregnancyOutcome = pregnancyOutcome,
+                prevPregnancyEndDate = prevPregnancyEndDate,
+                prevPregnancyOutcome = prevPregnancyOutcome,
                 zone = zone,
                 villageNumber = villageNumber,
                 householdNumber = householdNumber,
