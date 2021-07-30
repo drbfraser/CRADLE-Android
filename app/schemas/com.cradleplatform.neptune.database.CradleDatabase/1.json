@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "21cd4bd6fc19b250eb8fe4330fd3be3a",
+    "identityHash": "6638134f59cb740d3120ba67d8edeefb",
     "entities": [
       {
         "tableName": "Reading",
@@ -333,7 +333,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '21cd4bd6fc19b250eb8fe4330fd3be3a')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6638134f59cb740d3120ba67d8edeefb')"
     ]
   }
 }
