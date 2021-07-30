@@ -25,13 +25,13 @@ data class HealthFacility(
     @PrimaryKey @ColumnInfo @JsonProperty("healthFacilityName")
     val name: String,
     @ColumnInfo
-    val location: String,
+    val location: String = "",
     @ColumnInfo @JsonProperty("healthFacilityPhoneNumber")
-    val phoneNumber: String,
+    val phoneNumber: String = "",
     @ColumnInfo
-    val about: String,
+    val about: String = "",
     @ColumnInfo @JsonProperty("facilityType")
-    val type: String,
+    val type: String = "",
     @ColumnInfo @JsonIgnore
     var isUserSelected: Boolean = false
 )
