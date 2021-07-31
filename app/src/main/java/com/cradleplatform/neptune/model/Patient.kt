@@ -75,8 +75,8 @@ import kotlin.reflect.KProperty
  * @property medicalHistory Medical history for the patient (paragraph form expected).
  * @property allergy drug allergies for the patient (paragraph form expected).
  * @property lastEdited Last time patient info was edited on android
- * @property drugLastEdited Last time drug info was edited on android
- * @property medicalLastEdited Last time medical info was edited on android
+ * @property drugLastEdited Last time drug info was edited OFFLINE -> will be null if no offline edits
+ * @property medicalLastEdited Last time medical info was edited OFFLINE -> will be null if no offline edits
  * @property lastServerUpdate Last time the patient has gotten updated from the server.
  *
  * TODO: Make [isExactDob] and [dob] not optional. Requires backend work to enforce it.
@@ -495,9 +495,12 @@ data class Patient(
             val medicalHistory = get(PatientField.MEDICAL_HISTORY)?.textValue() ?: ""
             val allergy = get(PatientField.ALLERGY)?.textValue() ?: ""
             val lastEdited = get(PatientField.LAST_EDITED)?.asLong()
-            val drugLastEdited = get(PatientField.DRUG_LAST_EDITED)?.asLong()
-            val medicalLastEdited = get(PatientField.MEDICAL_LAST_EDITED)?.asLong()
             val lastServerUpdate = get(PatientField.LAST_SERVER_UPDATE)?.asLong()
+
+            // Set these to null because if we are receiving patient information from the server,
+            // it guarantees there are no un-uploaded edits on android
+            val drugLastEdited = null
+            val medicalLastEdited = null
 
             return@run Patient(
                 id = id,
