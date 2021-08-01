@@ -101,6 +101,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         populatePatientInfo(currPatient)
         setupReadingsRecyclerView()
         setupCreatePatientReadingButton()
+        setupUpdateRecord()
         setupLineChart()
         setupToolBar()
     }
@@ -230,6 +231,9 @@ open class PatientProfileActivity : AppCompatActivity() {
         radioGroup.check(R.id.monthradiobutton)
     }
 
+
+
+
     fun setupLineChart() {
         val lineChart = findViewById<LineChart>(R.id.patientLineChart)
         val lineChartCard = findViewById<CardView>(R.id.patientLineChartCard)
@@ -310,6 +314,25 @@ open class PatientProfileActivity : AppCompatActivity() {
                 currPatient.id
             )
             startActivityForResult(intent, READING_ACTIVITY_DONE)
+        }
+    }
+
+    private fun onUpdateButtonClicked(button: View, isDrugRecord: Boolean) {
+        val intent = Intent(this@PatientProfileActivity, PatientUpdateDrugMedicalActivity::class.java).apply {
+            putExtra("patient_id", currPatient.id)
+            putExtra("patientName", currPatient.name)
+            putExtra("record", if (isDrugRecord) currPatient.drugHistory else currPatient.medicalHistory)
+            putExtra("isDrugRecord", isDrugRecord)
+        }
+        startActivityForResult(intent, 123)
+    }
+
+    fun setupUpdateRecord(){
+        findViewById<Button>(R.id.medicalHistoryUpdateButton).setOnClickListener {
+            onUpdateButtonClicked(it, false)
+        }
+        findViewById<Button>(R.id.drugHistoryUpdateButton).setOnClickListener {
+            onUpdateButtonClicked(it, true)
         }
     }
 

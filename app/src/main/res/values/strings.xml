@@ -148,6 +148,8 @@
 
     <string name="pregnant">Pregnant:</string>
     <string name="patient_summary">Patient Summary</string>
+    <string name="patient_update_medical_history">Update Medical History</string>
+    <string name="patient_update_drug_history">Update Drug History</string>
     <string name="patient">Patient:</string>
     <string name="reading">Reading </string>
     <string name="systolic_blood_pressure">Systolic Blood Pressure:</string>
@@ -246,6 +248,9 @@
     <string name="patient_profile_month">Month</string>
     <string name="patient_profile_week">Week</string>
     <string name="patient_profile_none_caps">NONE</string>
+    <string name="patient_update_history">Update</string>
+    <string name="patient_update_drug_history_title">Update Drug History</string>
+    <string name="patient_update_medical_history_title">Update Medical History</string>
     <string name="patient_profile_add_to_my_patients_list_button">Add to my patients list</string>
     <string name="stats_activity_unique_readings">Unique Readings</string>
     <string name="stats_activity_total_readings">Total Readings</string>

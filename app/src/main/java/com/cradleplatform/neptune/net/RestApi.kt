@@ -21,6 +21,8 @@ import com.cradleplatform.neptune.sync.ReadingSyncField
 import com.cradleplatform.neptune.sync.SyncWorker
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper.createWriter
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
@@ -325,6 +327,22 @@ class RestApi constructor(
                 url = urlManager.getPatientInfoOnly(patient.id),
                 headers = headers,
                 requestBody = buildJsonRequestBody(body),
+                inputStreamReader = {},
+            )
+        }
+
+    suspend fun postMedicalRecord(patient: Patient, isDrugRecord: Boolean): NetworkResult<Unit> =
+        withContext(IO) {
+            val jsonObject = JSONObject()
+            if (isDrugRecord) jsonObject.put("drugHistory",patient.drugHistory)
+            else jsonObject.put("medicalHistory", patient.medicalHistory)
+            val mediaType = "application/json; charset=utf-8".toMediaType()
+            val requestBody = jsonObject.toString().toRequestBody(mediaType)
+            http.makeRequest(
+                method = Http.Method.POST,
+                url = urlManager.postMedicalRecord(patient.id),
+                headers = headers,
+                requestBody = requestBody,
                 inputStreamReader = {},
             )
         }
