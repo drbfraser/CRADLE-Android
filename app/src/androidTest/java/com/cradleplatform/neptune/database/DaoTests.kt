@@ -163,7 +163,7 @@ class DaoTests {
             villageNumber = null,
             drugHistory = "",
             medicalHistory = "",
-            base = null
+            lastServerUpdate = null
         )
         val patientDao = database.patientDao()
         runBlocking { patientDao.updateOrInsertIfNotExists(originalPatient) }
@@ -182,7 +182,7 @@ class DaoTests {
             villageNumber = null,
             drugHistory = "",
             medicalHistory = "",
-            base = null
+            lastServerUpdate = null
         )
         runBlocking { patientDao.updateOrInsertIfNotExists(updatedPatient) }
 

@@ -201,7 +201,7 @@ open class PatientProfileActivity : AppCompatActivity() {
             val medHistory = findViewById<TextView>(R.id.medHistoryText)
             medHistory.text = patient.medicalHistory
         }
-        if (!Util.stringNullOrEmpty(patient.allergy)) {
+        if (patient.allergy.isNotEmpty()) {
             val allergies = findViewById<TextView>(R.id.allergies)
             allergies.text = patient.allergy
         }

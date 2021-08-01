@@ -426,7 +426,7 @@ class RestApi constructor(
      * The API will first accept our [patientsToUpload], and then the server will respond with new
      * patients between now and [lastSyncTimestamp]. What the server sends back will be parsed and
      * send through [patientChannel]. Note that the server response includes the same patients in
-     * [patientsToUpload]; by downloading them again, this is how we eventually set [Patient.base].
+     * [patientsToUpload]; by downloading them again, this is how we eventually set [Patient.lastServerUpdate].
      *
      * Parsed patients are sent through the [patientChannel], with progress reporting done by
      * [reportProgressBlock] (first parameter is number of patients downloaded, second is number

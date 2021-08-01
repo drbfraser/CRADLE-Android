@@ -120,7 +120,7 @@ interface ReadingDao {
         SELECT r.* 
         FROM Reading r 
         JOIN Patient p ON r.patientId = p.id
-        WHERE p.base IS NOT NULL AND r.isUploadedToServer = 0
+        WHERE p.lastServerUpdate IS NOT NULL AND r.isUploadedToServer = 0
     """
     )
     suspend fun getAllUnUploadedReadingsForTrackedPatients(): List<Reading>
