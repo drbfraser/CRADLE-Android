@@ -331,6 +331,13 @@ class RestApi constructor(
             )
         }
 
+    /**
+     * Uploads a new drug/medical record for a patient which already exists on the server.
+     *
+     * @param patient contains the record to be uploaded and the id for the url
+     * @param isDrugRecord if it is a drug/medical record
+     * @return whether the request was successful or not
+     */
     suspend fun postMedicalRecord(patient: Patient, isDrugRecord: Boolean): NetworkResult<Unit> =
         withContext(IO) {
             val jsonObject = JSONObject()
