@@ -122,6 +122,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     companion object {
+        const val UPDATE_ACTIVITY_DONE = 14235
         const val READING_ACTIVITY_DONE = 12345
         const val OPACITY_HALF = 0.5f
         const val OPACITY_FULL = 1.0f

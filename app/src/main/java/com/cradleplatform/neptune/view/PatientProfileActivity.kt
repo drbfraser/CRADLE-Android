@@ -22,6 +22,7 @@ import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.utilities.Util
 import com.cradleplatform.neptune.view.DashBoardActivity.Companion.READING_ACTIVITY_DONE
+import com.cradleplatform.neptune.view.DashBoardActivity.Companion.UPDATE_ACTIVITY_DONE
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForEditReading
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForNewReadingExistingPatient
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForRecheck
@@ -319,12 +320,10 @@ open class PatientProfileActivity : AppCompatActivity() {
 
     private fun onUpdateButtonClicked(button: View, isDrugRecord: Boolean) {
         val intent = Intent(this@PatientProfileActivity, PatientUpdateDrugMedicalActivity::class.java).apply {
-            putExtra("patient_id", currPatient.id)
-            putExtra("patientName", currPatient.name)
-            putExtra("record", if (isDrugRecord) currPatient.drugHistory else currPatient.medicalHistory)
             putExtra("isDrugRecord", isDrugRecord)
+            putExtra(EXTRA_PATIENT, currPatient)
         }
-        startActivityForResult(intent, 123)
+        startActivityForResult(intent, UPDATE_ACTIVITY_DONE)
     }
 
     fun setupUpdateRecord(){
@@ -395,6 +394,12 @@ open class PatientProfileActivity : AppCompatActivity() {
         if (requestCode == READING_ACTIVITY_DONE) {
             updateUi()
         }
+
+        if (requestCode == UPDATE_ACTIVITY_DONE){
+            onResume()
+            populatePatientInfo(currPatient)
+        }
+
         super.onActivityResult(requestCode, resultCode, data)
     }
 

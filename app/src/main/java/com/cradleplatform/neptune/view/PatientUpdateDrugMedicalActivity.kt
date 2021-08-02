@@ -1,43 +1,55 @@
 package com.cradleplatform.neptune.view
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.manager.PatientManager
+import com.cradleplatform.neptune.model.Patient
 import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.runBlocking
+import javax.inject.Inject
+import com.cradleplatform.neptune.view.DashBoardActivity.Companion.UPDATE_ACTIVITY_DONE
 
 @AndroidEntryPoint
 class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
+    @Inject
+    lateinit var patientManager: PatientManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_patient_update_drug_medical)
 
-        if(intent.hasExtra("record")){
-            val record = intent.getStringExtra("record")!!
-            if(record.isNotEmpty()){
-                findViewById<TextInputEditText>(R.id.recordText).setText(record)
-            }
+        var patient: Patient = intent.getSerializableExtra("patient") as Patient
+        val isDrugRecord = intent.getBooleanExtra("isDrugRecord", true )
+
+        val input = findViewById<TextInputEditText>(R.id.recordText)
+        if(isDrugRecord && patient.drugHistory.isNotEmpty()){
+            input.setText(patient.drugHistory)
+        }
+        else if (!isDrugRecord && patient.medicalHistory.isNotEmpty()){
+            input.setText(patient.medicalHistory)
         }
 
-        if(intent.hasExtra("patientName")){
-            findViewById<TextView>(R.id.patientName).text = intent.getStringExtra("patientName")
-        }
+        findViewById<TextView>(R.id.patientName).text = patient.name
 
         findViewById<Button>(R.id.historySaveButton).setOnClickListener {
-
+            if(isDrugRecord) patient.drugHistory = input.text.toString()
+            else patient.medicalHistory = input.text.toString()
+            runBlocking { patientManager.updatePatientMedicalRecord(patient, isDrugRecord) }
+            val resultIntent = Intent()
+            resultIntent.putExtra("patientId", patient.id)
+            setResult(UPDATE_ACTIVITY_DONE, resultIntent);
+            finish()
         }
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
-        if(intent.hasExtra("isDrugRecord")){
-            supportActionBar?.setTitle(
-                if (intent.getBooleanExtra("isDrugRecord", true ))
-                    R.string.patient_update_drug_history
-                else R.string.patient_update_medical_history)
-        }
+        supportActionBar?.setTitle(
+            if (isDrugRecord) R.string.patient_update_drug_history
+            else R.string.patient_update_medical_history)
     }
 
     override fun onSupportNavigateUp(): Boolean {
