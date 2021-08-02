@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.PatientManager
@@ -37,13 +38,19 @@ class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.patientName).text = patient.name
 
         findViewById<Button>(R.id.historySaveButton).setOnClickListener {
-            if(isDrugRecord) patient.drugHistory = input.text.toString()
-            else patient.medicalHistory = input.text.toString()
-            runBlocking { patientManager.updatePatientMedicalRecord(patient, isDrugRecord) }
-            val resultIntent = Intent()
-            resultIntent.putExtra("patientId", patient.id)
-            setResult(UPDATE_ACTIVITY_DONE, resultIntent);
-            finish()
+            val record: String = input.text.toString()
+            if(record.isEmpty()){
+                input.error = "Cannot leave blank"
+            }
+            else{
+                if(isDrugRecord) patient.drugHistory = record
+                else patient.medicalHistory = record
+                runBlocking { patientManager.updatePatientMedicalRecord(patient, isDrugRecord) }
+                val resultIntent = Intent()
+                resultIntent.putExtra("patientId", patient.id)
+                setResult(UPDATE_ACTIVITY_DONE, resultIntent);
+                finish()
+            }
         }
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)

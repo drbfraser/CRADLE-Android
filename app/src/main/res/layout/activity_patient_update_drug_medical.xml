@@ -60,11 +60,11 @@
                 android:inputType="textLongMessage|textMultiLine"
                 android:maxLines="5"
                 android:minLines="5"
+                android:hint="@string/patient_update_history_label"
                 android:overScrollMode="always"
                 android:scrollbarStyle="insideInset"
                 android:scrollbars="vertical"
                 android:singleLine="false"
-                android:text="Drug or medical information here"
                 android:verticalScrollbarPosition="right" />
 
             <Button
