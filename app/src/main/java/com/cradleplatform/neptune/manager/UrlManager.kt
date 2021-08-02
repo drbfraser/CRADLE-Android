@@ -29,8 +29,8 @@ class UrlManager @Inject constructor(val settings: Settings) {
     /**
      * Endpoint for getting all patients managed by the current user.
      */
-    val getAllPatients: String
-        get() = "$base/mobile/patients"
+    val getAllPatientsAndReadings: String
+        get() = "$base/mobile/patients_and_readings"
 
     /**
      * Endpoint for posting a new patient.

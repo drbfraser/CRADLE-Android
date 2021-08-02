@@ -8,7 +8,8 @@ import androidx.room.withTransaction
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.model.HealthFacility
-import com.cradleplatform.neptune.model.PatientAndReadings
+import com.cradleplatform.neptune.model.Patient
+import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.UserRole
 import com.cradleplatform.neptune.net.NetworkResult
 import com.cradleplatform.neptune.net.RestApi
@@ -40,6 +41,7 @@ class LoginManager @Inject constructor(
     private val sharedPreferences: SharedPreferences,
     private val database: CradleDatabase,
     private val patientManager: PatientManager,
+    private val readingManager: ReadingManager,
     private val healthFacilityManager: HealthFacilityManager,
     @ApplicationContext private val context: Context
 ) {
@@ -126,7 +128,7 @@ class LoginManager @Inject constructor(
             // We will use this later as the last synced timestamp.
             val loginTime = UnixTimestamp.now
 
-            val patientsResultAsync = async { downloadPatients() }
+            val patientsResultAsync = async { downloadPatientsAndReadings() }
 
             // for unit testing purposes
             if (!parallelDownload) {
@@ -182,19 +184,19 @@ class LoginManager @Inject constructor(
         return@coroutineScope result
     }
 
-    private suspend fun downloadPatients(): NetworkResult<Unit> = coroutineScope {
+    private suspend fun downloadPatientsAndReadings(): NetworkResult<Unit> = coroutineScope {
         val startTime = System.currentTimeMillis()
 
-        val channel = Channel<PatientAndReadings>()
+        val patientChannel = Channel<Patient>()
+        val readingChannel = Channel<Reading>()
         val databaseJob = launch {
             try {
                 database.withTransaction {
-                    for (patientAndReadings in channel) {
-                        patientManager.addPatientWithReadings(
-                            patientAndReadings.patient,
-                            patientAndReadings.readings,
-                            areReadingsFromServer = true
-                        )
+                    for (patient in patientChannel) {
+                        patientManager.add(patient)
+                    }
+                    for (reading in readingChannel) {
+                        readingManager.addReading(reading, isReadingFromServer = true)
                     }
                     Log.d(TAG, "patient & reading database job is successful")
                 }
@@ -202,11 +204,13 @@ class LoginManager @Inject constructor(
                 Log.d(TAG, "patient & reading database job failed")
             }
         }
-        val result = restApi.getAllPatients(channel)
-        closeOrCancelChannelByResult(result, channel)
+        val result = restApi.getAllPatientsAndReadings(patientChannel, readingChannel)
+        closeOrCancelChannelByResult(result, patientChannel)
+        closeOrCancelChannelByResult(result, readingChannel)
         databaseJob.join()
+
         val endTime = System.currentTimeMillis()
-        Log.d(TAG, "Patient/readings download overall took ${endTime - startTime} ms")
+        Log.d(TAG, "Patients and readings download overall took ${endTime - startTime} ms")
         return@coroutineScope result
     }
 

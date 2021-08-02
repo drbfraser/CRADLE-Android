@@ -101,12 +101,12 @@ class RestApi constructor(
      * @return A [Success] if the parsing succeeds, otherwise a [Failure] or [NetworkException] if
      * parsing or the connection fails.
      */
-    suspend fun getAllPatients(
+    suspend fun getAllPatientsAndReadings(
         patientAndReadingsChannel: SendChannel<PatientAndReadings>
     ): NetworkResult<Unit> = withContext(IO) {
         http.makeRequest(
             method = Http.Method.GET,
-            url = urlManager.getAllPatients,
+            url = urlManager.getAllPatientsAndReadings,
             headers = headers,
             inputStreamReader = { inputStream ->
                 // Parse JSON strings directly from the input stream to avoid dealing with a
@@ -353,7 +353,7 @@ class RestApi constructor(
      *
      * The act of associating a patient with this user tells the server that
      * the patient is "managed" by this user and will show up in responses to
-     * the [getAllPatients] method.
+     * the [getAllPatientsAndReadings] method.
      *
      * @param id id of the patient to associate
      * @return whether the request was successful or not
