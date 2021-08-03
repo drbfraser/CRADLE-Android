@@ -159,13 +159,11 @@ class PatientManager @Inject constructor(
     suspend fun updatePatientMedicalRecord(patient: Patient, isDrugRecord: Boolean): NetworkResult<Unit> {
         val result = restApi.postMedicalRecord(patient, isDrugRecord)
         if (result is NetworkResult.Success) {
-            if(isDrugRecord) patient.drugLastEdited = null
+            if (isDrugRecord) patient.drugLastEdited = null
             else patient.medicalLastEdited = null
             add(patient)
-        }
-
-        else if (connectivityManager?.isConnected() == false){
-            if(isDrugRecord) patient.drugLastEdited = UnixTimestamp.now.toLong()
+        } else if (connectivityManager?.isConnected() == false) {
+            if (isDrugRecord) patient.drugLastEdited = UnixTimestamp.now.toLong()
             else patient.medicalLastEdited = UnixTimestamp.now.toLong()
             add(patient)
         }

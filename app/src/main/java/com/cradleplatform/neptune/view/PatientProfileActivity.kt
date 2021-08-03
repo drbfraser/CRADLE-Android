@@ -232,9 +232,6 @@ open class PatientProfileActivity : AppCompatActivity() {
         radioGroup.check(R.id.monthradiobutton)
     }
 
-
-
-
     fun setupLineChart() {
         val lineChart = findViewById<LineChart>(R.id.patientLineChart)
         val lineChartCard = findViewById<CardView>(R.id.patientLineChartCard)
@@ -326,7 +323,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         startActivityForResult(intent, UPDATE_ACTIVITY_DONE)
     }
 
-    fun setupUpdateRecord(){
+    fun setupUpdateRecord() {
         findViewById<Button>(R.id.medicalHistoryUpdateButton).setOnClickListener {
             onUpdateButtonClicked(it, false)
         }
@@ -395,7 +392,7 @@ open class PatientProfileActivity : AppCompatActivity() {
             updateUi()
         }
 
-        if (requestCode == UPDATE_ACTIVITY_DONE){
+        if (requestCode == UPDATE_ACTIVITY_DONE) {
             onResume()
             populatePatientInfo(currPatient)
         }
