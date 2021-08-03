@@ -7,6 +7,7 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RadioGroup
 import android.widget.TextView
@@ -103,6 +104,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupCreatePatientReadingButton()
         setupLineChart()
         setupToolBar()
+        setupEditPatient(currPatient)
     }
 
     fun setupToolBar() {
@@ -204,6 +206,15 @@ open class PatientProfileActivity : AppCompatActivity() {
             val allergies = findViewById<TextView>(R.id.allergies)
             allergies.text = patient.allergy
         }
+    }
+
+    private fun setupEditPatient(patient: Patient) {
+        val editIcon = findViewById<ImageView>(R.id.im_edit_personal_info)
+        editIcon.setOnClickListener() {
+            val intent = EditPatientInfoActivity.makeIntentWithPatientId(this, patient.id)
+            startActivity(intent)
+        }
+
     }
 
     /**

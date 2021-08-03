@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <import type="com.cradleplatform.neptune.binding.Converter" />
+        <import type="android.text.InputType" />
+        <import type="com.cradleplatform.neptune.model.Sex" />
+        <import type="com.cradleplatform.neptune.model.Patient" />
+        <import type="android.view.View" />
+
+        <!-- Idk if we'll have a new view model or something, honestly so not sure right now lol -->
+        <variable
+            name="viewModel"
+            type="com.cradleplatform.neptune.viewmodel.EditPatientViewModel" />
+    </data>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentBottom="true"
+            android:fitsSystemWindows="true"
+            android:clipToPadding="false">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/reading_flow_card_margin"
+                android:paddingBottom="8dp">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/patient_info_title"
+                    style="@style/TextAppearance.Cradle.H2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:text="@string/fragment_patient_info_title"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/guideline"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_end="193dp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/patient_name_layout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:hint="@string/fragment_patient_info_name_label"
+                    app:helperText=" "
+                    app:layout_constraintEnd_toStartOf="@+id/patient_id_text_layout"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintHorizontal_weight="0.5"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/patient_info_title"
+                    errorMessage='@{viewModel.errorMap["name"]}'>
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/patient_name_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textNoSuggestions|textPersonName"
+                        android:maxLength="@{Patient.NAME_MAX_LENGTH}"
+                        android:nextFocusDown="@id/patient_id_text"
+                        android:text="@={viewModel.patientName}"
+                        tools:text="ABC" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/patient_id_text_layout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:hint="@string/fragment_patient_info_id_label"
+                    app:helperText=" "
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintHorizontal_weight="0.5"
+                    app:layout_constraintStart_toEndOf="@+id/patient_name_layout"
+                    app:layout_constraintTop_toBottomOf="@+id/patient_info_title"
+                    errorMessage='@{viewModel.errorMap["id"]}'>
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/patient_id_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number"
+                        android:maxLength="@{Patient.ID_MAX_LENGTH}"
+                        android:nextFocusUp="@id/patient_name_text"
+                        android:nextFocusDown="@id/zone_text"
+                        android:text="@={viewModel.patientId}"
+                        tools:text="12345678901234" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/household_number_layout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:hint="@string/fragment_patient_info_household_number_label"
+                    app:helperText=" "
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintHorizontal_weight="0.5"
+                    app:layout_constraintStart_toEndOf="@+id/zone_layout"
+                    app:layout_constraintTop_toBottomOf="@+id/patient_id_text_layout">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/household_number_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number"
+                        android:maxLength="@{Patient.HOUSEHOLD_NUMBER_MAX_LENGTH}"
+                        android:nextFocusUp="@id/zone_text"
+                        android:nextFocusDown="@id/village_text"
+                        android:text="@={viewModel.patientHouseholdNumber}" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/zone_layout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:hint="@string/zone"
+                    app:helperText=" "
+                    app:layout_constraintEnd_toStartOf="@+id/household_number_layout"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintHorizontal_weight="0.5"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/patient_id_text_layout">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/zone_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textNoSuggestions"
+                        android:maxLength="@{Patient.ZONE_MAX_LENGTH}"
+                        android:nextFocusUp="@id/patient_id_text"
+                        android:nextFocusDown="@id/household_number_text"
+                        android:text="@={viewModel.patientZone}"
+                        tools:text="my zone" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/village_layout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:hint="@string/fragment_patient_info_village_number_label"
+                    android:paddingBottom="0dp"
+                    app:helperText=" "
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/zone_layout"
+                    errorMessage='@{viewModel.errorMap["villageNumber"]}'>
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/village_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number"
+                        android:maxLength="@{Patient.VILLAGE_NUMBER_MAX_LENGTH}"
+                        android:text="@={viewModel.patientVillageNumber}"
+                        tools:text="my village" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/age_input_layout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:hint="@string/fragment_patient_info_age_label"
+                    android:paddingBottom="0dp"
+                    app:helperText="@string/fragment_patient_info_dob_helper"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/village_layout"
+                    app:startIconContentDescription="Date picker for date of birth"
+                    app:startIconDrawable="@drawable/ic_baseline_calendar_today_24"
+                    app:suffixText="@string/age_input_suffix_approximate_years_old"
+                    errorMessage='@{viewModel.errorMap["dob"]}'
+                    isUsingDateOfBirth="@{viewModel.patientIsExactDob}">
+                    <!-- Note: The age and date of birth share the same error message map key,
+                         i.e., "age". -->
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/age_input_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number"
+                        android:text="@={Converter.intToString(viewModel.patientAge)}"
+                        tools:text="45" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/gender_input_layout"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:hint="@string/fragment_patient_info_gender_label"
+                    android:labelFor="@id/gender_input_auto_complete_text"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="0dp"
+                    app:helperText=" "
+                    app:layout_constraintEnd_toStartOf="@+id/guideline"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/age_input_layout"
+                    errorMessage='@{viewModel.errorMap["sex"]}'>
+                    <!--app:suffixText="@string/age_input_suffix_approximate_years_old"> -->
+
+                    <AutoCompleteTextView
+                        android:id="@+id/gender_input_auto_complete_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="none"
+                        android:text="@={Converter.sexToString(context, viewModel.patientSex)}"
+                        setMaterialSpinnerItemsWithArray="@{@stringArray/sex}" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/allergy_layout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:hint="@string/allergies"
+                    android:paddingBottom="0dp"
+                    app:helperText=" "
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/gender_input_layout">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/allergy_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textLongMessage|textMultiLine|textNoSuggestions"
+                        android:minLines="1"
+                        android:singleLine="false"
+                        android:text="@={viewModel.patientAllergies}"
+                        android:verticalScrollbarPosition="right"
+                        tools:text="Allergy sample" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </ScrollView>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>
