@@ -29,43 +29,42 @@ class UpdateManager @Inject constructor(
     }
 
     suspend fun immediateUpdate(activity: SplashActivity): Boolean {
-        // val appUpdateInfo = try {
-        //     appUpdateManager.requestAppUpdateInfo()
-        // } catch (e: InstallException) {
-        //     Log.e(TAG, "Error while checking for updates, error code ${e.errorCode}", e)
-        //     return false
-        // }
-        //
-        // var updateSuccessful = false
-        // if (isMaxPriorityUpdateAvailable(appUpdateInfo) || isUpdateInProgress(appUpdateInfo)) {
-        //     val task = appUpdateManager.startUpdateFlow(
-        //         appUpdateInfo,
-        //         activity,
-        //         AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build()
-        //     )
-        //
-        //     updateSuccessful = suspendCoroutine<Boolean> { cont ->
-        //         task.addOnCompleteListener {
-        //             if (it.result == RESULT_OK) {
-        //                 Toast.makeText(
-        //                     context,
-        //                     context.getString(R.string.update_successful),
-        //                     Toast.LENGTH_SHORT
-        //                 ).show()
-        //                 cont.resume(true)
-        //             } else {
-        //                 Toast.makeText(
-        //                     context,
-        //                     context.getString(R.string.update_failed),
-        //                     Toast.LENGTH_SHORT
-        //                 ).show()
-        //                 cont.resume(false)
-        //             }
-        //         }
-        //     }
-        // }
-        // return updateSuccessful
-        return true
+        val appUpdateInfo = try {
+            appUpdateManager.requestAppUpdateInfo()
+        } catch (e: InstallException) {
+            Log.e(TAG, "Error while checking for updates, error code ${e.errorCode}", e)
+            return false
+        }
+
+        var updateSuccessful = false
+        if (isMaxPriorityUpdateAvailable(appUpdateInfo) || isUpdateInProgress(appUpdateInfo)) {
+            val task = appUpdateManager.startUpdateFlow(
+                appUpdateInfo,
+                activity,
+                AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build()
+            )
+
+            updateSuccessful = suspendCoroutine<Boolean> { cont ->
+                task.addOnCompleteListener {
+                    if (it.result == RESULT_OK) {
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.update_successful),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        cont.resume(true)
+                    } else {
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.update_failed),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        cont.resume(false)
+                    }
+                }
+            }
+        }
+        return updateSuccessful
     }
 
     private fun isMaxPriorityUpdateAvailable(appUpdateInfo: AppUpdateInfo): Boolean {
