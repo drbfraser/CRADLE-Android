@@ -128,11 +128,13 @@ class LoginManager @Inject constructor(
             // We will use this later as the last synced timestamp.
             val loginTime = UnixTimestamp.now
 
-            val patientsResultAsync = async { downloadPatientsAndReadings() }
+            val patientsResultAsync = async { downloadPatients() }
+            val readingsResultAsync = async { downloadReadings() }
 
             // for unit testing purposes
             if (!parallelDownload) {
                 patientsResultAsync.join()
+                readingsResultAsync.join()
             }
 
             // TODO: Maybe make it so that the health facility the server sends back cannot
@@ -142,7 +144,7 @@ class LoginManager @Inject constructor(
                 downloadHealthFacilities(loginResult.value.healthFacilityName)
             }
 
-            joinAll(patientsResultAsync, healthFacilityResultAsync)
+            joinAll(patientsResultAsync, readingsResultAsync, healthFacilityResultAsync)
             if (patientsResultAsync.await() is NetworkResult.Success) {
                 sharedPreferences.edit(commit = true) {
                     putString(SyncWorker.LAST_PATIENT_SYNC, loginTime.toString())
@@ -184,33 +186,53 @@ class LoginManager @Inject constructor(
         return@coroutineScope result
     }
 
-    private suspend fun downloadPatientsAndReadings(): NetworkResult<Unit> = coroutineScope {
+    private suspend fun downloadPatients(): NetworkResult<Unit> = coroutineScope {
         val startTime = System.currentTimeMillis()
 
-        val patientChannel = Channel<Patient>()
-        val readingChannel = Channel<Reading>()
+        val channel = Channel<Patient>()
         val databaseJob = launch {
             try {
                 database.withTransaction {
-                    for (patient in patientChannel) {
+                    for (patient in channel) {
                         patientManager.add(patient)
                     }
-                    for (reading in readingChannel) {
-                        readingManager.addReading(reading, isReadingFromServer = true)
-                    }
-                    Log.d(TAG, "patient & reading database job is successful")
+                    Log.d(TAG, "patient database job is successful")
                 }
             } catch (e: SyncException) {
-                Log.d(TAG, "patient & reading database job failed")
+                Log.d(TAG, "patient database job failed")
             }
         }
-        val result = restApi.getAllPatientsAndReadings(patientChannel, readingChannel)
-        closeOrCancelChannelByResult(result, patientChannel)
-        closeOrCancelChannelByResult(result, readingChannel)
+        val result = restApi.getAllPatients(channel)
+        closeOrCancelChannelByResult(result, channel)
         databaseJob.join()
 
         val endTime = System.currentTimeMillis()
-        Log.d(TAG, "Patients and readings download overall took ${endTime - startTime} ms")
+        Log.d(TAG, "Patients download overall took ${endTime - startTime} ms")
+        return@coroutineScope result
+    }
+
+    private suspend fun downloadReadings(): NetworkResult<Unit> = coroutineScope {
+        val startTime = System.currentTimeMillis()
+
+        val channel = Channel<Reading>()
+        val databaseJob = launch {
+            try {
+                database.withTransaction {
+                    for (reading in channel) {
+                        readingManager.addReading(reading, isReadingFromServer = true)
+                    }
+                    Log.d(TAG, "reading database job is successful")
+                }
+            } catch (e: SyncException) {
+                Log.d(TAG, "reading database job failed")
+            }
+        }
+        val result = restApi.getAllReadings(channel)
+        closeOrCancelChannelByResult(result, channel)
+        databaseJob.join()
+
+        val endTime = System.currentTimeMillis()
+        Log.d(TAG, "Readings download overall took ${endTime - startTime} ms")
         return@coroutineScope result
     }
 
