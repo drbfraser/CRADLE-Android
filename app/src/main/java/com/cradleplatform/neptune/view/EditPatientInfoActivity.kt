@@ -2,189 +2,176 @@ package com.cradleplatform.neptune.view
 
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.DataBindingComponent
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.lifecycleScope
 import com.cradleplatform.neptune.R
-import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.ActivityEditPatientInfoBinding
-import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.viewmodel.EditPatientViewModel
-import com.google.android.material.datepicker.CalendarConstraints
-import com.google.android.material.datepicker.MaterialDatePicker
-import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
-import kotlinx.coroutines.launch
-import java.text.ParseException
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
-import java.util.TimeZone
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
-private const val TAG = "EditPatientInfoActivity"
-
+@AndroidEntryPoint
 class EditPatientInfoActivity : AppCompatActivity() {
-
     private val viewModel: EditPatientViewModel by viewModels()
 
     private var binding: ActivityEditPatientInfoBinding? = null
 
-    private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent()
-
-    override fun onDestroy() {
-        super.onDestroy()
-        binding = null
-    }
+    @Inject
+    lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_edit_patient_info, dataBindingComponent)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_edit_patient_info)
         binding?.apply {
             viewModel = this@EditPatientInfoActivity.viewModel
             lifecycleOwner = this@EditPatientInfoActivity
             executePendingBindings()
         }
 
-        viewModel.initialize(intent.getStringExtra(EXTRA_PATIENT_ID))
+        // add a toolbar4 to your xml, change names
+        setSupportActionBar(findViewById(R.id.edit_patient_toolbar))
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            title = getString(R.string.edit_patient)
+        }
+/*
+        // make this the save button (make it call viewModel save)
+        val syncButton = findViewById<Button>(R.id.sync_button)
+        syncButton.setOnClickListener {
+            syncButton.isEnabled = false
+            viewModel.startSyncing()
+        }
 
-        setupToolBar()
+        // this will be where you put the new data? damn it this isn't mutable live data :'(((
+        showLastSyncStatus(null)
+        viewModel.syncStatus.observe(this) { workInfo ->
+            val syncStatusText = findViewById<TextView>(R.id.sync_status_text)
+            val syncProgressBar = findViewById<ProgressBar>(R.id.sync_progress_bar)
+            val downloadProgressText = findViewById<TextView>(R.id.download_progress_text_view)
+            val lastSyncStatusText = findViewById<TextView>(R.id.latest_sync_status_text_view)
 
-        // make a loading thing visible
-        if (viewModel.isInitialized.value != true) {
-            viewModel.isInitialized.observe(this) { isInitialized ->
-                if (!isInitialized) {
-                    Log.d(TAG, "not initialized")
-                    return@observe
+            if (workInfo == null || workInfo.state.isFinished) {
+                showLastSyncStatus(workInfo)
+            } else {
+                lastSyncStatusText.apply {
+                    text = ""
+                    visibility = View.INVISIBLE
                 }
-                viewModel.isInitialized.removeObservers(this)
-                //remove loading thing
+                val state = SyncWorker.getState(workInfo)
+                val progressPair = SyncWorker.getProgress(workInfo)
+                syncProgressBar.apply {
+                    if (progressPair == null) {
+                        isIndeterminate = true
+                    } else {
+                        isIndeterminate = false
+                        max = progressPair.second
+                        progress = progressPair.first
+                    }
+
+                    if (visibility != View.VISIBLE) {
+                        visibility = View.VISIBLE
+                    }
+                }
+
+                downloadProgressText.apply {
+                    if (progressPair == null) {
+                        if (visibility != View.INVISIBLE) {
+                            visibility = View.INVISIBLE
+                        }
+                    } else {
+                        text = getString(
+                            R.string.sync_activity_d_out_of_d_downloaded,
+                            progressPair.first,
+                            progressPair.second
+                        )
+
+                        if (visibility != View.VISIBLE) {
+                            visibility = View.VISIBLE
+                        }
+                    }
+                }
+
+                val newStateString = when (state) {
+                    SyncWorker.State.STARTING -> {
+                        getString(R.string.sync_activity_status_beginning_upload)
+                    }
+                    SyncWorker.State.CHECKING_SERVER_PATIENTS -> getString(
+                        R.string.sync_activity_status_checking_for_new_patients
+                    )
+                    SyncWorker.State.UPLOADING_PATIENTS -> {
+                        getString(R.string.sync_activity_status_uploading_patients)
+                    }
+                    SyncWorker.State.DOWNLOADING_PATIENTS -> getString(
+                        R.string.sync_activity_status_downloading_patients
+                    )
+                    SyncWorker.State.CHECKING_SERVER_READINGS -> getString(
+                        R.string.sync_activity_status_checking_for_new_readings_referrals_and_assessments
+                    )
+                    SyncWorker.State.UPLOADING_READINGS -> getString(
+                        R.string.sync_activity_status_uploading_readings_referrals
+                    )
+                    SyncWorker.State.DOWNLOADING_READINGS -> getString(
+                        R.string.sync_activity_status_downloading_readings_referrals_and_assessments
+                    )
+                }
+                if (syncStatusText.text != newStateString) {
+                    syncStatusText.text = newStateString
+                }
             }
         }
+    }
 
-        viewModel.isNetworkAvailable.observe(this@EditPatientInfoActivity) {}
+    private fun showLastSyncStatus(workInfo: WorkInfo?) {
+        val syncProgressBar = findViewById<ProgressBar>(R.id.sync_progress_bar)
+        val downloadProgressText = findViewById<TextView>(R.id.download_progress_text_view)
+        val syncStatusText = findViewById<TextView>(R.id.sync_status_text)
+        val lastSyncStatusText = findViewById<TextView>(R.id.latest_sync_status_text_view)
 
-        //initAllFields()
-        //populatePatientInfo()
+        syncProgressBar.visibility = View.INVISIBLE
+        downloadProgressText.visibility = View.INVISIBLE
 
-        lifecycleScope.apply {
-            launch { setupAndObserveAgeInfo() }
-            launch { setupAndObserveGenderList() }
+        val lastSyncTime = BigInteger(
+            sharedPreferences.getString(
+                SyncWorker.LAST_PATIENT_SYNC,
+                SyncWorker.LAST_SYNC_DEFAULT.toString()
+            )!!
+        )
+        val date = if (lastSyncTime.toString() == SyncWorker.LAST_SYNC_DEFAULT) {
+            getString(R.string.sync_activity_date_never)
+        } else {
+            DateUtil.getConciseDateString(lastSyncTime, false)
         }
 
+        syncStatusText.text = getString(
+            R.string.sync_activity_waiting_to_sync_last_synced__s,
+            date
+        )
+
+        workInfo?.let {
+            lastSyncStatusText.apply {
+                text = SyncWorker.getSyncResultMessage(it)
+                visibility = View.VISIBLE
+            }
+        }*/
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return super.onSupportNavigateUp()
     }
 
     companion object {
+        private const val TAG = "EditPatientInfoActivity"
         private const val EXTRA_PATIENT_ID = "patientId"
-        private const val DATE_PICKER_DEFAULT_YEAR = 2000
-        private const val DATE_PICKER_YEAR_LOWER_BOUND = 1900
-        private const val DATE_PICKER_TIME_ZONE = "UTC"
 
         fun makeIntentWithPatientId(context: Context, patientId: String): Intent {
             val intent = Intent(context, EditPatientInfoActivity::class.java)
             intent.putExtra(EXTRA_PATIENT_ID, patientId)
             return intent
         }
+
     }
-
-    private fun setupToolBar() {
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setTitle(getString(R.string.edit_patient))
-    }
-
-    private fun setupAndObserveAgeInfo() {
-        val ageInputLayout = findViewById<TextInputLayout>(R.id.age_input_layout)
-        val ageEditText = findViewById<TextInputEditText>(R.id.age_input_text)
-
-        // https://github.com/material-components/material-components-android/blob/master/catalog/
-        // java/io/material/catalog/datepicker/DatePickerMainDemoFragment.java
-        val datePicker = MaterialDatePicker.Builder.datePicker()
-            .setTitleText(R.string.age_date_picker_title)
-            .setCalendarConstraints(setupCalendarConstraints())
-            .build()
-        datePicker.apply {
-            addOnPositiveButtonClickListener {
-                viewModel.setUsingDateOfBirth(useDateOfBirth = true)
-                viewModel.patientDob.value =
-                    with(SimpleDateFormat(Patient.DOB_FORMAT_SIMPLEDATETIME, Locale.getDefault())) {
-                        timeZone = TimeZone.getTimeZone(DATE_PICKER_TIME_ZONE)
-                        format(Date(it))
-                    }
-            }
-        }
-        ageInputLayout.apply {
-            setStartIconOnClickListener {
-                if (viewModel.patientIsExactDob.value == true) {
-                    // Clear icon is shown: handle clear icon actions
-                    viewModel.setUsingDateOfBirth(useDateOfBirth = false)
-                /*} else {
-                    // Calendar icon is shown: handle calendar icon actions
-                    if (childFragmentManager.findFragmentByTag(FRAGMENT_TAG_DATE_PICKER) == null) {
-                        datePicker.show(childFragmentManager, FRAGMENT_TAG_DATE_PICKER)
-                    }*/
-                }
-            }
-        }
-
-        viewModel.patientDob.observe(this@EditPatientInfoActivity) {
-            if (viewModel.patientIsExactDob.value != true) {
-                Log.d(TAG, "DEBUG: patientDob observe(): exiting since isUsingDateOfBirth false")
-                return@observe
-            }
-
-            ageInputLayout.apply {
-                if (it != null) {
-                    Log.d(TAG, "DEBUG: patient dob: setting patient age")
-                    viewModel.patientAge.value = try {
-                        Patient.calculateAgeFromDateString(it).also { age ->
-                            // We have to set the text manually; Data Binding doesn't seem to work
-                            // if the field is not editable.
-                            ageEditText.setText(age.toString())
-                        }
-                    } catch (_: ParseException) {
-                        Log.d(TAG, "DEBUG: patient dob: setting patient age got exception")
-                        null
-                    }
-                    suffixText = ageEditText.context.getString(
-                        R.string.years_old_with_date_of_birth_in_parens,
-                        it
-                    )
-                }
-            }
-        }
-    }
-
-
-    private fun setupAndObserveGenderList() {
-        //(tlPatientSex.editText as? AutoCompleteTextView?)?.apply {
-        //    setOnClickListener { it.hideKeyboard() }
-        //}
-    }
-
-    private fun setupCalendarConstraints(): CalendarConstraints {
-        val datePickerTimeZone = TimeZone.getTimeZone(DATE_PICKER_TIME_ZONE)
-        val lowerBoundMillis = Calendar.getInstance(datePickerTimeZone).run {
-            set(Calendar.YEAR, DATE_PICKER_YEAR_LOWER_BOUND)
-            timeInMillis
-        }
-        val upperBoundMillis = MaterialDatePicker.todayInUtcMilliseconds()
-        val defaultDateInMillis = Calendar.getInstance(datePickerTimeZone).run {
-            set(Calendar.YEAR, DATE_PICKER_DEFAULT_YEAR)
-            timeInMillis
-        }
-
-        check(lowerBoundMillis < defaultDateInMillis)
-        check(defaultDateInMillis < upperBoundMillis)
-
-        return CalendarConstraints.Builder()
-            .setStart(lowerBoundMillis)
-            .setEnd(upperBoundMillis)
-            .setOpenAt(defaultDateInMillis)
-            .build()
-    }
-
 }

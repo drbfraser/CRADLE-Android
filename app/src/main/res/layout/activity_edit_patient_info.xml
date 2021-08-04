@@ -21,6 +21,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/edit_patient_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
+
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -63,7 +69,8 @@
                     app:layout_constraintHorizontal_weight="0.5"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/patient_info_title"
-                    errorMessage='@{viewModel.errorMap["name"]}'>
+
+                    >
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/patient_name_text"
@@ -88,7 +95,8 @@
                     app:layout_constraintHorizontal_weight="0.5"
                     app:layout_constraintStart_toEndOf="@+id/patient_name_layout"
                     app:layout_constraintTop_toBottomOf="@+id/patient_info_title"
-                    errorMessage='@{viewModel.errorMap["id"]}'>
+
+                    >
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/patient_id_text"
@@ -162,7 +170,8 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/zone_layout"
-                    errorMessage='@{viewModel.errorMap["villageNumber"]}'>
+
+                    >
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/village_text"
@@ -188,7 +197,8 @@
                     app:startIconContentDescription="Date picker for date of birth"
                     app:startIconDrawable="@drawable/ic_baseline_calendar_today_24"
                     app:suffixText="@string/age_input_suffix_approximate_years_old"
-                    errorMessage='@{viewModel.errorMap["dob"]}'
+
+
                     isUsingDateOfBirth="@{viewModel.patientIsExactDob}">
                     <!-- Note: The age and date of birth share the same error message map key,
                          i.e., "age". -->
@@ -216,7 +226,8 @@
                     app:layout_constraintEnd_toStartOf="@+id/guideline"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/age_input_layout"
-                    errorMessage='@{viewModel.errorMap["sex"]}'>
+
+                    >
                     <!--app:suffixText="@string/age_input_suffix_approximate_years_old"> -->
 
                     <AutoCompleteTextView
@@ -255,4 +266,6 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
         </ScrollView>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+
 </layout>
