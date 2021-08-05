@@ -128,29 +128,37 @@ class LoginManager @Inject constructor(
             // We will use this later as the last synced timestamp.
             val loginTime = UnixTimestamp.now
 
-            val patientsResultAsync = async { downloadPatients() }
-            val readingsResultAsync = async { downloadReadings() }
+            val patientsDownloadSuccess = downloadPatients() is NetworkResult.Success
+            if (patientsDownloadSuccess) {
+                sharedPreferences.edit(commit = true) {
+                    putString(SyncWorker.LAST_PATIENT_SYNC, loginTime.toString())
+                }
+            }
+
+            val readingsAsync = async {
+                if (patientsDownloadSuccess) {
+                    val readingsDownloadSuccess = downloadReadings() is NetworkResult.Success
+                    if (readingsDownloadSuccess) {
+                        sharedPreferences.edit(commit = true) {
+                            putString(SyncWorker.LAST_READING_SYNC, loginTime.toString())
+                        }
+                    }
+                }
+            }
 
             // for unit testing purposes
             if (!parallelDownload) {
-                patientsResultAsync.join()
-                readingsResultAsync.join()
+                readingsAsync.join()
             }
 
             // TODO: Maybe make it so that the health facility the server sends back cannot
             //       be removed by the user?
             // TODO: Show some dialog to select a health facility
-            val healthFacilityResultAsync = async {
+            val healthFacilitiesAsync = async {
                 downloadHealthFacilities(loginResult.value.healthFacilityName)
             }
 
-            joinAll(patientsResultAsync, readingsResultAsync, healthFacilityResultAsync)
-            if (patientsResultAsync.await() is NetworkResult.Success) {
-                sharedPreferences.edit(commit = true) {
-                    putString(SyncWorker.LAST_PATIENT_SYNC, loginTime.toString())
-                    putString(SyncWorker.LAST_READING_SYNC, loginTime.toString())
-                }
-            }
+            joinAll(readingsAsync, healthFacilitiesAsync)
 
             // TODO: Actually report any failures instead of lettting the user pass
             //  It might be better to just split the login manager so that this function just

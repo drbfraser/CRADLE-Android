@@ -172,6 +172,18 @@ object MockDependencyUtils {
                     )
                 fakeReadingDatabase.add(reading)
             }
+            coEvery { updateOrInsertIfNotExists(any()) } answers {
+                val reading: Reading = firstArg()
+                fakePatientDatabase.find { it.id == reading.patientId }
+                    ?: error(
+                        "foreign key constraint: trying to insert reading for nonexistent patient; " +
+                            "patientId ${reading.patientId} not in fake database.\n" +
+                            "reading=$reading\n" +
+                            "fakePatientDatabase=$fakePatientDatabase\n" +
+                            "fakeReadingDatabase=$fakeReadingDatabase"
+                    )
+                fakeReadingDatabase.add(reading)
+            }
         }
 
         val mockDatabase = mockk<CradleDatabase> {
