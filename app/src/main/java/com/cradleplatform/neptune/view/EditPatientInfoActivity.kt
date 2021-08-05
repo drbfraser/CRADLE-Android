@@ -4,10 +4,14 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.widget.Button
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.databinding.DataBindingComponent
 import androidx.databinding.DataBindingUtil
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.ActivityEditPatientInfoBinding
 import com.cradleplatform.neptune.viewmodel.EditPatientViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -19,32 +23,41 @@ class EditPatientInfoActivity : AppCompatActivity() {
 
     private var binding: ActivityEditPatientInfoBinding? = null
 
+    private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent()
+
     @Inject
     lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_edit_patient_info)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_edit_patient_info, dataBindingComponent)
         binding?.apply {
             viewModel = this@EditPatientInfoActivity.viewModel
             lifecycleOwner = this@EditPatientInfoActivity
             executePendingBindings()
         }
 
-        // add a toolbar4 to your xml, change names
-        setSupportActionBar(findViewById(R.id.edit_patient_toolbar))
+        /*setSupportActionBar(findViewById(R.id.edit_patient_toolbar))
         supportActionBar?.apply {
             setDisplayHomeAsUpEnabled(true)
             title = getString(R.string.edit_patient)
-        }
-/*
-        // make this the save button (make it call viewModel save)
-        val syncButton = findViewById<Button>(R.id.sync_button)
-        syncButton.setOnClickListener {
-            syncButton.isEnabled = false
-            viewModel.startSyncing()
+        }*/
+
+        setupToolBar()
+
+        if (intent.hasExtra(EXTRA_PATIENT_ID)) {
+            val patientId = intent.getStringExtra(EXTRA_PATIENT_ID)
+                ?: error("no patient with given id")
+            viewModel.initialize(patientId)
         }
 
+        // make this the save button (make it call viewModel save)
+        val btnSave = findViewById<Button>(R.id.btn_save)
+        btnSave.setOnClickListener {
+            val retVal = viewModel.save()
+            Toast.makeText(this, "Return value: $retVal", Toast.LENGTH_SHORT).show()
+        }
+/*
         // this will be where you put the new data? damn it this isn't mutable live data :'(((
         showLastSyncStatus(null)
         viewModel.syncStatus.observe(this) { workInfo ->
@@ -158,6 +171,10 @@ class EditPatientInfoActivity : AppCompatActivity() {
         }*/
     }
 
+    fun setupToolBar() {
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setTitle(R.string.edit_patient)
+    }
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return super.onSupportNavigateUp()
@@ -172,6 +189,5 @@ class EditPatientInfoActivity : AppCompatActivity() {
             intent.putExtra(EXTRA_PATIENT_ID, patientId)
             return intent
         }
-
     }
 }
