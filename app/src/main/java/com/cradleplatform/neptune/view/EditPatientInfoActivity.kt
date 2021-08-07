@@ -107,8 +107,9 @@ class EditPatientInfoActivity : AppCompatActivity() {
                         Toast.makeText(
                             it.context,
                             "Invalid patient - check errors",
-                            Toast.LENGTH_LONG)
-                        .show()
+                            Toast.LENGTH_LONG
+                        )
+                            .show()
                     }
                 }
             }

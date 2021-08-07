@@ -193,7 +193,7 @@ class EditPatientViewModel @Inject constructor(
                     SaveResult.SavedAndUploaded
                 }
                 else -> {
-                    //Most common case here would be if patient isn't on server yet, put req won't work
+                    // Most common case here would be if patient isn't on server yet, put req won't work
                     SaveResult.SavedOffline
                 }
             }
