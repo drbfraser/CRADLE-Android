@@ -13,11 +13,36 @@
         <variable
             name="viewModel"
             type="com.cradleplatform.neptune.viewmodel.EditPatientViewModel" />
+
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/loading_visual"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:elevation="2dp"
+            android:gravity="center"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:background="@color/transparent_grey"
+            android:visibility="@{viewModel.isInputEnabled() ? View.GONE : View.VISIBLE}">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{viewModel.loadingStatus}"/>
+
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
 
         <ScrollView
             android:layout_width="match_parent"
@@ -34,6 +59,17 @@
                 android:layout_margin="@dimen/reading_flow_card_margin"
                 android:paddingBottom="8dp">
 
+                <TextView
+                    android:id="@+id/tv_network_avail"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:textColor="@color/redDown"
+                    android:visibility="@{viewModel.isNetworkAvailable ? View.GONE : View.VISIBLE}"
+                    android:text="@string/editing_no_network_warn"/>
+
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/patient_info_title"
                     style="@style/TextAppearance.Cradle.H2"
@@ -42,7 +78,7 @@
                     android:layout_margin="4dp"
                     android:text="@string/fragment_patient_info_title"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toBottomOf="@+id/tv_network_avail" />
 
                 <androidx.constraintlayout.widget.Guideline
                     android:id="@+id/guideline"
@@ -56,6 +92,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_margin="4dp"
+                    android:enabled="@{viewModel.isInputEnabled}"
                     android:hint="@string/fragment_patient_info_name_label"
                     app:helperText=" "
                     app:layout_constraintEnd_toStartOf="@+id/patient_id_text_layout"
@@ -63,8 +100,7 @@
                     app:layout_constraintHorizontal_weight="0.5"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/patient_info_title"
-
-                    >
+                    errorMessage='@{viewModel.errorMap["name"]}'>
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/patient_name_text"
@@ -108,6 +144,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_margin="4dp"
+                    android:enabled="@{viewModel.isInputEnabled}"
                     android:hint="@string/fragment_patient_info_household_number_label"
                     app:helperText=" "
                     app:layout_constraintEnd_toEndOf="parent"
@@ -132,6 +169,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_margin="4dp"
+                    android:enabled="@{viewModel.isInputEnabled}"
                     android:hint="@string/zone"
                     app:helperText=" "
                     app:layout_constraintEnd_toStartOf="@+id/household_number_layout"
@@ -157,14 +195,14 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_margin="4dp"
+                    android:enabled="@{viewModel.isInputEnabled}"
                     android:hint="@string/fragment_patient_info_village_number_label"
                     android:paddingBottom="0dp"
                     app:helperText=" "
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/zone_layout"
-
-                    >
+                    errorMessage='@{viewModel.errorMap["villageNumber"]}'>
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/village_text"
@@ -181,6 +219,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_margin="4dp"
+                    android:enabled="@{viewModel.isInputEnabled}"
                     android:hint="@string/fragment_patient_info_age_label"
                     android:paddingBottom="0dp"
                     app:helperText="@string/fragment_patient_info_dob_helper"
@@ -190,10 +229,10 @@
                     app:startIconContentDescription="Date picker for date of birth"
                     app:startIconDrawable="@drawable/ic_baseline_calendar_today_24"
                     app:suffixText="@string/age_input_suffix_approximate_years_old"
+                    errorMessage='@{viewModel.errorMap["dob"]}'
                     isUsingDateOfBirth="@{viewModel.patientIsExactDob}">
                     <!-- Note: The age and date of birth share the same error message map key,
-                         i.e., "age".
-                    -->
+                         i.e., "age".-->
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/age_input_text"
@@ -207,19 +246,20 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/gender_input_layout"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="4dp"
+                    android:enabled="@{viewModel.isInputEnabled &amp;&amp; viewModel.isPatientSexEditable}"
                     android:hint="@string/fragment_patient_info_gender_label"
                     android:labelFor="@+id/gender_input_auto_complete_text"
                     android:paddingTop="8dp"
-                    android:paddingBottom="0dp"
-                    app:helperText=" "
+                    android:paddingBottom="10dp"
+                    app:helperTextEnabled="@{!viewModel.isPatientSexEditable()}"
+                    app:helperText="@string/no_edit_patient_gender"
                     app:layout_constraintEnd_toStartOf="@+id/guideline"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/age_input_layout"
-
-                    >
+                    errorMessage='@{viewModel.errorMap["sex"]}'>
 
                     <AutoCompleteTextView
                         android:id="@+id/gender_input_auto_complete_text"
@@ -235,6 +275,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_margin="4dp"
+                    android:enabled="@{viewModel.isInputEnabled}"
                     android:hint="@string/allergies"
                     android:paddingBottom="0dp"
                     app:helperText=" "
@@ -261,6 +302,7 @@
             android:id="@+id/btn_save"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:enabled="@{viewModel.isInputEnabled()}"
             android:text="@string/save"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

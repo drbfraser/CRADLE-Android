@@ -122,21 +122,12 @@ class PatientManager @Inject constructor(
     /**
      * Uploads an edited patient to the server.
      *
-     * Upon successful upload, the patient's `base` field will be updated to
-     * reflect the fact that any changes made on mobile have been received by
-     * the server.
-     *
      * @param patient the patient to upload
      * @return whether the upload succeeded or not
      */
     suspend fun updatePatientOnServer(patient: Patient): NetworkResult<Unit> {
         val result = restApi.putPatient(patient)
-        if (result is NetworkResult.Success) {
-            // Update the patient's `base` field if successfully uploaded
-            patient.base = patient.lastEdited
-            add(patient)
-        }
-
+        add(patient)
         return result.map { }
     }
 

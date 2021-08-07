@@ -559,6 +559,8 @@
     <string name="update_successful">Updated Sucessfully</string>
     <string name="allergies">Allergies</string>
     <string name="edit_patient">Edit Patient</string>
+    <string name="no_edit_patient_gender">Patient pregnant, cannot change gender</string>
+    <string name="editing_no_network_warn">Editing without network. Please sync when possible</string>
 
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>
