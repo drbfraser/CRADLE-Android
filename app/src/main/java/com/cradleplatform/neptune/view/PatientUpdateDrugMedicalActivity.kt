@@ -7,16 +7,16 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.net.NetworkResult
 import com.cradleplatform.neptune.utilities.UnixTimestamp
-import com.cradleplatform.neptune.view.DashBoardActivity.Companion.UPDATE_ACTIVITY_DONE
 import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
+import com.cradleplatform.neptune.view.DashBoardActivity.Companion.UPDATE_ACTIVITY_DONE
 import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.AndroidEntryPoint
-import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -40,7 +40,7 @@ class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
         setupToolBar(isDrugRecord)
     }
 
-    private fun setupInternetConnectionCheck (){
+    private fun setupInternetConnectionCheck() {
         val noInternetText = findViewById<TextView>(R.id.internetAvailabilityTextView)
         isNetworkAvailable = NetworkAvailableLiveData(this).apply {
             observe(this@PatientUpdateDrugMedicalActivity) { netAvailable ->
@@ -50,7 +50,7 @@ class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupPageHeader(patient: Patient, isDrugRecord: Boolean){
+    private fun setupPageHeader(patient: Patient, isDrugRecord: Boolean) {
         val input = findViewById<TextInputEditText>(R.id.recordText)
         if (isDrugRecord && patient.drugHistory.isNotEmpty()) {
             input.setText(patient.drugHistory)
@@ -60,7 +60,7 @@ class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.patientName).text = patient.name
     }
 
-    private fun setupSaveButton(patient: Patient, isDrugRecord: Boolean){
+    private fun setupSaveButton(patient: Patient, isDrugRecord: Boolean) {
         val input = findViewById<TextInputEditText>(R.id.recordText)
         findViewById<Button>(R.id.historySaveButton).setOnClickListener {
             val record: String = input.text.toString()
@@ -77,7 +77,7 @@ class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
                 setResult(UPDATE_ACTIVITY_DONE, resultIntent)
 
                 lifecycleScope.launch {
-                    when(saveAndUploadPatient(patient, isDrugRecord)){
+                    when (saveAndUploadPatient(patient, isDrugRecord)) {
                         is SaveResult.SavedAndUploaded -> {
                             Toast.makeText(
                                 it.context,
@@ -107,7 +107,6 @@ class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
                         }
                     }
                 }
-
             }
         }
     }

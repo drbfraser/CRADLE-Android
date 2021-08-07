@@ -343,8 +343,7 @@ class RestApi constructor(
             val jsonObject = JSONObject()
             if (isDrugRecord) {
                 jsonObject.put("drugHistory", patient.drugHistory)
-            }
-            else {
+            } else {
                 jsonObject.put("medicalHistory", patient.medicalHistory)
             }
             val mediaType = "application/json; charset=utf-8".toMediaType()
