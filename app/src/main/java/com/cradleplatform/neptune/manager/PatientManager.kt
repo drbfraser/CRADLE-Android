@@ -112,7 +112,7 @@ class PatientManager @Inject constructor(
         if (result is NetworkResult.Success) {
             // Update the patient's `base` field if successfully uploaded
             val patient = patientAndReadings.patient
-            patient.base = patient.lastEdited
+            patient.lastServerUpdate = patient.lastEdited
             add(patient)
         }
 

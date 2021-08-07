@@ -15,6 +15,7 @@ import com.cradleplatform.neptune.ext.jackson.get
 import com.cradleplatform.neptune.ext.jackson.getOptObjectArray
 import com.cradleplatform.neptune.ext.jackson.writeBooleanField
 import com.cradleplatform.neptune.ext.jackson.writeObjectField
+import com.cradleplatform.neptune.ext.jackson.writeOptIntField
 import com.cradleplatform.neptune.ext.jackson.writeOptLongField
 import com.cradleplatform.neptune.ext.jackson.writeOptStringField
 import com.cradleplatform.neptune.ext.jackson.writeStringField
@@ -55,12 +56,23 @@ import kotlin.reflect.KProperty
  * @property gestationalAge The gestational age of this patient if applicable.
  * @property sex This patient's sex.
  * @property isPregnant Whether this patient is pregnant or not.
+ * @property pregnancyId Id of either the current or previous pregnancy saved on android
+ *           prevPregnancyEndDate and outcome is only saved on database if created offline,
+ *           therefore the pregnancyId would be related to these changes since they need to
+ *           be identified when sending to server on sync.
+ *           Otherwise, pregnancyId would be related to the gestationalAge value
+ *           (when gestationalAge is set on android offline, server gives it an Id on sync)
+ * @property prevPregnancyEndDate End date of the previous pregnancy - only used when pregnancy closed offline
+ * @property prevPregnancyOutcome Outcome of the previous pregnancy - only used when pregnancy closed offline
  * @property zone The zone in which this patient lives.
  * @property villageNumber The number of the village in which this patient lives.
  * @property drugHistory Drug history for the patient (paragraph form expected).
  * @property medicalHistory Medical history for the patient (paragraph form expected).
- * @property lastEdited Last time patient info was edited
- * @property base Last time the patient has been synced with the server.
+ * @property allergy drug allergies for the patient (paragraph form expected).
+ * @property lastEdited Last time patient info was edited on android
+ * @property drugLastEdited Last time drug info was edited on android
+ * @property medicalLastEdited Last time medical info was edited on android
+ * @property lastServerUpdate Last time the patient has gotten updated from the server.
  *
  */
 @Entity(
@@ -79,13 +91,19 @@ internal data class Patient(
     @ColumnInfo var gestationalAge: GestationalAge? = null,
     @ColumnInfo var sex: Sex = Sex.OTHER,
     @ColumnInfo var isPregnant: Boolean = false,
+    @ColumnInfo var pregnancyId: Int? = null,
+    @ColumnInfo var prevPregnancyEndDate: Long? = null,
+    @ColumnInfo var prevPregnancyOutcome: String? = null,
     @ColumnInfo var zone: String? = null,
     @ColumnInfo var villageNumber: String? = null,
     @ColumnInfo var householdNumber: String? = null,
     @ColumnInfo var drugHistory: String = "",
     @ColumnInfo var medicalHistory: String = "",
+    @ColumnInfo var allergy: String = "",
     @ColumnInfo var lastEdited: Long? = null,
-    @ColumnInfo var base: Long? = null
+    @ColumnInfo var drugLastEdited: Long? = null,
+    @ColumnInfo var medicalLastEdited: Long? = null,
+    @ColumnInfo var lastServerUpdate: Long? = null
 ) : Serializable, Verifiable<Patient> {
     override fun isValueForPropertyValid(
         property: KProperty<*>,
@@ -410,13 +428,19 @@ internal data class Patient(
                 if (isPregnant) {
                     patient.gestationalAge?.let { GestationalAge.Serializer.write(gen, it) }
                 }
+                gen.writeOptIntField(PatientField.PREGNANCY_ID, pregnancyId)
+                gen.writeOptLongField(PatientField.PREGNANCY_END_DATE, prevPregnancyEndDate)
+                gen.writeOptStringField(PatientField.PREGNANCY_OUTCOME, prevPregnancyOutcome)
                 gen.writeOptStringField(PatientField.ZONE, zone)
                 gen.writeOptStringField(PatientField.VILLAGE_NUMBER, villageNumber)
                 gen.writeOptStringField(PatientField.HOUSEHOLD_NUMBER, householdNumber)
                 gen.writeOptStringField(PatientField.DRUG_HISTORY, drugHistory)
                 gen.writeOptStringField(PatientField.MEDICAL_HISTORY, medicalHistory)
+                gen.writeOptStringField(PatientField.ALLERGY, allergy)
                 gen.writeOptLongField(PatientField.LAST_EDITED, lastEdited)
-                gen.writeOptLongField(PatientField.BASE, base)
+                gen.writeOptLongField(PatientField.DRUG_LAST_EDITED, drugLastEdited)
+                gen.writeOptLongField(PatientField.MEDICAL_LAST_EDITED, medicalLastEdited)
+                gen.writeOptLongField(PatientField.LAST_SERVER_UPDATE, lastServerUpdate)
             }
         }
 
@@ -448,15 +472,26 @@ internal data class Patient(
                 null
             }
 
+            val isPregnant = if (has(PatientField.IS_PREGNANT.text)) {
+                get(PatientField.IS_PREGNANT)!!.booleanValue()
+            } else {
+                gestationalAge != null
+            }
+
             val sex = Sex.valueOf(get(PatientField.SEX)!!.textValue())
-            val isPregnant = get(PatientField.IS_PREGNANT)!!.booleanValue()
+            val pregnancyId = get(PatientField.PREGNANCY_ID)?.asInt()
+            val prevPregnancyEndDate = get(PatientField.PREGNANCY_END_DATE)?.asLong()
+            val prevPregnancyOutcome = get(PatientField.PREGNANCY_OUTCOME)?.textValue()
             val zone = get(PatientField.ZONE)?.textValue()
             val villageNumber = get(PatientField.VILLAGE_NUMBER)?.textValue()
             val householdNumber = get(PatientField.HOUSEHOLD_NUMBER)?.textValue()
             val drugHistory = get(PatientField.DRUG_HISTORY)?.textValue() ?: ""
             val medicalHistory = get(PatientField.MEDICAL_HISTORY)?.textValue() ?: ""
+            val allergy = get(PatientField.ALLERGY)?.textValue() ?: ""
             val lastEdited = get(PatientField.LAST_EDITED)?.asLong()
-            val base = get(PatientField.BASE)?.asLong()
+            val drugLastEdited = get(PatientField.DRUG_LAST_EDITED)?.asLong()
+            val medicalLastEdited = get(PatientField.MEDICAL_LAST_EDITED)?.asLong()
+            val lastServerUpdate = get(PatientField.LAST_SERVER_UPDATE)?.asLong()
 
             return@run Patient(
                 id = id,
@@ -466,13 +501,19 @@ internal data class Patient(
                 gestationalAge = gestationalAge,
                 sex = sex,
                 isPregnant = isPregnant,
+                pregnancyId = pregnancyId,
+                prevPregnancyEndDate = prevPregnancyEndDate,
+                prevPregnancyOutcome = prevPregnancyOutcome,
                 zone = zone,
                 villageNumber = villageNumber,
                 householdNumber = householdNumber,
                 drugHistory = drugHistory,
                 medicalHistory = medicalHistory,
+                allergy = allergy,
                 lastEdited = lastEdited,
-                base = base
+                drugLastEdited = drugLastEdited,
+                medicalLastEdited = medicalLastEdited,
+                lastServerUpdate = lastServerUpdate
             )
         }
 
@@ -696,13 +737,19 @@ private enum class PatientField(override val text: String) : Field {
     GESTATIONAL_AGE_VALUE("gestationalTimestamp"),
     SEX("patientSex"),
     IS_PREGNANT("isPregnant"),
+    PREGNANCY_ID("pregnancyId"),
+    PREGNANCY_END_DATE("pregnancyEndDate"),
+    PREGNANCY_OUTCOME("pregnancyOutcome"),
     ZONE("zone"),
     VILLAGE_NUMBER("villageNumber"),
     HOUSEHOLD_NUMBER("householdNumber"),
     DRUG_HISTORY("drugHistory"),
     MEDICAL_HISTORY("medicalHistory"),
+    ALLERGY("allergy"),
     LAST_EDITED("lastEdited"),
-    BASE("base"),
+    DRUG_LAST_EDITED("drugLastEdited"),
+    MEDICAL_LAST_EDITED("medicalLastEdited"),
+    LAST_SERVER_UPDATE("lastServerUpdate"),
     READINGS("readings")
 }
 
