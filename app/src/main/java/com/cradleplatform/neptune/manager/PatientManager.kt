@@ -1,18 +1,15 @@
 package com.cradleplatform.neptune.manager
 
-import android.net.ConnectivityManager
 import androidx.room.withTransaction
 import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
-import com.cradleplatform.neptune.ext.isConnected
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.PatientAndReadings
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.net.NetworkResult
 import com.cradleplatform.neptune.net.RestApi
 import com.cradleplatform.neptune.net.map
-import com.cradleplatform.neptune.utilities.UnixTimestamp
 import kotlinx.coroutines.yield
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -27,7 +24,6 @@ class PatientManager @Inject constructor(
     private val readingDao: ReadingDao,
     private val restApi: RestApi,
 ) {
-    private var connectivityManager: ConnectivityManager? = null
     /**
      * add a single patient
      */
@@ -162,12 +158,7 @@ class PatientManager @Inject constructor(
             if (isDrugRecord) patient.drugLastEdited = null
             else patient.medicalLastEdited = null
             add(patient)
-        } else if (connectivityManager?.isConnected() == false) {
-            if (isDrugRecord) patient.drugLastEdited = UnixTimestamp.now.toLong()
-            else patient.medicalLastEdited = UnixTimestamp.now.toLong()
-            add(patient)
         }
-
         return result.map { }
     }
 

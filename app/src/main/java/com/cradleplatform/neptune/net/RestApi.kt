@@ -341,8 +341,12 @@ class RestApi constructor(
     suspend fun postMedicalRecord(patient: Patient, isDrugRecord: Boolean): NetworkResult<Unit> =
         withContext(IO) {
             val jsonObject = JSONObject()
-            if (isDrugRecord) jsonObject.put("drugHistory", patient.drugHistory)
-            else jsonObject.put("medicalHistory", patient.medicalHistory)
+            if (isDrugRecord) {
+                jsonObject.put("drugHistory", patient.drugHistory)
+            }
+            else {
+                jsonObject.put("medicalHistory", patient.medicalHistory)
+            }
             val mediaType = "application/json; charset=utf-8".toMediaType()
             val requestBody = jsonObject.toString().toRequestBody(mediaType)
             http.makeRequest(
