@@ -190,16 +190,14 @@ class EditPatientViewModel @Inject constructor(
         return if (isNetworkAvailable.value == true) {
             when (patientManager.updatePatientOnServer(patient)) {
                 is NetworkResult.Success -> {
-                    Log.d(TAG, "SAVE FN: Sent to server and saved")
                     SaveResult.SavedAndUploaded
                 }
                 else -> {
-                    Log.d(TAG, "SAVE FN: Tried to send to server, but didn't work")
+                    //Most common case here would be if patient isn't on server yet, put req won't work
                     SaveResult.SavedOffline
                 }
             }
         } else {
-            Log.d(TAG, "SAVE FN: No network connection, saved patient")
             patientManager.add(patient)
             SaveResult.SavedOffline
         }

@@ -95,7 +95,6 @@ class EditPatientInfoActivity : AppCompatActivity() {
                         finish()
                     }
                     is EditPatientViewModel.SaveResult.SavedOffline -> {
-                        // We could make this a popup on patientInfoActivity if we want to make it intrusive
                         Toast.makeText(
                             it.context,
                             "Please sync! Patient edits weren't pushed to server",
@@ -105,8 +104,11 @@ class EditPatientInfoActivity : AppCompatActivity() {
                         finish()
                     }
                     else -> {
-                        Toast.makeText(it.context, "FAILED", Toast.LENGTH_LONG).show()
-                        // probably make this a popup instead - ?
+                        Toast.makeText(
+                            it.context,
+                            "Invalid patient - check errors",
+                            Toast.LENGTH_LONG)
+                        .show()
                     }
                 }
             }
