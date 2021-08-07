@@ -469,9 +469,11 @@ data class Patient(
             val dob = get(PatientField.DOB)?.textValue()
             val isExactDob = get(PatientField.IS_EXACT_DOB)?.asBoolean(false)
 
+            // Some backend responses send gestationalTimestamp = null when not pregnant
             val gestationalAge = if (
                 has(PatientField.GESTATIONAL_AGE_UNIT.text) &&
-                has(PatientField.GESTATIONAL_AGE_VALUE.text)
+                has(PatientField.GESTATIONAL_AGE_VALUE.text) &&
+                get(PatientField.GESTATIONAL_AGE_VALUE.text).toString() != "null"
             ) {
                 GestationalAge.Deserializer.get(this)
             } else {
@@ -761,7 +763,7 @@ private enum class PatientField(override val text: String) : Field {
     LAST_EDITED("lastEdited"),
     DRUG_LAST_EDITED("drugLastEdited"),
     MEDICAL_LAST_EDITED("medicalLastEdited"),
-    LAST_SERVER_UPDATE("lastServerUpdate"),
+    LAST_SERVER_UPDATE("base"),
     READINGS("readings")
 }
 
