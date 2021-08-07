@@ -79,10 +79,10 @@ class EditPatientViewModel @Inject constructor(
     /** Patient Info */
     /** Used in two-way Data Binding with EditPatientInfoActivity */
     val patientId: MutableLiveData<String>
-    get() = patientBuilder.get<String>(Patient::id)
+        get() = patientBuilder.get<String>(Patient::id)
 
     val patientName: MutableLiveData<String>
-    get() = patientBuilder.get<String>(Patient::name)
+        get() = patientBuilder.get<String>(Patient::name)
 
     val patientDob: MediatorLiveData<String?> = patientBuilder.get<String?>(Patient::dob)
     val patientAge = MutableLiveData<Int?>(null)
@@ -92,22 +92,22 @@ class EditPatientViewModel @Inject constructor(
     val patientIsExactDob: LiveData<Boolean?> = _patientIsExactDob
 
     val patientSex: MutableLiveData<Sex?>
-    get() = patientBuilder.get<Sex?>(Patient::sex)
+        get() = patientBuilder.get<Sex?>(Patient::sex)
 
     val patientZone: MutableLiveData<String?>
-    get() = patientBuilder.get<String?>(Patient::zone)
+        get() = patientBuilder.get<String?>(Patient::zone)
 
     val patientHouseholdNumber: MutableLiveData<String?>
-    get() = patientBuilder.get<String?>(Patient::householdNumber)
+        get() = patientBuilder.get<String?>(Patient::householdNumber)
 
     val patientVillageNumber: MutableLiveData<String?>
-    get() = patientBuilder.get<String?>(Patient::villageNumber)
+        get() = patientBuilder.get<String?>(Patient::villageNumber)
 
     val patientAllergies: MutableLiveData<String?>
-    get() = patientBuilder.get<String?>(Patient::allergy)
+        get() = patientBuilder.get<String?>(Patient::allergy)
 
     val patientLastEdited: MutableLiveData<Long?>
-    get() = patientBuilder.get<Long?>(Patient::lastEdited)
+        get() = patientBuilder.get<Long?>(Patient::lastEdited)
 
     /**
      * Implicitly used in two-way Data Binding with .
@@ -123,7 +123,7 @@ class EditPatientViewModel @Inject constructor(
     val patientGestationalAgeUnits: MutableLiveData<String> = MediatorLiveData<String>()
 
     val patientIsPregnant: MutableLiveData<Boolean?>
-    get() = patientBuilder.get<Boolean?>(Patient::isPregnant)
+        get() = patientBuilder.get<Boolean?>(Patient::isPregnant)
 
     private fun allowEdit(isEnabled: Boolean) {
         isInputEnabled.value = isEnabled
@@ -144,7 +144,7 @@ class EditPatientViewModel @Inject constructor(
         _patientIsExactDob.value = useDateOfBirth
     }
 
-    private fun setUpAgeLiveData(dob : String?) {
+    private fun setUpAgeLiveData(dob: String?) {
 
         if (dob != null) {
             patientAge.value = Patient.calculateAgeFromDateString(dateString = dob)
@@ -203,7 +203,6 @@ class EditPatientViewModel @Inject constructor(
             patientManager.add(patient)
             SaveResult.SavedOffline
         }
-
     }
 
     private suspend fun constructValidPatientFromBuilders(): Patient? {
@@ -327,7 +326,6 @@ class EditPatientViewModel @Inject constructor(
                         currentValuesMap = patientBuilder.publicMap
                     )
                 }
-
             }
         }
 
@@ -407,5 +405,4 @@ class EditPatientViewModel @Inject constructor(
         object SavedOffline : SaveResult
         object Error : SaveResult
     }
-
 }

@@ -73,7 +73,6 @@ class EditPatientInfoActivity : AppCompatActivity() {
             launch { setupAndObserveAgeInfo() }
             launch { setupAndObserveGenderList() }
         }
-
     }
 
     private fun setupToolBar() {
@@ -87,17 +86,27 @@ class EditPatientInfoActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 when (viewModel.save()) {
                     is EditPatientViewModel.SaveResult.SavedAndUploaded -> {
-                        Toast.makeText(it.context, "Success - patient sent to server ", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            it.context,
+                            "Success - patient sent to server ",
+                            Toast.LENGTH_LONG
+                        )
+                            .show()
                         finish()
                     }
                     is EditPatientViewModel.SaveResult.SavedOffline -> {
                         // We could make this a popup on patientInfoActivity if we want to make it intrusive
-                        Toast.makeText(it.context, "Please sync! Patient edits weren't pushed to server", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            it.context,
+                            "Please sync! Patient edits weren't pushed to server",
+                            Toast.LENGTH_LONG
+                        )
+                            .show()
                         finish()
                     }
                     else -> {
                         Toast.makeText(it.context, "FAILED", Toast.LENGTH_LONG).show()
-                        //probably make this a popup instead - ?
+                        // probably make this a popup instead - ?
                     }
                 }
             }
@@ -199,5 +208,4 @@ class EditPatientInfoActivity : AppCompatActivity() {
             .setOpenAt(defaultDateInMillis)
             .build()
     }
-
 }

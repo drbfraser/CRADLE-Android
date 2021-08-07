@@ -214,7 +214,6 @@ open class PatientProfileActivity : AppCompatActivity() {
             val intent = EditPatientInfoActivity.makeIntentWithPatientId(this, patient.id)
             startActivity(intent)
         }
-
     }
 
     /**
