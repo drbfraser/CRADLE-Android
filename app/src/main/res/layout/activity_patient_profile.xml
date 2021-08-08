@@ -238,7 +238,7 @@
 
         <androidx.cardview.widget.CardView
             android:id="@+id/medicalCard"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
@@ -314,7 +314,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:gravity="clip_horizontal|center|center_vertical"
-                        android:paddingRight="8dp"
+                        android:paddingEnd="8dp"
                         android:text="@string/not_available_n_slash_a"
                         android:textColor="@color/black"
                         android:textSize="14sp" />
@@ -345,9 +345,8 @@
 
                 <LinearLayout
                     android:id="@+id/medicalLayout"
-                    android:layout_width="364dp"
-                    android:layout_height="36dp"
-                    android:layout_marginEnd="8dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:gravity="start|center_vertical"
                     android:orientation="horizontal"
                     android:visibility="visible"
@@ -358,7 +357,6 @@
                         android:id="@+id/textView47"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
                         android:text="@string/medical_history"
                         android:textAlignment="viewStart"
                         android:textColor="@color/black"
@@ -367,11 +365,9 @@
 
                     <Button
                         android:id="@+id/medicalHistoryUpdateButton"
-                        android:layout_width="100dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="36dp"
-                        android:layout_margin="10dp"
-                        android:layout_marginEnd="24dp"
-                        android:layout_marginBottom="10dp"
+                        android:layout_marginStart="10dp"
                         android:text="@string/patient_update_history" />
 
                 </LinearLayout>
@@ -391,8 +387,8 @@
 
                 <LinearLayout
                     android:id="@+id/drugLayout"
-                    android:layout_width="364dp"
-                    android:layout_height="30dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
                     android:gravity="start|center_vertical"
                     android:orientation="horizontal"
@@ -404,7 +400,6 @@
                         android:id="@+id/textView49"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
                         android:text="@string/drug_history"
                         android:textColor="@color/black"
                         android:textSize="14sp"
@@ -412,11 +407,9 @@
 
                     <Button
                         android:id="@+id/drugHistoryUpdateButton"
-                        android:layout_width="100dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="36dp"
-                        android:layout_margin="10dp"
-                        android:layout_marginEnd="24dp"
-                        android:layout_marginBottom="10dp"
+                        android:layout_marginStart="10dp"
                         android:text="@string/patient_update_history" />
 
                 </LinearLayout>
