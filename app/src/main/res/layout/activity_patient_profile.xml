@@ -288,6 +288,18 @@
                     app:layout_constraintStart_toEndOf="@+id/textView19"
                     app:layout_constraintTop_toTopOf="@+id/textView19" />
 
+                <Button
+                    android:id="@+id/btn_pregnancy"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="24dp"
+                    android:backgroundTint="@color/colorPrimaryLight"
+                    android:text="Add pregnancy"
+                    app:layout_constraintTop_toTopOf="@+id/textView20"
+                    app:layout_constraintBottom_toBottomOf="@id/textView20"
+                    app:layout_constraintEnd_toEndOf="parent"/>
+
                 <LinearLayout
                     android:id="@+id/pregnancyLayout"
                     android:layout_width="0dp"

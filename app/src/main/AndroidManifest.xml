@@ -9,7 +9,6 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-
     <application
         android:name=".CradleApplication"
         android:allowBackup="false"
@@ -19,6 +18,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="false">
+        <activity android:name=".view.EditPregnancyActivity"></activity>
         <activity
             android:name=".view.SyncActivity"
             android:theme="@style/AppTheme.NoActionBar" />
@@ -57,10 +57,8 @@
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
             </intent-filter>
-        </activity>
-        <!-- windowSoftInputMode=adjustResize so that wizard's bottom buttons stay visible -->
-        <activity
-            android:name=".view.VideoActivity" />
+        </activity> <!-- windowSoftInputMode=adjustResize so that wizard's bottom buttons stay visible -->
+        <activity android:name=".view.VideoActivity" />
         <activity
             android:name=".view.ReadingActivity"
             android:label="@string/title_activity_reading"
@@ -77,6 +75,7 @@
             android:authorities="${applicationId}.workmanager-init"
             android:exported="false"
             android:multiprocess="true"
-            tools:node="remove"/>
+            tools:node="remove" />
     </application>
+
 </manifest>

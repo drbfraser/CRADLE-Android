@@ -20,6 +20,7 @@ import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
+import com.cradleplatform.neptune.model.Sex
 import com.cradleplatform.neptune.utilities.Util
 import com.cradleplatform.neptune.view.DashBoardActivity.Companion.READING_ACTIVITY_DONE
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForEditReading
@@ -58,6 +59,7 @@ open class PatientProfileActivity : AppCompatActivity() {
     private lateinit var pregnant: TextView
     private lateinit var gestationalAge: TextView
     private lateinit var pregnancyInfoLayout: LinearLayout
+    private lateinit var btnPregnancy: Button
 
     lateinit var readingRecyclerview: RecyclerView
     lateinit var currPatient: Patient
@@ -103,6 +105,8 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupCreatePatientReadingButton()
         setupLineChart()
         setupToolBar()
+
+        setupBtnPregnancy(currPatient)
     }
 
     fun setupToolBar() {
@@ -122,6 +126,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         gestationalAge = findViewById(R.id.gestationalAge)
         pregnancyInfoLayout = findViewById(R.id.pregnancyLayout)
         readingRecyclerview = findViewById(R.id.readingRecyclerview)
+        btnPregnancy = findViewById(R.id.btn_pregnancy)
     }
 
     open fun getLocalPatient(): Boolean {
@@ -176,6 +181,9 @@ open class PatientProfileActivity : AppCompatActivity() {
             }
         }
         patientSex.text = patient.sex.toString()
+        if (patient.sex == Sex.MALE) {
+            btnPregnancy.visibility = View.GONE
+        }
         if (!Util.stringNullOrEmpty(patient.villageNumber)) {
             villageNo.text = patient.villageNumber
         }
@@ -188,9 +196,11 @@ open class PatientProfileActivity : AppCompatActivity() {
         if (patient.isPregnant) {
             pregnant.setText(R.string.yes)
             setupGestationalInfo(patient)
+            btnPregnancy.text = "Close"
         } else {
             pregnant.setText(R.string.no)
             pregnancyInfoLayout.visibility = View.GONE
+            btnPregnancy.text = "Add Pregnancy"
         }
         if (patient.drugHistory.isNotEmpty()) {
             val drugHistory = findViewById<TextView>(R.id.drugHistroyTxt)
@@ -203,6 +213,13 @@ open class PatientProfileActivity : AppCompatActivity() {
         if (patient.allergy.isNotEmpty()) {
             val allergies = findViewById<TextView>(R.id.allergies)
             allergies.text = patient.allergy
+        }
+    }
+
+    private fun setupBtnPregnancy(patient: Patient) {
+        btnPregnancy.setOnClickListener() {
+            val intent = EditPregnancyActivity.makeIntentWithPatientId(this, patient.id, patient.isPregnant)
+            startActivity(intent)
         }
     }
 
