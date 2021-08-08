@@ -469,9 +469,11 @@ data class Patient(
             val dob = get(PatientField.DOB)?.textValue()
             val isExactDob = get(PatientField.IS_EXACT_DOB)?.asBoolean(false)
 
+            // Some backend responses send gestationalTimestamp = null when not pregnant
             val gestationalAge = if (
                 has(PatientField.GESTATIONAL_AGE_UNIT.text) &&
-                has(PatientField.GESTATIONAL_AGE_VALUE.text)
+                has(PatientField.GESTATIONAL_AGE_VALUE.text) &&
+                get(PatientField.GESTATIONAL_AGE_VALUE).toString() != "null"
             ) {
                 GestationalAge.Deserializer.get(this)
             } else {
@@ -495,7 +497,15 @@ data class Patient(
             val medicalHistory = get(PatientField.MEDICAL_HISTORY)?.textValue() ?: ""
             val allergy = get(PatientField.ALLERGY)?.textValue() ?: ""
             val lastEdited = get(PatientField.LAST_EDITED)?.asLong()
-            val lastServerUpdate = get(PatientField.LAST_SERVER_UPDATE)?.asLong()
+
+            // TODO: update server to send "lastServerUpdate" instead of base
+            //  + remove PatientField.BASE
+            // This logic is implemented to allow tests to pass (tests look for lastServerUpdate
+            val lastServerUpdate = if (has(PatientField.BASE.text)) {
+                get(PatientField.BASE)?.asLong()
+            } else {
+                get(PatientField.LAST_SERVER_UPDATE)?.asLong()
+            }
 
             // Set these to null because if we are receiving patient information from the server,
             // it guarantees there are no un-uploaded edits on android
@@ -762,6 +772,7 @@ private enum class PatientField(override val text: String) : Field {
     DRUG_LAST_EDITED("drugLastEdited"),
     MEDICAL_LAST_EDITED("medicalLastEdited"),
     LAST_SERVER_UPDATE("lastServerUpdate"),
+    BASE("base"),
     READINGS("readings")
 }
 
