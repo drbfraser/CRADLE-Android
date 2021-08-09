@@ -32,6 +32,9 @@ class UrlManager @Inject constructor(val settings: Settings) {
     val getAllPatients: String
         get() = "$base/mobile/patients"
 
+    val getAllReadings: String
+        get() = "$base/mobile/readings"
+
     /**
      * Endpoint for posting a new patient.
      */

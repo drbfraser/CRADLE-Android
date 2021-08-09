@@ -734,7 +734,7 @@ private enum class PatientField(override val text: String) : Field {
     DOB("dob"),
     IS_EXACT_DOB("isExactDob"),
     GESTATIONAL_AGE_UNIT("gestationalAgeUnit"),
-    GESTATIONAL_AGE_VALUE("gestationalTimestamp"),
+    GESTATIONAL_AGE_VALUE("pregnancyStartDate"),
     SEX("patientSex"),
     IS_PREGNANT("isPregnant"),
     PREGNANCY_ID("pregnancyId"),
