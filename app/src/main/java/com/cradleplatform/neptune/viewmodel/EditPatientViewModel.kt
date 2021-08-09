@@ -188,7 +188,7 @@ class EditPatientViewModel @Inject constructor(
 
     private suspend fun saveAndUploadPatient(patient: Patient): SaveResult {
         return if (isNetworkAvailable.value == true) {
-            when (patientManager.updatePatientOnServer(patient)) {
+            when (patientManager.updatePatientOnServerAndSave(patient)) {
                 is NetworkResult.Success -> {
                     SaveResult.SavedAndUploaded
                 }

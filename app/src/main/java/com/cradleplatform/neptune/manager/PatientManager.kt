@@ -125,7 +125,7 @@ class PatientManager @Inject constructor(
      * @param patient the patient to upload
      * @return whether the upload succeeded or not
      */
-    suspend fun updatePatientOnServer(patient: Patient): NetworkResult<Unit> {
+    suspend fun updatePatientOnServerAndSave(patient: Patient): NetworkResult<Unit> {
         val result = restApi.putPatient(patient)
         add(patient)
         return result.map { }
