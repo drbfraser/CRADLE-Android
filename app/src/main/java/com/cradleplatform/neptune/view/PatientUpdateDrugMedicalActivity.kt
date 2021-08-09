@@ -1,5 +1,6 @@
 package com.cradleplatform.neptune.view
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
@@ -14,7 +15,6 @@ import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.net.NetworkResult
 import com.cradleplatform.neptune.utilities.UnixTimestamp
 import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
-import com.cradleplatform.neptune.view.DashBoardActivity.Companion.UPDATE_ACTIVITY_DONE
 import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -26,6 +26,18 @@ class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
     lateinit var patientManager: PatientManager
 
     private lateinit var isNetworkAvailable: NetworkAvailableLiveData
+
+    companion object {
+        private const val EXTRA_PATIENT = "patient"
+        const val UPDATE_ACTIVITY_DONE = 14235
+
+        fun makeIntent(context: Context, isDrugRecord: Boolean, currPatient: Patient): Intent {
+            val intent = Intent(context, PatientUpdateDrugMedicalActivity::class.java)
+            intent.putExtra("isDrugRecord", isDrugRecord)
+            intent.putExtra(EXTRA_PATIENT, currPatient)
+            return intent
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

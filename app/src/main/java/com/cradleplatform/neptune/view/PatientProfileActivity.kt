@@ -22,7 +22,7 @@ import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.utilities.Util
 import com.cradleplatform.neptune.view.DashBoardActivity.Companion.READING_ACTIVITY_DONE
-import com.cradleplatform.neptune.view.DashBoardActivity.Companion.UPDATE_ACTIVITY_DONE
+import com.cradleplatform.neptune.view.PatientUpdateDrugMedicalActivity.Companion.UPDATE_ACTIVITY_DONE
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForEditReading
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForNewReadingExistingPatient
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForRecheck
@@ -315,20 +315,17 @@ open class PatientProfileActivity : AppCompatActivity() {
         }
     }
 
-    private fun onUpdateButtonClicked(button: View, isDrugRecord: Boolean) {
-        val intent = Intent(this@PatientProfileActivity, PatientUpdateDrugMedicalActivity::class.java).apply {
-            putExtra("isDrugRecord", isDrugRecord)
-            putExtra(EXTRA_PATIENT, currPatient)
-        }
+    private fun onUpdateButtonClicked(isDrugRecord: Boolean) {
+        val intent = PatientUpdateDrugMedicalActivity.makeIntent(this, isDrugRecord, currPatient)
         startActivityForResult(intent, UPDATE_ACTIVITY_DONE)
     }
 
-    fun setupUpdateRecord() {
+    private fun setupUpdateRecord() {
         findViewById<Button>(R.id.medicalHistoryUpdateButton).setOnClickListener {
-            onUpdateButtonClicked(it, false)
+            onUpdateButtonClicked(false)
         }
         findViewById<Button>(R.id.drugHistoryUpdateButton).setOnClickListener {
-            onUpdateButtonClicked(it, true)
+            onUpdateButtonClicked(true)
         }
     }
 
