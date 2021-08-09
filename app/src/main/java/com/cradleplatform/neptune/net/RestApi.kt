@@ -87,7 +87,7 @@ class RestApi constructor(
     /**
      * Gets all patients and associated readings for the current user
      * from the server. The parsed results will be sent in the resulting
-     * [patientAndReadingsChannel].
+     * [patientChannel].
      *
      * Only the patient managed by this user will be returned in the [InputStream].
      * A patient is considered "managed" if it has an association with the logged-in
@@ -96,7 +96,7 @@ class RestApi constructor(
      * method. To query unmanaged (global) patients, use [searchForPatient]
      * or [getPatient].
      *
-     * [patientAndReadingsChannel] will be failed (see [SendChannel.close]) if [Failure] or
+     * [patientChannel] will be failed (see [SendChannel.close]) if [Failure] or
      * [NetworkException] is returned, so using any of the Channels can result in a [SyncException]
      * that should be caught by anything handling the Channels.
      *
@@ -104,7 +104,7 @@ class RestApi constructor(
      * parsing or the connection fails.
      */
     suspend fun getAllPatients(
-        patientAndReadingsChannel: SendChannel<PatientAndReadings>
+        patientChannel: SendChannel<Patient>
     ): NetworkResult<Unit> = withContext(IO) {
         http.makeRequest(
             method = Http.Method.GET,
@@ -114,16 +114,38 @@ class RestApi constructor(
                 // Parse JSON strings directly from the input stream to avoid dealing with a
                 // ByteArray of an entire JSON array in memory and trying to convert that into a
                 // String.
-                val reader = JacksonMapper.readerForPatientAndReadings
-                reader.readValues<PatientAndReadings>(inputStream).use { iterator ->
-                    iterator.forEachJackson { patientAndReadingsChannel.send(it) }
+                val reader = JacksonMapper.readerForPatient
+                reader.readValues<Patient>(inputStream).use { iterator ->
+                    iterator.forEachJackson { patientChannel.send(it) }
                 }
             }
         ).also {
             if (it is NetworkResult.Success) {
-                patientAndReadingsChannel.close()
+                patientChannel.close()
             } else {
-                patientAndReadingsChannel.close(SyncException("failed to download all associated patients"))
+                patientChannel.close(SyncException("failed to download all associated patients"))
+            }
+        }
+    }
+
+    suspend fun getAllReadings(
+        readingChannel: SendChannel<Reading>
+    ): NetworkResult<Unit> = withContext(IO) {
+        http.makeRequest(
+            method = Http.Method.GET,
+            url = urlManager.getAllReadings,
+            headers = headers,
+            inputStreamReader = { inputStream ->
+                val reader = JacksonMapper.readerForReading
+                reader.readValues<Reading>(inputStream).use { iterator ->
+                    iterator.forEachJackson { readingChannel.send(it) }
+                }
+            }
+        ).also {
+            if (it is NetworkResult.Success) {
+                readingChannel.close()
+            } else {
+                readingChannel.close(SyncException("failed to download all associated readings"))
             }
         }
     }
