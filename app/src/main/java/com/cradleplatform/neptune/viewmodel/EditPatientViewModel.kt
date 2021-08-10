@@ -173,7 +173,8 @@ class EditPatientViewModel @Inject constructor(
         return withContext(Dispatchers.Main) {
 
             val patientAsync = async {
-                constructValidPatientFromBuilders()
+                patientLastEdited.setValueOnMainThread(ZonedDateTime.now().toEpochSecond())
+                attemptToBuildValidPatient()
             }
             val patient = patientAsync.await()
 
@@ -200,17 +201,6 @@ class EditPatientViewModel @Inject constructor(
         } else {
             patientManager.add(patient)
             SaveResult.SavedOffline
-        }
-    }
-
-    private suspend fun constructValidPatientFromBuilders(): Patient? {
-        return withContext(Dispatchers.Default) {
-            val patientAsync = async {
-                patientLastEdited.setValueOnMainThread(ZonedDateTime.now().toEpochSecond())
-                attemptToBuildValidPatient()
-            }
-            val patient = patientAsync.await()
-            patient
         }
     }
 

@@ -127,6 +127,9 @@ class PatientManager @Inject constructor(
      */
     suspend fun updatePatientOnServerAndSave(patient: Patient): NetworkResult<Unit> {
         val result = restApi.putPatient(patient)
+        if (result is NetworkResult.Success) {
+            patient.lastServerUpdate = patient.lastEdited
+        }
         add(patient)
         return result.map { }
     }
