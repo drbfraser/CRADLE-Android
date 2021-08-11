@@ -114,10 +114,32 @@ ORDER BY latestReadingDate DESC, name COLLATE NOCASE ASC
     )
     fun localSearchPatientsByNameOrId(query: String): PagingSource<Int, LocalSearchPatient>
 
-    @Query("SELECT * FROM Patient WHERE lastServerUpdate IS NULL")
+    @Query(
+        """
+            SELECT * FROM Patient
+            WHERE
+                lastServerUpdate IS NULL
+                OR lastServerUpdate < lastEdited
+                OR prevPregnancyEndDate IS NOT NULL
+                OR medicalLastEdited IS NOT NULL
+                OR drugLastEdited IS NOT NULL
+                OR (gestationalAge IS NOT NULL AND pregnancyId IS NULL)
+        """
+    )
     suspend fun getPatientsForUpload(): List<Patient>
 
-    @Query("SELECT COUNT(id) FROM Patient WHERE lastServerUpdate IS NULL")
+    @Query(
+        """
+            SELECT COUNT(id) FROM Patient
+            WHERE
+                lastServerUpdate IS NULL
+                OR lastServerUpdate < lastEdited
+                OR prevPregnancyEndDate IS NOT NULL
+                OR medicalLastEdited IS NOT NULL
+                OR drugLastEdited IS NOT NULL
+                OR (gestationalAge IS NOT NULL AND pregnancyId IS NULL)
+        """
+    )
     suspend fun getNumberOfPatientsForUpload(): Int
 
     /**
