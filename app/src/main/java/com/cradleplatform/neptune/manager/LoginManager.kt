@@ -8,7 +8,8 @@ import androidx.room.withTransaction
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.model.HealthFacility
-import com.cradleplatform.neptune.model.PatientAndReadings
+import com.cradleplatform.neptune.model.Patient
+import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.UserRole
 import com.cradleplatform.neptune.net.NetworkResult
 import com.cradleplatform.neptune.net.RestApi
@@ -40,6 +41,7 @@ class LoginManager @Inject constructor(
     private val sharedPreferences: SharedPreferences,
     private val database: CradleDatabase,
     private val patientManager: PatientManager,
+    private val readingManager: ReadingManager,
     private val healthFacilityManager: HealthFacilityManager,
     @ApplicationContext private val context: Context
 ) {
@@ -126,27 +128,37 @@ class LoginManager @Inject constructor(
             // We will use this later as the last synced timestamp.
             val loginTime = UnixTimestamp.now
 
-            val patientsResultAsync = async { downloadPatients() }
+            val patientsDownloadSuccess = downloadPatients() is NetworkResult.Success
+            if (patientsDownloadSuccess) {
+                sharedPreferences.edit(commit = true) {
+                    putString(SyncWorker.LAST_PATIENT_SYNC, loginTime.toString())
+                }
+            }
+
+            val readingsAsync = async {
+                if (patientsDownloadSuccess) {
+                    val readingsDownloadSuccess = downloadReadings() is NetworkResult.Success
+                    if (readingsDownloadSuccess) {
+                        sharedPreferences.edit(commit = true) {
+                            putString(SyncWorker.LAST_READING_SYNC, loginTime.toString())
+                        }
+                    }
+                }
+            }
 
             // for unit testing purposes
             if (!parallelDownload) {
-                patientsResultAsync.join()
+                readingsAsync.join()
             }
 
             // TODO: Maybe make it so that the health facility the server sends back cannot
             //       be removed by the user?
             // TODO: Show some dialog to select a health facility
-            val healthFacilityResultAsync = async {
+            val healthFacilitiesAsync = async {
                 downloadHealthFacilities(loginResult.value.healthFacilityName)
             }
 
-            joinAll(patientsResultAsync, healthFacilityResultAsync)
-            if (patientsResultAsync.await() is NetworkResult.Success) {
-                sharedPreferences.edit(commit = true) {
-                    putString(SyncWorker.LAST_PATIENT_SYNC, loginTime.toString())
-                    putString(SyncWorker.LAST_READING_SYNC, loginTime.toString())
-                }
-            }
+            joinAll(readingsAsync, healthFacilitiesAsync)
 
             // TODO: Actually report any failures instead of lettting the user pass
             //  It might be better to just split the login manager so that this function just
@@ -185,28 +197,50 @@ class LoginManager @Inject constructor(
     private suspend fun downloadPatients(): NetworkResult<Unit> = coroutineScope {
         val startTime = System.currentTimeMillis()
 
-        val channel = Channel<PatientAndReadings>()
+        val channel = Channel<Patient>()
         val databaseJob = launch {
             try {
                 database.withTransaction {
-                    for (patientAndReadings in channel) {
-                        patientManager.addPatientWithReadings(
-                            patientAndReadings.patient,
-                            patientAndReadings.readings,
-                            areReadingsFromServer = true
-                        )
+                    for (patient in channel) {
+                        patientManager.add(patient)
                     }
-                    Log.d(TAG, "patient & reading database job is successful")
+                    Log.d(TAG, "patient database job is successful")
                 }
             } catch (e: SyncException) {
-                Log.d(TAG, "patient & reading database job failed")
+                Log.d(TAG, "patient database job failed")
             }
         }
         val result = restApi.getAllPatients(channel)
         closeOrCancelChannelByResult(result, channel)
         databaseJob.join()
+
         val endTime = System.currentTimeMillis()
-        Log.d(TAG, "Patient/readings download overall took ${endTime - startTime} ms")
+        Log.d(TAG, "Patients download overall took ${endTime - startTime} ms")
+        return@coroutineScope result
+    }
+
+    private suspend fun downloadReadings(): NetworkResult<Unit> = coroutineScope {
+        val startTime = System.currentTimeMillis()
+
+        val channel = Channel<Reading>()
+        val databaseJob = launch {
+            try {
+                database.withTransaction {
+                    for (reading in channel) {
+                        readingManager.addReading(reading, isReadingFromServer = true)
+                    }
+                    Log.d(TAG, "reading database job is successful")
+                }
+            } catch (e: SyncException) {
+                Log.d(TAG, "reading database job failed")
+            }
+        }
+        val result = restApi.getAllReadings(channel)
+        closeOrCancelChannelByResult(result, channel)
+        databaseJob.join()
+
+        val endTime = System.currentTimeMillis()
+        Log.d(TAG, "Readings download overall took ${endTime - startTime} ms")
         return@coroutineScope result
     }
 

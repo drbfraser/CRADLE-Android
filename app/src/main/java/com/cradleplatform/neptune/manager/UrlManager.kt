@@ -32,6 +32,9 @@ class UrlManager @Inject constructor(val settings: Settings) {
     val getAllPatients: String
         get() = "$base/mobile/patients"
 
+    val getAllReadings: String
+        get() = "$base/mobile/readings"
+
     /**
      * Endpoint for posting a new patient.
      */
@@ -147,6 +150,11 @@ class UrlManager @Inject constructor(val settings: Settings) {
      * get a patient info only
      */
     fun getPatientInfoOnly(id: String): String = "$base/patients/$id/info"
+
+    /**
+     * Create a new medical/drug record
+     */
+    fun postMedicalRecord(id: String): String = "$base/patients/$id/medical_records"
 
     /**
      * get a assessment by id

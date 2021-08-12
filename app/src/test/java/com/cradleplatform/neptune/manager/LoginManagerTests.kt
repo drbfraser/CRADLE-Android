@@ -8,6 +8,7 @@ import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
 import com.cradleplatform.neptune.model.CommonPatientReadingJsons
+import com.cradleplatform.neptune.model.CommonReadingJsons
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
@@ -184,6 +185,23 @@ internal class LoginManagerTests {
                                 setBody("${json.substring(0, json.length - 6)}ThisMessessItUp")
                             }
                         }
+                        "/api/mobile/readings" -> {
+                            if (request.headers["Authorization"] != "Bearer $TEST_AUTH_TOKEN") {
+                                setResponseCode(403)
+                                setBody(request.headers.toString())
+                                return@response
+                            }
+
+                            val json = CommonReadingJsons.allReadingsJsonExpectedPair.first
+                            if (!failTheLoginWithIOIssues) {
+                                setResponseCode(200)
+                                setBody(json)
+                            } else {
+                                // mess it up somehow
+                                setResponseCode(200)
+                                setBody("${json.substring(0, json.length - 6)}ThisMessessItUp")
+                            }
+                        }
                         "/api/facilities" -> {
                             if (request.headers["Authorization"] != "Bearer $TEST_AUTH_TOKEN") {
                                 setResponseCode(403)
@@ -216,6 +234,12 @@ internal class LoginManagerTests {
     private val fakePatientManager = PatientManager(
         mockDatabase,
         mockPatientDao,
+        mockReadingDao,
+        mockRestApi
+    )
+
+    private val fakeReadingManager = ReadingManager(
+        mockDatabase,
         mockReadingDao,
         mockRestApi
     )
@@ -256,6 +280,7 @@ internal class LoginManagerTests {
                 mockSharedPrefs,
                 mockDatabase,
                 fakePatientManager,
+                fakeReadingManager,
                 mockHealthManager,
                 mockContext
             )
@@ -324,6 +349,13 @@ internal class LoginManagerTests {
                 "parsing the patients failed: not enough patients parsed"
             }
 
+            assertEquals(
+                CommonReadingJsons.allReadingsJsonExpectedPair.second.size,
+                fakeReadingDatabase.size
+            ) {
+                "parsing the readings failed: not enough readings parsed"
+            }
+
             fakeReadingDatabase.forEach {
                 assert(it.isUploadedToServer)
             }
@@ -333,14 +365,9 @@ internal class LoginManagerTests {
 
             // Verify that the streamed parsing via Jackson of the simulated downloading of all
             // patients and their readings from the server was correct.
-            val expectedPatientAndReadings = CommonPatientReadingJsons
-                .allPatientsJsonExpectedPair.second
-            expectedPatientAndReadings.forEach { patientAndReadings ->
-                val (expectedPatient, expectedReadings) =
-                    patientAndReadings.patient to patientAndReadings.readings.map {
-                        it.copy(isUploadedToServer = true)
-                    }
-
+            val expectedPatients = CommonPatientReadingJsons
+                .allPatientsJsonExpectedPair.second.map { it.patient }
+            expectedPatients.forEach { expectedPatient ->
                 // The patient ID must have been parsed correctly at least since that's the
                 // primary key. When we find a match, we then check to see if all of the fields
                 // are the same. Doing a direct equality check gives us less information about
@@ -352,17 +379,19 @@ internal class LoginManagerTests {
                         }
                     }
                     ?: fail { "couldn't find expected patient in fake database: $expectedPatient" }
+            }
 
-                expectedReadings.forEach { expectedReading ->
-                    fakeReadingDatabase.find { it.id == expectedReading.id }
-                        ?.let { parsedReading ->
-                            assertEquals(expectedReading, parsedReading) {
-                                "found a reading with the same ID, but one or more properties are" +
-                                    " wrong"
-                            }
+            val expectedReadings = CommonReadingJsons.allReadingsJsonExpectedPair.second
+            expectedReadings.forEach { reading ->
+                val expectedReading = reading.copy(isUploadedToServer = true)
+                fakeReadingDatabase.find { it.id == expectedReading.id }
+                    ?.let { parsedReading ->
+                        assertEquals(expectedReading, parsedReading) {
+                            "found a reading with the same ID, but one or more properties are" +
+                                " wrong"
                         }
-                        ?: fail { "couldn't find expected reading in fake database: $expectedReading" }
-                }
+                    }
+                    ?: fail { "couldn't find expected reading in fake database: $expectedReading" }
             }
 
             loginManager.logout()
@@ -385,6 +414,7 @@ internal class LoginManagerTests {
                 mockSharedPrefs,
                 mockDatabase,
                 fakePatientManager,
+                fakeReadingManager,
                 mockHealthManager,
                 mockContext
             )
@@ -426,6 +456,7 @@ internal class LoginManagerTests {
                 mockSharedPrefs,
                 mockDatabase,
                 fakePatientManager,
+                fakeReadingManager,
                 mockHealthManager,
                 mockContext
             )

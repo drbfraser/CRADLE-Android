@@ -22,9 +22,8 @@ class PatientManager @Inject constructor(
     private val database: CradleDatabase,
     private val patientDao: PatientDao,
     private val readingDao: ReadingDao,
-    private val restApi: RestApi
+    private val restApi: RestApi,
 ) {
-
     /**
      * add a single patient
      */
@@ -131,6 +130,29 @@ class PatientManager @Inject constructor(
             patient.lastServerUpdate = patient.lastEdited
         }
         add(patient)
+        return result.map { }
+    }
+
+    /**
+     * Uploads an new drug/medical record
+     *
+     * When there is internet and the request is successful, drugLastEdited/medicalLastEdited
+     * field should be set to null
+     *
+     * When there isn't internet connection, the patient in local DB will be updated
+     * with the new record along with a drugLastEdited/medicalLastEdited at created time
+     *
+     * @param patient the patient to be updated with new drug/medical record
+     * @param isDrugRecord if it is a drug/medical record
+     * @return whether the upload succeeded or not
+     */
+    suspend fun updatePatientMedicalRecord(patient: Patient, isDrugRecord: Boolean): NetworkResult<Unit> {
+        val result = restApi.postMedicalRecord(patient, isDrugRecord)
+        if (result is NetworkResult.Success) {
+            if (isDrugRecord) patient.drugLastEdited = null
+            else patient.medicalLastEdited = null
+            add(patient)
+        }
         return result.map { }
     }
 
