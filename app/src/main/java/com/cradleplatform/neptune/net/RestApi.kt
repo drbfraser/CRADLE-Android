@@ -26,6 +26,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
 import java.io.InputStream
@@ -347,6 +349,32 @@ class RestApi constructor(
                 url = urlManager.getPatientInfoOnly(patient.id),
                 headers = headers,
                 requestBody = buildJsonRequestBody(body),
+                inputStreamReader = {},
+            )
+        }
+
+    /**
+     * Uploads a new drug/medical record for a patient which already exists on the server.
+     *
+     * @param patient contains the record to be uploaded and the id for the url
+     * @param isDrugRecord if it is a drug/medical record
+     * @return whether the request was successful or not
+     */
+    suspend fun postMedicalRecord(patient: Patient, isDrugRecord: Boolean): NetworkResult<Unit> =
+        withContext(IO) {
+            val jsonObject = JSONObject()
+            if (isDrugRecord) {
+                jsonObject.put("drugHistory", patient.drugHistory)
+            } else {
+                jsonObject.put("medicalHistory", patient.medicalHistory)
+            }
+            val mediaType = "application/json; charset=utf-8".toMediaType()
+            val requestBody = jsonObject.toString().toRequestBody(mediaType)
+            http.makeRequest(
+                method = Http.Method.POST,
+                url = urlManager.postMedicalRecord(patient.id),
+                headers = headers,
+                requestBody = requestBody,
                 inputStreamReader = {},
             )
         }

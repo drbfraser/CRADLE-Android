@@ -152,6 +152,11 @@ class UrlManager @Inject constructor(val settings: Settings) {
     fun getPatientInfoOnly(id: String): String = "$base/patients/$id/info"
 
     /**
+     * Create a new medical/drug record
+     */
+    fun postMedicalRecord(id: String): String = "$base/patients/$id/medical_records"
+
+    /**
      * get a assessment by id
      */
     fun getAssessmentById(id: String): String = "$base/assessments/$id"
