@@ -114,33 +114,17 @@ ORDER BY latestReadingDate DESC, name COLLATE NOCASE ASC
     )
     fun localSearchPatientsByNameOrId(query: String): PagingSource<Int, LocalSearchPatient>
 
-    @Query(
-        """
-            SELECT * FROM Patient
-            WHERE
-                lastServerUpdate IS NULL
-                OR lastServerUpdate < lastEdited
-                OR prevPregnancyEndDate IS NOT NULL
-                OR medicalLastEdited IS NOT NULL
-                OR drugLastEdited IS NOT NULL
-                OR (gestationalAge IS NOT NULL AND pregnancyId IS NULL)
-        """
-    )
-    suspend fun getPatientsForUpload(): List<Patient>
+    /**
+     * Query the database for all the patients that have been created or edited offline
+     */
+    @Query("SELECT * FROM Patient WHERE $patientsToUploadQueryCriteria")
+    suspend fun readPatientsToUpload(): List<Patient>
 
-    @Query(
-        """
-            SELECT COUNT(id) FROM Patient
-            WHERE
-                lastServerUpdate IS NULL
-                OR lastServerUpdate < lastEdited
-                OR prevPregnancyEndDate IS NOT NULL
-                OR medicalLastEdited IS NOT NULL
-                OR drugLastEdited IS NOT NULL
-                OR (gestationalAge IS NOT NULL AND pregnancyId IS NULL)
-        """
-    )
-    suspend fun getNumberOfPatientsForUpload(): Int
+    /**
+     * Query the database for the number of patients that have been created or edited offline
+     */
+    @Query("SELECT COUNT(id) FROM Patient WHERE $patientsToUploadQueryCriteria")
+    suspend fun countPatientsToUpload(): Int
 
     /**
      * get a list of patient Ids
@@ -166,4 +150,15 @@ ORDER BY latestReadingDate DESC, name COLLATE NOCASE ASC
      */
     @Query("DELETE FROM Patient")
     suspend fun deleteAllPatients()
+
+    companion object {
+        private const val patientsToUploadQueryCriteria = """
+            lastServerUpdate IS NULL
+            OR lastServerUpdate < lastEdited
+            OR prevPregnancyEndDate IS NOT NULL
+            OR medicalLastEdited IS NOT NULL
+            OR drugLastEdited IS NOT NULL
+            OR (gestationalAge IS NOT NULL AND pregnancyId IS NULL)
+        """
+    }
 }

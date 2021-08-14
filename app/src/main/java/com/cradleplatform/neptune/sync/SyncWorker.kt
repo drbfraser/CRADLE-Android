@@ -152,9 +152,9 @@ class SyncWorker @AssistedInject constructor(
         // phone if we only use a timestamp after the sync.
         val syncTimestampToSave: BigInteger = UnixTimestamp.now
 
-        val patientsToUpload: List<Patient> = patientManager.getPatientsForUpload()
+        val patientsToUpload: List<Patient> = patientManager.getPatientsToUpload()
         val patientResult = syncPatients(patientsToUpload, lastPatientSyncTime)
-        val patientsLeftToUpload = patientManager.getPatientsForUpload().size
+        val patientsLeftToUpload = patientManager.getNumberOfPatientsToUpload()
         if (patientsLeftToUpload > 0) {
             // FIXME: Clean this up
             Log.wtf(
