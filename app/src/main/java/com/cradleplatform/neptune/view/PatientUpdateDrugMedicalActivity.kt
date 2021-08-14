@@ -29,7 +29,6 @@ class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
 
     companion object {
         private const val EXTRA_PATIENT = "patient"
-        const val UPDATE_ACTIVITY_DONE = 14235
 
         fun makeIntent(context: Context, isDrugRecord: Boolean, currPatient: Patient): Intent {
             val intent = Intent(context, PatientUpdateDrugMedicalActivity::class.java)
@@ -43,7 +42,7 @@ class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_patient_update_drug_medical)
 
-        var patient: Patient = intent.getSerializableExtra("patient") as Patient
+        val patient: Patient = intent.getSerializableExtra("patient") as Patient
         val isDrugRecord = intent.getBooleanExtra("isDrugRecord", true)
 
         setupInternetConnectionCheck()
@@ -84,10 +83,6 @@ class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
                 if (isDrugRecord) patient.drugHistory = record
                 else patient.medicalHistory = record
 
-                val resultIntent = Intent()
-                resultIntent.putExtra("patientId", patient.id)
-                setResult(UPDATE_ACTIVITY_DONE, resultIntent)
-
                 lifecycleScope.launch {
                     when (saveAndUploadPatient(patient, isDrugRecord)) {
                         is SaveResult.SavedAndUploaded -> {
@@ -95,8 +90,7 @@ class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
                                 it.context,
                                 "Success - Record sent to server",
                                 Toast.LENGTH_LONG
-                            )
-                                .show()
+                            ).show()
                             finish()
                         }
                         is SaveResult.SavedOffline -> {
@@ -104,8 +98,7 @@ class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
                                 it.context,
                                 "Please sync! Record was not pushed to server",
                                 Toast.LENGTH_LONG
-                            )
-                                .show()
+                            ).show()
                             finish()
                         }
                         else -> {
@@ -114,8 +107,7 @@ class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
                                 it.context,
                                 "Failed to save - Please try again",
                                 Toast.LENGTH_LONG
-                            )
-                                .show()
+                            ).show()
                         }
                     }
                 }
@@ -138,15 +130,22 @@ class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
                     SaveResult.SavedAndUploaded
                 }
                 else -> {
-                    SaveResult.Error
+                    saveRecordOffline(patient, isDrugRecord)
                 }
             }
         } else {
-            if (isDrugRecord) patient.drugLastEdited = UnixTimestamp.now.toLong()
-            else patient.medicalLastEdited = UnixTimestamp.now.toLong()
-            patientManager.add(patient)
-            SaveResult.SavedOffline
+            saveRecordOffline(patient, isDrugRecord)
         }
+    }
+
+    private suspend fun saveRecordOffline(patient: Patient, isDrugRecord: Boolean): SaveResult {
+        if (isDrugRecord) {
+            patient.drugLastEdited = UnixTimestamp.now.toLong()
+        } else {
+            patient.medicalLastEdited = UnixTimestamp.now.toLong()
+        }
+        patientManager.add(patient)
+        return SaveResult.SavedOffline
     }
 
     override fun onSupportNavigateUp(): Boolean {

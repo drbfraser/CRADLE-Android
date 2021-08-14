@@ -361,7 +361,7 @@
     <string name="age_date_picker_title">Select date of birth</string>
     <string name="age_input_suffix_approximate_years_old">years old (approximate)</string>
     <string name="age_input_calculated_age">(%1$d years old)</string>
-    <string name="years_old_with_date_of_birth_in_parens">years old (<xliff:g id="date" example="1995-05-05">%1$s</xliff:g>)</string>
+    <string name="years_old_with_date_of_birth_in_parens">years old (<xliff:g example="1995-05-05" id="date">%1$s</xliff:g>)</string>
     <string name="dob_helper_using_age_from_date_of_birth">Using age from given date of birth</string>
     <string name="fragment_patient_info_name_label">Name*</string>
     <string name="field_required">*Required</string>
@@ -424,8 +424,8 @@
     <string name="fragment_advice_advice_card_header">Advice for this reading</string>
     <string name="fragment_advice_save_options_header">Options for saving</string>
 
-    <string name="list_reading_item_blood_pressure_display_systolic_diastolic">Systolic: <xliff:g id="bloodPressure" example="115">%1$d</xliff:g>, Diastolic: <xliff:g id="bloodPressure" example="115">%2$d</xliff:g></string>
-    <string name="list_reading_item_heart_rate_display"><xliff:g id="heartRate" example="75">%1$d</xliff:g> BPM</string>
+    <string name="list_reading_item_blood_pressure_display_systolic_diastolic">Systolic: <xliff:g example="115" id="bloodPressure">%1$d</xliff:g>, Diastolic: <xliff:g example="115" id="bloodPressure">%2$d</xliff:g></string>
+    <string name="list_reading_item_heart_rate_display"><xliff:g example="75" id="heartRate">%1$d</xliff:g> BPM</string>
     <string name="list_previous_readings_item_heart_rate_label">Heart rate</string>
     <string name="list_previous_readings_item_blood_pressure_label">Blood pressure</string>
     <string name="recommended_radio_button_suffix">(recommended)</string>
@@ -564,6 +564,9 @@
     <string name="update_failed">Update failed</string>
     <string name="update_successful">Updated Sucessfully</string>
     <string name="allergies">Allergies</string>
+    <string name="edit_patient">Edit Patient</string>
+    <string name="no_edit_patient_gender">Patient pregnant, cannot change gender</string>
+    <string name="editing_no_network_warn">Editing without network. Please sync when possible</string>
 
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>

@@ -7,6 +7,7 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RadioGroup
 import android.widget.TextView
@@ -22,7 +23,6 @@ import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.utilities.Util
 import com.cradleplatform.neptune.view.DashBoardActivity.Companion.READING_ACTIVITY_DONE
-import com.cradleplatform.neptune.view.PatientUpdateDrugMedicalActivity.Companion.UPDATE_ACTIVITY_DONE
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForEditReading
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForNewReadingExistingPatient
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForRecheck
@@ -99,12 +99,12 @@ open class PatientProfileActivity : AppCompatActivity() {
             // Not a local patient, might be a child class so we let the child do the init stuff
             return
         }
-        populatePatientInfo(currPatient)
         setupReadingsRecyclerView()
         setupCreatePatientReadingButton()
         setupUpdateRecord()
         setupLineChart()
         setupToolBar()
+        setupEditPatient(currPatient)
     }
 
     fun setupToolBar() {
@@ -137,6 +137,7 @@ open class PatientProfileActivity : AppCompatActivity() {
 
         if (tmpPatient != null) {
             currPatient = tmpPatient
+            populatePatientInfo(currPatient)
         }
         return tmpPatient != null
     }
@@ -205,6 +206,14 @@ open class PatientProfileActivity : AppCompatActivity() {
         if (patient.allergy.isNotEmpty()) {
             val allergies = findViewById<TextView>(R.id.allergies)
             allergies.text = patient.allergy
+        }
+    }
+
+    private fun setupEditPatient(patient: Patient) {
+        val editIcon = findViewById<ImageView>(R.id.im_edit_personal_info)
+        editIcon.setOnClickListener() {
+            val intent = EditPatientInfoActivity.makeIntentWithPatientId(this, patient.id)
+            startActivity(intent)
         }
     }
 
@@ -317,7 +326,7 @@ open class PatientProfileActivity : AppCompatActivity() {
 
     private fun onUpdateButtonClicked(isDrugRecord: Boolean) {
         val intent = PatientUpdateDrugMedicalActivity.makeIntent(this, isDrugRecord, currPatient)
-        startActivityForResult(intent, UPDATE_ACTIVITY_DONE)
+        startActivity(intent)
     }
 
     private fun setupUpdateRecord() {
@@ -388,12 +397,6 @@ open class PatientProfileActivity : AppCompatActivity() {
         if (requestCode == READING_ACTIVITY_DONE) {
             updateUi()
         }
-
-        if (requestCode == UPDATE_ACTIVITY_DONE) {
-            onResume()
-            populatePatientInfo(currPatient)
-        }
-
         super.onActivityResult(requestCode, resultCode, data)
     }
 
