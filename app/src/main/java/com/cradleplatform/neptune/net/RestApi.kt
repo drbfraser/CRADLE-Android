@@ -57,8 +57,8 @@ class RestApi constructor(
 ) {
     companion object {
         private const val TAG = "RestApi"
-        protected val UNIT_VALUE_WEEKS = "WEEKS"
-        protected val UNIT_VALUE_MONTHS = "MONTHS"
+        private const val UNIT_VALUE_WEEKS = "WEEKS"
+        private const val UNIT_VALUE_MONTHS = "MONTHS"
     }
 
     /**
@@ -408,15 +408,12 @@ class RestApi constructor(
      */
     object PregnancyResponse {
         var id: Int? = null
-        /**
-        "gestationalAgeUnit": "WEEKS",
-        "id": 1001,
-        "lastEdited": 1620000002,
-        "patientId": 120000,
-        "pregnancyEndDate": 1620000002,
-        "pregnancyOutcome": "Mode of delivery assisted birth",
-        "pregnancyStartDate": 1620000002
-         **/
+        var gestationalAgeUnit: String? = null
+        var lastEdited: Int? = null
+        var patientId: String? = null
+        var pregnancyEndDate: Int? = null
+        var pregnancyOutcome: String? = null
+        var pregnancyStartDate: Int? = null
     }
     suspend fun postPregnancy(patient: Patient): NetworkResult<PregnancyResponse> =
         withContext(IO) {

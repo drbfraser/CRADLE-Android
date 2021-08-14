@@ -71,14 +71,15 @@ class EditPregnancyActivity : AppCompatActivity() {
             }
         }
 
-        setupToolBar(title)
-        //setupSaveButton()
-
         if (intent.hasExtra(EXTRA_PATIENT_ID)) {
             val patientId = intent.getStringExtra(EXTRA_PATIENT_ID)
                 ?: error("no patient with given id")
             viewModel.initialize(patientId, intent.getBooleanExtra(EXTRA_IS_PREGNANT, false))
         }
+
+        setupToolBar(title)
+        setupSaveButton()
+
     }
 
     private fun setupToolBar(title: String) {
@@ -90,11 +91,11 @@ class EditPregnancyActivity : AppCompatActivity() {
         val btnSave = findViewById<Button>(R.id.btn_save_pregnancy)
         btnSave.setOnClickListener {
             lifecycleScope.launch {
-                when (viewModel.addPregnancy()) {
+                when (viewModel.saveAndUploadPregnancy()) {
                     is EditPregnancyViewModel.SaveResult.SavedAndUploaded -> {
                         Toast.makeText(
                             it.context,
-                            "Success - patient sent to server ",
+                            "Success - changes saved online",
                             Toast.LENGTH_LONG
                         ).show()
                         finish()
@@ -102,15 +103,16 @@ class EditPregnancyActivity : AppCompatActivity() {
                     is EditPregnancyViewModel.SaveResult.SavedOffline -> {
                         Toast.makeText(
                             it.context,
-                            "Please sync! Patient edits weren't pushed to server",
+                            "Please sync! Edits weren't pushed to server",
                             Toast.LENGTH_LONG
                         ).show()
                         finish()
                     }
                     else -> {
+                        // TODO: make this a popup since it doesn't finish the activity anyway
                         Toast.makeText(
                             it.context,
-                            "Invalid patient - check errors",
+                            "Invalid - check errors or try syncing",
                             Toast.LENGTH_LONG
                         ).show()
                     }

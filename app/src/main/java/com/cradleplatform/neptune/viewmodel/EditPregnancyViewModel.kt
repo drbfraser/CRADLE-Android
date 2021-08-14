@@ -33,7 +33,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.lang.reflect.InvocationTargetException
-import java.text.DecimalFormat
 import javax.inject.Inject
 import kotlin.reflect.KProperty
 
@@ -58,8 +57,11 @@ class EditPregnancyViewModel @Inject constructor(
 
     private val patientBuilder = LiveDataDynamicModelBuilder()
     val isNetworkAvailable = NetworkAvailableLiveData(context)
-    private var isValidToSave = false
-    private lateinit var patient: Patient
+
+    private var isAddPregnancy = true
+
+    val isInputEnabled = MediatorLiveData<Boolean>()
+    val patientName = MutableLiveData<String>()
 
     private val monthsUnitString = context.resources
         .getStringArray(R.array.reading_ga_units)[GEST_AGE_UNIT_MONTHS_INDEX]
@@ -73,6 +75,8 @@ class EditPregnancyViewModel @Inject constructor(
             val patient = patientManager.getPatientById(patientId)
                 ?: error("no patient with given id")
 
+            isAddPregnancy = !isPregnant
+
             if (!isPregnant) {
                 patient.isPregnant = true
                 setupGestationAgeLiveData()
@@ -83,13 +87,12 @@ class EditPregnancyViewModel @Inject constructor(
             patientBuilder.decompose(patient)
             //populateLiveData(patient)
 
+            patientName.value = patient.name
+
             allowEdit(true)
             Log.d(TAG, patient.toString())
         }
     }
-
-    val isInputEnabled = MediatorLiveData<Boolean>()
-    val patientName = MutableLiveData<String>()
 
     /**
      * Implicitly used in two-way Data Binding with .
@@ -104,38 +107,11 @@ class EditPregnancyViewModel @Inject constructor(
 
     val patientGestationalAgeUnits: MutableLiveData<String> = MediatorLiveData<String>()
 
-    private val patientIsPregnant: MutableLiveData<Boolean?>
-        get() = patientBuilder.get<Boolean?>(Patient::isPregnant)
-
     private fun allowEdit(isEnabled: Boolean) {
         isInputEnabled.value = isEnabled
     }
 
     private suspend fun setupGestationAgeLiveData() = withContext(Dispatchers.Main) {
-
-        // Populate the gestational age input field / EditText.
-        patientGestationalAgeInput.apply {
-            value = if (patientIsPregnant.value != true) {
-                // If not pregnant, make the input blank. Note: If this is the empty string,
-                // then an error will be triggered when the Pregnant CheckBox is ticked for the
-                // first time.
-                null
-            } else {
-                when (val gestationalAge = patientGestationalAge.value) {
-                    is GestationalAgeMonths -> {
-                        // We don't want to show an excessive amount of decimal places.
-                        DecimalFormat("#.####").format(gestationalAge.ageFromNow.asMonths())
-                    }
-                    is GestationalAgeWeeks -> {
-                        gestationalAge.ageFromNow.weeks.toString()
-                    }
-                    else -> {
-                        // If it's missing, default to nothing.
-                        ""
-                    }
-                }
-            }
-        }
 
         // Populate the gestational age units input field.
         patientGestationalAgeUnits.apply {
@@ -185,15 +161,10 @@ class EditPregnancyViewModel @Inject constructor(
                     GestationalAgeWeeks(Weeks(userInput))
                 }
             }
-            addSource(patientIsPregnant) { isPregnant ->
-                if (isPregnant == false) {
-                    value = null
-                }
-            }
         }
     }
 
-    suspend fun addPregnancy(): SaveResult {
+    suspend fun saveAndUploadPregnancy(): SaveResult {
 
         allowEdit(false)
         return withContext(Dispatchers.Main) {
@@ -202,30 +173,36 @@ class EditPregnancyViewModel @Inject constructor(
             }
             val patient = patientAsync.await()
 
-            if (patient == null) {
-                allowEdit(true)
-                SaveResult.Error
-            } else {
-                saveAndUploadPregnancy()
+            when {
+                patient == null -> {
+                    allowEdit(true)
+                    SaveResult.Error
+                }
+                isAddPregnancy -> {
+                    addPregnancy(patient)
+                }
+                else -> {
+                    //closePregnancy(patient)
+                    SaveResult.Error
+                }
             }
         }
     }
 
-    private suspend fun saveAndUploadPregnancy(): SaveResult {
-        patient.gestationalAge = patientGestationalAge.value
-        Log.d(TAG, "this is the gest from mut live data: ${patientGestationalAge.value}")
-
-        if (patient.gestationalAge == null) {
-            return SaveResult.Error
-        }
-
+    private suspend fun addPregnancy(patient: Patient): SaveResult {
         return if (isNetworkAvailable.value == true) {
-            when (patientManager.addPregnancyOnServerAndSave(patient)) {
+            when (val result = patientManager.addPregnancyOnServerSaveOnSuccess(patient)) {
                 is NetworkResult.Success -> {
                     SaveResult.SavedAndUploaded
                 }
+                is NetworkResult.Failure -> {
+                    // TODO: Find a way to push this message (String(result.body)) up to activity level
+                    Log.d(TAG, String(result.body))
+                    SaveResult.Error
+                }
                 else -> {
-                    SaveResult.SavedOffline
+                    allowEdit(true)
+                    SaveResult.Error
                 }
             }
         } else {
@@ -233,6 +210,23 @@ class EditPregnancyViewModel @Inject constructor(
             SaveResult.SavedOffline
         }
     }
+
+    /*private suspend fun closePregnancy(patient: Patient): SaveResult {
+        return if (isNetworkAvailable.value == true) {
+            when (patientManager.addPregnancyOnServerAndSave(patient)) {
+                is NetworkResult.Success -> {
+                    SaveResult.SavedAndUploaded
+                }
+                else -> {
+                    allowEdit(true)
+                    SaveResult.SavedOffline
+                }
+            }
+        } else {
+            patientManager.add(patient)
+            SaveResult.SavedOffline
+        }
+    }*/
 
     private fun attemptToBuildValidPatient(): Patient? {
         if (!patientBuilder.isConstructable<Patient>()) {
@@ -379,10 +373,8 @@ class EditPregnancyViewModel @Inject constructor(
                     if (currentMap[propertyForErrorMapKey.name] != errorMessageForMap) {
                         if (verificationResult is Verifiable.Valid) {
                             currentMap.remove(propertyForErrorMapKey.name)
-                            isValidToSave = true
                         } else {
                             currentMap[propertyForErrorMapKey.name] = errorMessageForMap
-                            isValidToSave = false
                         }
                         errorMap.setValueOnMainThread(currentMap)
                     }
