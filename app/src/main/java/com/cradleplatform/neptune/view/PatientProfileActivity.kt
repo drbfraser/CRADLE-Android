@@ -23,6 +23,7 @@ import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Sex
 import com.cradleplatform.neptune.utilities.Util
 import com.cradleplatform.neptune.view.DashBoardActivity.Companion.READING_ACTIVITY_DONE
+import com.cradleplatform.neptune.view.PatientUpdateDrugMedicalActivity.Companion.UPDATE_ACTIVITY_DONE
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForEditReading
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForNewReadingExistingPatient
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForRecheck
@@ -103,6 +104,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         populatePatientInfo(currPatient)
         setupReadingsRecyclerView()
         setupCreatePatientReadingButton()
+        setupUpdateRecord()
         setupLineChart()
         setupToolBar()
 
@@ -330,6 +332,20 @@ open class PatientProfileActivity : AppCompatActivity() {
         }
     }
 
+    private fun onUpdateButtonClicked(isDrugRecord: Boolean) {
+        val intent = PatientUpdateDrugMedicalActivity.makeIntent(this, isDrugRecord, currPatient)
+        startActivityForResult(intent, UPDATE_ACTIVITY_DONE)
+    }
+
+    private fun setupUpdateRecord() {
+        findViewById<Button>(R.id.medicalHistoryUpdateButton).setOnClickListener {
+            onUpdateButtonClicked(false)
+        }
+        findViewById<Button>(R.id.drugHistoryUpdateButton).setOnClickListener {
+            onUpdateButtonClicked(true)
+        }
+    }
+
     open fun setupReadingsRecyclerView() {
         patientReadings = getThisPatientsReadings()
 
@@ -389,6 +405,12 @@ open class PatientProfileActivity : AppCompatActivity() {
         if (requestCode == READING_ACTIVITY_DONE) {
             updateUi()
         }
+
+        if (requestCode == UPDATE_ACTIVITY_DONE) {
+            onResume()
+            populatePatientInfo(currPatient)
+        }
+
         super.onActivityResult(requestCode, resultCode, data)
     }
 

@@ -44,6 +44,7 @@
         </activity>
         <activity android:name=".view.DashBoardActivity" />
         <activity android:name=".view.PatientProfileActivity" />
+        <activity android:name=".view.PatientUpdateDrugMedicalActivity" />
         <activity
             android:name=".view.IntroActivity"
             android:label="@string/app_name"
