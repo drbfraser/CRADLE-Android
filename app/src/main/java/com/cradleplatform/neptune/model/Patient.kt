@@ -486,10 +486,13 @@ data class Patient(
                 gestationalAge != null
             }
 
+            val pregnancyId = if (has(PatientField.PREGNANCY_ID.text)) {
+                get(PatientField.PREGNANCY_ID)?.asInt()
+            } else {
+                null
+            }
+
             val sex = Sex.valueOf(get(PatientField.SEX)!!.textValue())
-            val pregnancyId = get(PatientField.PREGNANCY_ID)?.asInt()
-            val prevPregnancyEndDate = get(PatientField.PREGNANCY_END_DATE)?.asLong()
-            val prevPregnancyOutcome = get(PatientField.PREGNANCY_OUTCOME)?.textValue()
             val zone = get(PatientField.ZONE)?.textValue()
             val villageNumber = get(PatientField.VILLAGE_NUMBER)?.textValue()
             val householdNumber = get(PatientField.HOUSEHOLD_NUMBER)?.textValue()
@@ -511,6 +514,8 @@ data class Patient(
             // it guarantees there are no un-uploaded edits on android
             val drugLastEdited = null
             val medicalLastEdited = null
+            val prevPregnancyOutcome = null
+            val prevPregnancyEndDate = null
 
             return@run Patient(
                 id = id,

@@ -73,6 +73,4 @@ class AddPregnancyFragment : Fragment() {
             setOnClickListener { it.hideKeyboard() }
         }
     }
-
-
 }

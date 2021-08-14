@@ -7,38 +7,12 @@
     <data>
         <variable
             name="viewModel"
-            type="com.cradleplatform.neptune.viewmodel.EditPregnancyViewModel" />
+            type="com.cradleplatform.neptune.viewmodel.EditPregnancyViewModel"/>
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
-        <TextView
-            android:id="@+id/patientText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="16dp"
-            android:text="Patient:"
-            android:textColor="@color/black"
-            android:textSize="32sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-        <TextView
-            android:id="@+id/patientName"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="10dp"
-            android:text="@string/patient_name_john_smith"
-            android:textColor="@color/black"
-            android:textSize="32sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/patientText"
-            app:layout_constraintTop_toTopOf="@+id/patientText" />
 
         <androidx.cardview.widget.CardView
             android:id="@+id/personalInfoCard"
@@ -51,7 +25,7 @@
             app:cardElevation="4dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/patientText">
+            app:layout_constraintTop_toTopOf="parent">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 style="@style/ReadingFlowTheme"
@@ -65,25 +39,20 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="4dp"
                     android:hint="@string/fragment_patient_info_gestational_age_label"
-                    app:layout_constraintEnd_toStartOf="@+id/gestational_age_units_layout"
-                    app:layout_constraintHorizontal_bias="0.5"
+                    android:enabled="@{viewModel.isInputEnabled}"
+                    gestationalAgeUnits="@{viewModel.patientGestationalAgeUnits}"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    addMandatoryStarToLabelWhen="true">
-
-                    <!--
-                    errorMessage='@{viewModel.errorMap["gestationalAge"]}'
-                    gestationalAgeUnits="@{viewModel.patientGestationalAgeUnits}"-->
+                    app:layout_constraintEnd_toEndOf="parent"
+                    errorMessage='@{viewModel.errorMap["gestationalAge"]}'>
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/gestational_age_text"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="number"
-                        tools:text="23" />
-                    <!--
-                        android:text="@={viewModel.patientGestationalAgeInput}"
-                        makeTextEmptyWhen="@{viewModel.patientIsPregnant != true}"-->
+                        tools:text="23"
+                        android:text="@={viewModel.patientGestationalAgeInput}"/>
 
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -92,27 +61,23 @@
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
+                    android:layout_marginTop="10dp"
                     android:hint="@string/fragment_patient_info_gestational_age_units_label"
+                    android:enabled="@{viewModel.isInputEnabled}"
                     android:labelFor="@id/gestational_age_units_input_auto_complete_text"
-                    android:paddingBottom="0dp"
                     app:hintAnimationEnabled="false"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.5"
-                    app:layout_constraintStart_toEndOf="@+id/gestational_age_layout"
-                    app:layout_constraintTop_toTopOf="@+id/gestational_age_layout"
-                    app:layout_constraintBottom_toBottomOf="@+id/gestational_age_layout">
+                    app:layout_constraintTop_toBottomOf="@id/gestational_age_layout"
+                    app:layout_constraintStart_toStartOf="@id/gestational_age_layout">
 
                     <AutoCompleteTextView
                         android:id="@+id/gestational_age_units_input_auto_complete_text"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="none"
-                        tools:text="weeks" />
-                    <!--
-                    android:text="@={viewModel.patientGestationalAgeUnits}"
-                    setMaterialSpinnerItemsWithArray="@{@stringArray/reading_ga_units}"-->
-
+                        tools:text="weeks"
+                        android:text="@={viewModel.patientGestationalAgeUnits}"
+                        setMaterialSpinnerItemsWithArray="@{@stringArray/reading_ga_units}"/>
 
                 </com.google.android.material.textfield.TextInputLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>

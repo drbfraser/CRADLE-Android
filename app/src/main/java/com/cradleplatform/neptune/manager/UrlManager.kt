@@ -48,6 +48,11 @@ class UrlManager @Inject constructor(val settings: Settings) {
         get() = "$base/readings"
 
     /**
+     * Endpoint for posting a new pregnancy for an existing patient.
+     */
+    fun postPregnancy(id: String): String = "$base/patients/$id/pregnancies"
+
+    /**
      * The base server URL.
      */
     internal val base: String

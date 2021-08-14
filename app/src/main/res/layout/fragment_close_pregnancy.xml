@@ -13,32 +13,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/patientText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="16dp"
-            android:text="Patient:"
-            android:textColor="@color/black"
-            android:textSize="32sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-        <TextView
-            android:id="@+id/patientName"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="10dp"
-            android:text="@string/patient_name_john_smith"
-            android:textColor="@color/black"
-            android:textSize="32sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/patientText"
-            app:layout_constraintTop_toTopOf="@+id/patientText" />
-
         <androidx.cardview.widget.CardView
             android:id="@+id/personalInfoCard"
             android:layout_width="match_parent"
@@ -50,36 +24,42 @@
             app:cardElevation="4dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/patientText">
+            app:layout_constraintTop_toTopOf="parent">
+
             <androidx.constraintlayout.widget.ConstraintLayout
                 style="@style/ReadingFlowTheme"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="16dp">
 
+                <TextView
+                    android:id="@+id/tv_gestational_age"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SEVEN MONTHS"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/gestational_age"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_margin="4dp"
+                    android:layout_marginTop="10dp"
                     app:helperText="Enter end date of baby time"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
                     app:startIconContentDescription="Date picker for date of birth"
                     app:startIconDrawable="@drawable/ic_baseline_calendar_today_24"
-                    app:suffixText="@string/age_input_suffix_approximate_years_old">
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tv_gestational_age">
 
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!--
-                errorMessage='@{viewModel.errorMap["dob"]}'-->
-
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/recordText"
+                    android:id="@+id/pregnancy_outcome"
                     style="@style/ReadingFlowTheme"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:layout_marginTop="10dp"
                     android:gravity="top"
                     android:inputType="textLongMessage|textMultiLine"
                     android:maxLines="5"
@@ -97,12 +77,12 @@
                     android:id="@+id/internetAvailabilityTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="10dp"
                     android:text="No internet - Please sync when possible"
                     android:textColor="@color/error"
                     android:visibility="gone"
-                    app:layout_constraintStart_toStartOf="@+id/recordText"
-                    app:layout_constraintTop_toBottomOf="@+id/recordText"
+                    app:layout_constraintStart_toStartOf="@+id/pregnancy_outcome"
+                    app:layout_constraintTop_toBottomOf="@+id/pregnancy_outcome"
                     tools:visibility="visible" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>

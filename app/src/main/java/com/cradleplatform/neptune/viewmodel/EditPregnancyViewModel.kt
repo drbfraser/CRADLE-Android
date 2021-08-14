@@ -11,13 +11,18 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cradleplatform.neptune.BuildConfig
+import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.ext.setValueOnMainThread
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.model.GestationalAge
+import com.cradleplatform.neptune.model.GestationalAgeMonths
+import com.cradleplatform.neptune.model.GestationalAgeWeeks
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Verifiable
 import com.cradleplatform.neptune.net.NetworkResult
 import com.cradleplatform.neptune.utilities.LiveDataDynamicModelBuilder
+import com.cradleplatform.neptune.utilities.Months
+import com.cradleplatform.neptune.utilities.Weeks
 import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -27,12 +32,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import org.threeten.bp.ZonedDateTime
 import java.lang.reflect.InvocationTargetException
+import java.text.DecimalFormat
 import javax.inject.Inject
 import kotlin.reflect.KProperty
 
 private val DEBUG = BuildConfig.DEBUG
+
+// The index of the gestational age units inside of the string.xml array, R.array.reading_ga_units
+private const val GEST_AGE_UNIT_WEEKS_INDEX = 0
+private const val GEST_AGE_UNIT_MONTHS_INDEX = 1
 
 /**
  * ViewModel for [EditPregnancyActivity]
@@ -49,19 +58,30 @@ class EditPregnancyViewModel @Inject constructor(
 
     private val patientBuilder = LiveDataDynamicModelBuilder()
     val isNetworkAvailable = NetworkAvailableLiveData(context)
+    private var isValidToSave = false
+    private lateinit var patient: Patient
 
-    fun initialize(patientId: String) {
+    private val monthsUnitString = context.resources
+        .getStringArray(R.array.reading_ga_units)[GEST_AGE_UNIT_MONTHS_INDEX]
+    private val weeksUnitString = context.resources
+        .getStringArray(R.array.reading_ga_units)[GEST_AGE_UNIT_WEEKS_INDEX]
+
+    fun initialize(patientId: String, isPregnant: Boolean) {
         viewModelScope.launch(Dispatchers.Main) {
             allowEdit(false)
 
             val patient = patientManager.getPatientById(patientId)
                 ?: error("no patient with given id")
 
-            patientBuilder.decompose(patient)
-            //setUpAgeLiveData(patient.dob)
+            if (!isPregnant) {
+                patient.isPregnant = true
+                setupGestationAgeLiveData()
+            } /*else {
+                tvGestationalAge.value = patient.gestationalAge?.ageFromNow?.asMonths()?.toString() ?: ""
+            }*/
 
-            // Disable editing gender if patient is pregnant
-            isPatientSexEditable.value = !patient.isPregnant
+            patientBuilder.decompose(patient)
+            //populateLiveData(patient)
 
             allowEdit(true)
             Log.d(TAG, patient.toString())
@@ -69,19 +89,7 @@ class EditPregnancyViewModel @Inject constructor(
     }
 
     val isInputEnabled = MediatorLiveData<Boolean>()
-    val isPatientSexEditable = MediatorLiveData<Boolean>()
-    var loadingStatus = MutableLiveData<String>().apply { value = "Loading" }
-
-    /** Patient Info */
-    /** Used in two-way Data Binding with EditPatientInfoActivity */
-    val patientId: MutableLiveData<String>
-        get() = patientBuilder.get<String>(Patient::id)
-
-    val patientName: MutableLiveData<String>
-        get() = patientBuilder.get<String>(Patient::name)
-
-    val patientLastEdited: MutableLiveData<Long?>
-        get() = patientBuilder.get<Long?>(Patient::lastEdited)
+    val patientName = MutableLiveData<String>()
 
     /**
      * Implicitly used in two-way Data Binding with .
@@ -96,43 +104,101 @@ class EditPregnancyViewModel @Inject constructor(
 
     val patientGestationalAgeUnits: MutableLiveData<String> = MediatorLiveData<String>()
 
-    val patientIsPregnant: MutableLiveData<Boolean?>
+    private val patientIsPregnant: MutableLiveData<Boolean?>
         get() = patientBuilder.get<Boolean?>(Patient::isPregnant)
 
     private fun allowEdit(isEnabled: Boolean) {
         isInputEnabled.value = isEnabled
     }
 
-    /*private fun setUpAgeLiveData(dob: String?) {
+    private suspend fun setupGestationAgeLiveData() = withContext(Dispatchers.Main) {
 
-        if (dob != null) {
-            patientAge.value = Patient.calculateAgeFromDateString(dateString = dob)
-        }
-
-        patientDob.apply {
-            addSource(patientAge) {
-                // If we're using exact age, do not attempt to construct from approximate age
-                // input
-                if (it == null || _patientIsExactDob.value == true) return@addSource
-
-                // Otherwise, make a date of birth that corresponds to the age entered.
-                val newDateString = DateUtil.getDateStringFromAge(it.toLong())
-                if (value != newDateString) {
-                    value = newDateString
+        // Populate the gestational age input field / EditText.
+        patientGestationalAgeInput.apply {
+            value = if (patientIsPregnant.value != true) {
+                // If not pregnant, make the input blank. Note: If this is the empty string,
+                // then an error will be triggered when the Pregnant CheckBox is ticked for the
+                // first time.
+                null
+            } else {
+                when (val gestationalAge = patientGestationalAge.value) {
+                    is GestationalAgeMonths -> {
+                        // We don't want to show an excessive amount of decimal places.
+                        DecimalFormat("#.####").format(gestationalAge.ageFromNow.asMonths())
+                    }
+                    is GestationalAgeWeeks -> {
+                        gestationalAge.ageFromNow.weeks.toString()
+                    }
+                    else -> {
+                        // If it's missing, default to nothing.
+                        ""
+                    }
                 }
             }
         }
-    }*/
 
-    suspend fun save(): SaveResult {
-        loadingStatus = MutableLiveData<String>().apply { value = "Saving" }
+        // Populate the gestational age units input field.
+        patientGestationalAgeUnits.apply {
+            value = if (patientGestationalAge.value is GestationalAgeMonths) {
+                monthsUnitString
+            } else {
+                // This also makes the default units in weeks.
+                weeksUnitString
+            }
+        }
+
+        // Listen for changes from the input fields for gestational age
+        patientGestationalAge.apply {
+            addSource(patientGestationalAgeUnits) {
+                // If we received an update to the units used, convert the GestationalAge object
+                // into the right type.
+                it ?: return@addSource
+                val currentValue = value ?: return@addSource
+
+                value = if (it == monthsUnitString && currentValue !is GestationalAgeMonths) {
+                    GestationalAgeMonths((value as GestationalAge).timestamp)
+                } else if (it == weeksUnitString && currentValue !is GestationalAgeWeeks) {
+                    GestationalAgeWeeks((value as GestationalAge).timestamp)
+                } else {
+                    Log.d(TAG, "DEBUG: patientGestationalAge units source: didn't do anything")
+                    return@addSource
+                }
+
+                Log.d(TAG, "DEBUG: patientGestationalAge units source: clearing gest age input")
+                // Zero out the input when changing units.
+                patientGestationalAgeInput.value = "0"
+            }
+            addSource(patientGestationalAgeInput) {
+                // If the user typed something in, create a new GestationalAge object with the
+                // specified values.
+                if (it.isNullOrBlank()) {
+                    value = null
+                    return@addSource
+                }
+
+                val currentUnitsString = patientGestationalAgeUnits.value
+                value = if (currentUnitsString == monthsUnitString) {
+                    val userInput: Double = it.toDoubleOrNull() ?: 0.0
+                    GestationalAgeMonths(Months(userInput))
+                } else {
+                    val userInput: Long = it.toLongOrNull() ?: 0L
+                    GestationalAgeWeeks(Weeks(userInput))
+                }
+            }
+            addSource(patientIsPregnant) { isPregnant ->
+                if (isPregnant == false) {
+                    value = null
+                }
+            }
+        }
+    }
+
+    suspend fun addPregnancy(): SaveResult {
 
         allowEdit(false)
-
         return withContext(Dispatchers.Main) {
-
             val patientAsync = async {
-                constructValidPatientFromBuilders()
+                attemptToBuildValidPatient()
             }
             val patient = patientAsync.await()
 
@@ -140,36 +206,31 @@ class EditPregnancyViewModel @Inject constructor(
                 allowEdit(true)
                 SaveResult.Error
             } else {
-                saveAndUploadPatient(patient)
+                saveAndUploadPregnancy()
             }
         }
     }
 
-    private suspend fun saveAndUploadPatient(patient: Patient): SaveResult {
+    private suspend fun saveAndUploadPregnancy(): SaveResult {
+        patient.gestationalAge = patientGestationalAge.value
+        Log.d(TAG, "this is the gest from mut live data: ${patientGestationalAge.value}")
+
+        if (patient.gestationalAge == null) {
+            return SaveResult.Error
+        }
+
         return if (isNetworkAvailable.value == true) {
-            when (patientManager.updatePatientOnServer(patient)) {
+            when (patientManager.addPregnancyOnServerAndSave(patient)) {
                 is NetworkResult.Success -> {
                     SaveResult.SavedAndUploaded
                 }
                 else -> {
-                    // Most common case here would be if patient isn't on server yet, put req won't work
                     SaveResult.SavedOffline
                 }
             }
         } else {
             patientManager.add(patient)
             SaveResult.SavedOffline
-        }
-    }
-
-    private suspend fun constructValidPatientFromBuilders(): Patient? {
-        return withContext(Dispatchers.Default) {
-            val patientAsync = async {
-                patientLastEdited.setValueOnMainThread(ZonedDateTime.now().toEpochSecond())
-                attemptToBuildValidPatient()
-            }
-            val patient = patientAsync.await()
-            patient
         }
     }
 
@@ -247,13 +308,6 @@ class EditPregnancyViewModel @Inject constructor(
             // is that Data Binding doesn't support KProperty references like Patient::id.
             errorMap.apply {
                 value = arrayMapOf()
-                addSource(patientName) {
-                    testValueForValidityAndSetErrorMapAsync(
-                        value = it,
-                        propertyToCheck = Patient::name,
-                        verifier = Patient.Companion
-                    )
-                }
                 addSource(patientGestationalAge) {
                     testValueForValidityAndSetErrorMapAsync(
                         value = it,
@@ -325,8 +379,10 @@ class EditPregnancyViewModel @Inject constructor(
                     if (currentMap[propertyForErrorMapKey.name] != errorMessageForMap) {
                         if (verificationResult is Verifiable.Valid) {
                             currentMap.remove(propertyForErrorMapKey.name)
+                            isValidToSave = true
                         } else {
                             currentMap[propertyForErrorMapKey.name] = errorMessageForMap
+                            isValidToSave = false
                         }
                         errorMap.setValueOnMainThread(currentMap)
                     }

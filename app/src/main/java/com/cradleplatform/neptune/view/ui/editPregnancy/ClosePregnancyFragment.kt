@@ -1,6 +1,7 @@
 package com.cradleplatform.neptune.view.ui.editPregnancy
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,11 +9,22 @@ import androidx.databinding.DataBindingComponent
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.FragmentClosePregnancyBinding
+import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.view.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.EditPregnancyViewModel
+import com.google.android.material.datepicker.CalendarConstraints
+import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.textfield.TextInputLayout
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 private const val TAG = "Edit"
 
@@ -28,6 +40,12 @@ class ClosePregnancyFragment : Fragment() {
     private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent()
 
     private var binding: FragmentClosePregnancyBinding? = null
+
+    companion object {
+        private const val DATE_PICKER_DEFAULT_YEAR = 2000
+        private const val DATE_PICKER_YEAR_LOWER_BOUND = 1900
+        private const val DATE_PICKER_TIME_ZONE = "UTC"
+    }
 
     override fun onDestroy() {
         super.onDestroy()
@@ -59,15 +77,18 @@ class ClosePregnancyFragment : Fragment() {
 
         viewModel.isNetworkAvailable.observe(viewLifecycleOwner) {}
 
-        /*lifecycleScope.apply {
+        lifecycleScope.apply {
             launch { setupAndObserveAgeInfo(view) }
-        }*/
+        }
     }
 
     //CHANGE TO BE GESTATIONAL AGE VIA END DATE
-    /*private fun setupAndObserveAgeInfo(view: View) {
-        val ageInputLayout = view.findViewById<TextInputLayout>(R.id.age_input_layout)
-        val ageEditText = view.findViewById<TextInputEditText>(R.id.age_input_text)
+    private fun setupAndObserveAgeInfo(view: View) {
+        val endDateLayout = view.findViewById<TextInputLayout>(R.id.gestational_age)
+        //TODO: some error checking on the input - and some bounds for the datepicker
+        // also put the date in the layout (Add text to xml and set it with pregnancyEndDate)
+
+        // can you print the gestational time?
 
         // https://github.com/material-components/material-components-android/blob/master/catalog/
         // java/io/material/catalog/datepicker/DatePickerMainDemoFragment.java
@@ -77,51 +98,19 @@ class ClosePregnancyFragment : Fragment() {
             .build()
         datePicker.apply {
             addOnPositiveButtonClickListener {
-                viewModel.setUsingDateOfBirth(useDateOfBirth = true)
-                viewModel.patientDob.value =
+                var pregnancyEndDate =
                     with(SimpleDateFormat(Patient.DOB_FORMAT_SIMPLEDATETIME, Locale.getDefault())) {
                         timeZone = TimeZone.getTimeZone(DATE_PICKER_TIME_ZONE)
                         format(Date(it))
                     }
+                Log.d(TAG, pregnancyEndDate)
             }
         }
-        ageInputLayout.apply {
+        endDateLayout.apply {
             setStartIconOnClickListener {
-                if (viewModel.patientIsExactDob.value == true) {
-                    // Clear icon is shown: handle clear icon actions
-                    viewModel.setUsingDateOfBirth(useDateOfBirth = false)
-                } else {
-                    // Calendar icon is shown: handle calendar icon actions
-                    if (childFragmentManager.findFragmentByTag(FRAGMENT_TAG_DATE_PICKER) == null) {
-                        datePicker.show(childFragmentManager, FRAGMENT_TAG_DATE_PICKER)
-                    }
-                }
-            }
-        }
-
-        viewModel.patientDob.observe(viewLifecycleOwner) {
-            if (viewModel.patientIsExactDob.value != true) {
-                Log.d(TAG, "DEBUG: patientDob observe(): exiting since isUsingDateOfBirth false")
-                return@observe
-            }
-
-            ageInputLayout.apply {
-                if (it != null) {
-                    Log.d(TAG, "DEBUG: patient dob: setting patient age")
-                    viewModel.patientAge.value = try {
-                        Patient.calculateAgeFromDateString(it).also { age ->
-                            // We have to set the text manually; Data Binding doesn't seem to work
-                            // if the field is not editable.
-                            ageEditText.setText(age.toString())
-                        }
-                    } catch (_: ParseException) {
-                        Log.d(TAG, "DEBUG: patient dob: setting patient age got exception")
-                        null
-                    }
-                    suffixText = ageEditText.context.getString(
-                        R.string.years_old_with_date_of_birth_in_parens,
-                        it
-                    )
+                // Calendar icon is shown: handle calendar icon actions
+                if (childFragmentManager.findFragmentByTag(FRAGMENT_TAG_DATE_PICKER) == null) {
+                    datePicker.show(childFragmentManager, FRAGMENT_TAG_DATE_PICKER)
                 }
             }
         }
@@ -147,11 +136,6 @@ class ClosePregnancyFragment : Fragment() {
             .setEnd(upperBoundMillis)
             .setOpenAt(defaultDateInMillis)
             .build()
-    }*/
-
-    companion object {
-        private const val DATE_PICKER_DEFAULT_YEAR = 2000
-        private const val DATE_PICKER_YEAR_LOWER_BOUND = 1900
-        private const val DATE_PICKER_TIME_ZONE = "UTC"
     }
+
 }

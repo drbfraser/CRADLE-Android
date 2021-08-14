@@ -118,6 +118,17 @@ class PatientManager @Inject constructor(
         return result.map { }
     }
 
+    suspend fun addPregnancyOnServerAndSave(patient: Patient): NetworkResult<Unit> {
+        val result = restApi.postPregnancy(patient)
+        if (result is NetworkResult.Success) {
+            // Update the patient's `lastServerUpdate` field if successfully uploaded
+            patient.pregnancyId = result.value.id
+        }
+        add(patient)
+
+        return result.map { }
+    }
+
     /**
      * Uploads an edited patient to the server.
      *

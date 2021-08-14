@@ -9,6 +9,7 @@ import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.manager.LoginResponse
 import com.cradleplatform.neptune.manager.UrlManager
 import com.cradleplatform.neptune.model.Assessment
+import com.cradleplatform.neptune.model.GestationalAgeMonths
 import com.cradleplatform.neptune.model.GlobalPatient
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
@@ -56,6 +57,8 @@ class RestApi constructor(
 ) {
     companion object {
         private const val TAG = "RestApi"
+        protected val UNIT_VALUE_WEEKS = "WEEKS"
+        protected val UNIT_VALUE_MONTHS = "MONTHS"
     }
 
     /**
@@ -394,6 +397,50 @@ class RestApi constructor(
                 headers = headers,
                 requestBody = buildJsonRequestBody(readingAsBytes),
                 inputStreamReader = { input -> JacksonMapper.readerForReading.readValue(input) },
+            )
+        }
+
+    /**
+     * Sends info for creating a pregnancy record for specific patient
+     *
+     * @param patient the patient for gestationalAge, and id
+     * @return whether the request was successful or not and response from server
+     */
+    object PregnancyResponse {
+        var id: Int? = null
+        /**
+        "gestationalAgeUnit": "WEEKS",
+        "id": 1001,
+        "lastEdited": 1620000002,
+        "patientId": 120000,
+        "pregnancyEndDate": 1620000002,
+        "pregnancyOutcome": "Mode of delivery assisted birth",
+        "pregnancyStartDate": 1620000002
+         **/
+    }
+    suspend fun postPregnancy(patient: Patient): NetworkResult<PregnancyResponse> =
+        withContext(IO) {
+            val jsonObject = JSONObject()
+
+            val units = if (patient.gestationalAge is GestationalAgeMonths) {
+                UNIT_VALUE_MONTHS
+            } else {
+                UNIT_VALUE_WEEKS
+            }
+
+            val startDate = patient.gestationalAge?.timestamp.toString()
+            jsonObject.put("gestationalAgeUnit", units)
+            jsonObject.put("pregnancyStartDate", startDate)
+
+            val mediaType = "application/json; charset=utf-8".toMediaType()
+            val requestBody = jsonObject.toString().toRequestBody(mediaType)
+
+            http.makeRequest(
+                method = Http.Method.POST,
+                url = urlManager.postPregnancy(patient.id),
+                headers = headers,
+                requestBody = requestBody,
+                inputStreamReader = { JacksonMapper.mapper.readValue(it) }
             )
         }
 
