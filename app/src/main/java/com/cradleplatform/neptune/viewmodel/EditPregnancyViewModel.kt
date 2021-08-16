@@ -22,7 +22,9 @@ import com.cradleplatform.neptune.model.Verifiable
 import com.cradleplatform.neptune.net.NetworkResult
 import com.cradleplatform.neptune.utilities.LiveDataDynamicModelBuilder
 import com.cradleplatform.neptune.utilities.Months
+import com.cradleplatform.neptune.utilities.Seconds
 import com.cradleplatform.neptune.utilities.Weeks
+import com.cradleplatform.neptune.utilities.WeeksAndDays
 import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -33,6 +35,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.lang.reflect.InvocationTargetException
+import java.math.BigInteger
 import javax.inject.Inject
 import kotlin.reflect.KProperty
 
@@ -68,6 +71,23 @@ class EditPregnancyViewModel @Inject constructor(
     private val weeksUnitString = context.resources
         .getStringArray(R.array.reading_ga_units)[GEST_AGE_UNIT_WEEKS_INDEX]
 
+    /**
+     * Implicitly used in two-way Data Binding with .
+     * This listens to [patientGestationalAgeInput] and [patientGestationalAgeUnits].
+     *
+     * @see LiveDataInitializationManager.setupGestationAgeLiveData
+     */
+    val patientGestationalAge: MediatorLiveData<GestationalAge?> =
+        patientBuilder.get<GestationalAge?>(Patient::gestationalAge)
+    val patientGestationalAgeInput: MutableLiveData<String> = MediatorLiveData<String>()
+    val patientGestationalAgeUnits: MutableLiveData<String> = MediatorLiveData<String>()
+
+    // try what you have rn for this, but you might have to link it to a function that sets the value
+    val calculatedGestationalAge: MutableLiveData<String> = MediatorLiveData<String>()
+    var pregnancyEndTimestamp: Long? = null
+    val pregnancyOutcome: MutableLiveData<String> = MediatorLiveData<String>()
+    val endDateError: MutableLiveData<String> = MediatorLiveData<String>()
+
     fun initialize(patientId: String, isPregnant: Boolean) {
         viewModelScope.launch(Dispatchers.Main) {
             allowEdit(false)
@@ -80,12 +100,16 @@ class EditPregnancyViewModel @Inject constructor(
             if (!isPregnant) {
                 patient.isPregnant = true
                 setupGestationAgeLiveData()
-            } /*else {
-                tvGestationalAge.value = patient.gestationalAge?.ageFromNow?.asMonths()?.toString() ?: ""
-            }*/
+            } else {
+                if (patient.gestationalAge != null) {
+                    val isMonths = patient.gestationalAge is GestationalAgeMonths
+                    patientGestationalAge.value = patient.gestationalAge
+                    ageFromEndDate(patient.gestationalAge!!.timestamp, isMonths)
+                }
+                setupEndDateLiveData()
+            }
 
             patientBuilder.decompose(patient)
-            //populateLiveData(patient)
 
             patientName.value = patient.name
 
@@ -94,21 +118,27 @@ class EditPregnancyViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Implicitly used in two-way Data Binding with .
-     * This listens to [patientGestationalAgeInput] and [patientGestationalAgeUnits].
-     *
-     * @see LiveDataInitializationManager.setupGestationAgeLiveData
-     */
-    val patientGestationalAge: MediatorLiveData<GestationalAge?> =
-        patientBuilder.get<GestationalAge?>(Patient::gestationalAge)
-
-    val patientGestationalAgeInput: MutableLiveData<String> = MediatorLiveData<String>()
-
-    val patientGestationalAgeUnits: MutableLiveData<String> = MediatorLiveData<String>()
-
     private fun allowEdit(isEnabled: Boolean) {
         isInputEnabled.value = isEnabled
+    }
+
+    fun ageFromEndDate(endDate: BigInteger, isMonths: Boolean) {
+
+        val startDate = patientGestationalAge.value?.timestamp
+        if (startDate == null) {
+            calculatedGestationalAge.value = "Error"
+            return
+        }
+
+        calculatedGestationalAge.value = if (isMonths) {
+            WeeksAndDays.fromSeconds(Seconds(endDate - startDate)).asMonths().toString()
+        } else {
+            WeeksAndDays.fromSeconds(Seconds(endDate - startDate)).asWeeks().toString()
+        }
+    }
+
+    private suspend fun setupEndDateLiveData() = withContext(Dispatchers.Main) {
+
     }
 
     private suspend fun setupGestationAgeLiveData() = withContext(Dispatchers.Main) {
@@ -168,6 +198,16 @@ class EditPregnancyViewModel @Inject constructor(
 
         allowEdit(false)
         return withContext(Dispatchers.Main) {
+
+            if (! isAddPregnancy) {
+                patientBuilder.set(Patient::prevPregnancyEndDate, pregnancyEndTimestamp)
+                patientBuilder.set(Patient::prevPregnancyOutcome, pregnancyOutcome.value)
+                patientBuilder.set(Patient::isPregnant, false)
+                patientBuilder.set(Patient::gestationalAge, null)
+            }
+
+            //TODO: clean up this fn, it's chaotic
+            // since you will have to do different validation for add preg v end preg - maybe send to diff functions
             val patientAsync = async {
                 attemptToBuildValidPatient()
             }
@@ -181,8 +221,23 @@ class EditPregnancyViewModel @Inject constructor(
                 isAddPregnancy -> {
                     addPregnancy(patient)
                 }
+                pregnancyEndTimestamp != null -> {
+                    Log.d(TAG, "I want all the information")
+                    Log.d(TAG, patient.toString())
+                    Log.d(TAG, "preg outcome: ${pregnancyOutcome.value}")
+                    Log.d(TAG, "preg end timestamp: $pregnancyEndTimestamp")
+                    Log.d(TAG, "gest age calc: $calculatedGestationalAge")
+
+                    Log.d(TAG, pregnancyEndTimestamp.toString())
+                    closePregnancy(patient)
+                }
                 else -> {
-                    //closePregnancy(patient)
+                    Log.d(TAG, "((FAILED)) - I still want all the information")
+                    Log.d(TAG, patient.toString())
+                    Log.d(TAG, "preg outcome: ${pregnancyOutcome.value}")
+                    Log.d(TAG, "preg end timestamp: $pregnancyEndTimestamp")
+                    Log.d(TAG, "gest age calc: $calculatedGestationalAge")
+                    allowEdit(true)
                     SaveResult.Error
                 }
             }
@@ -190,8 +245,19 @@ class EditPregnancyViewModel @Inject constructor(
     }
 
     private suspend fun addPregnancy(patient: Patient): SaveResult {
-        return if (isNetworkAvailable.value == true) {
-            when (val result = patientManager.addPregnancyOnServerSaveOnSuccess(patient)) {
+        if (isNetworkAvailable.value == true) {
+            // IMPORTANT: IF THERE IS A PREGNANCY END DATE (AND YOU HAVE WIFI) THEN YOU HAVE TO MAKE
+                // SURE THAT CLOSE PREGNANCY IS SENT TO SERVER BEFORE ADDING THIS ONE
+                // IF YOU CAN'T ADD IT TO SERVER make the user sync before continuing
+            if (patient.prevPregnancyEndDate != null) {
+                if (closePregnancy(patient) != SaveResult.SavedAndUploaded) {
+                    // something is not good - make patient sync without saving changes
+                    allowEdit(true)
+                    return SaveResult.Error
+                }
+            }
+
+            return when (val result = patientManager.addPregnancyOnServerSaveOnSuccess(patient)) {
                 is NetworkResult.Success -> {
                     SaveResult.SavedAndUploaded
                 }
@@ -207,26 +273,42 @@ class EditPregnancyViewModel @Inject constructor(
             }
         } else {
             patientManager.add(patient)
-            SaveResult.SavedOffline
+            return SaveResult.SavedOffline
         }
     }
 
-    /*private suspend fun closePregnancy(patient: Patient): SaveResult {
+    private suspend fun closePregnancy(patient: Patient): SaveResult {
         return if (isNetworkAvailable.value == true) {
-            when (patientManager.addPregnancyOnServerAndSave(patient)) {
+
+            if (patient.pregnancyId == null) {
+                allowEdit(true)
+                Log.d(TAG, "ERROR: cannot upload end date for unknown pregnancy!!")
+                return SaveResult.Error
+            }
+
+            if (patient.prevPregnancyEndDate == null) {
+                allowEdit(true)
+                Log.d(TAG, "ERROR: cannot end pregnancy with no end date!!")
+                return SaveResult.Error
+            }
+
+            when (patientManager.pushEndPregnancy(patient)) {
                 is NetworkResult.Success -> {
+                    // everything good, continue
+                    Log.d(TAG, "everything good")
                     SaveResult.SavedAndUploaded
                 }
                 else -> {
+                    // something is not good - make patient sync without saving changes
                     allowEdit(true)
-                    SaveResult.SavedOffline
+                    SaveResult.Error
                 }
             }
         } else {
             patientManager.add(patient)
             SaveResult.SavedOffline
         }
-    }*/
+    }
 
     private fun attemptToBuildValidPatient(): Patient? {
         if (!patientBuilder.isConstructable<Patient>()) {

@@ -220,6 +220,8 @@ open class PatientProfileActivity : AppCompatActivity() {
 
     private fun setupBtnPregnancy(patient: Patient) {
         btnPregnancy.setOnClickListener() {
+            // If there is a pregnancyId and patient is NOT pregnant, DONT allow edit
+            // tell them that they have to sync the current ended pregnancy before starting another
             val intent = EditPregnancyActivity.makeIntentWithPatientId(this, patient.id, patient.isPregnant)
             startActivity(intent)
         }

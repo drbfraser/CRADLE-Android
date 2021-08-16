@@ -441,6 +441,25 @@ class RestApi constructor(
             )
         }
 
+    suspend fun putPregnancy(patient: Patient): NetworkResult<PregnancyResponse> =
+        withContext(IO) {
+            val jsonObject = JSONObject()
+
+            jsonObject.put("pregnancyEndDate", patient.prevPregnancyEndDate.toString())
+            jsonObject.put("pregnancyOutcome", patient.prevPregnancyOutcome ?: "")
+
+            val mediaType = "application/json; charset=utf-8".toMediaType()
+            val requestBody = jsonObject.toString().toRequestBody(mediaType)
+
+            http.makeRequest(
+                method = Http.Method.PUT,
+                url = urlManager.putPregnancy(patient.pregnancyId.toString()),
+                headers = headers,
+                requestBody = requestBody,
+                inputStreamReader = { JacksonMapper.mapper.readValue(it) }
+            )
+        }
+
     /**
      * Sends a request to the server to associate the patient with a given [id]
      * to the currently logged in user.

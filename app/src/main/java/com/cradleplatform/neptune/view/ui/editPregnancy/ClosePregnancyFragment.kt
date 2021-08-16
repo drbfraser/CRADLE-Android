@@ -1,7 +1,6 @@
 package com.cradleplatform.neptune.view.ui.editPregnancy
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,6 +17,7 @@ import com.cradleplatform.neptune.view.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.EditPregnancyViewModel
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -25,8 +25,6 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
-
-private const val TAG = "Edit"
 
 private const val FRAGMENT_TAG_DATE_PICKER = "DatePicker"
 
@@ -42,7 +40,6 @@ class ClosePregnancyFragment : Fragment() {
     private var binding: FragmentClosePregnancyBinding? = null
 
     companion object {
-        private const val DATE_PICKER_DEFAULT_YEAR = 2000
         private const val DATE_PICKER_YEAR_LOWER_BOUND = 1900
         private const val DATE_PICKER_TIME_ZONE = "UTC"
     }
@@ -77,33 +74,42 @@ class ClosePregnancyFragment : Fragment() {
 
         viewModel.isNetworkAvailable.observe(viewLifecycleOwner) {}
 
-        lifecycleScope.apply {
-            launch { setupAndObserveAgeInfo(view) }
+        viewModel.patientGestationalAge.observe(viewLifecycleOwner) {
+            lifecycleScope.apply {
+                launch { setupAndObserveAgeInfo(view) }
+            }
         }
     }
 
-    //CHANGE TO BE GESTATIONAL AGE VIA END DATE
     private fun setupAndObserveAgeInfo(view: View) {
         val endDateLayout = view.findViewById<TextInputLayout>(R.id.gestational_age)
-        //TODO: some error checking on the input - and some bounds for the datepicker
-        // also put the date in the layout (Add text to xml and set it with pregnancyEndDate)
+        val displayEndDate = view.findViewById<TextInputEditText>(R.id.display_end_date)
 
         // can you print the gestational time?
 
-        // https://github.com/material-components/material-components-android/blob/master/catalog/
-        // java/io/material/catalog/datepicker/DatePickerMainDemoFragment.java
         val datePicker = MaterialDatePicker.Builder.datePicker()
-            .setTitleText(R.string.age_date_picker_title)
+            .setTitleText("Set pregnancy end date")
             .setCalendarConstraints(setupCalendarConstraints())
             .build()
         datePicker.apply {
             addOnPositiveButtonClickListener {
-                var pregnancyEndDate =
+
+                // Time is in miliseconds so we have to convert it to seconds
+                val dateTimestampSeconds = with(SimpleDateFormat(Patient.DOB_FORMAT_SIMPLEDATETIME, Locale.getDefault())) {
+                    timeZone = TimeZone.getTimeZone(DATE_PICKER_TIME_ZONE)
+                    Date(it).time
+                } / 1000
+
+                viewModel.pregnancyEndTimestamp = dateTimestampSeconds
+                // get radio btn input for isMonths
+                viewModel.ageFromEndDate(dateTimestampSeconds.toBigInteger(), true)
+
+                displayEndDate.setText(
                     with(SimpleDateFormat(Patient.DOB_FORMAT_SIMPLEDATETIME, Locale.getDefault())) {
                         timeZone = TimeZone.getTimeZone(DATE_PICKER_TIME_ZONE)
                         format(Date(it))
                     }
-                Log.d(TAG, pregnancyEndDate)
+                )
             }
         }
         endDateLayout.apply {
@@ -118,18 +124,25 @@ class ClosePregnancyFragment : Fragment() {
 
     private fun setupCalendarConstraints(): CalendarConstraints {
         val datePickerTimeZone = TimeZone.getTimeZone(DATE_PICKER_TIME_ZONE)
-        val lowerBoundMillis = Calendar.getInstance(datePickerTimeZone).run {
-            set(Calendar.YEAR, DATE_PICKER_YEAR_LOWER_BOUND)
-            timeInMillis
-        }
-        val upperBoundMillis = MaterialDatePicker.todayInUtcMilliseconds()
-        val defaultDateInMillis = Calendar.getInstance(datePickerTimeZone).run {
-            set(Calendar.YEAR, DATE_PICKER_DEFAULT_YEAR)
-            timeInMillis
+        // make this value the value of gestationalAge
+
+        var lowerBoundMillis = (viewModel.patientGestationalAge.value?.timestamp?.toLong())?.times(
+            1000
+        )
+
+        if (lowerBoundMillis == null) {
+            lowerBoundMillis = Calendar.getInstance(datePickerTimeZone).run {
+                set(Calendar.YEAR, DATE_PICKER_YEAR_LOWER_BOUND)
+                timeInMillis
+            }
         }
 
+
+        val upperBoundMillis = MaterialDatePicker.todayInUtcMilliseconds()
+        val defaultDateInMillis = MaterialDatePicker.todayInUtcMilliseconds()
+
         check(lowerBoundMillis < defaultDateInMillis)
-        check(defaultDateInMillis < upperBoundMillis)
+        check(defaultDateInMillis <= upperBoundMillis)
 
         return CalendarConstraints.Builder()
             .setStart(lowerBoundMillis)

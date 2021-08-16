@@ -32,25 +32,80 @@
                 android:layout_height="wrap_content"
                 android:padding="16dp">
 
-                <TextView
-                    android:id="@+id/tv_gestational_age"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:id="@+id/display_gestation_length"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="SEVEN MONTHS"
+                    android:layout_marginEnd="8dp"
+                    android:gravity="start|center_vertical"
+                    android:orientation="horizontal"
+                    android:visibility="visible"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/gestational_age"
+                        android:textColor="@color/black"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/gestationalAge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:gravity="clip_horizontal|center|center_vertical"
+                        android:paddingEnd="8dp"
+                        android:text="@{viewModel.calculatedGestationalAge}"
+                        android:textColor="@color/black"
+                        android:textSize="14sp" />
+
+                    <!--RadioGroup
+                        android:id="@+id/gestationradioGroup"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingBottom="2dp">
+
+                        <RadioButton
+                            android:id="@+id/monthradiobutton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/patient_profile_month"
+                            android:textSize="12sp" />
+
+                        <RadioButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/patient_profile_week"
+                            android:textAlignment="viewStart"
+                            android:textSize="12sp" />
+                    </RadioGroup-->
+
+                </LinearLayout>
+
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/gestational_age"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    app:helperText="Enter end date of baby time"
+                    android:hint="Enter pregnancy end date"
                     app:startIconContentDescription="Date picker for date of birth"
                     app:startIconDrawable="@drawable/ic_baseline_calendar_today_24"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/tv_gestational_age">
+                    app:layout_constraintTop_toBottomOf="@id/display_gestation_length">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/display_end_date"
+                        android:enabled="false"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number"
+                        tools:text="01-01-2021" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -69,6 +124,7 @@
                     android:scrollbarStyle="insideInset"
                     android:scrollbars="vertical"
                     android:singleLine="false"
+                    android:text="@{viewModel.pregnancyOutcome}"
                     android:verticalScrollbarPosition="right"
                     app:layout_constraintTop_toBottomOf="@id/gestational_age"
                     app:layout_constraintStart_toStartOf="parent"/>
