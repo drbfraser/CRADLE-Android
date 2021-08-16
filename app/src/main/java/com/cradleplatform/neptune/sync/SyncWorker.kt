@@ -163,14 +163,14 @@ class SyncWorker @AssistedInject constructor(
             )
         }
 
-        if (patientResult is NetworkResult.Success) {
+        if (patientResult.networkResult is NetworkResult.Success) {
             sharedPreferences.edit(commit = true) {
                 putString(LAST_PATIENT_SYNC, syncTimestampToSave.toString())
             }
             Log.d(TAG, "Patient sync is a success, moving on to syncing readings")
         } else {
             return Result.failure(
-                workDataOf(RESULT_MESSAGE to getResultMessage(patientResult))
+                workDataOf(RESULT_MESSAGE to getResultErrorMessage(patientResult.networkResult))
             )
         }
 
@@ -188,7 +188,7 @@ class SyncWorker @AssistedInject constructor(
                 TAG,
                 "There are $readingsLeftToUpload readings left to upload"
             )
-            if (readingResult is NetworkResult.Success) {
+            if (readingResult.networkResult is NetworkResult.Success) {
                 Log.wtf(TAG, "successful reading sync but still readings left unsynced")
                 // https://csil-git1.cs.surrey.sfu.ca/415-cradle/cradle-platform/-/blob/master/server/api/resources/sync.py#L97-103
                 //  The only reasons why a reading might still not be uploaded but the response from
@@ -202,22 +202,25 @@ class SyncWorker @AssistedInject constructor(
             }
         }
 
-        return if (readingResult is NetworkResult.Success) {
+        if (readingResult.networkResult is NetworkResult.Success) {
             sharedPreferences.edit(commit = true) {
                 putString(LAST_READING_SYNC, syncTimestampToSave.toString())
             }
-            Result.success(
-                workDataOf(RESULT_MESSAGE to getResultMessage(readingResult))
-            )
         } else {
-            Result.failure(workDataOf(RESULT_MESSAGE to getResultMessage(readingResult)))
+            return Result.failure(
+                workDataOf(RESULT_MESSAGE to getResultErrorMessage(readingResult.networkResult))
+            )
         }
+
+        return Result.success(
+            workDataOf(RESULT_MESSAGE to getResultSuccessMessage(patientResult, readingResult))
+        )
     }
 
     private suspend fun syncPatients(
         patientsToUpload: List<Patient>,
         lastSyncTime: BigInteger
-    ): NetworkResult<Unit> = withContext(Dispatchers.Default) {
+    ): PatientSyncResult = withContext(Dispatchers.Default) {
         setProgress(
             if (patientsToUpload.isEmpty()) {
                 workDataOf(PROGRESS_CURRENT_STATE to State.CHECKING_SERVER_PATIENTS.name)
@@ -259,7 +262,7 @@ class SyncWorker @AssistedInject constructor(
     private suspend fun syncReadings(
         readingsToUpload: List<Reading>,
         lastSyncTime: BigInteger
-    ): NetworkResult<Unit> = withContext(Dispatchers.Default) {
+    ): ReadingSyncResult = withContext(Dispatchers.Default) {
         Log.d(TAG, "preparing to upload ${readingsToUpload.size} readings")
         setProgress(
             if (readingsToUpload.isEmpty()) {
@@ -336,12 +339,12 @@ class SyncWorker @AssistedInject constructor(
         }
     }
 
-    private fun getResultMessage(networkResult: NetworkResult<Unit>): String {
+    private fun getResultErrorMessage(networkResult: NetworkResult<Unit>): String {
         return when (networkResult) {
             is NetworkResult.Failure -> applicationContext.getString(
                 R.string.sync_worker_failure_server_sent_error_code_d__s,
                 networkResult.statusCode,
-                networkResult.getErrorMessage(applicationContext)
+                networkResult.getStatusMessage(applicationContext)
             )
             is NetworkResult.NetworkException -> applicationContext.getString(
                 R.string.sync_worker_failure_exception_during_sync_s__s,
@@ -351,17 +354,55 @@ class SyncWorker @AssistedInject constructor(
             is NetworkResult.Success -> applicationContext.getString(R.string.sync_worker_success)
         }
     }
+
+    private fun getResultSuccessMessage(
+        patientSyncResult: PatientSyncResult,
+        readingSyncResult: ReadingSyncResult,
+    ): String {
+        val success = patientSyncResult.networkResult.getStatusMessage(applicationContext)
+        val totalPatients = applicationContext.getString(
+            R.string.sync_total_patients_s, patientSyncResult.totalPatients
+        )
+        val totalReadings = applicationContext.getString(
+            R.string.sync_total_readings_s, readingSyncResult.totalReadings
+        )
+        val totalReferrals = applicationContext.getString(
+            R.string.sync_total_referrals_s, readingSyncResult.totalReferrals
+        )
+        val totalFollowups = applicationContext.getString(
+            R.string.sync_total_followups_s, readingSyncResult.totalFollowups
+        )
+        val errors = patientSyncResult.errors.let { if (it != "[ ]") "\nErrors:\n$it" else "" }
+        return "$success\n" +
+            "$totalPatients\n" +
+            "$totalReadings\n" +
+            "$totalReferrals\n" +
+            "$totalFollowups" +
+            "$errors"
+    }
 }
 
 enum class PatientSyncField(override val text: String) : Field {
-    TOTAL("total"),
     PATIENTS("patients"),
+    ERRORS("errors"),
     FACILITIES("healthFacilities"),
 }
 
 enum class ReadingSyncField(override val text: String) : Field {
-    TOTAL("total"),
     READINGS("readings"),
-    NEW_REFERRALS("newReferralsForOldReadings"),
-    NEW_FOLLOW_UPS("newFollowupsForOldReadings")
+    NEW_REFERRALS("newReferrals"),
+    NEW_FOLLOW_UPS("newFollowups"),
 }
+
+data class PatientSyncResult(
+    val networkResult: NetworkResult<Unit>,
+    val totalPatients: Int,
+    val errors: String?,
+)
+
+data class ReadingSyncResult(
+    val networkResult: NetworkResult<Unit>,
+    val totalReadings: Int,
+    val totalReferrals: Int,
+    val totalFollowups: Int,
+)
