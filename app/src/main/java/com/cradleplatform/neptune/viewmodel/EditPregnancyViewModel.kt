@@ -199,7 +199,7 @@ class EditPregnancyViewModel @Inject constructor(
                 }
             }
 
-            //TODO: clean up this fn, it's chaotic
+            // TODO: clean up this fn, it's chaotic
             // since you will have to do different validation for add preg v end preg - maybe send to diff functions
             val patientAsync = async {
                 attemptToBuildValidPatient()
@@ -222,7 +222,6 @@ class EditPregnancyViewModel @Inject constructor(
                         allowEdit(true)
                         SaveResult.Error
                     }
-
                 }
                 else -> {
                     allowEdit(true)
@@ -235,8 +234,8 @@ class EditPregnancyViewModel @Inject constructor(
     private suspend fun addPregnancy(patient: Patient): SaveResult {
         if (isNetworkAvailable.value == true) {
             // IMPORTANT: IF THERE IS A PREGNANCY END DATE (AND YOU HAVE WIFI) THEN YOU HAVE TO MAKE
-                // SURE THAT CLOSE PREGNANCY IS SENT TO SERVER BEFORE ADDING THIS ONE
-                // IF YOU CAN'T ADD IT TO SERVER make the user sync before continuing
+            // SURE THAT CLOSE PREGNANCY IS SENT TO SERVER BEFORE ADDING THIS ONE
+            // IF YOU CAN'T ADD IT TO SERVER make the user sync before continuing
             if (patient.prevPregnancyEndDate != null && patient.pregnancyId != null) {
                 if (closePregnancy(patient) != SaveResult.SavedAndUploaded) {
                     // something is not good - make patient sync and don't save changes
@@ -297,7 +296,7 @@ class EditPregnancyViewModel @Inject constructor(
         // if end date is before the start date of pregnancy
         if (endDateVal.toBigInteger() < startDate) {
             if (DEBUG) Log.d(
-                TAG,"Input error: cannot have an end date before the pregnancy's start date"
+                TAG, "Input error: cannot have an end date before the pregnancy's start date"
             )
             endDateError.value = context.getString(R.string.invalid_pregnancy_end_date_before_start)
             return
@@ -306,7 +305,7 @@ class EditPregnancyViewModel @Inject constructor(
         // if end date is after current time
         if (MaterialDatePicker.todayInUtcMilliseconds() / 1000 <= endDateVal) {
             if (DEBUG) Log.d(
-                TAG,"Input error: cannot have an end date greater than current time"
+                TAG, "Input error: cannot have an end date greater than current time"
             )
             endDateError.value = context.getString(R.string.invalid_pregnancy_end_date_future)
             return
@@ -318,7 +317,7 @@ class EditPregnancyViewModel @Inject constructor(
             // if total gestation length is > 10 months/43 weeks
             if (gestLen >= GESTATIONAL_AGE_WEEKS_MAX) {
                 if (DEBUG) Log.d(
-                    TAG,"Input error: pregnancy gestation length is too long"
+                    TAG, "Input error: pregnancy gestation length is too long"
                 )
                 endDateError.value = context.getString(
                     R.string.patient_error_gestation_greater_than_n_weeks,
@@ -328,7 +327,7 @@ class EditPregnancyViewModel @Inject constructor(
             }
         } catch (error: NumberFormatException) {
             if (DEBUG) Log.d(
-                TAG,"Error with calculatedGestationalAge conversion"
+                TAG, "Error with calculatedGestationalAge conversion"
             )
         }
 
@@ -343,17 +342,17 @@ class EditPregnancyViewModel @Inject constructor(
 
         if (patient.prevPregnancyEndDate == null) {
             if (DEBUG) Log.d(
-                TAG,"Input error: cannot end pregnancy with no end date"
+                TAG, "Input error: cannot end pregnancy with no end date"
             )
             endDateError.value = context.getString(R.string.missing)
             return false
         }
 
         // pregnancyId CAN be null if there IS a gestational age
-            // in the case where there's been an offline start date saved
+        // in the case where there's been an offline start date saved
         if (patient.pregnancyId == null && patient.gestationalAge == null) {
             if (DEBUG) Log.d(
-                TAG,"Input error: cannot upload pregnancy with no start date"
+                TAG, "Input error: cannot upload pregnancy with no start date"
             )
             return false
         }

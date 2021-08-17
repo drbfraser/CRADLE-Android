@@ -123,7 +123,7 @@ class PatientManager @Inject constructor(
 
         if (result is NetworkResult.Success) {
             // Have to set the pregnancyId on db to id returned from server to link this record
-                // to what was saved on server db
+            // to what was saved on server db
             patient.pregnancyId = result.value.id
             add(patient)
         }

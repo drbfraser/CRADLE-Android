@@ -79,7 +79,6 @@ class EditPregnancyActivity : AppCompatActivity() {
 
         setupToolBar(title)
         setupSaveButton()
-
     }
 
     private fun setupToolBar(title: String) {

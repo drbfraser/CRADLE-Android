@@ -567,6 +567,8 @@
     <string name="missing">Missing</string>
     <string name="invalid_pregnancy_end_date_future">Invalid end date. Future end dates are not allowed</string>
     <string name="invalid_pregnancy_end_date_before_start">Invalid end date. Pregnancy cannot end before it started </string>
+    <string name="to_many_offline_pregnancy_edits">There are too many offline edits to this patient\'s pregnancy, please sync to continue</string>
+    <string name="unable_to_edit_pregnancy">Unable to edit pregnancy</string>
 
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>

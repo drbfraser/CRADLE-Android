@@ -137,7 +137,6 @@ class ClosePregnancyFragment : Fragment() {
             }
         }
 
-
         val upperBoundMillis = MaterialDatePicker.todayInUtcMilliseconds()
         val defaultDateInMillis = MaterialDatePicker.todayInUtcMilliseconds()
 
@@ -150,5 +149,4 @@ class ClosePregnancyFragment : Fragment() {
             .setOpenAt(defaultDateInMillis)
             .build()
     }
-
 }

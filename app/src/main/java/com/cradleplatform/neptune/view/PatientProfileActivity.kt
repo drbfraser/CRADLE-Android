@@ -32,6 +32,7 @@ import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.runBlocking
 import java.text.ParseException
@@ -220,8 +221,19 @@ open class PatientProfileActivity : AppCompatActivity() {
 
     private fun setupBtnPregnancy(patient: Patient) {
         btnPregnancy.setOnClickListener() {
-            // If there is a pregnancyId and patient is NOT pregnant, DONT allow edit
-            // tell them that they have to sync the current ended pregnancy before starting another
+
+            // If there is gestationalAge AND a prevPregnancyEndDate, there is no space for more pregnancy edits
+            // user must sync to continue
+            if (patient.gestationalAge != null && patient.prevPregnancyEndDate != null) {
+                MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.unable_to_edit_pregnancy)
+                    .setMessage(R.string.to_many_offline_pregnancy_edits)
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show()
+
+                return@setOnClickListener
+            }
+
             val intent = EditPregnancyActivity.makeIntentWithPatientId(this, patient.id, patient.isPregnant)
             startActivity(intent)
         }
