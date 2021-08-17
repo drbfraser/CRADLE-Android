@@ -10,6 +10,7 @@
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
     <color name="light_grey">#BBBBBB</color>
+    <color name="transparent_grey">#A6FFFFFF</color>
 
     <color name="recommended">#3170D6</color>
     <color name="purple">#e69400d3</color>

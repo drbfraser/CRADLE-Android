@@ -275,8 +275,10 @@ data class Patient(
                     dependentProperties[Patient::isPregnant.name] == false
                 ) {
                     return if (this == null ||
-                        (dependentProperties[Patient::pregnancyId.name] != null &&
-                                dependentProperties[Patient::prevPregnancyEndDate.name] != null)
+                        (
+                            dependentProperties[Patient::pregnancyId.name] != null &&
+                                dependentProperties[Patient::prevPregnancyEndDate.name] != null
+                            )
                     ) {
                         // CAN have a gestational age and not pregnant if the user is closing the
                         // pregnancy offline and we have to keep the start date because that was saved offline too
