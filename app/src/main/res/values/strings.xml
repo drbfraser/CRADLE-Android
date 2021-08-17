@@ -564,6 +564,9 @@
     <string name="update_failed">Update failed</string>
     <string name="update_successful">Updated Sucessfully</string>
     <string name="allergies">Allergies</string>
+    <string name="missing">Missing</string>
+    <string name="invalid_pregnancy_end_date_future">Invalid end date. Future end dates are not allowed</string>
+    <string name="invalid_pregnancy_end_date_before_start">Invalid end date. Pregnancy cannot end before it started </string>
 
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>

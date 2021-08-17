@@ -261,12 +261,19 @@ internal data class Patient(
                     instance,
                     currentValues,
                     Patient::sex,
-                    Patient::isPregnant
+                    Patient::isPregnant,
+                    Patient::pregnancyId,
+                    Patient::prevPregnancyEndDate
                 )
                 if (dependentProperties[Patient::sex.name] == Sex.MALE ||
                     dependentProperties[Patient::isPregnant.name] == false
                 ) {
-                    return if (this == null) {
+                    return if (this == null ||
+                        (dependentProperties[Patient::pregnancyId.name] != null &&
+                        dependentProperties[Patient::prevPregnancyEndDate.name] != null)
+                    ) {
+                        // CAN have a gestational age and not pregnant if the user is closing the
+                            // pregnancy offline and we have to keep the start date because that was saved offline too
                         Verifiable.Valid
                     } else {
                         // Can't have gestational age if we're not pregnant.

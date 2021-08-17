@@ -74,7 +74,7 @@ class ClosePregnancyFragment : Fragment() {
 
         viewModel.isNetworkAvailable.observe(viewLifecycleOwner) {}
 
-        viewModel.patientGestationalAge.observe(viewLifecycleOwner) {
+        viewModel.pregnancyStartTimestamp.observe(viewLifecycleOwner) {
             lifecycleScope.apply {
                 launch { setupAndObserveAgeInfo(view) }
             }
@@ -82,7 +82,7 @@ class ClosePregnancyFragment : Fragment() {
     }
 
     private fun setupAndObserveAgeInfo(view: View) {
-        val endDateLayout = view.findViewById<TextInputLayout>(R.id.gestational_age)
+        val endDateLayout = view.findViewById<TextInputLayout>(R.id.gestational_age_layout)
         val displayEndDate = view.findViewById<TextInputEditText>(R.id.display_end_date)
 
         // can you print the gestational time?
@@ -101,8 +101,8 @@ class ClosePregnancyFragment : Fragment() {
                 } / 1000
 
                 viewModel.pregnancyEndTimestamp = dateTimestampSeconds
-                // get radio btn input for isMonths
-                viewModel.ageFromEndDate(dateTimestampSeconds.toBigInteger(), true)
+                viewModel.gestationalAgeFromEndDate(dateTimestampSeconds.toBigInteger())
+                viewModel.checkEndDateErrors(dateTimestampSeconds)
 
                 displayEndDate.setText(
                     with(SimpleDateFormat(Patient.DOB_FORMAT_SIMPLEDATETIME, Locale.getDefault())) {
@@ -126,7 +126,7 @@ class ClosePregnancyFragment : Fragment() {
         val datePickerTimeZone = TimeZone.getTimeZone(DATE_PICKER_TIME_ZONE)
         // make this value the value of gestationalAge
 
-        var lowerBoundMillis = (viewModel.patientGestationalAge.value?.timestamp?.toLong())?.times(
+        var lowerBoundMillis = (viewModel.pregnancyStartTimestamp.value?.toLong())?.times(
             1000
         )
 

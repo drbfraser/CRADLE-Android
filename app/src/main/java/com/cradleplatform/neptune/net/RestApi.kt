@@ -402,8 +402,10 @@ class RestApi constructor(
 
     /**
      * Sends info for creating a pregnancy record for specific patient
+     * Has the ability to send record with pregnancy start AND end date if full record is being
+     * sent to server.
      *
-     * @param patient the patient for gestationalAge, and id
+     * @param patient the patient for gestationalAge, and id, and in some cases the end date
      * @return whether the request was successful or not and response from server
      */
     object PregnancyResponse {
@@ -428,6 +430,13 @@ class RestApi constructor(
             val startDate = patient.gestationalAge?.timestamp.toString()
             jsonObject.put("gestationalAgeUnit", units)
             jsonObject.put("pregnancyStartDate", startDate)
+
+            // If there's no pregnancyId but there IS prevPregnancyEndDate & prevPregnancyOutcome:
+            // those records are related to this pregnancy, therefore you would want to push full pregnancy
+            if (patient.pregnancyId == null && patient.prevPregnancyEndDate != null) {
+                jsonObject.put("pregnancyEndDate", patient.prevPregnancyEndDate.toString())
+                jsonObject.put("pregnancyOutcome", patient.prevPregnancyOutcome ?: "")
+            }
 
             val mediaType = "application/json; charset=utf-8".toMediaType()
             val requestBody = jsonObject.toString().toRequestBody(mediaType)

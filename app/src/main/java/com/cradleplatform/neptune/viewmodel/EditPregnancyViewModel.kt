@@ -26,6 +26,7 @@ import com.cradleplatform.neptune.utilities.Seconds
 import com.cradleplatform.neptune.utilities.Weeks
 import com.cradleplatform.neptune.utilities.WeeksAndDays
 import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
+import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -56,6 +57,7 @@ class EditPregnancyViewModel @Inject constructor(
 
     companion object {
         private const val TAG = "EditPregnancyViewModel"
+        private const val GESTATIONAL_AGE_WEEKS_MAX = 43
     }
 
     private val patientBuilder = LiveDataDynamicModelBuilder()
@@ -71,22 +73,20 @@ class EditPregnancyViewModel @Inject constructor(
     private val weeksUnitString = context.resources
         .getStringArray(R.array.reading_ga_units)[GEST_AGE_UNIT_WEEKS_INDEX]
 
-    /**
-     * Implicitly used in two-way Data Binding with .
-     * This listens to [patientGestationalAgeInput] and [patientGestationalAgeUnits].
-     *
-     * @see LiveDataInitializationManager.setupGestationAgeLiveData
-     */
+    /** Values for Add pregnancy */
     val patientGestationalAge: MediatorLiveData<GestationalAge?> =
         patientBuilder.get<GestationalAge?>(Patient::gestationalAge)
     val patientGestationalAgeInput: MutableLiveData<String> = MediatorLiveData<String>()
     val patientGestationalAgeUnits: MutableLiveData<String> = MediatorLiveData<String>()
 
-    // try what you have rn for this, but you might have to link it to a function that sets the value
-    val calculatedGestationalAge: MutableLiveData<String> = MediatorLiveData<String>()
+    /** Values for End pregnancy */
     var pregnancyEndTimestamp: Long? = null
-    val pregnancyOutcome: MutableLiveData<String> = MediatorLiveData<String>()
-    val endDateError: MutableLiveData<String> = MediatorLiveData<String>()
+    // startTimestamp is taken from db saved patient, should not change throughout current lifecycle
+    val pregnancyStartTimestamp: MutableLiveData<BigInteger> = MediatorLiveData()
+    val calculatedGestationalAge: MutableLiveData<String> = MediatorLiveData<String>()
+    val pregnancyOutcome: MutableLiveData<String?>
+        get() = patientBuilder.get<String?>(Patient::prevPregnancyOutcome)
+    val endDateError: MutableLiveData<String> = MutableLiveData<String>()
 
     fun initialize(patientId: String, isPregnant: Boolean) {
         viewModelScope.launch(Dispatchers.Main) {
@@ -100,13 +100,9 @@ class EditPregnancyViewModel @Inject constructor(
             if (!isPregnant) {
                 patient.isPregnant = true
                 setupGestationAgeLiveData()
-            } else {
-                if (patient.gestationalAge != null) {
-                    val isMonths = patient.gestationalAge is GestationalAgeMonths
-                    patientGestationalAge.value = patient.gestationalAge
-                    ageFromEndDate(patient.gestationalAge!!.timestamp, isMonths)
-                }
-                setupEndDateLiveData()
+            } else if (patient.gestationalAge != null) {
+                pregnancyStartTimestamp.value = (patient.gestationalAge?.timestamp ?: return@launch)
+                gestationalAgeFromEndDate((MaterialDatePicker.todayInUtcMilliseconds() / 1000).toBigInteger())
             }
 
             patientBuilder.decompose(patient)
@@ -122,23 +118,14 @@ class EditPregnancyViewModel @Inject constructor(
         isInputEnabled.value = isEnabled
     }
 
-    fun ageFromEndDate(endDate: BigInteger, isMonths: Boolean) {
-
-        val startDate = patientGestationalAge.value?.timestamp
+    fun gestationalAgeFromEndDate(endDate: BigInteger) {
+        val startDate = pregnancyStartTimestamp.value
         if (startDate == null) {
             calculatedGestationalAge.value = "Error"
             return
         }
-
-        calculatedGestationalAge.value = if (isMonths) {
-            WeeksAndDays.fromSeconds(Seconds(endDate - startDate)).asMonths().toString()
-        } else {
-            WeeksAndDays.fromSeconds(Seconds(endDate - startDate)).asWeeks().toString()
-        }
-    }
-
-    private suspend fun setupEndDateLiveData() = withContext(Dispatchers.Main) {
-
+        calculatedGestationalAge.value =
+            "%.2f".format(WeeksAndDays.fromSeconds(Seconds(endDate - startDate)).asWeeks())
     }
 
     private suspend fun setupGestationAgeLiveData() = withContext(Dispatchers.Main) {
@@ -201,9 +188,15 @@ class EditPregnancyViewModel @Inject constructor(
 
             if (! isAddPregnancy) {
                 patientBuilder.set(Patient::prevPregnancyEndDate, pregnancyEndTimestamp)
-                patientBuilder.set(Patient::prevPregnancyOutcome, pregnancyOutcome.value)
+                // pregnancyOutcome is already in the patientBuilder
                 patientBuilder.set(Patient::isPregnant, false)
-                patientBuilder.set(Patient::gestationalAge, null)
+
+                // if there's no pregnancyId but they are closing a pregnancy, that means the
+                // startDate (gestationalAge) has not been pushed to server yet either and
+                // cannot be set to null yet
+                if (patientBuilder.get(Patient::pregnancyId).value != null) {
+                    patientBuilder.set(Patient::gestationalAge, null)
+                }
             }
 
             //TODO: clean up this fn, it's chaotic
@@ -222,21 +215,16 @@ class EditPregnancyViewModel @Inject constructor(
                     addPregnancy(patient)
                 }
                 pregnancyEndTimestamp != null -> {
-                    Log.d(TAG, "I want all the information")
-                    Log.d(TAG, patient.toString())
-                    Log.d(TAG, "preg outcome: ${pregnancyOutcome.value}")
-                    Log.d(TAG, "preg end timestamp: $pregnancyEndTimestamp")
-                    Log.d(TAG, "gest age calc: $calculatedGestationalAge")
 
-                    Log.d(TAG, pregnancyEndTimestamp.toString())
-                    closePregnancy(patient)
+                    if (isEndPregnancyValid(patient)) {
+                        closePregnancy(patient)
+                    } else {
+                        allowEdit(true)
+                        SaveResult.Error
+                    }
+
                 }
                 else -> {
-                    Log.d(TAG, "((FAILED)) - I still want all the information")
-                    Log.d(TAG, patient.toString())
-                    Log.d(TAG, "preg outcome: ${pregnancyOutcome.value}")
-                    Log.d(TAG, "preg end timestamp: $pregnancyEndTimestamp")
-                    Log.d(TAG, "gest age calc: $calculatedGestationalAge")
                     allowEdit(true)
                     SaveResult.Error
                 }
@@ -249,9 +237,9 @@ class EditPregnancyViewModel @Inject constructor(
             // IMPORTANT: IF THERE IS A PREGNANCY END DATE (AND YOU HAVE WIFI) THEN YOU HAVE TO MAKE
                 // SURE THAT CLOSE PREGNANCY IS SENT TO SERVER BEFORE ADDING THIS ONE
                 // IF YOU CAN'T ADD IT TO SERVER make the user sync before continuing
-            if (patient.prevPregnancyEndDate != null) {
+            if (patient.prevPregnancyEndDate != null && patient.pregnancyId != null) {
                 if (closePregnancy(patient) != SaveResult.SavedAndUploaded) {
-                    // something is not good - make patient sync without saving changes
+                    // something is not good - make patient sync and don't save changes
                     allowEdit(true)
                     return SaveResult.Error
                 }
@@ -264,11 +252,11 @@ class EditPregnancyViewModel @Inject constructor(
                 is NetworkResult.Failure -> {
                     // TODO: Find a way to push this message (String(result.body)) up to activity level
                     Log.d(TAG, String(result.body))
-                    SaveResult.Error
+                    SaveResult.ServerReject
                 }
                 else -> {
                     allowEdit(true)
-                    SaveResult.Error
+                    SaveResult.ServerReject
                 }
             }
         } else {
@@ -280,18 +268,6 @@ class EditPregnancyViewModel @Inject constructor(
     private suspend fun closePregnancy(patient: Patient): SaveResult {
         return if (isNetworkAvailable.value == true) {
 
-            if (patient.pregnancyId == null) {
-                allowEdit(true)
-                Log.d(TAG, "ERROR: cannot upload end date for unknown pregnancy!!")
-                return SaveResult.Error
-            }
-
-            if (patient.prevPregnancyEndDate == null) {
-                allowEdit(true)
-                Log.d(TAG, "ERROR: cannot end pregnancy with no end date!!")
-                return SaveResult.Error
-            }
-
             when (patientManager.pushEndPregnancy(patient)) {
                 is NetworkResult.Success -> {
                     // everything good, continue
@@ -301,13 +277,88 @@ class EditPregnancyViewModel @Inject constructor(
                 else -> {
                     // something is not good - make patient sync without saving changes
                     allowEdit(true)
-                    SaveResult.Error
+                    SaveResult.ServerReject
                 }
             }
         } else {
             patientManager.add(patient)
             SaveResult.SavedOffline
         }
+    }
+
+    fun checkEndDateErrors(endDateVal: Long) {
+
+        val startDate = pregnancyStartTimestamp.value
+        if (startDate == null) {
+            calculatedGestationalAge.value = "Error"
+            return
+        }
+
+        // if end date is before the start date of pregnancy
+        if (endDateVal.toBigInteger() < startDate) {
+            if (DEBUG) Log.d(
+                TAG,"Input error: cannot have an end date before the pregnancy's start date"
+            )
+            endDateError.value = context.getString(R.string.invalid_pregnancy_end_date_before_start)
+            return
+        }
+
+        // if end date is after current time
+        if (MaterialDatePicker.todayInUtcMilliseconds() / 1000 <= endDateVal) {
+            if (DEBUG) Log.d(
+                TAG,"Input error: cannot have an end date greater than current time"
+            )
+            endDateError.value = context.getString(R.string.invalid_pregnancy_end_date_future)
+            return
+        }
+
+        try {
+            val gestLen = calculatedGestationalAge.value?.toFloatOrNull() ?: return
+
+            // if total gestation length is > 10 months/43 weeks
+            if (gestLen >= GESTATIONAL_AGE_WEEKS_MAX) {
+                if (DEBUG) Log.d(
+                    TAG,"Input error: pregnancy gestation length is too long"
+                )
+                endDateError.value = context.getString(
+                    R.string.patient_error_gestation_greater_than_n_weeks,
+                    GESTATIONAL_AGE_WEEKS_MAX
+                )
+                return
+            }
+        } catch (error: NumberFormatException) {
+            if (DEBUG) Log.d(
+                TAG,"Error with calculatedGestationalAge conversion"
+            )
+        }
+
+        endDateError.value = ""
+    }
+
+    private fun isEndPregnancyValid(patient: Patient): Boolean {
+
+        if (endDateError.value != "") {
+            return false
+        }
+
+        if (patient.prevPregnancyEndDate == null) {
+            if (DEBUG) Log.d(
+                TAG,"Input error: cannot end pregnancy with no end date"
+            )
+            endDateError.value = context.getString(R.string.missing)
+            return false
+        }
+
+        // pregnancyId CAN be null if there IS a gestational age
+            // in the case where there's been an offline start date saved
+        if (patient.pregnancyId == null && patient.gestationalAge == null) {
+            if (DEBUG) Log.d(
+                TAG,"Input error: cannot upload pregnancy with no start date"
+            )
+            return false
+        }
+
+        return true
     }
 
     private fun attemptToBuildValidPatient(): Patient? {
@@ -468,6 +519,7 @@ class EditPregnancyViewModel @Inject constructor(
     interface SaveResult {
         object SavedAndUploaded : SaveResult
         object SavedOffline : SaveResult
+        object ServerReject : SaveResult
         object Error : SaveResult
     }
 }

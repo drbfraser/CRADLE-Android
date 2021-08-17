@@ -132,7 +132,11 @@ class PatientManager @Inject constructor(
     }
 
     suspend fun pushEndPregnancy(patient: Patient): NetworkResult<Unit> {
-        val result = restApi.putPregnancy(patient)
+        val result = if (patient.pregnancyId == null) {
+            restApi.postPregnancy(patient)
+        } else {
+            restApi.putPregnancy(patient)
+        }
 
         if (result is NetworkResult.Success) {
             // Clear all info - pregnancy id, pregnancyEndDate, pregnancyOutcome, isPregnant = false
@@ -140,6 +144,7 @@ class PatientManager @Inject constructor(
             patient.prevPregnancyEndDate = null
             patient.prevPregnancyOutcome = null
             patient.isPregnant = false
+            patient.gestationalAge = null
             add(patient)
         }
 
