@@ -51,35 +51,37 @@ class EditPregnancyActivity : AppCompatActivity() {
             executePendingBindings()
         }
 
-        var title = "Edit Pregnancy"
-        if (savedInstanceState == null) {
-            if (intent.hasExtra(EXTRA_IS_PREGNANT)) {
-                if (intent.getBooleanExtra(EXTRA_IS_PREGNANT, false)) {
-                    title = "Close Pregnancy"
-                    Log.d(TAG, "sending to close pregnancy")
-                    supportFragmentManager.commit {
-                        setReorderingAllowed(true)
-                        add<ClosePregnancyFragment>(R.id.frag_edit_pregnancy)
-                    }
-                } else {
-                    title = "Add Pregnancy"
-                    Log.d(TAG, "sending to add pregnancy")
-                    supportFragmentManager.commit {
-                        setReorderingAllowed(true)
-                        add<AddPregnancyFragment>(R.id.frag_edit_pregnancy)
-                    }
-                }
-            }
-        }
-
         if (intent.hasExtra(EXTRA_PATIENT_ID)) {
             val patientId = intent.getStringExtra(EXTRA_PATIENT_ID)
                 ?: error("no patient with given id")
             viewModel.initialize(patientId, intent.getBooleanExtra(EXTRA_IS_PREGNANT, false))
         }
 
-        setupToolBar(title)
+        setupFragment(savedInstanceState)
         setupSaveButton()
+    }
+
+    private fun setupFragment(savedInstanceState: Bundle?) {
+        var title = "Edit Pregnancy"
+        if (savedInstanceState == null && intent.hasExtra(EXTRA_IS_PREGNANT)) {
+
+            if (intent.getBooleanExtra(EXTRA_IS_PREGNANT, false)) {
+                title = "Close Pregnancy"
+                Log.d(TAG, "sending to close pregnancy")
+                supportFragmentManager.commit {
+                    setReorderingAllowed(true)
+                    add<ClosePregnancyFragment>(R.id.frag_edit_pregnancy)
+                }
+            } else {
+                title = "Add Pregnancy"
+                Log.d(TAG, "sending to add pregnancy")
+                supportFragmentManager.commit {
+                    setReorderingAllowed(true)
+                    add<AddPregnancyFragment>(R.id.frag_edit_pregnancy)
+                }
+            }
+        }
+        setupToolBar(title)
     }
 
     private fun setupToolBar(title: String) {
