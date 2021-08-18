@@ -3,7 +3,6 @@ package com.cradleplatform.neptune.view
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -22,6 +21,7 @@ import com.cradleplatform.neptune.viewmodel.EditPregnancyViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import com.cradleplatform.neptune.viewmodel.EditPatientViewModel.SaveResult
 
 @AndroidEntryPoint
 class EditPregnancyActivity : AppCompatActivity() {
@@ -62,19 +62,17 @@ class EditPregnancyActivity : AppCompatActivity() {
     }
 
     private fun setupFragment(savedInstanceState: Bundle?) {
-        var title = "Edit Pregnancy"
+        var title = getString(R.string.edit_pregnancy)
         if (savedInstanceState == null && intent.hasExtra(EXTRA_IS_PREGNANT)) {
 
             if (intent.getBooleanExtra(EXTRA_IS_PREGNANT, false)) {
-                title = "Close Pregnancy"
-                Log.d(TAG, "sending to close pregnancy")
+                title = getString(R.string.close_pregnancy)
                 supportFragmentManager.commit {
                     setReorderingAllowed(true)
                     add<ClosePregnancyFragment>(R.id.frag_edit_pregnancy)
                 }
             } else {
-                title = "Add Pregnancy"
-                Log.d(TAG, "sending to add pregnancy")
+                title = getString(R.string.add_pregnancy)
                 supportFragmentManager.commit {
                     setReorderingAllowed(true)
                     add<AddPregnancyFragment>(R.id.frag_edit_pregnancy)
@@ -94,23 +92,23 @@ class EditPregnancyActivity : AppCompatActivity() {
         btnSave.setOnClickListener {
             lifecycleScope.launch {
                 when (viewModel.saveAndUploadPregnancy()) {
-                    is EditPregnancyViewModel.SaveResult.SavedAndUploaded -> {
+                    is SaveResult.SavedAndUploaded -> {
                         Toast.makeText(
                             it.context,
-                            "Success - changes saved online",
+                            getString(R.string.edit_online_success_msg),
                             Toast.LENGTH_LONG
                         ).show()
                         finish()
                     }
-                    is EditPregnancyViewModel.SaveResult.SavedOffline -> {
+                    is SaveResult.SavedOffline -> {
                         Toast.makeText(
                             it.context,
-                            "Please sync! Edits weren't pushed to server",
+                            getString(R.string.edit_offline_success_msg),
                             Toast.LENGTH_LONG
                         ).show()
                         finish()
                     }
-                    is EditPregnancyViewModel.SaveResult.ServerReject -> {
+                    is SaveResult.ServerReject -> {
                         MaterialAlertDialogBuilder(it.context)
                             .setTitle(R.string.server_error)
                             .setMessage(R.string.data_invalid_please_sync)
@@ -120,7 +118,7 @@ class EditPregnancyActivity : AppCompatActivity() {
                     else -> {
                         Toast.makeText(
                             it.context,
-                            "Invalid - check errors or try syncing",
+                            getString(R.string.edit_fail_msg),
                             Toast.LENGTH_LONG
                         ).show()
                     }

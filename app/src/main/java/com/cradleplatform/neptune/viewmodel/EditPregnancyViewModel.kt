@@ -39,6 +39,7 @@ import java.lang.reflect.InvocationTargetException
 import java.math.BigInteger
 import javax.inject.Inject
 import kotlin.reflect.KProperty
+import com.cradleplatform.neptune.viewmodel.EditPatientViewModel.SaveResult
 
 private val DEBUG = BuildConfig.DEBUG
 
@@ -506,10 +507,4 @@ class EditPregnancyViewModel @Inject constructor(
         }
     }
 
-    interface SaveResult {
-        object SavedAndUploaded : SaveResult
-        object SavedOffline : SaveResult
-        object ServerReject : SaveResult
-        object Error : SaveResult
-    }
 }

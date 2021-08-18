@@ -18,8 +18,10 @@ import com.cradleplatform.neptune.databinding.ActivityEditPatientInfoBinding
 import com.cradleplatform.neptune.ext.hideKeyboard
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.viewmodel.EditPatientViewModel
+import com.cradleplatform.neptune.viewmodel.EditPatientViewModel.SaveResult
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.AndroidEntryPoint
@@ -85,28 +87,35 @@ class EditPatientInfoActivity : AppCompatActivity() {
         btnSave.setOnClickListener {
             lifecycleScope.launch {
                 when (viewModel.save()) {
-                    is EditPatientViewModel.SaveResult.SavedAndUploaded -> {
+                    is SaveResult.SavedAndUploaded -> {
                         Toast.makeText(
                             it.context,
-                            "Success - patient sent to server ",
+                            getString(R.string.edit_online_success_msg),
                             Toast.LENGTH_LONG
                         )
                             .show()
                         finish()
                     }
-                    is EditPatientViewModel.SaveResult.SavedOffline -> {
+                    is SaveResult.SavedOffline -> {
                         Toast.makeText(
                             it.context,
-                            "Please sync! Patient edits weren't pushed to server",
+                            getString(R.string.edit_offline_success_msg),
                             Toast.LENGTH_LONG
                         )
                             .show()
                         finish()
+                    }
+                    is SaveResult.ServerReject -> {
+                        MaterialAlertDialogBuilder(it.context)
+                            .setTitle(R.string.server_error)
+                            .setMessage(R.string.data_invalid_please_sync)
+                            .setPositiveButton(android.R.string.ok, null)
+                            .show()
                     }
                     else -> {
                         Toast.makeText(
                             it.context,
-                            "Invalid patient - check errors",
+                            getString(R.string.edit_fail_msg),
                             Toast.LENGTH_LONG
                         )
                             .show()
