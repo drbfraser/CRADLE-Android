@@ -162,5 +162,4 @@ class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
         onBackPressed()
         return true
     }
-
 }

@@ -26,6 +26,7 @@ import com.cradleplatform.neptune.utilities.Seconds
 import com.cradleplatform.neptune.utilities.Weeks
 import com.cradleplatform.neptune.utilities.WeeksAndDays
 import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
+import com.cradleplatform.neptune.viewmodel.EditPatientViewModel.SaveResult
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -39,7 +40,6 @@ import java.lang.reflect.InvocationTargetException
 import java.math.BigInteger
 import javax.inject.Inject
 import kotlin.reflect.KProperty
-import com.cradleplatform.neptune.viewmodel.EditPatientViewModel.SaveResult
 
 private val DEBUG = BuildConfig.DEBUG
 
@@ -506,5 +506,4 @@ class EditPregnancyViewModel @Inject constructor(
             }
         }
     }
-
 }
