@@ -546,10 +546,12 @@
     <string name="sync_worker_failure_server_sent_error_code_d__s">Last sync failed: Server sent error code %1$d. %2$s</string>
     <string name="sync_worker_failure_exception_during_sync_s__s">Last sync failed: Exception during sync (%1$s): %2$s</string>
     <string name="sync_worker_success">Last sync successful</string>
-    <string name="sync_total_patients_s">Number of patients updated: %1$d</string>
-    <string name="sync_total_readings_s">Number of readings updated: %1$d</string>
-    <string name="sync_total_followups_s">Number of new followups: %1$d</string>
-    <string name="sync_total_referrals_s">Number of new referrals: %1$d</string>
+    <string name="sync_total_patients_uploaded_s">Number of patients uploaded: %1$d</string>
+    <string name="sync_total_patients_downloaded_s">Number of patients downloaded: %1$d</string>
+    <string name="sync_total_readings_uploaded_s">Number of readings uploaded: %1$d</string>
+    <string name="sync_total_readings_downloaded_s">Number of readings downloaded: %1$d</string>
+    <string name="sync_total_followups_downloaded_s">Number of new follow-ups for old readings: %1$d</string>
+    <string name="sync_total_referrals_downloaded_s">Number of new referrals for old readings: %1$d</string>
 
     <string name="ocr_fragment_title">OCR</string>
     <string name="ocr_fragment_description">Align the CRADLE VSA screen with the corresponding areas and press USE when the readings look correct. The last measured blood pressure values can be retrieved by turning the CRADLE VSA off and holding the ON/OFF button until memory appears.</string>

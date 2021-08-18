@@ -156,6 +156,8 @@ class SyncWorker @AssistedInject constructor(
         val patientResult = syncPatients(patientsToUpload, lastPatientSyncTime)
         val patientsLeftToUpload = patientManager.getNumberOfPatientsToUpload()
         if (patientsLeftToUpload > 0) {
+            patientResult.totalPatientsUploaded -= patientsLeftToUpload
+
             // FIXME: Clean this up
             Log.wtf(
                 TAG,
@@ -184,6 +186,8 @@ class SyncWorker @AssistedInject constructor(
         val readingResult = syncReadings(readingsToUpload, lastReadingSyncTime)
         val readingsLeftToUpload = readingManager.getUnUploadedReadings().size
         if (readingsLeftToUpload > 0) {
+            readingResult.totalReadingsUploaded -= readingsLeftToUpload
+
             Log.wtf(
                 TAG,
                 "There are $readingsLeftToUpload readings left to upload"
@@ -360,25 +364,33 @@ class SyncWorker @AssistedInject constructor(
         readingSyncResult: ReadingSyncResult,
     ): String {
         val success = patientSyncResult.networkResult.getStatusMessage(applicationContext)
-        val totalPatients = applicationContext.getString(
-            R.string.sync_total_patients_s, patientSyncResult.totalPatients
+        val totalPatientsUploaded = applicationContext.getString(
+            R.string.sync_total_patients_uploaded_s, patientSyncResult.totalPatientsUploaded
         )
-        val totalReadings = applicationContext.getString(
-            R.string.sync_total_readings_s, readingSyncResult.totalReadings
+        val totalPatientsDownloaded = applicationContext.getString(
+            R.string.sync_total_patients_downloaded_s, patientSyncResult.totalPatientsDownloaded
         )
-        val totalReferrals = applicationContext.getString(
-            R.string.sync_total_referrals_s, readingSyncResult.totalReferrals
+        val totalReadingsUploaded = applicationContext.getString(
+            R.string.sync_total_readings_uploaded_s, readingSyncResult.totalReadingsUploaded
         )
-        val totalFollowups = applicationContext.getString(
-            R.string.sync_total_followups_s, readingSyncResult.totalFollowups
+        val totalReadingsDownloaded = applicationContext.getString(
+            R.string.sync_total_readings_downloaded_s, readingSyncResult.totalReadingsDownloaded
+        )
+        val totalReferralsDownloaded = applicationContext.getString(
+            R.string.sync_total_referrals_downloaded_s, readingSyncResult.totalReferralsDownloaded
+        )
+        val totalFollowupsDownloaded = applicationContext.getString(
+            R.string.sync_total_followups_downloaded_s, readingSyncResult.totalFollowupsDownloaded
         )
         val errors = patientSyncResult.errors.let { if (it != "[ ]") "\nErrors:\n$it" else "" }
         return "$success\n" +
-            "$totalPatients\n" +
-            "$totalReadings\n" +
-            "$totalReferrals\n" +
-            "$totalFollowups" +
-            "$errors"
+            "$totalPatientsUploaded\n" +
+            "$totalPatientsDownloaded\n" +
+            "$totalReadingsUploaded\n" +
+            "$totalReadingsDownloaded\n" +
+            "$totalReferralsDownloaded\n" +
+            totalFollowupsDownloaded +
+            errors
     }
 }
 
@@ -396,13 +408,15 @@ enum class ReadingSyncField(override val text: String) : Field {
 
 data class PatientSyncResult(
     val networkResult: NetworkResult<Unit>,
-    val totalPatients: Int,
-    val errors: String?,
+    var totalPatientsUploaded: Int,
+    var totalPatientsDownloaded: Int,
+    var errors: String?,
 )
 
 data class ReadingSyncResult(
     val networkResult: NetworkResult<Unit>,
-    val totalReadings: Int,
-    val totalReferrals: Int,
-    val totalFollowups: Int,
+    var totalReadingsUploaded: Int,
+    var totalReadingsDownloaded: Int,
+    var totalReferralsDownloaded: Int,
+    var totalFollowupsDownloaded: Int,
 )

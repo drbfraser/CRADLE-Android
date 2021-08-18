@@ -481,7 +481,7 @@ class RestApi constructor(
     ): PatientSyncResult =
         withContext(IO) {
             val body = createWriter<List<Patient>>().writeValueAsBytes(patientsToUpload)
-            var totalPatients = 0
+            var totalPatientsDownloaded = 0
             var errors: String? = null
             val networkResult = http.makeRequest(
                 method = Http.Method.POST,
@@ -496,8 +496,8 @@ class RestApi constructor(
                             PatientSyncField.PATIENTS.text -> {
                                 parseObjectArray<Patient>(reader) {
                                     patientChannel.send(it)
-                                    totalPatients++
-                                    reportProgressBlock(totalPatients, totalPatients)
+                                    totalPatientsDownloaded++
+                                    reportProgressBlock(totalPatientsDownloaded, totalPatientsDownloaded)
                                 }
                                 patientChannel.close()
                             }
@@ -525,7 +525,7 @@ class RestApi constructor(
                     patientChannel.close(SyncException("patient download wasn't done properly"))
                 }
             }
-            PatientSyncResult(networkResult, totalPatients, errors)
+            PatientSyncResult(networkResult, patientsToUpload.size, totalPatientsDownloaded, errors)
         }
 
     /**
@@ -565,9 +565,9 @@ class RestApi constructor(
         reportProgressBlock: suspend (Int, Int) -> Unit,
     ): ReadingSyncResult = withContext(IO) {
         val body = createWriter<List<Reading>>().writeValueAsBytes(readingsToUpload)
-        var totalReadings = 0
-        var totalReferrals = 0
-        var totalFollowups = 0
+        var totalReadingsDownloaded = 0
+        var totalReferralsDownloaded = 0
+        var totalFollowupsDownloaded = 0
         val networkResult = http.makeRequest(
             method = Http.Method.POST,
             url = urlManager.getReadingsSync(lastSyncTimestamp),
@@ -590,7 +590,7 @@ class RestApi constructor(
                             parseObjectArray<Reading>(readerForReading) {
                                 readingChannel.send(it)
                                 totalDownloaded++
-                                totalReadings++
+                                totalReadingsDownloaded++
                                 reportProgressBlock(totalDownloaded, totalToDownload)
                             }
                             readingChannel.close()
@@ -600,7 +600,7 @@ class RestApi constructor(
                             parseObjectArray<Referral>(readerForReferral) {
                                 referralChannel.send(it)
                                 totalDownloaded++
-                                totalReferrals++
+                                totalReferralsDownloaded++
                                 reportProgressBlock(totalDownloaded, totalToDownload)
                             }
                             referralChannel.close()
@@ -610,7 +610,7 @@ class RestApi constructor(
                             parseObjectArray<Assessment>(readerForAssessment) {
                                 assessmentChannel.send(it)
                                 totalDownloaded++
-                                totalFollowups++
+                                totalFollowupsDownloaded++
                                 reportProgressBlock(totalDownloaded, totalToDownload)
                             }
                             assessmentChannel.close()
@@ -622,9 +622,9 @@ class RestApi constructor(
             withContext(Dispatchers.Main) {
                 Log.d(
                     TAG,
-                    "DEBUG: Downloaded $totalReadings readings, " +
-                        "$totalReferrals referrals and " +
-                        "$totalFollowups assessments."
+                    "DEBUG: Downloaded $totalReadingsDownloaded readings, " +
+                        "$totalReferralsDownloaded referrals and " +
+                        "$totalFollowupsDownloaded assessments."
                 )
             }
             Unit
@@ -644,7 +644,13 @@ class RestApi constructor(
             }
         }
 
-        ReadingSyncResult(networkResult, totalReadings, totalReferrals, totalFollowups)
+        ReadingSyncResult(
+            networkResult,
+            readingsToUpload.size,
+            totalReadingsDownloaded,
+            totalReferralsDownloaded,
+            totalFollowupsDownloaded,
+        )
     }
 
     /**
