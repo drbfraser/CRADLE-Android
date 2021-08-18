@@ -19,6 +19,7 @@ import com.cradleplatform.neptune.databinding.ActivityEditPregnancyBinding
 import com.cradleplatform.neptune.view.ui.editPregnancy.AddPregnancyFragment
 import com.cradleplatform.neptune.view.ui.editPregnancy.ClosePregnancyFragment
 import com.cradleplatform.neptune.viewmodel.EditPregnancyViewModel
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -107,8 +108,14 @@ class EditPregnancyActivity : AppCompatActivity() {
                         ).show()
                         finish()
                     }
+                    is EditPregnancyViewModel.SaveResult.ServerReject -> {
+                        MaterialAlertDialogBuilder(it.context)
+                            .setTitle(R.string.server_error)
+                            .setMessage(R.string.data_invalid_please_sync)
+                            .setPositiveButton(android.R.string.ok, null)
+                            .show()
+                    }
                     else -> {
-                        // TODO: make this a popup since it doesn't finish the activity anyway
                         Toast.makeText(
                             it.context,
                             "Invalid - check errors or try syncing",

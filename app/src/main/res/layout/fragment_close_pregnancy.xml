@@ -65,7 +65,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="weeks"
+                        android:text="@string/lbl_weeks"
                         android:textColor="@color/black"
                         android:textSize="14sp"/>
 
@@ -88,41 +88,32 @@
                         android:enabled="false"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Click calendar icon to add end date" />
+                        android:hint="@string/end_date_calendar_icon_prompt" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <com.google.android.material.textfield.TextInputEditText
+                <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/pregnancy_outcome"
-                    style="@style/ReadingFlowTheme"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_marginTop="10dp"
-                    android:gravity="top"
-                    android:inputType="textLongMessage|textMultiLine"
-                    android:maxLines="5"
-                    android:minLines="5"
-                    android:hint="Outcome - Baby weight and mode of delivery"
-                    android:overScrollMode="always"
-                    android:scrollbarStyle="insideInset"
-                    android:scrollbars="vertical"
-                    android:singleLine="false"
-                    android:text="@{viewModel.pregnancyOutcome}"
-                    android:verticalScrollbarPosition="right"
-                    app:layout_constraintTop_toBottomOf="@id/gestational_age_layout"
-                    app:layout_constraintStart_toStartOf="parent"/>
-
-                <TextView
-                    android:id="@+id/internetAvailabilityTextView"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="No internet - Please sync when possible"
-                    android:textColor="@color/error"
-                    android:visibility="gone"
-                    app:layout_constraintStart_toStartOf="@+id/pregnancy_outcome"
-                    app:layout_constraintTop_toBottomOf="@+id/pregnancy_outcome"
-                    tools:visibility="visible" />
+                    android:enabled="@{viewModel.isInputEnabled}"
+                    android:hint="@string/pregnancy_outcome_hint"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/gestational_age_layout">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/test_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:backgroundTint="@color/white"
+                        android:gravity="top"
+                        android:minLines="5"
+                        android:text="@={viewModel.pregnancyOutcome}"
+                        tools:text="SVG" />
+
+                </com.google.android.material.textfield.TextInputLayout>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>

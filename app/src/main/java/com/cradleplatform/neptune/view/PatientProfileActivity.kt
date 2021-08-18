@@ -107,6 +107,16 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupUpdateRecord()
         setupLineChart()
         setupToolBar()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (!getLocalPatient()) {
+            // not a local patient, might be a child class
+            return
+        }
+        setupLineChart()
+        setupReadingsRecyclerView()
 
         setupEditPatient(currPatient)
         setupBtnPregnancy(currPatient)
@@ -151,16 +161,6 @@ open class PatientProfileActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return true
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (!getLocalPatient()) {
-            // not a local patient, might be a child class
-            return
-        }
-        setupLineChart()
-        setupReadingsRecyclerView()
     }
 
     fun populatePatientInfo(patient: Patient) {
@@ -223,12 +223,11 @@ open class PatientProfileActivity : AppCompatActivity() {
     private fun setupBtnPregnancy(patient: Patient) {
         btnPregnancy.setOnClickListener() {
 
-            // If there is gestationalAge AND a prevPregnancyEndDate, there is no space for more pregnancy edits
-            // user must sync to continue
-            if (patient.gestationalAge != null && patient.prevPregnancyEndDate != null) {
+            // Don't allow users to end a pregnancy when they haven't synced the start date
+            if (patient.pregnancyId == null && patient.gestationalAge != null) {
                 MaterialAlertDialogBuilder(this)
                     .setTitle(R.string.unable_to_edit_pregnancy)
-                    .setMessage(R.string.to_many_offline_pregnancy_edits)
+                    .setMessage(R.string.error_please_sync)
                     .setPositiveButton(android.R.string.ok, null)
                     .show()
 

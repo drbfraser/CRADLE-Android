@@ -431,13 +431,6 @@ class RestApi constructor(
             jsonObject.put("gestationalAgeUnit", units)
             jsonObject.put("pregnancyStartDate", startDate)
 
-            // If there's no pregnancyId but there IS prevPregnancyEndDate & prevPregnancyOutcome:
-            // those records are related to this pregnancy, therefore you would want to push full pregnancy
-            if (patient.pregnancyId == null && patient.prevPregnancyEndDate != null) {
-                jsonObject.put("pregnancyEndDate", patient.prevPregnancyEndDate.toString())
-                jsonObject.put("pregnancyOutcome", patient.prevPregnancyOutcome ?: "")
-            }
-
             val mediaType = "application/json; charset=utf-8".toMediaType()
             val requestBody = jsonObject.toString().toRequestBody(mediaType)
 

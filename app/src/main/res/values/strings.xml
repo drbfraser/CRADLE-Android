@@ -567,11 +567,16 @@
     <string name="missing">Missing</string>
     <string name="invalid_pregnancy_end_date_future">Invalid end date. Future end dates are not allowed</string>
     <string name="invalid_pregnancy_end_date_before_start">Invalid end date. Pregnancy cannot end before it started </string>
-    <string name="to_many_offline_pregnancy_edits">There are too many offline edits to this patient\'s pregnancy, please sync to continue</string>
+    <string name="error_please_sync">Please sync before continuing</string>
     <string name="unable_to_edit_pregnancy">Unable to edit pregnancy</string>
+    <string name="server_error">Server error</string>
+    <string name="data_invalid_please_sync">Something went wrong when validating data. Syncing data may solve the issue</string>
     <string name="edit_patient">Edit Patient</string>
     <string name="no_edit_patient_gender">Patient pregnant, cannot change gender</string>
     <string name="editing_no_network_warn">Editing without network. Please sync when possible</string>
+    <string name="pregnancy_outcome_hint">Enter outcome (ie Baby weight and mode of delivery)</string>
+    <string name="end_date_calendar_icon_prompt">Click calendar icon to add end date</string>
+    <string name="lbl_weeks">weeks</string>
 
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>

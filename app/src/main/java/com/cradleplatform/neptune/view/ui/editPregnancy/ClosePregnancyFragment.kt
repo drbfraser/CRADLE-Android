@@ -41,6 +41,7 @@ class ClosePregnancyFragment : Fragment() {
 
     companion object {
         private const val DATE_PICKER_YEAR_LOWER_BOUND = 1900
+        private const val MILLIS_IN_SEC = 1000
         private const val DATE_PICKER_TIME_ZONE = "UTC"
     }
 
@@ -95,10 +96,12 @@ class ClosePregnancyFragment : Fragment() {
             addOnPositiveButtonClickListener {
 
                 // Time is in miliseconds so we have to convert it to seconds
-                val dateTimestampSeconds = with(SimpleDateFormat(Patient.DOB_FORMAT_SIMPLEDATETIME, Locale.getDefault())) {
+                val dateTimestampSeconds = with(
+                    SimpleDateFormat(Patient.DOB_FORMAT_SIMPLEDATETIME, Locale.getDefault())
+                ) {
                     timeZone = TimeZone.getTimeZone(DATE_PICKER_TIME_ZONE)
                     Date(it).time
-                } / 1000
+                } / MILLIS_IN_SEC
 
                 viewModel.pregnancyEndTimestamp = dateTimestampSeconds
                 viewModel.gestationalAgeFromEndDate(dateTimestampSeconds.toBigInteger())
@@ -127,7 +130,7 @@ class ClosePregnancyFragment : Fragment() {
         // make this value the value of gestationalAge
 
         var lowerBoundMillis = (viewModel.pregnancyStartTimestamp.value?.toLong())?.times(
-            1000
+            MILLIS_IN_SEC
         )
 
         if (lowerBoundMillis == null) {

@@ -131,15 +131,11 @@ class PatientManager @Inject constructor(
         return result.map { }
     }
 
-    suspend fun pushEndPregnancy(patient: Patient): NetworkResult<Unit> {
-        val result = if (patient.pregnancyId == null) {
-            restApi.postPregnancy(patient)
-        } else {
-            restApi.putPregnancy(patient)
-        }
+    suspend fun pushAndSaveEndPregnancy(patient: Patient): NetworkResult<Unit> {
+        val result = restApi.putPregnancy(patient)
 
         if (result is NetworkResult.Success) {
-            // Clear all info - pregnancy id, pregnancyEndDate, pregnancyOutcome, isPregnant = false
+            // Ensure all info is cleared and clear end dates
             patient.pregnancyId = null
             patient.prevPregnancyEndDate = null
             patient.prevPregnancyOutcome = null
