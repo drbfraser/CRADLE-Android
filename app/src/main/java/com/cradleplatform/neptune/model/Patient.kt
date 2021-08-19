@@ -488,8 +488,6 @@ data class Patient(
 
             val sex = Sex.valueOf(get(PatientField.SEX)!!.textValue())
             val pregnancyId = get(PatientField.PREGNANCY_ID)?.asInt()
-            val prevPregnancyEndDate = get(PatientField.PREGNANCY_END_DATE)?.asLong()
-            val prevPregnancyOutcome = get(PatientField.PREGNANCY_OUTCOME)?.textValue()
             val zone = get(PatientField.ZONE)?.textValue()
             val villageNumber = get(PatientField.VILLAGE_NUMBER)?.textValue()
             val householdNumber = get(PatientField.HOUSEHOLD_NUMBER)?.textValue()
@@ -499,19 +497,11 @@ data class Patient(
             val lastEdited = get(PatientField.LAST_EDITED)?.asLong()
 
             // TODO: update server to send "lastServerUpdate" instead of base
-            //  + remove PatientField.BASE
-            // This logic is implemented to allow tests to pass (tests look for lastServerUpdate
-            val lastServerUpdate = if (has(PatientField.BASE.text)) {
-                get(PatientField.BASE)?.asLong()
-            } else {
-                get(PatientField.LAST_SERVER_UPDATE)?.asLong()
-            }
+            val lastServerUpdate = get(PatientField.LAST_SERVER_UPDATE)?.asLong()
 
-            // Set these to null because if we are receiving patient information from the server,
-            // it guarantees there are no un-uploaded edits on android
-            val drugLastEdited = null
-            val medicalLastEdited = null
-
+            // The following fields are set to null because if we are receiving patient information
+            // from the server, it guarantees there are no un-uploaded edits on android
+            // prevPregnancyEndDate, prevPregnancyOutcome, drugLastEdited, medicalLastEdited
             return@run Patient(
                 id = id,
                 name = name,
@@ -521,8 +511,8 @@ data class Patient(
                 sex = sex,
                 isPregnant = isPregnant,
                 pregnancyId = pregnancyId,
-                prevPregnancyEndDate = prevPregnancyEndDate,
-                prevPregnancyOutcome = prevPregnancyOutcome,
+                prevPregnancyEndDate = null,
+                prevPregnancyOutcome = null,
                 zone = zone,
                 villageNumber = villageNumber,
                 householdNumber = householdNumber,
@@ -530,8 +520,8 @@ data class Patient(
                 medicalHistory = medicalHistory,
                 allergy = allergy,
                 lastEdited = lastEdited,
-                drugLastEdited = drugLastEdited,
-                medicalLastEdited = medicalLastEdited,
+                drugLastEdited = null,
+                medicalLastEdited = null,
                 lastServerUpdate = lastServerUpdate
             )
         }
@@ -771,7 +761,7 @@ private enum class PatientField(override val text: String) : Field {
     LAST_EDITED("lastEdited"),
     DRUG_LAST_EDITED("drugLastEdited"),
     MEDICAL_LAST_EDITED("medicalLastEdited"),
-    LAST_SERVER_UPDATE("lastServerUpdate"),
+    LAST_SERVER_UPDATE("base"),
     BASE("base"),
     READINGS("readings")
 }

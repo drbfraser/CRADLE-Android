@@ -197,6 +197,8 @@
     <string name="missing_required_patient_vitals">Missing required patient vitals</string>
     <string name="missing_vitals_blood_pressure">Blood pressure (systolic, diastolic, heart rate)</string>
     <string name="missing_vitals_symptoms">Symptoms</string>
+    <string name="network_result_success">Successful</string>
+    <string name="network_result_partial_success">Partially Successful</string>
     <string name="network_result_error_server_rejected_credentials">Server rejected credentials; check they are correct in settings.</string>
     <string name="network_result_error_server_rejected_upload_request">Server rejected upload request; check server URL in settings.</string>
     <string name="network_result_error_server_rejected_url">Server rejected URL; check server URL in settings.</string>
@@ -537,12 +539,19 @@
     <string name="sync_activity_status_checking_for_new_patients">Checking for new patient updates</string>
     <string name="sync_activity_status_checking_for_new_readings_referrals_and_assessments">Checking for new readings, referrals, and assessments</string>
     <string name="sync_activity_no_internet_connection_please_check_back_later">No internet connection; please check back later</string>
-    <string name="sync_activity_sync_status_header">Sync status</string>
+    <string name="sync_activity_sync_status_header">Sync Status</string>
+    <string name="sync_activity_last_sync_result_header">Last Sync Result</string>
     <string name="sync_activity_press_the_sync_button_to_sync_patients_and_readings_with_the_server">Press the sync button to sync patients and readings with the server.</string>
     <string name="sync_activity_sync_failed">Sync failed!</string>
     <string name="sync_worker_failure_server_sent_error_code_d__s">Last sync failed: Server sent error code %1$d. %2$s</string>
     <string name="sync_worker_failure_exception_during_sync_s__s">Last sync failed: Exception during sync (%1$s): %2$s</string>
     <string name="sync_worker_success">Last sync successful</string>
+    <string name="sync_total_patients_uploaded_s">Number of patients uploaded: %1$d</string>
+    <string name="sync_total_patients_downloaded_s">Number of patients downloaded: %1$d</string>
+    <string name="sync_total_readings_uploaded_s">Number of readings uploaded: %1$d</string>
+    <string name="sync_total_readings_downloaded_s">Number of readings downloaded: %1$d</string>
+    <string name="sync_total_followups_downloaded_s">Number of new follow-ups for old readings: %1$d</string>
+    <string name="sync_total_referrals_downloaded_s">Number of new referrals for old readings: %1$d</string>
 
     <string name="ocr_fragment_title">OCR</string>
     <string name="ocr_fragment_description">Align the CRADLE VSA screen with the corresponding areas and press USE when the readings look correct. The last measured blood pressure values can be retrieved by turning the CRADLE VSA off and holding the ON/OFF button until memory appears.</string>

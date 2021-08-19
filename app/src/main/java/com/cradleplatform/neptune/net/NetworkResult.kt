@@ -22,6 +22,7 @@ import com.cradleplatform.neptune.net.NetworkResult.Success
 sealed interface NetworkResult<T> {
 
     companion object {
+        private const val MULTI_STATUS = 207
         private const val UNAUTHORIZED = 401
         private const val BAD_REQUEST = 400
         private const val NOT_FOUND = 404
@@ -55,9 +56,11 @@ sealed interface NetworkResult<T> {
      * @return A message describing the error contained in this result or null
      *  if this result is a [Success] variant.
      */
-    fun getErrorMessage(context: Context): String? = when (this) {
-        is Success -> null
-        is NetworkException -> this.cause.message
+    fun getStatusMessage(context: Context): String? = when (this) {
+        is Success -> when (this.statusCode) {
+            MULTI_STATUS -> context.getString(R.string.network_result_partial_success)
+            else -> context.getString(R.string.network_result_success)
+        }
         is Failure -> when (this.statusCode) {
             UNAUTHORIZED -> context.getString(
                 R.string.network_result_error_server_rejected_credentials
@@ -74,6 +77,7 @@ sealed interface NetworkResult<T> {
                 statusCode
             )
         }
+        is NetworkException -> this.cause.message
     }
 
     /**
