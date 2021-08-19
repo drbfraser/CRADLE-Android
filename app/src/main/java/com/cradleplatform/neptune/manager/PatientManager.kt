@@ -118,6 +118,35 @@ class PatientManager @Inject constructor(
         return result.map { }
     }
 
+    suspend fun addPregnancyOnServerSaveOnSuccess(patient: Patient): NetworkResult<Unit> {
+        val result = restApi.postPregnancy(patient)
+
+        if (result is NetworkResult.Success) {
+            // Have to set the pregnancyId on db to id returned from server to link this record
+            // to what was saved on server db
+            patient.pregnancyId = result.value.id
+            add(patient)
+        }
+
+        return result.map { }
+    }
+
+    suspend fun pushAndSaveEndPregnancy(patient: Patient): NetworkResult<Unit> {
+        val result = restApi.putPregnancy(patient)
+
+        if (result is NetworkResult.Success) {
+            // Ensure all info is cleared and clear end dates
+            patient.pregnancyId = null
+            patient.prevPregnancyEndDate = null
+            patient.prevPregnancyOutcome = null
+            patient.isPregnant = false
+            patient.gestationalAge = null
+            add(patient)
+        }
+
+        return result.map { }
+    }
+
     /**
      * Uploads an edited patient to the server.
      *

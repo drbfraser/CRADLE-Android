@@ -15,6 +15,8 @@ import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.net.NetworkResult
 import com.cradleplatform.neptune.utilities.UnixTimestamp
 import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
+import com.cradleplatform.neptune.viewmodel.EditPatientViewModel.SaveResult
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -88,7 +90,7 @@ class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
                         is SaveResult.SavedAndUploaded -> {
                             Toast.makeText(
                                 it.context,
-                                "Success - Record sent to server",
+                                getString(R.string.edit_online_success_msg),
                                 Toast.LENGTH_LONG
                             ).show()
                             finish()
@@ -96,18 +98,26 @@ class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
                         is SaveResult.SavedOffline -> {
                             Toast.makeText(
                                 it.context,
-                                "Please sync! Record was not pushed to server",
+                                getString(R.string.edit_offline_success_msg),
                                 Toast.LENGTH_LONG
                             ).show()
                             finish()
                         }
-                        else -> {
+                        is SaveResult.ServerReject -> {
+                            MaterialAlertDialogBuilder(it.context)
+                                .setTitle(R.string.server_error)
+                                .setMessage(R.string.data_invalid_please_sync)
+                                .setPositiveButton(android.R.string.ok, null)
+                                .show()
                             input.isEnabled = true
+                        }
+                        else -> {
                             Toast.makeText(
                                 it.context,
-                                "Failed to save - Please try again",
+                                getString(R.string.edit_fail_msg),
                                 Toast.LENGTH_LONG
                             ).show()
+                            input.isEnabled = true
                         }
                     }
                 }
@@ -130,7 +140,7 @@ class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
                     SaveResult.SavedAndUploaded
                 }
                 else -> {
-                    saveRecordOffline(patient, isDrugRecord)
+                    SaveResult.ServerReject
                 }
             }
         } else {
@@ -151,11 +161,5 @@ class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return true
-    }
-
-    interface SaveResult {
-        object SavedAndUploaded : SaveResult
-        object SavedOffline : SaveResult
-        object Error : SaveResult
     }
 }

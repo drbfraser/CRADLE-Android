@@ -21,6 +21,7 @@ import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
+import com.cradleplatform.neptune.model.Sex
 import com.cradleplatform.neptune.utilities.Util
 import com.cradleplatform.neptune.view.DashBoardActivity.Companion.READING_ACTIVITY_DONE
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForEditReading
@@ -31,6 +32,7 @@ import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.runBlocking
 import java.text.ParseException
@@ -59,6 +61,7 @@ open class PatientProfileActivity : AppCompatActivity() {
     private lateinit var pregnant: TextView
     private lateinit var gestationalAge: TextView
     private lateinit var pregnancyInfoLayout: LinearLayout
+    private lateinit var btnPregnancy: Button
 
     lateinit var readingRecyclerview: RecyclerView
     lateinit var currPatient: Patient
@@ -104,7 +107,19 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupUpdateRecord()
         setupLineChart()
         setupToolBar()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (!getLocalPatient()) {
+            // not a local patient, might be a child class
+            return
+        }
+        setupLineChart()
+        setupReadingsRecyclerView()
+
         setupEditPatient(currPatient)
+        setupBtnPregnancy(currPatient)
     }
 
     fun setupToolBar() {
@@ -124,6 +139,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         gestationalAge = findViewById(R.id.gestationalAge)
         pregnancyInfoLayout = findViewById(R.id.pregnancyLayout)
         readingRecyclerview = findViewById(R.id.readingRecyclerview)
+        btnPregnancy = findViewById(R.id.btn_pregnancy)
     }
 
     open fun getLocalPatient(): Boolean {
@@ -145,16 +161,6 @@ open class PatientProfileActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return true
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (!getLocalPatient()) {
-            // not a local patient, might be a child class
-            return
-        }
-        setupLineChart()
-        setupReadingsRecyclerView()
     }
 
     fun populatePatientInfo(patient: Patient) {
@@ -179,6 +185,9 @@ open class PatientProfileActivity : AppCompatActivity() {
             }
         }
         patientSex.text = patient.sex.toString()
+        if (patient.sex == Sex.MALE) {
+            btnPregnancy.visibility = View.GONE
+        }
         if (!Util.stringNullOrEmpty(patient.villageNumber)) {
             villageNo.text = patient.villageNumber
         }
@@ -191,9 +200,12 @@ open class PatientProfileActivity : AppCompatActivity() {
         if (patient.isPregnant) {
             pregnant.setText(R.string.yes)
             setupGestationalInfo(patient)
+            btnPregnancy.text = getString(R.string.close)
+            pregnancyInfoLayout.visibility = View.VISIBLE
         } else {
             pregnant.setText(R.string.no)
             pregnancyInfoLayout.visibility = View.GONE
+            btnPregnancy.text = getString(R.string.add_pregnancy)
         }
         if (patient.drugHistory.isNotEmpty()) {
             val drugHistory = findViewById<TextView>(R.id.drugHistroyTxt)
@@ -206,6 +218,25 @@ open class PatientProfileActivity : AppCompatActivity() {
         if (patient.allergy.isNotEmpty()) {
             val allergies = findViewById<TextView>(R.id.allergies)
             allergies.text = patient.allergy
+        }
+    }
+
+    private fun setupBtnPregnancy(patient: Patient) {
+        btnPregnancy.setOnClickListener() {
+
+            // Don't allow users to end a pregnancy when they haven't synced the start date
+            if (patient.pregnancyId == null && patient.gestationalAge != null) {
+                MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.unable_to_edit_pregnancy)
+                    .setMessage(R.string.error_please_sync)
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show()
+
+                return@setOnClickListener
+            }
+
+            val intent = EditPregnancyActivity.makeIntentWithPatientId(this, patient.id, patient.isPregnant)
+            startActivity(intent)
         }
     }
 

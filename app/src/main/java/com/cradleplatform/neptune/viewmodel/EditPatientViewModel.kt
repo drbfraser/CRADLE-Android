@@ -194,8 +194,8 @@ class EditPatientViewModel @Inject constructor(
                     SaveResult.SavedAndUploaded
                 }
                 else -> {
-                    // Most common case here would be if patient isn't on server yet, put req won't work
-                    SaveResult.SavedOffline
+                    allowEdit(true)
+                    SaveResult.ServerReject
                 }
             }
         } else {
@@ -391,6 +391,7 @@ class EditPatientViewModel @Inject constructor(
     interface SaveResult {
         object SavedAndUploaded : SaveResult
         object SavedOffline : SaveResult
+        object ServerReject : SaveResult
         object Error : SaveResult
     }
 }

@@ -762,7 +762,6 @@ private enum class PatientField(override val text: String) : Field {
     DRUG_LAST_EDITED("drugLastEdited"),
     MEDICAL_LAST_EDITED("medicalLastEdited"),
     LAST_SERVER_UPDATE("base"),
-    BASE("base"),
     READINGS("readings")
 }
 
