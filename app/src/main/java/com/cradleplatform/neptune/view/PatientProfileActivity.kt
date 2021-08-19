@@ -201,6 +201,7 @@ open class PatientProfileActivity : AppCompatActivity() {
             pregnant.setText(R.string.yes)
             setupGestationalInfo(patient)
             btnPregnancy.text = "Close"
+            pregnancyInfoLayout.visibility = View.VISIBLE
         } else {
             pregnant.setText(R.string.no)
             pregnancyInfoLayout.visibility = View.GONE
