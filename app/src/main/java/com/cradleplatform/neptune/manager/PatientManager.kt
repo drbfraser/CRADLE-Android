@@ -87,14 +87,14 @@ class PatientManager @Inject constructor(
     suspend fun getPatientById(id: String): Patient? = patientDao.getPatientById(id)
 
     /**
-     * Get patients.
+     * Get all the patients that have been created or edited offline
      */
-    suspend fun getPatientsForUpload(): List<Patient> = patientDao.getPatientsForUpload()
+    suspend fun getPatientsToUpload(): List<Patient> = patientDao.readPatientsToUpload()
 
     /**
-     * Get patients.
+     * Get the number of patients that have been created or edited offline
      */
-    suspend fun getNumberOfPatientsForUpload(): List<Patient> = patientDao.getPatientsForUpload()
+    suspend fun getNumberOfPatientsToUpload(): Int = patientDao.countPatientsToUpload()
 
     /**
      * Uploads a patient and associated readings to the server.

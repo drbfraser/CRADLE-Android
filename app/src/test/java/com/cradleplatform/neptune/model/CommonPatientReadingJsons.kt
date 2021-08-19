@@ -47,7 +47,7 @@ object CommonPatientReadingJsons {
     "villageNumber": "4555",
     "householdNumber": "111",
     "created": 1604883668,
-    "lastServerUpdate": 1605687954,
+    "base": 1605687954,
     "lastEdited": 1605687954,
     "userId": 12,
     "readings": [
@@ -211,7 +211,7 @@ object CommonPatientReadingJsons {
     "dob": "2002-01-08",
     "villageNumber": "133",
     "created": 1604883600,
-    "lastServerUpdate": 1604883600,
+    "base": 1604883600,
     "readings": [
         {
             "bpDiastolic": 97,
@@ -323,7 +323,7 @@ object CommonPatientReadingJsons {
     "villageNumber": "998",
     "householdNumber": "135",
     "created": 1604981097,
-    "lastServerUpdate": 1604981097,
+    "base": 1604981097,
     "lastEdited": 1604981097,
     "userId": 12,
     "readings": [
@@ -472,7 +472,7 @@ object CommonPatientReadingJsons {
     "villageNumber": "566454518",
     "householdNumber": "6594",
     "created": 1605778651,
-    "lastServerUpdate": 1605778651,
+    "base": 1605778651,
     "lastEdited": 1605778651,
     "userId": 12,
     "readings": [

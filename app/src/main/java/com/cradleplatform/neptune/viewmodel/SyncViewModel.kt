@@ -73,7 +73,7 @@ class SyncViewModel @Inject constructor(
     val patientAndReadingsToUploadText: LiveData<String> = _patientsAndReadingsToUploadText
 
     private suspend fun updatePatientAndReadingsToUploadString() {
-        val numberOfPatientsToUpload = patientDao.getNumberOfPatientsForUpload()
+        val numberOfPatientsToUpload = patientDao.countPatientsToUpload()
         val numberOfReadingsToUpload = readingDao.getNumberOfUnUploadedReadings()
 
         Log.d(

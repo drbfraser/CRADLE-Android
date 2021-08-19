@@ -200,12 +200,12 @@ open class PatientProfileActivity : AppCompatActivity() {
         if (patient.isPregnant) {
             pregnant.setText(R.string.yes)
             setupGestationalInfo(patient)
-            btnPregnancy.text = "Close"
+            btnPregnancy.text = getString(R.string.close)
             pregnancyInfoLayout.visibility = View.VISIBLE
         } else {
             pregnant.setText(R.string.no)
             pregnancyInfoLayout.visibility = View.GONE
-            btnPregnancy.text = "Add Pregnancy"
+            btnPregnancy.text = getString(R.string.add_pregnancy)
         }
         if (patient.drugHistory.isNotEmpty()) {
             val drugHistory = findViewById<TextView>(R.id.drugHistroyTxt)

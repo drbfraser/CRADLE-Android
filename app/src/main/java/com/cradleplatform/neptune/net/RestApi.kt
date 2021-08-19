@@ -18,10 +18,13 @@ import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.Statistics
 import com.cradleplatform.neptune.sync.PatientSyncField
+import com.cradleplatform.neptune.sync.PatientSyncResult
 import com.cradleplatform.neptune.sync.ReadingSyncField
+import com.cradleplatform.neptune.sync.ReadingSyncResult
 import com.cradleplatform.neptune.sync.SyncWorker
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper.createWriter
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
@@ -540,10 +543,12 @@ class RestApi constructor(
         lastSyncTimestamp: BigInteger = BigInteger.valueOf(1L),
         patientChannel: SendChannel<Patient>,
         reportProgressBlock: suspend (Int, Int) -> Unit,
-    ): NetworkResult<Unit> =
+    ): PatientSyncResult =
         withContext(IO) {
             val body = createWriter<List<Patient>>().writeValueAsBytes(patientsToUpload)
-            http.makeRequest(
+            var totalPatientsDownloaded = 0
+            var errors: String? = null
+            val networkResult = http.makeRequest(
                 method = Http.Method.POST,
                 url = urlManager.getPatientsSync(lastSyncTimestamp),
                 headers = headers,
@@ -551,24 +556,20 @@ class RestApi constructor(
             ) { inputStream ->
                 val reader = JacksonMapper.readerForPatient
                 reader.createParser(inputStream).use { parser ->
-                    var totalPatients = 0
                     parser.parseObject {
                         when (currentName) {
-                            PatientSyncField.TOTAL.text -> {
-                                totalPatients = nextIntValue(0)
-                                if (totalPatients == 0) {
-                                    // don't bother parsing if there's nothing to parse
-                                    return@use
-                                }
-                            }
                             PatientSyncField.PATIENTS.text -> {
-                                var patientsDownloaded = 0
                                 parseObjectArray<Patient>(reader) {
                                     patientChannel.send(it)
-                                    patientsDownloaded++
-                                    reportProgressBlock(patientsDownloaded, totalPatients)
+                                    totalPatientsDownloaded++
+                                    reportProgressBlock(totalPatientsDownloaded, totalPatientsDownloaded)
                                 }
                                 patientChannel.close()
+                            }
+                            PatientSyncField.ERRORS.text -> {
+                                // TODO: Parse array of objects
+                                nextToken()
+                                errors = readValueAsTree<JsonNode>().toPrettyString()
                             }
                             PatientSyncField.FACILITIES.text -> {
                                 // TODO: Either have a sync endpoint for new facilities, or
@@ -589,6 +590,7 @@ class RestApi constructor(
                     patientChannel.close(SyncException("patient download wasn't done properly"))
                 }
             }
+            PatientSyncResult(networkResult, patientsToUpload.size, totalPatientsDownloaded, errors)
         }
 
     /**
@@ -626,19 +628,18 @@ class RestApi constructor(
         referralChannel: SendChannel<Referral>,
         assessmentChannel: SendChannel<Assessment>,
         reportProgressBlock: suspend (Int, Int) -> Unit,
-    ): NetworkResult<Unit> = withContext(IO) {
+    ): ReadingSyncResult = withContext(IO) {
         val body = createWriter<List<Reading>>().writeValueAsBytes(readingsToUpload)
-        http.makeRequest(
+        var totalReadingsDownloaded = 0
+        var totalReferralsDownloaded = 0
+        var totalFollowupsDownloaded = 0
+        val networkResult = http.makeRequest(
             method = Http.Method.POST,
             url = urlManager.getReadingsSync(lastSyncTimestamp),
             headers = headers,
             requestBody = buildJsonRequestBody(body)
         ) { inputStream ->
             Log.d(TAG, "Parsing readings now")
-
-            var numReadingsDownloaded = 0
-            var numReferralsDownloaded = 0
-            var numAssessmentsDownloaded = 0
 
             val readerForReading = JacksonMapper.createReader<Reading>()
             val readerForReferral = JacksonMapper.createReader<Referral>()
@@ -649,20 +650,12 @@ class RestApi constructor(
                 var totalToDownload = 0
                 parser.parseObject {
                     when (currentName) {
-                        ReadingSyncField.TOTAL.text -> {
-                            totalToDownload = nextIntValue(0)
-                            Log.d(TAG, "There are $totalToDownload readings + referrals + followups")
-                            if (totalToDownload == 0) {
-                                // don't bother parsing if there's nothing to parse
-                                return@use
-                            }
-                        }
                         ReadingSyncField.READINGS.text -> {
                             Log.d(TAG, "Starting to parse readings array")
                             parseObjectArray<Reading>(readerForReading) {
                                 readingChannel.send(it)
                                 totalDownloaded++
-                                numReadingsDownloaded++
+                                totalReadingsDownloaded++
                                 reportProgressBlock(totalDownloaded, totalToDownload)
                             }
                             readingChannel.close()
@@ -672,7 +665,7 @@ class RestApi constructor(
                             parseObjectArray<Referral>(readerForReferral) {
                                 referralChannel.send(it)
                                 totalDownloaded++
-                                numReferralsDownloaded++
+                                totalReferralsDownloaded++
                                 reportProgressBlock(totalDownloaded, totalToDownload)
                             }
                             referralChannel.close()
@@ -682,7 +675,7 @@ class RestApi constructor(
                             parseObjectArray<Assessment>(readerForAssessment) {
                                 assessmentChannel.send(it)
                                 totalDownloaded++
-                                numAssessmentsDownloaded++
+                                totalFollowupsDownloaded++
                                 reportProgressBlock(totalDownloaded, totalToDownload)
                             }
                             assessmentChannel.close()
@@ -694,9 +687,9 @@ class RestApi constructor(
             withContext(Dispatchers.Main) {
                 Log.d(
                     TAG,
-                    "DEBUG: Downloaded $numReadingsDownloaded readings, " +
-                        "$numReferralsDownloaded referrals and " +
-                        "$numAssessmentsDownloaded assessments."
+                    "DEBUG: Downloaded $totalReadingsDownloaded readings, " +
+                        "$totalReferralsDownloaded referrals and " +
+                        "$totalFollowupsDownloaded assessments."
                 )
             }
             Unit
@@ -715,6 +708,14 @@ class RestApi constructor(
                 assessmentChannel.close(SyncException("failed to sync assessments"))
             }
         }
+
+        ReadingSyncResult(
+            networkResult,
+            readingsToUpload.size,
+            totalReadingsDownloaded,
+            totalReferralsDownloaded,
+            totalFollowupsDownloaded,
+        )
     }
 
     /**

@@ -57,12 +57,12 @@ class SyncActivity : AppCompatActivity() {
             val syncStatusText = findViewById<TextView>(R.id.sync_status_text)
             val syncProgressBar = findViewById<ProgressBar>(R.id.sync_progress_bar)
             val downloadProgressText = findViewById<TextView>(R.id.download_progress_text_view)
-            val lastSyncStatusText = findViewById<TextView>(R.id.latest_sync_status_text_view)
+            val lastSyncResultText = findViewById<TextView>(R.id.last_sync_result_text_view)
 
             if (workInfo == null || workInfo.state.isFinished) {
                 showLastSyncStatus(workInfo)
             } else {
-                lastSyncStatusText.apply {
+                lastSyncResultText.apply {
                     text = ""
                     visibility = View.INVISIBLE
                 }
@@ -134,7 +134,7 @@ class SyncActivity : AppCompatActivity() {
         val syncProgressBar = findViewById<ProgressBar>(R.id.sync_progress_bar)
         val downloadProgressText = findViewById<TextView>(R.id.download_progress_text_view)
         val syncStatusText = findViewById<TextView>(R.id.sync_status_text)
-        val lastSyncStatusText = findViewById<TextView>(R.id.latest_sync_status_text_view)
+        val lastSyncResultText = findViewById<TextView>(R.id.last_sync_result_text_view)
 
         syncProgressBar.visibility = View.INVISIBLE
         downloadProgressText.visibility = View.INVISIBLE
@@ -157,7 +157,7 @@ class SyncActivity : AppCompatActivity() {
         )
 
         workInfo?.let {
-            lastSyncStatusText.apply {
+            lastSyncResultText.apply {
                 text = SyncWorker.getSyncResultMessage(it)
                 visibility = View.VISIBLE
             }
