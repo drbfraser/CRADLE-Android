@@ -171,7 +171,7 @@ class ReferralDialogFragment : DialogFragment() {
         }
     }
 
-    private fun encodeBase64(json: String): String {
+    private fun encodeBase64(json:String):String {
         return Base64.encodeToString(json.toByteArray(), Base64.DEFAULT)
     }
 
