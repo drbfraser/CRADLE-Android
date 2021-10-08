@@ -7,7 +7,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Telephony
-import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -171,10 +170,6 @@ class ReferralDialogFragment : DialogFragment() {
         }
     }
 
-    private fun encodeBase64(json:String):String {
-        return Base64.encodeToString(json.toByteArray(), Base64.DEFAULT)
-    }
-
     private fun makeSmsIntent(
         selectedHealthFacilityName: String,
         patientAndReadings: PatientAndReadings
@@ -194,7 +189,7 @@ class ReferralDialogFragment : DialogFragment() {
 
         return Intent(Intent.ACTION_SENDTO, uri).apply {
             putExtra("address", phoneNumber)
-            putExtra("sms_body", encodeBase64(json))
+            putExtra("sms_body", json)
 
             // Use default SMS app if supported
             // https://stackoverflow.com/a/24804601
