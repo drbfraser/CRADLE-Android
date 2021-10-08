@@ -1,4 +1,3 @@
-
 build:
   maxIssues: 0
   weights:
@@ -187,7 +186,7 @@ formatting:
     active: true
     autoCorrect: true
   ImportOrdering:
-    active: true
+    active: false
     autoCorrect: true
   Indentation:
     active: true
@@ -233,7 +232,7 @@ formatting:
     active: true
     autoCorrect: true
   NoWildcardImports:
-    active: true
+    active: false
     autoCorrect: true
   PackageName:
     active: false
@@ -481,7 +480,7 @@ style:
   VarCouldBeVal:
     active: false
   WildcardImport:
-    active: true
+    active: false
     excludeImports: ["java.util.*", "kotlinx.android.synthetic.*"]
   UnderscoresInNumericLiterals:
     active: false
