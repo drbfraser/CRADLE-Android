@@ -183,18 +183,23 @@ class ReferralDialogFragment : DialogFragment() {
             referralDialogViewModel.getHealthFacilityFromHealthFacilityName(
                 selectedHealthFacilityName
             )
+        val genReferralId = UUID.randomUUID().toString()
+        var referralMsg: String = "**referral message start: $genReferralId**\n"
         val json = JacksonMapper.createWriter<SmsReferral>().writeValueAsString(
             SmsReferral(
-                referralId = UUID.randomUUID().toString(),
+                referralId = genReferralId,
                 patient = patientAndReadings
             )
         )
         val phoneNumber = selectedHealthFacility.phoneNumber
         val uri = Uri.parse("smsto:$phoneNumber")
 
+        val encodedMsg = encodeBase64(json)
+        referralMsg += "$encodedMsg**end of referral message**"
+
         return Intent(Intent.ACTION_SENDTO, uri).apply {
             putExtra("address", phoneNumber)
-            putExtra("sms_body", encodeBase64(json))
+            putExtra("sms_body", referralMsg)
 
             // Use default SMS app if supported
             // https://stackoverflow.com/a/24804601
