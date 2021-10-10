@@ -1686,21 +1686,7 @@ class PatientReadingViewModel @Inject constructor(
                 val retestGroup = readingManager.createRetestGroup(reading)
 
                 // Set the radio buttons.
-                val needDefaultForRecheckVitals = lastEdited.value == null
-                val retestAdvice: RetestAdvice = if (needDefaultForRecheckVitals) {
-                    retestGroup.getRetestAdvice()
-                } else {
-                    val recheckVitalsDate = dateRecheckVitalsNeeded.value
-                    val isVitalRecheckRequired = recheckVitalsDate != null
-                    val isVitalRecheckRequiredNow = isVitalRecheckRequired &&
-                        (recheckVitalsDate!! - ZonedDateTime.now().toEpochSecond() <= 0)
-
-                    when {
-                        isVitalRecheckRequiredNow -> RetestAdvice.RIGHT_NOW
-                        isVitalRecheckRequired -> RetestAdvice.IN_15_MIN
-                        else -> RetestAdvice.NOT_NEEDED
-                    }
-                }
+                val retestAdvice: RetestAdvice = retestGroup.getRetestAdvice()
 
                 val needDefaultForFollowup = dateTimeTaken.value == null
                 val isFollowupRecommended = if (needDefaultForFollowup) {
