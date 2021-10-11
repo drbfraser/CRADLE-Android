@@ -10,6 +10,7 @@ import android.view.ViewTreeObserver
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -24,6 +25,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
+import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.viewmodel.LocalSearchPatientAdapter
 import com.cradleplatform.neptune.viewmodel.PatientListViewModel
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
@@ -72,30 +74,31 @@ class PatientsActivity : AppCompatActivity() {
         }
 
         setupGlobalPatientSearchButton()
-        val globalSearchButton =
-            findViewById<ExtendedFloatingActionButton>(R.id.globalPatientSearch)
+        padRecyclerView()
+        setUpSearchPatientAdapter()
 
-        // Pad the bottom of the recyclerView based on the height of the floating button (MOB-123)
-        val searchButtonObserver = globalSearchButton.viewTreeObserver
-        if (searchButtonObserver.isAlive) {
-            searchButtonObserver.addOnGlobalLayoutListener(
-                object : ViewTreeObserver.OnGlobalLayoutListener {
-                    override fun onGlobalLayout() {
-                        patientRecyclerview.setPadding(
-                            patientRecyclerview.paddingLeft,
-                            patientRecyclerview.paddingTop,
-                            patientRecyclerview.paddingRight,
-                            globalSearchButton.height * 2
-                        )
-                        val removeObserver = globalSearchButton.viewTreeObserver
-                        if (removeObserver.isAlive) {
-                            removeObserver.removeOnGlobalLayoutListener(this)
-                        }
-                    }
-                }
-            )
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            title = getString(R.string.activity_patients_title)
         }
 
+        onBackPressedDispatcher.addCallback(this, closeSearchViewCallback)
+
+        // If not restoring, display all patients by using a blank query.
+        // Otherwise, the saved query will be used to search, and the
+        // SearchView will be restored in onCreateOptionsMenu.
+        val savedQuery = savedInstanceState?.getString(EXTRA_CURRENT_QUERY)
+        if (savedQuery == null) {
+            search("", shouldDelay = false)
+        } else {
+            search(savedQuery, shouldDelay = false)
+        }
+    }
+
+    private fun setUpSearchPatientAdapter() {
         val emptyMessage = findViewById<TextView>(R.id.emptyView)
         val progressBar = findViewById<ProgressBar>(R.id.patients_list_progress_bar)
         val retryButton = findViewById<Button>(R.id.retry_button)
@@ -136,25 +139,31 @@ class PatientsActivity : AppCompatActivity() {
                 patientRecyclerview.scrollToPosition(0)
             }
         }
+    }
 
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
+    private fun padRecyclerView() {
+        val globalSearchButton =
+            findViewById<ExtendedFloatingActionButton>(R.id.globalPatientSearch)
 
-        supportActionBar?.apply {
-            setDisplayHomeAsUpEnabled(true)
-            title = getString(R.string.activity_patients_title)
-        }
-
-        onBackPressedDispatcher.addCallback(this, closeSearchViewCallback)
-
-        // If not restoring, display all patients by using a blank query.
-        // Otherwise, the saved query will be used to search, and the
-        // SearchView will be restored in onCreateOptionsMenu.
-        val savedQuery = savedInstanceState?.getString(EXTRA_CURRENT_QUERY)
-        if (savedQuery == null) {
-            search("", shouldDelay = false)
-        } else {
-            search(savedQuery, shouldDelay = false)
+        // Pad the bottom of the recyclerView based on the height of the floating button (MOB-123)
+        val searchButtonObserver = globalSearchButton.viewTreeObserver
+        if (searchButtonObserver.isAlive) {
+            searchButtonObserver.addOnGlobalLayoutListener(
+                object : ViewTreeObserver.OnGlobalLayoutListener {
+                    override fun onGlobalLayout() {
+                        patientRecyclerview.setPadding(
+                            patientRecyclerview.paddingLeft,
+                            patientRecyclerview.paddingTop,
+                            patientRecyclerview.paddingRight,
+                            globalSearchButton.height * 2
+                        )
+                        val removeObserver = globalSearchButton.viewTreeObserver
+                        if (removeObserver.isAlive) {
+                            removeObserver.removeOnGlobalLayoutListener(this)
+                        }
+                    }
+                }
+            )
         }
     }
 
@@ -257,13 +266,24 @@ class PatientsActivity : AppCompatActivity() {
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val id = item.itemId
-        return if (id == R.id.searchPatients) {
+    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
+        R.id.searchPatients -> {
             true
-        } else {
+        }
+
+        R.id.syncPatients -> {
+            CustomToast.shortToast(this, "Make sure you are connected to the internet");
+            checkInternet()
+            true
+        }
+
+        else -> {
             super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun checkInternet() {
+        TODO("Not yet implemented")
     }
 
     override fun onSupportNavigateUp(): Boolean {
