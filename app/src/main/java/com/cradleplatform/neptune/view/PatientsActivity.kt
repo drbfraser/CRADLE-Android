@@ -10,7 +10,6 @@ import android.view.ViewTreeObserver
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -272,7 +271,7 @@ class PatientsActivity : AppCompatActivity() {
         }
 
         R.id.syncPatients -> {
-            CustomToast.shortToast(this, "Make sure you are connected to the internet");
+            CustomToast.shortToast(this, "Make sure you are connected to the internet")
             checkInternet()
             true
         }
