@@ -25,6 +25,8 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.utilities.CustomToast
+import com.cradleplatform.neptune.utilities.NetworkHelper
+import com.cradleplatform.neptune.utilities.NetworkStatus
 import com.cradleplatform.neptune.viewmodel.LocalSearchPatientAdapter
 import com.cradleplatform.neptune.viewmodel.PatientListViewModel
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
@@ -271,18 +273,25 @@ class PatientsActivity : AppCompatActivity() {
         }
 
         R.id.syncPatients -> {
-            CustomToast.shortToast(this, "Make sure you are connected to the internet")
-            checkInternet()
+            when (NetworkHelper.isConnectedToInternet(this)) {
+                NetworkStatus.CELLULAR ->  {
+                    CustomToast.longToast(this, "You are connected to CELLULAR network, charges may apply")
+                }
+
+                NetworkStatus.NO_NETWORK ->  {
+                    CustomToast.shortToast(this, "Make sure you are connected to the internet")
+                }
+
+                else -> {
+                    startActivity(Intent(this, SyncActivity::class.java))
+                }
+            }
             true
         }
 
         else -> {
             super.onOptionsItemSelected(item)
         }
-    }
-
-    private fun checkInternet() {
-        TODO("Not yet implemented")
     }
 
     override fun onSupportNavigateUp(): Boolean {
