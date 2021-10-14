@@ -183,7 +183,7 @@ class StatsActivity : AppCompatActivity() {
                         startActivity(Intent(this, SyncActivity::class.java))
                     }
                 }
-                return true;
+                return true
             }
             else -> {
                 return super.onOptionsItemSelected(item)
