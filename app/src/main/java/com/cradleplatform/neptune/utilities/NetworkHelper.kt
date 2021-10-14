@@ -12,10 +12,12 @@ enum class NetworkStatus {
 class NetworkHelper {
     companion object {
         fun isConnectedToInternet(context: Context): NetworkStatus {
-            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val connectivityManager =
+                context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val capabilities = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+                val capabilities =
+                    connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
 
                 if (capabilities != null) {
                     when {
@@ -29,8 +31,7 @@ class NetworkHelper {
                             return NetworkStatus.ETHERNET
                         }
                     }
-                }
-                else {
+                } else {
                     // If the sdk version is below 23, we will use a deprecated method
                     val activeNetworkInfo = connectivityManager.activeNetworkInfo
                     if (activeNetworkInfo != null && activeNetworkInfo.isConnected) {

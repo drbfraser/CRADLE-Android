@@ -10,6 +10,7 @@ import android.view.ViewTreeObserver
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -258,6 +259,7 @@ class PatientsActivity : AppCompatActivity() {
                 closeSearchViewCallback.isEnabled = true
             }
             setOnCloseListener {
+                //TODO: re-enable the sync icon
                 closeSearchViewCallback.isEnabled = false
                 // Don't want to override default behavior of clearing the query.
                 return@setOnCloseListener false
@@ -269,20 +271,25 @@ class PatientsActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.searchPatients -> {
+            //TODO: hide the sync icon
             true
         }
 
         R.id.syncPatients -> {
             when (NetworkHelper.isConnectedToInternet(this)) {
-                NetworkStatus.CELLULAR ->  {
-                    CustomToast.longToast(this, "You are connected to CELLULAR network, charges may apply")
+                NetworkStatus.CELLULAR -> {
+                    CustomToast.longToast(
+                        this,
+                        "You are connected to CELLULAR network, charges may apply"
+                    )
                 }
 
-                NetworkStatus.NO_NETWORK ->  {
+                NetworkStatus.NO_NETWORK -> {
                     CustomToast.shortToast(this, "Make sure you are connected to the internet")
                 }
 
                 else -> {
+                    //TODO: refresh the current activity when the user finishes syncing
                     startActivity(Intent(this, SyncActivity::class.java))
                 }
             }

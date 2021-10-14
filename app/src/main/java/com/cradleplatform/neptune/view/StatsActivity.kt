@@ -1,6 +1,7 @@
 package com.cradleplatform.neptune.view
 
 import android.content.DialogInterface
+import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
@@ -26,7 +27,10 @@ import com.cradleplatform.neptune.model.Statistics
 import com.cradleplatform.neptune.model.UserRole
 import com.cradleplatform.neptune.net.NetworkResult
 import com.cradleplatform.neptune.utilities.BarGraphValueFormatter
+import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.DateUtil
+import com.cradleplatform.neptune.utilities.NetworkHelper
+import com.cradleplatform.neptune.utilities.NetworkStatus
 import com.cradleplatform.neptune.viewmodel.StatsViewModel
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.BarData
@@ -160,6 +164,26 @@ class StatsActivity : AppCompatActivity() {
             R.id.stats_filters -> {
                 setupFilterDialog()
                 return true
+            }
+            R.id.syncPatients -> {
+                when (NetworkHelper.isConnectedToInternet(this)) {
+                    NetworkStatus.CELLULAR -> {
+                        CustomToast.longToast(
+                            this,
+                            "You are connected to CELLULAR network, charges may apply"
+                        )
+                    }
+
+                    NetworkStatus.NO_NETWORK -> {
+                        CustomToast.shortToast(this, "Make sure you are connected to the internet")
+                    }
+
+                    else -> {
+                        //TODO: refresh the current activity when the user finishes syncing
+                        startActivity(Intent(this, SyncActivity::class.java))
+                    }
+                }
+                return true;
             }
             else -> {
                 return super.onOptionsItemSelected(item)
