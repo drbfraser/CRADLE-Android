@@ -6,6 +6,7 @@ import org.threeten.bp.Instant;
 import org.threeten.bp.ZoneId;
 import org.threeten.bp.ZonedDateTime;
 import org.threeten.bp.format.DateTimeFormatter;
+import org.threeten.bp.temporal.ChronoUnit;
 
 import java.math.BigInteger;
 
@@ -35,6 +36,21 @@ public class DateUtil {
     }
 
     /**
+     * @param lastSyncDate The Unix timestamp
+     * @param hours        hours in int format (Ex: 2 = 2 hours)
+     * @return if the difference between the current time and the lastSyncDate is greater than
+     * the hours variable
+     */
+    public static boolean isOverTime(BigInteger lastSyncDate, int hours) {
+        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime lastSyncTimeInZonedDateTime = getZoneTimeFromLong(lastSyncDate.longValue());
+        long diffHours = ChronoUnit.HOURS.between(lastSyncTimeInZonedDateTime, now);
+
+        Log.d("Henry", diffHours + "");
+        return diffHours > hours;
+    }
+
+    /**
      * @param unixDate           The Unix timestamp to use
      * @param useYMDOrderForFull If true, the full date will use YYYY-MM-DD format, else
      *                           it will use MMM d, yyyy format
@@ -42,8 +58,8 @@ public class DateUtil {
      */
     public static String getConciseDateString(BigInteger unixDate, boolean useYMDOrderForFull) {
         if ((unixDate.compareTo(BigInteger.valueOf(Long.MAX_VALUE))) > 0) {
-          Log.e(TAG, "Input date is beyond the range of values supported by this utility " +
-                  "- undefined behavior ahead");
+            Log.e(TAG, "Input date is beyond the range of values supported by this utility " +
+                    "- undefined behavior ahead");
         }
         final ZonedDateTime now = ZonedDateTime.now();
         // With our previous comparison and log, I think it's fine to take the longValue:

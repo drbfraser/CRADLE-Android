@@ -3,6 +3,7 @@ package com.cradleplatform.neptune.view
 import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -24,7 +25,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
+import com.cradleplatform.neptune.sync.SyncWorker
 import com.cradleplatform.neptune.utilities.CustomToast
+import com.cradleplatform.neptune.utilities.DateUtil
 import com.cradleplatform.neptune.utilities.NetworkHelper
 import com.cradleplatform.neptune.utilities.NetworkStatus
 import com.cradleplatform.neptune.viewmodel.LocalSearchPatientAdapter
@@ -35,6 +38,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.math.BigInteger
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -52,6 +56,13 @@ class PatientsActivity : AppCompatActivity() {
         }
 
     private var isFirstLoadDone: Boolean = false
+
+    private var menu: Menu? = null
+
+    private val requiredSyncTimeInterval = 3;
+
+    @Inject
+    lateinit var sharedPreferences: SharedPreferences
 
     @Inject
     lateinit var readingManager: ReadingManager
@@ -211,11 +222,19 @@ class PatientsActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_patients, menu)
+        this.menu = menu
 
+        setUpSearchBar()
+        checkLastSyncTimeAndUpdateSyncIcon()
+
+        return true
+    }
+
+    private fun setUpSearchBar() {
         // Associate searchable configuration with the SearchView
         val searchManager = ContextCompat.getSystemService(this, SearchManager::class.java)
             ?: error("missing SearchManager")
-        val searchView = menu.findItem(R.id.searchPatients).actionView as SearchView
+        val searchView = menu!!.findItem(R.id.searchPatients).actionView as SearchView
         this.searchView = searchView
 
         searchView.apply {
@@ -227,7 +246,7 @@ class PatientsActivity : AppCompatActivity() {
                     return@let
                 }
                 // Show the SearchView and populate the query.
-                val searchViewMenuItem = menu.findItem(R.id.searchPatients)
+                val searchViewMenuItem = menu!!.findItem(R.id.searchPatients)
                 searchViewMenuItem.expandActionView()
                 isIconified = true
                 onActionViewExpanded()
@@ -264,13 +283,36 @@ class PatientsActivity : AppCompatActivity() {
                 return@setOnCloseListener false
             }
         }
+    }
 
-        return true
+    private fun checkLastSyncTimeAndUpdateSyncIcon() {
+        val lastSyncTime = BigInteger(
+            sharedPreferences.getString(
+                SyncWorker.LAST_PATIENT_SYNC,
+                SyncWorker.LAST_SYNC_DEFAULT.toString()
+            )!!
+        )
+
+        val date = if (lastSyncTime.toString() == SyncWorker.LAST_SYNC_DEFAULT) {
+            getString(R.string.sync_activity_date_never)
+        } else {
+            DateUtil.getConciseDateString(lastSyncTime, false)
+        }
+
+        val menuItem: MenuItem = menu!!.findItem(R.id.syncPatients);
+
+        if (lastSyncTime.toString() == SyncWorker.LAST_SYNC_DEFAULT
+            || DateUtil.isOverTime(lastSyncTime, requiredSyncTimeInterval)
+        )
+            menuItem.setIcon(R.drawable.ic_baseline_sync_problem_24_red)
+        else
+            menuItem.setIcon(R.drawable.ic_baseline_sync_24_white)
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.searchPatients -> {
             //TODO: hide the sync icon
+
             true
         }
 
