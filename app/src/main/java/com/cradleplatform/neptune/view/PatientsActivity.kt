@@ -59,7 +59,7 @@ class PatientsActivity : AppCompatActivity() {
 
     private var menu: Menu? = null
 
-    private val requiredSyncTimeInterval = 3;
+    private val requiredSyncTimeInterval = 3 // TODO: should we add this as a settings variable?
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
@@ -299,7 +299,7 @@ class PatientsActivity : AppCompatActivity() {
             DateUtil.getConciseDateString(lastSyncTime, false)
         }
 
-        val menuItem: MenuItem = menu!!.findItem(R.id.syncPatients);
+        val menuItem: MenuItem = menu!!.findItem(R.id.syncPatients)
 
         if (lastSyncTime.toString() == SyncWorker.LAST_SYNC_DEFAULT
             || DateUtil.isOverTime(lastSyncTime, requiredSyncTimeInterval)
