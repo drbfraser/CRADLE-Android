@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewTreeObserver
@@ -59,8 +60,6 @@ class PatientsActivity : AppCompatActivity() {
 
     private var menu: Menu? = null
 
-    private val requiredSyncTimeInterval = 3 // TODO: should we add this as a settings variable?
-
     @Inject
     lateinit var sharedPreferences: SharedPreferences
 
@@ -108,6 +107,16 @@ class PatientsActivity : AppCompatActivity() {
         } else {
             search(savedQuery, shouldDelay = false)
         }
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        // restart the activity in case data is refresh
+        finish()
+        // smooth the animation of activity recreation
+        overridePendingTransition(0, 0)
+        startActivity(intent)
+        overridePendingTransition(0, 0)
     }
 
     private fun setUpSearchPatientAdapter() {
@@ -293,16 +302,10 @@ class PatientsActivity : AppCompatActivity() {
             )!!
         )
 
-        val date = if (lastSyncTime.toString() == SyncWorker.LAST_SYNC_DEFAULT) {
-            getString(R.string.sync_activity_date_never)
-        } else {
-            DateUtil.getConciseDateString(lastSyncTime, false)
-        }
-
         val menuItem: MenuItem = menu!!.findItem(R.id.syncPatients)
 
         if (lastSyncTime.toString() == SyncWorker.LAST_SYNC_DEFAULT
-            || DateUtil.isOverTime(lastSyncTime, requiredSyncTimeInterval)
+            || DateUtil.isOverTime(lastSyncTime, R.integer.settings_default_sync_period_hours)
         )
             menuItem.setIcon(R.drawable.ic_baseline_sync_problem_24_red)
         else
@@ -311,8 +314,6 @@ class PatientsActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.searchPatients -> {
-            //TODO: hide the sync icon
-
             true
         }
 

@@ -46,7 +46,6 @@ public class DateUtil {
         ZonedDateTime lastSyncTimeInZonedDateTime = getZoneTimeFromLong(lastSyncDate.longValue());
         long diffHours = ChronoUnit.HOURS.between(lastSyncTimeInZonedDateTime, now);
 
-        Log.d("Henry", diffHours + "");
         return diffHours > hours;
     }
 
