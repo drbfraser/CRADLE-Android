@@ -16,8 +16,10 @@ class SyncRemainderHelper {
                 )!!
             )
 
-            return (lastSyncTime.toString() == SyncWorker.LAST_SYNC_DEFAULT
-                || DateUtil.isOverTime(lastSyncTime, R.integer.settings_default_sync_period_hours))
+            return (lastSyncTime.toString() == SyncWorker.LAST_SYNC_DEFAULT || DateUtil.isOverTime(
+                lastSyncTime,
+                R.integer.settings_default_sync_period_hours
+            ))
         }
     }
 }

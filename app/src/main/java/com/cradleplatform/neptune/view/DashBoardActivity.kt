@@ -63,8 +63,10 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun reminderUserToSync() {
         if (SyncRemainderHelper.checkIfOverTime(sharedPreferences))
-            CustomToast.longToast(this,
-                "Please sync the app and make sure your data is up to date!")
+            CustomToast.longToast(
+                this,
+                "Please sync the app and make sure your data is up to date!"
+            )
     }
 
     private fun setupOnClickListner() {
