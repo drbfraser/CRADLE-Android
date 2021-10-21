@@ -7,12 +7,10 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.cradleplatform.neptune.R
-import okhttp3.internal.notify
 
 class NotificationManagerCustom {
-
     companion object {
-        private lateinit var channel_id: String
+        private lateinit var channelID: String
 
         // https://developer.android.com/training/notify-user/build-notification#Priority
         fun createNotificationChannel(context: Context) {
@@ -29,7 +27,7 @@ class NotificationManagerCustom {
                 ).apply {
                     description = descriptionText
                 }
-                channel_id = context.resources.getString(R.string.notification_id)
+                channelID = context.resources.getString(R.string.notification_id)
                 // Register the channel with the system
                 val notificationManager: NotificationManager =
                     context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -38,7 +36,7 @@ class NotificationManagerCustom {
         }
 
         fun pushNotification(context: Context, title: String, msg: String) {
-            var builder = NotificationCompat.Builder(context, channel_id)
+            var builder = NotificationCompat.Builder(context, channelID)
                 .setSmallIcon(R.drawable.cradle_for_icon_512x512)
                 .setContentTitle(title)
                 .setContentText(msg)
