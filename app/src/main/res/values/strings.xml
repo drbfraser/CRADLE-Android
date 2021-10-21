@@ -593,6 +593,8 @@
     <string name="edit_online_success_msg">Success - changes saved online</string>
     <string name="edit_offline_success_msg">Please sync! Edits weren\'t pushed to server</string>
     <string name="edit_fail_msg">Invalid - check errors in input</string>
+    <string name="show_password">show password</string>
+    <string name="hide_password">hide password</string>
 
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>

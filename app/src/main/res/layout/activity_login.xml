@@ -13,10 +13,10 @@
         android:layout_width="42dp"
         android:layout_height="41dp"
         android:backgroundTint="#00FFFFFF"
+        android:contentDescription="TODO"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/baseline_settings_white_36"
-        android:contentDescription="TODO" />
+        app:srcCompat="@drawable/baseline_settings_white_36" />
 
     <androidx.cardview.widget.CardView
         android:layout_width="0dp"
@@ -115,6 +115,18 @@
                 app:layout_constraintEnd_toEndOf="@+id/emailEditText"
                 app:layout_constraintStart_toStartOf="@+id/textView27"
                 app:layout_constraintTop_toBottomOf="@+id/textView27" />
+
+            <ImageButton
+                android:id="@+id/togglePasswordButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:layout_marginBottom="10dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="@string/show_password"
+                app:layout_constraintBottom_toBottomOf="@+id/passwordEditText"
+                app:layout_constraintEnd_toEndOf="@+id/passwordEditText"
+                app:srcCompat="@drawable/baseline_visibility_24" />
 
             <Button
                 android:id="@+id/loginButton"
