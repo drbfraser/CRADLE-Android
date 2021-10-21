@@ -11,4 +11,7 @@
     <!-- OCR -->
     <string name="settings_default_ocr_enabled">true</string>
     <string name="settings_default_ocr_show_debug_info">false</string>
+
+    <!--    Notification Channel-->
+    <string name="notification_id">iCradle</string>
 </resources>

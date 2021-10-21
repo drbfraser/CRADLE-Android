@@ -21,6 +21,9 @@
     <!-- Navigation Menu Options-->
     <string name="menu_readings">Readings</string>
 
+    <!--    Notification-->
+    <string name="notification_channel_name">iCradle</string>
+    <string name="notification_channel_description">iCradle Notification</string>
 
     <!-- Patient Reading - Tab Interface -->
     <string name="save">SAVE</string>

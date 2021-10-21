@@ -8,6 +8,7 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.manager.UpdateManager
 import com.cradleplatform.neptune.utilities.SharedPreferencesMigration
+import com.cradleplatform.neptune.utilities.notification.NotificationManagerCustom
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -28,6 +29,9 @@ class SplashActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
+        // As recommended by Google. Since we want our app to push notifications,
+        // This should the first thing to
+        createNotificationChannel()
 
         val isMigrationSuccessful = if (loginManager.isLoggedIn()) {
             SharedPreferencesMigration(sharedPreferences).migrate()
@@ -56,6 +60,10 @@ class SplashActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
         }
+    }
+
+    private fun createNotificationChannel() {
+        NotificationManagerCustom.createNotificationChannel(this)
     }
 
     companion object {
