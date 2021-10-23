@@ -2,7 +2,9 @@ package com.cradleplatform.neptune.utilities.notification
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -35,16 +37,34 @@ class NotificationManagerCustom {
             }
         }
 
-        fun pushNotification(context: Context, title: String, msg: String) {
-            var builder = NotificationCompat.Builder(context, channelID)
+        /**
+         * The tab action need to be passed to this activity
+         * Ex:  val intent = Intent(this, DashBoardActivity::class.java).apply {
+         *          flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+         *      }
+         */
+        fun pushNotification(
+            context: Context,
+            title: String,
+            msg: String,
+            notificationID: Int,
+            intent: Intent
+        ) {
+            val pendingIntent: PendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+            else
+                PendingIntent.getActivity(context, 0, intent, 0)
+
+            val builder = NotificationCompat.Builder(context, channelID)
                 .setSmallIcon(R.drawable.cradle_for_icon_512x512)
                 .setContentTitle(title)
                 .setContentText(msg)
+                .setContentIntent(pendingIntent)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
             with(NotificationManagerCompat.from(context)) {
                 // notificationId is a unique int for each notification that you must define
-                notify(0, builder.build())
+                notify(notificationID, builder.build())
             }
         }
     }
