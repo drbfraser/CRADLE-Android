@@ -73,6 +73,8 @@
             android:label="Settings"
             android:screenOrientation="portrait" />
 
+        <receiver android:name=".utilities.notification.NotificationPublisher"/>
+
         <provider
             android:name="androidx.work.impl.WorkManagerInitializer"
             android:authorities="${applicationId}.workmanager-init"

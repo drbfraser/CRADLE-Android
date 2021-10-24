@@ -2,6 +2,7 @@ package com.cradleplatform.neptune.view.ui.reading
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -119,6 +120,12 @@ class AdviceFragment : Fragment() {
             lifecycleScope.launch {
                 when (val saveResult = viewModel.save()) {
                     is ReadingFlowSaveResult.SaveSuccessful -> {
+                        // Recheck vitals is required, send notification in 15 minutes
+                        //TODO: schedule notification here
+                        if (saveResult == ReadingFlowSaveResult.SaveSuccessful.ReCheckNeeded) {
+                            Log.d("Henry", "Here")
+                        }
+
                         showStatusToast(view.context, saveResult)
                         viewModel.isSaving.removeObservers(viewLifecycleOwner)
                         savingDialog?.cancel()

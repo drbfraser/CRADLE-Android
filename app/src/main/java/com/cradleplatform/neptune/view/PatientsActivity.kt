@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
+import com.cradleplatform.neptune.utilities.notification.NotificationManagerCustom
 import com.cradleplatform.neptune.viewmodel.LocalSearchPatientAdapter
 import com.cradleplatform.neptune.viewmodel.PatientListViewModel
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton

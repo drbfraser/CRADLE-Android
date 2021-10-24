@@ -1,5 +1,8 @@
 package com.cradleplatform.neptune.utilities.notification
 
+import android.R.attr
+import android.app.AlarmManager
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -9,6 +12,8 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.cradleplatform.neptune.R
+import android.R.attr.delay
+import android.os.SystemClock
 
 class NotificationManagerCustom {
     companion object {
@@ -66,6 +71,49 @@ class NotificationManagerCustom {
                 // notificationId is a unique int for each notification that you must define
                 notify(notificationID, builder.build())
             }
+        }
+
+        fun scheduleNotification(
+            context: Context,
+            title: String,
+            msg: String,
+            notificationID: Int,
+            intent: Intent,
+            timeInMinutes: Int, // push the notification in _ minutes
+        ) {
+            val pendingIntent: PendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+            else
+                PendingIntent.getActivity(context, 0, intent, 0)
+
+            val builder = NotificationCompat.Builder(context, channelID)
+                .setSmallIcon(R.drawable.cradle_for_icon_512x512)
+                .setContentTitle(title)
+                .setContentText(msg)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            val notification: Notification = builder.build()
+
+            val notificationIntent = Intent(context, NotificationPublisher::class.java)
+            notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, notificationID)
+            notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, notification)
+            val pendingIntentForBroadCast = PendingIntent.getBroadcast(
+                context,
+                notificationID,
+                notificationIntent,
+                0
+            )
+
+            // val futureInMillis: Long = SystemClock.elapsedRealtime() + timeInMinutes * 60 * 1000
+            val futureInMillis: Long = SystemClock.elapsedRealtime() + 5000
+
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            alarmManager.set(
+                AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                futureInMillis,
+                pendingIntentForBroadCast
+            )
         }
     }
 }
