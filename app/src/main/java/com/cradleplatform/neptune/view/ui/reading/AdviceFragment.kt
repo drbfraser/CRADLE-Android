@@ -121,7 +121,7 @@ class AdviceFragment : Fragment() {
                 when (val saveResult = viewModel.save()) {
                     is ReadingFlowSaveResult.SaveSuccessful -> {
                         // Recheck vitals is required, send notification in 15 minutes
-                        //TODO: schedule notification here
+                        // TODO: schedule notification here
                         if (saveResult == ReadingFlowSaveResult.SaveSuccessful.ReCheckNeeded) {
                             Log.d("Henry", "Here")
                         }

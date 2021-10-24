@@ -1,6 +1,5 @@
 package com.cradleplatform.neptune.utilities.notification
 
-import android.R.attr
 import android.app.AlarmManager
 import android.app.Notification
 import android.app.NotificationChannel
@@ -12,7 +11,6 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.cradleplatform.neptune.R
-import android.R.attr.delay
 import android.os.SystemClock
 
 class NotificationManagerCustom {
@@ -73,6 +71,7 @@ class NotificationManagerCustom {
             }
         }
 
+        //https://stackoverflow.com/questions/36902667/how-to-schedule-notification-in-android
         fun scheduleNotification(
             context: Context,
             title: String,
@@ -105,8 +104,7 @@ class NotificationManagerCustom {
                 0
             )
 
-            // val futureInMillis: Long = SystemClock.elapsedRealtime() + timeInMinutes * 60 * 1000
-            val futureInMillis: Long = SystemClock.elapsedRealtime() + 5000
+            val futureInMillis: Long = SystemClock.elapsedRealtime() + timeInMinutes * 60 * 1000
 
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             alarmManager.set(

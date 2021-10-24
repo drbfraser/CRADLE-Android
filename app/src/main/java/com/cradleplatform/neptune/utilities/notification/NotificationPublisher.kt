@@ -9,9 +9,10 @@ import okhttp3.internal.notify
 
 class NotificationPublisher : BroadcastReceiver() {
     companion object {
-        var NOTIFICATION_ID = "Cradle"
-        var NOTIFICATION = "CradleNotification"
+        const val NOTIFICATION_ID = "Cradle"
+        const val NOTIFICATION = "CradleNotification"
     }
+
     override fun onReceive(context: Context?, intent: Intent?) {
         val notificationManager =
             context!!.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
