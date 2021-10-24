@@ -12,6 +12,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.cradleplatform.neptune.R
 import android.os.SystemClock
+import java.util.concurrent.TimeUnit
 
 class NotificationManagerCustom {
     companion object {
@@ -71,7 +72,7 @@ class NotificationManagerCustom {
             }
         }
 
-        //https://stackoverflow.com/questions/36902667/how-to-schedule-notification-in-android
+        // https://stackoverflow.com/questions/36902667/how-to-schedule-notification-in-android
         fun scheduleNotification(
             context: Context,
             title: String,
@@ -104,7 +105,8 @@ class NotificationManagerCustom {
                 0
             )
 
-            val futureInMillis: Long = SystemClock.elapsedRealtime() + timeInMinutes * 60 * 1000
+            val futureInMillis: Long =
+                SystemClock.elapsedRealtime() + TimeUnit.MINUTES.toMillis(timeInMinutes.toLong())
 
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             alarmManager.set(
