@@ -110,7 +110,7 @@ class PatientsActivity : AppCompatActivity() {
 
     override fun onRestart() {
         super.onRestart()
-        // restart the activity in case data is refresh
+        // restart the activity in case data is changed after syncing
         finish()
         // smooth the animation of activity recreation
         overridePendingTransition(0, 0)
@@ -285,7 +285,6 @@ class PatientsActivity : AppCompatActivity() {
                 closeSearchViewCallback.isEnabled = true
             }
             setOnCloseListener {
-                //TODO: re-enable the sync icon
                 closeSearchViewCallback.isEnabled = false
                 // Don't want to override default behavior of clearing the query.
                 return@setOnCloseListener false
@@ -330,7 +329,6 @@ class PatientsActivity : AppCompatActivity() {
                 }
 
                 else -> {
-                    //TODO: refresh the current activity when the user finishes syncing
                     startActivity(Intent(this, SyncActivity::class.java))
                 }
             }
