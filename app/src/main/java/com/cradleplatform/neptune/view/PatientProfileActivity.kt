@@ -263,7 +263,7 @@ open class PatientProfileActivity : AppCompatActivity() {
                 patient.gestationalAge?.ageFromNow?.asWeeks()
             }
 
-            gestationalAge.text = if (ageVal!! < 0) {
+            gestationalAge.text = if (ageVal == null || ageVal < 0) {
                 getText(R.string.not_available_n_slash_a)
             } else {
                 "%.2f".format(ageVal)

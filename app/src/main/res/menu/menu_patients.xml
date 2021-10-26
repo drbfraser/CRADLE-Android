@@ -9,4 +9,11 @@
         android:contentDescription="@string/activity_patients_search_view_title"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/syncPatients"
+        android:icon="@drawable/ic_baseline_sync_24_white"
+        android:orderInCategory="90"
+        android:title="@string/sync_patients"
+        android:contentDescription="@string/sync_patients"
+        app:showAsAction="always" />
 </menu>
