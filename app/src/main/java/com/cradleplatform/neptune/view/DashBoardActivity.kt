@@ -1,6 +1,7 @@
 package com.cradleplatform.neptune.view
 
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -9,11 +10,19 @@ import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.makeLaunchIntent
+import com.cradleplatform.neptune.viewmodel.SyncRemainderHelper
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
+    @Inject
+    lateinit var sharedPreferences: SharedPreferences
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dash_board)
@@ -50,6 +59,16 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
                 }
             }
         }
+
+        reminderUserToSync()
+    }
+
+    private fun reminderUserToSync() {
+        if (SyncRemainderHelper.checkIfOverTime(sharedPreferences))
+            CustomToast.longToast(
+                this,
+                "Please sync the app and make sure your data is up to date!"
+            )
     }
 
     private fun setupOnClickListner() {

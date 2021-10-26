@@ -175,10 +175,10 @@ formatting:
   android: false
   autoCorrect: true
   ChainWrapping:
-    active: true
+    active: false
     autoCorrect: true
   CommentSpacing:
-    active: true
+    active: false
     autoCorrect: true
   Filename:
     active: true
@@ -401,7 +401,7 @@ style:
     active: false
     maxJumpCount: 1
   MagicNumber:
-    active: true
+    active: false
     ignoreNumbers: ["-1","0","1","2"]
     ignoreHashCodeFunction: true
     ignorePropertyDeclaration: false

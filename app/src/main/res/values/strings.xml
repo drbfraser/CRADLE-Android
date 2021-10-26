@@ -596,6 +596,7 @@
     <string name="edit_online_success_msg">Success - changes saved online</string>
     <string name="edit_offline_success_msg">Please sync! Edits weren\'t pushed to server</string>
     <string name="edit_fail_msg">Invalid - check errors in input</string>
+    <string name="sync_patients">Sync Patients</string>
     <string name="show_password">show password</string>
     <string name="hide_password">hide password</string>
     <string name="vital_recheck_due_now">Vital recheck due now</string>

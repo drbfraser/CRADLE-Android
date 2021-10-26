@@ -17,4 +17,7 @@
 
     <!-- Recheck Duration -->
     <integer name="recheck_duration">15</integer>
+
+    <!-- Required Sync Period -->
+    <integer name="settings_default_sync_period_hours">3</integer>
 </resources>

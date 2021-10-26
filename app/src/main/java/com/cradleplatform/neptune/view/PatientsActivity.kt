@@ -3,6 +3,7 @@ package com.cradleplatform.neptune.view
 import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -24,6 +25,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
+import com.cradleplatform.neptune.sync.SyncWorker
+import com.cradleplatform.neptune.utilities.CustomToast
+import com.cradleplatform.neptune.utilities.DateUtil
+import com.cradleplatform.neptune.utilities.NetworkHelper
+import com.cradleplatform.neptune.utilities.NetworkStatus
 import com.cradleplatform.neptune.viewmodel.LocalSearchPatientAdapter
 import com.cradleplatform.neptune.viewmodel.PatientListViewModel
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
@@ -32,6 +38,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.math.BigInteger
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -49,6 +56,11 @@ class PatientsActivity : AppCompatActivity() {
         }
 
     private var isFirstLoadDone: Boolean = false
+
+    private var menu: Menu? = null
+
+    @Inject
+    lateinit var sharedPreferences: SharedPreferences
 
     @Inject
     lateinit var readingManager: ReadingManager
@@ -72,30 +84,41 @@ class PatientsActivity : AppCompatActivity() {
         }
 
         setupGlobalPatientSearchButton()
-        val globalSearchButton =
-            findViewById<ExtendedFloatingActionButton>(R.id.globalPatientSearch)
+        padRecyclerView()
+        setUpSearchPatientAdapter()
 
-        // Pad the bottom of the recyclerView based on the height of the floating button (MOB-123)
-        val searchButtonObserver = globalSearchButton.viewTreeObserver
-        if (searchButtonObserver.isAlive) {
-            searchButtonObserver.addOnGlobalLayoutListener(
-                object : ViewTreeObserver.OnGlobalLayoutListener {
-                    override fun onGlobalLayout() {
-                        patientRecyclerview.setPadding(
-                            patientRecyclerview.paddingLeft,
-                            patientRecyclerview.paddingTop,
-                            patientRecyclerview.paddingRight,
-                            globalSearchButton.height * 2
-                        )
-                        val removeObserver = globalSearchButton.viewTreeObserver
-                        if (removeObserver.isAlive) {
-                            removeObserver.removeOnGlobalLayoutListener(this)
-                        }
-                    }
-                }
-            )
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            title = getString(R.string.activity_patients_title)
         }
 
+        onBackPressedDispatcher.addCallback(this, closeSearchViewCallback)
+
+        // If not restoring, display all patients by using a blank query.
+        // Otherwise, the saved query will be used to search, and the
+        // SearchView will be restored in onCreateOptionsMenu.
+        val savedQuery = savedInstanceState?.getString(EXTRA_CURRENT_QUERY)
+        if (savedQuery == null) {
+            search("", shouldDelay = false)
+        } else {
+            search(savedQuery, shouldDelay = false)
+        }
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        // restart the activity in case data is changed after syncing
+        finish()
+        // smooth the animation of activity recreation
+        overridePendingTransition(0, 0)
+        startActivity(intent)
+        overridePendingTransition(0, 0)
+    }
+
+    private fun setUpSearchPatientAdapter() {
         val emptyMessage = findViewById<TextView>(R.id.emptyView)
         val progressBar = findViewById<ProgressBar>(R.id.patients_list_progress_bar)
         val retryButton = findViewById<Button>(R.id.retry_button)
@@ -136,25 +159,31 @@ class PatientsActivity : AppCompatActivity() {
                 patientRecyclerview.scrollToPosition(0)
             }
         }
+    }
 
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
+    private fun padRecyclerView() {
+        val globalSearchButton =
+            findViewById<ExtendedFloatingActionButton>(R.id.globalPatientSearch)
 
-        supportActionBar?.apply {
-            setDisplayHomeAsUpEnabled(true)
-            title = getString(R.string.activity_patients_title)
-        }
-
-        onBackPressedDispatcher.addCallback(this, closeSearchViewCallback)
-
-        // If not restoring, display all patients by using a blank query.
-        // Otherwise, the saved query will be used to search, and the
-        // SearchView will be restored in onCreateOptionsMenu.
-        val savedQuery = savedInstanceState?.getString(EXTRA_CURRENT_QUERY)
-        if (savedQuery == null) {
-            search("", shouldDelay = false)
-        } else {
-            search(savedQuery, shouldDelay = false)
+        // Pad the bottom of the recyclerView based on the height of the floating button (MOB-123)
+        val searchButtonObserver = globalSearchButton.viewTreeObserver
+        if (searchButtonObserver.isAlive) {
+            searchButtonObserver.addOnGlobalLayoutListener(
+                object : ViewTreeObserver.OnGlobalLayoutListener {
+                    override fun onGlobalLayout() {
+                        patientRecyclerview.setPadding(
+                            patientRecyclerview.paddingLeft,
+                            patientRecyclerview.paddingTop,
+                            patientRecyclerview.paddingRight,
+                            globalSearchButton.height * 2
+                        )
+                        val removeObserver = globalSearchButton.viewTreeObserver
+                        if (removeObserver.isAlive) {
+                            removeObserver.removeOnGlobalLayoutListener(this)
+                        }
+                    }
+                }
+            )
         }
     }
 
@@ -201,11 +230,19 @@ class PatientsActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_patients, menu)
+        this.menu = menu
 
+        setUpSearchBar()
+        checkLastSyncTimeAndUpdateSyncIcon()
+
+        return true
+    }
+
+    private fun setUpSearchBar() {
         // Associate searchable configuration with the SearchView
         val searchManager = ContextCompat.getSystemService(this, SearchManager::class.java)
             ?: error("missing SearchManager")
-        val searchView = menu.findItem(R.id.searchPatients).actionView as SearchView
+        val searchView = menu!!.findItem(R.id.searchPatients).actionView as SearchView
         this.searchView = searchView
 
         searchView.apply {
@@ -217,7 +254,7 @@ class PatientsActivity : AppCompatActivity() {
                     return@let
                 }
                 // Show the SearchView and populate the query.
-                val searchViewMenuItem = menu.findItem(R.id.searchPatients)
+                val searchViewMenuItem = menu!!.findItem(R.id.searchPatients)
                 searchViewMenuItem.expandActionView()
                 isIconified = true
                 onActionViewExpanded()
@@ -253,15 +290,52 @@ class PatientsActivity : AppCompatActivity() {
                 return@setOnCloseListener false
             }
         }
-
-        return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val id = item.itemId
-        return if (id == R.id.searchPatients) {
+    private fun checkLastSyncTimeAndUpdateSyncIcon() {
+        val lastSyncTime = BigInteger(
+            sharedPreferences.getString(
+                SyncWorker.LAST_PATIENT_SYNC,
+                SyncWorker.LAST_SYNC_DEFAULT.toString()
+            )!!
+        )
+
+        val menuItem: MenuItem = menu!!.findItem(R.id.syncPatients)
+
+        if (lastSyncTime.toString() == SyncWorker.LAST_SYNC_DEFAULT
+            || DateUtil.isOverTime(lastSyncTime, R.integer.settings_default_sync_period_hours)
+        )
+            menuItem.setIcon(R.drawable.ic_baseline_sync_problem_24_red)
+        else
+            menuItem.setIcon(R.drawable.ic_baseline_sync_24_white)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
+        R.id.searchPatients -> {
             true
-        } else {
+        }
+
+        R.id.syncPatients -> {
+            when (NetworkHelper.isConnectedToInternet(this)) {
+                NetworkStatus.CELLULAR -> {
+                    CustomToast.longToast(
+                        this,
+                        "You are connected to CELLULAR network, charges may apply"
+                    )
+                }
+
+                NetworkStatus.NO_NETWORK -> {
+                    CustomToast.shortToast(this, "Make sure you are connected to the internet")
+                }
+
+                else -> {
+                    startActivity(Intent(this, SyncActivity::class.java))
+                }
+            }
+            true
+        }
+
+        else -> {
             super.onOptionsItemSelected(item)
         }
     }
