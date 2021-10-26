@@ -21,6 +21,9 @@
     <!-- Navigation Menu Options-->
     <string name="menu_readings">Readings</string>
 
+    <!--    Notification-->
+    <string name="notification_channel_name">iCradle</string>
+    <string name="notification_channel_description">iCradle Notification</string>
 
     <!-- Patient Reading - Tab Interface -->
     <string name="save">SAVE</string>
@@ -571,7 +574,7 @@
     <string name="ocr_fragment_results_correct_no">No</string>
     <string name="patient_name_john_smith">John Smith</string>
     <string name="update_failed">Update failed</string>
-    <string name="update_successful">Updated Sucessfully</string>
+    <string name="update_successful">Updated Successfully</string>
     <string name="allergies">Allergies</string>
     <string name="missing">Missing</string>
     <string name="invalid_pregnancy_end_date_future">Invalid end date. Future end dates are not allowed</string>
@@ -596,6 +599,7 @@
     <string name="sync_patients">Sync Patients</string>
     <string name="show_password">show password</string>
     <string name="hide_password">hide password</string>
+    <string name="vital_recheck_due_now">Vital recheck due now</string>
 
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>

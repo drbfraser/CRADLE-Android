@@ -1,6 +1,7 @@
 package com.cradleplatform.neptune.view.ui.reading
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -23,6 +24,8 @@ import com.cradleplatform.neptune.databinding.ListReadingsCardItemBinding
 import com.cradleplatform.neptune.ext.hideKeyboard
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.RetestGroup
+import com.cradleplatform.neptune.utilities.notification.NotificationManagerCustom
+import com.cradleplatform.neptune.view.PatientsActivity
 import com.cradleplatform.neptune.view.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel
 import com.cradleplatform.neptune.viewmodel.ReadingFlowSaveResult
@@ -119,6 +122,22 @@ class AdviceFragment : Fragment() {
             lifecycleScope.launch {
                 when (val saveResult = viewModel.save()) {
                     is ReadingFlowSaveResult.SaveSuccessful -> {
+                        // Recheck vitals is required, send notification in 15 minutes
+                        if (saveResult == ReadingFlowSaveResult.SaveSuccessful.ReCheckNeeded) {
+                            val intent = Intent(view.context, PatientsActivity::class.java).apply {
+                                flags =
+                                    Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            }
+                            NotificationManagerCustom.scheduleNotification(
+                                view.context,
+                                getString(R.string.vital_recheck_due_now),
+                                getString(R.string.vital_recheck_due_now),
+                                0,
+                                intent,
+                                resources.getInteger(R.integer.recheck_duration)
+                            )
+                        }
+
                         showStatusToast(view.context, saveResult)
                         viewModel.isSaving.removeObservers(viewLifecycleOwner)
                         savingDialog?.cancel()

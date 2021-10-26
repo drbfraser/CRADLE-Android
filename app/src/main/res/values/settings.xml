@@ -12,6 +12,12 @@
     <string name="settings_default_ocr_enabled">true</string>
     <string name="settings_default_ocr_show_debug_info">false</string>
 
+    <!-- Notification Channel -->
+    <string name="notification_id">iCradle</string>
+
+    <!-- Recheck Duration -->
+    <integer name="recheck_duration">15</integer>
+
     <!-- Required Sync Period -->
     <integer name="settings_default_sync_period_hours">3</integer>
 </resources>
