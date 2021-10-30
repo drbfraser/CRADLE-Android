@@ -1,5 +1,6 @@
 package com.cradleplatform.neptune.view
 
+import android.annotation.SuppressLint
 import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
@@ -32,6 +33,8 @@ import com.cradleplatform.neptune.utilities.NetworkHelper
 import com.cradleplatform.neptune.utilities.NetworkStatus
 import com.cradleplatform.neptune.viewmodel.LocalSearchPatientAdapter
 import com.cradleplatform.neptune.viewmodel.PatientListViewModel
+import com.google.android.material.badge.BadgeDrawable
+import com.google.android.material.badge.BadgeUtils
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
@@ -58,6 +61,7 @@ class PatientsActivity : AppCompatActivity() {
     private var isFirstLoadDone: Boolean = false
 
     private var menu: Menu? = null
+    private var toolbar: Toolbar? = null
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
@@ -87,7 +91,7 @@ class PatientsActivity : AppCompatActivity() {
         padRecyclerView()
         setUpSearchPatientAdapter()
 
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
 
         supportActionBar?.apply {
@@ -228,6 +232,7 @@ class PatientsActivity : AppCompatActivity() {
         }
     }
 
+    @com.google.android.material.badge.ExperimentalBadgeUtils
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_patients, menu)
         this.menu = menu
@@ -292,6 +297,7 @@ class PatientsActivity : AppCompatActivity() {
         }
     }
 
+    @com.google.android.material.badge.ExperimentalBadgeUtils
     private fun checkLastSyncTimeAndUpdateSyncIcon() {
         val lastSyncTime = BigInteger(
             sharedPreferences.getString(
@@ -300,14 +306,24 @@ class PatientsActivity : AppCompatActivity() {
             )!!
         )
 
+
         val menuItem: MenuItem = menu!!.findItem(R.id.syncPatients)
+        val badge = BadgeDrawable.create(this)
 
         if (lastSyncTime.toString() == SyncWorker.LAST_SYNC_DEFAULT
             || DateUtil.isOverTime(lastSyncTime, R.integer.settings_default_sync_period_hours)
-        )
-            menuItem.setIcon(R.drawable.ic_baseline_sync_problem_24_red)
-        else
-            menuItem.setIcon(R.drawable.ic_baseline_sync_24_white)
+        ) {
+            toolbar?.let {
+                BadgeUtils.detachBadgeDrawable(badge,
+                    it, menuItem.itemId)
+            }
+        }
+        else {
+            toolbar?.let {
+                BadgeUtils.attachBadgeDrawable(badge,
+                    it, menuItem.itemId)
+            }
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
