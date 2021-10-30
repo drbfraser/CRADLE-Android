@@ -1,6 +1,5 @@
 package com.cradleplatform.neptune.view
 
-import android.annotation.SuppressLint
 import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
@@ -306,7 +305,6 @@ class PatientsActivity : AppCompatActivity() {
             )!!
         )
 
-
         val menuItem: MenuItem = menu!!.findItem(R.id.syncPatients)
         val badge = BadgeDrawable.create(this)
 
@@ -314,14 +312,17 @@ class PatientsActivity : AppCompatActivity() {
             || DateUtil.isOverTime(lastSyncTime, R.integer.settings_default_sync_period_hours)
         ) {
             toolbar?.let {
-                BadgeUtils.detachBadgeDrawable(badge,
-                    it, menuItem.itemId)
+                BadgeUtils.detachBadgeDrawable(
+                    badge,
+                    it, menuItem.itemId
+                )
             }
-        }
-        else {
+        } else {
             toolbar?.let {
-                BadgeUtils.attachBadgeDrawable(badge,
-                    it, menuItem.itemId)
+                BadgeUtils.attachBadgeDrawable(
+                    badge,
+                    it, menuItem.itemId
+                )
             }
         }
     }

@@ -13,18 +13,33 @@
         android:layout_height="wrap_content"
         tools:context=".view.StatsActivity">
 
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appBarLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:theme="@style/AppTheme.AppBarOverlay"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:popupTheme="@style/AppTheme.PopupOverlay"
+                app:titleTextColor="@color/white" />
+
+        </com.google.android.material.appbar.AppBarLayout>
+
         <androidx.cardview.widget.CardView
             android:id="@+id/uniqueReadingCard"
             android:layout_width="150dp"
             android:layout_height="100dp"
-            android:layout_marginTop="16dp"
             android:layout_marginEnd="32dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="8dp"
             app:cardPreventCornerOverlap="true"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/readingCard"
-            app:layout_constraintTop_toBottomOf="@+id/textView32">
+            app:layout_constraintTop_toTopOf="@+id/readingCard">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -311,7 +326,7 @@
             android:layout_width="150dp"
             android:layout_height="100dp"
             android:layout_marginStart="32dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="32dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="8dp"
             app:cardPreventCornerOverlap="true"

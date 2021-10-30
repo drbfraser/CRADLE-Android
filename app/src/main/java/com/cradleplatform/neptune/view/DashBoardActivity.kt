@@ -59,7 +59,10 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
                 }
             }
         }
+    }
 
+    override fun onRestart() {
+        super.onRestart()
         reminderUserToSync()
     }
 
