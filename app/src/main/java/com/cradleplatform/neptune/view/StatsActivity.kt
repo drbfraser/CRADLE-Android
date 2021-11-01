@@ -34,6 +34,7 @@ import com.cradleplatform.neptune.utilities.DateUtil
 import com.cradleplatform.neptune.utilities.NetworkHelper
 import com.cradleplatform.neptune.utilities.NetworkStatus
 import com.cradleplatform.neptune.viewmodel.StatsViewModel
+import com.cradleplatform.neptune.viewmodel.SyncRemainderHelper
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
@@ -171,9 +172,7 @@ class StatsActivity : AppCompatActivity() {
         val menuItem: MenuItem = menu!!.findItem(R.id.syncPatients)
         val badge = BadgeDrawable.create(this)
 
-        if (lastSyncTime.toString() == SyncWorker.LAST_SYNC_DEFAULT
-            || DateUtil.isOverTime(lastSyncTime, R.integer.settings_default_sync_period_hours)
-        ) {
+        if (!SyncRemainderHelper.checkIfOverTime(this, sharedPreferences)) {
             toolbar?.let {
                 BadgeUtils.detachBadgeDrawable(
                     badge,
