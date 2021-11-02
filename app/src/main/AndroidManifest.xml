@@ -30,7 +30,8 @@
         <activity android:name=".view.ui.settings.ui.healthFacility.HealthFacilitiesActivity" />
         <activity android:name=".view.PosterActivity" />
         <activity android:name=".view.EducationActivity" />
-        <activity android:name=".view.StatsActivity" />
+        <activity android:name=".view.StatsActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name=".view.LoginActivity"
             android:theme="@style/AppTheme.NoActionBar" />

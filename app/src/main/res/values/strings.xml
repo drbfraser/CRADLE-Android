@@ -600,6 +600,8 @@
     <string name="show_password">show password</string>
     <string name="hide_password">hide password</string>
     <string name="vital_recheck_due_now">Vital recheck due now</string>
+    <string name="activity_stats_title">Statistics</string>
+    <string name="remind_user_to_sync">Please sync patient data</string>
 
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>

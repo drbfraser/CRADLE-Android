@@ -14,6 +14,7 @@ import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.widget.Toolbar
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
@@ -33,10 +34,13 @@ import com.cradleplatform.neptune.utilities.DateUtil
 import com.cradleplatform.neptune.utilities.NetworkHelper
 import com.cradleplatform.neptune.utilities.NetworkStatus
 import com.cradleplatform.neptune.viewmodel.StatsViewModel
+import com.cradleplatform.neptune.viewmodel.SyncRemainderHelper
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
+import com.google.android.material.badge.BadgeDrawable
+import com.google.android.material.badge.BadgeUtils
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputLayout
@@ -61,6 +65,7 @@ class StatsActivity : AppCompatActivity() {
     private lateinit var headerTextPrefix: String
     private lateinit var headerText: String
     private var menu: Menu? = null
+    private var toolbar: Toolbar? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,6 +74,13 @@ class StatsActivity : AppCompatActivity() {
         if (supportActionBar != null) {
             supportActionBar!!.setDisplayHomeAsUpEnabled(true)
             supportActionBar!!.title = getString(R.string.dashboard_statistics)
+        }
+
+        toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            title = getString(R.string.activity_stats_title)
         }
 
         headerTextPrefix = getString(R.string.stats_activity_month_string)
@@ -83,8 +95,6 @@ class StatsActivity : AppCompatActivity() {
             viewModel.savedStartTime,
             viewModel.savedEndTime
         )
-
-        checkLastSyncTimeAndUpdateSyncIcon()
     }
 
     override fun onRestart() {
@@ -136,6 +146,21 @@ class StatsActivity : AppCompatActivity() {
         }
     }
 
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return true
+    }
+
+    // For filtering by month, etc.
+    @com.google.android.material.badge.ExperimentalBadgeUtils
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_stats, menu)
+        this.menu = menu
+        checkLastSyncTimeAndUpdateSyncIcon()
+        return true
+    }
+
+    @com.google.android.material.badge.ExperimentalBadgeUtils
     private fun checkLastSyncTimeAndUpdateSyncIcon() {
         val lastSyncTime = BigInteger(
             sharedPreferences.getString(
@@ -145,25 +170,23 @@ class StatsActivity : AppCompatActivity() {
         )
 
         val menuItem: MenuItem = menu!!.findItem(R.id.syncPatients)
+        val badge = BadgeDrawable.create(this)
 
-        if (lastSyncTime.toString() == SyncWorker.LAST_SYNC_DEFAULT
-            || DateUtil.isOverTime(lastSyncTime, R.integer.settings_default_sync_period_hours)
-        )
-            menuItem.setIcon(R.drawable.ic_baseline_sync_problem_24_red)
-        else
-            menuItem.setIcon(R.drawable.ic_baseline_sync_24_white)
-    }
-
-    override fun onSupportNavigateUp(): Boolean {
-        onBackPressed()
-        return true
-    }
-
-    // For filtering by month, etc.
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_stats, menu)
-        this.menu = menu
-        return true
+        if (!SyncRemainderHelper.checkIfOverTime(this, sharedPreferences)) {
+            toolbar?.let {
+                BadgeUtils.detachBadgeDrawable(
+                    badge,
+                    it, menuItem.itemId
+                )
+            }
+        } else {
+            toolbar?.let {
+                BadgeUtils.attachBadgeDrawable(
+                    badge,
+                    it, menuItem.itemId
+                )
+            }
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
