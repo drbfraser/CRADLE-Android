@@ -14,6 +14,7 @@ import android.widget.TextView
 import androidx.annotation.Nullable
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
@@ -107,6 +108,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupUpdateRecord()
         setupLineChart()
         setupToolBar()
+        changeAddReadingButtonColorIfNeeded()
     }
 
     override fun onResume() {
@@ -120,6 +122,18 @@ open class PatientProfileActivity : AppCompatActivity() {
 
         setupEditPatient(currPatient)
         setupBtnPregnancy(currPatient)
+        changeAddReadingButtonColorIfNeeded()
+    }
+
+    private fun changeAddReadingButtonColorIfNeeded() {
+        val button: Button = findViewById(R.id.newPatientReadingButton)
+        if (Util.isRecheckNeededNow(patientReadings[0].dateRecheckVitalsNeeded)) {
+            button.backgroundTintList = ContextCompat.getColorStateList(this, R.color.redDown)
+            button.text = getString(R.string.newReadingIsRequiredNow)
+        } else {
+            button.backgroundTintList = ContextCompat.getColorStateList(this, R.color.colorPrimaryLight)
+            button.text = getString(R.string.create_new_reading)
+        }
     }
 
     fun setupToolBar() {
