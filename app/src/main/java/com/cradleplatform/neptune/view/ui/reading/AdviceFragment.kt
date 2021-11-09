@@ -124,19 +124,21 @@ class AdviceFragment : Fragment() {
                 when (val saveResult = viewModel.save()) {
                     is ReadingFlowSaveResult.SaveSuccessful -> {
                         // Recheck vitals is required, send notification in 15 minutes
-                        if (saveResult == ReadingFlowSaveResult.SaveSuccessful.ReCheckNeeded) {
+                        if (saveResult != ReadingFlowSaveResult.SaveSuccessful.ReCheckNeededNow) {
                             val intent = Intent(view.context, PatientsActivity::class.java).apply {
                                 flags =
                                     Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                             }
-                            NotificationManagerCustom.scheduleNotification(
-                                view.context,
-                                getString(R.string.vital_recheck_notification_title, viewModel.patientName.value),
-                                getString(R.string.vital_recheck_notification_body_msg),
-                                0,
-                                intent,
-                                resources.getInteger(R.integer.recheck_duration)
-                            )
+                            viewModel.patientId.value?.toInt()?.let { it1 ->
+                                NotificationManagerCustom.scheduleNotification(
+                                    view.context,
+                                    getString(R.string.vital_recheck_notification_title, viewModel.patientName.value),
+                                    getString(R.string.vital_recheck_notification_body_msg),
+                                    it1,
+                                    intent,
+                                    resources.getInteger(R.integer.recheck_duration)
+                                )
+                            }
                         }
 
                         showStatusToast(view.context, saveResult)
