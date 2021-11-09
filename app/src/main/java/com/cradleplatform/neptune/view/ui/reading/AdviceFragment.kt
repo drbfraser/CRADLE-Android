@@ -3,6 +3,7 @@ package com.cradleplatform.neptune.view.ui.reading
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -130,8 +131,8 @@ class AdviceFragment : Fragment() {
                             }
                             NotificationManagerCustom.scheduleNotification(
                                 view.context,
-                                getString(R.string.vital_recheck_due_now),
-                                getString(R.string.vital_recheck_due_now),
+                                getString(R.string.vital_recheck_notification_title, viewModel.patientName.value),
+                                getString(R.string.vital_recheck_notification_body_msg),
                                 0,
                                 intent,
                                 resources.getInteger(R.integer.recheck_duration)
