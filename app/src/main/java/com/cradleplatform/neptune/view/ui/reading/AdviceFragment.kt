@@ -1,7 +1,6 @@
 package com.cradleplatform.neptune.view.ui.reading
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -25,7 +24,7 @@ import com.cradleplatform.neptune.ext.hideKeyboard
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.RetestGroup
 import com.cradleplatform.neptune.utilities.notification.NotificationManagerCustom
-import com.cradleplatform.neptune.view.PatientsActivity
+import com.cradleplatform.neptune.view.PatientProfileActivity
 import com.cradleplatform.neptune.view.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel
 import com.cradleplatform.neptune.viewmodel.ReadingFlowSaveResult
@@ -123,22 +122,8 @@ class AdviceFragment : Fragment() {
                 when (val saveResult = viewModel.save()) {
                     is ReadingFlowSaveResult.SaveSuccessful -> {
                         // Recheck vitals is required, send notification in 15 minutes
-                        if (saveResult != ReadingFlowSaveResult.SaveSuccessful.ReCheckNeededNow) {
-                            val intent = Intent(view.context, PatientsActivity::class.java).apply {
-                                flags =
-                                    Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                            }
-                            viewModel.patientId.value?.toInt()?.let { it1 ->
-                                NotificationManagerCustom.scheduleNotification(
-                                    view.context,
-                                    getString(R.string.vital_recheck_notification_title, viewModel.patientName.value),
-                                    getString(R.string.vital_recheck_notification_body_msg),
-                                    it1,
-                                    intent,
-                                    resources.getInteger(R.integer.recheck_duration)
-                                )
-                            }
-                        }
+                        if (saveResult != ReadingFlowSaveResult.SaveSuccessful.ReCheckNeededNow)
+                            scheduleVitalRecheckReminderNotification(view)
 
                         showStatusToast(view.context, saveResult)
                         viewModel.isSaving.removeObservers(viewLifecycleOwner)
@@ -156,6 +141,24 @@ class AdviceFragment : Fragment() {
                 }
                 viewModel.idlingResource?.decrement()
             }
+        }
+    }
+
+    private fun scheduleVitalRecheckReminderNotification(view: View) {
+        viewModel.patientId.value?.let { it1 ->
+            val intent = PatientProfileActivity.makeIntentForPatientId(
+                view.context,
+                it1
+            )
+
+            NotificationManagerCustom.scheduleNotification(
+                view.context,
+                getString(R.string.vital_recheck_notification_title, viewModel.patientName.value),
+                getString(R.string.vital_recheck_notification_body_msg),
+                it1.toInt(),
+                intent,
+                resources.getInteger(R.integer.recheck_duration)
+            )
         }
     }
 
