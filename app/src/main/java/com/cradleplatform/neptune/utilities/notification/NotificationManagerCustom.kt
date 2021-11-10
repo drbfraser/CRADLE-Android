@@ -140,7 +140,8 @@ class NotificationManagerCustom {
             title: String,
             msg: String,
             notificationID: Int,
-            intent: Intent) {
+            intent: Intent
+        ) {
             val pendingIntent: PendingIntent = constructPendingIntentForAlarmManager(
                 context,
                 intent,
