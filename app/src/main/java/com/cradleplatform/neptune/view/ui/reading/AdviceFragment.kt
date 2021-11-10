@@ -121,8 +121,10 @@ class AdviceFragment : Fragment() {
             lifecycleScope.launch {
                 when (val saveResult = viewModel.save()) {
                     is ReadingFlowSaveResult.SaveSuccessful -> {
+                        // Cancel a scheduled notification if there is one
+                        cancelScheduledNotificationIfThereIsOne(view)
                         // Recheck vitals is required, send notification in 15 minutes
-                        if (saveResult != ReadingFlowSaveResult.SaveSuccessful.ReCheckNeededNow)
+                        if (saveResult == ReadingFlowSaveResult.SaveSuccessful.ReCheckNeededInFuture)
                             scheduleVitalRecheckReminderNotification(view)
 
                         showStatusToast(view.context, saveResult)
@@ -141,6 +143,23 @@ class AdviceFragment : Fragment() {
                 }
                 viewModel.idlingResource?.decrement()
             }
+        }
+    }
+
+    private fun cancelScheduledNotificationIfThereIsOne(view: View) {
+        viewModel.patientId.value?.let { it1 ->
+            val intent = PatientProfileActivity.makeIntentForPatientId(
+                view.context,
+                it1
+            )
+
+            NotificationManagerCustom.cancelScheduledNotification(
+                view.context,
+                getString(R.string.vital_recheck_notification_title, viewModel.patientName.value),
+                getString(R.string.vital_recheck_notification_body_msg),
+                it1.toInt(),
+                intent,
+            )
         }
     }
 

@@ -12,11 +12,13 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.cradleplatform.neptune.R
 import android.os.SystemClock
+import android.util.Log
 import java.util.concurrent.TimeUnit
 
 class NotificationManagerCustom {
     companion object {
         private lateinit var channelID: String
+        private const val TAG = "MyNotificationManager"
 
         // https://developer.android.com/training/notify-user/build-notification#Priority
         fun createNotificationChannel(context: Context) {
@@ -81,6 +83,32 @@ class NotificationManagerCustom {
             intent: Intent,
             timeInMinutes: Int, // push the notification in _ minutes
         ) {
+            val pendingIntent: PendingIntent = constructPendingIntentForAlarmManager(
+                context,
+                intent,
+                title,
+                msg,
+                notificationID
+            )
+            val futureInMillis: Long =
+                SystemClock.elapsedRealtime() + TimeUnit.MINUTES.toMillis(timeInMinutes.toLong())
+
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            alarmManager.set(
+                AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                futureInMillis,
+                pendingIntent
+            )
+            Log.d(TAG, "notification scheduled, title: $title")
+        }
+
+        private fun constructPendingIntentForAlarmManager(
+            context: Context,
+            intent: Intent,
+            title: String,
+            msg: String,
+            notificationID: Int
+        ): PendingIntent {
             val pendingIntent: PendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
                 PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
             else
@@ -98,22 +126,31 @@ class NotificationManagerCustom {
             val notificationIntent = Intent(context, NotificationPublisher::class.java)
             notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, notificationID)
             notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, notification)
-            val pendingIntentForBroadCast = PendingIntent.getBroadcast(
+
+            return PendingIntent.getBroadcast(
                 context,
                 notificationID,
                 notificationIntent,
                 0
             )
+        }
 
-            val futureInMillis: Long =
-                SystemClock.elapsedRealtime() + TimeUnit.MINUTES.toMillis(timeInMinutes.toLong())
-
-            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            alarmManager.set(
-                AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                futureInMillis,
-                pendingIntentForBroadCast
+        fun cancelScheduledNotification(
+            context: Context,
+            title: String,
+            msg: String,
+            notificationID: Int,
+            intent: Intent) {
+            val pendingIntent: PendingIntent = constructPendingIntentForAlarmManager(
+                context,
+                intent,
+                title,
+                msg,
+                notificationID
             )
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            alarmManager.cancel(pendingIntent)
+            Log.d(TAG, "notification cancelled, title: $title")
         }
     }
 }
