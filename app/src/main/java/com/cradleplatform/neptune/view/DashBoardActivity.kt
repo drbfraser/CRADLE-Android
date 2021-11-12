@@ -12,11 +12,14 @@ import androidx.cardview.widget.CardView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
-import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.makeLaunchIntent
+import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
 import com.cradleplatform.neptune.viewmodel.SyncRemainderHelper
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+
+import android.widget.TextView
+import com.cradleplatform.neptune.utilities.Util
 
 @AndroidEntryPoint
 class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
@@ -59,6 +62,13 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
                 }
             }
         }
+
+        setVersionName()
+    }
+
+    private fun setVersionName() {
+        val textView: TextView = findViewById<TextView>(R.id.versionNameTextView)
+        textView.text = Util.getVersionName(this)
     }
 
     override fun onRestart() {
@@ -115,7 +125,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         // as you specify a parent activity in AndroidManifest.xml.
         val id = item.itemId
         if (id == R.id.action_settings) {
-            val intent = makeLaunchIntent(this)
+            val intent = makeSettingsActivityLaunchIntent(this)
             startActivityForResult(
                 intent,
                 TabActivityBase.TAB_ACTIVITY_BASE_SETTINGS_DONE
