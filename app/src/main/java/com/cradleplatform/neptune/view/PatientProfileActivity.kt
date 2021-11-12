@@ -108,7 +108,6 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupUpdateRecord()
         setupLineChart()
         setupToolBar()
-        changeAddReadingButtonColorIfNeeded()
     }
 
     override fun onResume() {
@@ -122,7 +121,7 @@ open class PatientProfileActivity : AppCompatActivity() {
 
         setupEditPatient(currPatient)
         setupBtnPregnancy(currPatient)
-        changeAddReadingButtonColorIfNeeded()
+        setupCreatePatientReadingButton()
     }
 
     private fun changeAddReadingButtonColorIfNeeded() {
@@ -360,13 +359,25 @@ open class PatientProfileActivity : AppCompatActivity() {
         val createButton =
             findViewById<Button>(R.id.newPatientReadingButton)
         createButton.visibility = View.VISIBLE
-        createButton.setOnClickListener { _: View? ->
-            val intent = makeIntentForNewReadingExistingPatient(
-                this@PatientProfileActivity,
-                currPatient.id
-            )
-            startActivityForResult(intent, READING_ACTIVITY_DONE)
+
+        if (Util.isRecheckNeededNow(patientReadings[0].dateRecheckVitalsNeeded)) {
+            createButton.setOnClickListener { _: View? ->
+                val readingId = patientReadings[0].id
+                val intent =
+                    makeIntentForRecheck(this@PatientProfileActivity, readingId)
+                startActivityForResult(intent, READING_ACTIVITY_DONE)
+            }
+        } else {
+            createButton.setOnClickListener { _: View? ->
+                val intent = makeIntentForNewReadingExistingPatient(
+                    this@PatientProfileActivity,
+                    currPatient.id
+                )
+                startActivityForResult(intent, READING_ACTIVITY_DONE)
+            }
         }
+
+        changeAddReadingButtonColorIfNeeded()
     }
 
     private fun onUpdateButtonClicked(isDrugRecord: Boolean) {
