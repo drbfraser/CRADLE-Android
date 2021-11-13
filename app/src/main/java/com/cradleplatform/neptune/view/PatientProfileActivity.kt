@@ -14,6 +14,7 @@ import android.widget.TextView
 import androidx.annotation.Nullable
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
@@ -120,6 +121,18 @@ open class PatientProfileActivity : AppCompatActivity() {
 
         setupEditPatient(currPatient)
         setupBtnPregnancy(currPatient)
+        setupCreatePatientReadingButton()
+    }
+
+    private fun changeAddReadingButtonColorIfNeeded() {
+        val button: Button = findViewById(R.id.newPatientReadingButton)
+        if (Util.isRecheckNeededNow(patientReadings[0].dateRecheckVitalsNeeded)) {
+            button.backgroundTintList = ContextCompat.getColorStateList(this, R.color.redDown)
+            button.text = getString(R.string.newReadingIsRequiredNow)
+        } else {
+            button.backgroundTintList = ContextCompat.getColorStateList(this, R.color.colorPrimaryLight)
+            button.text = getString(R.string.create_new_reading)
+        }
     }
 
     fun setupToolBar() {
@@ -346,13 +359,25 @@ open class PatientProfileActivity : AppCompatActivity() {
         val createButton =
             findViewById<Button>(R.id.newPatientReadingButton)
         createButton.visibility = View.VISIBLE
-        createButton.setOnClickListener { _: View? ->
-            val intent = makeIntentForNewReadingExistingPatient(
-                this@PatientProfileActivity,
-                currPatient.id
-            )
-            startActivityForResult(intent, READING_ACTIVITY_DONE)
+
+        if (Util.isRecheckNeededNow(patientReadings[0].dateRecheckVitalsNeeded)) {
+            createButton.setOnClickListener { _: View? ->
+                val readingId = patientReadings[0].id
+                val intent =
+                    makeIntentForRecheck(this@PatientProfileActivity, readingId)
+                startActivityForResult(intent, READING_ACTIVITY_DONE)
+            }
+        } else {
+            createButton.setOnClickListener { _: View? ->
+                val intent = makeIntentForNewReadingExistingPatient(
+                    this@PatientProfileActivity,
+                    currPatient.id
+                )
+                startActivityForResult(intent, READING_ACTIVITY_DONE)
+            }
         }
+
+        changeAddReadingButtonColorIfNeeded()
     }
 
     private fun onUpdateButtonClicked(isDrugRecord: Boolean) {

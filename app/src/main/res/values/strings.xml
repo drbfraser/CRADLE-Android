@@ -602,7 +602,9 @@
     <string name="vital_recheck_due_now">Vital recheck due now</string>
     <string name="activity_stats_title">Statistics</string>
     <string name="remind_user_to_sync">Please sync patient data</string>
-    <string name="not_avaliable">Not Available</string>
+    <string name="need_vital_recheck_now">Need Vital Recheck Now</string>
+    <string name="newReadingIsRequiredNow">New Reading is Required Now</string>
+    <string name="not_available">Not Available</string>
     <string name="version">Version:</string>
 
     <plurals name="unuploaded_reading_signout_message">

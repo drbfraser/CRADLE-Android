@@ -78,28 +78,91 @@ class PatientsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_patients)
 
-        patientRecyclerview = findViewById(R.id.patientListRecyclerview)
-        patientRecyclerview.apply {
-            addItemDecoration(
-                DividerItemDecoration(this@PatientsActivity, DividerItemDecoration.VERTICAL)
-            )
-            this.adapter = localSearchPatientAdapter
-        }
-
+        setUpPatientRecyclerView()
         setupGlobalPatientSearchButton()
         padRecyclerView()
         setUpSearchPatientAdapter()
-
-        toolbar = findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
-
-        supportActionBar?.apply {
-            setDisplayHomeAsUpEnabled(true)
-            title = getString(R.string.activity_patients_title)
-        }
+        setUpSupportActionBar()
 
         onBackPressedDispatcher.addCallback(this, closeSearchViewCallback)
 
+        setUpSavedQuery(savedInstanceState)
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        // restart the activity in case data is changed after syncing
+        finish()
+        // smooth the animation of activity recreation
+        overridePendingTransition(0, 0)
+        startActivity(intent)
+        overridePendingTransition(0, 0)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        if (viewModel.isUsingSearch()) {
+            outState.putString(EXTRA_CURRENT_QUERY, viewModel.currentQueryString)
+        } else {
+            outState.remove(EXTRA_CURRENT_QUERY)
+        }
+    }
+
+    @com.google.android.material.badge.ExperimentalBadgeUtils
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_patients, menu)
+        this.menu = menu
+
+        setUpSearchBar()
+        checkLastSyncTimeAndUpdateSyncIcon()
+
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
+        R.id.searchPatients -> {
+            true
+        }
+
+        R.id.syncPatients -> {
+            when (NetworkHelper.isConnectedToInternet(this)) {
+                NetworkStatus.CELLULAR -> {
+                    CustomToast.longToast(
+                        this,
+                        "You are connected to CELLULAR network, charges may apply"
+                    )
+                }
+
+                NetworkStatus.NO_NETWORK -> {
+                    CustomToast.shortToast(this, "Make sure you are connected to the internet")
+                }
+
+                else -> {
+                    startActivity(Intent(this, SyncActivity::class.java))
+                }
+            }
+            true
+        }
+
+        else -> {
+            super.onOptionsItemSelected(item)
+        }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        searchView.let {
+            // If the search icon is not showing, the user is searching something,
+            // so we should remove that first.
+            return if (hideSearchView()) {
+                false
+            } else {
+                onBackPressed()
+                true
+            }
+        }
+    }
+
+    private fun setUpSavedQuery(savedInstanceState: Bundle?) {
         // If not restoring, display all patients by using a blank query.
         // Otherwise, the saved query will be used to search, and the
         // SearchView will be restored in onCreateOptionsMenu.
@@ -111,14 +174,24 @@ class PatientsActivity : AppCompatActivity() {
         }
     }
 
-    override fun onRestart() {
-        super.onRestart()
-        // restart the activity in case data is changed after syncing
-        finish()
-        // smooth the animation of activity recreation
-        overridePendingTransition(0, 0)
-        startActivity(intent)
-        overridePendingTransition(0, 0)
+    private fun setUpPatientRecyclerView() {
+        patientRecyclerview = findViewById(R.id.patientListRecyclerview)
+        patientRecyclerview.apply {
+            addItemDecoration(
+                DividerItemDecoration(this@PatientsActivity, DividerItemDecoration.VERTICAL)
+            )
+            this.adapter = localSearchPatientAdapter
+        }
+    }
+
+    private fun setUpSupportActionBar() {
+        toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            title = getString(R.string.activity_patients_title)
+        }
     }
 
     private fun setUpSearchPatientAdapter() {
@@ -190,15 +263,6 @@ class PatientsActivity : AppCompatActivity() {
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        if (viewModel.isUsingSearch()) {
-            outState.putString(EXTRA_CURRENT_QUERY, viewModel.currentQueryString)
-        } else {
-            outState.remove(EXTRA_CURRENT_QUERY)
-        }
-    }
-
     private fun setupGlobalPatientSearchButton() {
         val globalSearchButton =
             findViewById<ExtendedFloatingActionButton>(R.id.globalPatientSearch)
@@ -229,17 +293,6 @@ class PatientsActivity : AppCompatActivity() {
                 localSearchPatientAdapter.submitData(it)
             }
         }
-    }
-
-    @com.google.android.material.badge.ExperimentalBadgeUtils
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_patients, menu)
-        this.menu = menu
-
-        setUpSearchBar()
-        checkLastSyncTimeAndUpdateSyncIcon()
-
-        return true
     }
 
     private fun setUpSearchBar() {
@@ -323,49 +376,6 @@ class PatientsActivity : AppCompatActivity() {
                     badge,
                     it, menuItem.itemId
                 )
-            }
-        }
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
-        R.id.searchPatients -> {
-            true
-        }
-
-        R.id.syncPatients -> {
-            when (NetworkHelper.isConnectedToInternet(this)) {
-                NetworkStatus.CELLULAR -> {
-                    CustomToast.longToast(
-                        this,
-                        "You are connected to CELLULAR network, charges may apply"
-                    )
-                }
-
-                NetworkStatus.NO_NETWORK -> {
-                    CustomToast.shortToast(this, "Make sure you are connected to the internet")
-                }
-
-                else -> {
-                    startActivity(Intent(this, SyncActivity::class.java))
-                }
-            }
-            true
-        }
-
-        else -> {
-            super.onOptionsItemSelected(item)
-        }
-    }
-
-    override fun onSupportNavigateUp(): Boolean {
-        searchView.let {
-            // If the search icon is not showing, the user is searching something,
-            // so we should remove that first.
-            return if (hideSearchView()) {
-                false
-            } else {
-                onBackPressed()
-                true
             }
         }
     }
