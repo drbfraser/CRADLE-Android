@@ -55,7 +55,7 @@ public class Util {
             return packageInfo.versionName;
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
-            return context.getString(R.string.not_avaliable);
+            return context.getString(R.string.not_available);
         }
     }
 }
