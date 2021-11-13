@@ -190,5 +190,19 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <TextView
+            android:id="@+id/vitalRecheckNeededTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/need_vital_recheck_now"
+            android:textAppearance="@style/TextAppearance.Cradle.Body1"
+            android:textColor="#E91E63"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:visibility='@{Util.isRecheckNeededNow(localSearchPatient.dateRecheckVitalsNeeded) == true ? View.VISIBLE : View.GONE}'
+            app:layout_constraintBottom_toTopOf="@+id/last_reading_on_text_view"
+            app:layout_constraintEnd_toEndOf="@+id/last_reading_on_text_view"
+            app:layout_constraintStart_toEndOf="@+id/list_item_patient_id_text" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

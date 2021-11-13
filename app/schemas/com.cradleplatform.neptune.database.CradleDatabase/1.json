@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "6638134f59cb740d3120ba67d8edeefb",
+    "identityHash": "0a58b026698e8445f97936a712356f97",
     "entities": [
       {
         "tableName": "Reading",
@@ -328,12 +328,12 @@
     "views": [
       {
         "viewName": "LocalSearchPatient",
-        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT\n  p.name,\n  p.id,\n  p.villageNumber,\n  r.bloodPressure as latestBloodPressure,\n  MAX(r.dateTimeTaken) as latestReadingDate,\n  p.lastEdited,\n  r.referral\nFROM\n  Patient as p\n  LEFT JOIN Reading AS r ON p.id = r.patientId\nGROUP BY \n  IFNULL(r.patientId, p.id)"
+        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT\n  p.name,\n  p.id,\n  p.villageNumber,\n  r.bloodPressure as latestBloodPressure,\n  MAX(r.dateTimeTaken) as latestReadingDate,\n  p.lastEdited,\n  r.referral,\n  r.dateRecheckVitalsNeeded\nFROM\n  Patient as p\n  LEFT JOIN Reading AS r ON p.id = r.patientId\nGROUP BY \n  IFNULL(r.patientId, p.id)"
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6638134f59cb740d3120ba67d8edeefb')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0a58b026698e8445f97936a712356f97')"
     ]
   }
 }

@@ -19,7 +19,8 @@ SELECT
   r.bloodPressure as latestBloodPressure,
   MAX(r.dateTimeTaken) as latestReadingDate,
   p.lastEdited,
-  r.referral
+  r.referral,
+  r.dateRecheckVitalsNeeded
 FROM
   Patient as p
   LEFT JOIN Reading AS r ON p.id = r.patientId
@@ -34,7 +35,8 @@ data class LocalSearchPatient(
     val latestBloodPressure: BloodPressure?,
     val latestReadingDate: Long?,
     val lastEdited: Long?,
-    val referral: Referral?
+    val referral: Referral?,
+    val dateRecheckVitalsNeeded: Long?
 ) {
     fun getLatestRetestAnalysis(): ReadingAnalysis? = latestBloodPressure?.analysis
 }
