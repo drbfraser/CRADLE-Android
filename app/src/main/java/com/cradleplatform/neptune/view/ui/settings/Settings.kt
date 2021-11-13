@@ -32,7 +32,8 @@ class SettingsActivity : AppCompatActivity() {
     companion object {
         const val ADVANCED_SETTINGS_KEY: String = "advanced settings"
 
-        fun makeLaunchIntent(context: Context): Intent = Intent(context, SettingsActivity::class.java)
+        fun makeSettingsActivityLaunchIntent(context: Context): Intent =
+            Intent(context, SettingsActivity::class.java)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

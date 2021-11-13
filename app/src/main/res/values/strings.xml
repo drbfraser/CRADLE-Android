@@ -604,6 +604,8 @@
     <string name="remind_user_to_sync">Please sync patient data</string>
     <string name="need_vital_recheck_now">Need Vital Recheck Now</string>
     <string name="newReadingIsRequiredNow">New Reading is Required Now</string>
+    <string name="not_avaliable">Not Available</string>
+    <string name="version">Version:</string>
 
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>

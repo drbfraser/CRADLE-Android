@@ -177,7 +177,6 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/statconstraintLayout"
             android:layout_width="wrap_content"
@@ -299,7 +298,6 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fabEducationDashboard"
             android:layout_width="wrap_content"
@@ -316,18 +314,45 @@
             app:useCompatPadding="false" />
 
         <TextView
+            android:id="@+id/textView30"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
             android:text="@string/dashboard_education"
             android:textColor="@color/colorOffWhite"
             android:textSize="14sp"
             android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@+id/fabEducationDashboard"
             app:layout_constraintStart_toStartOf="@+id/fabEducationDashboard"
             app:layout_constraintTop_toBottomOf="@+id/fabEducationDashboard" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_marginTop="64dp"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView30">
+
+            <TextView
+                android:id="@+id/versionTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:text="@string/version"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <TextView
+                android:id="@+id/versionNameTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:text="@string/not_available_n_slash_a"
+                app:layout_constraintBottom_toBottomOf="@+id/versionTextView"
+                app:layout_constraintStart_toEndOf="@+id/versionTextView"
+                app:layout_constraintTop_toTopOf="@+id/versionTextView" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </ScrollView>
