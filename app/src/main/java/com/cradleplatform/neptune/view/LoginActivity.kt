@@ -213,6 +213,8 @@ class LoginActivity : AppCompatActivity() {
                             resources, R.drawable.baseline_visibility_off_24, null
                         )
                     )
+
+                    passwordEditText.setSelection(passwordEditText.text.length)
                 }
 
                 MotionEvent.ACTION_UP -> {
@@ -226,6 +228,8 @@ class LoginActivity : AppCompatActivity() {
                             resources, R.drawable.baseline_visibility_24, null
                         )
                     )
+
+                    passwordEditText.setSelection(passwordEditText.text.length)
                 }
             }
             true
