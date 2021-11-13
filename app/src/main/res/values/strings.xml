@@ -605,7 +605,7 @@
     <string name="vital_recheck_notification_body_msg">Please tap the notification to take a new reading</string>
     <string name="vital_recheck_notification_title">Vital recheck due for %1$s</string>
     <string name="need_vital_recheck_now">Need Vital Recheck Now</string>
-    <string name="newReadingIsRequiredNow">New Reading is Required Now</string>
+    <string name="new_reading_is_required_now">New Reading is Required Now</string>
     <string name="not_available">Not Available</string>
     <string name="version">Version:</string>
 
