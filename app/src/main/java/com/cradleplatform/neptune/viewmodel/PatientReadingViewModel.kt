@@ -1561,8 +1561,10 @@ class PatientReadingViewModel @Inject constructor(
 
                 handleStoringPatientReadingFromBuilders(patient, reading)
 
-                if (reading.isVitalRecheckRequired)
-                    return@withContext ReadingFlowSaveResult.SaveSuccessful.ReCheckNeeded
+                if (reading.isVitalRecheckRequiredNow)
+                    return@withContext ReadingFlowSaveResult.SaveSuccessful.ReCheckNeededNow
+                else if (reading.isVitalRecheckRequired)
+                    return@withContext ReadingFlowSaveResult.SaveSuccessful.ReCheckNeededInFuture
 
                 // Don't set isSaving to false to ensure this can't be run again.
                 return@withContext ReadingFlowSaveResult.SaveSuccessful.NoSmsNeeded
@@ -2037,7 +2039,9 @@ sealed interface ReadingFlowSaveResult {
     sealed interface SaveSuccessful : ReadingFlowSaveResult {
         object NoSmsNeeded : SaveSuccessful
 
-        object ReCheckNeeded : SaveSuccessful
+        object ReCheckNeededNow : SaveSuccessful
+
+        object ReCheckNeededInFuture : SaveSuccessful
 
         /**
          * Indicates when saving the referral to the local database was successful but referral SMS
