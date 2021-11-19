@@ -16,8 +16,9 @@ class SnackbarHelper {
                 .make(
                     activity.findViewById(android.R.id.content),
                     message,
-                    Snackbar.LENGTH_INDEFINITE)
-                .setAction(activity.getString(android.R.string.ok), View.OnClickListener {  })
+                    Snackbar.LENGTH_INDEFINITE
+                )
+                .setAction(activity.getString(android.R.string.ok), View.OnClickListener { })
                 .setAnimationMode(BaseTransientBottomBar.ANIMATION_MODE_FADE)
                 .setActionTextColor(activity.getColor(R.color.white))
                 .show()
@@ -29,8 +30,9 @@ class SnackbarHelper {
                 .make(
                     activity.findViewById(android.R.id.content),
                     message,
-                    Snackbar.LENGTH_INDEFINITE)
-                .setAction(activity.getString(android.R.string.ok), View.OnClickListener {  })
+                    Snackbar.LENGTH_INDEFINITE
+                )
+                .setAction(activity.getString(android.R.string.ok), View.OnClickListener { })
                 .setAnimationMode(BaseTransientBottomBar.ANIMATION_MODE_FADE)
                 .setActionTextColor(activity.getColor(R.color.redDown))
                 .show()
