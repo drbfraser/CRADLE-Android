@@ -29,6 +29,7 @@ import com.cradleplatform.neptune.databinding.ActivityReadingBinding
 import com.cradleplatform.neptune.ext.hideKeyboard
 import com.cradleplatform.neptune.net.NetworkResult
 import com.cradleplatform.neptune.view.ui.reading.PatientIdConflictDialogFragment
+import com.cradleplatform.neptune.view.ui.reading.ReferralDialogFragment
 import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel
 import com.cradleplatform.neptune.viewmodel.ReadingFlowError
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -40,7 +41,7 @@ import kotlinx.coroutines.launch
 private const val TAG = "ReadingActivity"
 
 @AndroidEntryPoint
-class ReadingActivity : AppCompatActivity() {
+class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSendWebSnackbarMsgPass {
     private lateinit var launchReason: LaunchReason
 
     private var nextButtonJob: Job? = null
@@ -431,5 +432,11 @@ class ReadingActivity : AppCompatActivity() {
                 putExtra(EXTRA_LAUNCH_REASON, LaunchReason.LAUNCH_REASON_EXISTINGNEW)
                 putExtra(EXTRA_PATIENT_ID, patientId)
             }
+    }
+
+    override fun onMsgPass(data: String) {
+        val intent = getIntent()
+        intent.putExtra("Test", data)
+        setResult(RESULT_OK, intent)
     }
 }

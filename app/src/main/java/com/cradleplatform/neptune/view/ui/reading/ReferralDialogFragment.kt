@@ -55,6 +55,8 @@ class ReferralDialogFragment : DialogFragment() {
 
     private lateinit var launchReason: ReadingActivity.LaunchReason
 
+    lateinit var dataPasser: OnReadingSendWebSnackbarMsgPass
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         check(context is ReadingActivity)
@@ -62,6 +64,8 @@ class ReferralDialogFragment : DialogFragment() {
         check(
             arguments?.getSerializable(ARG_LAUNCH_REASON) as? ReadingActivity.LaunchReason != null
         )
+
+        dataPasser = context as OnReadingSendWebSnackbarMsgPass
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -224,6 +228,7 @@ class ReferralDialogFragment : DialogFragment() {
             showStatusToast(view.context, smsSendResult, ReferralOption.WEB)
             if (smsSendResult is ReadingFlowSaveResult.SaveSuccessful) {
                 // Nothing left for us to do.
+                dataPasser.onMsgPass(getToastMessageForStatus(view.context, smsSendResult, ReferralOption.WEB))
                 activity?.finish()
             }
         } finally {
@@ -325,5 +330,9 @@ class ReferralDialogFragment : DialogFragment() {
                     putSerializable(ARG_LAUNCH_REASON, launchReason)
                 }
             }
+    }
+
+    interface OnReadingSendWebSnackbarMsgPass {
+        fun onMsgPass(data: String)
     }
 }

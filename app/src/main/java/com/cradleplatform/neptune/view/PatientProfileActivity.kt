@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -23,6 +24,7 @@ import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Sex
+import com.cradleplatform.neptune.utilities.SnackbarHelper
 import com.cradleplatform.neptune.utilities.Util
 import com.cradleplatform.neptune.view.DashBoardActivity.Companion.READING_ACTIVITY_DONE
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForEditReading
@@ -452,6 +454,16 @@ open class PatientProfileActivity : AppCompatActivity() {
     ) {
         if (requestCode == READING_ACTIVITY_DONE) {
             updateUi()
+
+            if(resultCode == RESULT_OK) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    data?.getStringExtra("Test")?.let {
+                        SnackbarHelper.showSnackbarWithOK(this,
+                            it
+                        )
+                    }
+                }
+            }
         }
         super.onActivityResult(requestCode, resultCode, data)
     }
