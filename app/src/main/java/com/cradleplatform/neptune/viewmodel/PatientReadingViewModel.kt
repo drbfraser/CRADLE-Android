@@ -1693,12 +1693,7 @@ class PatientReadingViewModel @Inject constructor(
                 // Set the radio buttons.
                 val retestAdvice: RetestAdvice = retestGroup.getRetestAdvice()
 
-                val needDefaultForFollowup = dateTimeTaken.value == null
-                val isFollowupRecommended = if (needDefaultForFollowup) {
-                    retestGroup.mostRecentReadingAnalysis.isRed
-                } else {
-                    isFlaggedForFollowUp.value ?: false
-                }
+                val isFollowupRecommended = retestGroup.mostRecentReadingAnalysis.isRed
 
                 val isReferralRecommended =
                     retestGroup.mostRecentReadingAnalysis.isReferralRecommended
