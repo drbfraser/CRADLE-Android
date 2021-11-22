@@ -26,6 +26,8 @@ data class HealthFacility(
     val name: String,
     @ColumnInfo
     val location: String = "",
+    @ColumnInfo
+    val newReferrals: String = "",
     @ColumnInfo @JsonProperty("healthFacilityPhoneNumber")
     val phoneNumber: String = "",
     @ColumnInfo
@@ -47,6 +49,7 @@ private enum class HealthFacilityField(override val text: String) : Field {
     LOCATION("location"),
     ABOUT("about"),
     PHONE_NUMBER("healthFacilityPhoneNumber"),
+    NewReferrals("newReferrals"),
     NAME("healthFacilityName"),
     ID("id");
 }
