@@ -400,6 +400,8 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
 
         private const val PATIENT_ID_IN_USE_DIALOG_FRAGMENT_TAG = "patientIdInUse"
 
+        public const val EXTRA_SNACKBAR_MSG = "snackbar message"
+
         @JvmStatic
         fun makeIntentForNewReading(context: Context?): Intent {
             val intent = Intent(context, ReadingActivity::class.java)
@@ -435,8 +437,8 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
     }
 
     override fun onMsgPass(data: String) {
-        val intent = getIntent()
-        intent.putExtra("Test", data)
+        val intent = intent
+        intent.putExtra(EXTRA_SNACKBAR_MSG, data)
         setResult(RESULT_OK, intent)
     }
 }

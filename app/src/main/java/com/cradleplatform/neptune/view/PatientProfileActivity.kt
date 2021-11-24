@@ -455,10 +455,11 @@ open class PatientProfileActivity : AppCompatActivity() {
         if (requestCode == READING_ACTIVITY_DONE) {
             updateUi()
 
-            if(resultCode == RESULT_OK) {
+            if (resultCode == RESULT_OK) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    data?.getStringExtra("Test")?.let {
-                        SnackbarHelper.showSnackbarWithOK(this,
+                    data?.getStringExtra(ReadingActivity.EXTRA_SNACKBAR_MSG)?.let {
+                        SnackbarHelper.showSnackbarWithOK(
+                            this,
                             it
                         )
                     }
