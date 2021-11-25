@@ -79,7 +79,7 @@ class NotificationManagerCustom {
             context: Context,
             title: String,
             msg: String,
-            notificationID: Int,
+            notificationID: Long,
             intent: Intent,
             timeInMinutes: Int, // push the notification in _ minutes
         ) {
@@ -88,7 +88,7 @@ class NotificationManagerCustom {
                 intent,
                 title,
                 msg,
-                notificationID
+                notificationID.toInt()
             )
             val futureInMillis: Long =
                 SystemClock.elapsedRealtime() + TimeUnit.MINUTES.toMillis(timeInMinutes.toLong())
@@ -139,7 +139,7 @@ class NotificationManagerCustom {
             context: Context,
             title: String,
             msg: String,
-            notificationID: Int,
+            notificationID: Long,
             intent: Intent
         ) {
             val pendingIntent: PendingIntent = constructPendingIntentForAlarmManager(
@@ -147,7 +147,7 @@ class NotificationManagerCustom {
                 intent,
                 title,
                 msg,
-                notificationID
+                notificationID.toInt()
             )
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             alarmManager.cancel(pendingIntent)
