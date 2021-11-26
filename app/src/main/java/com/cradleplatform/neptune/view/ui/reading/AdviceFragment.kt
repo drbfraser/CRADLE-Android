@@ -157,7 +157,7 @@ class AdviceFragment : Fragment() {
                 view.context,
                 getString(R.string.vital_recheck_notification_title, viewModel.patientName.value),
                 getString(R.string.vital_recheck_notification_body_msg),
-                it1.toInt(),
+                it1.toLong(),
                 intent,
             )
         }
@@ -174,7 +174,7 @@ class AdviceFragment : Fragment() {
                 view.context,
                 getString(R.string.vital_recheck_notification_title, viewModel.patientName.value),
                 getString(R.string.vital_recheck_notification_body_msg),
-                it1.toInt(),
+                it1.toLong(),
                 intent,
                 resources.getInteger(R.integer.recheck_duration)
             )
