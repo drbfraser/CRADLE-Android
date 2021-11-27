@@ -44,8 +44,8 @@ android {
 
     defaultConfig {
         // Update this for new tags / new builds / new releases
-        versionCode 47
-        versionName "0.5.5-alpha"
+        versionCode 48
+        versionName "0.6.0-alpha"
 
         applicationId "com.cradleplatform.neptune"
         // Android 5
