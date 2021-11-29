@@ -77,6 +77,13 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
             executePendingBindings()
         }
 
+        val toolbar = findViewById<Toolbar>(R.id.toolbar3)
+        setSupportActionBar(toolbar)
+
+        setUpNavController()
+    }
+
+    private fun setUpNavController() {
         val host: NavHostFragment = supportFragmentManager
             .findFragmentById(R.id.reading_nav_host) as NavHostFragment? ?: return
         val navController = host.navController
@@ -90,9 +97,6 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
             readingId = intent.getStringExtra(EXTRA_READING_ID),
             patientId = intent.getStringExtra(EXTRA_PATIENT_ID)
         )
-
-        val toolbar = findViewById<Toolbar>(R.id.toolbar3)
-        setSupportActionBar(toolbar)
 
         // TODO: remove this when done
         // adapted from https://github.com/googlecodelabs/android-navigation

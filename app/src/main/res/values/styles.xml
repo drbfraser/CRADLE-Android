@@ -44,6 +44,10 @@
         <item name="actionMenuTextColor">@style/PreferenceThemeOverlay</item>
     </style>
 
+    <style name="ToolbarSubtitleAppearance" parent="@style/TextAppearance.Widget.AppCompat.Toolbar.Subtitle">
+        <item name="android:textSize">13sp</item>
+    </style>
+
     <!-- Theme for reading flow. -->
     <style name="ReadingFlowTheme" parent="AppTheme.NoActionBar">
         <item name="textInputStyle">@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox</item>

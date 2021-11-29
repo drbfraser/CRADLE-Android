@@ -30,6 +30,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dash_board)
         setupOnClickListner()
+
         val actionBar = supportActionBar
         if (actionBar != null) {
             actionBar.setDisplayShowHomeEnabled(true)
@@ -37,6 +38,11 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
             actionBar.title = ""
         }
 
+        networkCheck()
+        setVersionName()
+    }
+
+    private fun networkCheck() {
         // Disable entering StatsActivity without network connectivity.
 
         val statView = findViewById<View>(R.id.statconstraintLayout)
@@ -62,8 +68,6 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
                 }
             }
         }
-
-        setVersionName()
     }
 
     private fun setVersionName() {
