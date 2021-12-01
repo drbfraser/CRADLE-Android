@@ -225,7 +225,6 @@ class ReferralDialogFragment : DialogFragment() {
                 selectedHealthFacilityName
             )
 
-            showStatusToast(view.context, smsSendResult, ReferralOption.WEB)
             if (smsSendResult is ReadingFlowSaveResult.SaveSuccessful) {
                 // Nothing left for us to do.
                 dataPasser.onMsgPass(getToastMessageForStatus(view.context, smsSendResult, ReferralOption.WEB))
