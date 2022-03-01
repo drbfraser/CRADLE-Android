@@ -175,6 +175,7 @@
     <string name="activity_patients_no_patients_message">You don\'t have any patients right now.\n Go to the dashboard to create a new patient.</string>
     <string name="pregnant_question">Pregnant?</string>
     <string name="create_new_reading">Create New Reading</string>
+    <string name="create_new_referral">Create New Referral</string>
     <string name="global_search">Search all patients</string>
     <string name="sign_out_question">Sign out?</string>
     <string name="settings_title">Settings</string>
@@ -608,6 +609,21 @@
     <string name="new_reading_is_required_now">New Reading is Required Now</string>
     <string name="not_available">Not Available</string>
     <string name="version">Version:</string>
+    <string name="referral_pending_card_title">Referral Pending</string>
+    <string name="date_of_referral">Referred On</string>
+    <string name="date_of_assessment">Assessed On</string>
+    <string name="referral_location">Referred To</string>
+    <string name="comments">Comments:</string>
+    <string name="date_last_assessed">Date Last Assessed:</string>
+    <string name="assessed_by">Assessed By:</string>
+    <string name="special_investigations_and_results">Special Investigations + Results:</string>
+    <string name="final_diagnosis">Final Diagnosis:</string>
+    <string name="treatment_operation">Treatment/Operation:</string>
+    <string name="medication_prescribed">Medication Prescribed:</string>
+    <string name="follow_up">Follow-Up:</string>
+    <string name="referral_assessed">"Referral Assessed"</string>
+    <string name="referral_cancelled_card_title">Referral Cancelled</string>
+    <string name="yyyy_mm_dd">YYYY-MM-DD</string>
 
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>

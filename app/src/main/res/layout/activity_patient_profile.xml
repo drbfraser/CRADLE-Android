@@ -73,14 +73,14 @@
                     android:id="@+id/im_edit_personal_info"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:contentDescription="Pencil icon for edit"
                     android:padding="24dp"
                     app:layout_constraintBottom_toBottomOf="@+id/textView"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="1"
                     app:layout_constraintStart_toEndOf="@id/textView"
                     app:layout_constraintTop_toTopOf="@id/textView"
-                    app:srcCompat="@drawable/ic_edit_24"
-                    android:contentDescription="Pencil icon for edit" />
+                    app:srcCompat="@drawable/ic_edit_24" />
 
                 <TextView
                     android:id="@+id/textView12"
@@ -499,9 +499,11 @@
             android:id="@+id/buttonLayout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             app:layout_constraintEnd_toEndOf="@+id/personalInfoCard"
             app:layout_constraintStart_toStartOf="@id/personalInfoCard"
-            app:layout_constraintTop_toBottomOf="@id/personalInfoCard">
+            app:layout_constraintTop_toBottomOf="@id/personalInfoCard"
+            app:layout_constraintVertical_chainStyle="packed">
 
             <Button
                 android:id="@+id/addToMyPatientButton"
@@ -510,6 +512,7 @@
                 android:layout_marginTop="8dp"
                 android:text="@string/patient_profile_add_to_my_patients_list_button"
                 android:visibility="gone"
+                android:background="@drawable/rounded_button"
                 app:backgroundTint="@color/colorPrimaryLight"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -518,16 +521,25 @@
                 android:id="@+id/newPatientReadingButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:background="@color/colorPrimaryLight"
+                android:background="@drawable/rounded_button"
                 android:text="@string/create_new_reading"
                 android:visibility="gone"
-                app:backgroundTint="@color/colorPrimaryLight"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/newPatientReferralButton"
                 app:layout_constraintTop_toTopOf="parent" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
 
+            <Button
+                android:id="@+id/newPatientReferralButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rounded_button"
+                android:text="@string/create_new_referral"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/newPatientReadingButton"
+                android:visibility="gone"
+                android:layout_marginTop="@dimen/reading_flow_previous_reading_item_margin"/>
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

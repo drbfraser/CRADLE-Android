@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/assessmentCardView"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:clickable="true"
+        android:foreground="?android:attr/selectableItemBackground">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/assessedHospitalImg"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/hospital" />
+
+            <TextView
+                android:id="@+id/referralAssessedTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginBottom="0dp"
+                android:text="@string/referral_assessed"
+                app:layout_constraintBottom_toBottomOf="@+id/assessedHospitalImg"
+                app:layout_constraintStart_toEndOf="@+id/assessedHospitalImg" />
+
+            <TextView
+                android:id="@+id/assessedReferralDateTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="4dp"
+                android:text="@string/date_of_referral"
+                android:textColor="@color/black"
+                android:textSize="12sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/referralAssessedTitle" />
+
+            <TextView
+                android:id="@+id/assessedAssessmentDateTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="4dp"
+                android:text="@string/date_of_assessment"
+                android:textColor="@color/black"
+                android:textSize="12sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/assessedReferralDateTitle" />
+
+            <TextView
+                android:id="@+id/cancelledReferralLocationTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="4dp"
+                android:text="@string/referral_location"
+                android:textColor="@color/black"
+                android:textSize="12sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/assessedAssessmentDateTitle" />
+
+            <TextView
+                android:id="@+id/assessedReferralCommentsTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="16dp"
+                android:text="@string/comments"
+                android:textColor="@color/black"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/cancelledReferralLocationTitle" />
+
+            <TextView
+                android:id="@+id/assessedReferralCommentsTxt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/not_available_n_slash_a"
+                android:textSize="12sp"
+                app:layout_constraintBaseline_toBaselineOf="@+id/assessedReferralCommentsTitle"
+                app:layout_constraintStart_toEndOf="@+id/assessedReferralCommentsTitle" />
+
+            <TextView
+                android:id="@+id/assessedReferralLocationTxt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/not_available_n_slash_a"
+                android:textSize="12sp"
+                app:layout_constraintBaseline_toBaselineOf="@+id/cancelledReferralLocationTitle"
+                app:layout_constraintStart_toEndOf="@+id/cancelledReferralLocationTitle" />
+
+            <TextView
+                android:id="@+id/assessedAssessmentDateTxt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/yyyy_mm_dd"
+                android:textSize="12sp"
+                app:layout_constraintBaseline_toBaselineOf="@+id/assessedAssessmentDateTitle"
+                app:layout_constraintStart_toEndOf="@+id/assessedAssessmentDateTitle" />
+
+            <TextView
+                android:id="@+id/assessedReferralDateTxt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/yyyy_mm_dd"
+                android:textSize="12sp"
+                app:layout_constraintBaseline_toBaselineOf="@+id/assessedReferralDateTitle"
+                app:layout_constraintStart_toEndOf="@+id/assessedReferralDateTitle" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+</androidx.constraintlayout.widget.ConstraintLayout>

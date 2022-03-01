@@ -107,6 +107,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         }
         setupReadingsRecyclerView()
         setupCreatePatientReadingButton()
+        setupCreatePatientReferralButton()
         setupUpdateRecord()
         setupLineChart()
         setupToolBar()
@@ -124,6 +125,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupEditPatient(currPatient)
         setupBtnPregnancy(currPatient)
         setupCreatePatientReadingButton()
+        setupCreatePatientReferralButton()
     }
 
     private fun changeAddReadingButtonColorIfNeeded() {
@@ -380,6 +382,13 @@ open class PatientProfileActivity : AppCompatActivity() {
         }
 
         changeAddReadingButtonColorIfNeeded()
+    }
+
+    private fun setupCreatePatientReferralButton() {
+        val createButton =
+            findViewById<Button>(R.id.newPatientReferralButton)
+
+        createButton.visibility = View.VISIBLE
     }
 
     private fun onUpdateButtonClicked(isDrugRecord: Boolean) {
