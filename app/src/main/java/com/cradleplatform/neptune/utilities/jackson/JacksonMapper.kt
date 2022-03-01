@@ -1,11 +1,13 @@
 package com.cradleplatform.neptune.utilities.jackson
 
+import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.GestationalAge
 import com.cradleplatform.neptune.model.GlobalPatient
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.PatientAndReadings
 import com.cradleplatform.neptune.model.Reading
+import com.cradleplatform.neptune.model.Referral
 import com.fasterxml.jackson.databind.ObjectReader
 import com.fasterxml.jackson.databind.ObjectWriter
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -43,6 +45,14 @@ internal object JacksonMapper {
     val readerForGestAge: ObjectReader by lazy { mapper.readerFor(GestationalAge::class.java) }
 
     val writerForGestAge: ObjectWriter by lazy { mapper.writerFor(GestationalAge::class.java) }
+
+    val readerForReferral: ObjectReader by lazy { mapper.readerFor(Referral::class.java) }
+
+    val writerForReferral: ObjectWriter by lazy { mapper.writerFor(Referral::class.java) }
+
+    val readerForAssessment: ObjectReader by lazy { mapper.readerFor(Assessment::class.java) }
+
+    val writerForAssessment: ObjectWriter by lazy { mapper.writerFor(Assessment::class.java) }
 
     fun createGlobalPatientsListReader(): ObjectReader =
         mapper.readerForListOf(GlobalPatient::class.java)

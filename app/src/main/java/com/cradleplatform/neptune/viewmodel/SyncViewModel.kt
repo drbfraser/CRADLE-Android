@@ -16,8 +16,10 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.database.daos.AssessmentDao
 import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
+import com.cradleplatform.neptune.database.daos.ReferralDao
 import com.cradleplatform.neptune.ext.setValueOnMainThread
 import com.cradleplatform.neptune.sync.SyncWorker
 import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
@@ -36,6 +38,8 @@ import javax.inject.Inject
 class SyncViewModel @Inject constructor(
     private val patientDao: PatientDao,
     private val readingDao: ReadingDao,
+    private val referralDao: ReferralDao,
+    private val assessmentDao: AssessmentDao,
     private val sharedPreferences: SharedPreferences,
     private val workManager: WorkManager,
     @ApplicationContext private val context: Context
@@ -75,6 +79,8 @@ class SyncViewModel @Inject constructor(
     private suspend fun updatePatientAndReadingsToUploadString() {
         val numberOfPatientsToUpload = patientDao.countPatientsToUpload()
         val numberOfReadingsToUpload = readingDao.getNumberOfUnUploadedReadings()
+        val numberOfReferralsToUpload = referralDao.countReferralsToUpload()
+        val numberOfAssessmentsToUpload = assessmentDao.countAssessmentsToUpload()
 
         Log.d(
             TAG,
@@ -83,33 +89,14 @@ class SyncViewModel @Inject constructor(
         )
 
         val numberToUploadString = when {
-            numberOfPatientsToUpload != 1 && numberOfReadingsToUpload != 1 &&
-                (numberOfPatientsToUpload + numberOfReadingsToUpload != 0) -> {
+            numberOfPatientsToUpload != 1 || numberOfReadingsToUpload != 1
+                || numberOfReferralsToUpload != 1 || numberOfAssessmentsToUpload != 1 -> {
                 context.getString(
-                    R.string.sync_activity_d_patients_and_d_readings_to_upload,
+                    R.string.sync_activity_d_data_to_upload,
                     numberOfPatientsToUpload,
-                    numberOfReadingsToUpload
-                )
-            }
-            numberOfPatientsToUpload != 1 && numberOfReadingsToUpload == 1 -> {
-                context.getString(
-                    R.string.sync_activity_d_patients_and_d_reading_to_upload,
-                    numberOfPatientsToUpload,
-                    numberOfReadingsToUpload
-                )
-            }
-            numberOfPatientsToUpload == 1 && numberOfReadingsToUpload != 1 -> {
-                context.getString(
-                    R.string.sync_activity_d_patient_and_d_readings_to_upload,
-                    numberOfPatientsToUpload,
-                    numberOfReadingsToUpload
-                )
-            }
-            numberOfPatientsToUpload == 1 && numberOfReadingsToUpload == 1 -> {
-                context.getString(
-                    R.string.sync_activity_d_patient_and_d_reading_to_upload,
-                    numberOfPatientsToUpload,
-                    numberOfReadingsToUpload
+                    numberOfReadingsToUpload,
+                    numberOfReferralsToUpload,
+                    numberOfAssessmentsToUpload
                 )
             }
             else -> {

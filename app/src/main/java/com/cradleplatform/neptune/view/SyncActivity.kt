@@ -122,6 +122,26 @@ class SyncActivity : AppCompatActivity() {
                     SyncWorker.State.DOWNLOADING_READINGS -> getString(
                         R.string.sync_activity_status_downloading_readings_referrals_and_assessments
                     )
+
+                    SyncWorker.State.CHECKING_SERVER_REFERRALS -> getString(
+                        R.string.sync_activity_status_checking_for_new_referrals
+                    )
+                    SyncWorker.State.UPLOADING_REFERRALS -> getString(
+                        R.string.sync_activity_status_uploading_referrals
+                    )
+                    SyncWorker.State.DOWNLOADING_REFERRALS -> getString(
+                        R.string.sync_activity_status_downloading_referrals
+                    )
+
+                    SyncWorker.State.CHECKING_SERVER_ASSESSMENTS -> getString(
+                        R.string.sync_activity_status_checking_for_new_assessments
+                    )
+                    SyncWorker.State.UPLOADING_ASSESSMENTS -> getString(
+                        R.string.sync_activity_status_uploading_assessments
+                    )
+                    SyncWorker.State.DOWNLOADING_ASSESSMENTS -> getString(
+                        R.string.sync_activity_status_downloading_assessments
+                    )
                 }
                 if (syncStatusText.text != newStateString) {
                     syncStatusText.text = newStateString

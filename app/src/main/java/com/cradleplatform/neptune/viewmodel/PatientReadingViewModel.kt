@@ -1456,12 +1456,15 @@ class PatientReadingViewModel @Inject constructor(
                 // Embed the referral to the reading from the builder.
                 readingFromBuilder.referral =
                     Referral(
+                        id = 1,
                         comment = referralComment,
                         healthFacilityName = healthFacilityName,
                         dateReferred = readingFromBuilder.dateTimeTaken,
                         patientId = patient.id,
                         readingId = readingFromBuilder.id,
-                        sharedPreferences = sharedPreferences
+                        userId = 2,
+                        isAssessed = true
+                        // sharedPreferences = sharedPreferences
                     )
                 yield()
 

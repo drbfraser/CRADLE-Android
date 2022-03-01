@@ -2,19 +2,32 @@ package com.cradleplatform.neptune.database
 
 import android.content.Context
 import androidx.room.Database
+import androidx.room.Index
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
+import com.cradleplatform.neptune.database.daos.AssessmentDao
 import com.cradleplatform.neptune.database.daos.HealthFacilityDao
 import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
+import com.cradleplatform.neptune.database.daos.ReferralDao
 import com.cradleplatform.neptune.database.views.LocalSearchPatient
+import com.cradleplatform.neptune.ext.jackson.writeBooleanField
+import com.cradleplatform.neptune.ext.jackson.writeIntField
+import com.cradleplatform.neptune.ext.jackson.writeLongField
+import com.cradleplatform.neptune.ext.jackson.writeOptIntField
+import com.cradleplatform.neptune.ext.jackson.writeOptLongField
+import com.cradleplatform.neptune.ext.jackson.writeOptStringField
+import com.cradleplatform.neptune.ext.jackson.writeStringField
+import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
+import com.cradleplatform.neptune.model.Referral
 
-const val CURRENT_DATABASE_VERSION = 1
+const val CURRENT_DATABASE_VERSION = 2
 
 /**
  * An interface for the local CRADLE database.
@@ -25,7 +38,7 @@ const val CURRENT_DATABASE_VERSION = 1
  * TODO: Lower the version back to version 1 when the app is out of alpha testing.
  */
 @Database(
-    entities = [Reading::class, Patient::class, HealthFacility::class],
+    entities = [Reading::class, Patient::class, HealthFacility::class, Referral::class, Assessment::class],
     views = [LocalSearchPatient::class],
     version = CURRENT_DATABASE_VERSION,
     exportSchema = true
@@ -35,6 +48,8 @@ abstract class CradleDatabase : RoomDatabase() {
     abstract fun readingDao(): ReadingDao
     abstract fun patientDao(): PatientDao
     abstract fun healthFacility(): HealthFacilityDao
+    abstract fun referralDao(): ReferralDao
+    abstract fun assessmentDao(): AssessmentDao
 
     companion object {
         private const val DATABASE_NAME = "room-readingDB"
@@ -72,6 +87,61 @@ abstract class CradleDatabase : RoomDatabase() {
 @Suppress("MagicNumber", "NestedBlockDepth", "ObjectPropertyNaming")
 internal object Migrations {
     val ALL_MIGRATIONS: Array<Migration> by lazy {
-        arrayOf()
+        arrayOf(MIGRATION_1_2)
+    }
+    /**
+     * Version 2:
+     * Create Referral and Assessment table
+     */
+    private val MIGRATION_1_2 = object : Migration(1, 2) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.apply {
+                execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS Referral (
+                        `id` INTEGER NULLABLE, 
+                        `comment` TEXT,
+                        `referralHealthFacilityName` TEXT NOT NULL, 
+                        `dateReferred` LONG NOT NULL,
+                        `userId` INTEGER,
+                        `patientId` TEXT NOT NULL,
+                        `readingId` TEXT NOT NULL,
+                        `isAssessed` BOOLEAN NOT NULL,
+                        `lastEdited` LONG NOT NULL,
+                        `lastServerUpdate` LONG NOT NULL,
+                        PRIMARY KEY(`id`),
+                        FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE,
+                        FOREIGN KEY(`readingId`) REFERENCES `Reading`(`id`) ON UPDATE CASCADE ON DELETE CASCADE,
+                        FOREIGN KEY(`healthFacilityName`) REFERENCES `HealthFacility`(`name`) ON UPDATE CASCADE ON DELETE CASCADE
+                    )
+                    """.trimIndent()
+
+                )
+
+                execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS Assessment (
+                        `id` INTEGER NULLABLE, 
+                        `dateAssessed` LONG NOT NULL,
+                        `healthcareWorkerId` INTEGER NOT NULL, 
+                        `patientId` TEXT NOT NULL, 
+                        `diagnosis` TEXT NULLABLE, 
+                        `treatment` TEXT NULLABLE, 
+                        `medicationPrescribed` TEXT NULLABLE, 
+                        `specialInvestigations` TEXT NULLABLE, 
+                        `followupNeeded` BOOLEAN NOT NULL,
+                        `followupInstructions` TEXT NULLABLE, 
+                        `lastEdited` LONG NOT NULL,
+                        `lastServerUpdate` LONG NOT NULL,
+                        PRIMARY KEY(`id`),
+                        FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE
+                    )
+                    """.trimIndent()
+                )
+
+                execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_Referral_id` ON `Referral` (`id`, `patientId`, `readingId`, `healthFacilityName`)")
+                execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_Assessment_id` ON `Assessment` (`id`, `patientId`)")
+            }
+        }
     }
 }

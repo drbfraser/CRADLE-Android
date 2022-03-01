@@ -129,11 +129,11 @@ class ReadingManager @Inject constructor(
     }
 
     suspend fun addAssessment(assessment: Assessment) {
-        getReadingById(assessment.readingId)?.apply {
-            followUp = assessment
-            referral?.isAssessed = true
-            updateReading(this)
-        }
+        // getReadingById(assessment.readingId)?.apply {
+        //     followUp = assessment
+        //     referral?.isAssessed = true
+        //     updateReading(this)
+        // }
     }
 
     suspend fun addReferral(referral: Referral) {

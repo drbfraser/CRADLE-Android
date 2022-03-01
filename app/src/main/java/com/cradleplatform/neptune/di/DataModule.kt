@@ -4,12 +4,16 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
 import com.cradleplatform.neptune.database.CradleDatabase
+import com.cradleplatform.neptune.database.daos.AssessmentDao
 import com.cradleplatform.neptune.database.daos.HealthFacilityDao
 import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
+import com.cradleplatform.neptune.database.daos.ReferralDao
+import com.cradleplatform.neptune.manager.AssessmentManager
 import com.cradleplatform.neptune.manager.HealthFacilityManager
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
+import com.cradleplatform.neptune.manager.ReferralManager
 import com.cradleplatform.neptune.manager.UrlManager
 import com.cradleplatform.neptune.model.Settings
 import com.cradleplatform.neptune.net.Http
@@ -47,6 +51,22 @@ class DataModule {
 
     @Provides
     @Singleton
+    fun provideReferralManager(
+        database: CradleDatabase,
+        referralDao: ReferralDao,
+        restApi: RestApi
+    ) = ReferralManager(database, referralDao, restApi)
+
+    @Provides
+    @Singleton
+    fun provideAssessmentManager(
+        database: CradleDatabase,
+        assessmentDao: AssessmentDao,
+        restApi: RestApi
+    ) = AssessmentManager(database, assessmentDao, restApi)
+
+    @Provides
+    @Singleton
     fun provideDatabase(@ApplicationContext context: Context) = CradleDatabase.getInstance(context)
 
     @Provides
@@ -60,6 +80,14 @@ class DataModule {
     @Provides
     fun provideHealthFacilityDao(database: CradleDatabase): HealthFacilityDao =
         database.healthFacility()
+
+    @Provides
+    fun provideReferralDao(database: CradleDatabase): ReferralDao =
+        database.referralDao()
+
+    @Provides
+    fun provideAssessmentDao(database: CradleDatabase): AssessmentDao =
+        database.assessmentDao()
 
     @Provides
     @Singleton

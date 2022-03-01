@@ -530,6 +530,7 @@
     <string name="sync_activity_d_patients_and_d_reading_to_upload">There are %1$d patients and %2$d reading to upload.</string>
     <string name="sync_activity_d_patient_and_d_readings_to_upload">There is %1$d patient and %2$d readings to upload.</string>
     <string name="sync_activity_d_patient_and_d_reading_to_upload">There is %1$d patient and %2$d reading to upload.</string>
+    <string name="sync_activity_d_data_to_upload">There are %1$d patient(s), %2$d reading(s), %3$d referral(s), and %4$d assessments(s) to upload.</string>
     <string name="sync_activity_nothing_to_upload">There is nothing to upload.</string>
     <string name="sync_activity_date_never">Never</string>
     <string name="sync_activity_waiting_to_sync_last_synced__s">Waiting to sync. Last sync: %1$s</string>
@@ -541,6 +542,15 @@
     <string name="sync_activity_status_downloading_readings_referrals_and_assessments">Downloading readings, referrals, and assessments</string>
     <string name="sync_activity_status_checking_for_new_patients">Checking for new patient updates</string>
     <string name="sync_activity_status_checking_for_new_readings_referrals_and_assessments">Checking for new readings, referrals, and assessments</string>
+
+    <string name="sync_activity_status_checking_for_new_referrals">Checking for new referral updates</string>
+    <string name="sync_activity_status_uploading_referrals">Uploading referrals</string>
+    <string name="sync_activity_status_downloading_referrals">Downloading referrals</string>
+
+    <string name="sync_activity_status_checking_for_new_assessments">Checking for new assessments updates</string>
+    <string name="sync_activity_status_uploading_assessments">Uploading assessments</string>
+    <string name="sync_activity_status_downloading_assessments">Downloading assessments</string>
+
     <string name="sync_activity_no_internet_connection_please_check_back_later">No internet connection; please check back later</string>
     <string name="sync_activity_sync_status_header">Sync Status</string>
     <string name="sync_activity_last_sync_result_header">Last Sync Result</string>
@@ -553,8 +563,12 @@
     <string name="sync_total_patients_downloaded_s">Number of patients downloaded: %1$d</string>
     <string name="sync_total_readings_uploaded_s">Number of readings uploaded: %1$d</string>
     <string name="sync_total_readings_downloaded_s">Number of readings downloaded: %1$d</string>
-    <string name="sync_total_followups_downloaded_s">Number of new follow-ups for old readings: %1$d</string>
-    <string name="sync_total_referrals_downloaded_s">Number of new referrals for old readings: %1$d</string>
+    <string name="sync_total_followups_from_reading_downloaded_s">Number of new follow-ups for old readings: %1$d</string>
+    <string name="sync_total_referrals_from_reading_downloaded_s">Number of new referrals for old readings: %1$d</string>
+    <string name="sync_total_assessments_uploaded_s">Number of assessments uploaded: %1$d</string>
+    <string name="sync_total_assessments_downloaded_s">Number of assessments downloaded: %1$d</string>
+    <string name="sync_total_referrals_uploaded_s">Number of referrals uploaded: %1$d</string>
+    <string name="sync_total_referrals_downloaded_s">Number of referrals downloaded: %1$d</string>
 
     <string name="ocr_fragment_title">OCR</string>
     <string name="ocr_fragment_description">Align the CRADLE VSA screen with the corresponding areas and press USE when the readings look correct. The last measured blood pressure values can be retrieved by turning the CRADLE VSA off and holding the ON/OFF button until memory appears.</string>
