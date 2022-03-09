@@ -54,9 +54,8 @@ import java.io.Serializable
 @Entity(
     indices = [
         Index(value = ["id"], unique = true),
-        Index(value = ["patientId"], unique = true),
-        // Index(value = ["readingId"], unique = true),
-        Index(value = ["healthFacilityName"], unique = true)
+        Index(value = ["patientId"]),
+        Index(value = ["healthFacilityName"])
     ],
     foreignKeys = [
         ForeignKey(
@@ -66,13 +65,6 @@ import java.io.Serializable
             onUpdate = ForeignKey.CASCADE,
             onDelete = ForeignKey.CASCADE
         ),
-        // ForeignKey(
-        //     entity = Reading::class,
-        //     parentColumns = arrayOf("readingId"),
-        //     childColumns = arrayOf("readingId"),
-        //     onUpdate = ForeignKey.CASCADE,
-        //     onDelete = ForeignKey.CASCADE
-        // ),
         ForeignKey(
             entity = HealthFacility::class,
             parentColumns = arrayOf("name"),

@@ -48,7 +48,7 @@ import java.io.Serializable
 @Entity(
     indices = [
         Index(value = ["id"], unique = true),
-        Index(value = ["patientId"], unique = true)
+        Index(value = ["patientId"])
     ],
     foreignKeys = [
         ForeignKey(

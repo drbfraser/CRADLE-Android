@@ -111,7 +111,6 @@ internal object Migrations {
                         `lastServerUpdate` LONG NOT NULL,
                         PRIMARY KEY(`id`),
                         FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE,
-                        FOREIGN KEY(`readingId`) REFERENCES `Reading`(`id`) ON UPDATE CASCADE ON DELETE CASCADE,
                         FOREIGN KEY(`healthFacilityName`) REFERENCES `HealthFacility`(`name`) ON UPDATE CASCADE ON DELETE CASCADE
                     )
                     """.trimIndent()
@@ -139,7 +138,7 @@ internal object Migrations {
                     """.trimIndent()
                 )
 
-                execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_Referral_id` ON `Referral` (`id`, `patientId`, `readingId`, `healthFacilityName`)")
+                execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_Referral_id` ON `Referral` (`id`, `patientId`, `healthFacilityName`)")
                 execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_Assessment_id` ON `Assessment` (`id`, `patientId`)")
             }
         }
