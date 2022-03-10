@@ -162,6 +162,24 @@ data class Referral(
             }
     }
 
+    object AscendingDataComparator : Comparator<Referral> {
+        override fun compare(o1: Referral?, o2: Referral?): Int {
+            val hasO1 = o1?.dateReferred != null
+            val hasO2 = o2?.dateReferred != null
+            return when {
+                hasO1 && hasO2 -> o1!!.dateReferred.compareTo(o2!!.dateReferred)
+                hasO1 && !hasO2 -> -1
+                !hasO1 && hasO2 -> 1
+                else -> 0
+            }
+        }
+    }
+
+    object DescendingDateComparator : Comparator<Referral> {
+        override fun compare(o1: Referral?, o2: Referral?): Int =
+            -AscendingDataComparator.compare(o1, o2)
+    }
+
     // constructor(
     //     comment: String?,
     //     healthFacilityName: String,

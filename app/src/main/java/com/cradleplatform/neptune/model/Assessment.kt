@@ -159,6 +159,24 @@ data class Assessment(
                 )
             }
     }
+
+    object AscendingDataComparator : Comparator<Assessment> {
+        override fun compare(o1: Assessment?, o2: Assessment?): Int {
+            val hasO1 = o1?.dateAssessed != null
+            val hasO2 = o2?.dateAssessed != null
+            return when {
+                hasO1 && hasO2 -> o1!!.dateAssessed.compareTo(o2!!.dateAssessed)
+                hasO1 && !hasO2 -> -1
+                !hasO1 && hasO2 -> 1
+                else -> 0
+            }
+        }
+    }
+
+    object DescendingDateComparator : Comparator<Assessment> {
+        override fun compare(o1: Assessment?, o2: Assessment?): Int =
+            -AscendingDataComparator.compare(o1, o2)
+    }
 }
 
 private enum class AssessmentField(override val text: String) : Field {
