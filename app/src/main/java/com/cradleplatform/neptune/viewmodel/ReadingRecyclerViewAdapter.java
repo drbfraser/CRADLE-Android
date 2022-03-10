@@ -16,6 +16,7 @@ import com.cradleplatform.neptune.R;
 import com.cradleplatform.neptune.model.Assessment;
 import com.cradleplatform.neptune.model.Reading;
 import com.cradleplatform.neptune.model.ReadingAnalysis;
+import com.cradleplatform.neptune.model.Referral;
 import com.cradleplatform.neptune.model.SymptomsState;
 import com.cradleplatform.neptune.model.UrineTest;
 import com.cradleplatform.neptune.utilities.DateUtil;
@@ -29,11 +30,13 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
     private final static int NO_ASSESSMENT_TYPE = 1;
     private final static int ASSESSMENT_TYPE = 2;
     private List<Reading> readings;
+    private List<Referral> referrals;
     private RecyclerView recyclerView;
     private OnClickElement onClickElementListener;
 
-    public ReadingRecyclerViewAdapter(List<Reading> readings) {
+    public ReadingRecyclerViewAdapter(List<Reading> readings, List<Referral> referrals) {
         this.readings = readings;
+        this.referrals = referrals;
     }
 
     @NonNull
@@ -65,6 +68,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder myViewHolder, int i) {
         Reading currReading = readings.get(i);
+        Referral currRefferal = referrals.get(0);
 
         ReadingAnalysis analysis = currReading.getBloodPressure().getAnalysis();
 
@@ -73,9 +77,9 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         myViewHolder.diaBP.setText(new StringBuilder().append(currReading.getBloodPressure().getDiastolic()).append("").toString());
         myViewHolder.heartRate.setText(new StringBuilder().append(currReading.getBloodPressure().getHeartRate()).append("").toString());
 
-        if (currReading.getUrineTest() != null) {
+        if (currRefferal.getPatientId() != null) {
             myViewHolder.urineTest.setText(
-                    getUrineTestFormattedTxt(currReading.getUrineTest())
+                    currRefferal.getPatientId()
             );
         }
 
