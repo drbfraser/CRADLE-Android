@@ -709,14 +709,10 @@ class RestApi constructor(
         readingsToUpload: List<Reading>,
         lastSyncTimestamp: BigInteger = BigInteger.valueOf(1L),
         readingChannel: SendChannel<Reading>,
-        referralChannel: SendChannel<Referral>,
-        assessmentChannel: SendChannel<Assessment>,
         reportProgressBlock: suspend (Int, Int) -> Unit,
     ): ReadingSyncResult = withContext(IO) {
         val body = createWriter<List<Reading>>().writeValueAsBytes(readingsToUpload)
         var totalReadingsDownloaded = 0
-        var totalReferralsDownloaded = 0
-        var totalFollowupsDownloaded = 0
         val networkResult = http.makeRequest(
             method = Http.Method.POST,
             url = urlManager.getReadingsSync(lastSyncTimestamp),
@@ -726,8 +722,6 @@ class RestApi constructor(
             Log.d(TAG, "Parsing readings now")
 
             val readerForReading = JacksonMapper.createReader<Reading>()
-            val readerForReferral = JacksonMapper.createReader<Referral>()
-            val readerForAssessment = JacksonMapper.createReader<Assessment>()
 
             readerForReading.createParser(inputStream).use { parser ->
                 var totalDownloaded = 0
@@ -744,26 +738,6 @@ class RestApi constructor(
                             }
                             readingChannel.close()
                         }
-                        ReadingSyncField.NEW_REFERRALS.text -> {
-                            Log.d(TAG, "Starting to parse NEW_REFERRALS array")
-                            parseObjectArray<Referral>(readerForReferral) {
-                                referralChannel.send(it)
-                                totalDownloaded++
-                                totalReferralsDownloaded++
-                                reportProgressBlock(totalDownloaded, totalToDownload)
-                            }
-                            referralChannel.close()
-                        }
-                        ReadingSyncField.NEW_FOLLOW_UPS.text -> {
-                            Log.d(TAG, "Starting to parse NEW_FOLLOW_UPS array")
-                            parseObjectArray<Assessment>(readerForAssessment) {
-                                assessmentChannel.send(it)
-                                totalDownloaded++
-                                totalFollowupsDownloaded++
-                                reportProgressBlock(totalDownloaded, totalToDownload)
-                            }
-                            assessmentChannel.close()
-                        }
                     }
                 }
             }
@@ -771,9 +745,7 @@ class RestApi constructor(
             withContext(Dispatchers.Main) {
                 Log.d(
                     TAG,
-                    "DEBUG: Downloaded $totalReadingsDownloaded readings, " +
-                        "$totalReferralsDownloaded referrals and " +
-                        "$totalFollowupsDownloaded assessments."
+                    "DEBUG: Downloaded $totalReadingsDownloaded readings."
                 )
             }
             Unit
@@ -783,22 +755,16 @@ class RestApi constructor(
                 // operations, so it doesn't do anything on Successes where we don't return
                 // early.
                 readingChannel.close()
-                referralChannel.close()
-                assessmentChannel.close()
             } else {
                 // Fail these channels if not successful (note: idempotent operations)
                 readingChannel.close(SyncException("failed to sync readings"))
-                referralChannel.close(SyncException("failed to sync referrals"))
-                assessmentChannel.close(SyncException("failed to sync assessments"))
             }
         }
 
         ReadingSyncResult(
             networkResult,
             readingsToUpload.size,
-            totalReadingsDownloaded,
-            totalReferralsDownloaded,
-            totalFollowupsDownloaded,
+            totalReadingsDownloaded
         )
     }
 

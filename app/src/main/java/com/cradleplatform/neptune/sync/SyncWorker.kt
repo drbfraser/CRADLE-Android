@@ -356,8 +356,6 @@ class SyncWorker @AssistedInject constructor(
         )
 
         val readingChannel = Channel<Reading>()
-        val referralChannel = Channel<Referral>()
-        val assessmentChannel = Channel<Assessment>()
 
         launch {
             try {
@@ -365,12 +363,6 @@ class SyncWorker @AssistedInject constructor(
                     for (reading in readingChannel) {
                         readingManager.addReading(reading, isReadingFromServer = true)
                     }
-                    for (referral in referralChannel) {
-                        readingManager.addReferral(referral)
-                    }
-                    // for (assessment in assessmentChannel) {
-                    //     readingManager.addAssessment(assessment)
-                    // }
                 }
             } catch (e: SyncException) {
                 // Need to switch context, since Dispatchers.Default doesn't do logging
@@ -383,9 +375,7 @@ class SyncWorker @AssistedInject constructor(
         restApi.syncReadings(
             readingsToUpload,
             lastSyncTimestamp = lastSyncTime,
-            readingChannel,
-            referralChannel,
-            assessmentChannel
+            readingChannel
         ) { current, total ->
             reportProgress(
                 State.DOWNLOADING_READINGS,
@@ -541,12 +531,6 @@ class SyncWorker @AssistedInject constructor(
         val totalReadingsDownloaded = applicationContext.getString(
             R.string.sync_total_readings_downloaded_s, readingSyncResult.totalReadingsDownloaded
         )
-        val totalReferralsFromReadingDownloaded = applicationContext.getString(
-            R.string.sync_total_referrals_from_reading_downloaded_s, readingSyncResult.totalReferralsDownloaded
-        )
-        val totalFollowupsFromReadingDownloaded = applicationContext.getString(
-            R.string.sync_total_followups_from_reading_downloaded_s, readingSyncResult.totalFollowupsDownloaded
-        )
         val totalReferralsUploaded = applicationContext.getString(
             R.string.sync_total_referrals_uploaded_s, referralSyncResult.totalReferralsUploaded
         )
@@ -567,8 +551,6 @@ class SyncWorker @AssistedInject constructor(
             "$totalPatientsDownloaded\n" +
             "$totalReadingsUploaded\n" +
             "$totalReadingsDownloaded\n" +
-            "$totalReferralsFromReadingDownloaded\n" +
-            "$totalFollowupsFromReadingDownloaded\n" +
             "$totalReferralsUploaded\n" +
             "$totalReferralsDownloaded\n" +
             "$totalAssessmentsUploaded\n" +
@@ -609,9 +591,7 @@ data class PatientSyncResult(
 data class ReadingSyncResult(
     val networkResult: NetworkResult<Unit>,
     var totalReadingsUploaded: Int,
-    var totalReadingsDownloaded: Int,
-    var totalReferralsDownloaded: Int,
-    var totalFollowupsDownloaded: Int,
+    var totalReadingsDownloaded: Int
 )
 
 data class ReferralSyncResult(

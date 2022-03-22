@@ -96,9 +96,6 @@ interface AssessmentDao {
         private const val assessmentsToUploadQueryCriteria = """
             lastServerUpdate IS NULL
             OR lastServerUpdate < lastEdited
-            OR dateAssessed IS NOT NULL
-            OR healthcareWorkerId IS NOT NULL
-            OR patientId IS NOT NULL
         """
     }
 

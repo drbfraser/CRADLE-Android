@@ -158,12 +158,11 @@ class LoginManager @Inject constructor(
             // TODO: Maybe make it so that the health facility the server sends back cannot
             //       be removed by the user?
             // TODO: Show some dialog to select a health facility
-            val healthFacilitiesAsync = async {
-                downloadHealthFacilities(loginResult.value.healthFacilityName)
-            }
+            val healthFacilitiesDownloadSuccess = downloadHealthFacilities(loginResult.value.healthFacilityName) is NetworkResult.Success
+
 
             val referralsAsync = async {
-                if (patientsDownloadSuccess) {
+                if (patientsDownloadSuccess && healthFacilitiesDownloadSuccess) {
                     val referralsDownloadSuccess = downloadReferral() is NetworkResult.Success
                     if (referralsDownloadSuccess) {
                         sharedPreferences.edit(commit = true) {
@@ -184,7 +183,7 @@ class LoginManager @Inject constructor(
                 }
             }
 
-            joinAll(readingsAsync, healthFacilitiesAsync, referralsAsync, assessmentsAsync)
+            joinAll(readingsAsync, referralsAsync, assessmentsAsync)
 
             // TODO: Actually report any failures instead of lettting the user pass
             //  It might be better to just split the login manager so that this function just

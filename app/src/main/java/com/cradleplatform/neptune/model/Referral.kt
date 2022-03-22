@@ -39,15 +39,19 @@ import java.io.Serializable
  * Holds information about a referral.
  *
  * @property comment An optional comment made by the user about this referral
- * @property healthFacilityName The name of the health facility this referral
+ * @property referralHealthFacilityName The name of the health facility this referral
  *  is being made to
  * @property dateReferred The time at which this referral was made as a unix
  *  timestamp
  * @property id The unique identifier for this referral assigned by the server
  * @property userId The id of the user who made this referral
  * @property patientId The id of patient being referred
- * @property readingId The id of the reading being referred
+ * @property actionTaken The action taken
+ * @property cancelReason The reason of cancel
+ * @property notAttendReason The reason of not attend
  * @property isAssessed True if the referral has been assessed
+ * @property isCancelled True if the referral has been cancelled
+ * @property notAttended True if the referral has not been attended
  * @property lastEdited Last time referral was edited on android
  * @property lastServerUpdate Last time the referral has gotten updated from the server.
  */
@@ -55,7 +59,7 @@ import java.io.Serializable
     indices = [
         Index(value = ["id"], unique = true),
         Index(value = ["patientId"]),
-        Index(value = ["healthFacilityName"])
+        Index(value = ["referralHealthFacilityName"])
     ],
     foreignKeys = [
         ForeignKey(
@@ -68,7 +72,7 @@ import java.io.Serializable
         ForeignKey(
             entity = HealthFacility::class,
             parentColumns = arrayOf("name"),
-            childColumns = arrayOf("healthFacilityName"),
+            childColumns = arrayOf("referralHealthFacilityName"),
             onUpdate = ForeignKey.CASCADE,
             onDelete = ForeignKey.CASCADE
         )
@@ -79,13 +83,13 @@ import java.io.Serializable
 @JsonDeserialize(using = Referral.Deserializer::class)
 data class Referral(
     @PrimaryKey @ColumnInfo @JsonProperty("id")
-    var id: Int?,
+    var id: Int,
 
-    @ColumnInfo @JsonProperty("comment")// TODO here should match web
+    @ColumnInfo @JsonProperty("comment")
     var comment: String?,
 
-    @ColumnInfo @JsonProperty("referralHealthFacilityName")// TODO consider delete jsonproperty
-    var healthFacilityName: String,
+    @ColumnInfo @JsonProperty("referralHealthFacilityName")
+    var referralHealthFacilityName: String,
 
     @ColumnInfo @JsonProperty("dateReferred")
     var dateReferred: Long,
@@ -96,14 +100,26 @@ data class Referral(
     @ColumnInfo @JsonProperty("patientId")
     var patientId: String,
 
-    @ColumnInfo @JsonProperty("readingId")
-    var readingId: String,
+    @ColumnInfo @JsonProperty("actionTaken")
+    var actionTaken: String?,
+
+    @ColumnInfo @JsonProperty("cancelReason")
+    var cancelReason: String?,
+
+    @ColumnInfo @JsonProperty("notAttendReason")
+    var notAttendReason: String?,
 
     @ColumnInfo @JsonProperty("isAssessed")
     var isAssessed: Boolean,
 
+    @ColumnInfo @JsonProperty("isCancelled")
+    var isCancelled: Boolean,
+
+    @ColumnInfo @JsonProperty("notAttended")
+    var notAttended: Boolean,
+
     @ColumnInfo @JsonProperty("lastEdited")
-    var lastEdited: Long? = null,
+    var lastEdited: Long,
 
     @ColumnInfo @JsonProperty("lastServerUpdate")
     var lastServerUpdate: Long? = null
@@ -117,15 +133,19 @@ data class Referral(
             referral.run {
                 gen.writeStartObject()
 
-                gen.writeOptIntField(ReferralField.ID, id)
+                gen.writeIntField(ReferralField.ID, id)
                 gen.writeOptStringField(ReferralField.COMMENT, comment)
-                gen.writeStringField(ReferralField.HEALTH_FACILITY_NAME, healthFacilityName)
+                gen.writeStringField(ReferralField.HEALTH_FACILITY_NAME, referralHealthFacilityName)
                 gen.writeLongField(ReferralField.DATE_REFERRED, dateReferred)
                 gen.writeOptIntField(ReferralField.USER_ID, userId)
                 gen.writeStringField(ReferralField.PATIENT_ID, patientId)
-                // gen.writeStringField(ReferralField.READING_ID, readingId)
+                gen.writeOptStringField(ReferralField.ACTION_TAKEN, actionTaken)
+                gen.writeOptStringField(ReferralField.CANCEL_REASON, cancelReason)
+                gen.writeOptStringField(ReferralField.NOT_ATTEND_REASON, notAttendReason)
                 gen.writeBooleanField(ReferralField.IS_ASSESSED, isAssessed)
-                gen.writeOptLongField(ReferralField.LAST_EDITED, lastEdited)
+                gen.writeBooleanField(ReferralField.IS_CANCELLED, isCancelled)
+                gen.writeBooleanField(ReferralField.NOT_ATTENDED, notAttended)
+                gen.writeLongField(ReferralField.LAST_EDITED, lastEdited)
                 gen.writeOptLongField(ReferralField.LAST_SERVER_UPDATE, lastServerUpdate)
 
                 gen.writeEndObject()
@@ -136,26 +156,34 @@ data class Referral(
     class Deserializer : StdDeserializer<Referral>(Referral::class.java) {
         override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Referral =
             p.codec.readTree<JsonNode>(p)!!.run {
-                val id = get(ReferralField.ID)?.intValue()
+                val id = get(ReferralField.ID)!!.intValue()
                 val comment = get(ReferralField.COMMENT)?.textValue()
-                val healthFacilityName = get(ReferralField.HEALTH_FACILITY_NAME)!!.textValue()
+                val referralHealthFacilityName = get(ReferralField.HEALTH_FACILITY_NAME)!!.textValue()
                 val dateReferred = get(ReferralField.DATE_REFERRED)!!.longValue()
                 val userId = get(ReferralField.USER_ID)?.intValue()
                 val patientId = get(ReferralField.PATIENT_ID)!!.textValue()
-                // val readingId = get(ReferralField.READING_ID)!!.textValue()
+                val actionTaken = get(ReferralField.ACTION_TAKEN)?.textValue()
+                val cancelReason = get(ReferralField.CANCEL_REASON)?.textValue()
+                val notAttendReason = get(ReferralField.NOT_ATTEND_REASON)?.textValue()
                 val isAssessed = get(ReferralField.IS_ASSESSED)!!.booleanValue()
-                val lastEdited = get(ReferralField.LAST_EDITED)?.longValue()
+                val isCancelled = get(ReferralField.IS_CANCELLED)!!.booleanValue()
+                val notAttended = get(ReferralField.NOT_ATTENDED)!!.booleanValue()
+                val lastEdited = get(ReferralField.LAST_EDITED)!!.longValue()
                 val lastServerUpdate = get(ReferralField.LAST_SERVER_UPDATE)?.longValue()
 
                 return@run Referral(
                     id = id,
                     comment = comment,
-                    healthFacilityName = healthFacilityName,
+                    referralHealthFacilityName = referralHealthFacilityName,
                     dateReferred = dateReferred,
                     userId = userId,
                     patientId = patientId,
-                    readingId = "1",
+                    actionTaken = actionTaken,
+                    cancelReason = cancelReason,
+                    notAttendReason = notAttendReason,
                     isAssessed = isAssessed,
+                    isCancelled = isCancelled,
+                    notAttended = notAttended,
                     lastEdited = lastEdited,
                     lastServerUpdate = lastServerUpdate
                 )
@@ -179,24 +207,6 @@ data class Referral(
         override fun compare(o1: Referral?, o2: Referral?): Int =
             -AscendingDataComparator.compare(o1, o2)
     }
-
-    // constructor(
-    //     comment: String?,
-    //     healthFacilityName: String,
-    //     dateReferred: Long,
-    //     patientId: String,
-    //     readingId: String,
-    //     sharedPreferences: SharedPreferences
-    // ) : this(
-    //     comment = comment,
-    //     healthFacilityName = healthFacilityName,
-    //     dateReferred = dateReferred,
-    //     id = null,
-    //     userId = sharedPreferences.getIntOrNull(LoginManager.USER_ID_KEY),
-    //     patientId = patientId,
-    //     readingId = readingId,
-    //     isAssessed = false
-    // )
 }
 
 /**
@@ -215,13 +225,12 @@ private enum class ReferralField(override val text: String) : Field {
     USER_ID("userId"),
     PATIENT_ID("patientId"),
     HEALTH_FACILITY_NAME("referralHealthFacilityName"),
-    READING_ID("readingId"),
+    ACTION_TAKEN("actionTaken"),
+    CANCEL_REASON("cancelReason"),
+    NOT_ATTEND_REASON("notAttendReason"),
     IS_ASSESSED("isAssessed"),
+    IS_CANCELLED("isCancelled"),
+    NOT_ATTENDED("notAttended"),
     LAST_EDITED("lastEdited"),
     LAST_SERVER_UPDATE("lastServerUpdate")
 }
-
-// private fun find(): Int {
-//     var sharedPreferences: SharedPreferences
-//     return sharedPreferences.getIntOrNull(LoginManager.USER_ID_KEY)
-// }

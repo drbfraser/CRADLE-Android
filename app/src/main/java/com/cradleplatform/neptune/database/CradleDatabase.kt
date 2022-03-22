@@ -99,19 +99,23 @@ internal object Migrations {
                 execSQL(
                     """
                     CREATE TABLE IF NOT EXISTS Referral (
-                        `id` INTEGER NULLABLE, 
-                        `comment` TEXT,
+                        `id` INTEGER NOT NULL, 
+                        `comment` TEXT NULLABLE,
                         `referralHealthFacilityName` TEXT NOT NULL, 
                         `dateReferred` LONG NOT NULL,
-                        `userId` INTEGER,
+                        `userId` INTEGER NOT NULL,
                         `patientId` TEXT NOT NULL,
-                        `readingId` TEXT NOT NULL,
+                        `actionTaken` TEXT NULLABLE,
+                        `cancelReason` TEXT NULLABLE,
+                        `notAttendReason` TEXT NULLABLE,
                         `isAssessed` BOOLEAN NOT NULL,
+                        `isCancelled` BOOLEAN NOT NULL,
+                        `notAttended` BOOLEAN NOT NULL,
                         `lastEdited` LONG NOT NULL,
-                        `lastServerUpdate` LONG NOT NULL,
+                        `lastServerUpdate` LONG NULLABLE,
                         PRIMARY KEY(`id`),
                         FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE,
-                        FOREIGN KEY(`healthFacilityName`) REFERENCES `HealthFacility`(`name`) ON UPDATE CASCADE ON DELETE CASCADE
+                        FOREIGN KEY(`referralHealthFacilityName`) REFERENCES `HealthFacility`(`name`) ON UPDATE CASCADE ON DELETE CASCADE
                     )
                     """.trimIndent()
 
@@ -128,7 +132,7 @@ internal object Migrations {
                         `treatment` TEXT NULLABLE, 
                         `medicationPrescribed` TEXT NULLABLE, 
                         `specialInvestigations` TEXT NULLABLE, 
-                        `followupNeeded` BOOLEAN NOT NULL,
+                        `followupNeeded` BOOLEAN NULLABLE,
                         `followupInstructions` TEXT NULLABLE, 
                         `lastEdited` LONG NOT NULL,
                         `lastServerUpdate` LONG NOT NULL,

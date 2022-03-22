@@ -68,7 +68,11 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder myViewHolder, int i) {
         Reading currReading = readings.get(i);
-        Referral currRefferal = referrals.get(0);
+
+        Referral currRefferal = null;
+        if (referrals != null && !referrals.isEmpty()) {
+            currRefferal = referrals.get(0);
+        }
 
         ReadingAnalysis analysis = currReading.getBloodPressure().getAnalysis();
 
@@ -77,7 +81,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         myViewHolder.diaBP.setText(new StringBuilder().append(currReading.getBloodPressure().getDiastolic()).append("").toString());
         myViewHolder.heartRate.setText(new StringBuilder().append(currReading.getBloodPressure().getHeartRate()).append("").toString());
 
-        if (currRefferal.getPatientId() != null) {
+        if (currRefferal != null) {
             myViewHolder.urineTest.setText(
                     currRefferal.getPatientId()
             );
@@ -149,8 +153,8 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             if (currReading.isReferredToHealthFacility()) {
                 final String message;
                 if (currReading.getReferral() != null
-                        && currReading.getReferral().getHealthFacilityName().length() > 0) {
-                    message = v.getContext().getString(R.string.reading_referred_to_health_facility, currReading.getReferral().getHealthFacilityName());
+                        && currReading.getReferral().getReferralHealthFacilityName().length() > 0) {
+                    message = v.getContext().getString(R.string.reading_referred_to_health_facility, currReading.getReferral().getReferralHealthFacilityName());
                 } else {
                     message = v.getContext().getString(R.string.reading_referred_to_health_facility_unknown);
                 }

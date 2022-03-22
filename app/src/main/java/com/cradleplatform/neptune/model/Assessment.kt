@@ -10,6 +10,7 @@ import com.cradleplatform.neptune.ext.jackson.get
 import com.cradleplatform.neptune.ext.jackson.writeBooleanField
 import com.cradleplatform.neptune.ext.jackson.writeIntField
 import com.cradleplatform.neptune.ext.jackson.writeLongField
+import com.cradleplatform.neptune.ext.jackson.writeOptBooleanField
 import com.cradleplatform.neptune.ext.jackson.writeOptIntField
 import com.cradleplatform.neptune.ext.jackson.writeOptLongField
 import com.cradleplatform.neptune.ext.jackson.writeOptStringField
@@ -89,7 +90,7 @@ data class Assessment(
     var specialInvestigations: String?,
 
     @ColumnInfo @JsonProperty("followupNeeded")
-    var followupNeeded: Boolean,
+    var followupNeeded: Boolean?,
 
     @ColumnInfo @JsonProperty("followupInstructions")
     var followupInstructions: String?,
@@ -117,7 +118,7 @@ data class Assessment(
                 gen.writeOptStringField(AssessmentField.TREATMENT, treatment)
                 gen.writeOptStringField(AssessmentField.MEDICATION_PRESCRIBED, medicationPrescribed)
                 gen.writeOptStringField(AssessmentField.SPECIAL_INVESTIGATIONS, specialInvestigations)
-                gen.writeBooleanField(AssessmentField.FOLLOW_UP_NEEDED, followupNeeded)
+                gen.writeOptBooleanField(AssessmentField.FOLLOW_UP_NEEDED, followupNeeded)
                 gen.writeOptStringField(AssessmentField.FOLLOW_UP_INSTRUCTIONS, followupInstructions)
                 gen.writeOptLongField(AssessmentField.LAST_EDITED, lastEdited)
                 gen.writeOptLongField(AssessmentField.LAST_SERVER_UPDATE, lastServerUpdate)
@@ -138,7 +139,7 @@ data class Assessment(
                 val treatment = get(AssessmentField.TREATMENT)?.textValue()
                 val medicationPrescribed = get(AssessmentField.MEDICATION_PRESCRIBED)?.textValue()
                 val specialInvestigations = get(AssessmentField.SPECIAL_INVESTIGATIONS)?.textValue()
-                val followupNeeded = get(AssessmentField.FOLLOW_UP_NEEDED)!!.booleanValue()
+                val followupNeeded = get(AssessmentField.FOLLOW_UP_NEEDED)?.booleanValue()
                 val followupInstructions = get(AssessmentField.FOLLOW_UP_INSTRUCTIONS)?.textValue()
                 val lastEdited = get(AssessmentField.LAST_EDITED)?.longValue()
                 val lastServerUpdate = get(AssessmentField.LAST_SERVER_UPDATE)?.longValue()
