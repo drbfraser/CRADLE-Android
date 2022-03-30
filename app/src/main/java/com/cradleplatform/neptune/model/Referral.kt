@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import java.io.Serializable
+import java.util.UUID
 
 /**
  * Holds information about a referral.
@@ -83,7 +84,7 @@ import java.io.Serializable
 @JsonDeserialize(using = Referral.Deserializer::class)
 data class Referral(
     @PrimaryKey @ColumnInfo @JsonProperty("id")
-    var id: Int,
+    var id: String = UUID.randomUUID().toString(),
 
     @ColumnInfo @JsonProperty("comment")
     var comment: String?,
@@ -133,7 +134,7 @@ data class Referral(
             referral.run {
                 gen.writeStartObject()
 
-                gen.writeIntField(ReferralField.ID, id)
+                gen.writeStringField(ReferralField.ID, id)
                 gen.writeOptStringField(ReferralField.COMMENT, comment)
                 gen.writeStringField(ReferralField.HEALTH_FACILITY_NAME, referralHealthFacilityName)
                 gen.writeLongField(ReferralField.DATE_REFERRED, dateReferred)
@@ -156,7 +157,7 @@ data class Referral(
     class Deserializer : StdDeserializer<Referral>(Referral::class.java) {
         override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Referral =
             p.codec.readTree<JsonNode>(p)!!.run {
-                val id = get(ReferralField.ID)!!.intValue()
+                val id = get(ReferralField.ID)!!.textValue()
                 val comment = get(ReferralField.COMMENT)?.textValue()
                 val referralHealthFacilityName = get(ReferralField.HEALTH_FACILITY_NAME)!!.textValue()
                 val dateReferred = get(ReferralField.DATE_REFERRED)!!.longValue()

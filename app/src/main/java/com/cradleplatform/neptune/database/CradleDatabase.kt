@@ -99,7 +99,7 @@ internal object Migrations {
                 execSQL(
                     """
                     CREATE TABLE IF NOT EXISTS Referral (
-                        `id` INTEGER NOT NULL, 
+                        `id` TEXT NOT NULL, 
                         `comment` TEXT NULLABLE,
                         `referralHealthFacilityName` TEXT NOT NULL, 
                         `dateReferred` LONG NOT NULL,
@@ -123,7 +123,7 @@ internal object Migrations {
                 execSQL(
                     """
                     CREATE TABLE IF NOT EXISTS Assessment (
-                        `id` INTEGER NULLABLE, 
+                        `id` TEXT NOT NULL, 
                         `dateAssessed` LONG NOT NULL,
                         `healthcareWorkerId` INTEGER NOT NULL, 
                         `patientId` TEXT NOT NULL, 

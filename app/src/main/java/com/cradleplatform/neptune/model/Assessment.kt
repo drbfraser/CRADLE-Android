@@ -66,7 +66,7 @@ import java.io.Serializable
 @JsonDeserialize(using = Assessment.Deserializer::class)
 data class Assessment(
     @PrimaryKey @ColumnInfo @JsonProperty("id")
-    var id: Int?,
+    var id: String,
 
     @ColumnInfo @JsonProperty("dateAssessed")
     var dateAssessed: Long,
@@ -110,7 +110,7 @@ data class Assessment(
             assessment.run {
                 gen.writeStartObject()
 
-                gen.writeOptIntField(AssessmentField.ID, id)
+                gen.writeStringField(AssessmentField.ID, id)
                 gen.writeLongField(AssessmentField.DATE_ASSESSED, dateAssessed)
                 gen.writeIntField(AssessmentField.HEALTH_CARE_WORKER_ID, healthCareWorkerId)
                 gen.writeStringField(AssessmentField.PATIENT_ID, patientId)
@@ -131,7 +131,7 @@ data class Assessment(
     class Deserializer : StdDeserializer<Assessment>(Assessment::class.java) {
         override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Assessment =
             p.codec.readTree<JsonNode>(p)!!.run {
-                val id = get(AssessmentField.ID)?.intValue()
+                val id = get(AssessmentField.ID)!!.textValue()
                 val dateAssessed = get(AssessmentField.DATE_ASSESSED)!!.longValue()
                 val healthCareWorkerId = get(AssessmentField.HEALTH_CARE_WORKER_ID)!!.intValue()
                 val patientId = get(AssessmentField.PATIENT_ID)!!.textValue()

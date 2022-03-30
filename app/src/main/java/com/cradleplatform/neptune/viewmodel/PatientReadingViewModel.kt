@@ -1621,11 +1621,10 @@ class PatientReadingViewModel @Inject constructor(
                 yield()
 
                 val referral = Referral(
-                    id = 999,
                     comment = "referralComment",
                     referralHealthFacilityName = "H2000",
                     dateReferred = ZonedDateTime.now().toEpochSecond(),
-                    userId = 888,
+                    userId = sharedPreferences.getIntOrNull(LoginManager.USER_ID_KEY),
                     patientId = "49300028162",
                     actionTaken = "actionTaken",
                     cancelReason = "cancelReason",
