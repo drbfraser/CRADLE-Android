@@ -99,7 +99,9 @@ data class Assessment(
     var lastEdited: Long? = null,
 
     @ColumnInfo @JsonProperty("lastServerUpdate")
-    var lastServerUpdate: Long? = null
+    var lastServerUpdate: Long? = null,
+
+    @ColumnInfo var isUploadedToServer: Boolean = false
 ) : Serializable {
     class Serializer : StdSerializer<Assessment>(Assessment::class.java) {
         override fun serialize(

@@ -277,7 +277,7 @@ class LoginManager @Inject constructor(
             try {
                 database.withTransaction {
                     for (referral in channel) {
-                        referralManager.addReferral(referral)
+                        referralManager.addReferral(referral, true)
                     }
                     Log.d(TAG, "referral database job is successful")
                 }
@@ -302,7 +302,7 @@ class LoginManager @Inject constructor(
             try {
                 database.withTransaction {
                     for (assessment in channel) {
-                        assessmentManager.addAssessment(assessment)
+                        assessmentManager.addAssessment(assessment, true)
                     }
                     Log.d(TAG, "assessment database job is successful")
                 }

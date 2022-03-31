@@ -88,20 +88,13 @@ interface ReferralDao {
     /**
      * Query the database for all the referrals that have been created or edited offline
      */
-    @Query("SELECT * FROM Referral WHERE $referralsToUploadQueryCriteria")
+    @Query("SELECT * FROM Referral WHERE isUploadedToServer = 0")
     suspend fun referralsToUpload(): List<Referral>
-
-    companion object {
-        private const val referralsToUploadQueryCriteria = """
-            lastServerUpdate IS NULL
-            OR lastServerUpdate < lastEdited
-        """
-    }
 
     /**
      * Query the database for the number of referrals that have been created or edited offline
      */
-    @Query("SELECT COUNT(id) FROM Referral WHERE $referralsToUploadQueryCriteria")
+    @Query("SELECT COUNT(id) FROM Referral WHERE isUploadedToServer = 0")
     suspend fun countReferralsToUpload(): Int
 
     /**

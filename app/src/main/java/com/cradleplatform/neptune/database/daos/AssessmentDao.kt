@@ -89,20 +89,13 @@ interface AssessmentDao {
     /**
      * Query the database for all the assessments that have been created or edited offline
      */
-    @Query("SELECT * FROM Assessment WHERE ${AssessmentDao.assessmentsToUploadQueryCriteria}")
+    @Query("SELECT * FROM Assessment WHERE isUploadedToServer = 0")
     suspend fun assessmentsToUpload(): List<Assessment>
-
-    companion object {
-        private const val assessmentsToUploadQueryCriteria = """
-            lastServerUpdate IS NULL
-            OR lastServerUpdate < lastEdited
-        """
-    }
 
     /**
      * Query the database for the number of assessments that have been created or edited offline
      */
-    @Query("SELECT COUNT(id) FROM Assessment WHERE ${AssessmentDao.assessmentsToUploadQueryCriteria}")
+    @Query("SELECT COUNT(id) FROM Assessment WHERE isUploadedToServer = 0")
     suspend fun countAssessmentsToUpload(): Int
 
     /**

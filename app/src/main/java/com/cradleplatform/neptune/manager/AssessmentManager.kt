@@ -35,7 +35,8 @@ class AssessmentManager @Inject constructor(
      * Adds a new assessment to the database.
      * @param assessment the assessment to insert
      */
-    suspend fun addAssessment(assessment: Assessment) {
+    suspend fun addAssessment(assessment: Assessment, isAssessmentFromServer: Boolean) {
+        if (isAssessmentFromServer) assessment.isUploadedToServer = true
         assessmentDao.updateOrInsertIfNotExists(assessment)
     }
 
@@ -85,7 +86,7 @@ class AssessmentManager @Inject constructor(
         if (result is NetworkResult.Success) {
             assessment.lastServerUpdate = assessment.lastEdited
         }
-        addAssessment(assessment)
+        addAssessment(assessment, true)
         return result.map { }
     }
 

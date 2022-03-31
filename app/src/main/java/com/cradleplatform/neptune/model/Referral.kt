@@ -123,7 +123,9 @@ data class Referral(
     var lastEdited: Long,
 
     @ColumnInfo @JsonProperty("lastServerUpdate")
-    var lastServerUpdate: Long? = null
+    var lastServerUpdate: Long? = null,
+
+    @ColumnInfo var isUploadedToServer: Boolean = false
 ) : Serializable {
     class Serializer : StdSerializer<Referral>(Referral::class.java) {
         override fun serialize(

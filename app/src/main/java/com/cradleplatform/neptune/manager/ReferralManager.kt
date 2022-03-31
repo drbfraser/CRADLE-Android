@@ -34,7 +34,8 @@ class ReferralManager @Inject constructor(
      * Adds a new referral to the database.
      * @param referral the referral to insert
      */
-    suspend fun addReferral(referral: Referral) {
+    suspend fun addReferral(referral: Referral, isReferralFromServer: Boolean) {
+        if (isReferralFromServer) referral.isUploadedToServer = true
         referralDao.updateOrInsertIfNotExists(referral)
     }
 
@@ -84,7 +85,7 @@ class ReferralManager @Inject constructor(
         if (result is NetworkResult.Success) {
             referral.lastServerUpdate = referral.lastEdited
         }
-        addReferral(referral)
+        addReferral(referral, true)
         return result.map { }
     }
 

@@ -113,6 +113,7 @@ internal object Migrations {
                         `notAttended` BOOLEAN NOT NULL,
                         `lastEdited` LONG NOT NULL,
                         `lastServerUpdate` LONG NULLABLE,
+                        `isUploadedToServer` BOOLEAN NOT NULL,
                         PRIMARY KEY(`id`),
                         FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE,
                         FOREIGN KEY(`referralHealthFacilityName`) REFERENCES `HealthFacility`(`name`) ON UPDATE CASCADE ON DELETE CASCADE
@@ -135,6 +136,7 @@ internal object Migrations {
                         `followupInstructions` TEXT NULLABLE, 
                         `lastEdited` LONG NOT NULL,
                         `lastServerUpdate` LONG NOT NULL,
+                        `isUploadedToServer` BOOLEAN NOT NULL,
                         PRIMARY KEY(`id`),
                         FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE
                     )

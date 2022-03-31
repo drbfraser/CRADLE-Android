@@ -402,7 +402,7 @@ class SyncWorker @AssistedInject constructor(
             try {
                 database.withTransaction {
                     for (referral in channel) {
-                        referralManager.addReferral(referral)
+                        referralManager.addReferral(referral, true)
                     }
                 }
             } catch (e: SyncException) {
@@ -444,7 +444,7 @@ class SyncWorker @AssistedInject constructor(
             try {
                 database.withTransaction {
                     for (assessment in channel) {
-                        assessmentManager.addAssessment(assessment)
+                        assessmentManager.addAssessment(assessment, true)
                     }
                 }
             } catch (e: SyncException) {
