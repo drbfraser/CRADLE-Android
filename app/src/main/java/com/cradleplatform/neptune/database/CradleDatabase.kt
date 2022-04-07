@@ -100,20 +100,20 @@ internal object Migrations {
                     """
                     CREATE TABLE IF NOT EXISTS Referral (
                         `id` TEXT NOT NULL, 
-                        `comment` TEXT NULLABLE,
+                        `comment` TEXT,
                         `referralHealthFacilityName` TEXT NOT NULL, 
-                        `dateReferred` LONG NOT NULL,
-                        `userId` INTEGER NOT NULL,
+                        `dateReferred` INTEGER NOT NULL,
+                        `userId` INTEGER,
                         `patientId` TEXT NOT NULL,
-                        `actionTaken` TEXT NULLABLE,
-                        `cancelReason` TEXT NULLABLE,
-                        `notAttendReason` TEXT NULLABLE,
-                        `isAssessed` BOOLEAN NOT NULL,
-                        `isCancelled` BOOLEAN NOT NULL,
-                        `notAttended` BOOLEAN NOT NULL,
-                        `lastEdited` LONG NOT NULL,
-                        `lastServerUpdate` LONG NULLABLE,
-                        `isUploadedToServer` BOOLEAN NOT NULL,
+                        `actionTaken` TEXT,
+                        `cancelReason` TEXT,
+                        `notAttendReason` TEXT,
+                        `isAssessed` INTEGER NOT NULL,
+                        `isCancelled` INTEGER NOT NULL,
+                        `notAttended` INTEGER NOT NULL,
+                        `lastEdited` INTEGER NOT NULL,
+                        `lastServerUpdate` INTEGER,
+                        `isUploadedToServer` INTEGER NOT NULL,
                         PRIMARY KEY(`id`),
                         FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE,
                         FOREIGN KEY(`referralHealthFacilityName`) REFERENCES `HealthFacility`(`name`) ON UPDATE CASCADE ON DELETE CASCADE
@@ -125,26 +125,30 @@ internal object Migrations {
                     """
                     CREATE TABLE IF NOT EXISTS Assessment (
                         `id` TEXT NOT NULL, 
-                        `dateAssessed` LONG NOT NULL,
-                        `healthcareWorkerId` INTEGER NOT NULL, 
+                        `dateAssessed` INTEGER NOT NULL,
+                        `healthCareWorkerId` INTEGER NOT NULL, 
                         `patientId` TEXT NOT NULL, 
-                        `diagnosis` TEXT NULLABLE, 
-                        `treatment` TEXT NULLABLE, 
-                        `medicationPrescribed` TEXT NULLABLE, 
-                        `specialInvestigations` TEXT NULLABLE, 
-                        `followupNeeded` BOOLEAN NULLABLE,
-                        `followupInstructions` TEXT NULLABLE, 
-                        `lastEdited` LONG NOT NULL,
-                        `lastServerUpdate` LONG NOT NULL,
-                        `isUploadedToServer` BOOLEAN NOT NULL,
+                        `diagnosis` TEXT, 
+                        `treatment` TEXT, 
+                        `medicationPrescribed` TEXT, 
+                        `specialInvestigations` TEXT, 
+                        `followupNeeded` INTEGER,
+                        `followupInstructions` TEXT, 
+                        `lastEdited` INTEGER,
+                        `lastServerUpdate` INTEGER,
+                        `isUploadedToServer` INTEGER NOT NULL,
                         PRIMARY KEY(`id`),
                         FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE
                     )
                     """.trimIndent()
                 )
 
-                execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_Referral_id` ON `Referral` (`id`, `patientId`, `referralHealthFacilityName`)")
-                execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_Assessment_id` ON `Assessment` (`id`, `patientId`)")
+                execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_Referral_id` ON `Referral` (`id`)")
+                execSQL("CREATE INDEX IF NOT EXISTS `index_Referral_patientId` ON `Referral` (`patientId`)")
+                execSQL("CREATE INDEX IF NOT EXISTS `index_Referral_referralHealthFacilityName` ON `Referral` (`referralHealthFacilityName`)")
+
+                execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_Assessment_id` ON `Assessment` (`id`)")
+                execSQL("CREATE INDEX IF NOT EXISTS `index_Assessment_patientId` ON `Assessment` (`patientId`)")
             }
         }
     }
