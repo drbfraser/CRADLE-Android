@@ -1649,7 +1649,7 @@ class PatientReadingViewModel @Inject constructor(
         private suspend fun handleStoringReferralFromBuilders(
             referralFromBuilder: Referral
         ) {
-            referralManager.addReferral(referralFromBuilder)
+            referralManager.addReferral(referralFromBuilder, false)
         }
     }
 
