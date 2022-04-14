@@ -7,9 +7,11 @@ import androidx.core.content.edit
 import androidx.room.withTransaction
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.database.CradleDatabase
+import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
+import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.UserRole
 import com.cradleplatform.neptune.net.NetworkResult
 import com.cradleplatform.neptune.net.RestApi
@@ -43,6 +45,8 @@ class LoginManager @Inject constructor(
     private val patientManager: PatientManager,
     private val readingManager: ReadingManager,
     private val healthFacilityManager: HealthFacilityManager,
+    private val referralManager: ReferralManager,
+    private val assessmentManager: AssessmentManager,
     @ApplicationContext private val context: Context
 ) {
 
@@ -154,11 +158,32 @@ class LoginManager @Inject constructor(
             // TODO: Maybe make it so that the health facility the server sends back cannot
             //       be removed by the user?
             // TODO: Show some dialog to select a health facility
-            val healthFacilitiesAsync = async {
-                downloadHealthFacilities(loginResult.value.healthFacilityName)
+            val healthFacilitiesDownloadSuccess = downloadHealthFacilities(loginResult.value.healthFacilityName) is NetworkResult.Success
+
+
+            val referralsAsync = async {
+                if (patientsDownloadSuccess && healthFacilitiesDownloadSuccess) {
+                    val referralsDownloadSuccess = downloadReferral() is NetworkResult.Success
+                    if (referralsDownloadSuccess) {
+                        sharedPreferences.edit(commit = true) {
+                            putString(SyncWorker.LAST_REFERRAL_SYNC, loginTime.toString())
+                        }
+                    }
+                }
             }
 
-            joinAll(readingsAsync, healthFacilitiesAsync)
+            val assessmentsAsync = async {
+                if (patientsDownloadSuccess) {
+                    val assessmentsDownloadSuccess = downloadAssessment() is NetworkResult.Success
+                    if (assessmentsDownloadSuccess) {
+                        sharedPreferences.edit(commit = true) {
+                            putString(SyncWorker.LAST_ASSESSMENT_SYNC, loginTime.toString())
+                        }
+                    }
+                }
+            }
+
+            joinAll(readingsAsync, referralsAsync, assessmentsAsync)
 
             // TODO: Actually report any failures instead of lettting the user pass
             //  It might be better to just split the login manager so that this function just
@@ -241,6 +266,56 @@ class LoginManager @Inject constructor(
 
         val endTime = System.currentTimeMillis()
         Log.d(TAG, "Readings download overall took ${endTime - startTime} ms")
+        return@coroutineScope result
+    }
+
+    private suspend fun downloadReferral(): NetworkResult<Unit> = coroutineScope {
+        val startTime = System.currentTimeMillis()
+
+        val channel = Channel<Referral>()
+        val databaseJob = launch {
+            try {
+                database.withTransaction {
+                    for (referral in channel) {
+                        referralManager.addReferral(referral, true)
+                    }
+                    Log.d(TAG, "referral database job is successful")
+                }
+            } catch (e: SyncException) {
+                Log.d(TAG, "referral database job failed")
+            }
+        }
+        val result = restApi.getAllReferrals(channel)
+        closeOrCancelChannelByResult(result, channel)
+        databaseJob.join()
+
+        val endTime = System.currentTimeMillis()
+        Log.d(TAG, "Referral download overall took ${endTime - startTime} ms")
+        return@coroutineScope result
+    }
+
+    private suspend fun downloadAssessment(): NetworkResult<Unit> = coroutineScope {
+        val startTime = System.currentTimeMillis()
+
+        val channel = Channel<Assessment>()
+        val databaseJob = launch {
+            try {
+                database.withTransaction {
+                    for (assessment in channel) {
+                        assessmentManager.addAssessment(assessment, true)
+                    }
+                    Log.d(TAG, "assessment database job is successful")
+                }
+            } catch (e: SyncException) {
+                Log.d(TAG, "assessment database job failed")
+            }
+        }
+        val result = restApi.getAllAssessments(channel)
+        closeOrCancelChannelByResult(result, channel)
+        databaseJob.join()
+
+        val endTime = System.currentTimeMillis()
+        Log.d(TAG, "Assessment download overall took ${endTime - startTime} ms")
         return@coroutineScope result
     }
 

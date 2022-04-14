@@ -21,8 +21,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
+import com.cradleplatform.neptune.manager.ReferralManager
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
+import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.Sex
 import com.cradleplatform.neptune.utilities.SnackbarHelper
 import com.cradleplatform.neptune.utilities.Util
@@ -69,10 +71,14 @@ open class PatientProfileActivity : AppCompatActivity() {
     lateinit var readingRecyclerview: RecyclerView
     lateinit var currPatient: Patient
     lateinit var patientReadings: List<Reading>
+    private var patientReferrals: List<Referral>? = null
 
     // Data Model
     @Inject
     lateinit var readingManager: ReadingManager
+
+    @Inject
+    lateinit var referralManager: ReferralManager
 
     @Inject
     lateinit var patientManager: PatientManager
@@ -107,6 +113,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         }
         setupReadingsRecyclerView()
         setupCreatePatientReadingButton()
+        setupCreatePatientReferralButton()
         setupUpdateRecord()
         setupLineChart()
         setupToolBar()
@@ -124,6 +131,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupEditPatient(currPatient)
         setupBtnPregnancy(currPatient)
         setupCreatePatientReadingButton()
+        setupCreatePatientReferralButton()
     }
 
     private fun changeAddReadingButtonColorIfNeeded() {
@@ -357,6 +365,12 @@ open class PatientProfileActivity : AppCompatActivity() {
         return readings.sortedWith(comparator)
     }
 
+    private fun getThisPatientsReferrals(): List<Referral>? {
+        val referrals: List<Referral>? = runBlocking { referralManager.getReferralByPatientId(currPatient.id) }
+        val comparator: Comparator<Referral> = Referral.DescendingDateComparator
+        return referrals?.sortedWith(comparator)
+    }
+
     private fun setupCreatePatientReadingButton() {
         val createButton =
             findViewById<Button>(R.id.newPatientReadingButton)
@@ -382,6 +396,13 @@ open class PatientProfileActivity : AppCompatActivity() {
         changeAddReadingButtonColorIfNeeded()
     }
 
+    private fun setupCreatePatientReferralButton() {
+        val createButton =
+            findViewById<Button>(R.id.newPatientReferralButton)
+
+        createButton.visibility = View.VISIBLE
+    }
+
     private fun onUpdateButtonClicked(isDrugRecord: Boolean) {
         val intent = PatientUpdateDrugMedicalActivity.makeIntent(this, isDrugRecord, currPatient)
         startActivity(intent)
@@ -398,13 +419,14 @@ open class PatientProfileActivity : AppCompatActivity() {
 
     open fun setupReadingsRecyclerView() {
         patientReadings = getThisPatientsReadings()
+        patientReferrals = getThisPatientsReferrals()
 
         // use linear layout
         val layoutManager: RecyclerView.LayoutManager = LinearLayoutManager(this)
         readingRecyclerview.layoutManager = layoutManager
         readingRecyclerview.isNestedScrollingEnabled = false
 
-        val listAdapter = ReadingRecyclerViewAdapter(patientReadings)
+        val listAdapter = ReadingRecyclerViewAdapter(patientReadings, patientReferrals)
         listAdapter.setOnClickElementListener(
             object : ReadingRecyclerViewAdapter.OnClickElement {
                 override fun onClick(readingId: String?) {

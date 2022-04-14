@@ -10,7 +10,6 @@ import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Transaction
 import androidx.room.Update
 import com.cradleplatform.neptune.model.Reading
-import com.cradleplatform.neptune.model.Referral
 
 /**
  * Data Access Object (DAO) for [Reading] entities.
@@ -58,9 +57,6 @@ interface ReadingDao {
      */
     @Update
     suspend fun update(reading: Reading): Int
-
-    @Query("UPDATE Reading SET referral = :referral WHERE readingId = :readingId")
-    suspend fun updateReferral(readingId: String, referral: Referral): Int
 
     /**
      * Removes an entity from the database.

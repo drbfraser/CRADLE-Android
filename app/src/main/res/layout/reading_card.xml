@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/readingCardview"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:clickable="true"
+        android:foreground="?android:attr/selectableItemBackground"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+
+            <TextView
+                android:id="@+id/readingCardTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:text="@string/reading"
+                android:textColor="@color/black"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/readingDate2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="@color/black"
+                android:textSize="14sp"
+                app:layout_constraintEnd_toEndOf="@+id/readingCardTitle"
+                app:layout_constraintStart_toStartOf="@+id/readingCardTitle"
+                app:layout_constraintTop_toBottomOf="@+id/readingCardTitle"
+                tools:text="Sep 3 @ 11 PM" />
+
+            <ImageView
+                android:id="@+id/readingTrafficLight2"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                app:layout_constraintStart_toStartOf="@+id/readingDate2"
+                app:layout_constraintTop_toBottomOf="@+id/readingDate2"
+                app:srcCompat="@drawable/status_yellow" />
+
+            <ImageView
+                android:id="@+id/readingArrow2"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:layout_constraintStart_toEndOf="@+id/readingTrafficLight2"
+                app:layout_constraintTop_toTopOf="@+id/readingTrafficLight2"
+                app:srcCompat="@drawable/arrow_down" />
+
+            <TextView
+                android:id="@+id/sbpName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/systolic_blood_pressure"
+                android:textColor="@color/black"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/readingTrafficLight2"
+                app:layout_constraintTop_toBottomOf="@+id/readingTrafficLight2" />
+
+            <TextView
+                android:id="@+id/sbpReading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/not_available_n_slash_a"
+                app:layout_constraintStart_toEndOf="@+id/sbpName"
+                app:layout_constraintTop_toTopOf="@+id/sbpName" />
+
+            <TextView
+                android:id="@+id/dbpName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/diastolic_blood_pressure"
+                android:textColor="@color/black"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/sbpName"
+                app:layout_constraintTop_toBottomOf="@+id/sbpName" />
+
+            <TextView
+                android:id="@+id/dbpReading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/not_available_n_slash_a"
+                app:layout_constraintBottom_toBottomOf="@+id/dbpName"
+                app:layout_constraintStart_toEndOf="@+id/dbpName"
+                app:layout_constraintTop_toTopOf="@+id/dbpName" />
+
+            <TextView
+                android:id="@+id/heartRateName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/heart_rate"
+                android:textColor="@color/black"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/dbpName"
+                app:layout_constraintTop_toBottomOf="@+id/dbpName" />
+
+            <TextView
+                android:id="@+id/heartRateReading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/not_available_n_slash_a"
+                app:layout_constraintStart_toEndOf="@+id/heartRateName"
+                app:layout_constraintTop_toTopOf="@+id/heartRateName" />
+
+            <ImageView
+                android:id="@+id/followUpImg"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginTop="8dp"
+                android:visibility="visible"
+                app:layout_constraintStart_toStartOf="@+id/heartRateName"
+                app:layout_constraintTop_toBottomOf="@+id/heartRateReading"
+                app:srcCompat="@mipmap/followup"
+                tools:visibility="visible" />
+
+            <TextView
+                android:id="@+id/followUpTxt"
+                android:layout_width="98dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="0dp"
+                android:text="@string/reading_card_pending_no_assessment_follow_up_needed"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:visibility="visible"
+                app:layout_constraintStart_toEndOf="@+id/followUpImg"
+                app:layout_constraintTop_toTopOf="@+id/followUpImg"
+                tools:visibility="visible" />
+
+            <ImageView
+                android:id="@+id/notUploadedImg"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginTop="8dp"
+                android:visibility="visible"
+                app:layout_constraintStart_toStartOf="@+id/followUpImg"
+                app:layout_constraintTop_toBottomOf="@+id/followUpTxt"
+                app:srcCompat="@drawable/upload"
+                tools:visibility="visible" />
+
+            <TextView
+                android:id="@+id/notUploadedTxt"
+                android:layout_width="142dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:text="@string/reading_card_pending_no_assessment_not_yet_uploaded_to_server"
+                android:textSize="12sp"
+                android:visibility="visible"
+                app:layout_constraintStart_toEndOf="@+id/notUploadedImg"
+                app:layout_constraintTop_toBottomOf="@+id/followUpTxt"
+                tools:visibility="visible" />
+
+            <View
+                android:id="@+id/readingCardBar"
+                android:layout_width="2dp"
+                android:layout_height="0dp"
+                android:layout_marginStart="16dp"
+                android:background="@color/colorPrimaryLight"
+                app:layout_constraintBottom_toBottomOf="@+id/heartRateReading"
+                app:layout_constraintStart_toEndOf="@+id/sbpReading"
+                app:layout_constraintTop_toBottomOf="@+id/readingCardTitle" />
+
+
+            <TextView
+                android:id="@+id/urineTestName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/reading_card_assessment_urine_test_result"
+                android:textColor="@color/black"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toEndOf="@+id/readingCardBar"
+                app:layout_constraintTop_toTopOf="@+id/readingCardBar" />
+
+            <TextView
+                android:id="@+id/urineTestTxt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/not_available_n_slash_a"
+                android:textSize="12sp"
+                app:layout_constraintStart_toEndOf="@+id/readingCardBar"
+                app:layout_constraintTop_toBottomOf="@+id/urineTestName" />
+
+            <TextView
+                android:id="@+id/symptomsName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:text="@string/reading_card_assessment_symptoms_colon"
+                android:textColor="@color/black"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toEndOf="@+id/readingCardBar"
+                app:layout_constraintTop_toBottomOf="@+id/urineTestTxt" />
+
+            <TextView
+                android:id="@+id/symptomsTxt"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="16dp"
+                android:text="@string/not_available_n_slash_a"
+                android:textSize="12sp"
+                app:layout_constraintBaseline_toBaselineOf="@+id/symptomsName"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toEndOf="@+id/symptomsName" />
+
+            <ImageView
+                android:id="@+id/recheckVitalsImg"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:visibility="visible"
+                app:layout_constraintStart_toEndOf="@+id/readingCardBar"
+                app:layout_constraintTop_toBottomOf="@+id/symptomsTxt"
+                app:srcCompat="@drawable/clock"
+                tools:visibility="visible" />
+
+            <TextView
+                android:id="@+id/recheckVitalsTxt"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="16dp"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:visibility="visible"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/recheckVitalsImg"
+                app:layout_constraintTop_toTopOf="@+id/recheckVitalsImg"
+                tools:text="Recheck vitals {{when to recheck}}"
+                tools:visibility="visible" />
+
+            <Button
+                android:id="@+id/newReadingBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="16dp"
+                android:background="@drawable/rounded_button"
+                android:text="@string/take_new_reading_button"
+                android:textSize="12sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/readingCardBar"
+                app:layout_constraintTop_toBottomOf="@+id/recheckVitalsTxt" />
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+</androidx.constraintlayout.widget.ConstraintLayout>

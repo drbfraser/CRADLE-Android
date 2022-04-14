@@ -17,10 +17,14 @@ import com.cradleplatform.neptune.model.PatientAndReadings
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.Statistics
+import com.cradleplatform.neptune.sync.AssessmentSyncField
+import com.cradleplatform.neptune.sync.AssessmentSyncResult
 import com.cradleplatform.neptune.sync.PatientSyncField
 import com.cradleplatform.neptune.sync.PatientSyncResult
 import com.cradleplatform.neptune.sync.ReadingSyncField
 import com.cradleplatform.neptune.sync.ReadingSyncResult
+import com.cradleplatform.neptune.sync.ReferralSyncField
+import com.cradleplatform.neptune.sync.ReferralSyncResult
 import com.cradleplatform.neptune.sync.SyncWorker
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper.createWriter
@@ -152,6 +156,50 @@ class RestApi constructor(
                 readingChannel.close()
             } else {
                 readingChannel.close(SyncException("failed to download all associated readings"))
+            }
+        }
+    }
+
+    suspend fun getAllReferrals(
+        referralChannel: SendChannel<Referral>
+    ): NetworkResult<Unit> = withContext(IO) {
+        http.makeRequest(
+            method = Http.Method.GET,
+            url = urlManager.getAllReferrals,
+            headers = headers,
+            inputStreamReader = { inputStream ->
+                val reader = JacksonMapper.readerForReferral
+                reader.readValues<Referral>(inputStream).use { iterator ->
+                    iterator.forEachJackson { referralChannel.send(it) }
+                }
+            }
+        ).also {
+            if (it is NetworkResult.Success) {
+                referralChannel.close()
+            } else {
+                referralChannel.close(SyncException("failed to download all associated referrals"))
+            }
+        }
+    }
+
+    suspend fun getAllAssessments(
+        assessmentChannel: SendChannel<Assessment>
+    ): NetworkResult<Unit> = withContext(IO) {
+        http.makeRequest(
+            method = Http.Method.GET,
+            url = urlManager.getAllAssessments,
+            headers = headers,
+            inputStreamReader = { inputStream ->
+                val reader = JacksonMapper.readerForAssessment
+                reader.readValues<Assessment>(inputStream).use { iterator ->
+                    iterator.forEachJackson { assessmentChannel.send(it) }
+                }
+            }
+        ).also {
+            if (it is NetworkResult.Success) {
+                assessmentChannel.close()
+            } else {
+                assessmentChannel.close(SyncException("failed to download all associated assessments"))
             }
         }
     }
@@ -404,6 +452,42 @@ class RestApi constructor(
         }
 
     /**
+     * Uploads a new assessment for a patient which already exists on the server.
+     *
+     * @param assessment the referral to upload
+     * @return the server's version of the uploaded assessment
+     */
+    suspend fun postAssessment(assessment: Assessment): NetworkResult<Assessment> =
+        withContext(IO) {
+            val assessmentAsBytes = JacksonMapper.writerForAssessment.writeValueAsBytes(assessment)
+            http.makeRequest(
+                method = Http.Method.POST,
+                url = urlManager.postAssessment,
+                headers = headers,
+                requestBody = buildJsonRequestBody(assessmentAsBytes),
+                inputStreamReader = { input -> JacksonMapper.readerForAssessment.readValue(input) },
+            )
+        }
+
+    /**
+     * Uploads a new referral for a patient which already exists on the server.
+     *
+     * @param referral the referral to upload
+     * @return the server's version of the uploaded referral
+     */
+    suspend fun postReferral(referral: Referral): NetworkResult<Referral> =
+        withContext(IO) {
+            val referralAsBytes = JacksonMapper.writerForReferral.writeValueAsBytes(referral)
+            http.makeRequest(
+                method = Http.Method.POST,
+                url = urlManager.postReferral,
+                headers = headers,
+                requestBody = buildJsonRequestBody(referralAsBytes),
+                inputStreamReader = { input -> JacksonMapper.readerForReferral.readValue(input) },
+            )
+        }
+
+    /**
      * Sends info for creating a pregnancy record for specific patient
      * Has the ability to send record with pregnancy start AND end date if full record is being
      * sent to server.
@@ -625,14 +709,10 @@ class RestApi constructor(
         readingsToUpload: List<Reading>,
         lastSyncTimestamp: BigInteger = BigInteger.valueOf(1L),
         readingChannel: SendChannel<Reading>,
-        referralChannel: SendChannel<Referral>,
-        assessmentChannel: SendChannel<Assessment>,
         reportProgressBlock: suspend (Int, Int) -> Unit,
     ): ReadingSyncResult = withContext(IO) {
         val body = createWriter<List<Reading>>().writeValueAsBytes(readingsToUpload)
         var totalReadingsDownloaded = 0
-        var totalReferralsDownloaded = 0
-        var totalFollowupsDownloaded = 0
         val networkResult = http.makeRequest(
             method = Http.Method.POST,
             url = urlManager.getReadingsSync(lastSyncTimestamp),
@@ -642,8 +722,6 @@ class RestApi constructor(
             Log.d(TAG, "Parsing readings now")
 
             val readerForReading = JacksonMapper.createReader<Reading>()
-            val readerForReferral = JacksonMapper.createReader<Referral>()
-            val readerForAssessment = JacksonMapper.createReader<Assessment>()
 
             readerForReading.createParser(inputStream).use { parser ->
                 var totalDownloaded = 0
@@ -660,26 +738,6 @@ class RestApi constructor(
                             }
                             readingChannel.close()
                         }
-                        ReadingSyncField.NEW_REFERRALS.text -> {
-                            Log.d(TAG, "Starting to parse NEW_REFERRALS array")
-                            parseObjectArray<Referral>(readerForReferral) {
-                                referralChannel.send(it)
-                                totalDownloaded++
-                                totalReferralsDownloaded++
-                                reportProgressBlock(totalDownloaded, totalToDownload)
-                            }
-                            referralChannel.close()
-                        }
-                        ReadingSyncField.NEW_FOLLOW_UPS.text -> {
-                            Log.d(TAG, "Starting to parse NEW_FOLLOW_UPS array")
-                            parseObjectArray<Assessment>(readerForAssessment) {
-                                assessmentChannel.send(it)
-                                totalDownloaded++
-                                totalFollowupsDownloaded++
-                                reportProgressBlock(totalDownloaded, totalToDownload)
-                            }
-                            assessmentChannel.close()
-                        }
                     }
                 }
             }
@@ -687,9 +745,7 @@ class RestApi constructor(
             withContext(Dispatchers.Main) {
                 Log.d(
                     TAG,
-                    "DEBUG: Downloaded $totalReadingsDownloaded readings, " +
-                        "$totalReferralsDownloaded referrals and " +
-                        "$totalFollowupsDownloaded assessments."
+                    "DEBUG: Downloaded $totalReadingsDownloaded readings."
                 )
             }
             Unit
@@ -699,24 +755,156 @@ class RestApi constructor(
                 // operations, so it doesn't do anything on Successes where we don't return
                 // early.
                 readingChannel.close()
-                referralChannel.close()
-                assessmentChannel.close()
             } else {
                 // Fail these channels if not successful (note: idempotent operations)
                 readingChannel.close(SyncException("failed to sync readings"))
-                referralChannel.close(SyncException("failed to sync referrals"))
-                assessmentChannel.close(SyncException("failed to sync assessments"))
             }
         }
 
         ReadingSyncResult(
             networkResult,
             readingsToUpload.size,
-            totalReadingsDownloaded,
-            totalReferralsDownloaded,
-            totalFollowupsDownloaded,
+            totalReadingsDownloaded
         )
     }
+
+    /**
+     * Syncs the referrals on the device with the server, where [lastSyncTimestamp] is the last time
+     * the referrals have been synced with the server. The given [referralsToUpload] should be
+     * new referrals. Sync conflicts are handled by the server.
+     *
+     * The API will first accept our [referralsToUpload], and then the server will respond with new
+     * referrals between now and [lastSyncTimestamp]. What the server sends back will be parsed and
+     * send through [referralChannel]. Note that the server response includes the same referrals in
+     * [referralsToUpload]; by downloading them again, this is how we eventually set [Referral.lastServerUpdate].
+     *
+     * Parsed referrals are sent through the [referralChannel], with progress reporting done by
+     * [reportProgressBlock] (first parameter is number of referrals downloaded, second is number
+     * of referrals in total). The [referralChannel] is closed when referral downloading is complete.
+     *
+     * [referralChannel] will be failed (see [SendChannel.close]) if [Failure] or
+     * [NetworkException] is returned, so using any of the Channels can result in a [SyncException]
+     * that should be caught by anything handling the Channels.
+     *
+     * @sample SyncWorker.syncReferrals
+     */
+    suspend fun syncReferrals(
+        referralsToUpload: List<Referral>,
+        lastSyncTimestamp: BigInteger = BigInteger.valueOf(1L),
+        referralChannel: SendChannel<Referral>,
+        reportProgressBlock: suspend (Int, Int) -> Unit,
+    ): ReferralSyncResult =
+        withContext(IO) {
+            val body = createWriter<List<Referral>>().writeValueAsBytes(referralsToUpload)
+            var totalReferralsDownloaded = 0
+            var errors: String? = null
+            val networkResult = http.makeRequest(
+                method = Http.Method.POST,
+                url = urlManager.getReferralsSync(lastSyncTimestamp),
+                headers = headers,
+                requestBody = buildJsonRequestBody(body),
+            ) { inputStream ->
+                val reader = JacksonMapper.readerForReferral
+                reader.createParser(inputStream).use { parser ->
+                    parser.parseObject {
+                        when (currentName) {
+                            ReferralSyncField.REFERRALS.text -> {
+                                parseObjectArray<Referral>(reader) {
+                                    referralChannel.send(it)
+                                    totalReferralsDownloaded++
+                                    reportProgressBlock(totalReferralsDownloaded, totalReferralsDownloaded)
+                                }
+                                referralChannel.close()
+                            }
+                            ReferralSyncField.ERRORS.text -> {
+                                // TODO: Parse array of objects
+                                nextToken()
+                                errors = readValueAsTree<JsonNode>().toPrettyString()
+                            }
+                        }
+                    }
+                }
+            }.also {
+                if (it is NetworkResult.Success) {
+                    // In case we return early, this needs to be closed. These is an idempotent
+                    // operation, so it doesn't do anything on Successes where we don't return early
+                    referralChannel.close()
+                } else {
+                    // Fail the channel if not successful (note: idempotent operation).
+                    referralChannel.close(SyncException("referral download wasn't done properly"))
+                }
+            }
+            ReferralSyncResult(networkResult, referralsToUpload.size, totalReferralsDownloaded, errors)
+        }
+
+    /**
+     * Syncs the assessments on the device with the server, where [lastSyncTimestamp] is the last time
+     * the assessments have been synced with the server. The given [assessmentsToUpload] should be
+     * new assessments. Sync conflicts are handled by the server.
+     *
+     * The API will first accept our [assessmentsToUpload], and then the server will respond with new
+     * assessments between now and [lastSyncTimestamp]. What the server sends back will be parsed and
+     * send through [assessmentChannel]. Note that the server response includes the same assessments in
+     * [assessmentsToUpload]; by downloading them again, this is how we eventually set [Assessment.lastServerUpdate].
+     *
+     * Parsed assessments are sent through the [assessmentChannel], with progress reporting done by
+     * [reportProgressBlock] (first parameter is number of assessments downloaded, second is number
+     * of assessments in total). The [assessmentChannel] is closed when assessment downloading is complete.
+     *
+     * [assessmentChannel] will be failed (see [SendChannel.close]) if [Failure] or
+     * [NetworkException] is returned, so using any of the Channels can result in a [SyncException]
+     * that should be caught by anything handling the Channels.
+     *
+     * @sample SyncWorker.syncAssessments
+     */
+    suspend fun syncAssessments(
+        assessmentsToUpload: List<Assessment>,
+        lastSyncTimestamp: BigInteger = BigInteger.valueOf(1L),
+        assessmentChannel: SendChannel<Assessment>,
+        reportProgressBlock: suspend (Int, Int) -> Unit,
+    ): AssessmentSyncResult =
+        withContext(IO) {
+            val body = createWriter<List<Assessment>>().writeValueAsBytes(assessmentsToUpload)
+            var totalAssessmentsDownloaded = 0
+            var errors: String? = null
+            val networkResult = http.makeRequest(
+                method = Http.Method.POST,
+                url = urlManager.getAssessmentsSync(lastSyncTimestamp),
+                headers = headers,
+                requestBody = buildJsonRequestBody(body),
+            ) { inputStream ->
+                val reader = JacksonMapper.readerForAssessment
+                reader.createParser(inputStream).use { parser ->
+                    parser.parseObject {
+                        when (currentName) {
+                            AssessmentSyncField.ASSESSMENTS.text -> {
+                                parseObjectArray<Assessment>(reader) {
+                                    assessmentChannel.send(it)
+                                    totalAssessmentsDownloaded++
+                                    reportProgressBlock(totalAssessmentsDownloaded, totalAssessmentsDownloaded)
+                                }
+                                assessmentChannel.close()
+                            }
+                            AssessmentSyncField.ERRORS.text -> {
+                                // TODO: Parse array of objects
+                                nextToken()
+                                errors = readValueAsTree<JsonNode>().toPrettyString()
+                            }
+                        }
+                    }
+                }
+            }.also {
+                if (it is NetworkResult.Success) {
+                    // In case we return early, this needs to be closed. These is an idempotent
+                    // operation, so it doesn't do anything on Successes where we don't return early
+                    assessmentChannel.close()
+                } else {
+                    // Fail the channel if not successful (note: idempotent operation).
+                    assessmentChannel.close(SyncException("assessment download wasn't done properly"))
+                }
+            }
+            AssessmentSyncResult(networkResult, assessmentsToUpload.size, totalAssessmentsDownloaded, errors)
+        }
 
     /**
      * The common headers used for most API requests.

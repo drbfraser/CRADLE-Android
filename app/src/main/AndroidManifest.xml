@@ -18,7 +18,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="false">
+        android:usesCleartextTraffic="false"> <!--    set this to true when testing the app on a local dev server-->
         <activity android:name=".view.EditPatientInfoActivity"/>
         <activity
             android:name=".view.SyncActivity"

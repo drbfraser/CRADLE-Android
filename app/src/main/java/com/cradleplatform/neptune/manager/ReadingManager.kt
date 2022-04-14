@@ -128,26 +128,6 @@ class ReadingManager @Inject constructor(
         return result.map { Unit }
     }
 
-    suspend fun addAssessment(assessment: Assessment) {
-        getReadingById(assessment.readingId)?.apply {
-            followUp = assessment
-            referral?.isAssessed = true
-            updateReading(this)
-        }
-    }
-
-    suspend fun addReferral(referral: Referral) {
-        readingDao.updateReferral(referral.readingId, referral)
-    }
-
-    suspend fun downloadAssessment(assessmentId: String): NetworkResult<Unit> {
-        val result = restApi.getAssessment(assessmentId)
-        if (result is NetworkResult.Success) {
-            addAssessment(result.value)
-        }
-        return result.map { }
-    }
-
     /**
      * @param lastEdited Optional: If not null, it will set the lastEdited column in the database
      * to the value.

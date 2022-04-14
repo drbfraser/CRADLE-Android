@@ -24,6 +24,7 @@ import com.cradleplatform.neptune.ext.use
 import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
+import com.cradleplatform.neptune.manager.ReferralManager
 import com.cradleplatform.neptune.manager.ReferralUploadManager
 import com.cradleplatform.neptune.model.BloodPressure
 import com.cradleplatform.neptune.model.GestationalAge
@@ -103,6 +104,7 @@ private val DEBUG = BuildConfig.DEBUG
 @HiltViewModel
 class PatientReadingViewModel @Inject constructor(
     private val readingManager: ReadingManager,
+    private val referralManager: ReferralManager,
     private val patientManager: PatientManager,
     private val referralUploadManager: ReferralUploadManager,
     private val sharedPreferences: SharedPreferences,
@@ -1331,6 +1333,7 @@ class PatientReadingViewModel @Inject constructor(
      */
     suspend fun save(): ReadingFlowSaveResult {
         val saveResult = saveManager.save()
+        // val saveResult = saveManager.saveReferral()
         if (saveResult is ReadingFlowSaveResult.SaveSuccessful) {
             originalReadingId?.let {
                 readingManager.clearDateRecheckVitalsAndMarkForUpload(
@@ -1452,17 +1455,6 @@ class PatientReadingViewModel @Inject constructor(
                 // If it's not available, then shouldSavePatient() is true, so we must be
                 // creating a new patient, and so patientFromBuilder should not be null.
                 val patient = originalPatient ?: patientFromBuilder ?: error("unreachable state")
-
-                // Embed the referral to the reading from the builder.
-                readingFromBuilder.referral =
-                    Referral(
-                        comment = referralComment,
-                        healthFacilityName = healthFacilityName,
-                        dateReferred = readingFromBuilder.dateTimeTaken,
-                        patientId = patient.id,
-                        readingId = readingFromBuilder.id,
-                        sharedPreferences = sharedPreferences
-                    )
                 yield()
 
                 // Handle the referral based on the type.
@@ -1566,7 +1558,7 @@ class PatientReadingViewModel @Inject constructor(
                 else if (reading.isVitalRecheckRequired)
                     return@withContext ReadingFlowSaveResult.SaveSuccessful.ReCheckNeededInFuture
 
-                // Don't set isSaving to false to ensure this can't be run again.
+                // Don't set isSavingReferral to false to ensure this can't be run again.
                 return@withContext ReadingFlowSaveResult.SaveSuccessful.NoSmsNeeded
             }
         }
@@ -1590,6 +1582,74 @@ class PatientReadingViewModel @Inject constructor(
             } else {
                 readingManager.addReading(readingFromBuilder, isReadingFromServer = false)
             }
+        }
+
+        private val isSavingReferralMutex = Mutex()
+        val isSavingReferral = MutableLiveData<Boolean>(false)
+
+        /**
+         * When the save button in the AdviceFragment is clicked, this is run/
+         * Saves the patient (if creating a new patient) and saves the referral to the database.
+         *
+         * @return a [ReferralFlowSaveResult]
+         */
+        suspend fun saveReferral(): ReadingFlowSaveResult = withContext(Dispatchers.Default) {
+            // Don't save if we are uninitialized for some reason.
+            isInitializedMutex.withLock {
+                if (_isInitialized.value == false) {
+                    return@withContext ReadingFlowSaveResult.ErrorConstructing
+                }
+            }
+
+            isSavingReferralMutex.withLock {
+                // Prevent saving from being run while it's already running. We have to do
+                // this since the save button launches a coroutine.
+                if (isSavingReferral.value == true) {
+                    return@withContext ReadingFlowSaveResult.ErrorConstructing
+                }
+
+                // // If user selected to send a referral, handle that. When the AdviceFragment sees
+                // // REFERRAL_REQUIRED, it launches a referral dialog.
+                // if (adviceReferralButtonId.value == R.id.send_referral_radio_button) {
+                //     // Don't save the reading / patient yet; we need the AdviceFragment to launch a
+                //     // referral dialog.
+                //     return@withContext ReferralFlowSaveResult.ReferralRequired
+                // }
+
+                // Otherwise, we're in the main saving path.
+                isSavingReferral.setValueOnMainThread(true)
+                yield()
+
+                val referral = Referral(
+                    comment = "referralComment",
+                    referralHealthFacilityName = "H2000",
+                    dateReferred = ZonedDateTime.now().toEpochSecond(),
+                    userId = sharedPreferences.getIntOrNull(LoginManager.USER_ID_KEY),
+                    patientId = "49300028162",
+                    actionTaken = "actionTaken",
+                    cancelReason = "cancelReason",
+                    notAttendReason = "notAttendReason",
+                    isAssessed = false,
+                    isCancelled = false,
+                    notAttended = false,
+                    lastEdited = ZonedDateTime.now().toEpochSecond()
+                )
+                yield()
+
+                handleStoringReferralFromBuilders(referral)
+
+                // Don't set isSavingReferral to false to ensure this can't be run again.
+                return@withContext ReadingFlowSaveResult.SaveSuccessful.NoSmsNeeded
+            }
+        }
+
+        /**
+         * Will always save the referral to the database.
+         */
+        private suspend fun handleStoringReferralFromBuilders(
+            referralFromBuilder: Referral
+        ) {
+            referralManager.addReferral(referralFromBuilder, false)
         }
     }
 
@@ -2061,4 +2121,40 @@ sealed interface ReadingFlowSaveResult {
      * Indicates an error with constructing a valid patient / reading.
      */
     object ErrorConstructing : ReadingFlowSaveResult
+}
+
+sealed interface ReferralFlowSaveResult {
+    /**
+     * Indicates when saving the referral to the local database was successful.
+     */
+    sealed interface SaveSuccessful : ReferralFlowSaveResult {
+        object NoSmsNeeded : SaveSuccessful
+
+        object ReCheckNeededNow : SaveSuccessful
+
+        object ReCheckNeededInFuture : SaveSuccessful
+
+        /**
+         * Indicates when saving the referral to the local database was successful but referral SMS
+         * still needs to be sent. The Intent to send an SMS should be launched,
+         * because the patient and reading are valid and stored in the local database.
+         */
+        @JvmInline
+        value class ReferralSmsNeeded(val patientInfoForReferral: PatientAndReadings) : SaveSuccessful
+    }
+
+    /**
+     * Indicates when a referral dialog is required.
+     */
+    object ReferralRequired : ReferralFlowSaveResult
+
+    /**
+     * Indicates an error when trying to upload a referral via web
+     */
+    object ErrorUploadingReferral : ReferralFlowSaveResult
+
+    /**
+     * Indicates an error with constructing a valid patient / reading.
+     */
+    object ErrorConstructing : ReferralFlowSaveResult
 }

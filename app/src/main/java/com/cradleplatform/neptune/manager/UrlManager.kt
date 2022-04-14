@@ -35,6 +35,12 @@ class UrlManager @Inject constructor(val settings: Settings) {
     val getAllReadings: String
         get() = "$base/mobile/readings"
 
+    val getAllReferrals: String
+        get() = "$base/mobile/referrals"
+
+    val getAllAssessments: String
+        get() = "$base/mobile/assessments"
+
     /**
      * Endpoint for posting a new patient.
      */
@@ -46,6 +52,18 @@ class UrlManager @Inject constructor(val settings: Settings) {
      */
     val postReading: String
         get() = "$base/readings"
+
+    /**
+     * Endpoint for posting a new referral for an existing patient.
+     */
+    val postReferral: String
+        get() = "$base/referrals"
+
+    /**
+     * Endpoint for posting a new assessment for an existing patient.
+     */
+    val postAssessment: String
+        get() = "$base/assessments"
 
     /**
      * Endpoint for posting a new pregnancy for an existing patient.
@@ -62,6 +80,7 @@ class UrlManager @Inject constructor(val settings: Settings) {
      */
     internal val base: String
         get() {
+            // change both of these to http when testing on dev server
             val protocol = if (settings.networkUseHttps) {
                 "https://"
             } else {
@@ -130,6 +149,12 @@ class UrlManager @Inject constructor(val settings: Settings) {
 
     fun getReadingsSync(lastSyncTimestamp: BigInteger): String =
         "$base/sync/readings?since=$lastSyncTimestamp"
+
+    fun getReferralsSync(lastSyncTimestamp: BigInteger): String =
+        "$base/sync/referrals?since=$lastSyncTimestamp"
+
+    fun getAssessmentsSync(lastSyncTimestamp: BigInteger): String =
+        "$base/sync/assessments?since=$lastSyncTimestamp"
 
     fun getUpdatesNew(): String = "$base/sync/updates"
 

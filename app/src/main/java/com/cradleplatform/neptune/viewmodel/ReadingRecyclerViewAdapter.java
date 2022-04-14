@@ -16,6 +16,7 @@ import com.cradleplatform.neptune.R;
 import com.cradleplatform.neptune.model.Assessment;
 import com.cradleplatform.neptune.model.Reading;
 import com.cradleplatform.neptune.model.ReadingAnalysis;
+import com.cradleplatform.neptune.model.Referral;
 import com.cradleplatform.neptune.model.SymptomsState;
 import com.cradleplatform.neptune.model.UrineTest;
 import com.cradleplatform.neptune.utilities.DateUtil;
@@ -29,11 +30,13 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
     private final static int NO_ASSESSMENT_TYPE = 1;
     private final static int ASSESSMENT_TYPE = 2;
     private List<Reading> readings;
+    private List<Referral> referrals;
     private RecyclerView recyclerView;
     private OnClickElement onClickElementListener;
 
-    public ReadingRecyclerViewAdapter(List<Reading> readings) {
+    public ReadingRecyclerViewAdapter(List<Reading> readings, List<Referral> referrals) {
         this.readings = readings;
+        this.referrals = referrals;
     }
 
     @NonNull
@@ -66,6 +69,11 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
     public void onBindViewHolder(@NonNull MyViewHolder myViewHolder, int i) {
         Reading currReading = readings.get(i);
 
+        Referral currRefferal = null;
+        if (referrals != null && !referrals.isEmpty()) {
+            currRefferal = referrals.get(0);
+        }
+
         ReadingAnalysis analysis = currReading.getBloodPressure().getAnalysis();
 
         myViewHolder.readingDate.setText(DateUtil.getConciseDateString(currReading.getDateTimeTaken(), false));
@@ -73,9 +81,9 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         myViewHolder.diaBP.setText(new StringBuilder().append(currReading.getBloodPressure().getDiastolic()).append("").toString());
         myViewHolder.heartRate.setText(new StringBuilder().append(currReading.getBloodPressure().getHeartRate()).append("").toString());
 
-        if (currReading.getUrineTest() != null) {
+        if (currRefferal != null) {
             myViewHolder.urineTest.setText(
-                    getUrineTestFormattedTxt(currReading.getUrineTest())
+                    currRefferal.getPatientId()
             );
         }
 
@@ -145,8 +153,8 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             if (currReading.isReferredToHealthFacility()) {
                 final String message;
                 if (currReading.getReferral() != null
-                        && currReading.getReferral().getHealthFacilityName().length() > 0) {
-                    message = v.getContext().getString(R.string.reading_referred_to_health_facility, currReading.getReferral().getHealthFacilityName());
+                        && currReading.getReferral().getReferralHealthFacilityName().length() > 0) {
+                    message = v.getContext().getString(R.string.reading_referred_to_health_facility, currReading.getReferral().getReferralHealthFacilityName());
                 } else {
                     message = v.getContext().getString(R.string.reading_referred_to_health_facility_unknown);
                 }

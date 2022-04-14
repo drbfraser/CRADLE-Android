@@ -13,8 +13,10 @@ import androidx.work.workDataOf
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.ext.Field
+import com.cradleplatform.neptune.manager.AssessmentManager
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
+import com.cradleplatform.neptune.manager.ReferralManager
 import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
@@ -49,6 +51,8 @@ class SyncWorker @AssistedInject constructor(
     private val restApi: RestApi,
     private val patientManager: PatientManager,
     private val readingManager: ReadingManager,
+    private val referralManager: ReferralManager,
+    private val assessmentManager: AssessmentManager,
     private val sharedPreferences: SharedPreferences,
     private val database: CradleDatabase
 ) : CoroutineWorker(context, params) {
@@ -64,7 +68,19 @@ class SyncWorker @AssistedInject constructor(
          */
         CHECKING_SERVER_READINGS,
         UPLOADING_READINGS,
-        DOWNLOADING_READINGS
+        DOWNLOADING_READINGS,
+        /**
+         * Checking the server for new referrals by uploading an empty list
+         */
+        CHECKING_SERVER_REFERRALS,
+        UPLOADING_REFERRALS,
+        DOWNLOADING_REFERRALS,
+        /**
+         * Checking the server for new assessments by uploading an empty list
+         */
+        CHECKING_SERVER_ASSESSMENTS,
+        UPLOADING_ASSESSMENTS,
+        DOWNLOADING_ASSESSMENTS
     }
 
     companion object {
@@ -74,6 +90,10 @@ class SyncWorker @AssistedInject constructor(
         const val LAST_PATIENT_SYNC = "lastSyncTime"
         /** SharedPreferences key for last time readings were synced */
         const val LAST_READING_SYNC = "lastSyncTimeReadings"
+        /** SharedPreferences key for last time referrals were synced */
+        const val LAST_REFERRAL_SYNC = "lastSyncTimeReferrals"
+        /** SharedPreferences key for last time assessments were synced */
+        const val LAST_ASSESSMENT_SYNC = "lastSyncTimeAssessments"
         /** Default last sync timestamp. Note that using 0 will result in server rejecting param */
         const val LAST_SYNC_DEFAULT = "1"
 
@@ -216,8 +236,67 @@ class SyncWorker @AssistedInject constructor(
             )
         }
 
+        // for referrals
+        val lastReferralSyncTime = BigInteger(
+            sharedPreferences.getString(
+                LAST_REFERRAL_SYNC,
+                LAST_SYNC_DEFAULT
+            )!!
+        )
+
+        val referralsToUpload = referralManager.getReferralsToUpload()
+        val referralResult = syncReferrals(referralsToUpload, lastReferralSyncTime)
+        val referralsLeftToUpload = referralManager.getReferralsToUpload().size
+        if (referralsLeftToUpload > 0) {
+            referralResult.totalReferralsUploaded -= referralsLeftToUpload
+
+            Log.wtf(
+                TAG,
+                "There are $referralsLeftToUpload referrals left to upload"
+            )
+        }
+
+        if (referralResult.networkResult is NetworkResult.Success) {
+            sharedPreferences.edit(commit = true) {
+                putString(LAST_REFERRAL_SYNC, syncTimestampToSave.toString())
+            }
+        } else {
+            return Result.failure(
+                workDataOf(RESULT_MESSAGE to getResultErrorMessage(referralResult.networkResult))
+            )
+        }
+
+        // for assessments
+        val lastAssessmentSyncTime = BigInteger(
+            sharedPreferences.getString(
+                LAST_ASSESSMENT_SYNC,
+                LAST_SYNC_DEFAULT
+            )!!
+        )
+        val assessmentsToUpload = assessmentManager.getAssessmentsToUpload()
+        val assessmentResult = syncAssessments(assessmentsToUpload, lastAssessmentSyncTime)
+        val assessmentsLeftToUpload = assessmentManager.getAssessmentsToUpload().size
+        if (assessmentsLeftToUpload > 0) {
+            assessmentResult.totalAssessmentsUploaded -= assessmentsLeftToUpload
+
+            Log.wtf(
+                TAG,
+                "There are $assessmentsLeftToUpload assessments left to upload"
+            )
+        }
+
+        if (assessmentResult.networkResult is NetworkResult.Success) {
+            sharedPreferences.edit(commit = true) {
+                putString(LAST_ASSESSMENT_SYNC, syncTimestampToSave.toString())
+            }
+        } else {
+            return Result.failure(
+                workDataOf(RESULT_MESSAGE to getResultErrorMessage(assessmentResult.networkResult))
+            )
+        }
+
         return Result.success(
-            workDataOf(RESULT_MESSAGE to getResultSuccessMessage(patientResult, readingResult))
+            workDataOf(RESULT_MESSAGE to getResultSuccessMessage(patientResult, readingResult, referralResult, assessmentResult))
         )
     }
 
@@ -277,20 +356,12 @@ class SyncWorker @AssistedInject constructor(
         )
 
         val readingChannel = Channel<Reading>()
-        val referralChannel = Channel<Referral>()
-        val assessmentChannel = Channel<Assessment>()
 
         launch {
             try {
                 database.withTransaction {
                     for (reading in readingChannel) {
                         readingManager.addReading(reading, isReadingFromServer = true)
-                    }
-                    for (referral in referralChannel) {
-                        readingManager.addReferral(referral)
-                    }
-                    for (assessment in assessmentChannel) {
-                        readingManager.addAssessment(assessment)
                     }
                 }
             } catch (e: SyncException) {
@@ -304,12 +375,94 @@ class SyncWorker @AssistedInject constructor(
         restApi.syncReadings(
             readingsToUpload,
             lastSyncTimestamp = lastSyncTime,
-            readingChannel,
-            referralChannel,
-            assessmentChannel
+            readingChannel
         ) { current, total ->
             reportProgress(
                 State.DOWNLOADING_READINGS,
+                progress = current,
+                total = total,
+            )
+        }
+    }
+
+    private suspend fun syncReferrals(
+        referralsToUpload: List<Referral>,
+        lastSyncTime: BigInteger
+    ): ReferralSyncResult = withContext(Dispatchers.Default) {
+        setProgress(
+            if (referralsToUpload.isEmpty()) {
+                workDataOf(PROGRESS_CURRENT_STATE to State.CHECKING_SERVER_REFERRALS.name)
+            } else {
+                workDataOf(PROGRESS_CURRENT_STATE to State.UPLOADING_REFERRALS.name)
+            }
+        )
+        Log.d(TAG, "preparing to upload ${referralsToUpload.size} referrals")
+        val channel = Channel<Referral>()
+        launch {
+            try {
+                database.withTransaction {
+                    for (referral in channel) {
+                        referralManager.addReferral(referral, true)
+                    }
+                }
+            } catch (e: SyncException) {
+                // Need to switch context, since Dispatchers.Default doesn't do logging
+                withContext(Dispatchers.Main) {
+                    Log.e(TAG, "referrals sync failed", e)
+                }
+            }
+            withContext(Dispatchers.Main) { Log.d(TAG, "referrals job done") }
+        }
+
+        restApi.syncReferrals(
+            referralsToUpload,
+            lastSyncTimestamp = lastSyncTime,
+            referralChannel = channel
+        ) { current, total ->
+            reportProgress(
+                state = State.DOWNLOADING_REFERRALS,
+                progress = current,
+                total = total,
+            )
+        }
+    }
+
+    private suspend fun syncAssessments(
+        assessmentsToUpload: List<Assessment>,
+        lastSyncTime: BigInteger
+    ): AssessmentSyncResult = withContext(Dispatchers.Default) {
+        setProgress(
+            if (assessmentsToUpload.isEmpty()) {
+                workDataOf(PROGRESS_CURRENT_STATE to State.CHECKING_SERVER_ASSESSMENTS.name)
+            } else {
+                workDataOf(PROGRESS_CURRENT_STATE to State.UPLOADING_ASSESSMENTS.name)
+            }
+        )
+        Log.d(TAG, "preparing to upload ${assessmentsToUpload.size} assessments")
+        val channel = Channel<Assessment>()
+        launch {
+            try {
+                database.withTransaction {
+                    for (assessment in channel) {
+                        assessmentManager.addAssessment(assessment, true)
+                    }
+                }
+            } catch (e: SyncException) {
+                // Need to switch context, since Dispatchers.Default doesn't do logging
+                withContext(Dispatchers.Main) {
+                    Log.e(TAG, "assessments sync failed", e)
+                }
+            }
+            withContext(Dispatchers.Main) { Log.d(TAG, "assessments job done") }
+        }
+
+        restApi.syncAssessments(
+            assessmentsToUpload,
+            lastSyncTimestamp = lastSyncTime,
+            assessmentChannel = channel
+        ) { current, total ->
+            reportProgress(
+                state = State.DOWNLOADING_ASSESSMENTS,
                 progress = current,
                 total = total,
             )
@@ -362,6 +515,8 @@ class SyncWorker @AssistedInject constructor(
     private fun getResultSuccessMessage(
         patientSyncResult: PatientSyncResult,
         readingSyncResult: ReadingSyncResult,
+        referralSyncResult: ReferralSyncResult,
+        assessmentSyncResult: AssessmentSyncResult,
     ): String {
         val success = patientSyncResult.networkResult.getStatusMessage(applicationContext)
         val totalPatientsUploaded = applicationContext.getString(
@@ -376,20 +531,30 @@ class SyncWorker @AssistedInject constructor(
         val totalReadingsDownloaded = applicationContext.getString(
             R.string.sync_total_readings_downloaded_s, readingSyncResult.totalReadingsDownloaded
         )
+        val totalReferralsUploaded = applicationContext.getString(
+            R.string.sync_total_referrals_uploaded_s, referralSyncResult.totalReferralsUploaded
+        )
         val totalReferralsDownloaded = applicationContext.getString(
-            R.string.sync_total_referrals_downloaded_s, readingSyncResult.totalReferralsDownloaded
+            R.string.sync_total_referrals_downloaded_s, referralSyncResult.totalReferralsDownloaded
         )
-        val totalFollowupsDownloaded = applicationContext.getString(
-            R.string.sync_total_followups_downloaded_s, readingSyncResult.totalFollowupsDownloaded
+        val totalAssessmentsUploaded = applicationContext.getString(
+            R.string.sync_total_assessments_uploaded_s, assessmentSyncResult.totalAssessmentsUploaded
         )
+        val totalAssessmentsDownloaded = applicationContext.getString(
+            R.string.sync_total_assessments_downloaded_s, assessmentSyncResult.totalAssessmentsDownloaded
+        )
+
+
         val errors = patientSyncResult.errors.let { if (it != "[ ]") "\nErrors:\n$it" else "" }
         return "$success\n" +
             "$totalPatientsUploaded\n" +
             "$totalPatientsDownloaded\n" +
             "$totalReadingsUploaded\n" +
             "$totalReadingsDownloaded\n" +
+            "$totalReferralsUploaded\n" +
             "$totalReferralsDownloaded\n" +
-            totalFollowupsDownloaded +
+            "$totalAssessmentsUploaded\n" +
+            totalAssessmentsDownloaded +
             errors
     }
 }
@@ -406,6 +571,16 @@ enum class ReadingSyncField(override val text: String) : Field {
     NEW_FOLLOW_UPS("newFollowups"),
 }
 
+enum class ReferralSyncField(override val text: String) : Field {
+    REFERRALS("referrals"),
+    ERRORS("errors")
+}
+
+enum class AssessmentSyncField(override val text: String) : Field {
+    ASSESSMENTS("assessments"),
+    ERRORS("errors")
+}
+
 data class PatientSyncResult(
     val networkResult: NetworkResult<Unit>,
     var totalPatientsUploaded: Int,
@@ -416,7 +591,19 @@ data class PatientSyncResult(
 data class ReadingSyncResult(
     val networkResult: NetworkResult<Unit>,
     var totalReadingsUploaded: Int,
-    var totalReadingsDownloaded: Int,
+    var totalReadingsDownloaded: Int
+)
+
+data class ReferralSyncResult(
+    val networkResult: NetworkResult<Unit>,
+    var totalReferralsUploaded: Int,
     var totalReferralsDownloaded: Int,
-    var totalFollowupsDownloaded: Int,
+    var errors: String?,
+)
+
+data class AssessmentSyncResult(
+    val networkResult: NetworkResult<Unit>,
+    var totalAssessmentsUploaded: Int,
+    var totalAssessmentsDownloaded: Int,
+    var errors: String?,
 )
