@@ -80,8 +80,9 @@ class UrlManager @Inject constructor(val settings: Settings) {
      */
     internal val base: String
         get() {
+            // change both of these to http when testing on dev server
             val protocol = if (settings.networkUseHttps) {
-                "http://"
+                "https://"
             } else {
                 "http://"
             }
