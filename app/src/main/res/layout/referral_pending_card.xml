@@ -27,6 +27,16 @@
             android:layout_height="match_parent">
 
 
+            <TextView
+                android:id="@+id/referralComments"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/not_available_n_slash_a"
+                android:textSize="12sp"
+                app:layout_constraintBaseline_toBaselineOf="@+id/pendingReferralCommentsTitle"
+                app:layout_constraintStart_toEndOf="@+id/pendingReferralCommentsTitle" />
+
             <ImageView
                 android:id="@+id/pendingHospitalImg"
                 android:layout_width="44dp"
@@ -62,18 +72,6 @@
                 app:layout_constraintTop_toBottomOf="@+id/referralPendingTitle" />
 
             <TextView
-                android:id="@+id/pendingAssessmentDateTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="4dp"
-                android:text="@string/date_of_assessment"
-                android:textColor="@color/black"
-                android:textSize="12sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/pendingReferralDateTitle" />
-
-            <TextView
                 android:id="@+id/pendingReferralLocationTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -83,7 +81,7 @@
                 android:textColor="@color/black"
                 android:textSize="12sp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/pendingAssessmentDateTitle" />
+                app:layout_constraintTop_toBottomOf="@+id/pendingReferralDateTitle" />
 
             <TextView
                 android:id="@+id/pendingReferralCommentsTitle"
@@ -100,17 +98,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/pendingReferralLocationTitle" />
 
             <TextView
-                android:id="@+id/pendingReferralCommentsTxt"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="@string/not_available_n_slash_a"
-                android:textSize="12sp"
-                app:layout_constraintBaseline_toBaselineOf="@+id/pendingReferralCommentsTitle"
-                app:layout_constraintStart_toEndOf="@+id/pendingReferralCommentsTitle" />
-
-            <TextView
-                android:id="@+id/pendingReferralLocationTxt"
+                android:id="@+id/referralLocation"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
@@ -120,17 +108,7 @@
                 app:layout_constraintStart_toEndOf="@+id/pendingReferralLocationTitle" />
 
             <TextView
-                android:id="@+id/pendingAssessmentDateTxt"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="@string/yyyy_mm_dd"
-                android:textSize="12sp"
-                app:layout_constraintBaseline_toBaselineOf="@+id/pendingAssessmentDateTitle"
-                app:layout_constraintStart_toEndOf="@+id/pendingAssessmentDateTitle" />
-
-            <TextView
-                android:id="@+id/pendingReferralDateTxt"
+                android:id="@+id/referralDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"

@@ -331,6 +331,7 @@
     <string name="reading_card_pending_no_assessment_symptoms_colon">Symptoms:</string>
     <string name="referral_dialog_title_which_health_facility">Which health facility?</string>
     <string name="referral_dialog_comments_label">Comments (optional)</string>
+    <string name="cancellation_reason">Cancellation reason:</string>
     <string name="optional_edit_text_hint">(optional)</string>
     <string name="referral_dialog_sending_a_referral_saves_the_reading">Sending a referral saves the reading</string>
     <string name="referral_dialog_uploading_referral_message">Uploading referral</string>

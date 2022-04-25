@@ -63,7 +63,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/referralCancelledTitle" />
 
             <TextView
-                android:id="@+id/cancelledReferralDateTxt"
+                android:id="@+id/referralDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
@@ -98,7 +98,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/cancelledAssessmentDateTitle" />
 
             <TextView
-                android:id="@+id/cancelledAssessmentDateTxt"
+                android:id="@+id/referralAssessmentDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
@@ -108,7 +108,17 @@
                 app:layout_constraintStart_toEndOf="@+id/cancelledAssessmentDateTitle" />
 
             <TextView
-                android:id="@+id/cancelledReferralLocationTxt"
+                android:id="@+id/referralComments"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/not_available_n_slash_a"
+                android:textSize="12sp"
+                app:layout_constraintBaseline_toBaselineOf="@+id/cancelledReferralCommentsTitle"
+                app:layout_constraintStart_toEndOf="@+id/cancelledReferralCommentsTitle" />
+
+            <TextView
+                android:id="@+id/referralLocation"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
@@ -123,23 +133,36 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="4dp"
-                android:layout_marginBottom="16dp"
                 android:text="@string/comments"
                 android:textColor="@color/black"
                 android:textSize="12sp"
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/cancellationReasonTitle"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/cancelledReferralLocationTitle" />
 
             <TextView
-                android:id="@+id/cancelledReferralCommentsTxt"
+                android:id="@+id/cancellationReasonTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="16dp"
+                android:text="@string/cancellation_reason"
+                android:textColor="@color/black"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/cancelledReferralCommentsTitle" />
+
+            <TextView
+                android:id="@+id/cancellationReason"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="@string/not_available_n_slash_a"
                 android:textSize="12sp"
-                app:layout_constraintBaseline_toBaselineOf="@+id/cancelledReferralCommentsTitle"
-                app:layout_constraintStart_toEndOf="@+id/cancelledReferralCommentsTitle" />
+                app:layout_constraintBaseline_toBaselineOf="@+id/cancellationReasonTitle"
+                app:layout_constraintStart_toEndOf="@+id/cancellationReasonTitle" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>
