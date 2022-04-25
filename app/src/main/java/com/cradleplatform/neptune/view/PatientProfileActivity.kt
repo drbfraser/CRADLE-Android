@@ -16,12 +16,15 @@ import androidx.annotation.Nullable
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.manager.AssessmentManager
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.manager.ReferralManager
+import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
@@ -32,6 +35,7 @@ import com.cradleplatform.neptune.view.DashBoardActivity.Companion.READING_ACTIV
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForEditReading
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForNewReadingExistingPatient
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForRecheck
+import com.cradleplatform.neptune.view.ui.reading.ReferralDialogFragment
 import com.cradleplatform.neptune.viewmodel.ReadingRecyclerViewAdapter
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
@@ -72,6 +76,7 @@ open class PatientProfileActivity : AppCompatActivity() {
     lateinit var currPatient: Patient
     lateinit var patientReadings: List<Reading>
     private var patientReferrals: List<Referral>? = null
+    private var patientAssessments: List<Assessment>? = null
 
     // Data Model
     @Inject
@@ -85,6 +90,9 @@ open class PatientProfileActivity : AppCompatActivity() {
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
+
+    @Inject
+    lateinit var assessmentManager: AssessmentManager
 
     companion object {
         private const val EXTRA_PATIENT = "patient"
@@ -371,6 +379,12 @@ open class PatientProfileActivity : AppCompatActivity() {
         return referrals?.sortedWith(comparator)
     }
 
+    private fun getThisPatientAssessments(): List<Assessment>? {
+        val assessments: List<Assessment>? = runBlocking { assessmentManager.getAssessmentByPatientId(currPatient.id) }
+        val comparator: Comparator<Assessment> = Assessment.DescendingDateComparator
+        return assessments?.sortedWith(comparator)
+    }
+
     private fun setupCreatePatientReadingButton() {
         val createButton =
             findViewById<Button>(R.id.newPatientReadingButton)
@@ -420,13 +434,26 @@ open class PatientProfileActivity : AppCompatActivity() {
     open fun setupReadingsRecyclerView() {
         patientReadings = getThisPatientsReadings()
         patientReferrals = getThisPatientsReferrals()
-
+        patientAssessments = getThisPatientAssessments()
+        val combinedList: MutableList<Any> = patientReadings.map{i-> i }.toMutableList()
+        if (patientReferrals!=null)
+            combinedList.addAll(patientReferrals!!.map{i->i})
+        if (patientAssessments!=null)
+            combinedList.addAll(patientAssessments!!.map{i->i})
+        combinedList.sortWith(compareByDescending {
+            when (it) {
+                is Reading -> it.dateTimeTaken
+                is Referral -> it.dateReferred
+                is Assessment -> it.dateAssessed
+                else -> Integer.MAX_VALUE
+            }
+        })
         // use linear layout
         val layoutManager: RecyclerView.LayoutManager = LinearLayoutManager(this)
         readingRecyclerview.layoutManager = layoutManager
         readingRecyclerview.isNestedScrollingEnabled = false
 
-        val listAdapter = ReadingRecyclerViewAdapter(patientReadings, patientReferrals)
+        val listAdapter = ReadingRecyclerViewAdapter(combinedList)
         listAdapter.setOnClickElementListener(
             object : ReadingRecyclerViewAdapter.OnClickElement {
                 override fun onClick(readingId: String?) {
@@ -496,4 +523,5 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupReadingsRecyclerView()
         setupLineChart()
     }
+
 }

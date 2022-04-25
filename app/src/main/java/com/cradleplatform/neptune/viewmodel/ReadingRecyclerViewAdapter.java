@@ -27,195 +27,201 @@ import java.util.List;
 
 public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecyclerViewAdapter.MyViewHolder> {
 
-    private final static int NO_ASSESSMENT_TYPE = 1;
-    private final static int ASSESSMENT_TYPE = 2;
-    private List<Reading> readings;
-    private List<Referral> referrals;
+    private final static int READING_VIEW = 3;
+    private final static int REFERRAL_PENDING = 4;
+    private final static int REFERRAL_CANCELLED = 5;
+    private final static int REFERRAL_ASSESSED = 6;
+    private final static int ASSESSMENT_VIEW = 7;
+    private List<?> combinedList;
     private RecyclerView recyclerView;
     private OnClickElement onClickElementListener;
 
-    public ReadingRecyclerViewAdapter(List<Reading> readings, List<Referral> referrals) {
-        this.readings = readings;
-        this.referrals = referrals;
+    public ReadingRecyclerViewAdapter(List<?> combinedList) {
+        this.combinedList = combinedList;
     }
 
     @NonNull
     @Override
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-
-        View v = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.reading_card_assesment, viewGroup, false);
-
-        if (i == NO_ASSESSMENT_TYPE) {
-            v = LayoutInflater.from(viewGroup.getContext())
-                    .inflate(R.layout.reading_card_no_or_pending_assessment, viewGroup, false);
+        View v;
+        switch(i){
+            case ASSESSMENT_VIEW:
+                v = LayoutInflater.from(viewGroup.getContext())
+                        .inflate(R.layout.assessment_card, viewGroup, false);
+                break;
+            case REFERRAL_PENDING:
+                v = LayoutInflater.from(viewGroup.getContext())
+                        .inflate(R.layout.referral_pending_card, viewGroup, false);
+                break;
+            case REFERRAL_CANCELLED:
+                v = LayoutInflater.from(viewGroup.getContext())
+                        .inflate(R.layout.referral_cancelled_card, viewGroup, false);
+                break;
+            case REFERRAL_ASSESSED:
+                v = LayoutInflater.from(viewGroup.getContext())
+                        .inflate(R.layout.referral_assessed_card, viewGroup, false);
+                break;
+            default:
+                v = LayoutInflater.from(viewGroup.getContext())
+                        .inflate(R.layout.reading_card, viewGroup, false);
         }
-
         return new MyViewHolder(v);
-
     }
 
     @Override
     public int getItemViewType(int position) {
-        Assessment followUpAction = readings.get(position).getFollowUp();
-        if (followUpAction == null) {
-            return NO_ASSESSMENT_TYPE;
+        String viewType = combinedList.get(position).getClass().getName();
+        //assign view
+        switch (viewType) {
+            case "com.cradleplatform.neptune.model.Assessment":
+                return ASSESSMENT_VIEW;
+            case "com.cradleplatform.neptune.model.Referral":
+                Referral currReferral = (Referral) combinedList.get(position);
+                if (currReferral.isAssessed())
+                    return REFERRAL_ASSESSED;
+                else if (currReferral.isCancelled())
+                    return REFERRAL_CANCELLED;
+                else
+                    return REFERRAL_PENDING;
+            default:
+                return READING_VIEW;
         }
-        return ASSESSMENT_TYPE;
     }
 
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder myViewHolder, int i) {
-        Reading currReading = readings.get(i);
+        switch(myViewHolder.getItemViewType()){
+            case ASSESSMENT_VIEW:
+                Assessment currAssessment = (Assessment) combinedList.get(i);
+                myViewHolder.assessmentDate.setText(DateUtil.getConciseDateString(currAssessment.getDateAssessed(), false));
+                myViewHolder.assessedBy.setText(currAssessment.getHealthCareWorkerId());
+                myViewHolder.investigateAndResults.setText(currAssessment.getSpecialInvestigations());
+                myViewHolder.finalDiagnosis.setText(currAssessment.getDiagnosis());
+                myViewHolder.treatmentOp.setText(currAssessment.getTreatment());
+                myViewHolder.medication.setText(currAssessment.getMedicationPrescribed());
+                myViewHolder.followUp.setText(currAssessment.getFollowupInstructions());
+                break;
+            case REFERRAL_ASSESSED:
+                Referral currReferral = (Referral) combinedList.get(i);
+                myViewHolder.referralDate.setText(DateUtil.getConciseDateString(currReferral.getDateReferred(), false));
+                myViewHolder.refAssessmentDate.setText("N/A");
+                myViewHolder.referralLocation.setText(currReferral.getReferralHealthFacilityName());
+                myViewHolder.referralComments.setText(currReferral.getComment());
+                break;
+            case REFERRAL_CANCELLED:
+                currReferral = (Referral) combinedList.get(i);
+                myViewHolder.referralDate.setText(DateUtil.getConciseDateString(currReferral.getDateReferred(), false));
+                myViewHolder.refAssessmentDate.setText("N/A");
+                myViewHolder.referralLocation.setText(currReferral.getReferralHealthFacilityName());
+                myViewHolder.referralComments.setText(currReferral.getComment());
+                myViewHolder.cancellationReason.setText(currReferral.getCancelReason());
+                break;
+            case REFERRAL_PENDING:
+                currReferral = (Referral) combinedList.get(i);
+//                myViewHolder.readingDate.setText(DateUtil.getConciseDateString(currReferral.getDateReferred(), false));
+                myViewHolder.referralDate.setText(DateUtil.getConciseDateString(currReferral.getDateReferred(), false));
+                myViewHolder.referralLocation.setText(currReferral.getReferralHealthFacilityName());
+                myViewHolder.referralComments.setText(currReferral.getComment());
+                break;
+            case READING_VIEW:
+                Reading currReading = (Reading) combinedList.get(i);
+                ReadingAnalysis analysis = currReading.getBloodPressure().getAnalysis();
 
-        Referral currRefferal = null;
-        if (referrals != null && !referrals.isEmpty()) {
-            currRefferal = referrals.get(0);
-        }
+                myViewHolder.readingDate.setText(DateUtil.getConciseDateString(currReading.getDateTimeTaken(), false));
+                myViewHolder.sysBP.setText(new StringBuilder().append(currReading.getBloodPressure().getSystolic()).append("").toString());
+                myViewHolder.diaBP.setText(new StringBuilder().append(currReading.getBloodPressure().getDiastolic()).append("").toString());
+                myViewHolder.heartRate.setText(new StringBuilder().append(currReading.getBloodPressure().getHeartRate()).append("").toString());
 
-        ReadingAnalysis analysis = currReading.getBloodPressure().getAnalysis();
-
-        myViewHolder.readingDate.setText(DateUtil.getConciseDateString(currReading.getDateTimeTaken(), false));
-        myViewHolder.sysBP.setText(new StringBuilder().append(currReading.getBloodPressure().getSystolic()).append("").toString());
-        myViewHolder.diaBP.setText(new StringBuilder().append(currReading.getBloodPressure().getDiastolic()).append("").toString());
-        myViewHolder.heartRate.setText(new StringBuilder().append(currReading.getBloodPressure().getHeartRate()).append("").toString());
-
-        if (currRefferal != null) {
-            myViewHolder.urineTest.setText(
-                    currRefferal.getPatientId()
-            );
-        }
-
-        SymptomsState symptomsState = new SymptomsState(currReading.getSymptoms(), myViewHolder.itemView.getContext());
-
-        StringBuilder symptomsStringBuilder = new StringBuilder();
-        String[] defaultSymptoms = myViewHolder.itemView.getResources()
-                .getStringArray(R.array.reading_symptoms);
-
-        final List<String> symptoms = symptomsState.buildSymptomsList(defaultSymptoms, true);
-        for (int j = 0; j < symptoms.size(); j++) {
-            symptomsStringBuilder.append(symptoms.get(j));
-            if (j < symptoms.size() - 1) {
-                symptomsStringBuilder.append(", ");
-            }
-        }
-        myViewHolder.symptomTxt.setText(symptomsStringBuilder.toString());
-
-        myViewHolder.trafficLight.setImageResource(ReadingAnalysisViewSupport.getColorCircleImageId(analysis));
-        myViewHolder.arrow.setImageResource(ReadingAnalysisViewSupport.getArrowImageId(analysis));
-
-        View v = myViewHolder.view;
-
-        myViewHolder.cardView.setOnClickListener(view -> {
-            // if the reading is uploaded to the server, we dont want to change it locally.
-            if (currReading.isUploadedToServer()) {
-                Snackbar.make(
-                        v,
-                        R.string.patient_profile_reading_already_uploaded_snackbar,
-                        Snackbar.LENGTH_LONG
-                ).show();
-            } else {
-                onClickElementListener.onClick(currReading.getId());
-            }
-        });
-        myViewHolder.cardView.setOnLongClickListener(view -> {
-            // if the reading is uploaded to the server, we don't want to delete it locally.
-            if (currReading.isUploadedToServer()) {
-                Snackbar.make(
-                        v,
-                        R.string.patient_profile_reading_already_uploaded_cannot_delete_snackbar,
-                        Snackbar.LENGTH_LONG
-                ).show();
-            } else {
-                onClickElementListener.onLongClick(currReading.getId());
-            }
-            return false;
-        });
-
-        if (myViewHolder.getItemViewType() == NO_ASSESSMENT_TYPE) {
-            if (currReading.isVitalRecheckRequired()) {
-                myViewHolder.retakeVitalButton.setVisibility(View.VISIBLE);
-                myViewHolder.retakeVitalButton.setOnClickListener(view -> onClickElementListener.onClickRecheckReading(currReading.getId()));
-            }
-
-            if (currReading.isReferredToHealthFacility()) {
-                myViewHolder.isreferedTxt.setText(R.string.patient_profile_reading_referral_pending);
-            }
-            myViewHolder.trafficLight.setImageResource(ReadingAnalysisViewSupport.getColorCircleImageId(analysis));
-            myViewHolder.arrow.setImageResource(ReadingAnalysisViewSupport.getArrowImageId(analysis));
-
-            //upload button
-            setVisibilityForImageAndText(v, R.id.imgNotUploaded, R.id.tvNotUploaded, !currReading.isUploadedToServer());
-
-            //referral
-            setVisibilityForImageAndText(v, R.id.imgReferred, R.id.txtReferred, currReading.isReferredToHealthFacility());
-            if (currReading.isReferredToHealthFacility()) {
-                final String message;
-                if (currReading.getReferral() != null
-                        && currReading.getReferral().getReferralHealthFacilityName().length() > 0) {
-                    message = v.getContext().getString(R.string.reading_referred_to_health_facility, currReading.getReferral().getReferralHealthFacilityName());
-                } else {
-                    message = v.getContext().getString(R.string.reading_referred_to_health_facility_unknown);
+                if (currReading.getUrineTest() != null) {
+                    myViewHolder.urineTest.setText(
+                            getUrineTestFormattedTxt(currReading.getUrineTest())
+                    );
                 }
+                SymptomsState symptomsState = new SymptomsState(currReading.getSymptoms(), myViewHolder.itemView.getContext());
 
-                TextView tv = v.findViewById(R.id.txtReferred);
-                tv.setText(message);
-            }
+                StringBuilder symptomsStringBuilder = new StringBuilder();
+                String[] defaultSymptoms = myViewHolder.itemView.getResources()
+                        .getStringArray(R.array.reading_symptoms);
 
-
-            // populate: follow-up
-            setVisibilityForImageAndText(v, R.id.imgFollowUp, R.id.txtFollowUp, currReading.isFlaggedForFollowUp());
-
-            // populate: recheck vitals
-            setVisibilityForImageAndText(v, R.id.imgRecheckVitals, R.id.txtRecheckVitals, currReading.isVitalRecheckRequired());
-            if (currReading.isVitalRecheckRequired()) {
-                final String message;
-                if (currReading.isVitalRecheckRequiredNow()) {
-                    message = v.getContext().getString(R.string.reading_recheck_vitals_now);
-                } else {
-                    long minutes = currReading.getMinutesUntilVitalRecheck();
-                    if (minutes <= 1) {
-                        message = v.getContext().getString(R.string.reading_recheck_vitals_in_one_minute);
-                    } else {
-                        message = v.getContext().getString(R.string.reading_recheck_vitals_in_minutes, minutes);
+                final List<String> symptoms = symptomsState.buildSymptomsList(defaultSymptoms, true);
+                for (int j = 0; j < symptoms.size(); j++) {
+                    symptomsStringBuilder.append(symptoms.get(j));
+                    if (j < symptoms.size() - 1) {
+                        symptomsStringBuilder.append(", ");
                     }
                 }
 
-                TextView tvRecheckVitals = v.findViewById(R.id.txtRecheckVitals);
-                tvRecheckVitals.setText(message);
-            }
+                myViewHolder.symptomTxt.setText(symptomsStringBuilder.toString());
 
-        } else if (myViewHolder.getItemViewType() == ASSESSMENT_TYPE) {
-            Assessment readingFollowUp = currReading.getFollowUp();
-            myViewHolder.diagnosis.setText(readingFollowUp.getDiagnosis());
-            myViewHolder.treatment.setText(readingFollowUp.getTreatment());
-            myViewHolder.hcName.setText(Integer.toString(readingFollowUp.getHealthCareWorkerId()));
-            if (currReading.getReferral() == null || currReading.getReferral().getUserId() == null) {
-                myViewHolder.referredBy.setText(R.string.patient_profile_reading_unknown_referrer);
-            } else {
-                myViewHolder.referredBy.setText(currReading.getReferral().getUserId().toString());
-            }
-            myViewHolder.assessedBy.setText(Integer.toString(readingFollowUp.getHealthCareWorkerId()));
-            myViewHolder.assessmentDate.setText(DateUtil.getFullDateFromUnix(readingFollowUp.getDateAssessed()));
-            TextView specialInvestigation = v.findViewById(R.id.specialInvestigationTxt);
-            TextView medPrescribed = v.findViewById(R.id.medPrescibedTxt);
-            specialInvestigation.setText(readingFollowUp.getSpecialInvestigations());
-            medPrescribed.setText(readingFollowUp.getMedicationPrescribed());
-            if (readingFollowUp.getFollowupNeeded()) {
-                myViewHolder.followUp.setText(readingFollowUp.getFollowupInstructions());
-                TextView frequencyTxt = v.findViewById(R.id.followupFrequencyTxt);
-                frequencyTxt.setVisibility(View.VISIBLE);
-//                String txt = "Every " + readingFollowUp.getFollowUpFrequencyValue() + " " + readingFollowUp.getFollowUpFrequencyUnit().toLowerCase()
-//                        + " till: " + readingFollowUp.getFollowUpNeededTill();
-//                frequencyTxt.setText(txt);
-                // FIXME: no longer have frequency fields
-            } else {
-                TextView frequencyTxt = v.findViewById(R.id.followupFrequencyTxt);
-                frequencyTxt.setVisibility(View.GONE);
-            }
+                myViewHolder.trafficLight.setImageResource(ReadingAnalysisViewSupport.getColorCircleImageId(analysis));
+                myViewHolder.arrow.setImageResource(ReadingAnalysisViewSupport.getArrowImageId(analysis));
+
+                View v = myViewHolder.view;
+
+                myViewHolder.cardView.setOnClickListener(view -> {
+                    // if the reading is uploaded to the server, we dont want to change it locally.
+                    if (currReading.isUploadedToServer()) {
+                        Snackbar.make(
+                                v,
+                                R.string.patient_profile_reading_already_uploaded_snackbar,
+                                Snackbar.LENGTH_LONG
+                        ).show();
+                    } else {
+                        onClickElementListener.onClick(currReading.getId());
+                    }
+                });
+                myViewHolder.cardView.setOnLongClickListener(view -> {
+                    // if the reading is uploaded to the server, we don't want to delete it locally.
+                    if (currReading.isUploadedToServer()) {
+                        Snackbar.make(
+                                v,
+                                R.string.patient_profile_reading_already_uploaded_cannot_delete_snackbar,
+                                Snackbar.LENGTH_LONG
+                        ).show();
+                    } else {
+                        onClickElementListener.onLongClick(currReading.getId());
+                    }
+                    return false;
+                });
+
+                //No assessment type for reading card
+                if (currReading.getFollowUp() == null) {
+                    if (currReading.isVitalRecheckRequired()) {
+                        myViewHolder.retakeVitalButton.setVisibility(View.VISIBLE);
+                        myViewHolder.retakeVitalButton.setOnClickListener(view -> onClickElementListener.onClickRecheckReading(currReading.getId()));
+                    }
+
+                    myViewHolder.trafficLight.setImageResource(ReadingAnalysisViewSupport.getColorCircleImageId(analysis));
+                    myViewHolder.arrow.setImageResource(ReadingAnalysisViewSupport.getArrowImageId(analysis));
+
+                    //upload button
+                    setVisibilityForImageAndText(v, R.id.imgNotUploaded, R.id.tvNotUploaded, !currReading.isUploadedToServer());
+
+
+                    // populate: follow-up
+                    setVisibilityForImageAndText(v, R.id.imgFollowUp, R.id.txtFollowUp, currReading.isFlaggedForFollowUp());
+
+                    // populate: recheck vitals
+                    setVisibilityForImageAndText(v, R.id.imgRecheckVitals, R.id.txtRecheckVitals, currReading.isVitalRecheckRequired());
+                    if (currReading.isVitalRecheckRequired()) {
+                        final String message;
+                        if (currReading.isVitalRecheckRequiredNow()) {
+                            message = v.getContext().getString(R.string.reading_recheck_vitals_now);
+                        } else {
+                            long minutes = currReading.getMinutesUntilVitalRecheck();
+                            if (minutes <= 1) {
+                                message = v.getContext().getString(R.string.reading_recheck_vitals_in_one_minute);
+                            } else {
+                                message = v.getContext().getString(R.string.reading_recheck_vitals_in_minutes, minutes);
+                            }
+                        }
+
+                        TextView tvRecheckVitals = v.findViewById(R.id.txtRecheckVitals);
+                        tvRecheckVitals.setText(message);
+                    }
+                }
         }
-
     }
 
     private String getUrineTestFormattedTxt(UrineTest urineTestResult) {
@@ -250,7 +256,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
 
     @Override
     public int getItemCount() {
-        return readings.size();
+        return combinedList.size();
     }
 
     public void setOnClickElementListener(OnClickElement obs) {
@@ -259,9 +265,12 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
 
     private void onClick(View view) {
         int itemPosition = recyclerView.getChildLayoutPosition(view);
-        String readingId = readings.get(itemPosition).getId();
-        if (onClickElementListener != null) {
-            onClickElementListener.onClick(readingId);
+        if (getItemViewType(itemPosition) == READING_VIEW) {
+            Reading currReading = (Reading) combinedList.get(itemPosition);
+            String readingId = currReading.getId();
+            if (onClickElementListener != null) {
+                onClickElementListener.onClick(readingId);
+            }
         }
     }
 
@@ -276,9 +285,12 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
 
     static class MyViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
-        TextView readingDate, assessmentDate, sysBP, diaBP, heartRate, diagnosis,
-                treatment, followUp, assessedBy, isreferedTxt, referredBy,
-                hcName, urineTest, symptomTxt;
+        TextView readingDate, sysBP, diaBP, heartRate,
+                urineTest, symptomTxt, referralDate, refAssessmentDate,
+                referralLocation, referralComments, cancellationReason,
+                assessmentDate, assessedBy, investigateAndResults,
+                finalDiagnosis, treatmentOp, medication,
+                followUp;
         ImageView trafficLight, arrow;
         Button retakeVitalButton;
         View view;
@@ -287,24 +299,28 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
         MyViewHolder(View v) {
             super(v);
             readingDate = v.findViewById(R.id.readingDate);
-            assessmentDate = v.findViewById(R.id.assessmentDate);
             sysBP = v.findViewById(R.id.sysBP);
             diaBP = v.findViewById(R.id.diaBP);
             heartRate = v.findViewById(R.id.readingHeartRate);
-            diagnosis = v.findViewById(R.id.readingdiagnosis);
-            treatment = v.findViewById(R.id.readingTreatment);
-            assessedBy = v.findViewById(R.id.assessedBy);
             trafficLight = v.findViewById(R.id.readingTrafficLight);
             arrow = v.findViewById(R.id.readingArrow);
             retakeVitalButton = v.findViewById(R.id.newReadingButton);
-            followUp = v.findViewById(R.id.followupTreatment);
             view = v;
             cardView = v.findViewById(R.id.readingCardview);
-            isreferedTxt = v.findViewById(R.id.isReferrerdText);
-            referredBy = v.findViewById(R.id.treatmentReferedBy);
-            hcName = v.findViewById(R.id.hcReferred);
             urineTest = v.findViewById(R.id.urineResultTxt);
             symptomTxt = v.findViewById(R.id.symptomtxt);
+            referralDate = v.findViewById(R.id.referralDate);
+            refAssessmentDate = v.findViewById(R.id.referralAssessmentDate);
+            referralLocation = v.findViewById(R.id.referralLocation);
+            referralComments = v.findViewById(R.id.referralComments);
+            cancellationReason = v.findViewById(R.id.cancellationReason);
+            assessmentDate = v.findViewById(R.id.assessmentCardDateTxt);
+            assessedBy = v.findViewById(R.id.assessByTxt);
+            investigateAndResults = v.findViewById(R.id.specialInvestigationsAndResultsTxt);
+            finalDiagnosis = v.findViewById(R.id.finalDiagnosisTxt);
+            treatmentOp = v.findViewById(R.id.treatmentOperationTxt);
+            medication = v.findViewById(R.id.medicationPrescribedTxt);
+            followUp = v.findViewById(R.id.assessmentFollowUpTxt);
         }
     }
 }

@@ -172,7 +172,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
      * simple function to setup the recyclerview
      */
     override fun setupReadingsRecyclerView() {
-        val listAdapter = ReadingRecyclerViewAdapter(patientReadings, null)
+        val listAdapter = ReadingRecyclerViewAdapter(patientReadings)
         listAdapter.setOnClickElementListener(
             object : OnClickElement {
                 override fun onClick(readingId: String) {
