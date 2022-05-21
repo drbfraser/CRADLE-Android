@@ -144,7 +144,7 @@ open class PatientProfileActivity : AppCompatActivity() {
 
     private fun changeAddReadingButtonColorIfNeeded() {
         val button: Button = findViewById(R.id.newPatientReadingButton)
-        if (Util.isRecheckNeededNow(patientReadings[0].dateRecheckVitalsNeeded)) {
+        if (patientReadings.isNotEmpty() && Util.isRecheckNeededNow(patientReadings[0].dateRecheckVitalsNeeded)) {
             button.backgroundTintList = ContextCompat.getColorStateList(this, R.color.redDown)
             button.text = getString(R.string.new_reading_is_required_now)
         } else {
@@ -386,11 +386,12 @@ open class PatientProfileActivity : AppCompatActivity() {
     }
 
     private fun setupCreatePatientReadingButton() {
+        // TODO: this function has unclear dependency on setupReadingsRecyclerView, patientsReadings won't be loaded until it's called
         val createButton =
             findViewById<Button>(R.id.newPatientReadingButton)
         createButton.visibility = View.VISIBLE
 
-        if (Util.isRecheckNeededNow(patientReadings[0].dateRecheckVitalsNeeded)) {
+        if (patientReadings.isNotEmpty() && Util.isRecheckNeededNow(patientReadings[0].dateRecheckVitalsNeeded)) {
             createButton.setOnClickListener { _: View? ->
                 val readingId = patientReadings[0].id
                 val intent =
