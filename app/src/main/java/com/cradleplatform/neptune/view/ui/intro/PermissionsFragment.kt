@@ -68,10 +68,6 @@ class PermissionsFragment : IntroBaseFragment() {
 
     private fun updateDisplay() {
         // Show permissions message
-        /*
-        had to create webview dynamically, for some reason webview crashes on android 5.1
-           todo: figure out why
-         */
         val linearLayout =
             requireView().findViewById<LinearLayout>(R.id.linearLayoutForWV)
         if (linearLayout.childCount == 0) {
