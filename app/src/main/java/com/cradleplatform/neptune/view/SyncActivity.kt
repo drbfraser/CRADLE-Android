@@ -19,9 +19,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigInteger
 import javax.inject.Inject
 
-/**
- * TODO: redesign
- */
 @AndroidEntryPoint
 class SyncActivity : AppCompatActivity() {
     private val viewModel: SyncViewModel by viewModels()
