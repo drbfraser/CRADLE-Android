@@ -185,10 +185,6 @@ class LoginManager @Inject constructor(
 
             joinAll(readingsAsync, referralsAsync, assessmentsAsync)
 
-            // TODO: Actually report any failures instead of lettting the user pass
-            //  It might be better to just split the login manager so that this function just
-            //  handles the initial login, and then the patient and health facility download can
-            //  be done in another activity/fragment.
             return@withContext NetworkResult.Success(Unit, HTTP_OK)
         }
     }
