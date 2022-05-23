@@ -212,7 +212,6 @@ class ReadingBindingAdapters {
         oldCondition: Boolean?,
         newCondition: Boolean?
     ) {
-        // TODO: Make this RTL compatible.
         val context = radioButton.context
         val recommendedSuffix = " " + context.getString(R.string.recommended_radio_button_suffix)
         if (oldCondition == newCondition) return
