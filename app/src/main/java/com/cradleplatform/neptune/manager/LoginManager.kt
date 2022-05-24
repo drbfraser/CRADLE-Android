@@ -361,7 +361,6 @@ class LoginManager @Inject constructor(
 /**
  * Models the response sent back by the server for /api/user/auth.
  * Not used outside of LoginManager.
- * TODO: Store refresh token and use it
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class LoginResponse(
