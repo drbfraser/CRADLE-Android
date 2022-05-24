@@ -84,7 +84,7 @@ class PatientIdConflictDialogFragment : DialogFragment() {
             .setMessage(message)
             .setPositiveButton(positiveButtonLabel) { _, _ ->
                 if (isPatientInPatientsList) {
-                    // TODO: use Navigation and make a deep link to the patient's profile
+                    // TODO: use Navigation and make a deep link to the patient's profile (refer to issue #34)
                     val newReadingIntent =
                         ReadingActivity.makeIntentForNewReadingExistingPatient(
                             context = requireContext(),
