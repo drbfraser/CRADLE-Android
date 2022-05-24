@@ -176,7 +176,6 @@ public class CradleOverlay {
 //        return ImageUtils.extractBitmapRegion(source, photoLeft, photoTop, photoRight, photoBottom);
 //    }
 
-
     public enum OverlayRegion {
         SCREEN,
         SYS,
@@ -184,7 +183,6 @@ public class CradleOverlay {
         HR,
     }
 
-    // TODO: TESTING ONLY
     private interface ScaleI {
         int apply(int x);
     }
