@@ -99,7 +99,7 @@ class PermissionsFragment : IntroBaseFragment() {
     }
 
     /**
-     * TODO: Stop using this deprecated way of requesting permissions
+     * TODO: Stop using this deprecated way of requesting permissions (refer to issue #26)
      */
     private fun requestAllPermissions() {
         requestPermissions(
