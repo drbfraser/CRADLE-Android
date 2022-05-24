@@ -42,7 +42,7 @@ import java.math.BigInteger
  *
  * TODO: Make sure that patients or readings can't be edited or created while syncing is in
  *  progress.
- * TODO: Use SyncWorker to perform periodic sync.
+ * TODO: Use SyncWorker to perform periodic sync. (refer to issue #32)
  */
 @HiltWorker
 class SyncWorker @AssistedInject constructor(
