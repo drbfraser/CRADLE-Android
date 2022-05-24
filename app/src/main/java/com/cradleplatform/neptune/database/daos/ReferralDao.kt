@@ -100,8 +100,6 @@ interface ReferralDao {
     /**
      * Returns a live list of referrals
      */
-    // TODO: need live data?
-    // if need, need for all referral or based on patient id?
     @Query("SELECT * FROM Referral")
     fun getAllReferralsLiveData(): LiveData<List<Referral>>
 }
