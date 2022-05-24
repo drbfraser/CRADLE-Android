@@ -157,7 +157,7 @@ class LoginManager @Inject constructor(
 
             // TODO: Maybe make it so that the health facility the server sends back cannot
             //       be removed by the user?
-            // TODO: Show some dialog to select a health facility
+            // TODO: Show some dialog to select a health facility (Refer to issue #24)
             val healthFacilitiesDownloadSuccess = downloadHealthFacilities(loginResult.value.healthFacilityName) is NetworkResult.Success
 
 
