@@ -38,8 +38,8 @@ private const val CONFIRMATION_DELAY_MILLIS = 1500L
  * the app can process.
  *
  * TODO: Look into using androidx.camera.view.PreviewView again but with the 3 views that the
- *  user aligns.
- * TODO: Add back debug info that shows the score for each digit using BorderedText, etc.
+ *  user aligns. (refer to issue #33)
+ * TODO: Add back debug info that shows the score for each digit using BorderedText, etc. (refer to issue #33)
  */
 @AndroidEntryPoint
 class OcrFragment : Fragment() {
@@ -52,7 +52,7 @@ class OcrFragment : Fragment() {
     /** A ViewModel for OCR-specific info / state **/
     private val ocrViewModel: OcrFragmentViewModel by viewModels()
 
-    // TODO: Look into declaring executors for the whole app and use it from there?
+    // TODO: Look into declaring executors for the whole app and use it from there? (refer to issue #33)
     private val analysisExecutor = Executors.newSingleThreadExecutor()
 
     private var binding: FragmentOcrBinding? = null
