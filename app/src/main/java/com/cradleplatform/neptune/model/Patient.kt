@@ -487,8 +487,6 @@ data class Patient(
             val medicalHistory = get(PatientField.MEDICAL_HISTORY)?.textValue() ?: ""
             val allergy = get(PatientField.ALLERGY)?.textValue() ?: ""
             val lastEdited = get(PatientField.LAST_EDITED)?.asLong()
-
-            // TODO: update server to send "lastServerUpdate" instead of base
             val lastServerUpdate = get(PatientField.LAST_SERVER_UPDATE)?.asLong()
 
             // The following fields are set to null because if we are receiving patient information
