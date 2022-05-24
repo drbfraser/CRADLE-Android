@@ -214,7 +214,7 @@ data class Referral(
 
 /**
  * The information that is expected by the SMS relay app.
- * TODO: Ensure that removing "referralId" doesn't break the SMS relay app.
+ * TODO: Ensure that removing "referralId" doesn't break the SMS relay app. (refer to issue #31)
  */
 data class SmsReferral(val referralId: String, val patient: PatientAndReadings)
 
