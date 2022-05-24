@@ -45,12 +45,6 @@ import java.util.TimeZone
 import kotlin.math.round
 import kotlin.reflect.KProperty
 
-// TODO: Figure out which of these fields must be optional and which are never
-//  used at all.
-
-// TODO: Remove default constructor, we should never be able to instantiate
-//  partial objects.
-
 /**
  * Holds information about a patient.
  *
@@ -78,8 +72,6 @@ import kotlin.reflect.KProperty
  * @property drugLastEdited Last time drug info was edited OFFLINE -> will be null if no offline edits
  * @property medicalLastEdited Last time medical info was edited OFFLINE -> will be null if no offline edits
  * @property lastServerUpdate Last time the patient has gotten updated from the server.
- *
- * TODO: Make [isExactDob] and [dob] not optional. Requires backend work to enforce it.
  */
 @Entity(
     indices = [
@@ -665,7 +657,6 @@ sealed class GestationalAge(val timestamp: BigInteger) : Serializable {
          * Nested serialization into the given [gen]
          */
         fun write(gen: JsonGenerator, gestationalAge: GestationalAge) {
-            // TODO: figure Jackson sealed classes and how it can work with deserialization
             val units = if (gestationalAge is GestationalAgeMonths) {
                 UNIT_VALUE_MONTHS
             } else {
@@ -739,7 +730,6 @@ class GestationalAgeMonths(timestamp: BigInteger) : GestationalAge(timestamp), S
  * methods use the same field names.
  */
 
-// TODO: Change gestationalTimestamp to pregnancyStartDate (when handling API that sends pregnancyStartDate)
 private enum class PatientField(override val text: String) : Field {
     ID("patientId"),
     NAME("patientName"),
