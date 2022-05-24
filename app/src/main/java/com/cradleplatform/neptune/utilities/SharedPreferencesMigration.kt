@@ -24,7 +24,7 @@ import androidx.core.content.edit
  *  </map>
  *
  *  TODO: Set version back to 0 when out of alpha testing. This will force all alpha users to
- *        log out.
+ *        log out. (Refer to issues ticket #28)
  */
 class SharedPreferencesMigration constructor(
     private val sharedPreferences: SharedPreferences
