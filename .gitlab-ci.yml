@@ -21,6 +21,8 @@ code_analysis:
     - if: '$CI_PIPELINE_SOURCE != "schedule" && $CI_MERGE_REQUEST_ID == null'
   script:
     - ./gradlew detekt
+  tags:
+    - docker
 
 # Compile and assemble a debug version of the application.
 build:
