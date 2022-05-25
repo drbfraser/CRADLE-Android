@@ -71,7 +71,8 @@ validate_database_json:
         echo "Generate it by building in Android Studio or by doing ./gradlew build"
         echo "Alternatively, you can get the JSON from the pipeline build artifact."
       fi
-
+  tags:
+    - docker
 # Run local unit tests
 test:
   stage: test
