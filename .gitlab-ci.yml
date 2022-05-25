@@ -34,7 +34,7 @@ build:
     - LATEST_DB_VERSION="$(scripts/get-latest-db-version.sh)"
     - cp "app/schemas/com.cradleplatform.neptune.database.CradleDatabase/$LATEST_DB_VERSION.json" latest_db_version.json
   tags:
-    - build
+    - docker
   artifacts:
     expire_in: 1 hour
     paths:
@@ -85,7 +85,7 @@ test:
     reports:
       junit: app/build/test-results/**/TEST-*.xml
   tags:
-    - build
+    - docker
 
 ######################
 # Scheduled jobs
