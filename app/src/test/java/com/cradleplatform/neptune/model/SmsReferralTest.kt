@@ -11,19 +11,6 @@ import java.util.UUID
 internal class SmsReferralTest {
     @Test
     fun `create sms referral and write it and then parse it back `() {
-        val fakeSharedPreferenceMap = mutableMapOf<String, Any?>()
-        val mockSharedPref = mockk<SharedPreferences> {
-            every { getInt(any(), any()) } answers {
-                val key = firstArg<String?>() ?: error("no key supplied")
-                if (fakeSharedPreferenceMap.containsKey(key)) {
-                    fakeSharedPreferenceMap[key] as Int
-                } else {
-                    // default value
-                    secondArg()
-                }
-            }
-        }
-        fakeSharedPreferenceMap["userId"] = 5
 
         // Changing this will affect other tests
         val patientAndReadings = deepCopyPatientAndReadings(
@@ -32,12 +19,19 @@ internal class SmsReferralTest {
         val firstReading = patientAndReadings.readings.first()
         firstReading.referral = Referral(
             comment = "this is a comment",
-            healthFacilityName = "H23234",
+            referralHealthFacilityName = "H23234",
             dateReferred = 16456665L,
             patientId = "400003232",
-            readingId = firstReading.id,
-            mockSharedPref
+            isAssessed = false,
+            actionTaken = null,
+            cancelReason = null,
+            isCancelled = false,
+            lastEdited = 0L,
+            notAttendReason = null,
+            notAttended = false,
+            userId = null
         )
+
 
         val referralId = UUID.randomUUID().toString()
 

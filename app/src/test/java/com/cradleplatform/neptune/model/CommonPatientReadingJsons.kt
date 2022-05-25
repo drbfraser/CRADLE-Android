@@ -68,14 +68,16 @@ object CommonPatientReadingJsons {
             "patientId": "123456",
             "isFlaggedForFollowup": false,
             "referral": {
-                "id": 120,
+                "id": "120",
                 "comment": "",
                 "isAssessed": false,
                 "referralHealthFacilityName": "H0000",
                 "patientId": "123456",
-                "readingId": "25255191-05b1-47f3-a7c7-2a0321ea3588",
-                "dateReferred": 1605753210
-            },
+                "dateReferred": 1605753210,
+                "isCancelled": false,
+                "lastEdited": 1605753210,
+                "notAttended": false
+            },    
             "followup": null,
             "urineTests": null,
             "userId": 12
@@ -137,12 +139,17 @@ object CommonPatientReadingJsons {
                     patientId = "123456",
                     isFlaggedForFollowUp = false,
                     referral = Referral(
-                        id = 120,
+                        id = "120",
                         comment = "",
                         isAssessed = false,
-                        healthFacilityName = "H0000",
+                        referralHealthFacilityName = "H0000",
                         patientId = "123456",
-                        readingId = "25255191-05b1-47f3-a7c7-2a0321ea3588",
+                        actionTaken = null,
+                        cancelReason = null,
+                        isCancelled = false,
+                        lastEdited = 1605753210,
+                        notAttendReason = null,
+                        notAttended = false,
                         dateReferred = 1605753210,
                         userId = null /* not sent back by server */
                     ),
@@ -344,25 +351,28 @@ object CommonPatientReadingJsons {
             "patientId": "66665",
             "isFlaggedForFollowup": false,
             "referral": {
-                "id": 104,
+                "id": "104",
                 "comment": "",
                 "isAssessed": true,
                 "referralHealthFacilityName": "H0000",
                 "patientId": "66665",
-                "readingId": "b1e9d431-0265-484d-a4df-695dd6aa827e",
-                "dateReferred": 1604981072
+                "dateReferred": 1604981072,
+                "isCancelled": false,
+                "lastEdited": 1604981072,
+                "notAttended": false
             },
             "followup": {
-                "id": 22,
-                "followupInstructions": "This is my follow up that is needded",
-                "specialInvestigations": "This is a messgage",
-                "diagnosis": "",
-                "treatment": "Treatmnents applied",
-                "medicationPrescribed": "",
-                "dateAssessed": 1604981359,
                 "followupNeeded": true,
-                "readingId": "b1e9d431-0265-484d-a4df-695dd6aa827e",
-                "healthcareWorkerId": 1
+                "medicationPrescribed": "",
+                "diagnosis": "",
+                "specialInvestigations": "This is a messgage",
+                "id": "22",
+                "healthcareWorkerId": 1,
+                "dateAssessed": 1604981359,
+                "treatment": "Treatmnents applied",
+                "followupInstructions": "This is my follow up that is needded",
+                "patientId": "66665"
+                
             },
             "urineTests": {
                 "id": 19,
@@ -411,17 +421,22 @@ object CommonPatientReadingJsons {
                     patientId = "66665",
                     isFlaggedForFollowUp = false,
                     referral = Referral(
-                        id = 104,
+                        id = "104",
                         comment = "",
                         isAssessed = true,
-                        healthFacilityName = "H0000",
+                        referralHealthFacilityName = "H0000",
                         patientId = "66665",
-                        readingId = "b1e9d431-0265-484d-a4df-695dd6aa827e",
+                        actionTaken = null,
+                        cancelReason = null,
+                        isCancelled = false,
+                        lastEdited = 1604981072L,
+                        notAttendReason = null,
+                        notAttended = false,
                         dateReferred = 1604981072L,
                         userId = null
                     ),
                     followUp = Assessment(
-                        id = 22,
+                        id = "22",
                         followupInstructions = "This is my follow up that is needded",
                         specialInvestigations = "This is a messgage",
                         diagnosis = "",
@@ -429,8 +444,8 @@ object CommonPatientReadingJsons {
                         medicationPrescribed = "",
                         dateAssessed = 1604981359L,
                         followupNeeded = true,
-                        readingId = "b1e9d431-0265-484d-a4df-695dd6aa827e",
-                        healthCareWorkerId = 1
+                        healthCareWorkerId = 1,
+                        patientId = "66665"
                     ),
                     urineTest = UrineTest(
                         leukocytes = "NAD",
