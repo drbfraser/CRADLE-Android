@@ -296,7 +296,15 @@ class SyncWorker @AssistedInject constructor(
         }
 
         return Result.success(
-            workDataOf(RESULT_MESSAGE to getResultSuccessMessage(patientResult, readingResult, referralResult, assessmentResult))
+            workDataOf(
+                RESULT_MESSAGE to
+                    getResultSuccessMessage(
+                        patientResult,
+                        readingResult,
+                        referralResult,
+                        assessmentResult
+                    )
+            )
         )
     }
 
