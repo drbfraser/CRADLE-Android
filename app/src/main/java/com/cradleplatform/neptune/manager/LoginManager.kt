@@ -160,7 +160,6 @@ class LoginManager @Inject constructor(
             // TODO: Show some dialog to select a health facility
             val healthFacilitiesDownloadSuccess = downloadHealthFacilities(loginResult.value.healthFacilityName) is NetworkResult.Success
 
-
             val referralsAsync = async {
                 if (patientsDownloadSuccess && healthFacilitiesDownloadSuccess) {
                     val referralsDownloadSuccess = downloadReferral() is NetworkResult.Success

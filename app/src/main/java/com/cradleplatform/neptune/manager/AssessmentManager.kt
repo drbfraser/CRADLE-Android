@@ -2,9 +2,7 @@ package com.cradleplatform.neptune.manager
 
 import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.database.daos.AssessmentDao
-import com.cradleplatform.neptune.database.daos.ReferralDao
 import com.cradleplatform.neptune.model.Assessment
-import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.net.NetworkResult
 import com.cradleplatform.neptune.net.RestApi
 import com.cradleplatform.neptune.net.map
@@ -94,5 +92,4 @@ class AssessmentManager @Inject constructor(
      * Get all the assessments that have been created or edited offline
      */
     suspend fun getAssessmentsToUpload(): List<Assessment> = assessmentDao.assessmentsToUpload()
-
 }

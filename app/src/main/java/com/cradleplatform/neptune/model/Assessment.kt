@@ -7,11 +7,9 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.cradleplatform.neptune.ext.Field
 import com.cradleplatform.neptune.ext.jackson.get
-import com.cradleplatform.neptune.ext.jackson.writeBooleanField
 import com.cradleplatform.neptune.ext.jackson.writeIntField
 import com.cradleplatform.neptune.ext.jackson.writeLongField
 import com.cradleplatform.neptune.ext.jackson.writeOptBooleanField
-import com.cradleplatform.neptune.ext.jackson.writeOptIntField
 import com.cradleplatform.neptune.ext.jackson.writeOptLongField
 import com.cradleplatform.neptune.ext.jackson.writeOptStringField
 import com.cradleplatform.neptune.ext.jackson.writeStringField
@@ -36,7 +34,7 @@ import java.io.Serializable
  * @property id A unique id for this follow up populated by the server
  * @property dateAssessed The time this follow up was made as a unix timestamp
  * @property healthCareWorkerId The id of the user who made this assessment
- * @property readingId Id of the reading this follow up belongs to
+ * @property patientId Id of the patient this follow up belongs to
  * @property diagnosis An optional medical diagnosis
  * @property treatment An optional treatment description
  * @property medicationPrescribed An optional description of the medication
@@ -154,10 +152,10 @@ data class Assessment(
                     diagnosis = diagnosis,
                     treatment = treatment,
                     medicationPrescribed = medicationPrescribed,
-                    specialInvestigations= specialInvestigations,
+                    specialInvestigations = specialInvestigations,
                     followupNeeded = followupNeeded,
-                    followupInstructions= followupInstructions,
-                    lastEdited= lastEdited,
+                    followupInstructions = followupInstructions,
+                    lastEdited = lastEdited,
                     lastServerUpdate = lastServerUpdate
                 )
             }

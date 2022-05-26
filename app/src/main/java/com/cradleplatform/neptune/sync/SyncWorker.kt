@@ -544,7 +544,6 @@ class SyncWorker @AssistedInject constructor(
             R.string.sync_total_assessments_downloaded_s, assessmentSyncResult.totalAssessmentsDownloaded
         )
 
-
         val errors = patientSyncResult.errors.let { if (it != "[ ]") "\nErrors:\n$it" else "" }
         return "$success\n" +
             "$totalPatientsUploaded\n" +
