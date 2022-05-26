@@ -384,7 +384,8 @@ open class PatientProfileActivity : AppCompatActivity() {
     }
 
     private fun setupCreatePatientReadingButton() {
-        // TODO: this function has unclear dependency on setupReadingsRecyclerView, patientsReadings won't be loaded until it's called
+        // TODO: this function has unclear dependency on setupReadingsRecyclerView,
+        //  patientsReadings won't be loaded until it's called (refer to issue #50)
         val createButton =
             findViewById<Button>(R.id.newPatientReadingButton)
         createButton.visibility = View.VISIBLE
