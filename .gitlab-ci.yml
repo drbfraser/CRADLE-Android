@@ -73,12 +73,15 @@ validate_database_json:
       fi
   tags:
     - docker
+    
 # Run local unit tests
 test:
   stage: test
   cache:
     <<: *global_cache
     policy: pull
+  needs:
+    - job: build
   script:
     - ./gradlew test
   rules:
