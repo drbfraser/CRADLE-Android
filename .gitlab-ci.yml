@@ -79,6 +79,8 @@ test:
   cache:
     <<: *global_cache
     policy: pull
+  needs:
+    - job: build
   script:
     - ./gradlew test
   rules:
