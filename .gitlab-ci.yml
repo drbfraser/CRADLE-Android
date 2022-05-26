@@ -7,12 +7,13 @@ stages:
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
 
-# Cache Gradle files.
-cache: &global_cache
-  key: global-cache
-  paths:
-    - .gradle/wrapper/
-    - .gradle/caches/
+# default cache value
+default:
+  cache:
+    key: global-cache
+    paths:
+      - .gradle/wrapper/
+      - .gradle/caches/
 
 # run static code analysis
 code_analysis:
@@ -78,7 +79,7 @@ validate_database_json:
 test:
   stage: test
   cache:
-    <<: *global_cache
+    key: global-cache
     policy: pull
   needs:
     - job: build
