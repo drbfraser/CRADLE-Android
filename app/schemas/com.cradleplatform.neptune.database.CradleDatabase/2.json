@@ -1,0 +1,618 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "199972f7755416a077d88ca3e47df6d6",
+    "entities": [
+      {
+        "tableName": "Reading",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`readingId` TEXT NOT NULL, `patientId` TEXT NOT NULL, `dateTimeTaken` INTEGER NOT NULL, `bloodPressure` TEXT NOT NULL, `urineTest` TEXT, `symptoms` TEXT NOT NULL, `referral` TEXT, `followUp` TEXT, `dateRecheckVitalsNeeded` INTEGER, `isFlaggedForFollowUp` INTEGER NOT NULL, `previousReadingIds` TEXT NOT NULL, `isUploadedToServer` INTEGER NOT NULL, `lastEdited` INTEGER NOT NULL, `userId` INTEGER, PRIMARY KEY(`readingId`), FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "readingId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "patientId",
+            "columnName": "patientId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateTimeTaken",
+            "columnName": "dateTimeTaken",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bloodPressure",
+            "columnName": "bloodPressure",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "urineTest",
+            "columnName": "urineTest",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "symptoms",
+            "columnName": "symptoms",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "referral",
+            "columnName": "referral",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "followUp",
+            "columnName": "followUp",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "dateRecheckVitalsNeeded",
+            "columnName": "dateRecheckVitalsNeeded",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "isFlaggedForFollowUp",
+            "columnName": "isFlaggedForFollowUp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "previousReadingIds",
+            "columnName": "previousReadingIds",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isUploadedToServer",
+            "columnName": "isUploadedToServer",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastEdited",
+            "columnName": "lastEdited",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "readingId"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [
+          {
+            "name": "index_Reading_readingId",
+            "unique": true,
+            "columnNames": [
+              "readingId"
+            ],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_Reading_readingId` ON `${TABLE_NAME}` (`readingId`)"
+          },
+          {
+            "name": "index_Reading_patientId",
+            "unique": false,
+            "columnNames": [
+              "patientId"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Reading_patientId` ON `${TABLE_NAME}` (`patientId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "Patient",
+            "onDelete": "CASCADE",
+            "onUpdate": "CASCADE",
+            "columns": [
+              "patientId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "Patient",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `dob` TEXT, `isExactDob` INTEGER, `gestationalAge` TEXT, `sex` TEXT NOT NULL, `isPregnant` INTEGER NOT NULL, `pregnancyId` INTEGER, `prevPregnancyEndDate` INTEGER, `prevPregnancyOutcome` TEXT, `zone` TEXT, `villageNumber` TEXT, `householdNumber` TEXT, `drugHistory` TEXT NOT NULL, `medicalHistory` TEXT NOT NULL, `allergy` TEXT NOT NULL, `lastEdited` INTEGER, `drugLastEdited` INTEGER, `medicalLastEdited` INTEGER, `lastServerUpdate` INTEGER, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dob",
+            "columnName": "dob",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "isExactDob",
+            "columnName": "isExactDob",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "gestationalAge",
+            "columnName": "gestationalAge",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "sex",
+            "columnName": "sex",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isPregnant",
+            "columnName": "isPregnant",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pregnancyId",
+            "columnName": "pregnancyId",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "prevPregnancyEndDate",
+            "columnName": "prevPregnancyEndDate",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "prevPregnancyOutcome",
+            "columnName": "prevPregnancyOutcome",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "zone",
+            "columnName": "zone",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "villageNumber",
+            "columnName": "villageNumber",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "householdNumber",
+            "columnName": "householdNumber",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "drugHistory",
+            "columnName": "drugHistory",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "medicalHistory",
+            "columnName": "medicalHistory",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "allergy",
+            "columnName": "allergy",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastEdited",
+            "columnName": "lastEdited",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "drugLastEdited",
+            "columnName": "drugLastEdited",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "medicalLastEdited",
+            "columnName": "medicalLastEdited",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "lastServerUpdate",
+            "columnName": "lastServerUpdate",
+            "affinity": "INTEGER",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [
+          {
+            "name": "index_Patient_id",
+            "unique": true,
+            "columnNames": [
+              "id"
+            ],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_Patient_id` ON `${TABLE_NAME}` (`id`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "HealthFacility",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`name` TEXT NOT NULL, `location` TEXT NOT NULL, `newReferrals` TEXT NOT NULL, `phoneNumber` TEXT NOT NULL, `about` TEXT NOT NULL, `type` TEXT NOT NULL, `isUserSelected` INTEGER NOT NULL, PRIMARY KEY(`name`))",
+        "fields": [
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "location",
+            "columnName": "location",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "newReferrals",
+            "columnName": "newReferrals",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "phoneNumber",
+            "columnName": "phoneNumber",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "about",
+            "columnName": "about",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isUserSelected",
+            "columnName": "isUserSelected",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "name"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "Referral",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `comment` TEXT, `referralHealthFacilityName` TEXT NOT NULL, `dateReferred` INTEGER NOT NULL, `userId` INTEGER, `patientId` TEXT NOT NULL, `actionTaken` TEXT, `cancelReason` TEXT, `notAttendReason` TEXT, `isAssessed` INTEGER NOT NULL, `isCancelled` INTEGER NOT NULL, `notAttended` INTEGER NOT NULL, `lastEdited` INTEGER NOT NULL, `lastServerUpdate` INTEGER, `isUploadedToServer` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE , FOREIGN KEY(`referralHealthFacilityName`) REFERENCES `HealthFacility`(`name`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "comment",
+            "columnName": "comment",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "referralHealthFacilityName",
+            "columnName": "referralHealthFacilityName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateReferred",
+            "columnName": "dateReferred",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "patientId",
+            "columnName": "patientId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "actionTaken",
+            "columnName": "actionTaken",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "cancelReason",
+            "columnName": "cancelReason",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "notAttendReason",
+            "columnName": "notAttendReason",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "isAssessed",
+            "columnName": "isAssessed",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isCancelled",
+            "columnName": "isCancelled",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notAttended",
+            "columnName": "notAttended",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastEdited",
+            "columnName": "lastEdited",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastServerUpdate",
+            "columnName": "lastServerUpdate",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "isUploadedToServer",
+            "columnName": "isUploadedToServer",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [
+          {
+            "name": "index_Referral_id",
+            "unique": true,
+            "columnNames": [
+              "id"
+            ],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_Referral_id` ON `${TABLE_NAME}` (`id`)"
+          },
+          {
+            "name": "index_Referral_patientId",
+            "unique": false,
+            "columnNames": [
+              "patientId"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Referral_patientId` ON `${TABLE_NAME}` (`patientId`)"
+          },
+          {
+            "name": "index_Referral_referralHealthFacilityName",
+            "unique": false,
+            "columnNames": [
+              "referralHealthFacilityName"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Referral_referralHealthFacilityName` ON `${TABLE_NAME}` (`referralHealthFacilityName`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "Patient",
+            "onDelete": "CASCADE",
+            "onUpdate": "CASCADE",
+            "columns": [
+              "patientId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "HealthFacility",
+            "onDelete": "CASCADE",
+            "onUpdate": "CASCADE",
+            "columns": [
+              "referralHealthFacilityName"
+            ],
+            "referencedColumns": [
+              "name"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "Assessment",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `dateAssessed` INTEGER NOT NULL, `healthCareWorkerId` INTEGER NOT NULL, `patientId` TEXT NOT NULL, `diagnosis` TEXT, `treatment` TEXT, `medicationPrescribed` TEXT, `specialInvestigations` TEXT, `followupNeeded` INTEGER, `followupInstructions` TEXT, `lastEdited` INTEGER, `lastServerUpdate` INTEGER, `isUploadedToServer` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateAssessed",
+            "columnName": "dateAssessed",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "healthCareWorkerId",
+            "columnName": "healthCareWorkerId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "patientId",
+            "columnName": "patientId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "diagnosis",
+            "columnName": "diagnosis",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "treatment",
+            "columnName": "treatment",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "medicationPrescribed",
+            "columnName": "medicationPrescribed",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "specialInvestigations",
+            "columnName": "specialInvestigations",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "followupNeeded",
+            "columnName": "followupNeeded",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "followupInstructions",
+            "columnName": "followupInstructions",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "lastEdited",
+            "columnName": "lastEdited",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "lastServerUpdate",
+            "columnName": "lastServerUpdate",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "isUploadedToServer",
+            "columnName": "isUploadedToServer",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [
+          {
+            "name": "index_Assessment_id",
+            "unique": true,
+            "columnNames": [
+              "id"
+            ],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_Assessment_id` ON `${TABLE_NAME}` (`id`)"
+          },
+          {
+            "name": "index_Assessment_patientId",
+            "unique": false,
+            "columnNames": [
+              "patientId"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Assessment_patientId` ON `${TABLE_NAME}` (`patientId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "Patient",
+            "onDelete": "CASCADE",
+            "onUpdate": "CASCADE",
+            "columns": [
+              "patientId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "viewName": "LocalSearchPatient",
+        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT\n  p.name,\n  p.id,\n  p.villageNumber,\n  r.bloodPressure as latestBloodPressure,\n  MAX(r.dateTimeTaken) as latestReadingDate,\n  p.lastEdited,\n  r.referral,\n  r.dateRecheckVitalsNeeded\nFROM\n  Patient as p\n  LEFT JOIN Reading AS r ON p.id = r.patientId\nGROUP BY \n  IFNULL(r.patientId, p.id)"
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '199972f7755416a077d88ca3e47df6d6')"
+    ]
+  }
+}
