@@ -215,6 +215,12 @@ object MockDependencyUtils {
             //  captured, it overrides any lambdas that was there before. To work around this,
             //  we don't test parallel downloads in LoginManager.
             coEvery { withTransaction(captureLambda<suspend () -> Unit>()) } coAnswers {
+
+                // save mutable list states before transaction
+                val preTransactionHealthFacilityDatabase = fakeHealthFacilityDatabase.toList()
+                val preTransactionPatientDatabase = fakePatientDatabase.toList()
+                val preTransactionReadingDatabase = fakeReadingDatabase.toList()
+
                 var isTransactionSuccessful = false
                 try {
                     lambda<suspend () -> Unit>().captured.invoke()
@@ -223,8 +229,11 @@ object MockDependencyUtils {
                     if (!isTransactionSuccessful) {
                         // Simulate rollback
                         fakeHealthFacilityDatabase.clear()
+                        fakeHealthFacilityDatabase.addAll(preTransactionHealthFacilityDatabase)
                         fakePatientDatabase.clear()
+                        fakePatientDatabase.addAll(preTransactionPatientDatabase)
                         fakeReadingDatabase.clear()
+                        fakeReadingDatabase.addAll(preTransactionReadingDatabase)
                     }
                 }
             }
