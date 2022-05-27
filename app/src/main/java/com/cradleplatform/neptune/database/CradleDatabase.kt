@@ -27,7 +27,7 @@ import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 
-const val CURRENT_DATABASE_VERSION = 2
+const val CURRENT_DATABASE_VERSION = 3
 
 /**
  * An interface for the local CRADLE database.

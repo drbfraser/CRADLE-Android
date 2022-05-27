@@ -119,6 +119,15 @@ data class Referral(
     @ColumnInfo @JsonProperty("notAttended")
     var notAttended: Boolean,
 
+    @ColumnInfo @JsonProperty("dateAssessed")
+    var dateAssessed: Long?,
+
+    @ColumnInfo @JsonProperty("dateCancelled")
+    var dateCancelled: Long?,
+
+    @ColumnInfo @JsonProperty("dateNotAttended")
+    var dateNotAttended: Long?,
+
     @ColumnInfo @JsonProperty("lastEdited")
     var lastEdited: Long,
 
@@ -148,6 +157,9 @@ data class Referral(
                 gen.writeBooleanField(ReferralField.IS_ASSESSED, isAssessed)
                 gen.writeBooleanField(ReferralField.IS_CANCELLED, isCancelled)
                 gen.writeBooleanField(ReferralField.NOT_ATTENDED, notAttended)
+                gen.writeOptLongField(ReferralField.DATE_ASSESSED, dateAssessed)
+                gen.writeOptLongField(ReferralField.DATE_CANCELLED, dateCancelled)
+                gen.writeOptLongField(ReferralField.DATE_NOT_ATTENDED, dateNotAttended)
                 gen.writeLongField(ReferralField.LAST_EDITED, lastEdited)
                 gen.writeOptLongField(ReferralField.LAST_SERVER_UPDATE, lastServerUpdate)
 
@@ -171,6 +183,9 @@ data class Referral(
                 val isAssessed = get(ReferralField.IS_ASSESSED)!!.booleanValue()
                 val isCancelled = get(ReferralField.IS_CANCELLED)!!.booleanValue()
                 val notAttended = get(ReferralField.NOT_ATTENDED)!!.booleanValue()
+                val dateAssessed = get(ReferralField.DATE_ASSESSED)?.longValue()
+                val dateCancelled = get(ReferralField.DATE_CANCELLED)?.longValue()
+                val dateNotAttended = get(ReferralField.DATE_NOT_ATTENDED)?.longValue()
                 val lastEdited = get(ReferralField.LAST_EDITED)!!.longValue()
                 val lastServerUpdate = get(ReferralField.LAST_SERVER_UPDATE)?.longValue()
 
@@ -187,6 +202,9 @@ data class Referral(
                     isAssessed = isAssessed,
                     isCancelled = isCancelled,
                     notAttended = notAttended,
+                    dateAssessed = dateAssessed,
+                    dateCancelled = dateCancelled,
+                    dateNotAttended = dateNotAttended,
                     lastEdited = lastEdited,
                     lastServerUpdate = lastServerUpdate
                 )
@@ -234,6 +252,9 @@ private enum class ReferralField(override val text: String) : Field {
     IS_ASSESSED("isAssessed"),
     IS_CANCELLED("isCancelled"),
     NOT_ATTENDED("notAttended"),
+    DATE_ASSESSED("dateAssessed"),
+    DATE_CANCELLED("dateCancelled"),
+    DATE_NOT_ATTENDED("dateNotAttended"),
     LAST_EDITED("lastEdited"),
     LAST_SERVER_UPDATE("lastServerUpdate")
 }

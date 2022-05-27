@@ -1632,6 +1632,9 @@ class PatientReadingViewModel @Inject constructor(
                     isAssessed = false,
                     isCancelled = false,
                     notAttended = false,
+                    dateAssessed = null,
+                    dateCancelled = null,
+                    dateNotAttended = null,
                     lastEdited = ZonedDateTime.now().toEpochSecond()
                 )
                 yield()
