@@ -101,8 +101,6 @@ interface AssessmentDao {
     /**
      * Returns a live list of assessments
      */
-    // TODO: need live data?
-    // if need, need for all assessment or based on patient id?
     @Query("SELECT * FROM Assessment")
     fun getAllAssessmentsLiveData(): LiveData<List<Assessment>>
 }

@@ -651,13 +651,13 @@ class RestApi constructor(
                                 patientChannel.close()
                             }
                             PatientSyncField.ERRORS.text -> {
-                                // TODO: Parse array of objects
+                                // TODO: Parse array of objects (refer to issue #38)
                                 nextToken()
                                 errors = readValueAsTree<JsonNode>().toPrettyString()
                             }
                             PatientSyncField.FACILITIES.text -> {
                                 // TODO: Either have a sync endpoint for new facilities, or
-                                //  remove this and just redownload facilities from server.
+                                //  remove this and just redownload facilities from server. (refer to issue #38)
                                 // nextToken()
                                 // val tree = readValueAsTree<JsonNode>().toPrettyString()
                             }
@@ -817,7 +817,7 @@ class RestApi constructor(
                                 referralChannel.close()
                             }
                             ReferralSyncField.ERRORS.text -> {
-                                // TODO: Parse array of objects
+                                // TODO: Parse array of objects (refer to issue #38)
                                 nextToken()
                                 errors = readValueAsTree<JsonNode>().toPrettyString()
                             }
@@ -886,7 +886,7 @@ class RestApi constructor(
                                 assessmentChannel.close()
                             }
                             AssessmentSyncField.ERRORS.text -> {
-                                // TODO: Parse array of objects
+                                // TODO: Parse array of objects (refer to issue #38)
                                 nextToken()
                                 errors = readValueAsTree<JsonNode>().toPrettyString()
                             }

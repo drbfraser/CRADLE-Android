@@ -30,7 +30,6 @@
             android:layout_height="wrap_content"
             android:padding="@dimen/reading_flow_previous_reading_item_padding">
 
-            <!-- TODO: set content description for accessibility -->
             <ImageView
                 android:id="@+id/traffic_light_image_view"
                 android:layout_width="48dp"

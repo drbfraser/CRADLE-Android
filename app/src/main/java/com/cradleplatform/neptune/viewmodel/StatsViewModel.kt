@@ -63,7 +63,7 @@ class StatsViewModel @Inject constructor(
             }
             StatisticsFilterOptions.JUSTME -> {
                 // Get stats for the current user ID:
-                // TODO: Determine a sane failure value for USER_ID_KEY
+                // TODO: Determine a sane failure value for USER_ID_KEY (refer to issue #35)
                 savedStatsData = restApi.getStatisticsForUserBetween(
                     startTime,
                     endTime,

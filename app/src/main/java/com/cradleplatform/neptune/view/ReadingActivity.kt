@@ -98,7 +98,6 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
             patientId = intent.getStringExtra(EXTRA_PATIENT_ID)
         )
 
-        // TODO: remove this when done
         // adapted from https://github.com/googlecodelabs/android-navigation
         navController.addOnDestinationChangedListener { _, destination, _ ->
             val dest: String = try {
@@ -185,7 +184,7 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
                     // Trigger a destination change back to start in case we are starting up after a
                     // system-initiated process death.
                     // TODO: Implement some sort of auto-save system that works in general and lets
-                    //  users exit the reading flow without a dialog to confirm discarding.
+                    //  users exit the reading flow without a dialog to confirm discarding. (refer to issue #5)
                     Log.w(TAG, "ReadingActivity started up after being killed by the OS")
                     navController.popBackStack(getStartDestinationId(), false)
                     Toast.makeText(

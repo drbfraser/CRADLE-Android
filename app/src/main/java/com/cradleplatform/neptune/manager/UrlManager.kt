@@ -6,7 +6,7 @@ import java.math.BigInteger
 import javax.inject.Inject
 import javax.inject.Singleton
 
-// TODO: Lots of duplicate properties in here, need to clean them out
+// TODO: Lots of duplicate properties in here, need to clean them out (Refer to issue # 29)
 
 /**
  * Constructs the various URLs required for communicating with the server.

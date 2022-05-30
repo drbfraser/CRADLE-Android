@@ -344,7 +344,7 @@ class PatientReadingViewModel @Inject constructor(
                     viewModelScope.launch {
                         logTime("setupIsPatientValidLiveData") {
                             // Only check if the patient is valid if we are creating a new patient.
-                            // TODO: Handle the case where we are editing patient info only.
+                            // TODO: Handle the case where we are editing patient info only. (refer to issue 36)
                             if (reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
                                 setupIsPatientValidLiveData()
                             } else {

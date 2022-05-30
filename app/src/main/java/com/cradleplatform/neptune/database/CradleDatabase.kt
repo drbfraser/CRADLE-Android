@@ -35,7 +35,7 @@ const val CURRENT_DATABASE_VERSION = 2
  * About migrations: Although we want to prioritize the data that is on the server, we don't want
  * to fall back to a destructive migration in case the user has un-uploaded [Patient]s or [Reading]s
  *
- * TODO: Lower the version back to version 1 when the app is out of alpha testing.
+ * TODO: Lower the version back to version 1 when the app is out of alpha testing. (Refer to issues ticket #28)
  */
 @Database(
     entities = [Reading::class, Patient::class, HealthFacility::class, Referral::class, Assessment::class],

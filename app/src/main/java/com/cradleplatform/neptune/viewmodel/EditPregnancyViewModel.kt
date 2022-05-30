@@ -239,7 +239,6 @@ class EditPregnancyViewModel @Inject constructor(
                     SaveResult.SavedAndUploaded
                 }
                 is NetworkResult.Failure -> {
-                    // TODO: Find a way to push this message (String(result.body)) up to activity level
                     Log.d(TAG, String(result.body))
                     allowEdit(true)
                     SaveResult.ServerReject
