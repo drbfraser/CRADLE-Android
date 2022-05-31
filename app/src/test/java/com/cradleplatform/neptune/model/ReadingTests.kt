@@ -7,7 +7,7 @@ import java.util.UUID
 
 class ReadingTests {
     @Test
-    fun reading_jackson_serializeAndDeserialize() {
+    fun `jackson serialize And Deserialize for Dataclass Reading`() {
         val reading = createTestReading()
 
         val writer = JacksonMapper.writerForReading
@@ -25,24 +25,30 @@ class ReadingTests {
         val readingId = UUID.randomUUID().toString()
         val referralForReading = Referral(
             comment = "This is a comment",
-            healthFacilityName = "H2230",
+            referralHealthFacilityName = "H2230",
             dateReferred = 1595645675L,
             patientId = patientId,
-            readingId = readingId,
-            id = 345,
+            id = "345",
             userId = 2,
-            isAssessed = true
+            isAssessed = false,
+            actionTaken = null,
+            cancelReason = null,
+            isCancelled = false,
+            lastEdited = 0L,
+            notAttendReason = null,
+            notAttended = false
         )
+
         val assessmentForReading = Assessment(
-            id = 4535,
+            id = "4535",
             dateAssessed = 1595745946L,
             healthCareWorkerId = 2,
-            readingId = readingId,
             diagnosis = "This is a detailed diagnosis.",
             treatment = "This is a treatment",
             medicationPrescribed = "These are medications prescripted.",
             specialInvestigations = "This is a special investiation",
-            followupNeeded = true, followupInstructions = "These are things to do"
+            followupNeeded = true, followupInstructions = "These are things to do",
+            patientId = patientId
         )
 
         return Reading(

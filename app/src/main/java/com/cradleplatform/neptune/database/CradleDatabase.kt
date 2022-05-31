@@ -2,7 +2,6 @@ package com.cradleplatform.neptune.database
 
 import android.content.Context
 import androidx.room.Database
-import androidx.room.Index
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
@@ -14,13 +13,6 @@ import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
 import com.cradleplatform.neptune.database.daos.ReferralDao
 import com.cradleplatform.neptune.database.views.LocalSearchPatient
-import com.cradleplatform.neptune.ext.jackson.writeBooleanField
-import com.cradleplatform.neptune.ext.jackson.writeIntField
-import com.cradleplatform.neptune.ext.jackson.writeLongField
-import com.cradleplatform.neptune.ext.jackson.writeOptIntField
-import com.cradleplatform.neptune.ext.jackson.writeOptLongField
-import com.cradleplatform.neptune.ext.jackson.writeOptStringField
-import com.cradleplatform.neptune.ext.jackson.writeStringField
 import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
@@ -115,8 +107,10 @@ internal object Migrations {
                         `lastServerUpdate` INTEGER,
                         `isUploadedToServer` INTEGER NOT NULL,
                         PRIMARY KEY(`id`),
-                        FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE,
-                        FOREIGN KEY(`referralHealthFacilityName`) REFERENCES `HealthFacility`(`name`) ON UPDATE CASCADE ON DELETE CASCADE
+                        FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) 
+                            ON UPDATE CASCADE ON DELETE CASCADE,
+                        FOREIGN KEY(`referralHealthFacilityName`) REFERENCES `HealthFacility`(`name`) 
+                            ON UPDATE CASCADE ON DELETE CASCADE
                     )
                     """.trimIndent()
                 )
@@ -145,8 +139,13 @@ internal object Migrations {
 
                 execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_Referral_id` ON `Referral` (`id`)")
                 execSQL("CREATE INDEX IF NOT EXISTS `index_Referral_patientId` ON `Referral` (`patientId`)")
-                execSQL("CREATE INDEX IF NOT EXISTS `index_Referral_referralHealthFacilityName` ON `Referral` (`referralHealthFacilityName`)")
-
+                execSQL(
+                    """
+                    CREATE INDEX 
+                    IF NOT EXISTS `index_Referral_referralHealthFacilityName` 
+                    ON `Referral` (`referralHealthFacilityName`)
+                    """.trimIndent()
+                )
                 execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_Assessment_id` ON `Assessment` (`id`)")
                 execSQL("CREATE INDEX IF NOT EXISTS `index_Assessment_patientId` ON `Assessment` (`patientId`)")
             }

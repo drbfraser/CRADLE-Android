@@ -3,9 +3,7 @@ package com.cradleplatform.neptune.manager
 import androidx.room.withTransaction
 import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.database.daos.ReadingDao
-import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.Reading
-import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.RetestGroup
 import com.cradleplatform.neptune.net.NetworkResult
 import com.cradleplatform.neptune.net.RestApi
@@ -125,7 +123,7 @@ class ReadingManager @Inject constructor(
         if (result is NetworkResult.Success) {
             addReading(result.value, isReadingFromServer = true)
         }
-        return result.map { Unit }
+        return result.map { }
     }
 
     /**

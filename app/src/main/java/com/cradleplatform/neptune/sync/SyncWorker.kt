@@ -296,7 +296,15 @@ class SyncWorker @AssistedInject constructor(
         }
 
         return Result.success(
-            workDataOf(RESULT_MESSAGE to getResultSuccessMessage(patientResult, readingResult, referralResult, assessmentResult))
+            workDataOf(
+                RESULT_MESSAGE to
+                    getResultSuccessMessage(
+                        patientResult,
+                        readingResult,
+                        referralResult,
+                        assessmentResult
+                    )
+            )
         )
     }
 
@@ -543,7 +551,6 @@ class SyncWorker @AssistedInject constructor(
         val totalAssessmentsDownloaded = applicationContext.getString(
             R.string.sync_total_assessments_downloaded_s, assessmentSyncResult.totalAssessmentsDownloaded
         )
-
 
         val errors = patientSyncResult.errors.let { if (it != "[ ]") "\nErrors:\n$it" else "" }
         return "$success\n" +

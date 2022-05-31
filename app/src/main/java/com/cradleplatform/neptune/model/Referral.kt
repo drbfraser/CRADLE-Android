@@ -1,27 +1,18 @@
 package com.cradleplatform.neptune.model
 
-import android.content.SharedPreferences
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.cradleplatform.neptune.ext.Field
-import com.cradleplatform.neptune.ext.getIntOrNull
 import com.cradleplatform.neptune.ext.jackson.get
-import com.cradleplatform.neptune.ext.jackson.getOptObject
-import com.cradleplatform.neptune.ext.jackson.getOptObjectArray
 import com.cradleplatform.neptune.ext.jackson.writeBooleanField
-import com.cradleplatform.neptune.ext.jackson.writeIntField
 import com.cradleplatform.neptune.ext.jackson.writeLongField
-import com.cradleplatform.neptune.ext.jackson.writeObjectField
 import com.cradleplatform.neptune.ext.jackson.writeOptIntField
 import com.cradleplatform.neptune.ext.jackson.writeOptLongField
-import com.cradleplatform.neptune.ext.jackson.writeOptObjectField
 import com.cradleplatform.neptune.ext.jackson.writeOptStringField
 import com.cradleplatform.neptune.ext.jackson.writeStringField
-import com.cradleplatform.neptune.manager.LoginManager
-import com.cradleplatform.neptune.utilities.nullIfEmpty
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.core.JsonGenerator

@@ -3,9 +3,13 @@ package com.cradleplatform.neptune.testutils
 import android.content.SharedPreferences
 import androidx.room.withTransaction
 import com.cradleplatform.neptune.database.CradleDatabase
+import com.cradleplatform.neptune.database.daos.AssessmentDao
+import com.cradleplatform.neptune.database.daos.AssessmentDao_Impl
 import com.cradleplatform.neptune.database.daos.HealthFacilityDao
 import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
+import com.cradleplatform.neptune.database.daos.ReferralDao
+import com.cradleplatform.neptune.database.daos.ReferralDao_Impl
 import com.cradleplatform.neptune.manager.HealthFacilityManager
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
@@ -186,6 +190,15 @@ object MockDependencyUtils {
             }
         }
 
+        val mockReferralDao = mockk<ReferralDao> {
+            // TODO: add mock operations for ReferralDao (refer to issue #44)
+        }
+
+        val mockAssessmentDao = mockk<AssessmentDao> {
+            // TODO: add mock operations for AssessmentDao (refer to issue #44)
+        }
+
+
         val mockDatabase = mockk<CradleDatabase> {
             // https://stackoverflow.com/a/56652529 - if we don't do this, test will hang forever
             if (!isMockkStaticForDatabaseKtDone) {
@@ -202,6 +215,12 @@ object MockDependencyUtils {
             //  captured, it overrides any lambdas that was there before. To work around this,
             //  we don't test parallel downloads in LoginManager.
             coEvery { withTransaction(captureLambda<suspend () -> Unit>()) } coAnswers {
+
+                // save mutable list states before transaction
+                val preTransactionHealthFacilityDatabase = fakeHealthFacilityDatabase.toList()
+                val preTransactionPatientDatabase = fakePatientDatabase.toList()
+                val preTransactionReadingDatabase = fakeReadingDatabase.toList()
+
                 var isTransactionSuccessful = false
                 try {
                     lambda<suspend () -> Unit>().captured.invoke()
@@ -210,8 +229,11 @@ object MockDependencyUtils {
                     if (!isTransactionSuccessful) {
                         // Simulate rollback
                         fakeHealthFacilityDatabase.clear()
+                        fakeHealthFacilityDatabase.addAll(preTransactionHealthFacilityDatabase)
                         fakePatientDatabase.clear()
+                        fakePatientDatabase.addAll(preTransactionPatientDatabase)
                         fakeReadingDatabase.clear()
+                        fakeReadingDatabase.addAll(preTransactionReadingDatabase)
                     }
                 }
             }
@@ -228,6 +250,8 @@ object MockDependencyUtils {
             mockDatabase,
             mockPatientDao,
             mockReadingDao,
+            mockReferralDao,
+            mockAssessmentDao,
             mockHealthFacilityDao,
             fakePatientDatabase,
             fakeReadingDatabase,
@@ -239,6 +263,8 @@ object MockDependencyUtils {
         val mockedDatabase: CradleDatabase,
         val mockedPatientDao: PatientDao,
         val mockedReadingDao: ReadingDao,
+        val mockedReferralDao: ReferralDao,
+        val mockedAssessmentDao: AssessmentDao,
         val mockedHealthFacilityDao: HealthFacilityDao,
         val underlyingPatientDatabase: MutableList<Patient>,
         val underlyingReadingDatabase: MutableList<Reading>,

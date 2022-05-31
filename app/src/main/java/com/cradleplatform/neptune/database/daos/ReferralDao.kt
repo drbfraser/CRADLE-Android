@@ -1,17 +1,13 @@
 package com.cradleplatform.neptune.database.daos
 
-import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Transaction
 import androidx.room.Update
-import com.cradleplatform.neptune.model.HealthFacility
-import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Referral
 
 /**
@@ -46,7 +42,7 @@ interface ReferralDao {
      * If a conflicting element already exists in the database it will be
      * replaced with the new one.
      *
-     * @param referral A list of entities to insert.
+     * @param referralEntities A list of entities to insert.
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(referralEntities: List<Referral>)

@@ -5,8 +5,10 @@ import android.content.SharedPreferences
 import android.util.Log
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.database.CradleDatabase
+import com.cradleplatform.neptune.database.daos.AssessmentDao
 import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
+import com.cradleplatform.neptune.database.daos.ReferralDao
 import com.cradleplatform.neptune.model.CommonPatientReadingJsons
 import com.cradleplatform.neptune.model.CommonReadingJsons
 import com.cradleplatform.neptune.model.HealthFacility
@@ -108,6 +110,8 @@ internal class LoginManagerTests {
     private val mockDatabase: CradleDatabase
     private val mockPatientDao: PatientDao
     private val mockReadingDao: ReadingDao
+    private val mockReferralDao: ReferralDao
+    private val mockAssessmentDao: AssessmentDao
     private val fakeSharedPreferences: MutableMap<String, Any?>
     private val mockSharedPrefs: SharedPreferences
     private val fakeHealthFacilityDatabase: MutableList<HealthFacility>
@@ -122,6 +126,8 @@ internal class LoginManagerTests {
             mockDatabase = mockedDatabase
             mockPatientDao = mockedPatientDao
             mockReadingDao = mockedReadingDao
+            mockReferralDao = mockedReferralDao
+            mockAssessmentDao = mockedAssessmentDao
             fakePatientDatabase = underlyingPatientDatabase
             fakeReadingDatabase = underlyingReadingDatabase
             fakeHealthFacilityDatabase = underlyingHealthFacilityDatabase
@@ -182,7 +188,7 @@ internal class LoginManagerTests {
                             } else {
                                 // mess it up somehow
                                 setResponseCode(200)
-                                setBody("${json.substring(0, json.length - 6)}ThisMessessItUp")
+                                setBody("${json.substring(0, json.length - 6)}ThisMessesItUp")
                             }
                         }
                         "/api/mobile/readings" -> {
@@ -199,7 +205,7 @@ internal class LoginManagerTests {
                             } else {
                                 // mess it up somehow
                                 setResponseCode(200)
-                                setBody("${json.substring(0, json.length - 6)}ThisMessessItUp")
+                                setBody("${json.substring(0, json.length - 6)}ThisMessesItUp")
                             }
                         }
                         "/api/facilities" -> {
@@ -216,7 +222,7 @@ internal class LoginManagerTests {
                                 // mess it up somehow. server says it's okay but something happened
                                 // during download
                                 setResponseCode(200)
-                                setBody("${json.substring(0, json.length - 6)}ThisMessessItUp")
+                                setBody("${json.substring(0, json.length - 6)}ThisMessesItUp")
                             }
                         }
                         else -> setResponseCode(404)
@@ -229,25 +235,20 @@ internal class LoginManagerTests {
         mockWebServer = server
     }
 
+    // Mock Managers that only being used to initialize LoginManager
     private val mockHealthManager = HealthFacilityManager(mockDatabase)
-
-    private val fakePatientManager = PatientManager(
-        mockDatabase,
-        mockPatientDao,
-        mockReadingDao,
-        mockRestApi
-    )
-
-    private val fakeReadingManager = ReadingManager(
-        mockDatabase,
-        mockReadingDao,
-        mockRestApi
-    )
+    private val fakePatientManager = PatientManager(mockDatabase, mockPatientDao, mockReadingDao, mockRestApi)
+    private val fakeReadingManager = ReadingManager(mockDatabase, mockReadingDao, mockRestApi)
+    private val mockReferralManager = ReferralManager(mockDatabase, mockReferralDao, mockRestApi)
+    private val mockAssessmentManager = AssessmentManager(mockDatabase, mockAssessmentDao, mockRestApi)
 
     private val mockContext = mockk<Context>(relaxed = true) {
         every { getString(R.string.key_vht_name) } returns "setting_vht_name"
         every { getString(R.string.key_role) } returns "setting_role"
     }
+
+    // Variable Storing an instance of the loginManger being tested
+    private lateinit var loginManager :LoginManager
 
     @BeforeEach
     fun setUp() {
@@ -262,6 +263,18 @@ internal class LoginManagerTests {
         fakeHealthFacilityDatabase.clear()
         fakePatientDatabase.clear()
         fakeReadingDatabase.clear()
+
+        loginManager = LoginManager(
+            mockRestApi,
+            mockSharedPrefs,
+            mockDatabase,
+            fakePatientManager,
+            fakeReadingManager,
+            mockHealthManager,
+            mockReferralManager,
+            mockAssessmentManager,
+            mockContext
+        )
     }
     @AfterEach
     fun cleanUp() {
@@ -275,15 +288,6 @@ internal class LoginManagerTests {
         failTheLoginWithIOIssues = false
 
         runBlocking {
-            val loginManager = LoginManager(
-                mockRestApi,
-                mockSharedPrefs,
-                mockDatabase,
-                fakePatientManager,
-                fakeReadingManager,
-                mockHealthManager,
-                mockContext
-            )
 
             val result = withTimeout(Duration.seconds(10)) {
                 loginManager.login(TEST_USER_EMAIL, TEST_USER_PASSWORD, parallelDownload = false)
@@ -409,16 +413,6 @@ internal class LoginManagerTests {
         mockDatabase.clearAllTables()
 
         runBlocking {
-            val loginManager = LoginManager(
-                mockRestApi,
-                mockSharedPrefs,
-                mockDatabase,
-                fakePatientManager,
-                fakeReadingManager,
-                mockHealthManager,
-                mockContext
-            )
-
             val result = loginManager.login(
                 TEST_USER_EMAIL,
                 TEST_USER_PASSWORD,
@@ -451,17 +445,7 @@ internal class LoginManagerTests {
         mockDatabase.clearAllTables()
 
         runBlocking {
-            val loginManager = LoginManager(
-                mockRestApi,
-                mockSharedPrefs,
-                mockDatabase,
-                fakePatientManager,
-                fakeReadingManager,
-                mockHealthManager,
-                mockContext
-            )
-
-            val result = loginManager.login(TEST_USER_EMAIL, TEST_USER_PASSWORD + "wronglol")
+            val result = loginManager.login(TEST_USER_EMAIL, TEST_USER_PASSWORD + "_invalid_version")
             assert(result is NetworkResult.Failure) {
                 "expected a failure, but got result $result and " +
                     "shared prefs map $fakeSharedPreferences"

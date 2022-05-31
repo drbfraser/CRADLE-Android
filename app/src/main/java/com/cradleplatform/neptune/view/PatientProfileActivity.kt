@@ -16,7 +16,6 @@ import androidx.annotation.Nullable
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
@@ -35,7 +34,6 @@ import com.cradleplatform.neptune.view.DashBoardActivity.Companion.READING_ACTIV
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForEditReading
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForNewReadingExistingPatient
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForRecheck
-import com.cradleplatform.neptune.view.ui.reading.ReferralDialogFragment
 import com.cradleplatform.neptune.viewmodel.ReadingRecyclerViewAdapter
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
@@ -386,7 +384,8 @@ open class PatientProfileActivity : AppCompatActivity() {
     }
 
     private fun setupCreatePatientReadingButton() {
-        // TODO: this function has unclear dependency on setupReadingsRecyclerView, patientsReadings won't be loaded until it's called
+        // TODO: this function has unclear dependency on setupReadingsRecyclerView,
+        //  patientsReadings won't be loaded until it's called (refer to issue #50)
         val createButton =
             findViewById<Button>(R.id.newPatientReadingButton)
         createButton.visibility = View.VISIBLE
@@ -436,19 +435,21 @@ open class PatientProfileActivity : AppCompatActivity() {
         patientReadings = getThisPatientsReadings()
         patientReferrals = getThisPatientsReferrals()
         patientAssessments = getThisPatientAssessments()
-        val combinedList: MutableList<Any> = patientReadings.map{i-> i }.toMutableList()
-        if (patientReferrals!=null)
-            combinedList.addAll(patientReferrals!!.map{i->i})
-        if (patientAssessments!=null)
-            combinedList.addAll(patientAssessments!!.map{i->i})
-        combinedList.sortWith(compareByDescending {
-            when (it) {
-                is Reading -> it.dateTimeTaken
-                is Referral -> it.dateReferred
-                is Assessment -> it.dateAssessed
-                else -> Integer.MAX_VALUE
+        val combinedList: MutableList<Any> = patientReadings.map { i -> i }.toMutableList()
+        if (patientReferrals != null)
+            combinedList.addAll(patientReferrals!!.map { i -> i })
+        if (patientAssessments != null)
+            combinedList.addAll(patientAssessments!!.map { i -> i })
+        combinedList.sortWith(
+            compareByDescending {
+                when (it) {
+                    is Reading -> it.dateTimeTaken
+                    is Referral -> it.dateReferred
+                    is Assessment -> it.dateAssessed
+                    else -> Integer.MAX_VALUE
+                }
             }
-        })
+        )
         // use linear layout
         val layoutManager: RecyclerView.LayoutManager = LinearLayoutManager(this)
         readingRecyclerview.layoutManager = layoutManager
@@ -524,5 +525,4 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupReadingsRecyclerView()
         setupLineChart()
     }
-
 }

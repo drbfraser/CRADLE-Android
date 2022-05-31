@@ -7,12 +7,13 @@ stages:
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
 
-# Cache Gradle files.
-cache: &global_cache
-  key: global-cache
-  paths:
-    - .gradle/wrapper/
-    - .gradle/caches/
+# default cache value
+default:
+  cache:
+    key: global-cache
+    paths:
+      - .gradle/wrapper/
+      - .gradle/caches/
 
 # run static code analysis
 code_analysis:
@@ -21,6 +22,8 @@ code_analysis:
     - if: '$CI_PIPELINE_SOURCE != "schedule" && $CI_MERGE_REQUEST_ID == null'
   script:
     - ./gradlew detekt
+  tags:
+    - docker
 
 # Compile and assemble a debug version of the application.
 build:
@@ -34,7 +37,7 @@ build:
     - LATEST_DB_VERSION="$(scripts/get-latest-db-version.sh)"
     - cp "app/schemas/com.cradleplatform.neptune.database.CradleDatabase/$LATEST_DB_VERSION.json" latest_db_version.json
   tags:
-    - build
+    - docker
   artifacts:
     expire_in: 1 hour
     paths:
@@ -69,13 +72,17 @@ validate_database_json:
         echo "Generate it by building in Android Studio or by doing ./gradlew build"
         echo "Alternatively, you can get the JSON from the pipeline build artifact."
       fi
-
+  tags:
+    - docker
+    
 # Run local unit tests
 test:
   stage: test
   cache:
-    <<: *global_cache
+    key: global-cache
     policy: pull
+  needs:
+    - job: build
   script:
     - ./gradlew test
   rules:
@@ -85,7 +92,7 @@ test:
     reports:
       junit: app/build/test-results/**/TEST-*.xml
   tags:
-    - build
+    - docker
 
 ######################
 # Scheduled jobs

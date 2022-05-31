@@ -2,7 +2,6 @@ package com.cradleplatform.neptune.manager
 
 import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.database.daos.ReferralDao
-import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.net.NetworkResult
 import com.cradleplatform.neptune.net.RestApi
@@ -105,5 +104,4 @@ class ReferralManager @Inject constructor(
     //
 
     //
-
 }
