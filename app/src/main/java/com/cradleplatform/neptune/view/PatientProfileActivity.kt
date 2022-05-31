@@ -365,7 +365,8 @@ open class PatientProfileActivity : AppCompatActivity() {
     }
 
     private fun getThisPatientsReadings(): List<Reading> {
-        // TODO: as per MOB-270, we should not have database retrieval operations within runBlocking. (refer to issue #37)
+        // TODO: as per MOB-270, we should not have database retrieval operations within runBlocking.
+        //  (refer to issue #37)
         val readings: List<Reading> = runBlocking { readingManager.getReadingsByPatientId(currPatient.id) }
         val comparator: Comparator<Reading> = Reading.DescendingDateComparator
         return readings.sortedWith(comparator)
