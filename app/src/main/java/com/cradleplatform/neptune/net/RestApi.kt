@@ -906,6 +906,33 @@ class RestApi constructor(
             AssessmentSyncResult(networkResult, assessmentsToUpload.size, totalAssessmentsDownloaded, errors)
         }
 
+    suspend fun syncHealthFacilities(
+        healthFacilityChannel: SendChannel<HealthFacility>
+    ): HealthFacilitySyncResult = withContext(IO) {
+        var totalHealthFacilitiesDownloaded = 0
+        val networkResult = http.makeRequest(
+            method = Http.Method.GET,
+            url = urlManager.healthFacilities,
+            headers = headers,
+            inputStreamReader = { inputStream ->
+                val reader = JacksonMapper.readerForHealthFacility
+                reader.readValues<HealthFacility>(inputStream).use { iterator ->
+                    iterator.forEachJackson {
+                        healthFacilityChannel.send(it)
+                        totalHealthFacilitiesDownloaded++
+                    }
+                }
+            },
+        ).also {
+            if (it is NetworkResult.Success) {
+                healthFacilityChannel.close()
+            } else {
+                healthFacilityChannel.close(SyncException("health facility download failed"))
+            }
+        }
+        HealthFacilitySyncResult(networkResult, totalHealthFacilitiesDownloaded)
+    }
+
     /**
      * The common headers used for most API requests.
      * Note: The [Http] class also sets some headers for encoding.
