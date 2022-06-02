@@ -655,12 +655,6 @@ class RestApi constructor(
                                 nextToken()
                                 errors = readValueAsTree<JsonNode>().toPrettyString()
                             }
-                            PatientSyncField.FACILITIES.text -> {
-                                // TODO: Either have a sync endpoint for new facilities, or
-                                //  remove this and just redownload facilities from server. (refer to issue #38)
-                                // nextToken()
-                                // val tree = readValueAsTree<JsonNode>().toPrettyString()
-                            }
                         }
                     }
                 }
