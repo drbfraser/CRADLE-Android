@@ -33,7 +33,6 @@ class LoginManager @Inject constructor(
     private val restApi: RestApi, // only for authenticating calls
     private val sharedPreferences: SharedPreferences,
     private val database: CradleDatabase, // only for clearing database on logout
-    private val healthFacilityManager: HealthFacilityManager,
     @ApplicationContext private val context: Context
 ) {
 
@@ -110,34 +109,8 @@ class LoginManager @Inject constructor(
                 return@withContext loginResult.cast()
             }
 
-            // TODO: move this logic to syncWorker (refer to issue #23)
-            downloadHealthFacilities(loginResult.value.healthFacilityName) is NetworkResult.Success
-
             return@withContext NetworkResult.Success(Unit, HTTP_OK)
         }
-    }
-
-    private suspend fun downloadHealthFacilities(
-        defaultHealthFacilityName: String?
-    ): NetworkResult<Unit> = coroutineScope {
-        val channel = Channel<HealthFacility>()
-        launch {
-            try {
-                database.withTransaction {
-                    for (healthFacility in channel) {
-                        if (healthFacility.name == defaultHealthFacilityName) {
-                            healthFacility.isUserSelected = true
-                        }
-                        healthFacilityManager.add(healthFacility)
-                    }
-                }
-            } catch (e: SyncException) {
-                Log.e(TAG, "health facilities download failed", e)
-            }
-            withContext(Dispatchers.Main) { Log.d(TAG, "health facilities job is done")}
-        }
-
-        restApi.syncHealthFacilities(channel).networkResult
     }
 
     suspend fun logout(): Unit = withContext(Dispatchers.IO) {

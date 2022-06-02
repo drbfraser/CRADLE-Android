@@ -19,18 +19,24 @@ import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.edit
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.test.espresso.IdlingResource
 import androidx.test.espresso.idling.CountingIdlingResource
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.ext.hideKeyboard
 import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.net.NetworkResult
+import com.cradleplatform.neptune.sync.SyncWorker
 import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.ADVANCED_SETTINGS_KEY
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
+import com.cradleplatform.neptune.viewmodel.SyncViewModel
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException
 import com.google.android.gms.common.GooglePlayServicesRepairableException
@@ -53,6 +59,9 @@ class LoginActivity : AppCompatActivity() {
 
     @Inject
     lateinit var loginManager: LoginManager
+
+    @Inject
+    lateinit var workManager: WorkManager
 
     private lateinit var isNetworkAvailable: NetworkAvailableLiveData
 
@@ -147,6 +156,18 @@ class LoginActivity : AppCompatActivity() {
                             getString(R.string.login_successful),
                             Toast.LENGTH_SHORT
                         ).show()
+
+
+                        val workRequest = OneTimeWorkRequestBuilder<SyncWorker>()
+                            .addTag("SyncViewModel")
+                            .build()
+                        sharedPreferences.edit {
+                            putString("lastSyncJobUuid", workRequest.id.toString())
+                        }
+                        workManager.enqueueUniqueWork("SyncWorkerUniqueSync", ExistingWorkPolicy.APPEND_OR_REPLACE, workRequest)
+
+
+
                         startIntroActivity()
                     }
                     is NetworkResult.Failure -> {
