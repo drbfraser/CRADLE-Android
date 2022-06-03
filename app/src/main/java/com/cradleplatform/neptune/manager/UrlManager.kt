@@ -82,7 +82,7 @@ class UrlManager @Inject constructor(val settings: Settings) {
         get() {
             // change both of these to http when testing on dev server
             val protocol = if (settings.networkUseHttps) {
-                "http://"
+                "https://"
             } else {
                 "http://"
             }
