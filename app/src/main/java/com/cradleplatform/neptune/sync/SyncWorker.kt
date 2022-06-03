@@ -15,7 +15,6 @@ import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.ext.Field
 import com.cradleplatform.neptune.manager.AssessmentManager
 import com.cradleplatform.neptune.manager.HealthFacilityManager
-import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.manager.ReferralManager
@@ -24,7 +23,11 @@ import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
+import com.cradleplatform.neptune.net.AssessmentSyncResult
 import com.cradleplatform.neptune.net.HealthFacilitySyncResult
+import com.cradleplatform.neptune.net.PatientSyncResult
+import com.cradleplatform.neptune.net.ReadingSyncResult
+import com.cradleplatform.neptune.net.ReferralSyncResult
 import com.cradleplatform.neptune.net.NetworkResult
 import com.cradleplatform.neptune.net.RestApi
 import com.cradleplatform.neptune.net.SyncException
@@ -34,7 +37,6 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.math.BigInteger
@@ -501,7 +503,7 @@ class SyncWorker @AssistedInject constructor(
     private suspend fun syncHealthFacilities(
         currentHealthFacilities: List<HealthFacility>,
         lastSyncTime: BigInteger
-    ) : HealthFacilitySyncResult = withContext(Dispatchers.Default) {
+    ): HealthFacilitySyncResult = withContext(Dispatchers.Default) {
 
         val currentHealthFacilitiesNames = currentHealthFacilities.map { it.name }
         val channel = Channel<HealthFacility>()
@@ -510,7 +512,7 @@ class SyncWorker @AssistedInject constructor(
                 database.withTransaction {
                     for (healthFacility in channel) {
 
-                        if(!currentHealthFacilitiesNames.contains(healthFacility.name)){
+                        if (!currentHealthFacilitiesNames.contains(healthFacility.name)) {
                             // new facility to be added, selects by default
                             healthFacility.isUserSelected = true
                             healthFacilityManager.add(healthFacility)
@@ -522,7 +524,7 @@ class SyncWorker @AssistedInject constructor(
             } catch (e: SyncException) {
                 Log.e(TAG, "health facilities download failed", e)
             }
-            withContext(Dispatchers.Main) { Log.d(TAG, "health facilities job is done")}
+            withContext(Dispatchers.Main) { Log.d(TAG, "health facilities job is done") }
         }
 
         restApi.syncHealthFacilities(channel)
@@ -643,32 +645,3 @@ enum class AssessmentSyncField(override val text: String) : Field {
     ASSESSMENTS("assessments"),
     ERRORS("errors")
 }
-
-data class PatientSyncResult(
-    val networkResult: NetworkResult<Unit>,
-    var totalPatientsUploaded: Int,
-    var totalPatientsDownloaded: Int,
-    var errors: String?,
-)
-
-data class ReadingSyncResult(
-    val networkResult: NetworkResult<Unit>,
-    var totalReadingsUploaded: Int,
-    var totalReadingsDownloaded: Int
-)
-
-data class ReferralSyncResult(
-    val networkResult: NetworkResult<Unit>,
-    var totalReferralsUploaded: Int,
-    var totalReferralsDownloaded: Int,
-    var errors: String?,
-)
-
-data class AssessmentSyncResult(
-    val networkResult: NetworkResult<Unit>,
-    var totalAssessmentsUploaded: Int,
-    var totalAssessmentsDownloaded: Int,
-    var errors: String?,
-)
-
-
