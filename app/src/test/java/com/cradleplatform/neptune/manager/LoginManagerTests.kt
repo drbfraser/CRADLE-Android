@@ -268,11 +268,6 @@ internal class LoginManagerTests {
             mockRestApi,
             mockSharedPrefs,
             mockDatabase,
-            fakePatientManager,
-            fakeReadingManager,
-            mockHealthManager,
-            mockReferralManager,
-            mockAssessmentManager,
             mockContext
         )
     }
@@ -290,7 +285,7 @@ internal class LoginManagerTests {
         runBlocking {
 
             val result = withTimeout(Duration.seconds(10)) {
-                loginManager.login(TEST_USER_EMAIL, TEST_USER_PASSWORD, parallelDownload = false)
+                loginManager.login(TEST_USER_EMAIL, TEST_USER_PASSWORD)
             }
             assert(result is NetworkResult.Success) {
                 "expected login to be successful, but it failed, with " +
@@ -316,7 +311,10 @@ internal class LoginManagerTests {
             ) { "bad first name" }
 
             val role = UserRole.safeValueOf(fakeSharedPreferences[mockContext.getString(R.string.key_role)] as String)
+
             assertEquals(TEST_USER_ROLE, role) { "unexpected role $role; expected $TEST_USER_ROLE" }
+/*
+            TODO: move this assertion section to test for SyncWorker (refer to issue #23)
 
             assert(fakeSharedPreferences.containsKey(SyncWorker.LAST_PATIENT_SYNC)) {
                 "missing last patient sync time; shared pref dump: $fakeSharedPreferences"
@@ -346,58 +344,7 @@ internal class LoginManagerTests {
                 "wrong health facility selected"
             }
 
-            assertEquals(
-                CommonPatientReadingJsons.allPatientsJsonExpectedPair.second.size,
-                fakePatientDatabase.size
-            ) {
-                "parsing the patients failed: not enough patients parsed"
-            }
-
-            assertEquals(
-                CommonReadingJsons.allReadingsJsonExpectedPair.second.size,
-                fakeReadingDatabase.size
-            ) {
-                "parsing the readings failed: not enough readings parsed"
-            }
-
-            fakeReadingDatabase.forEach {
-                assert(it.isUploadedToServer)
-            }
-            fakePatientDatabase.forEach {
-                assert(it.lastServerUpdate != null)
-            }
-
-            // Verify that the streamed parsing via Jackson of the simulated downloading of all
-            // patients and their readings from the server was correct.
-            val expectedPatients = CommonPatientReadingJsons
-                .allPatientsJsonExpectedPair.second.map { it.patient }
-            expectedPatients.forEach { expectedPatient ->
-                // The patient ID must have been parsed correctly at least since that's the
-                // primary key. When we find a match, we then check to see if all of the fields
-                // are the same. Doing a direct equality check gives us less information about
-                // what failed.
-                fakePatientDatabase.find { it.id == expectedPatient.id }
-                    ?.let { parsedPatient ->
-                        assertEquals(expectedPatient, parsedPatient) {
-                            "found a patient with the same ID, but one or more properties are wrong"
-                        }
-                    }
-                    ?: fail { "couldn't find expected patient in fake database: $expectedPatient" }
-            }
-
-            val expectedReadings = CommonReadingJsons.allReadingsJsonExpectedPair.second
-            expectedReadings.forEach { reading ->
-                val expectedReading = reading.copy(isUploadedToServer = true)
-                fakeReadingDatabase.find { it.id == expectedReading.id }
-                    ?.let { parsedReading ->
-                        assertEquals(expectedReading, parsedReading) {
-                            "found a reading with the same ID, but one or more properties are" +
-                                " wrong"
-                        }
-                    }
-                    ?: fail { "couldn't find expected reading in fake database: $expectedReading" }
-            }
-
+ */
             loginManager.logout()
 
             assert(fakeSharedPreferences.isEmpty())
@@ -416,7 +363,6 @@ internal class LoginManagerTests {
             val result = loginManager.login(
                 TEST_USER_EMAIL,
                 TEST_USER_PASSWORD,
-                parallelDownload = false
             )
             // Note: we say success, but this just lets us move on from the LoginActivity.
             // TODO: Need to communicate failure.
