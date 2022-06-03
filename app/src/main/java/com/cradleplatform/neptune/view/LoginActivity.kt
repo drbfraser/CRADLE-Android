@@ -36,7 +36,6 @@ import com.cradleplatform.neptune.sync.SyncWorker
 import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.ADVANCED_SETTINGS_KEY
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
-import com.cradleplatform.neptune.viewmodel.SyncViewModel
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException
 import com.google.android.gms.common.GooglePlayServicesRepairableException
@@ -157,16 +156,17 @@ class LoginActivity : AppCompatActivity() {
                             Toast.LENGTH_SHORT
                         ).show()
 
-
                         val workRequest = OneTimeWorkRequestBuilder<SyncWorker>()
-                            .addTag("SyncViewModel")
+                            .addTag(WORK_TAG)
                             .build()
                         sharedPreferences.edit {
-                            putString("lastSyncJobUuid", workRequest.id.toString())
+                            putString(LAST_SYNC_JOB_UUID, workRequest.id.toString())
                         }
-                        workManager.enqueueUniqueWork("SyncWorkerUniqueSync", ExistingWorkPolicy.APPEND_OR_REPLACE, workRequest)
-
-
+                        workManager.enqueueUniqueWork(
+                            WORK_NAME,
+                            ExistingWorkPolicy.APPEND_OR_REPLACE,
+                            workRequest
+                        )
 
                         startIntroActivity()
                     }
@@ -300,6 +300,11 @@ class LoginActivity : AppCompatActivity() {
         private const val EXTRA_SHOULD_DISPLAY_MESSAGE = "display_message_bool"
         private const val EXTRA_DISPLAY_MESSAGE_TITLE = "display_message_title"
         private const val EXTRA_DISPLAY_MESSAGE_BODY = "display_message_body"
+
+        // Tags for creating the SyncWorker job
+        private const val WORK_TAG = "Sync-DownloadPatientsReadingsAssessmentsReferralsFacilities"
+        private const val WORK_NAME = "SyncWorkerUniqueSync"
+        private const val LAST_SYNC_JOB_UUID = "lastSyncJobUuid"
 
         fun makeIntent(
             context: Context,

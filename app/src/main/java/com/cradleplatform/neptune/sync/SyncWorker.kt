@@ -216,7 +216,10 @@ class SyncWorker @AssistedInject constructor(
                 LAST_SYNC_DEFAULT
             )!!
         )
-        val healthFacilitiesResult = syncHealthFacilities(healthFacilityManager.getAllFacilities(), lastHealthFacilitiesDownloadTime)
+        val healthFacilitiesResult = syncHealthFacilities(
+            healthFacilityManager.getAllFacilities(),
+            lastHealthFacilitiesDownloadTime
+        )
 
         val lastReadingSyncTime = BigInteger(
             sharedPreferences.getString(

@@ -18,13 +18,9 @@ import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.Statistics
 import com.cradleplatform.neptune.sync.AssessmentSyncField
-import com.cradleplatform.neptune.sync.AssessmentSyncResult
 import com.cradleplatform.neptune.sync.PatientSyncField
-import com.cradleplatform.neptune.sync.PatientSyncResult
 import com.cradleplatform.neptune.sync.ReadingSyncField
-import com.cradleplatform.neptune.sync.ReadingSyncResult
 import com.cradleplatform.neptune.sync.ReferralSyncField
-import com.cradleplatform.neptune.sync.ReferralSyncResult
 import com.cradleplatform.neptune.sync.SyncWorker
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper.createWriter
