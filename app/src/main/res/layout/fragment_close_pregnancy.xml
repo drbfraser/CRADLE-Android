@@ -60,7 +60,8 @@
                         android:paddingEnd="8dp"
                         android:text="@{viewModel.calculatedGestationalAge}"
                         android:textColor="@color/black"
-                        android:textSize="14sp" />
+                        android:textSize="14sp"
+                        tools:ignore="RtlSymmetry" />
 
                     <TextView
                         android:layout_width="wrap_content"

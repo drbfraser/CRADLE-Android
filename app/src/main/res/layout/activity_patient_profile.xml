@@ -309,7 +309,7 @@
                     android:layout_marginStart="7dp"
                     android:layout_marginEnd="24dp"
                     android:backgroundTint="@color/colorPrimaryLight"
-                    android:text="Add pregnancy"
+                    android:text="@string/add_pregnancy_btn"
                     app:layout_constraintTop_toTopOf="@+id/textView20"
                     app:layout_constraintBottom_toBottomOf="@id/textView20"
                     app:layout_constraintEnd_toEndOf="parent"/>
@@ -343,7 +343,8 @@
                         android:paddingEnd="8dp"
                         android:text="@string/not_available_n_slash_a"
                         android:textColor="@color/black"
-                        android:textSize="14sp" />
+                        android:textSize="14sp"
+                        tools:ignore="RtlSymmetry" />
 
                     <RadioGroup
                         android:id="@+id/gestationradioGroup"

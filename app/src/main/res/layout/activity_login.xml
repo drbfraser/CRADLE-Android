@@ -13,7 +13,7 @@
         android:layout_width="42dp"
         android:layout_height="41dp"
         android:backgroundTint="#00FFFFFF"
-        android:contentDescription="TODO"
+        android:contentDescription="@string/setting_btn"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/baseline_settings_white_36" />
