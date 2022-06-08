@@ -159,10 +159,10 @@ data class Referral(
                 val actionTaken = get(ReferralField.ACTION_TAKEN)?.textValue()
                 val cancelReason = get(ReferralField.CANCEL_REASON)?.textValue()
                 val notAttendReason = get(ReferralField.NOT_ATTEND_REASON)?.textValue()
-                val isAssessed = get(ReferralField.IS_ASSESSED)!!.booleanValue()
-                val isCancelled = get(ReferralField.IS_CANCELLED)!!.booleanValue()
-                val notAttended = get(ReferralField.NOT_ATTENDED)!!.booleanValue()
-                val lastEdited = get(ReferralField.LAST_EDITED)!!.longValue()
+                val isAssessed = get(ReferralField.IS_ASSESSED)?.booleanValue() ?: false
+                val isCancelled = get(ReferralField.IS_CANCELLED)?.booleanValue() ?: false
+                val notAttended = get(ReferralField.NOT_ATTENDED)?.booleanValue() ?: false
+                val lastEdited = get(ReferralField.LAST_EDITED)?.longValue() ?: System.currentTimeMillis()
                 val lastServerUpdate = get(ReferralField.LAST_SERVER_UPDATE)?.longValue()
 
                 return@run Referral(
