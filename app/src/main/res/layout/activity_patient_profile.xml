@@ -306,7 +306,7 @@
                     android:id="@+id/btn_pregnancy"
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
-                    android:layout_marginStart="10dp"
+                    android:layout_marginStart="7dp"
                     android:layout_marginEnd="24dp"
                     android:backgroundTint="@color/colorPrimaryLight"
                     android:text="Add pregnancy"
@@ -354,16 +354,18 @@
 
                         <RadioButton
                             android:id="@+id/monthradiobutton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
                             android:text="@string/patient_profile_month"
+                            android:layout_marginStart="33dp"
                             android:textSize="12sp" />
 
                         <RadioButton
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
                             android:text="@string/patient_profile_week"
                             android:textAlignment="viewStart"
+                            android:layout_marginStart="30dp"
                             android:textSize="12sp" />
                     </RadioGroup>
 
@@ -391,9 +393,11 @@
 
                     <Button
                         android:id="@+id/medicalHistoryUpdateButton"
-                        android:layout_width="wrap_content"
+                        android:backgroundTint="@color/colorPrimaryLight"
+                        android:layout_width="match_parent"
                         android:layout_height="36dp"
-                        android:layout_marginStart="10dp"
+                        android:layout_marginStart="86dp"
+                        android:layout_marginTop="5dp"
                         android:text="@string/patient_update_history" />
 
                 </LinearLayout>
@@ -433,9 +437,10 @@
 
                     <Button
                         android:id="@+id/drugHistoryUpdateButton"
-                        android:layout_width="wrap_content"
+                        android:backgroundTint="@color/colorPrimaryLight"
+                        android:layout_width="match_parent"
                         android:layout_height="36dp"
-                        android:layout_marginStart="10dp"
+                        android:layout_marginStart="105dp"
                         android:text="@string/patient_update_history" />
 
                 </LinearLayout>
