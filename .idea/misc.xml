@@ -1,55 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="DesignSurface">
-    <option name="filePathToZoomLevelMap">
-      <map>
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/activity_dash_board.xml" value="0.18568840579710144" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/activity_edit_patient_info.xml" value="0.3140625" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/activity_edit_pregnancy.xml" value="0.28854166666666664" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/activity_education.xml" value="0.28854166666666664" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/activity_global_patient_search.xml" value="0.3140625" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/activity_health_facilities.xml" value="0.28854166666666664" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/activity_intro.xml" value="0.28854166666666664" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/activity_login.xml" value="0.33" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/activity_patient_profile.xml" value="0.33" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/activity_patient_update_drug_medical.xml" value="0.3140625" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/activity_patients.xml" value="0.3140625" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/activity_pdf_view.xml" value="0.3140625" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/activity_reading.xml" value="0.3140625" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/activity_splash.xml" value="0.28854166666666664" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/activity_stats.xml" value="0.28854166666666664" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/activity_sync.xml" value="0.28854166666666664" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/activity_video.xml" value="0.28854166666666664" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/assessment_card.xml" value="0.28854166666666664" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/content_patients.xml" value="0.3140625" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/dialog_loading.xml" value="0.3140625" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/dialog_stats_filter_picker.xml" value="0.3140625" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/fragment_add_pregnancy.xml" value="0.3140625" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/fragment_advice.xml" value="0.309375" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/fragment_close_pregnancy.xml" value="0.28854166666666664" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/fragment_intro_permissions.xml" value="0.309375" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/fragment_intro_privacy_policy.xml" value="0.28854166666666664" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/fragment_loading.xml" value="0.309375" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/fragment_ocr.xml" value="0.309375" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/fragment_patient_info.xml" value="0.309375" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/fragment_symptoms.xml" value="0.309375" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/fragment_vital_signs.xml" value="0.309375" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/global_patient_card.xml" value="0.309375" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/health_facility_layout.xml" value="0.309375" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/list_dropdown_menu_item.xml" value="0.309375" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/list_item_patient.xml" value="0.3140625" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/list_readings_card_item.xml" value="0.3140625" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/patient_card.xml" value="0.3140625" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/reading_card.xml" value="0.309375" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/reading_card_assesment.xml" value="0.3140625" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/reading_card_no_or_pending_assessment.xml" value="0.28854166666666664" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/referral_assessed_card.xml" value="0.309375" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/referral_cancelled_card.xml" value="0.28854166666666664" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/referral_dialog.xml" value="0.309375" />
-        <entry key="..\:/Users/18979/StudioProjects/cradlemobile/app/src/main/res/layout/referral_pending_card.xml" value="0.3140625" />
-      </map>
-    </option>
-  </component>
   <component name="FrameworkDetectionExcludesConfiguration">
     <file type="web" url="file://$PROJECT_DIR$" />
   </component>
@@ -81,7 +31,7 @@
     </option>
     <option name="myNotNulls">
       <value>
-        <list size="14">
+        <list size="13">
           <item index="0" class="java.lang.String" itemvalue="org.jetbrains.annotations.NotNull" />
           <item index="1" class="java.lang.String" itemvalue="javax.annotation.Nonnull" />
           <item index="2" class="java.lang.String" itemvalue="edu.umd.cs.findbugs.annotations.NonNull" />
@@ -95,7 +45,6 @@
           <item index="10" class="java.lang.String" itemvalue="org.eclipse.jdt.annotation.NonNull" />
           <item index="11" class="java.lang.String" itemvalue="io.reactivex.annotations.NonNull" />
           <item index="12" class="java.lang.String" itemvalue="io.reactivex.rxjava3.annotations.NonNull" />
-          <item index="13" class="java.lang.String" itemvalue="lombok.NonNull" />
         </list>
       </value>
     </option>
