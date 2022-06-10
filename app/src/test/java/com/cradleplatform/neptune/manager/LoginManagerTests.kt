@@ -113,6 +113,8 @@ internal class LoginManagerTests {
     private val mockContext = mockk<Context>(relaxed = true) {
         every { getString(R.string.key_vht_name) } returns "setting_vht_name"
         every { getString(R.string.key_role) } returns "setting_role"
+        every { getString(R.string.key_server_hostname) } returns "settings_server_hostname"
+        every { getString(R.string.key_server_port) } returns "settings_server_port"
     }
 
     private var databaseCleared: Boolean = false
@@ -132,6 +134,7 @@ internal class LoginManagerTests {
         every { Log.i(any(), any()) } returns 0
         every { Log.e(any(), any()) } returns 0
         every { Log.e(any(), any(), any()) } returns 0
+        every { Log.w(any(), any<String>()) } returns 0
 
         // reset values
         Dispatchers.setMain(testMainDispatcher)
@@ -219,11 +222,17 @@ internal class LoginManagerTests {
             }
 
  */
-            assert(!databaseCleared)
+            assert(!databaseCleared) {
+                "Database was already cleared before logging out"
+            }
             // logout
             loginManager.logout()
-            assert(databaseCleared)
-            assert(fakeSharedPreferences.isEmpty())
+            assert(databaseCleared) {
+                "Database was not cleared after logging out"
+            }
+            assert(fakeSharedPreferences.isEmpty()) {
+                "Shared Preferences was not cleared after logging out"
+            }
         }
     }
 
@@ -239,15 +248,13 @@ internal class LoginManagerTests {
             val statusCode = (result as NetworkResult.Failure).statusCode
             assertEquals(401, statusCode) { "expected 401 status code, but got $statusCode" }
 
-            assert(!loginManager.isLoggedIn())
-            assertEquals(0, fakeSharedPreferences.keys.size)
+            assert(!loginManager.isLoggedIn()){
+                "Login should not be successful with invalid password"
+            }
+            assertEquals(0, fakeSharedPreferences.keys.size) {
+                "SharedPreferences should be empty if login failed"
+            }
 
-            /*
-            val healthFacilities = fakeHealthFacilityDatabase
-            assertEquals(0, healthFacilities.size) { "nothing should be added" }
-            assertEquals(0, fakePatientDatabase.size) { "nothing should be added" }
-            assertEquals(0, fakeReadingDatabase.size) { "nothing should be added" }
-             */
         }
     }
 
@@ -263,18 +270,71 @@ internal class LoginManagerTests {
             val statusCode = (result as NetworkResult.Failure).statusCode
             assertEquals(401, statusCode) { "expected 401 status code, but got $statusCode" }
 
-            assert(!loginManager.isLoggedIn())
-            assertEquals(0, fakeSharedPreferences.keys.size)
+            assert(!loginManager.isLoggedIn()){
+                "Login should not be successful with invalid email"
+            }
+            assertEquals(0, fakeSharedPreferences.keys.size) {
+                "SharedPreferences should be empty if login failed"
+            }
+
         }
     }
 
     @Test
     fun `login a second time`() {
+        runBlocking {
+
+            val firstResult = loginManager.login(TEST_USER_EMAIL, TEST_USER_PASSWORD)
+            // light check if has login successfully
+            assert(firstResult is NetworkResult.Success) {
+                "Login should succeed for the first time"
+            }
+            assert(loginManager.isLoggedIn()) {
+                "isLoggedIn() for loginManager should be true for the first time"
+            }
+
+            // login a second time
+            val secondResult = loginManager.login(TEST_USER_EMAIL, TEST_USER_PASSWORD)
+            assert(secondResult is NetworkResult.NetworkException){
+                "Expected a Network Exception \"already logged in\"," +
+                    "but got result $secondResult"
+            }
+
+        }
     }
 
     @Test
-    fun `logout with host and port persists in sharedPreference`() {
+    fun `logout with hostName and port persisting in sharedPreference`() {
+        val testHostName = "10.0.2.2"
+        val testHostPort = "5000"
+        fakeSharedPreferences[mockContext.getString(R.string.key_server_hostname)] = testHostName
+        fakeSharedPreferences[mockContext.getString(R.string.key_server_port)] = testHostPort
 
+        runBlocking {
+            val result = loginManager.login(TEST_USER_EMAIL, TEST_USER_PASSWORD)
+            // light check if has login successfully
+            assert(result is NetworkResult.Success)
+            assert(loginManager.isLoggedIn())
+
+            assertEquals(TEST_AUTH_TOKEN, fakeSharedPreferences["token"]) { "bad auth token" }
+            assertEquals(TEST_USER_ID, fakeSharedPreferences["userId"]) { "bad userId" }
+            assertEquals(
+                TEST_FIRST_NAME,
+                fakeSharedPreferences[mockContext.getString(R.string.key_vht_name)]
+            ) { "bad first name" }
+
+            val role =
+                UserRole.safeValueOf(fakeSharedPreferences[mockContext.getString(R.string.key_role)] as String)
+
+            assertEquals(TEST_USER_ROLE, role) { "unexpected role $role; expected $TEST_USER_ROLE" }
+
+            // logs out, both settings should persist
+            loginManager.logout()
+            assert(fakeSharedPreferences.isNotEmpty())
+            assertEquals(fakeSharedPreferences[mockContext.getString(R.string.key_server_hostname)], testHostName)
+            assertEquals(fakeSharedPreferences[mockContext.getString(R.string.key_server_port)], testHostPort)
+
+        }
     }
 
 }
