@@ -1,48 +1,49 @@
 package com.cradleplatform.neptune.model
 
+import com.google.gson.annotations.SerializedName
 
-data class FormTemplate (
+data class FormTemplate(
 
-	val id : String?,
-	val name : String?,
-	val category : String?,
-	val version : String?,
-	val questions : List<Questions>?
+    @SerializedName("id") val id : String?,
+    @SerializedName("name") val name : String?,
+    @SerializedName("category") val category : String?,
+    @SerializedName("version") val version : String?,
+    @SerializedName("questions") val questions: List<Questions>?
 )
 
-data class Questions (
+data class Questions(
 
-	val questionId : String?,
-	val categoryIndex : String?,
-	val questionIndex : Int?,
-	val questionType : String?,
-	val required : Boolean?,
-	val numMin : Double?,
-	val visibleCondition : List<VisibleCondition>?,
-	val questionLangVersions : List<QuestionLangVersions>?
+    @SerializedName("questionId") val questionId : String?,
+    @SerializedName("categoryIndex") val categoryIndex : String?,
+    @SerializedName("questionIndex") val questionIndex : Int?,
+    @SerializedName("questionType") val questionType : String?,
+    @SerializedName("required") val required : Boolean?,
+    @SerializedName("numMin") val numMin : Double?,
+    @SerializedName("visibleCondition") val visibleCondition: List<VisibleCondition>?,
+    @SerializedName("questionLangVersions") val questionLangVersions: List<QuestionLangVersions>?
 )
 
-data class VisibleCondition (
+data class VisibleCondition(
 
-	val qidx : Int?,
-	val relation : String?,
-	val answers : Answers?
+    @SerializedName("qidx") val qidx : Int?,
+    @SerializedName("relation") val relation : String?,
+    @SerializedName("answers") val answers : Answers?
 )
 
-data class Answers (
+data class Answers(
 
-	val number : Int?
+    @SerializedName("number") val number : Int?
 )
 
-data class QuestionLangVersions (
+data class QuestionLangVersions(
 
-	val lang : String?,
-	val questionText : String?,
-	val mcOptions : List<McOptions>?
+    @SerializedName("lang") val lang : String?,
+    @SerializedName("questionText") val questionText : String?,
+    @SerializedName("mcOptions") val mcOptions: List<McOptions>?
 )
 
-data class McOptions (
+data class McOptions(
 
-	val mcid : Int?,
-	val opt : String?
+    @SerializedName("mcid") val mcid : Int?,
+    @SerializedName("opt") val opt : String?
 )
