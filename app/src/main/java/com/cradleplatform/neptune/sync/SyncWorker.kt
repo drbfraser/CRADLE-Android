@@ -325,11 +325,7 @@ class SyncWorker @AssistedInject constructor(
             try {
                 database.withTransaction {
                     for (patient in channel) {
-                        try {
-                            patientManager.add(patient)
-                        } catch (e: Exception) {
-                            Log.e(TAG, "failed to add patient " + patient.id)
-                        }
+                        patientManager.add(patient)
                     }
                 }
             } catch (e: SyncException) {
@@ -373,11 +369,7 @@ class SyncWorker @AssistedInject constructor(
             try {
                 database.withTransaction {
                     for (reading in readingChannel) {
-                        try {
-                            readingManager.addReading(reading, isReadingFromServer = true)
-                        } catch (e: Exception) {
-                            Log.e(TAG, "failed to add reading " + reading.id)
-                        }
+                        readingManager.addReading(reading, isReadingFromServer = true)
                     }
                 }
             } catch (e: SyncException) {
@@ -418,11 +410,7 @@ class SyncWorker @AssistedInject constructor(
             try {
                 database.withTransaction {
                     for (referral in channel) {
-                        try {
-                            referralManager.addReferral(referral, true)
-                        } catch (e: Exception) {
-                            Log.e(TAG, "failed to add referral " + referral.id)
-                        }
+                        referralManager.addReferral(referral, true)
                     }
                 }
             } catch (e: SyncException) {
@@ -464,11 +452,7 @@ class SyncWorker @AssistedInject constructor(
             try {
                 database.withTransaction {
                     for (assessment in channel) {
-                        try {
-                            assessmentManager.addAssessment(assessment, true)
-                        } catch (e: Exception) {
-                            Log.e(TAG, "failed to add assessment " + assessment.id)
-                        }
+                        assessmentManager.addAssessment(assessment, true)
                     }
                 }
             } catch (e: SyncException) {

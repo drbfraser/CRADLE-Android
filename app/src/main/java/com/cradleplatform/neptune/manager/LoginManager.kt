@@ -225,11 +225,7 @@ class LoginManager @Inject constructor(
             try {
                 database.withTransaction {
                     for (patient in channel) {
-                        try {
-                            patientManager.add(patient)
-                        } catch (e: Exception) {
-                            Log.e(LoginManager.TAG, "failed to add patient " + patient.id)
-                        }
+                        patientManager.add(patient)
                     }
                     Log.d(TAG, "patient database job is successful")
                 }
@@ -254,11 +250,7 @@ class LoginManager @Inject constructor(
             try {
                 database.withTransaction {
                     for (reading in channel) {
-                        try {
-                            readingManager.addReading(reading, isReadingFromServer = true)
-                        } catch (e: Exception) {
-                            Log.e(LoginManager.TAG, "failed to add reading " + reading.id)
-                        }
+                        readingManager.addReading(reading, isReadingFromServer = true)
                     }
                     Log.d(TAG, "reading database job is successful")
                 }
@@ -283,11 +275,7 @@ class LoginManager @Inject constructor(
             try {
                 database.withTransaction {
                     for (referral in channel) {
-                        try {
-                            referralManager.addReferral(referral, true)
-                        } catch (e: Exception) {
-                            Log.e(LoginManager.TAG, "failed to add referral " + referral.id)
-                        }
+                        referralManager.addReferral(referral, true)
                     }
                     Log.d(TAG, "referral database job is successful")
                 }
@@ -312,11 +300,7 @@ class LoginManager @Inject constructor(
             try {
                 database.withTransaction {
                     for (assessment in channel) {
-                        try {
-                            assessmentManager.addAssessment(assessment, true)
-                        } catch (e: Exception) {
-                            android.util.Log.e(LoginManager.TAG, "failed to add assessment " + assessment.id)
-                        }
+                        assessmentManager.addAssessment(assessment, true)
                     }
                     Log.d(TAG, "assessment database job is successful")
                 }
