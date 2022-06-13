@@ -188,7 +188,7 @@ internal class LoginManagerTests {
                             } else {
                                 // mess it up somehow
                                 setResponseCode(200)
-                                setBody("${json.substring(0, json.length - 6)}ThisMessesItUp")
+                                setBody(json.replace("\"patientId\"", "\"pattientId\""))
                             }
                         }
                         "/api/mobile/readings" -> {
@@ -205,7 +205,7 @@ internal class LoginManagerTests {
                             } else {
                                 // mess it up somehow
                                 setResponseCode(200)
-                                setBody("${json.substring(0, json.length - 6)}ThisMessesItUp")
+                                setBody(json.replace("\"readingId\"", "\"reaadingId\""))
                             }
                         }
                         "/api/facilities" -> {
@@ -222,7 +222,7 @@ internal class LoginManagerTests {
                                 // mess it up somehow. server says it's okay but something happened
                                 // during download
                                 setResponseCode(200)
-                                setBody("${json.substring(0, json.length - 6)}ThisMessesItUp")
+                                setBody(json.replace("\"healthFacilityName\"", "\"heaalthFacilityName\""))
                             }
                         }
                         else -> setResponseCode(404)
