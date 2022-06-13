@@ -116,6 +116,7 @@ class RestApi constructor(
     suspend fun getAllPatients(
         patientChannel: SendChannel<Patient>
     ): NetworkResult<Unit> = withContext(IO) {
+        var failedParse = false
         http.makeRequest(
             method = Http.Method.GET,
             url = urlManager.getAllPatients,
@@ -131,12 +132,17 @@ class RestApi constructor(
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, e.toString())
+                    failedParse = true
                 }
                 Unit
             }
         ).also {
             if (it is NetworkResult.Success) {
-                patientChannel.close()
+                if (failedParse) {
+                    patientChannel.close(SyncException("failed to parse all associated patients"))
+                } else {
+                    patientChannel.close()
+                }
             } else {
                 patientChannel.close(SyncException("failed to download all associated patients"))
             }
@@ -146,6 +152,7 @@ class RestApi constructor(
     suspend fun getAllReadings(
         readingChannel: SendChannel<Reading>
     ): NetworkResult<Unit> = withContext(IO) {
+        var failedParse = false
         http.makeRequest(
             method = Http.Method.GET,
             url = urlManager.getAllReadings,
@@ -158,12 +165,17 @@ class RestApi constructor(
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, e.toString())
+                    failedParse = true
                 }
                 Unit
             }
         ).also {
             if (it is NetworkResult.Success) {
-                readingChannel.close()
+                if (failedParse) {
+                    readingChannel.close(SyncException("failed to parse all associated readings"))
+                } else {
+                    readingChannel.close()
+                }
             } else {
                 readingChannel.close(SyncException("failed to download all associated readings"))
             }
@@ -173,6 +185,7 @@ class RestApi constructor(
     suspend fun getAllReferrals(
         referralChannel: SendChannel<Referral>
     ): NetworkResult<Unit> = withContext(IO) {
+        var failedParse = false
         http.makeRequest(
             method = Http.Method.GET,
             url = urlManager.getAllReferrals,
@@ -185,12 +198,17 @@ class RestApi constructor(
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, e.toString())
+                    failedParse = true
                 }
                 Unit
             }
         ).also {
             if (it is NetworkResult.Success) {
-                referralChannel.close()
+                if (failedParse) {
+                    referralChannel.close(SyncException("failed to parse all associated referrals"))
+                } else {
+                    referralChannel.close()
+                }
             } else {
                 referralChannel.close(SyncException("failed to download all associated referrals"))
             }
@@ -200,6 +218,7 @@ class RestApi constructor(
     suspend fun getAllAssessments(
         assessmentChannel: SendChannel<Assessment>
     ): NetworkResult<Unit> = withContext(IO) {
+        var failedParse = false
         http.makeRequest(
             method = Http.Method.GET,
             url = urlManager.getAllAssessments,
@@ -212,12 +231,17 @@ class RestApi constructor(
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, e.toString())
+                    failedParse = true
                 }
                 Unit
             }
         ).also {
             if (it is NetworkResult.Success) {
-                assessmentChannel.close()
+                if (failedParse) {
+                    assessmentChannel.close(SyncException("failed to parse all associated assessments"))
+                } else {
+                    assessmentChannel.close()
+                }
             } else {
                 assessmentChannel.close(SyncException("failed to download all associated assessments"))
             }
