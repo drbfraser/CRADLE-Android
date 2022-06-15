@@ -188,7 +188,7 @@ internal class LoginManagerTests {
                             } else {
                                 // mess it up somehow
                                 setResponseCode(200)
-                                setBody("${json.substring(0, json.length - 6)}ThisMessesItUp")
+                                setBody(json.replace("\"patientId\"", "\"pattientId\""))
                             }
                         }
                         "/api/mobile/readings" -> {
@@ -205,7 +205,7 @@ internal class LoginManagerTests {
                             } else {
                                 // mess it up somehow
                                 setResponseCode(200)
-                                setBody("${json.substring(0, json.length - 6)}ThisMessesItUp")
+                                setBody(json.replace("\"readingId\"", "\"reaadingId\""))
                             }
                         }
                         "/api/facilities" -> {
@@ -222,7 +222,7 @@ internal class LoginManagerTests {
                                 // mess it up somehow. server says it's okay but something happened
                                 // during download
                                 setResponseCode(200)
-                                setBody("${json.substring(0, json.length - 6)}ThisMessesItUp")
+                                setBody(json.replace("\"healthFacilityName\"", "\"heaalthFacilityName\""))
                             }
                         }
                         else -> setResponseCode(404)
@@ -425,17 +425,20 @@ internal class LoginManagerTests {
                     "shared prefs map $fakeSharedPreferences"
             }
 
+            assert(fakeSharedPreferences.containsKey(SyncWorker.LAST_PATIENT_SYNC)) {
+                "sync time should be stored as the patient download process is successful"
+            }
+
+            assert(fakeSharedPreferences.containsKey(SyncWorker.LAST_READING_SYNC)) {
+                "sync time should be stored as the reading download process is successful"
+            }
+
             // Should be logged in, but the download of patients and facilities failed
             assert(loginManager.isLoggedIn())
 
             // withTransaction should make it so that the changes are not committed.
             assertEquals(0, fakePatientDatabase.size) { "nothing should be added" }
             assertEquals(0, fakeReadingDatabase.size) { "nothing should be added" }
-
-            assert(!fakeSharedPreferences.containsKey(SyncWorker.LAST_PATIENT_SYNC)) {
-                "sync time should not be stored for a failed, incomplete download; otherwise," +
-                    "the user will no longer be able to sync"
-            }
         }
     }
 
