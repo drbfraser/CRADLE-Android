@@ -232,20 +232,19 @@ object MockWebServerUtils {
             "/api/mobile/patients" -> {
                 json = CommonPatientReadingJsons.allPatientsJsonExpectedPair.first
                 // mess it up somehow
-                json = "${json.substring(0, json.length - 6)}ThisMessesItUp"
+                json = json.replace("\"patientId\"", "\"pattientId\"")
             }
             "/api/mobile/readings" -> {
                 json = CommonReadingJsons.allReadingsJsonExpectedPair.first
                 // mess it up somehow
-                json = "${json.substring(0, json.length - 6)}ThisMessesItUp"
+                json = json.replace("\"readingId\"", "\"reaadingId\"")
             }
             /*
             "/api/facilities" -> {
                 val json = LoginManagerTests.HEALTH_FACILITY_JSON
                 // mess it up somehow. server says it's okay but something happened
                 // during download
-                setResponseCode(200)
-                setBody("${json.substring(0, json.length - 6)}ThisMessesItUp")
+                json = json.replace("\"healthFacilityName\"", "\"heaalthFacilityName\"")
             }*/
         }
         return json

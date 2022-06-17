@@ -190,38 +190,7 @@ internal class LoginManagerTests {
                 UserRole.safeValueOf(fakeSharedPreferences[mockContext.getString(R.string.key_role)] as String)
 
             assertEquals(TEST_USER_ROLE, role) { "unexpected role $role; expected $TEST_USER_ROLE" }
-/*
-            TODO: move this assertion section to test for SyncWorker (refer to issue #23)
 
-            assert(fakeSharedPreferences.containsKey(SyncWorker.LAST_PATIENT_SYNC)) {
-                "missing last patient sync time; shared pref dump: $fakeSharedPreferences"
-            }
-            assert(BigInteger(fakeSharedPreferences[SyncWorker.LAST_PATIENT_SYNC] as String).toLong() > 100L) {
-                "last patient sync time too small"
-            }
-            assert(fakeSharedPreferences.containsKey(SyncWorker.LAST_READING_SYNC)) {
-                "missing last reading sync time"
-            }
-            assert(BigInteger(fakeSharedPreferences[SyncWorker.LAST_READING_SYNC]!! as String).toLong() > 100L) {
-                "last reading sync time too small"
-            }
-            assertNotEquals(0, fakeHealthFacilityDatabase.size) {
-                "LoginManager failed to do health facility download; dumping facility db: $fakeHealthFacilityDatabase"
-            }
-
-            val userSelectedHealthFacilities = fakeHealthFacilityDatabase
-                .filter { it.isUserSelected }
-            assertNotEquals(0, userSelectedHealthFacilities.size) {
-                "LoginManager failed to select a health facility; dumping facility db: $fakeHealthFacilityDatabase"
-            }
-            assertEquals(1, userSelectedHealthFacilities.size) {
-                "LoginManager selected too many health health facilities"
-            }
-            assertEquals(TEST_USER_FACILITY_NAME, userSelectedHealthFacilities[0].name) {
-                "wrong health facility selected"
-            }
-
- */
             assert(!databaseCleared) {
                 "Database was already cleared before logging out"
             }
