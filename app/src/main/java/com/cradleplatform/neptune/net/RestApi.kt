@@ -112,6 +112,7 @@ class RestApi constructor(
     suspend fun getAllPatients(
         patientChannel: SendChannel<Patient>
     ): NetworkResult<Unit> = withContext(IO) {
+        var failedParse = false
         http.makeRequest(
             method = Http.Method.GET,
             url = urlManager.getAllPatients,
@@ -120,14 +121,24 @@ class RestApi constructor(
                 // Parse JSON strings directly from the input stream to avoid dealing with a
                 // ByteArray of an entire JSON array in memory and trying to convert that into a
                 // String.
-                val reader = JacksonMapper.readerForPatient
-                reader.readValues<Patient>(inputStream).use { iterator ->
-                    iterator.forEachJackson { patientChannel.send(it) }
+                try {
+                    val reader = JacksonMapper.readerForPatient
+                    reader.readValues<Patient>(inputStream).use { iterator ->
+                        iterator.forEachJackson { patientChannel.send(it) }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, e.toString())
+                    failedParse = true
                 }
+                Unit
             }
         ).also {
             if (it is NetworkResult.Success) {
-                patientChannel.close()
+                if (failedParse) {
+                    patientChannel.close(SyncException("failed to parse all associated patients"))
+                } else {
+                    patientChannel.close()
+                }
             } else {
                 patientChannel.close(SyncException("failed to download all associated patients"))
             }
@@ -137,19 +148,30 @@ class RestApi constructor(
     suspend fun getAllReadings(
         readingChannel: SendChannel<Reading>
     ): NetworkResult<Unit> = withContext(IO) {
+        var failedParse = false
         http.makeRequest(
             method = Http.Method.GET,
             url = urlManager.getAllReadings,
             headers = headers,
             inputStreamReader = { inputStream ->
-                val reader = JacksonMapper.readerForReading
-                reader.readValues<Reading>(inputStream).use { iterator ->
-                    iterator.forEachJackson { readingChannel.send(it) }
+                try {
+                    val reader = JacksonMapper.readerForReading
+                    reader.readValues<Reading>(inputStream).use { iterator ->
+                        iterator.forEachJackson { readingChannel.send(it) }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, e.toString())
+                    failedParse = true
                 }
+                Unit
             }
         ).also {
             if (it is NetworkResult.Success) {
-                readingChannel.close()
+                if (failedParse) {
+                    readingChannel.close(SyncException("failed to parse all associated readings"))
+                } else {
+                    readingChannel.close()
+                }
             } else {
                 readingChannel.close(SyncException("failed to download all associated readings"))
             }
@@ -159,19 +181,30 @@ class RestApi constructor(
     suspend fun getAllReferrals(
         referralChannel: SendChannel<Referral>
     ): NetworkResult<Unit> = withContext(IO) {
+        var failedParse = false
         http.makeRequest(
             method = Http.Method.GET,
             url = urlManager.getAllReferrals,
             headers = headers,
             inputStreamReader = { inputStream ->
-                val reader = JacksonMapper.readerForReferral
-                reader.readValues<Referral>(inputStream).use { iterator ->
-                    iterator.forEachJackson { referralChannel.send(it) }
+                try {
+                    val reader = JacksonMapper.readerForReferral
+                    reader.readValues<Referral>(inputStream).use { iterator ->
+                        iterator.forEachJackson { referralChannel.send(it) }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, e.toString())
+                    failedParse = true
                 }
+                Unit
             }
         ).also {
             if (it is NetworkResult.Success) {
-                referralChannel.close()
+                if (failedParse) {
+                    referralChannel.close(SyncException("failed to parse all associated referrals"))
+                } else {
+                    referralChannel.close()
+                }
             } else {
                 referralChannel.close(SyncException("failed to download all associated referrals"))
             }
@@ -181,19 +214,30 @@ class RestApi constructor(
     suspend fun getAllAssessments(
         assessmentChannel: SendChannel<Assessment>
     ): NetworkResult<Unit> = withContext(IO) {
+        var failedParse = false
         http.makeRequest(
             method = Http.Method.GET,
             url = urlManager.getAllAssessments,
             headers = headers,
             inputStreamReader = { inputStream ->
-                val reader = JacksonMapper.readerForAssessment
-                reader.readValues<Assessment>(inputStream).use { iterator ->
-                    iterator.forEachJackson { assessmentChannel.send(it) }
+                try {
+                    val reader = JacksonMapper.readerForAssessment
+                    reader.readValues<Assessment>(inputStream).use { iterator ->
+                        iterator.forEachJackson { assessmentChannel.send(it) }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, e.toString())
+                    failedParse = true
                 }
+                Unit
             }
         ).also {
             if (it is NetworkResult.Success) {
-                assessmentChannel.close()
+                if (failedParse) {
+                    assessmentChannel.close(SyncException("failed to parse all associated assessments"))
+                } else {
+                    assessmentChannel.close()
+                }
             } else {
                 assessmentChannel.close(SyncException("failed to download all associated assessments"))
             }
@@ -584,10 +628,15 @@ class RestApi constructor(
             url = urlManager.healthFacilities,
             headers = headers,
             inputStreamReader = { inputStream ->
-                val reader = JacksonMapper.readerForHealthFacility
-                reader.readValues<HealthFacility>(inputStream).use { iterator ->
-                    iterator.forEachJackson { healthFacilityChannel.send(it) }
+                try {
+                    val reader = JacksonMapper.readerForHealthFacility
+                    reader.readValues<HealthFacility>(inputStream).use { iterator ->
+                        iterator.forEachJackson { healthFacilityChannel.send(it) }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, e.toString())
                 }
+                Unit
             },
         ).also {
             if (it is NetworkResult.Success) {
