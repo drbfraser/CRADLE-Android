@@ -21,7 +21,7 @@ import java.net.HttpURLConnection.HTTP_OK
 import javax.inject.Inject
 
 /**
- * Manages authenticating user login credentials into the server
+ * Manages user login credentials authenticating with the server
  */
 class LoginManager @Inject constructor(
     private val restApi: RestApi, // only for authenticating calls

@@ -62,7 +62,6 @@ internal class LoginManagerTests {
     private val mockRestApi: RestApi
     private val mockWebServer: MockWebServer
 
-    //private var failTheLoginWithIOIssues = false
     init {
         val (api, server) = MockWebServerUtils.createRestApiWithServerBlock(mockSharedPrefs) {
             dispatcher = object : Dispatcher() {
