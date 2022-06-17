@@ -1459,7 +1459,7 @@ class PatientReadingViewModel @Inject constructor(
                         notAttendReason = null,
                         isCancelled = false,
                         notAttended = false,
-                        isAssessed = true,
+                        isAssessed = false,
                         lastEdited = readingFromBuilder.dateTimeTaken)
 
                 yield()
