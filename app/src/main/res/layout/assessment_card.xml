@@ -64,28 +64,6 @@
 
 
             <TextView
-                android:id="@+id/assessByTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="4dp"
-                android:text="@string/assessed_by"
-                android:textColor="@color/black"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/assessmentCardDateTitle" />
-
-            <TextView
-                android:id="@+id/assessByTxt"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="4dp"
-                app:layout_constraintBaseline_toBaselineOf="@+id/assessByTitle"
-                app:layout_constraintStart_toEndOf="@+id/assessByTitle"
-                tools:text="@string/not_available_n_slash_a" />
-
-            <TextView
                 android:id="@+id/specialInvestigationsAndResultsTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -95,7 +73,7 @@
                 android:textColor="@color/black"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/assessByTitle" />
+                app:layout_constraintTop_toBottomOf="@+id/assessmentCardDateTitle" />
 
             <TextView
                 android:id="@+id/specialInvestigationsAndResultsTxt"
