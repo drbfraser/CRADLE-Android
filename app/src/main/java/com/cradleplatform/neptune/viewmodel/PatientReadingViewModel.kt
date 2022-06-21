@@ -1452,7 +1452,7 @@ class PatientReadingViewModel @Inject constructor(
                         comment = referralComment,
                         referralHealthFacilityName = healthFacilityName,
                         dateReferred = readingFromBuilder.dateTimeTaken,
-                        userId =  sharedPreferences.getIntOrNull(LoginManager.USER_ID_KEY),
+                        userId = sharedPreferences.getIntOrNull(LoginManager.USER_ID_KEY),
                         patientId = readingFromBuilder.patientId,
                         actionTaken = null,
                         cancelReason = null,
@@ -1460,7 +1460,8 @@ class PatientReadingViewModel @Inject constructor(
                         isCancelled = false,
                         notAttended = false,
                         isAssessed = false,
-                        lastEdited = readingFromBuilder.dateTimeTaken)
+                        lastEdited = readingFromBuilder.dateTimeTaken
+                    )
 
                 yield()
 
