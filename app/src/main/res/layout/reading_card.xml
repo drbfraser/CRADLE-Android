@@ -279,7 +279,7 @@
                 android:backgroundTint="@color/colorPrimaryLight"
                 android:text="@string/take_new_reading_button"
                 android:textSize="9sp"
-                android:visibility="visible"
+                android:visibility="invisible"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/readingCardBar"
                 app:layout_constraintTop_toBottomOf="@+id/txtRecheckVitals"
