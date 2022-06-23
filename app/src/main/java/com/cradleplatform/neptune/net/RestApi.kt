@@ -971,7 +971,7 @@ class RestApi constructor(
             url = urlManager.healthFacilities,
             headers = headers,
             inputStreamReader = { inputStream ->
-                try{
+                try {
                     val reader = JacksonMapper.readerForHealthFacility
                     reader.readValues<HealthFacility>(inputStream).use { iterator ->
                         iterator.forEachJackson {
@@ -986,7 +986,7 @@ class RestApi constructor(
             },
         ).also {
             if (it is NetworkResult.Success) {
-                if(failedParse){
+                if (failedParse) {
                     Log.e(TAG, "Failed to parse all Health Facilities during Sync")
                 } else {
                     healthFacilityChannel.close()

@@ -525,7 +525,7 @@ class SyncWorker @AssistedInject constructor(
                     }
                 }
             } catch (e: SyncException) {
-                Log.e(TAG, "Failed to add health facility during Sync, with error:\n ${e.toString()}")
+                Log.e(TAG, "Failed to add health facility during Sync, with error:\n $e")
             }
             withContext(Dispatchers.Main) { Log.d(TAG, "health facilities sync job is done") }
         }
