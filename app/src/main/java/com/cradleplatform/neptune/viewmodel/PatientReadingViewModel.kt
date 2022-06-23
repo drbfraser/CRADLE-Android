@@ -1626,15 +1626,6 @@ class PatientReadingViewModel @Inject constructor(
                     return@withContext ReadingFlowSaveResult.ErrorConstructing
                 }
 
-                // // If user selected to send a referral, handle that. When the AdviceFragment sees
-                // // REFERRAL_REQUIRED, it launches a referral dialog.
-                // if (adviceReferralButtonId.value == R.id.send_referral_radio_button) {
-                //     // Don't save the reading / patient yet; we need the AdviceFragment to launch a
-                //     // referral dialog.
-                //     return@withContext ReferralFlowSaveResult.ReferralRequired
-                // }
-
-                // Otherwise, we're in the main saving path.
                 isSavingReferral.setValueOnMainThread(true)
                 yield()
 
