@@ -945,26 +945,49 @@ class RestApi constructor(
             AssessmentSyncResult(networkResult, assessmentsToUpload.size, totalAssessmentsDownloaded, errors)
         }
 
+    /**
+     * Get all Health Facilities from the server with.
+     * The parsed results will be sent in the resulting [healthFacilityChannel].
+     *
+     * [healthFacilityChannel] will be failed (see [SendChannel.close]) if [Failure] or
+     * [NetworkException] is returned, so using any of the Channels can result in a [SyncException]
+     * that should be caught by anything handling the Channels.
+     *
+     * @return A [HealthFacilitySyncResult] containing [Success] if the parsing succeeds,
+     * otherwise a [Failure] or [NetworkException] if parsing or the connection fail,
+     * with a number indicating how many incoming health facilities are successfully parsed
+     *
+     */
     suspend fun syncHealthFacilities(
         healthFacilityChannel: SendChannel<HealthFacility>
     ): HealthFacilitySyncResult = withContext(IO) {
         var totalHealthFacilitiesDownloaded = 0
+       var failedParse = false
         val networkResult = http.makeRequest(
             method = Http.Method.GET,
             url = urlManager.healthFacilities,
             headers = headers,
             inputStreamReader = { inputStream ->
-                val reader = JacksonMapper.readerForHealthFacility
-                reader.readValues<HealthFacility>(inputStream).use { iterator ->
-                    iterator.forEachJackson {
-                        healthFacilityChannel.send(it)
-                        totalHealthFacilitiesDownloaded++
+                try{
+                    val reader = JacksonMapper.readerForHealthFacility
+                    reader.readValues<HealthFacility>(inputStream).use { iterator ->
+                        iterator.forEachJackson {
+                            healthFacilityChannel.send(it)
+                            totalHealthFacilitiesDownloaded++
+                        }
                     }
+                } catch (e: Exception) {
+                    Log.e(TAG, e.toString())
+                    failedParse = true
                 }
             },
         ).also {
             if (it is NetworkResult.Success) {
-                healthFacilityChannel.close()
+                if(failedParse){
+                    Log.e(TAG, "Failed to parse all Health Facilities during Sync")
+                } else {
+                    healthFacilityChannel.close()
+                }
             } else {
                 healthFacilityChannel.close(SyncException("health facility download failed"))
             }
