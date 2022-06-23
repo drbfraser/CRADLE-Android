@@ -34,6 +34,7 @@ import com.cradleplatform.neptune.view.DashBoardActivity.Companion.READING_ACTIV
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForEditReading
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForNewReadingExistingPatient
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForRecheck
+import com.cradleplatform.neptune.view.ui.reading.ReferralDialogFragment
 import com.cradleplatform.neptune.viewmodel.ReadingRecyclerViewAdapter
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
@@ -416,6 +417,11 @@ open class PatientProfileActivity : AppCompatActivity() {
             findViewById<Button>(R.id.newPatientReferralButton)
 
         createButton.visibility = View.VISIBLE
+
+        createButton.setOnClickListener { _: View? ->
+            ReferralDialogFragment.makeInstance(ReadingActivity.LaunchReason.LAUNCH_REASON_NEW)
+                .show(supportFragmentManager, "referral_dialog")
+        }
     }
 
     private fun onUpdateButtonClicked(isDrugRecord: Boolean) {
