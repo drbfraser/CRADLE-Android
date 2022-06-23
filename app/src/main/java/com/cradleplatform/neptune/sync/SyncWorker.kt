@@ -530,7 +530,7 @@ class SyncWorker @AssistedInject constructor(
             withContext(Dispatchers.Main) { Log.d(TAG, "health facilities sync job is done") }
         }
 
-        restApi.syncHealthFacilities(channel)
+        restApi.syncHealthFacilities(channel, lastSyncTime)
     }
 
     private suspend fun reportProgress(

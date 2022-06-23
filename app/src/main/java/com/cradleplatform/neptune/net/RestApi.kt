@@ -946,7 +946,7 @@ class RestApi constructor(
         }
 
     /**
-     * Get all Health Facilities from the server with.
+     * Get all and sync Health Facilities from the server with.
      * The parsed results will be sent in the resulting [healthFacilityChannel].
      *
      * [healthFacilityChannel] will be failed (see [SendChannel.close]) if [Failure] or
@@ -957,12 +957,15 @@ class RestApi constructor(
      * otherwise a [Failure] or [NetworkException] if parsing or the connection fail,
      * with a number indicating how many incoming health facilities are successfully parsed
      *
+     * TODO: currently lastSyncTimestamp is unused and is waiting for backend to implement
+     *  a new endpoint for it. (refer to issue #54)
      */
     suspend fun syncHealthFacilities(
-        healthFacilityChannel: SendChannel<HealthFacility>
+        healthFacilityChannel: SendChannel<HealthFacility>,
+        lastSyncTimestamp: BigInteger = BigInteger.valueOf(1L)
     ): HealthFacilitySyncResult = withContext(IO) {
         var totalHealthFacilitiesDownloaded = 0
-       var failedParse = false
+        var failedParse = false
         val networkResult = http.makeRequest(
             method = Http.Method.GET,
             url = urlManager.healthFacilities,
