@@ -525,9 +525,9 @@ class SyncWorker @AssistedInject constructor(
                     }
                 }
             } catch (e: SyncException) {
-                Log.e(TAG, "health facilities download failed", e)
+                Log.e(TAG, "Failed to add health facility during Sync, with error:\n ${e.toString()}")
             }
-            withContext(Dispatchers.Main) { Log.d(TAG, "health facilities job is done") }
+            withContext(Dispatchers.Main) { Log.d(TAG, "health facilities sync job is done") }
         }
 
         restApi.syncHealthFacilities(channel)
