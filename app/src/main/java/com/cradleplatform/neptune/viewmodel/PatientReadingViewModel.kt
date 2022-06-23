@@ -1445,6 +1445,24 @@ class PatientReadingViewModel @Inject constructor(
                             isSaving.setValueOnMainThread(false)
                             return@withContext ReadingFlowSaveResult.ErrorConstructing
                         }
+
+                readingFromBuilder.referral =
+                    Referral(
+                        id = UUID.randomUUID().toString(),
+                        comment = referralComment,
+                        referralHealthFacilityName = healthFacilityName,
+                        dateReferred = readingFromBuilder.dateTimeTaken,
+                        userId = sharedPreferences.getIntOrNull(LoginManager.USER_ID_KEY),
+                        patientId = readingFromBuilder.patientId,
+                        actionTaken = null,
+                        cancelReason = null,
+                        notAttendReason = null,
+                        isCancelled = false,
+                        notAttended = false,
+                        isAssessed = false,
+                        lastEdited = readingFromBuilder.dateTimeTaken
+                    )
+
                 yield()
 
                 // If original patient is null, then that implies that we should save the patient.

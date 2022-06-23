@@ -95,7 +95,6 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             case ASSESSMENT_VIEW:
                 Assessment currAssessment = (Assessment) combinedList.get(i);
                 myViewHolder.assessmentDate.setText(DateUtil.getConciseDateString(currAssessment.getDateAssessed(), false));
-                myViewHolder.assessedBy.setText(currAssessment.getHealthCareWorkerId());
                 myViewHolder.investigateAndResults.setText(currAssessment.getSpecialInvestigations());
                 myViewHolder.finalDiagnosis.setText(currAssessment.getDiagnosis());
                 myViewHolder.treatmentOp.setText(currAssessment.getTreatment());
@@ -315,7 +314,6 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             referralComments = v.findViewById(R.id.referralComments);
             cancellationReason = v.findViewById(R.id.cancellationReason);
             assessmentDate = v.findViewById(R.id.assessmentCardDateTxt);
-            assessedBy = v.findViewById(R.id.assessByTxt);
             investigateAndResults = v.findViewById(R.id.specialInvestigationsAndResultsTxt);
             finalDiagnosis = v.findViewById(R.id.finalDiagnosisTxt);
             treatmentOp = v.findViewById(R.id.treatmentOperationTxt);
