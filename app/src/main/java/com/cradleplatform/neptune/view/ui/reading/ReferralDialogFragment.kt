@@ -27,6 +27,7 @@ import com.cradleplatform.neptune.databinding.ReferralDialogBinding
 import com.cradleplatform.neptune.model.PatientAndReadings
 import com.cradleplatform.neptune.model.SmsReferral
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
+import com.cradleplatform.neptune.view.PatientProfileActivity
 import com.cradleplatform.neptune.view.ReadingActivity
 import com.cradleplatform.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity
 import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel
@@ -59,7 +60,7 @@ class ReferralDialogFragment : DialogFragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        check(context is ReadingActivity)
+        check(context is ReadingActivity || context is PatientProfileActivity)
         check(arguments != null)
         check(
             arguments?.getSerializable(ARG_LAUNCH_REASON) as? ReadingActivity.LaunchReason != null
