@@ -211,12 +211,6 @@ object MockWebServerUtils {
             "/api/mobile/readings" -> {
                 json = CommonReadingJsons.allReadingsJsonExpectedPair.first
             }
-            /*
-            "/api/facilities" -> {
-                val json =
-                setResponseCode(200)
-                setBody(json)
-            }*/
         }
         return json
     }
@@ -239,13 +233,6 @@ object MockWebServerUtils {
                 // mess it up somehow
                 json = json.replace("\"readingId\"", "\"reaadingId\"")
             }
-            /*
-            "/api/facilities" -> {
-                val json = LoginManagerTests.HEALTH_FACILITY_JSON
-                // mess it up somehow. server says it's okay but something happened
-                // during download
-                json = json.replace("\"healthFacilityName\"", "\"heaalthFacilityName\"")
-            }*/
         }
         return json
     }
