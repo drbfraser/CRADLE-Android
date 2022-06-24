@@ -20,7 +20,7 @@ data class FormTemplate(
     @SerializedName("lastEdited") val lastEdited: Int,
     @SerializedName("lang") val lang: String,
     @SerializedName("questions") val questions: List<Questions>
-): Serializable
+) : Serializable
 
 data class Questions(
 
@@ -37,22 +37,22 @@ data class Questions(
     @SerializedName("answers") val answers: Answers,
     @SerializedName("hasCommentAttached") val hasCommentAttached: Boolean,
     @SerializedName("required") val required: Boolean
-):Serializable
+) : Serializable
 
 data class McOptions(
 
     @SerializedName("mcid") val mcid: Int,
     @SerializedName("opt") val opt: String
-):Serializable
+) : Serializable
 
 data class VisibleCondition(
 
     @SerializedName("qidx") val qidx: Int,
     @SerializedName("relation") val relation: String,
     @SerializedName("answers") val answers: Answers
-):Serializable
+) : Serializable
 
 data class Answers(
 
     @SerializedName("answers") val answers: String?,
-):Serializable
+) : Serializable

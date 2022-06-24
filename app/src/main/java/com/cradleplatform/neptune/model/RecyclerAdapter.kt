@@ -5,10 +5,14 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.ListView
+import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
-import java.util.*
+import java.util.Calendar
 
 class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapter.ViewHolder>() {
     private var form: FormTemplate = myForm
@@ -36,7 +40,6 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
             listView.layoutParams = params
         }
     }
-
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var itemQuestion: TextView
@@ -66,9 +69,7 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
                     Toast.LENGTH_SHORT
                 ).show()
             }
-
         }
-
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerAdapter.ViewHolder {
@@ -102,7 +103,6 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
                 holder.itemMultipleChoice.visibility = View.VISIBLE
             }
         }
-
     }
 
     override fun getItemCount(): Int {
@@ -130,8 +130,5 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
         )
         dpd.datePicker.maxDate = System.currentTimeMillis()
         dpd.show()
-
     }
-
-
 }

@@ -26,6 +26,5 @@ class FormRenderingActivity : AppCompatActivity() {
 
         adapter = RecyclerAdapter(form!!)
         recyclerView.adapter = adapter
-
     }
 }
