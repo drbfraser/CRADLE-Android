@@ -20,6 +20,11 @@ class HealthFacilityManager(database: CradleDatabase) {
     suspend fun getAllSelectedByUser() = dao.getAllUserSelectedHealthFacilities()
 
     /**
+     * get all the [HealthFacility] currently in database
+     */
+    suspend fun getAllFacilities() = dao.getAllHealthFacilities()
+
+    /**
      * add a single health facility
      */
     suspend fun add(facility: HealthFacility) = dao.insert(facility)

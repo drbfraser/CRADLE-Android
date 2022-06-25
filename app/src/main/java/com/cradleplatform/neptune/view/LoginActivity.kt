@@ -19,15 +19,20 @@ import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.edit
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.test.espresso.IdlingResource
 import androidx.test.espresso.idling.CountingIdlingResource
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.ext.hideKeyboard
 import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.net.NetworkResult
+import com.cradleplatform.neptune.sync.SyncWorker
 import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.ADVANCED_SETTINGS_KEY
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
@@ -53,6 +58,9 @@ class LoginActivity : AppCompatActivity() {
 
     @Inject
     lateinit var loginManager: LoginManager
+
+    @Inject
+    lateinit var workManager: WorkManager
 
     private lateinit var isNetworkAvailable: NetworkAvailableLiveData
 
@@ -147,6 +155,19 @@ class LoginActivity : AppCompatActivity() {
                             getString(R.string.login_successful),
                             Toast.LENGTH_SHORT
                         ).show()
+
+                        val workRequest = OneTimeWorkRequestBuilder<SyncWorker>()
+                            .addTag(WORK_TAG)
+                            .build()
+                        sharedPreferences.edit {
+                            putString(LAST_SYNC_JOB_UUID, workRequest.id.toString())
+                        }
+                        workManager.enqueueUniqueWork(
+                            WORK_NAME,
+                            ExistingWorkPolicy.APPEND_OR_REPLACE,
+                            workRequest
+                        )
+
                         startIntroActivity()
                     }
                     is NetworkResult.Failure -> {
@@ -279,6 +300,11 @@ class LoginActivity : AppCompatActivity() {
         private const val EXTRA_SHOULD_DISPLAY_MESSAGE = "display_message_bool"
         private const val EXTRA_DISPLAY_MESSAGE_TITLE = "display_message_title"
         private const val EXTRA_DISPLAY_MESSAGE_BODY = "display_message_body"
+
+        // Tags for creating the SyncWorker job
+        private const val WORK_TAG = "Sync-DownloadPatientsReadingsAssessmentsReferralsFacilities"
+        private const val WORK_NAME = "SyncWorkerUniqueSync"
+        private const val LAST_SYNC_JOB_UUID = "lastSyncJobUuid"
 
         fun makeIntent(
             context: Context,

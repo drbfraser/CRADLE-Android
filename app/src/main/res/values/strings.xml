@@ -563,6 +563,7 @@
     <string name="sync_worker_success">Last sync successful</string>
     <string name="sync_total_patients_uploaded_s">Number of patients uploaded: %1$d</string>
     <string name="sync_total_patients_downloaded_s">Number of patients downloaded: %1$d</string>
+    <string name="sync_total_HealthFacilities_downloaded_s">Number of health facilities downloaded: %1$d</string>
     <string name="sync_total_readings_uploaded_s">Number of readings uploaded: %1$d</string>
     <string name="sync_total_readings_downloaded_s">Number of readings downloaded: %1$d</string>
     <string name="sync_total_followups_from_reading_downloaded_s">Number of new follow-ups for old readings: %1$d</string>

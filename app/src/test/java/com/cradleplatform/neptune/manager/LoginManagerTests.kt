@@ -5,19 +5,9 @@ import android.content.SharedPreferences
 import android.util.Log
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.database.CradleDatabase
-import com.cradleplatform.neptune.database.daos.AssessmentDao
-import com.cradleplatform.neptune.database.daos.PatientDao
-import com.cradleplatform.neptune.database.daos.ReadingDao
-import com.cradleplatform.neptune.database.daos.ReferralDao
-import com.cradleplatform.neptune.model.CommonPatientReadingJsons
-import com.cradleplatform.neptune.model.CommonReadingJsons
-import com.cradleplatform.neptune.model.HealthFacility
-import com.cradleplatform.neptune.model.Patient
-import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.UserRole
 import com.cradleplatform.neptune.net.NetworkResult
 import com.cradleplatform.neptune.net.RestApi
-import com.cradleplatform.neptune.sync.SyncWorker
 import com.cradleplatform.neptune.testutils.MockDependencyUtils
 import com.cradleplatform.neptune.testutils.MockWebServerUtils
 import com.cradleplatform.neptune.utilities.SharedPreferencesMigration
@@ -40,11 +30,8 @@ import org.json.JSONException
 import org.json.JSONObject
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
-import java.math.BigInteger
 import java.nio.charset.Charset
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -54,48 +41,6 @@ internal class LoginManagerTests {
     private val testMainDispatcher = TestCoroutineDispatcher()
 
     companion object {
-
-        private const val HEALTH_FACILITY_JSON =
-            """
-[
-    {
-        "location": "Sample Location",
-        "facilityType": "HOSPITAL",
-        "about": "Sample health centre",
-        "healthFacilityPhoneNumber": "555-555-55555",
-        "healthFacilityName": "H0000"
-    },
-    {
-        "location": "District 1",
-        "facilityType": "HCF_2",
-        "about": "Has minimal resources",
-        "healthFacilityPhoneNumber": "+256-413-837484",
-        "healthFacilityName": "H1233"
-    },
-    {
-        "location": "District 2",
-        "facilityType": "HCF_3",
-        "about": "Can do full checkup",
-        "healthFacilityPhoneNumber": "+256-223-927484",
-        "healthFacilityName": "H2555"
-    },
-    {
-        "location": "District 3",
-        "facilityType": "HCF_4",
-        "about": "Has specialized equipment",
-        "healthFacilityPhoneNumber": "+256-245-748573",
-        "healthFacilityName": "H3445"
-    },
-    {
-        "location": "District 4",
-        "facilityType": "HOSPITAL",
-        "about": "Urgent requests only",
-        "healthFacilityPhoneNumber": "+256-847-0947584",
-        "healthFacilityName": "H5123"
-    }
-]
-    """
-
         private const val TEST_USER_FACILITY_NAME = "H3445"
         private const val TEST_FIRST_NAME = "NAME PERSON"
         private const val TEST_USER_ID = 4
@@ -105,40 +50,20 @@ internal class LoginManagerTests {
         private val TEST_USER_ROLE = UserRole.VHT
     }
 
-    private val fakePatientDatabase: MutableList<Patient>
-    private val fakeReadingDatabase: MutableList<Reading>
-    private val mockDatabase: CradleDatabase
-    private val mockPatientDao: PatientDao
-    private val mockReadingDao: ReadingDao
-    private val mockReferralDao: ReferralDao
-    private val mockAssessmentDao: AssessmentDao
     private val fakeSharedPreferences: MutableMap<String, Any?>
     private val mockSharedPrefs: SharedPreferences
-    private val fakeHealthFacilityDatabase: MutableList<HealthFacility>
 
     init {
         val (map, sharedPrefs) = MockDependencyUtils.createMockSharedPreferences()
         fakeSharedPreferences = map
         mockSharedPrefs = sharedPrefs
-
-        val mockDatabaseStuff = MockDependencyUtils.createMockedDatabaseDependencies()
-        mockDatabaseStuff.run {
-            mockDatabase = mockedDatabase
-            mockPatientDao = mockedPatientDao
-            mockReadingDao = mockedReadingDao
-            mockReferralDao = mockedReferralDao
-            mockAssessmentDao = mockedAssessmentDao
-            fakePatientDatabase = underlyingPatientDatabase
-            fakeReadingDatabase = underlyingReadingDatabase
-            fakeHealthFacilityDatabase = underlyingHealthFacilityDatabase
-        }
     }
 
     private val mockRestApi: RestApi
     private val mockWebServer: MockWebServer
-    private var failTheLoginWithIOIssues = false
+
     init {
-        val (api, server) = MockWebServerUtils.createRestApiWithMockedServer(mockSharedPrefs) {
+        val (api, server) = MockWebServerUtils.createRestApiWithServerBlock(mockSharedPrefs) {
             dispatcher = object : Dispatcher() {
                 override fun dispatch(request: RecordedRequest) = MockResponse().apply response@{
                     when (request.path) {
@@ -174,57 +99,6 @@ internal class LoginManagerTests {
                             setResponseCode(200)
                             setBody(json)
                         }
-                        "/api/mobile/patients" -> {
-                            if (request.headers["Authorization"] != "Bearer $TEST_AUTH_TOKEN") {
-                                setResponseCode(403)
-                                setBody(request.headers.toString())
-                                return@response
-                            }
-
-                            val json = CommonPatientReadingJsons.allPatientsJsonExpectedPair.first
-                            if (!failTheLoginWithIOIssues) {
-                                setResponseCode(200)
-                                setBody(json)
-                            } else {
-                                // mess it up somehow
-                                setResponseCode(200)
-                                setBody(json.replace("\"patientId\"", "\"pattientId\""))
-                            }
-                        }
-                        "/api/mobile/readings" -> {
-                            if (request.headers["Authorization"] != "Bearer $TEST_AUTH_TOKEN") {
-                                setResponseCode(403)
-                                setBody(request.headers.toString())
-                                return@response
-                            }
-
-                            val json = CommonReadingJsons.allReadingsJsonExpectedPair.first
-                            if (!failTheLoginWithIOIssues) {
-                                setResponseCode(200)
-                                setBody(json)
-                            } else {
-                                // mess it up somehow
-                                setResponseCode(200)
-                                setBody(json.replace("\"readingId\"", "\"reaadingId\""))
-                            }
-                        }
-                        "/api/facilities" -> {
-                            if (request.headers["Authorization"] != "Bearer $TEST_AUTH_TOKEN") {
-                                setResponseCode(403)
-                                return@response
-                            }
-
-                            val json = HEALTH_FACILITY_JSON
-                            if (!failTheLoginWithIOIssues) {
-                                setResponseCode(200)
-                                setBody(json)
-                            } else {
-                                // mess it up somehow. server says it's okay but something happened
-                                // during download
-                                setResponseCode(200)
-                                setBody(json.replace("\"healthFacilityName\"", "\"heaalthFacilityName\""))
-                            }
-                        }
                         else -> setResponseCode(404)
                     }
 
@@ -235,20 +109,22 @@ internal class LoginManagerTests {
         mockWebServer = server
     }
 
-    // Mock Managers that only being used to initialize LoginManager
-    private val mockHealthManager = HealthFacilityManager(mockDatabase)
-    private val fakePatientManager = PatientManager(mockDatabase, mockPatientDao, mockReadingDao, mockRestApi)
-    private val fakeReadingManager = ReadingManager(mockDatabase, mockReadingDao, mockRestApi)
-    private val mockReferralManager = ReferralManager(mockDatabase, mockReferralDao, mockRestApi)
-    private val mockAssessmentManager = AssessmentManager(mockDatabase, mockAssessmentDao, mockRestApi)
-
     private val mockContext = mockk<Context>(relaxed = true) {
         every { getString(R.string.key_vht_name) } returns "setting_vht_name"
         every { getString(R.string.key_role) } returns "setting_role"
+        every { getString(R.string.key_server_hostname) } returns "settings_server_hostname"
+        every { getString(R.string.key_server_port) } returns "settings_server_port"
+    }
+
+    private var databaseCleared: Boolean = false
+    private val studDatabase: CradleDatabase = mockk(relaxed = true) {
+        every { clearAllTables() } answers {
+            databaseCleared = true
+        }
     }
 
     // Variable Storing an instance of the loginManger being tested
-    private lateinit var loginManager :LoginManager
+    private lateinit var loginManager: LoginManager
 
     @BeforeEach
     fun setUp() {
@@ -257,25 +133,21 @@ internal class LoginManagerTests {
         every { Log.i(any(), any()) } returns 0
         every { Log.e(any(), any()) } returns 0
         every { Log.e(any(), any(), any()) } returns 0
+        every { Log.w(any(), any<String>()) } returns 0
 
+        // reset values
         Dispatchers.setMain(testMainDispatcher)
         fakeSharedPreferences.clear()
-        fakeHealthFacilityDatabase.clear()
-        fakePatientDatabase.clear()
-        fakeReadingDatabase.clear()
+        databaseCleared = false
 
         loginManager = LoginManager(
             mockRestApi,
             mockSharedPrefs,
-            mockDatabase,
-            fakePatientManager,
-            fakeReadingManager,
-            mockHealthManager,
-            mockReferralManager,
-            mockAssessmentManager,
+            studDatabase,
             mockContext
         )
     }
+
     @AfterEach
     fun cleanUp() {
         Dispatchers.resetMain()
@@ -285,12 +157,10 @@ internal class LoginManagerTests {
     @ExperimentalTime
     @Test
     fun `login with right credentials and logout`() {
-        failTheLoginWithIOIssues = false
-
         runBlocking {
 
             val result = withTimeout(Duration.seconds(10)) {
-                loginManager.login(TEST_USER_EMAIL, TEST_USER_PASSWORD, parallelDownload = false)
+                loginManager.login(TEST_USER_EMAIL, TEST_USER_PASSWORD)
             }
             assert(result is NetworkResult.Success) {
                 "expected login to be successful, but it failed, with " +
@@ -315,140 +185,30 @@ internal class LoginManagerTests {
                 fakeSharedPreferences[mockContext.getString(R.string.key_vht_name)]
             ) { "bad first name" }
 
-            val role = UserRole.safeValueOf(fakeSharedPreferences[mockContext.getString(R.string.key_role)] as String)
+            val role =
+                UserRole.safeValueOf(fakeSharedPreferences[mockContext.getString(R.string.key_role)] as String)
+
             assertEquals(TEST_USER_ROLE, role) { "unexpected role $role; expected $TEST_USER_ROLE" }
 
-            assert(fakeSharedPreferences.containsKey(SyncWorker.LAST_PATIENT_SYNC)) {
-                "missing last patient sync time; shared pref dump: $fakeSharedPreferences"
+            assert(!databaseCleared) {
+                "Database was already cleared before logging out"
             }
-            assert(BigInteger(fakeSharedPreferences[SyncWorker.LAST_PATIENT_SYNC] as String).toLong() > 100L) {
-                "last patient sync time too small"
-            }
-            assert(fakeSharedPreferences.containsKey(SyncWorker.LAST_READING_SYNC)) {
-                "missing last reading sync time"
-            }
-            assert(BigInteger(fakeSharedPreferences[SyncWorker.LAST_READING_SYNC]!! as String).toLong() > 100L) {
-                "last reading sync time too small"
-            }
-            assertNotEquals(0, fakeHealthFacilityDatabase.size) {
-                "LoginManager failed to do health facility download; dumping facility db: $fakeHealthFacilityDatabase"
-            }
-
-            val userSelectedHealthFacilities = fakeHealthFacilityDatabase
-                .filter { it.isUserSelected }
-            assertNotEquals(0, userSelectedHealthFacilities.size) {
-                "LoginManager failed to select a health facility; dumping facility db: $fakeHealthFacilityDatabase"
-            }
-            assertEquals(1, userSelectedHealthFacilities.size) {
-                "LoginManager selected too many health health facilities"
-            }
-            assertEquals(TEST_USER_FACILITY_NAME, userSelectedHealthFacilities[0].name) {
-                "wrong health facility selected"
-            }
-
-            assertEquals(
-                CommonPatientReadingJsons.allPatientsJsonExpectedPair.second.size,
-                fakePatientDatabase.size
-            ) {
-                "parsing the patients failed: not enough patients parsed"
-            }
-
-            assertEquals(
-                CommonReadingJsons.allReadingsJsonExpectedPair.second.size,
-                fakeReadingDatabase.size
-            ) {
-                "parsing the readings failed: not enough readings parsed"
-            }
-
-            fakeReadingDatabase.forEach {
-                assert(it.isUploadedToServer)
-            }
-            fakePatientDatabase.forEach {
-                assert(it.lastServerUpdate != null)
-            }
-
-            // Verify that the streamed parsing via Jackson of the simulated downloading of all
-            // patients and their readings from the server was correct.
-            val expectedPatients = CommonPatientReadingJsons
-                .allPatientsJsonExpectedPair.second.map { it.patient }
-            expectedPatients.forEach { expectedPatient ->
-                // The patient ID must have been parsed correctly at least since that's the
-                // primary key. When we find a match, we then check to see if all of the fields
-                // are the same. Doing a direct equality check gives us less information about
-                // what failed.
-                fakePatientDatabase.find { it.id == expectedPatient.id }
-                    ?.let { parsedPatient ->
-                        assertEquals(expectedPatient, parsedPatient) {
-                            "found a patient with the same ID, but one or more properties are wrong"
-                        }
-                    }
-                    ?: fail { "couldn't find expected patient in fake database: $expectedPatient" }
-            }
-
-            val expectedReadings = CommonReadingJsons.allReadingsJsonExpectedPair.second
-            expectedReadings.forEach { reading ->
-                val expectedReading = reading.copy(isUploadedToServer = true)
-                fakeReadingDatabase.find { it.id == expectedReading.id }
-                    ?.let { parsedReading ->
-                        assertEquals(expectedReading, parsedReading) {
-                            "found a reading with the same ID, but one or more properties are" +
-                                " wrong"
-                        }
-                    }
-                    ?: fail { "couldn't find expected reading in fake database: $expectedReading" }
-            }
-
+            // logout
             loginManager.logout()
-
-            assert(fakeSharedPreferences.isEmpty())
-            assert(fakePatientDatabase.isEmpty())
-            assert(fakeReadingDatabase.isEmpty())
-            assert(fakeHealthFacilityDatabase.isEmpty())
+            assert(databaseCleared) {
+                "Database was not cleared after logging out"
+            }
+            assert(fakeSharedPreferences.isEmpty()) {
+                "Shared Preferences was not cleared after logging out"
+            }
         }
     }
 
     @Test
-    fun `login with right credentials, IO error during download, nothing should be added`() {
-        failTheLoginWithIOIssues = true
-        mockDatabase.clearAllTables()
-
+    fun `login with wrong password`() {
         runBlocking {
-            val result = loginManager.login(
-                TEST_USER_EMAIL,
-                TEST_USER_PASSWORD,
-                parallelDownload = false
-            )
-            // Note: we say success, but this just lets us move on from the LoginActivity.
-            // TODO: Need to communicate failure.
-            assert(result is NetworkResult.Success) {
-                "expected a Success, but got result $result and " +
-                    "shared prefs map $fakeSharedPreferences"
-            }
-
-            assert(fakeSharedPreferences.containsKey(SyncWorker.LAST_PATIENT_SYNC)) {
-                "sync time should be stored as the patient download process is successful"
-            }
-
-            assert(fakeSharedPreferences.containsKey(SyncWorker.LAST_READING_SYNC)) {
-                "sync time should be stored as the reading download process is successful"
-            }
-
-            // Should be logged in, but the download of patients and facilities failed
-            assert(loginManager.isLoggedIn())
-
-            // withTransaction should make it so that the changes are not committed.
-            assertEquals(0, fakePatientDatabase.size) { "nothing should be added" }
-            assertEquals(0, fakeReadingDatabase.size) { "nothing should be added" }
-        }
-    }
-
-    @Test
-    fun `login with wrong credentials`() {
-        failTheLoginWithIOIssues = false
-        mockDatabase.clearAllTables()
-
-        runBlocking {
-            val result = loginManager.login(TEST_USER_EMAIL, TEST_USER_PASSWORD + "_invalid_version")
+            val result =
+                loginManager.login(TEST_USER_EMAIL, TEST_USER_PASSWORD + "_invalid_version")
             assert(result is NetworkResult.Failure) {
                 "expected a failure, but got result $result and " +
                     "shared prefs map $fakeSharedPreferences"
@@ -456,12 +216,93 @@ internal class LoginManagerTests {
             val statusCode = (result as NetworkResult.Failure).statusCode
             assertEquals(401, statusCode) { "expected 401 status code, but got $statusCode" }
 
-            assert(!loginManager.isLoggedIn())
-            assertEquals(0, fakeSharedPreferences.keys.size)
-            val healthFacilities = fakeHealthFacilityDatabase
-            assertEquals(0, healthFacilities.size) { "nothing should be added" }
-            assertEquals(0, fakePatientDatabase.size) { "nothing should be added" }
-            assertEquals(0, fakeReadingDatabase.size) { "nothing should be added" }
+            assert(!loginManager.isLoggedIn()){
+                "Login should not be successful with invalid password"
+            }
+            assertEquals(0, fakeSharedPreferences.keys.size) {
+                "SharedPreferences should be empty if login failed"
+            }
+
         }
     }
+
+    @Test
+    fun `login with wrong email`() {
+        runBlocking {
+            val result =
+                loginManager.login(TEST_USER_EMAIL + "_invalid_version", TEST_USER_PASSWORD)
+            assert(result is NetworkResult.Failure) {
+                "expected a failure, but got result $result and " +
+                    "shared prefs map $fakeSharedPreferences"
+            }
+            val statusCode = (result as NetworkResult.Failure).statusCode
+            assertEquals(401, statusCode) { "expected 401 status code, but got $statusCode" }
+
+            assert(!loginManager.isLoggedIn()){
+                "Login should not be successful with invalid email"
+            }
+            assertEquals(0, fakeSharedPreferences.keys.size) {
+                "SharedPreferences should be empty if login failed"
+            }
+
+        }
+    }
+
+    @Test
+    fun `login a second time`() {
+        runBlocking {
+
+            val firstResult = loginManager.login(TEST_USER_EMAIL, TEST_USER_PASSWORD)
+            // light check if has login successfully
+            assert(firstResult is NetworkResult.Success) {
+                "Login should succeed for the first time"
+            }
+            assert(loginManager.isLoggedIn()) {
+                "isLoggedIn() for loginManager should be true for the first time"
+            }
+
+            // login a second time
+            val secondResult = loginManager.login(TEST_USER_EMAIL, TEST_USER_PASSWORD)
+            assert(secondResult is NetworkResult.NetworkException){
+                "Expected a Network Exception \"already logged in\"," +
+                    "but got result $secondResult"
+            }
+
+        }
+    }
+
+    @Test
+    fun `logout with hostName and port persisting in sharedPreference`() {
+        val testHostName = "10.0.2.2"
+        val testHostPort = "5000"
+        fakeSharedPreferences[mockContext.getString(R.string.key_server_hostname)] = testHostName
+        fakeSharedPreferences[mockContext.getString(R.string.key_server_port)] = testHostPort
+
+        runBlocking {
+            val result = loginManager.login(TEST_USER_EMAIL, TEST_USER_PASSWORD)
+            // light check if has login successfully
+            assert(result is NetworkResult.Success)
+            assert(loginManager.isLoggedIn())
+
+            assertEquals(TEST_AUTH_TOKEN, fakeSharedPreferences["token"]) { "bad auth token" }
+            assertEquals(TEST_USER_ID, fakeSharedPreferences["userId"]) { "bad userId" }
+            assertEquals(
+                TEST_FIRST_NAME,
+                fakeSharedPreferences[mockContext.getString(R.string.key_vht_name)]
+            ) { "bad first name" }
+
+            val role =
+                UserRole.safeValueOf(fakeSharedPreferences[mockContext.getString(R.string.key_role)] as String)
+
+            assertEquals(TEST_USER_ROLE, role) { "unexpected role $role; expected $TEST_USER_ROLE" }
+
+            // logs out, both settings should persist
+            loginManager.logout()
+            assert(fakeSharedPreferences.isNotEmpty())
+            assertEquals(fakeSharedPreferences[mockContext.getString(R.string.key_server_hostname)], testHostName)
+            assertEquals(fakeSharedPreferences[mockContext.getString(R.string.key_server_port)], testHostPort)
+
+        }
+    }
+
 }

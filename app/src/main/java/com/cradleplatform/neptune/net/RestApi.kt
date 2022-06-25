@@ -18,13 +18,9 @@ import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.Statistics
 import com.cradleplatform.neptune.sync.AssessmentSyncField
-import com.cradleplatform.neptune.sync.AssessmentSyncResult
 import com.cradleplatform.neptune.sync.PatientSyncField
-import com.cradleplatform.neptune.sync.PatientSyncResult
 import com.cradleplatform.neptune.sync.ReadingSyncField
-import com.cradleplatform.neptune.sync.ReadingSyncResult
 import com.cradleplatform.neptune.sync.ReferralSyncField
-import com.cradleplatform.neptune.sync.ReferralSyncResult
 import com.cradleplatform.neptune.sync.SyncWorker
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper.createWriter
@@ -704,12 +700,6 @@ class RestApi constructor(
                                 nextToken()
                                 errors = readValueAsTree<JsonNode>().toPrettyString()
                             }
-                            PatientSyncField.FACILITIES.text -> {
-                                // TODO: Either have a sync endpoint for new facilities, or
-                                //  remove this and just redownload facilities from server. (refer to issue #38)
-                                // nextToken()
-                                // val tree = readValueAsTree<JsonNode>().toPrettyString()
-                            }
                         }
                     }
                 }
@@ -954,6 +944,59 @@ class RestApi constructor(
             }
             AssessmentSyncResult(networkResult, assessmentsToUpload.size, totalAssessmentsDownloaded, errors)
         }
+
+    /**
+     * Get all and sync Health Facilities from the server with.
+     * The parsed results will be sent in the resulting [healthFacilityChannel].
+     *
+     * [healthFacilityChannel] will be failed (see [SendChannel.close]) if [Failure] or
+     * [NetworkException] is returned, so using any of the Channels can result in a [SyncException]
+     * that should be caught by anything handling the Channels.
+     *
+     * @return A [HealthFacilitySyncResult] containing [Success] if the parsing succeeds,
+     * otherwise a [Failure] or [NetworkException] if parsing or the connection fail,
+     * with a number indicating how many incoming health facilities are successfully parsed
+     *
+     * TODO: currently lastSyncTimestamp is unused and is waiting for backend to implement
+     *  a new endpoint for it. (refer to issue #54)
+     */
+    suspend fun syncHealthFacilities(
+        healthFacilityChannel: SendChannel<HealthFacility>,
+        lastSyncTimestamp: BigInteger = BigInteger.valueOf(1L)
+    ): HealthFacilitySyncResult = withContext(IO) {
+        var totalHealthFacilitiesDownloaded = 0
+        var failedParse = false
+        val networkResult = http.makeRequest(
+            method = Http.Method.GET,
+            url = urlManager.healthFacilities,
+            headers = headers,
+            inputStreamReader = { inputStream ->
+                try {
+                    val reader = JacksonMapper.readerForHealthFacility
+                    reader.readValues<HealthFacility>(inputStream).use { iterator ->
+                        iterator.forEachJackson {
+                            healthFacilityChannel.send(it)
+                            totalHealthFacilitiesDownloaded++
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, e.toString())
+                    failedParse = true
+                }
+            },
+        ).also {
+            if (it is NetworkResult.Success) {
+                if (failedParse) {
+                    Log.e(TAG, "Failed to parse all Health Facilities during Sync")
+                } else {
+                    healthFacilityChannel.close()
+                }
+            } else {
+                healthFacilityChannel.close(SyncException("health facility download failed"))
+            }
+        }
+        HealthFacilitySyncResult(networkResult, totalHealthFacilitiesDownloaded)
+    }
 
     /**
      * The common headers used for most API requests.

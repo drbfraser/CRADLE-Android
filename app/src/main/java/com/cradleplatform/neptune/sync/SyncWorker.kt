@@ -14,13 +14,20 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.ext.Field
 import com.cradleplatform.neptune.manager.AssessmentManager
+import com.cradleplatform.neptune.manager.HealthFacilityManager
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.manager.ReferralManager
 import com.cradleplatform.neptune.model.Assessment
+import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
+import com.cradleplatform.neptune.net.AssessmentSyncResult
+import com.cradleplatform.neptune.net.HealthFacilitySyncResult
+import com.cradleplatform.neptune.net.PatientSyncResult
+import com.cradleplatform.neptune.net.ReadingSyncResult
+import com.cradleplatform.neptune.net.ReferralSyncResult
 import com.cradleplatform.neptune.net.NetworkResult
 import com.cradleplatform.neptune.net.RestApi
 import com.cradleplatform.neptune.net.SyncException
@@ -53,6 +60,7 @@ class SyncWorker @AssistedInject constructor(
     private val readingManager: ReadingManager,
     private val referralManager: ReferralManager,
     private val assessmentManager: AssessmentManager,
+    private val healthFacilityManager: HealthFacilityManager,
     private val sharedPreferences: SharedPreferences,
     private val database: CradleDatabase
 ) : CoroutineWorker(context, params) {
@@ -94,6 +102,8 @@ class SyncWorker @AssistedInject constructor(
         const val LAST_REFERRAL_SYNC = "lastSyncTimeReferrals"
         /** SharedPreferences key for last time assessments were synced */
         const val LAST_ASSESSMENT_SYNC = "lastSyncTimeAssessments"
+        /** SharedPreferences key for last time assessments were synced */
+        const val LAST_HEALTH_FACILITIES_SYNC = "lastSyncTimeHealthFacilities"
         /** Default last sync timestamp. Note that using 0 will result in server rejecting param */
         const val LAST_SYNC_DEFAULT = "1"
 
@@ -195,6 +205,21 @@ class SyncWorker @AssistedInject constructor(
                 workDataOf(RESULT_MESSAGE to getResultErrorMessage(patientResult.networkResult))
             )
         }
+
+        // Downloading for HealthFacilities
+        //
+        // HealthFacilities needs to be downloaded before referrals due to HealthFacility.name being
+        // a foreign key in referral in the schema
+        val lastHealthFacilitiesDownloadTime = BigInteger(
+            sharedPreferences.getString(
+                LAST_HEALTH_FACILITIES_SYNC,
+                LAST_SYNC_DEFAULT
+            )!!
+        )
+        val healthFacilitiesResult = syncHealthFacilities(
+            healthFacilityManager.getAllFacilities(),
+            lastHealthFacilitiesDownloadTime
+        )
 
         val lastReadingSyncTime = BigInteger(
             sharedPreferences.getString(
@@ -300,6 +325,7 @@ class SyncWorker @AssistedInject constructor(
                 RESULT_MESSAGE to
                     getResultSuccessMessage(
                         patientResult,
+                        healthFacilitiesResult,
                         readingResult,
                         referralResult,
                         assessmentResult
@@ -477,6 +503,36 @@ class SyncWorker @AssistedInject constructor(
         }
     }
 
+    private suspend fun syncHealthFacilities(
+        currentHealthFacilities: List<HealthFacility>,
+        lastSyncTime: BigInteger
+    ): HealthFacilitySyncResult = withContext(Dispatchers.Default) {
+
+        val currentHealthFacilitiesNames = currentHealthFacilities.map { it.name }
+        val channel = Channel<HealthFacility>()
+        launch {
+            try {
+                database.withTransaction {
+                    for (healthFacility in channel) {
+
+                        if (!currentHealthFacilitiesNames.contains(healthFacility.name)) {
+                            // new facility to be added, selects by default
+                            healthFacility.isUserSelected = true
+                            healthFacilityManager.add(healthFacility)
+                        } else {
+                            // facility already exists in local database
+                        }
+                    }
+                }
+            } catch (e: SyncException) {
+                Log.e(TAG, "Failed to add health facility during Sync, with error:\n $e")
+            }
+            withContext(Dispatchers.Main) { Log.d(TAG, "health facilities sync job is done") }
+        }
+
+        restApi.syncHealthFacilities(channel, lastSyncTime)
+    }
+
     private suspend fun reportProgress(
         state: State,
         progress: Int,
@@ -522,6 +578,7 @@ class SyncWorker @AssistedInject constructor(
 
     private fun getResultSuccessMessage(
         patientSyncResult: PatientSyncResult,
+        healthFacilitySyncResult: HealthFacilitySyncResult,
         readingSyncResult: ReadingSyncResult,
         referralSyncResult: ReferralSyncResult,
         assessmentSyncResult: AssessmentSyncResult,
@@ -532,6 +589,10 @@ class SyncWorker @AssistedInject constructor(
         )
         val totalPatientsDownloaded = applicationContext.getString(
             R.string.sync_total_patients_downloaded_s, patientSyncResult.totalPatientsDownloaded
+        )
+        val totalHealthFacilitiesDownloaded = applicationContext.getString(
+            R.string.sync_total_HealthFacilities_downloaded_s,
+            healthFacilitySyncResult.totalHealthFacilitiesDownloaded
         )
         val totalReadingsUploaded = applicationContext.getString(
             R.string.sync_total_readings_uploaded_s, readingSyncResult.totalReadingsUploaded
@@ -556,6 +617,7 @@ class SyncWorker @AssistedInject constructor(
         return "$success\n" +
             "$totalPatientsUploaded\n" +
             "$totalPatientsDownloaded\n" +
+            "$totalHealthFacilitiesDownloaded\n" +
             "$totalReadingsUploaded\n" +
             "$totalReadingsDownloaded\n" +
             "$totalReferralsUploaded\n" +
@@ -569,7 +631,6 @@ class SyncWorker @AssistedInject constructor(
 enum class PatientSyncField(override val text: String) : Field {
     PATIENTS("patients"),
     ERRORS("errors"),
-    FACILITIES("healthFacilities"),
 }
 
 enum class ReadingSyncField(override val text: String) : Field {
@@ -587,30 +648,3 @@ enum class AssessmentSyncField(override val text: String) : Field {
     ASSESSMENTS("assessments"),
     ERRORS("errors")
 }
-
-data class PatientSyncResult(
-    val networkResult: NetworkResult<Unit>,
-    var totalPatientsUploaded: Int,
-    var totalPatientsDownloaded: Int,
-    var errors: String?,
-)
-
-data class ReadingSyncResult(
-    val networkResult: NetworkResult<Unit>,
-    var totalReadingsUploaded: Int,
-    var totalReadingsDownloaded: Int
-)
-
-data class ReferralSyncResult(
-    val networkResult: NetworkResult<Unit>,
-    var totalReferralsUploaded: Int,
-    var totalReferralsDownloaded: Int,
-    var errors: String?,
-)
-
-data class AssessmentSyncResult(
-    val networkResult: NetworkResult<Unit>,
-    var totalAssessmentsUploaded: Int,
-    var totalAssessmentsDownloaded: Int,
-    var errors: String?,
-)

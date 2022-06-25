@@ -26,7 +26,7 @@ internal class RestApiTest {
     private val mockServer: MockWebServer
     private val restApi: RestApi
     init {
-        val (api, server) = MockWebServerUtils.createRestApiWithMockedServer {
+        val (api, server) = MockWebServerUtils.createRestApiWithServerBlock {
             dispatcher = object : Dispatcher() {
                 override fun dispatch(request: RecordedRequest) = when (request.path) {
                     "/api/user/auth" -> MockResponse().apply {
