@@ -21,6 +21,9 @@
         android:usesCleartextTraffic="false"> <!--    set this to true when testing the app on a local dev server-->
         <activity android:name=".view.EditPatientInfoActivity"/>
         <activity
+            android:name=".view.FormRenderingActivity"
+            android:exported="false" />
+        <activity
             android:name=".view.SyncActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".view.GlobalPatientProfileActivity" />
