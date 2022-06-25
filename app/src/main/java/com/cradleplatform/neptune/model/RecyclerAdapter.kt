@@ -58,7 +58,6 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
             itemMultipleChoice.setItemChecked(position, true)
 
             itemDatePicker.setOnClickListener {
-//                Toast.makeText(context, "Data Picker Processed", Toast.LENGTH_SHORT).show()
                 clickDataPicker(context, itemDatePicker)
             }
 
@@ -79,11 +78,7 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
 
     override fun onBindViewHolder(holder: RecyclerAdapter.ViewHolder, position: Int) {
         holder.itemQuestion.text = form.questions[position].questionText
-//        if (form.questions[position].questionType == "CATEGORY") {
-//            holder.itemAnswer.visibility = View.GONE
-//        }
         when (form.questions[position].questionType) {
-//            "CATEGORY" -> holder.itemQuestion.textSize = 24F
             "DATE" -> holder.itemDatePicker.visibility = View.VISIBLE
             "STRING" -> holder.itemTextAnswer.visibility = View.VISIBLE
             "INTEGER" -> holder.itemTextAnswer.visibility = View.VISIBLE
@@ -91,7 +86,6 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
                 var questionList: MutableList<String> = mutableListOf()
                 for (mcOption in form.questions[position].mcOptions) {
                     questionList.add(mcOption.opt)
-//                    questionList.add("23333")
                 }
                 val adapter = ArrayAdapter<String>(
                     holder.context,
@@ -119,9 +113,6 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
             { view, selectedYear, selectedMonth, selectedDayOfMonth ->
                 val date = "$selectedYear/${selectedMonth + 1}/$selectedDayOfMonth"
                 selectedDate = date
-//                Toast.makeText(context, selectedDate, Toast.LENGTH_SHORT).show()
-//                val sdf = SimpleDateFormat("yyyy/MM/dd", Locale.CANADA)
-//                val theDate = sdf.parse(date)
                 itemDatePicker.text = selectedDate
             },
             year,
