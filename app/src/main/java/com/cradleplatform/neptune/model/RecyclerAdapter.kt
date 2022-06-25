@@ -117,7 +117,7 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
         val dpd = DatePickerDialog(
             context,
             { view, selectedYear, selectedMonth, selectedDayOfMonth ->
-                val date = "${selectedYear}/${selectedMonth + 1}/${selectedDayOfMonth}"
+                val date = "$selectedYear/${selectedMonth + 1}/$selectedDayOfMonth"
                 selectedDate = date
 //                Toast.makeText(context, selectedDate, Toast.LENGTH_SHORT).show()
 //                val sdf = SimpleDateFormat("yyyy/MM/dd", Locale.CANADA)
