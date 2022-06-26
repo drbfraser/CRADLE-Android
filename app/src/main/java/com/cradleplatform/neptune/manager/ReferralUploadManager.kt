@@ -72,7 +72,7 @@ class ReferralUploadManager @Inject constructor(private val restApi: RestApi) {
      * @return result of the network request. [patient] is returned back if [patient] already exists
      * on the server.
      */
-    suspend fun uploadIndependentReferralViaWeb(
+    suspend fun uploadReferralViaWeb(
         patient: Patient,
         referral: Referral
     ): NetworkResult<PatientAndReferrals> {
