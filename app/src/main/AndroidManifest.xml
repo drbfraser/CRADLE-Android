@@ -76,6 +76,10 @@
             android:name=".view.ui.settings.SettingsActivity"
             android:label="Settings"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".view.FormSelectionActivity"
+            android:label="Form Selection"
+            android:screenOrientation="portrait" />
 
         <receiver android:name=".utilities.notification.NotificationPublisher"/>
 

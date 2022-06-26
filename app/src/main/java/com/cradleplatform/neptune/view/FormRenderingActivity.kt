@@ -1,5 +1,7 @@
 package com.cradleplatform.neptune.view
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,7 +20,7 @@ class FormRenderingActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_form_rendering)
 
-        form = intent.getSerializableExtra("form") as FormTemplate
+        form = intent.getSerializableExtra(EXTRA_FORM_TEMPLATE) as FormTemplate
         layoutManager = LinearLayoutManager(this)
 
         var recyclerView = findViewById<RecyclerView>(R.id.myRecyclerView)
@@ -27,4 +29,19 @@ class FormRenderingActivity : AppCompatActivity() {
         adapter = RecyclerAdapter(form!!)
         recyclerView.adapter = adapter
     }
+
+    companion object {
+        private const val EXTRA_FORM_TEMPLATE= "JSON string for form template"
+
+        @JvmStatic
+        fun makeIntentWithFormTemplate(context: Context, formTemplate: FormTemplate): Intent {
+            val bundle = Bundle()
+            bundle.putSerializable(EXTRA_FORM_TEMPLATE,formTemplate)
+            return Intent(context,FormRenderingActivity::class.java).apply {
+                this.putExtras(bundle)
+            }
+        }
+
+    }
+
 }

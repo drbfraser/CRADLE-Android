@@ -539,8 +539,19 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/rounded_button"
                 android:text="@string/create_new_referral"
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/newFormButton"
                 app:layout_constraintTop_toBottomOf="@+id/newPatientReadingButton"
+                android:visibility="gone"
+                android:layout_marginTop="@dimen/reading_flow_previous_reading_item_margin"/>
+
+            <Button
+                android:id="@+id/newFormButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rounded_button"
+                android:text="Create New Form"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/newPatientReferralButton"
                 android:visibility="gone"
                 android:layout_marginTop="@dimen/reading_flow_previous_reading_item_margin"/>
 

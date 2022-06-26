@@ -1,0 +1,269 @@
+package com.cradleplatform.neptune.viewmodel
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
+import com.cradleplatform.neptune.model.FormTemplate
+import com.google.gson.Gson
+
+class FormSelectionViewModel : ViewModel() {
+
+    private fun getLiveDataFormList(): LiveData<List<FormTemplate>>{
+        val tempFormTemplate:FormTemplate = Gson().fromJson(tempForm, FormTemplate::class.java)
+        var tempFormTemplate2 = tempFormTemplate.copy(name = "FormTemplate2")
+
+        return MutableLiveData(
+            listOf(
+                tempFormTemplate,
+                tempFormTemplate2
+            )
+        )
+    }
+
+    private val formTemplateList: LiveData<List<FormTemplate>> = this.getLiveDataFormList()
+
+    val formTemplateListAsString: LiveData<Array<String>> by lazy {
+        formTemplateList.map { it.map(FormTemplate::name).toTypedArray() }
+    }
+
+    fun getFormTemplateFromName(formName:String):FormTemplate {
+        val currentFormTemplateList = formTemplateList.value
+        if (currentFormTemplateList.isNullOrEmpty()){
+            error("Tried to retrieve FormTemplate by name when no FormTemplate is available")
+        }
+        return currentFormTemplateList!!.find { it.name == formName } ?:
+        error("FormTemplate cannot be found in the current list. Please check if parameter is correct")
+    }
+    
+}
+
+const val tempForm = """
+{
+    "lastEdited": 1650781303,
+    "version": "V1",
+    "name": "Ministry of Health and Sanitation Referral Form",
+    "dateCreated": 1650781303,
+    "category": "L1 referral",
+    "id": "da36f2c0-2c14-4076-85aa-63990ad9a037",
+    "lang": "english",
+    "questions": [
+    {
+        "questionText": "Referred by",
+        "questionType": "CATEGORY",
+        "hasCommentAttached": false,
+        "answers": {},
+        "required": true,
+        "id": "1c72dc3a-ae1f-43c7-bd8f-ec571e0f0d6e",
+        "visibleCondition": [],
+        "isBlank": true,
+        "formTemplateId": "da36f2c0-2c14-4076-85aa-63990ad9a037",
+        "mcOptions": [],
+        "questionIndex": 0,
+        "questionId": "category-referred-by"
+    },
+    {
+        "questionText": "name/ID",
+        "questionType": "STRING",
+        "hasCommentAttached": false,
+        "answers": {},
+        "required": true,
+        "categoryIndex": 0,
+        "id": "6922532b-dce3-4423-906b-a0705968445f",
+        "visibleCondition": [],
+        "isBlank": true,
+        "formTemplateId": "da36f2c0-2c14-4076-85aa-63990ad9a037",
+        "mcOptions": [],
+        "questionIndex": 1,
+        "questionId": "referred-by-name"
+    },
+    {
+        "questionText": "Initiating Facility",
+        "questionType": "CATEGORY",
+        "hasCommentAttached": false,
+        "answers": {},
+        "required": true,
+        "id": "3ef19573-ff3e-4eb6-b8a4-216536b0628d",
+        "visibleCondition": [],
+        "isBlank": true,
+        "formTemplateId": "da36f2c0-2c14-4076-85aa-63990ad9a037",
+        "mcOptions": [],
+        "questionIndex": 2,
+        "questionId": "category-initiating-facility"
+    },
+    {
+        "questionText": "Name",
+        "questionType": "MULTIPLE_CHOICE",
+        "hasCommentAttached": false,
+        "answers": {},
+        "required": true,
+        "categoryIndex": 2,
+        "id": "b1a1ac5c-9b22-41e0-b477-e6e505ca6b71",
+        "visibleCondition": [],
+        "isBlank": true,
+        "formTemplateId": "da36f2c0-2c14-4076-85aa-63990ad9a037",
+        "mcOptions": [
+        {
+            "mcid": 0,
+            "opt": "H000"
+        },
+        {
+            "mcid": 1,
+            "opt": "H001"
+        }
+        ],
+        "questionIndex": 3,
+        "questionId": "initiating-facility-name"
+    },
+    {
+        "questionText": "Date of referral",
+        "questionType": "DATE",
+        "hasCommentAttached": false,
+        "answers": {},
+        "required": true,
+        "categoryIndex": 2,
+        "id": "b6ef8d85-9f9e-4cd4-8fad-f171d1c0362b",
+        "visibleCondition": [],
+        "isBlank": true,
+        "formTemplateId": "da36f2c0-2c14-4076-85aa-63990ad9a037",
+        "mcOptions": [],
+        "questionIndex": 4,
+        "questionId": "initiating-facility-date"
+    },
+    {
+        "questionText": "Patient Info",
+        "questionType": "CATEGORY",
+        "hasCommentAttached": false,
+        "answers": {},
+        "required": true,
+        "id": "b2ce6383-121b-46bb-9a46-4ea989c6a503",
+        "visibleCondition": [],
+        "isBlank": true,
+        "formTemplateId": "da36f2c0-2c14-4076-85aa-63990ad9a037",
+        "mcOptions": [],
+        "questionIndex": 5,
+        "questionId": "category-patient-info"
+    },
+    {
+        "questionText": "Patient Name",
+        "questionType": "STRING",
+        "hasCommentAttached": false,
+        "answers": {},
+        "required": true,
+        "categoryIndex": 5,
+        "id": "05d67b26-c2e5-42b8-a8a4-ad115ac42f31",
+        "visibleCondition": [],
+        "isBlank": true,
+        "formTemplateId": "da36f2c0-2c14-4076-85aa-63990ad9a037",
+        "mcOptions": [],
+        "questionIndex": 6,
+        "questionId": "patient-name"
+    },
+    {
+        "questionText": "Card Number",
+        "questionType": "STRING",
+        "hasCommentAttached": false,
+        "answers": {},
+        "required": true,
+        "categoryIndex": 5,
+        "id": "15b9bf3a-9c6d-44b1-8669-dce8bb73ff1d",
+        "visibleCondition": [],
+        "isBlank": true,
+        "formTemplateId": "da36f2c0-2c14-4076-85aa-63990ad9a037",
+        "mcOptions": [],
+        "questionIndex": 7,
+        "questionId": "patient-card-number"
+    },
+    {
+        "numMin": 0.0,
+        "questionText": "Heart Rate",
+        "numMax": 220.0,
+        "questionType": "INTEGER",
+        "hasCommentAttached": false,
+        "answers": {},
+        "required": true,
+        "categoryIndex": 5,
+        "id": "92b40820-128c-48bd-9a75-ac08c09da0dc",
+        "visibleCondition": [],
+        "isBlank": true,
+        "formTemplateId": "da36f2c0-2c14-4076-85aa-63990ad9a037",
+        "mcOptions": [],
+        "questionIndex": 8,
+        "questionId": "patient-heart-rate"
+    },
+    {
+        "questionText": "Whether the assessment is available?",
+        "questionType": "MULTIPLE_CHOICE",
+        "hasCommentAttached": false,
+        "answers": {},
+        "required": true,
+        "categoryIndex": 5,
+        "id": "14d91339-99e5-4304-898b-a60086b896d1",
+        "visibleCondition": [],
+        "isBlank": true,
+        "formTemplateId": "da36f2c0-2c14-4076-85aa-63990ad9a037",
+        "mcOptions": [
+        {
+            "mcid": 0,
+            "opt": "yes"
+        },
+        {
+            "mcid": 1,
+            "opt": "no"
+        }
+        ],
+        "questionIndex": 9,
+        "questionId": "patient-assessment-available"
+    },
+    {
+        "questionText": "assessment",
+        "questionType": "CATEGORY",
+        "hasCommentAttached": false,
+        "answers": {},
+        "required": true,
+        "id": "e816e65e-d1d4-4e89-9190-981e72c56634",
+        "visibleCondition": [
+        {
+            "answers": {
+            "mcidArray": [
+            0
+            ]
+        },
+            "qidx": 9,
+            "relation": "EQUAL_TO"
+        }
+        ],
+        "isBlank": true,
+        "formTemplateId": "da36f2c0-2c14-4076-85aa-63990ad9a037",
+        "mcOptions": [],
+        "questionIndex": 10,
+        "questionId": "patient-assessment"
+    },
+    {
+        "questionText": "Final Diagnosis",
+        "questionType": "STRING",
+        "hasCommentAttached": false,
+        "answers": {},
+        "required": true,
+        "categoryIndex": 10,
+        "id": "474ce497-9a36-4904-81a8-d3adcb19449a",
+        "visibleCondition": [
+        {
+            "answers": {
+            "mcidArray": [
+            0
+            ]
+        },
+            "qidx": 9,
+            "relation": "EQUAL_TO"
+        }
+        ],
+        "isBlank": true,
+        "formTemplateId": "da36f2c0-2c14-4076-85aa-63990ad9a037",
+        "mcOptions": [],
+        "questionIndex": 11,
+        "questionId": "patient-final-diagnosis"
+    }
+    ]
+}
+"""
