@@ -424,7 +424,7 @@ open class PatientProfileActivity : AppCompatActivity() {
 
         createFormButton.visibility = View.VISIBLE
         createFormButton.setOnClickListener {
-            val intent = FormSelectionActivity.makeIntentForPatientId(this@PatientProfileActivity,currPatient.id)
+            val intent = FormSelectionActivity.makeIntentForPatientId(this@PatientProfileActivity, currPatient.id)
             startActivity(intent)
         }
     }

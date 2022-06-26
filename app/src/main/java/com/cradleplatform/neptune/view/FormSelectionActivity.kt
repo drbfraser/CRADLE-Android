@@ -34,7 +34,7 @@ class FormSelectionActivity : AppCompatActivity() {
         setUpFetchFormButton()
     }
 
-    private fun setUpFetchFormButton(){
+    private fun setUpFetchFormButton() {
         val fetchFormButton = findViewById<Button>(R.id.fetchFormButton)
         val formSelection = findViewById<TextInputLayout>(R.id.form_selection_text_input)
 
@@ -47,7 +47,6 @@ class FormSelectionActivity : AppCompatActivity() {
                     viewModel.getFormTemplateFromName(it)
                 )
             }
-
         }
     }
 
@@ -56,9 +55,8 @@ class FormSelectionActivity : AppCompatActivity() {
 
         @JvmStatic
         fun makeIntentForPatientId(context: Context, patientId: String): Intent =
-            Intent(context,FormSelectionActivity::class.java).apply {
+            Intent(context, FormSelectionActivity::class.java).apply {
                 putExtra(EXTRA_PATIENT_ID, patientId)
             }
     }
-
 }

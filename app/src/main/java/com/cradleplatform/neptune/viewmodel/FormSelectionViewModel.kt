@@ -9,8 +9,8 @@ import com.google.gson.Gson
 
 class FormSelectionViewModel : ViewModel() {
 
-    private fun getLiveDataFormList(): LiveData<List<FormTemplate>>{
-        val tempFormTemplate:FormTemplate = Gson().fromJson(tempForm, FormTemplate::class.java)
+    private fun getLiveDataFormList(): LiveData<List<FormTemplate>> {
+        val tempFormTemplate: FormTemplate = Gson().fromJson(FORM_SELECTION_TEMP_FORM, FormTemplate::class.java)
         var tempFormTemplate2 = tempFormTemplate.copy(name = "FormTemplate2")
 
         return MutableLiveData(
@@ -27,18 +27,17 @@ class FormSelectionViewModel : ViewModel() {
         formTemplateList.map { it.map(FormTemplate::name).toTypedArray() }
     }
 
-    fun getFormTemplateFromName(formName:String):FormTemplate {
+    fun getFormTemplateFromName(formName: String): FormTemplate {
         val currentFormTemplateList = formTemplateList.value
-        if (currentFormTemplateList.isNullOrEmpty()){
+        if (currentFormTemplateList.isNullOrEmpty()) {
             error("Tried to retrieve FormTemplate by name when no FormTemplate is available")
         }
         return currentFormTemplateList!!.find { it.name == formName } ?:
-        error("FormTemplate cannot be found in the current list. Please check if parameter is correct")
+            error("FormTemplate cannot be found in the current list. Please check if parameter is correct")
     }
-    
 }
 
-const val tempForm = """
+const val FORM_SELECTION_TEMP_FORM = """
 {
     "lastEdited": 1650781303,
     "version": "V1",
