@@ -11,27 +11,20 @@ class FormSelectionViewModel : ViewModel() {
 
     var formVersionLiveData: MutableLiveData<Array<String>> = MutableLiveData()
 
-    private fun getLiveDataFormList(): LiveData<List<FormTemplate>> {
-        val tempFormTemplate: FormTemplate = Gson().fromJson(FORM_SELECTION_TEMP_FORM, FormTemplate::class.java)
-        val tempFormTemplate2 = tempFormTemplate.copy(name = "FormTemplate2")
-        val tempFormShort: FormTemplate = Gson().fromJson(FORM_SELECTION_TEMP_FORM_SHORT, FormTemplate::class.java)
-
-        return MutableLiveData(
-            listOf(
-                tempFormTemplate,
-                tempFormTemplate.copy(lang = "Latin"),
-                tempFormTemplate2,
-                tempFormShort.copy(lang = "japanese")
-            )
-        )
-    }
-
-    private val formTemplateList: LiveData<List<FormTemplate>> = this.getLiveDataFormList()
+    private val formTemplateList: LiveData<List<FormTemplate>> = getLiveDataFormList()
 
     val formTemplateListAsString: LiveData<Array<String>> by lazy {
         formTemplateList.map { it.map(FormTemplate::name).distinct().toTypedArray() }
     }
 
+    /**
+     * perform a search for a set of [FormTemplate] by [formName],
+     *
+     * returns a [List] of [String]s for available languages.
+     *
+     * throws error if none is available, user should make sure that the inputs parameters is retrieved from
+     * the sets of LiveData provided by this class.
+     */
     private fun getFormTemplateVersionsFromName(formName: String): List<String> {
         val formTemplateVersions = formTemplateList.value!!.filter { it.name == formName }.map(FormTemplate::lang)
         if (formTemplateVersions.isEmpty()) {
@@ -40,12 +33,23 @@ class FormSelectionViewModel : ViewModel() {
         return formTemplateVersions
     }
 
+    /**
+     * Populates the dropdown list for languages available for a specific [FormTemplate].
+     *
+     * This function is bound to when a user selects a formTemplate from the dropdown list for [FormTemplate]s
+     */
     fun formTemplateChanged(formName: String) {
         formVersionLiveData.postValue(
             getFormTemplateVersionsFromName(formName).toTypedArray()
         )
     }
 
+    /**
+     * returns [FormTemplate] that matches the input [formName] and [version]
+     *
+     * throws errors if not found, user should make sure that the inputs parameters is retrieved from
+     * the sets of LiveData provided by this class.
+     */
     fun getFormTemplateFromNameAndVersion(formName: String, version: String): FormTemplate {
         val currentFormTemplateList = formTemplateList.value
         if (currentFormTemplateList.isNullOrEmpty()) {
@@ -56,7 +60,22 @@ class FormSelectionViewModel : ViewModel() {
     }
 }
 
-// TODO: replace this hardcoded string with accessing local(Synced) FormTemplates (refer to issue #55)
+// TODO: replace this function and hardcoded strings with accessing local(Synced) FormTemplates (refer to issue #55)
+private fun getLiveDataFormList(): LiveData<List<FormTemplate>> {
+    val tempFormTemplate: FormTemplate = Gson().fromJson(FORM_SELECTION_TEMP_FORM, FormTemplate::class.java)
+    val tempFormTemplate2 = tempFormTemplate.copy(name = "FormTemplate2")
+    val tempFormShort: FormTemplate = Gson().fromJson(FORM_SELECTION_TEMP_FORM_SHORT, FormTemplate::class.java)
+
+    return MutableLiveData(
+        listOf(
+            tempFormTemplate,
+            tempFormTemplate.copy(lang = "Latin"),
+            tempFormTemplate2,
+            tempFormShort.copy(lang = "japanese")
+        )
+    )
+}
+
 const val FORM_SELECTION_TEMP_FORM = """
 {
     "lastEdited": 1650781303,
