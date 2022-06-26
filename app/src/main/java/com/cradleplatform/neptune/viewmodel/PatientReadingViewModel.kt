@@ -1333,7 +1333,6 @@ class PatientReadingViewModel @Inject constructor(
      */
     suspend fun save(): ReadingFlowSaveResult {
         val saveResult = saveManager.save()
-        // val saveResult = saveManager.saveReferral()
         if (saveResult is ReadingFlowSaveResult.SaveSuccessful) {
             originalReadingId?.let {
                 readingManager.clearDateRecheckVitalsAndMarkForUpload(
@@ -1605,61 +1604,6 @@ class PatientReadingViewModel @Inject constructor(
         private val isSavingReferralMutex = Mutex()
         val isSavingReferral = MutableLiveData<Boolean>(false)
 
-        /**
-         * When the save button in the AdviceFragment is clicked, this is run/
-         * Saves the patient (if creating a new patient) and saves the referral to the database.
-         *
-         * @return a [ReferralFlowSaveResult]
-         */
-        suspend fun saveReferral(): ReadingFlowSaveResult = withContext(Dispatchers.Default) {
-            // Don't save if we are uninitialized for some reason.
-            isInitializedMutex.withLock {
-                if (_isInitialized.value == false) {
-                    return@withContext ReadingFlowSaveResult.ErrorConstructing
-                }
-            }
-
-            isSavingReferralMutex.withLock {
-                // Prevent saving from being run while it's already running. We have to do
-                // this since the save button launches a coroutine.
-                if (isSavingReferral.value == true) {
-                    return@withContext ReadingFlowSaveResult.ErrorConstructing
-                }
-
-                isSavingReferral.setValueOnMainThread(true)
-                yield()
-
-                val referral = Referral(
-                    comment = "referralComment",
-                    referralHealthFacilityName = "H2000",
-                    dateReferred = ZonedDateTime.now().toEpochSecond(),
-                    userId = sharedPreferences.getIntOrNull(LoginManager.USER_ID_KEY),
-                    patientId = "49300028162",
-                    actionTaken = "actionTaken",
-                    cancelReason = "cancelReason",
-                    notAttendReason = "notAttendReason",
-                    isAssessed = false,
-                    isCancelled = false,
-                    notAttended = false,
-                    lastEdited = ZonedDateTime.now().toEpochSecond()
-                )
-                yield()
-
-                handleStoringReferralFromBuilders(referral)
-
-                // Don't set isSavingReferral to false to ensure this can't be run again.
-                return@withContext ReadingFlowSaveResult.SaveSuccessful.NoSmsNeeded
-            }
-        }
-
-        /**
-         * Will always save the referral to the database.
-         */
-        private suspend fun handleStoringReferralFromBuilders(
-            referralFromBuilder: Referral
-        ) {
-            referralManager.addReferral(referralFromBuilder, false)
-        }
     }
 
     /** Advice fields */
