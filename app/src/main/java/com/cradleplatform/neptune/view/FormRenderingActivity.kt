@@ -43,7 +43,7 @@ class FormRenderingActivity : AppCompatActivity() {
             val bundle = Bundle()
             bundle.putSerializable(EXTRA_FORM_TEMPLATE, formTemplate)
             return Intent(context, FormRenderingActivity::class.java).apply {
-                this.putExtra(EXTRA_PATIENT_ID,patientId)
+                this.putExtra(EXTRA_PATIENT_ID, patientId)
                 this.putExtras(bundle)
             }
         }
