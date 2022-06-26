@@ -1,20 +1,41 @@
 package com.cradleplatform.neptune.viewmodel
 
+import android.content.SharedPreferences
 import androidx.annotation.MainThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
+import com.cradleplatform.neptune.ext.getIntOrNull
 import com.cradleplatform.neptune.manager.HealthFacilityManager
+import com.cradleplatform.neptune.manager.LoginManager
+import com.cradleplatform.neptune.manager.PatientManager
+import com.cradleplatform.neptune.manager.ReferralManager
+import com.cradleplatform.neptune.manager.ReferralUploadManager
 import com.cradleplatform.neptune.model.HealthFacility
+import com.cradleplatform.neptune.model.Patient
+import com.cradleplatform.neptune.model.PatientAndReferrals
+import com.cradleplatform.neptune.model.Referral
+import com.cradleplatform.neptune.net.NetworkResult
+import com.cradleplatform.neptune.utilities.UnixTimestamp
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class ReferralDialogViewModel @Inject constructor(
     healthFacilityManager: HealthFacilityManager
 ) : ViewModel() {
+
+    private lateinit var referralManager: ReferralManager
+    private lateinit var patientManager: PatientManager
+    private lateinit var referralUploadManager: ReferralUploadManager
+    private lateinit var sharedPreferences: SharedPreferences
+
     val healthFacilityToUse = MediatorLiveData<String>()
     val comments = MutableLiveData<String>("")
 
@@ -74,4 +95,64 @@ class ReferralDialogViewModel @Inject constructor(
     }
 
     private fun isHealthCentreStringValid(healthFacility: String?) = !healthFacility.isNullOrBlank()
+
+    suspend fun saveReferral(
+        referralOption: ReferralOption,
+        referralComment: String,
+        healthFacilityName: String,
+        patient: Patient
+    ): ReferralFlowSaveResult = withContext(Dispatchers.Default) {
+        val currentTime = UnixTimestamp.now.toLong()
+        val referral =
+            Referral(
+                id = UUID.randomUUID().toString(),
+                comment = referralComment,
+                referralHealthFacilityName = healthFacilityName,
+                dateReferred = currentTime,
+                userId = sharedPreferences.getIntOrNull(LoginManager.USER_ID_KEY),
+                patientId = patient.id,
+                actionTaken = null,
+                cancelReason = null,
+                notAttendReason = null,
+                isCancelled = false,
+                notAttended = false,
+                isAssessed = false,
+                lastEdited = currentTime
+            )
+
+        when (referralOption) {
+            ReferralOption.WEB -> {
+                val result = referralUploadManager.uploadReferralViaWeb(patient, referral)
+
+                if (result is NetworkResult.Success) {
+                    // Save the patient and referral in local database
+                    handleStoringReferralFromBuilders(referral)
+
+                    return@withContext ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded
+                } else {
+                    return@withContext ReferralFlowSaveResult.ErrorUploadingReferral
+                }
+            }
+            ReferralOption.SMS -> {
+                // Need more investigation on the SMS side of things.
+                // TODO: Update inline documentation here to detail the inner workings
+                handleStoringReferralFromBuilders(referral)
+
+                // Pass a PatientAndReferrals object for the SMS message.
+                return@withContext ReferralFlowSaveResult.SaveSuccessful.ReferralSmsNeeded(
+                    PatientAndReferrals(patient, listOf(referral))
+                )
+            }
+            else -> error("unreachable")
+        }
+    }
+
+    /**
+     * Will always save the referral to the database.
+     */
+    private suspend fun handleStoringReferralFromBuilders(
+        referralFromBuilder: Referral
+    ) {
+        referralManager.addReferral(referralFromBuilder, false)
+    }
 }

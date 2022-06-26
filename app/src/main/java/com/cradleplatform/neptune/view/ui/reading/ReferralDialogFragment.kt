@@ -24,6 +24,7 @@ import androidx.lifecycle.lifecycleScope
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.ReferralDialogBinding
+import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.PatientAndReadings
 import com.cradleplatform.neptune.model.SmsReferral
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
@@ -46,35 +47,46 @@ import java.util.UUID
 @Suppress("LargeClass")
 class ReferralDialogFragment : DialogFragment() {
     private val readingViewModel: PatientReadingViewModel by activityViewModels()
-
-    private var binding: ReferralDialogBinding? = null
-
-    private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent()
-
     /** ViewModel to store input */
     private val referralDialogViewModel: ReferralDialogViewModel by viewModels()
 
-    private lateinit var launchReason: ReadingActivity.LaunchReason
+    private var binding: ReferralDialogBinding? = null
+    private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent()
 
-    lateinit var dataPasser: OnReadingSendWebSnackbarMsgPass
+    private lateinit var launchReason: ReadingActivity.LaunchReason
+    private lateinit var patient : Patient
+
+    private lateinit var readingDataPasser: OnReadingSendWebSnackbarMsgPass
+
+    private var isStandaloneReferral = false
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         check(context is ReadingActivity || context is PatientProfileActivity)
         check(arguments != null)
-        check(
-            arguments?.getSerializable(ARG_LAUNCH_REASON) as? ReadingActivity.LaunchReason != null
-        )
 
-        dataPasser = context as OnReadingSendWebSnackbarMsgPass
+        isStandaloneReferral = context is PatientProfileActivity
+
+        if (!isStandaloneReferral) {
+            check(
+                arguments?.getSerializable(ARG_LAUNCH_REASON) as? ReadingActivity.LaunchReason != null
+            )
+            launchReason = arguments?.getSerializable(ARG_LAUNCH_REASON)
+                as? ReadingActivity.LaunchReason ?: error("unreachable")
+            readingDataPasser = context as OnReadingSendWebSnackbarMsgPass
+        } else {
+            check(
+                arguments?.getSerializable(ARG_PATIENT) as? Patient != null
+            )
+
+            patient = arguments?.getSerializable(ARG_PATIENT) as Patient
+        }
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = true
-
-        launchReason = arguments?.getSerializable(ARG_LAUNCH_REASON)
-            as? ReadingActivity.LaunchReason ?: error("unreachable")
     }
 
     override fun onCreateView(
@@ -131,7 +143,7 @@ class ReferralDialogFragment : DialogFragment() {
             }
         }
 
-        if (viewModel.isInitialized.value != true) {
+        if (!isStandaloneReferral && readingViewModel.isInitialized.value != true) {
             dismiss()
         }
     }
@@ -142,23 +154,29 @@ class ReferralDialogFragment : DialogFragment() {
             val selectedHealthFacilityName =
                 referralDialogViewModel.healthFacilityToUse.value ?: return
 
-            val smsSendResult = readingViewModel.saveWithReferral(
-                ReferralOption.SMS,
-                comment,
-                selectedHealthFacilityName
-            )
+            if (!isStandaloneReferral) {
 
-            when (smsSendResult) {
-                is ReadingFlowSaveResult.SaveSuccessful.ReferralSmsNeeded -> {
-                    showStatusToast(view.context, smsSendResult, ReferralOption.SMS)
-                    launchSmsIntentAndFinish(
-                        selectedHealthFacilityName,
-                        smsSendResult.patientInfoForReferral
-                    )
+                val smsSendResult = readingViewModel.saveWithReferral(
+                    ReferralOption.SMS,
+                    comment,
+                    selectedHealthFacilityName
+                )
+
+                when (smsSendResult) {
+                    is ReadingFlowSaveResult.SaveSuccessful.ReferralSmsNeeded -> {
+                        showStatusToast(view.context, smsSendResult, ReferralOption.SMS)
+                        launchSmsIntentAndFinish(
+                            selectedHealthFacilityName,
+                            smsSendResult.patientInfoForReferral
+                        )
+                    }
+                    else -> {
+                        showStatusToast(view.context, smsSendResult, ReferralOption.SMS)
+                    }
                 }
-                else -> {
-                    showStatusToast(view.context, smsSendResult, ReferralOption.SMS)
-                }
+
+            } else {
+
             }
         } finally {
             referralDialogViewModel.isSending.value = false
@@ -220,17 +238,20 @@ class ReferralDialogFragment : DialogFragment() {
             val selectedHealthFacilityName =
                 referralDialogViewModel.healthFacilityToUse.value ?: return
 
-            val smsSendResult = readingViewModel.saveWithReferral(
-                ReferralOption.WEB,
-                comment,
-                selectedHealthFacilityName
-            )
+            if (!isStandaloneReferral) {
+                val webSendResult = readingViewModel.saveWithReferral(
+                    ReferralOption.WEB,
+                    comment,
+                    selectedHealthFacilityName
+                )
 
-            if (smsSendResult is ReadingFlowSaveResult.SaveSuccessful) {
-                // Nothing left for us to do.
-                dataPasser.onMsgPass(getToastMessageForStatus(view.context, smsSendResult, ReferralOption.WEB))
-                activity?.finish()
+                if (webSendResult is ReadingFlowSaveResult.SaveSuccessful) {
+                    // Nothing left for us to do.
+                    readingDataPasser.onMsgPass(getToastMessageForStatus(view.context, webSendResult, ReferralOption.WEB))
+                    activity?.finish()
+                }
             }
+
         } finally {
             referralDialogViewModel.isSending.value = false
         }
@@ -322,12 +343,20 @@ class ReferralDialogFragment : DialogFragment() {
     companion object {
         private const val TAG = "ReferralDialogFragment"
         private const val ARG_LAUNCH_REASON = "LAUNCH_REASON"
+        private const val ARG_PATIENT = "PATIENT"
 
         fun makeInstance(launchReason: ReadingActivity.LaunchReason) =
             ReferralDialogFragment().apply {
                 arguments = Bundle().apply {
                     // Have it pass the launch reason so that we don't run into lateinit problems
                     putSerializable(ARG_LAUNCH_REASON, launchReason)
+                }
+            }
+
+        fun makeInstance(patient: Patient) =
+            ReferralDialogFragment().apply {
+                arguments = Bundle().apply {
+                    putSerializable(ARG_PATIENT, patient)
                 }
             }
     }
