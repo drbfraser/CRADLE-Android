@@ -59,9 +59,17 @@ class FormSelectionActivity : AppCompatActivity() {
             val formLanguage = formLanguageInput.editText!!.text.toString()
 
             if (formTemplateName.isEmpty()) {
-                Toast.makeText(this@FormSelectionActivity, "Please Select a form", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@FormSelectionActivity,
+                    getString(R.string.warn_no_form_template_selected),
+                    Toast.LENGTH_SHORT
+                ).show()
             } else if (formLanguage.isEmpty()) {
-                Toast.makeText(this@FormSelectionActivity, "Please Select a Language", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@FormSelectionActivity,
+                    getString(R.string.war_no_form_language_selected),
+                    Toast.LENGTH_SHORT
+                ).show()
             } else {
                 val formTemplate = viewModel.getFormTemplateFromNameAndVersion(formTemplateName, formLanguage)
 
@@ -76,7 +84,7 @@ class FormSelectionActivity : AppCompatActivity() {
     }
 
     private fun setUpActionBar() {
-        supportActionBar?.title = "Create New Form"
+        supportActionBar?.title = getString(R.string.form_selection_activity_title)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 

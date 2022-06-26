@@ -644,6 +644,12 @@
     <string name="setting_btn">TODO</string>
     <string name="add_pregnancy_btn">Add pregnancy</string>
     <string name="textview">TextView</string>
+    <string name="warn_no_form_template_selected">Please Select a form</string>
+    <string name="war_no_form_language_selected">Please Select a Language</string>
+    <string name="form_selection_activity_title">Create New Form</string>
+    <string name="form_selection_hint">Form*</string>
+    <string name="form_language_hint">Language*</string>
+    <string name="fetch_form_button_text">Fetch Form</string>
 
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>

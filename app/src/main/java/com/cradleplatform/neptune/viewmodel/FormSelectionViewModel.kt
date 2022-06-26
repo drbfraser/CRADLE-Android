@@ -21,7 +21,7 @@ class FormSelectionViewModel : ViewModel() {
                 tempFormTemplate,
                 tempFormTemplate.copy(lang = "Latin"),
                 tempFormTemplate2,
-                tempFormShort
+                tempFormShort.copy(lang = "japanese")
             )
         )
     }
@@ -296,7 +296,7 @@ const val FORM_SELECTION_TEMP_FORM_SHORT =
     "category": "Hopsital Report - sys test",
     "id": "ft6",
     "lastEdited": 1655434930,
-    "lang": "japanese",
+    "lang": "english",
     "questions": [
         {
             "id": "5ab70a2f-6d7c-4b1f-86ce-da3c4c62f72d",
