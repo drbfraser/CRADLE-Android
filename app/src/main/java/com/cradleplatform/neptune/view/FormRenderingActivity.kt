@@ -32,12 +32,18 @@ class FormRenderingActivity : AppCompatActivity() {
 
     companion object {
         private const val EXTRA_FORM_TEMPLATE = "JSON string for form template"
+        private const val EXTRA_PATIENT_ID = "Patient id that the form is created for"
 
         @JvmStatic
-        fun makeIntentWithFormTemplate(context: Context, formTemplate: FormTemplate): Intent {
+        fun makeIntentWithFormTemplate(
+            context: Context,
+            formTemplate: FormTemplate,
+            patientId: String
+        ): Intent {
             val bundle = Bundle()
             bundle.putSerializable(EXTRA_FORM_TEMPLATE, formTemplate)
             return Intent(context, FormRenderingActivity::class.java).apply {
+                this.putExtra(EXTRA_PATIENT_ID,patientId)
                 this.putExtras(bundle)
             }
         }
