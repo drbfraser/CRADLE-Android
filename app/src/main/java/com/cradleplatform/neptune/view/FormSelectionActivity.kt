@@ -32,11 +32,11 @@ class FormSelectionActivity : AppCompatActivity() {
         }
 
         setUpFetchFormButton()
-        setupFormVersionOnChange()
-        supportActionBar?.title = "Create New Form"
+        setUpFormVersionOnChange()
+        setUpActionBar()
     }
 
-    private fun setupFormVersionOnChange() {
+    private fun setUpFormVersionOnChange() {
         val formSelection = findViewById<TextInputLayout>(R.id.form_selection_text_input)
         val formLanguageInput = findViewById<TextInputLayout>(R.id.form_language_text_input)
         formSelection.editText!!.doOnTextChanged { text, _, _, _ ->
@@ -73,6 +73,16 @@ class FormSelectionActivity : AppCompatActivity() {
                 startActivity(intent)
             }
         }
+    }
+
+    private fun setUpActionBar() {
+        supportActionBar?.title = "Create New Form"
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return true
     }
 
     companion object {
