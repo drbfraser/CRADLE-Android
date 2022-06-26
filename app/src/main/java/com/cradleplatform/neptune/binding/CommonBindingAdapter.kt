@@ -5,8 +5,14 @@ import androidx.databinding.BindingAdapter
 import com.cradleplatform.neptune.R
 
 /**
- * FIXME: comment DO NOT COMMIT THIS
+ * A Utility file containing static Binding Adapters that is common across different view bindings
 */
+
+/**
+ * Populates a AutoCompleteView for the dropdown menu in Material's TextInputLayout from an Array.
+ *
+ * Commonly used for binding with ViewModel's list/data access functions
+ */
 @BindingAdapter("setMaterialSpinnerItemsWithArray")
 fun setMaterialSpinnerItemsWithArray(
     view: AutoCompleteTextView,
