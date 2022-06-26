@@ -32,6 +32,7 @@ import com.cradleplatform.neptune.model.GestationalAgeMonths
 import com.cradleplatform.neptune.model.GestationalAgeWeeks
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.PatientAndReadings
+import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.RetestAdvice
@@ -2093,7 +2094,7 @@ sealed interface ReferralFlowSaveResult {
          * because the patient and reading are valid and stored in the local database.
          */
         @JvmInline
-        value class ReferralSmsNeeded(val patientInfoForReferral: PatientAndReadings) : SaveSuccessful
+        value class ReferralSmsNeeded(val patientInfoForReferral: PatientAndReferrals) : SaveSuccessful
     }
 
     /**
