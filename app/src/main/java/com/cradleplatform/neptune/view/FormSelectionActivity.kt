@@ -4,8 +4,10 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.doOnTextChanged
 import androidx.databinding.DataBindingUtil
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.databinding.ActivityFormSelectionBinding
@@ -23,29 +25,52 @@ class FormSelectionActivity : AppCompatActivity() {
         setContentView(R.layout.activity_form_selection)
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_form_selection)
-        //binding.formSelectionAutoCompleteText.setAdapter()
         binding?.apply {
             viewModel = this@FormSelectionActivity.viewModel
             lifecycleOwner = this@FormSelectionActivity
             executePendingBindings()
         }
 
-        check(intent.hasExtra(EXTRA_PATIENT_ID))
         setUpFetchFormButton()
+        setupFormVersionOnChange()
+        supportActionBar?.title = "Create New Form"
+    }
+
+    private fun setupFormVersionOnChange() {
+        val formSelection = findViewById<TextInputLayout>(R.id.form_selection_text_input)
+        val formLanguageInput = findViewById<TextInputLayout>(R.id.form_language_text_input)
+        formSelection.editText!!.doOnTextChanged { text, _, _, _ ->
+            viewModel.formTemplateChanged(text.toString())
+            formLanguageInput.editText!!.text.clear()
+        }
     }
 
     private fun setUpFetchFormButton() {
         val fetchFormButton = findViewById<Button>(R.id.fetchFormButton)
-        val formSelection = findViewById<TextInputLayout>(R.id.form_selection_text_input)
+        val formSelectionInput = findViewById<TextInputLayout>(R.id.form_selection_text_input)
+        val formLanguageInput = findViewById<TextInputLayout>(R.id.form_language_text_input)
+
+        check(intent.hasExtra(EXTRA_PATIENT_ID))
 
         fetchFormButton.setOnClickListener {
 
-            val selectedFormName: String? = formSelection.editText?.text.toString()
-            selectedFormName?.let {
-                FormRenderingActivity.makeIntentWithFormTemplate(
+            // editTexts should not be null in normal circumstances
+            val formTemplateName = formSelectionInput.editText!!.text.toString()
+            val formLanguage = formLanguageInput.editText!!.text.toString()
+
+            if (formTemplateName.isEmpty()) {
+                Toast.makeText(this@FormSelectionActivity, "Please Select a form", Toast.LENGTH_SHORT).show()
+            } else if (formLanguage.isEmpty()) {
+                Toast.makeText(this@FormSelectionActivity, "Please Select a Language", Toast.LENGTH_SHORT).show()
+            } else {
+                val formTemplate = viewModel.getFormTemplateFromNameAndVersion(formTemplateName, formLanguage)
+
+                val intent = FormRenderingActivity.makeIntentWithFormTemplate(
                     this@FormSelectionActivity,
-                    viewModel.getFormTemplateFromName(it)
+                    formTemplate,
+                    intent.getStringExtra(EXTRA_PATIENT_ID)!!
                 )
+                startActivity(intent)
             }
         }
     }

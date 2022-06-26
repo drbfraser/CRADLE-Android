@@ -9,14 +9,19 @@ import com.google.gson.Gson
 
 class FormSelectionViewModel : ViewModel() {
 
+    var formVersionLiveData: MutableLiveData<Array<String>> = MutableLiveData()
+
     private fun getLiveDataFormList(): LiveData<List<FormTemplate>> {
         val tempFormTemplate: FormTemplate = Gson().fromJson(FORM_SELECTION_TEMP_FORM, FormTemplate::class.java)
-        var tempFormTemplate2 = tempFormTemplate.copy(name = "FormTemplate2")
+        val tempFormTemplate2 = tempFormTemplate.copy(name = "FormTemplate2")
+        val tempFormShort: FormTemplate = Gson().fromJson(FORM_SELECTION_TEMP_FORM_SHORT, FormTemplate::class.java)
 
         return MutableLiveData(
             listOf(
                 tempFormTemplate,
-                tempFormTemplate2
+                tempFormTemplate.copy(lang = "Latin"),
+                tempFormTemplate2,
+                tempFormShort
             )
         )
     }
@@ -24,19 +29,32 @@ class FormSelectionViewModel : ViewModel() {
     private val formTemplateList: LiveData<List<FormTemplate>> = this.getLiveDataFormList()
 
     val formTemplateListAsString: LiveData<Array<String>> by lazy {
-        formTemplateList.map { it.map(FormTemplate::name).toTypedArray() }
+        formTemplateList.map { it.map(FormTemplate::name).distinct().toTypedArray() }
     }
 
-    fun getFormTemplateFromName(formName: String): FormTemplate {
+    private fun getFormTemplateVersionsFromName(formName: String): List<String> {
+        val formTemplateVersions = formTemplateList.value!!.filter { it.name == formName }.map(FormTemplate::lang)
+        if (formTemplateVersions.isEmpty()) {
+            error("Unable to match FormTemplate from name when finding Versions")
+        }
+        return formTemplateVersions
+    }
+
+    fun formTemplateChanged(formName: String) {
+        formVersionLiveData.postValue(
+            getFormTemplateVersionsFromName(formName).toTypedArray()
+        )
+    }
+
+    fun getFormTemplateFromNameAndVersion(formName: String, version: String): FormTemplate {
         val currentFormTemplateList = formTemplateList.value
         if (currentFormTemplateList.isNullOrEmpty()) {
             error("Tried to retrieve FormTemplate by name when no FormTemplate is available")
         }
-        return currentFormTemplateList!!.find { it.name == formName } ?:
+        return currentFormTemplateList.find { it.name == formName && it.lang == version } ?:
             error("FormTemplate cannot be found in the current list. Please check if parameter is correct")
     }
 }
-
 
 // TODO: replace this hardcoded string with accessing local(Synced) FormTemplates (refer to issue #55)
 const val FORM_SELECTION_TEMP_FORM = """
@@ -265,6 +283,53 @@ const val FORM_SELECTION_TEMP_FORM = """
         "questionIndex": 11,
         "questionId": "patient-final-diagnosis"
     }
+    ]
+}
+"""
+
+const val FORM_SELECTION_TEMP_FORM_SHORT =
+"""
+   {
+    "version": "V1",
+    "name": "NEMS Ambulance Request - sys test3",
+    "dateCreated": 1655434930,
+    "category": "Hopsital Report - sys test",
+    "id": "ft6",
+    "lastEdited": 1655434930,
+    "lang": "japanese",
+    "questions": [
+        {
+            "id": "5ab70a2f-6d7c-4b1f-86ce-da3c4c62f72d",
+            "visibleCondition": [
+                {
+                    "qidx": 0,
+                    "relation": "EQUAL_TO",
+                    "answers": {
+                        "number": 4
+                    }
+                }
+            ],
+            "isBlank": true,
+            "formTemplateId": "ft6",
+            "mcOptions": [
+                {
+                    "mcid": 0,
+                    "opt": "male"
+                },
+                {
+                    "mcid": 1,
+                    "opt": "female"
+                }
+            ],
+            "questionIndex": 0,
+            "numMin": 10.01,
+            "questionId": "referred-by-name",
+            "questionText": "what's your sex?",
+            "questionType": "MULTIPLE_CHOICE",
+            "answers": {},
+            "hasCommentAttached": false,
+            "required": true
+        }
     ]
 }
 """
