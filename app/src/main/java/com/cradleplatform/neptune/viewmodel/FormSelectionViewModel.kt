@@ -37,6 +37,8 @@ class FormSelectionViewModel : ViewModel() {
     }
 }
 
+
+// TODO: replace this hardcoded string with accessing local(Synced) FormTemplates (refer to issue #55)
 const val FORM_SELECTION_TEMP_FORM = """
 {
     "lastEdited": 1650781303,
