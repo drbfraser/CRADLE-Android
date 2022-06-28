@@ -44,6 +44,7 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var itemQuestion: TextView
         var itemTextAnswer: TextView
+        var itemNumberAnswer: TextView
         var itemDatePicker: Button
         var itemMultipleChoice: ListView
         var context: Context = itemView.context
@@ -53,9 +54,9 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
             itemTextAnswer = itemView.findViewById(R.id.et_answer)
             itemDatePicker = itemView.findViewById(R.id.btn_date_picker)
             itemMultipleChoice = itemView.findViewById(R.id.lv_multiple_choice)
-
             itemMultipleChoice.choiceMode = ListView.CHOICE_MODE_MULTIPLE
             itemMultipleChoice.setItemChecked(position, true)
+            itemNumberAnswer = itemView.findViewById(R.id.et_num_answer)
 
             itemDatePicker.setOnClickListener {
                 clickDataPicker(context, itemDatePicker)
@@ -79,10 +80,35 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
     override fun onBindViewHolder(holder: RecyclerAdapter.ViewHolder, position: Int) {
         holder.itemQuestion.text = form.questions[position].questionText
         when (form.questions[position].questionType) {
-            "DATE" -> holder.itemDatePicker.visibility = View.VISIBLE
-            "STRING" -> holder.itemTextAnswer.visibility = View.VISIBLE
-            "INTEGER" -> holder.itemTextAnswer.visibility = View.VISIBLE
+            "CATEGORY" -> {
+                holder.itemDatePicker.visibility = View.GONE
+                holder.itemTextAnswer.visibility = View.GONE
+                holder.itemNumberAnswer.visibility = View.GONE
+                holder.itemMultipleChoice.visibility = View.GONE
+            }
+            "DATE" -> {
+                holder.itemDatePicker.visibility = View.VISIBLE
+                holder.itemTextAnswer.visibility = View.GONE
+                holder.itemNumberAnswer.visibility = View.GONE
+                holder.itemMultipleChoice.visibility = View.GONE
+            }
+            "STRING" -> {
+                holder.itemTextAnswer.visibility = View.VISIBLE
+                holder.itemNumberAnswer.visibility = View.GONE
+                holder.itemDatePicker.visibility = View.GONE
+                holder.itemMultipleChoice.visibility = View.GONE
+            }
+            "INTEGER" -> {
+                holder.itemNumberAnswer.visibility = View.VISIBLE
+                holder.itemTextAnswer.visibility = View.GONE
+                holder.itemDatePicker.visibility = View.GONE
+                holder.itemMultipleChoice.visibility = View.GONE
+            }
             "MULTIPLE_CHOICE" -> {
+                holder.itemNumberAnswer.visibility = View.GONE
+                holder.itemDatePicker.visibility = View.GONE
+                holder.itemTextAnswer.visibility = View.GONE
+
                 var questionList: MutableList<String> = mutableListOf()
                 for (mcOption in form.questions[position].mcOptions) {
                     questionList.add(mcOption.opt)
@@ -92,6 +118,7 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
                     android.R.layout.simple_list_item_1,
                     questionList
                 )
+
                 holder.itemMultipleChoice.adapter = adapter
                 Utility.setListViewHeightBasedOnChildren(holder.itemMultipleChoice)
                 holder.itemMultipleChoice.visibility = View.VISIBLE
