@@ -2,15 +2,16 @@ package com.cradleplatform.neptune.view
 
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.databinding.DataBindingComponent
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.ActivityReferralBinding
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.model.Patient
@@ -29,14 +30,13 @@ open class PatientReferralActivity : AppCompatActivity() {
     @Inject
     lateinit var patientManager: PatientManager
 
-    @Inject
-    lateinit var sharedPreferences: SharedPreferences
-
     private lateinit var currPatient : Patient
 
     private val viewModel: PatientReferralViewModel by viewModels()
 
     private var binding: ActivityReferralBinding? = null
+
+    private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent()
 
     companion object {
         private const val EXTRA_PATIENT = "patient"
@@ -59,7 +59,7 @@ open class PatientReferralActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_referral)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_referral, dataBindingComponent)
         binding?.apply {
             viewModel = this@PatientReferralActivity.viewModel
             lifecycleOwner = this@PatientReferralActivity
@@ -71,6 +71,11 @@ open class PatientReferralActivity : AppCompatActivity() {
         setupToolBar()
         setupSendWebBtn()
         setupSendSMSBtn()
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return super.onSupportNavigateUp()
     }
 
     private fun populateCurrentPatient() {
@@ -100,15 +105,27 @@ open class PatientReferralActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 when (viewModel.saveReferral(ReferralOption.WEB, currPatient)) {
                     is ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded -> {
-                        finish()
-                    }
-                    is ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded -> {
+                        Toast.makeText(
+                            it.context,
+                            getString(R.string.patient_referral_activity_save_success_nosms),
+                            Toast.LENGTH_LONG
+                        ).show()
                         finish()
                     }
                     is ReferralFlowSaveResult.ErrorConstructing -> {
+                        Toast.makeText(
+                            it.context,
+                            getString(R.string.patient_referral_activity_save_error_construction),
+                            Toast.LENGTH_LONG
+                        ).show()
                         finish()
                     }
                     is ReferralFlowSaveResult.ErrorUploadingReferral -> {
+                        Toast.makeText(
+                            it.context,
+                            getString(R.string.patient_referral_activity_save_error_upload),
+                            Toast.LENGTH_LONG
+                        ).show()
                         finish()
                     }
                 }
@@ -121,16 +138,29 @@ open class PatientReferralActivity : AppCompatActivity() {
         sendBtn.setOnClickListener {
             lifecycleScope.launch {
                 when (viewModel.saveReferral(ReferralOption.SMS, currPatient)) {
-                    is ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded -> {
-                        finish()
-                    }
                     is ReferralFlowSaveResult.SaveSuccessful.ReferralSmsNeeded -> {
+                        Toast.makeText(
+                            it.context,
+                            getString(R.string.patient_referral_activity_save_success_smsneeded),
+                            Toast.LENGTH_LONG
+                        ).show()
                         finish()
                     }
                     is ReferralFlowSaveResult.ErrorConstructing -> {
+                        Toast.makeText(
+                            it.context,
+                            getString(R.string.patient_referral_activity_save_error_construction),
+                            Toast.LENGTH_LONG
+                        ).show()
+                        finish()
                         finish()
                     }
                     is ReferralFlowSaveResult.ErrorUploadingReferral -> {
+                        Toast.makeText(
+                            it.context,
+                            getString(R.string.patient_referral_activity_save_error_upload),
+                            Toast.LENGTH_LONG
+                        ).show()
                         finish()
                     }
                 }

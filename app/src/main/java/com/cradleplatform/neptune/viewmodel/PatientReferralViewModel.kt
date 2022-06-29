@@ -1,6 +1,5 @@
 package com.cradleplatform.neptune.viewmodel
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.annotation.MainThread
@@ -21,19 +20,20 @@ import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.net.NetworkResult
 import com.cradleplatform.neptune.utilities.UnixTimestamp
 import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.UUID
 import javax.inject.Inject
 
+@HiltViewModel
 class PatientReferralViewModel  @Inject constructor(
     private val referralManager: ReferralManager,
     private val referralUploadManager: ReferralUploadManager,
     private val sharedPreferences: SharedPreferences,
     private val healthFacilityManager: HealthFacilityManager,
-    @ApplicationContext @SuppressLint("StaticFieldLeak")
-    private val app: Context
+    @ApplicationContext private val app: Context
 ) : ViewModel() {
 
 
@@ -116,9 +116,9 @@ class PatientReferralViewModel  @Inject constructor(
                 actionTaken = null,
                 cancelReason = null,
                 notAttendReason = null,
+                isAssessed = false,
                 isCancelled = false,
                 notAttended = false,
-                isAssessed = false,
                 lastEdited = currentTime
             )
 

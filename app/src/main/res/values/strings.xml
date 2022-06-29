@@ -479,6 +479,10 @@
     <string name="referral_dialog_explanation_text_new_patient">Sending a referral will save the new patient and reading to your device. If you send the referral via the web, the referral along with the patient and reading will all be uploaded to the server.</string>
     <string name="referral_dialog_explanation_text_new_reading">Sending a referral will save the reading to your device. If you send the referral via the web, the referral along with the reading will be uploaded to the server.</string>
     <string name="referral_dialog_select_health_facility">Select one of your health facilities to send the referral to.</string>
+    <string name="patient_referral_activity_save_success_nosms">The referral has been successfully uploaded to the server.</string>
+    <string name="patient_referral_activity_save_success_smsneeded">New Referral has been saved locally. Please send the referral SMS manually.</string>
+    <string name="patient_referral_activity_save_error_construction">>An error has occurred when trying to save the referral. Please recheck the fields.</string>
+    <string name="patient_referral_activity_save_error_upload">An error has occurred when trying to uploading the referral to the server.</string>
     <string name="patient_profile_age_label">Age</string>
     <string name="patient_profile_age_about_n_years_old">About %1$d years old</string>
     <string name="patient_profile_age_n_years_old">%1$d years old</string>
