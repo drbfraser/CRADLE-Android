@@ -6,7 +6,6 @@ import android.text.InputFilter
 import android.text.InputType
 import android.util.Log
 import android.view.View
-import android.widget.AutoCompleteTextView
 import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.RadioButton
@@ -151,24 +150,6 @@ class ReadingBindingAdapters {
                 filters = arrayOf(InputFilter.LengthFilter(10))
             }
         }
-    }
-
-    @BindingAdapter("setMaterialSpinnerItemsWithArray")
-    fun setMaterialSpinnerItemsWithArray(
-        view: AutoCompleteTextView,
-        oldArray: Array<String>?,
-        newArray: Array<String>?
-    ) {
-        if (oldArray === newArray) return
-        if (newArray == null) return
-        if (oldArray?.contentEquals(newArray) == true) return
-
-        val adapter = MaterialSpinnerArrayAdapter(
-            view.context,
-            R.layout.list_dropdown_menu_item,
-            newArray
-        )
-        view.setAdapter(adapter)
     }
 
     @BindingAdapter("setTrafficLightDrawable")

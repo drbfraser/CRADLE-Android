@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".view.FormSelectionActivity">
+
+    <data>
+        <variable
+            name="viewModel"
+            type="com.cradleplatform.neptune.viewmodel.FormSelectionViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/form_selection_text_input"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:hint="@string/form_selection_hint"
+            android:paddingStart="32dp"
+            android:paddingEnd="32dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:labelFor="@id/form_selection_auto_complete_text">
+
+            <AutoCompleteTextView
+                android:id="@+id/form_selection_auto_complete_text"
+                setMaterialSpinnerItemsWithArray="@{viewModel.formTemplateListAsString}"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/form_language_text_input"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="@string/form_language_hint"
+            android:paddingStart="32dp"
+            android:paddingEnd="32dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/form_selection_text_input"
+            android:layout_marginTop="16dp"
+            android:labelFor="@id/form_language_auto_complete_text">
+
+            <AutoCompleteTextView
+                android:id="@+id/form_language_auto_complete_text"
+                setMaterialSpinnerItemsWithArray="@{viewModel.formVersionLiveData}"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+        <Button
+            android:id="@+id/fetchFormButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_button"
+            android:textAllCaps="false"
+            android:text="@string/fetch_form_button_text"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_margin="16dp"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

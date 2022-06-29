@@ -120,6 +120,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupReadingsRecyclerView()
         setupCreatePatientReadingButton()
         setupCreatePatientReferralButton()
+        setupCreateAndFillFormButton()
         setupUpdateRecord()
         setupLineChart()
         setupToolBar()
@@ -416,6 +417,16 @@ open class PatientProfileActivity : AppCompatActivity() {
             findViewById<Button>(R.id.newPatientReferralButton)
 
         createButton.visibility = View.VISIBLE
+    }
+
+    private fun setupCreateAndFillFormButton() {
+        val createFormButton = findViewById<Button>(R.id.newFormButton)
+
+        createFormButton.visibility = View.VISIBLE
+        createFormButton.setOnClickListener {
+            val intent = FormSelectionActivity.makeIntentForPatientId(this@PatientProfileActivity, currPatient.id)
+            startActivity(intent)
+        }
     }
 
     private fun onUpdateButtonClicked(isDrugRecord: Boolean) {
