@@ -419,7 +419,8 @@ open class PatientProfileActivity : AppCompatActivity() {
         createButton.visibility = View.VISIBLE
 
         createButton.setOnClickListener { _: View? ->
-            ReferralDialogFragment.makeInstance(currPatient).show(supportFragmentManager, "referral_dialog")
+            ReferralDialogFragment.makeInstance(ReadingActivity.LaunchReason.LAUNCH_REASON_NEW)
+                .show(supportFragmentManager, "referral_dialog")
         }
     }
 
