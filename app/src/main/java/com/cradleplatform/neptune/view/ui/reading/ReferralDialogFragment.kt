@@ -45,7 +45,7 @@ import java.util.UUID
 @AndroidEntryPoint
 @Suppress("LargeClass")
 class ReferralDialogFragment : DialogFragment() {
-    private val readingViewModel: PatientReadingViewModel by activityViewModels()
+    private val viewModel: PatientReadingViewModel by activityViewModels()
 
     private var binding: ReferralDialogBinding? = null
 
@@ -96,7 +96,7 @@ class ReferralDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding?.viewModel = referralDialogViewModel
-        binding?.readingViewModel = readingViewModel
+        binding?.readingViewModel = viewModel
         binding?.launchReason = launchReason
         binding?.lifecycleOwner = viewLifecycleOwner
         super.onViewCreated(view, savedInstanceState)
@@ -142,7 +142,7 @@ class ReferralDialogFragment : DialogFragment() {
             val selectedHealthFacilityName =
                 referralDialogViewModel.healthFacilityToUse.value ?: return
 
-            val smsSendResult = readingViewModel.saveWithReferral(
+            val smsSendResult = viewModel.saveWithReferral(
                 ReferralOption.SMS,
                 comment,
                 selectedHealthFacilityName
@@ -220,7 +220,7 @@ class ReferralDialogFragment : DialogFragment() {
             val selectedHealthFacilityName =
                 referralDialogViewModel.healthFacilityToUse.value ?: return
 
-            val smsSendResult = readingViewModel.saveWithReferral(
+            val smsSendResult = viewModel.saveWithReferral(
                 ReferralOption.WEB,
                 comment,
                 selectedHealthFacilityName
@@ -311,11 +311,11 @@ class ReferralDialogFragment : DialogFragment() {
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        readingViewModel.setInputEnabledState(true)
+        viewModel.setInputEnabledState(true)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        readingViewModel.setInputEnabledState(false)
+        viewModel.setInputEnabledState(false)
         return super.onCreateDialog(savedInstanceState)
     }
 
