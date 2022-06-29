@@ -49,6 +49,7 @@
         </activity>
         <activity android:name=".view.DashBoardActivity" />
         <activity android:name=".view.PatientProfileActivity" />
+        <activity android:name=".view.PatientReferralActivity" />
         <activity android:name=".view.PatientUpdateDrugMedicalActivity" />
         <activity android:name=".view.EditPregnancyActivity" />
         <activity
