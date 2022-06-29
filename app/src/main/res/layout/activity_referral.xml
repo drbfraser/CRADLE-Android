@@ -17,23 +17,6 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <com.google.android.material.appbar.AppBarLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:elevation="0dp">
-
-            <androidx.appcompat.widget.Toolbar
-                android:id="@+id/referral_toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:paddingStart="6dp"
-                android:paddingEnd="16dp"
-                android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-                app:contentInsetStartWithNavigation="0dp"
-                app:navigationIcon="@drawable/ic_baseline_clear_24" />
-
-        </com.google.android.material.appbar.AppBarLayout>
-
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -143,7 +126,7 @@
                     android:text="@string/referral_dialog_select_health_facility"
                     android:textAppearance="@style/TextAppearance.Cradle.Body1"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toStartOf="parent" />
+                    app:layout_constraintTop_toTopOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
