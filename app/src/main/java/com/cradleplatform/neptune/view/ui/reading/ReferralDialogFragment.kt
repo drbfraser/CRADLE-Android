@@ -25,7 +25,7 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.ReferralDialogBinding
 import com.cradleplatform.neptune.model.PatientAndReadings
-import com.cradleplatform.neptune.model.SmsReferral
+import com.cradleplatform.neptune.model.SmsReadingWithReferral
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.view.PatientProfileActivity
 import com.cradleplatform.neptune.view.ReadingActivity
@@ -190,8 +190,8 @@ class ReferralDialogFragment : DialogFragment() {
             )
         val genReferralId = UUID.randomUUID().toString()
         var referralMsg: String = "**referral message start: $genReferralId**\n"
-        val json = JacksonMapper.createWriter<SmsReferral>().writeValueAsString(
-            SmsReferral(
+        val json = JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
+            SmsReadingWithReferral(
                 referralId = genReferralId,
                 patient = patientAndReadings
             )
