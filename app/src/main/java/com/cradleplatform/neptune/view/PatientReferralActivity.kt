@@ -2,7 +2,10 @@ package com.cradleplatform.neptune.view
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Telephony
+import android.util.Base64
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -15,12 +18,18 @@ import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.ActivityReferralBinding
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.model.Patient
+import com.cradleplatform.neptune.model.PatientAndReadings
+import com.cradleplatform.neptune.model.PatientAndReferrals
+import com.cradleplatform.neptune.model.SmsReadingWithReferral
+import com.cradleplatform.neptune.model.SmsReferral
+import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.viewmodel.PatientReferralViewModel
 import com.cradleplatform.neptune.viewmodel.ReferralFlowSaveResult
 import com.cradleplatform.neptune.viewmodel.ReferralOption
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.util.UUID
 import javax.inject.Inject
 
 
@@ -118,7 +127,6 @@ open class PatientReferralActivity : AppCompatActivity() {
                             getString(R.string.patient_referral_activity_save_error_construction),
                             Toast.LENGTH_LONG
                         ).show()
-                        finish()
                     }
                     is ReferralFlowSaveResult.ErrorUploadingReferral -> {
                         Toast.makeText(
@@ -126,7 +134,13 @@ open class PatientReferralActivity : AppCompatActivity() {
                             getString(R.string.patient_referral_activity_save_error_upload),
                             Toast.LENGTH_LONG
                         ).show()
-                        finish()
+                    }
+                    else -> {
+                        Toast.makeText(
+                            it.context,
+                            getString(R.string.patient_referral_activity_save_error_unknown),
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
             }
@@ -136,34 +150,86 @@ open class PatientReferralActivity : AppCompatActivity() {
     private fun setupSendSMSBtn() {
         val sendBtn = findViewById<Button>(R.id.send_sms_button)
         sendBtn.setOnClickListener {
-            lifecycleScope.launch {
-                when (viewModel.saveReferral(ReferralOption.SMS, currPatient)) {
-                    is ReferralFlowSaveResult.SaveSuccessful.ReferralSmsNeeded -> {
-                        Toast.makeText(
-                            it.context,
-                            getString(R.string.patient_referral_activity_save_success_smsneeded),
-                            Toast.LENGTH_LONG
-                        ).show()
-                        finish()
-                    }
-                    is ReferralFlowSaveResult.ErrorConstructing -> {
-                        Toast.makeText(
-                            it.context,
-                            getString(R.string.patient_referral_activity_save_error_construction),
-                            Toast.LENGTH_LONG
-                        ).show()
-                        finish()
-                        finish()
-                    }
-                    is ReferralFlowSaveResult.ErrorUploadingReferral -> {
-                        Toast.makeText(
-                            it.context,
-                            getString(R.string.patient_referral_activity_save_error_upload),
-                            Toast.LENGTH_LONG
-                        ).show()
-                        finish()
+            if (viewModel.isSelectedHealthFacilityValid() &&
+                viewModel.isSending.value != true
+            ) {
+                viewModel.isSending.value = true
+
+                lifecycleScope.launch {
+                    when (val smsSendResult = viewModel.saveReferral(ReferralOption.SMS, currPatient)) {
+                        is ReferralFlowSaveResult.SaveSuccessful.ReferralSmsNeeded -> {
+                            Toast.makeText(
+                                it.context,
+                                getString(R.string.patient_referral_activity_save_success_smsneeded),
+                                Toast.LENGTH_LONG
+                            ).show()
+                            launchSmsIntentAndFinish(smsSendResult.patientInfoForReferral)
+                        }
+                        is ReferralFlowSaveResult.ErrorConstructing -> {
+                            Toast.makeText(
+                                it.context,
+                                getString(R.string.patient_referral_activity_save_error_construction),
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                        is ReferralFlowSaveResult.ErrorUploadingReferral -> {
+                            Toast.makeText(
+                                it.context,
+                                getString(R.string.patient_referral_activity_save_error_upload),
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                        else -> {
+                            Toast.makeText(
+                                it.context,
+                                getString(R.string.patient_referral_activity_save_error_unknown),
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
                     }
                 }
+            }
+        }
+    }
+
+    private fun encodeBase64(json: String): String {
+        return Base64.encodeToString(json.toByteArray(), Base64.DEFAULT)
+    }
+
+    private fun launchSmsIntentAndFinish(
+        patientAndReferrals: PatientAndReferrals
+    ) {
+        this.run {
+            val smsIntent = makeSmsIntent(patientAndReferrals)
+            startActivity(smsIntent)
+            finish()
+        }
+    }
+
+    private fun makeSmsIntent(
+        patientAndReferrals: PatientAndReferrals
+    ): Intent {
+        val selectedHealthFacility = viewModel.getActiveHealthFacility()
+        val genReferralId = UUID.randomUUID().toString()
+        var referralMsg: String = "**referral message start: $genReferralId**\n"
+        val json = JacksonMapper.createWriter<SmsReferral>().writeValueAsString(
+            SmsReferral(
+                referralId = genReferralId,
+                patient = patientAndReferrals
+            )
+        )
+        val phoneNumber = selectedHealthFacility.phoneNumber
+        val uri = Uri.parse("smsto:$phoneNumber")
+
+        val encodedMsg = encodeBase64(json)
+        referralMsg += "$encodedMsg**end of referral message**"
+
+        return Intent(Intent.ACTION_SENDTO, uri).apply {
+            putExtra("address", phoneNumber)
+            putExtra("sms_body", referralMsg)
+
+            Telephony.Sms.getDefaultSmsPackage(applicationContext)?.let {
+                setPackage(it)
             }
         }
     }

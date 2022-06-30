@@ -483,6 +483,7 @@
     <string name="patient_referral_activity_save_success_smsneeded">New Referral has been saved locally. Please send the referral SMS manually.</string>
     <string name="patient_referral_activity_save_error_construction">>An error has occurred when trying to save the referral. Please recheck the fields.</string>
     <string name="patient_referral_activity_save_error_upload">An error has occurred when trying to uploading the referral to the server.</string>
+    <string name="patient_referral_activity_save_error_unknown">An unknown error has occurred.</string>
     <string name="patient_profile_age_label">Age</string>
     <string name="patient_profile_age_about_n_years_old">About %1$d years old</string>
     <string name="patient_profile_age_n_years_old">%1$d years old</string>

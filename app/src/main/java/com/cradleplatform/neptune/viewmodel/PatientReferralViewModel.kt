@@ -35,9 +35,6 @@ class PatientReferralViewModel  @Inject constructor(
     private val healthFacilityManager: HealthFacilityManager,
     @ApplicationContext private val app: Context
 ) : ViewModel() {
-
-
-
     val healthFacilityToUse = MediatorLiveData<String>()
     val comments = MutableLiveData<String>("")
 
@@ -82,11 +79,11 @@ class PatientReferralViewModel  @Inject constructor(
         }
     }
 
-    fun getHealthFacilityFromHealthFacilityName(name: String): HealthFacility {
+    fun getActiveHealthFacility(): HealthFacility {
         val currentSelectedHealthFacilities = selectedHealthFacilities.value
         if (currentSelectedHealthFacilities.isNullOrEmpty()) error("missing health facilities")
 
-        return currentSelectedHealthFacilities.find { it.name == name }
+        return currentSelectedHealthFacilities.find { it.name == healthFacilityToUse.value }
             ?: error("can't find")
     }
 
@@ -136,8 +133,7 @@ class PatientReferralViewModel  @Inject constructor(
                 }
             }
             ReferralOption.SMS -> {
-                // Need more investigation on the SMS side of things.
-                // TODO: Update inline documentation here to detail the inner workings
+                // Store the referral object into internal DB
                 handleStoringReferralFromBuilders(referral)
 
                 // Pass a PatientAndReferrals object for the SMS message.

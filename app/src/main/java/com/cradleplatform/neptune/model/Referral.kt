@@ -209,6 +209,8 @@ data class Referral(
  */
 data class SmsReadingWithReferral(val referralId: String, val patient: PatientAndReadings)
 
+data class SmsReferral(val referralId: String, val patient: PatientAndReferrals)
+
 /**
  * JSON keys for [Referral] fields.
  */
