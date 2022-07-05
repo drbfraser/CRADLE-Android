@@ -3,7 +3,6 @@ package com.cradleplatform.neptune.view
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -94,7 +93,6 @@ class FormRenderingActivity : AppCompatActivity() {
     }
 
     fun getFirstCategory(form: FormTemplate): FormTemplate {
-        Log.d("DEBUG: form before", form.questions.toString())
         var questionList: List<Questions> = form.questions
         var firstQuestionList: MutableList<Questions> = mutableListOf()
         for (i in questionList.indices) {
