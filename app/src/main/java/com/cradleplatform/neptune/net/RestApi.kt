@@ -677,37 +677,47 @@ class RestApi constructor(
             val body = createWriter<List<Patient>>().writeValueAsBytes(patientsToUpload)
             var totalPatientsDownloaded = 0
             var errors: String? = null
+            var failedParse = false
             val networkResult = http.makeRequest(
                 method = Http.Method.POST,
                 url = urlManager.getPatientsSync(lastSyncTimestamp),
                 headers = headers,
                 requestBody = buildJsonRequestBody(body),
             ) { inputStream ->
-                val reader = JacksonMapper.readerForPatient
-                reader.createParser(inputStream).use { parser ->
-                    parser.parseObject {
-                        when (currentName) {
-                            PatientSyncField.PATIENTS.text -> {
-                                parseObjectArray<Patient>(reader) {
-                                    patientChannel.send(it)
-                                    totalPatientsDownloaded++
-                                    reportProgressBlock(totalPatientsDownloaded, totalPatientsDownloaded)
+                try {
+                    val reader = JacksonMapper.readerForPatient
+                    reader.createParser(inputStream).use { parser ->
+                        parser.parseObject {
+                            when (currentName) {
+                                PatientSyncField.PATIENTS.text -> {
+                                    parseObjectArray<Patient>(reader) {
+                                        patientChannel.send(it)
+                                        totalPatientsDownloaded++
+                                        reportProgressBlock(totalPatientsDownloaded, totalPatientsDownloaded)
+                                    }
+                                    patientChannel.close()
                                 }
-                                patientChannel.close()
-                            }
-                            PatientSyncField.ERRORS.text -> {
-                                // TODO: Parse array of objects (refer to issue #38)
-                                nextToken()
-                                errors = readValueAsTree<JsonNode>().toPrettyString()
+                                PatientSyncField.ERRORS.text -> {
+                                    // TODO: Parse array of objects (refer to issue #62)
+                                    nextToken()
+                                    errors = readValueAsTree<JsonNode>().toPrettyString()
+                                }
                             }
                         }
                     }
+                } catch (e: Exception) {
+                    Log.e(TAG, e.toString())
+                    failedParse = true
                 }
             }.also {
                 if (it is NetworkResult.Success) {
                     // In case we return early, this needs to be closed. These is an idempotent
                     // operation, so it doesn't do anything on Successes where we don't return early
-                    patientChannel.close()
+                    if (failedParse) {
+                        patientChannel.close(SyncException("patient sync response parsing had failure(s)"))
+                    } else {
+                        patientChannel.close()
+                    }
                 } else {
                     // Fail the channel if not successful (note: idempotent operation).
                     patientChannel.close(SyncException("patient download wasn't done properly"))
@@ -752,6 +762,7 @@ class RestApi constructor(
     ): ReadingSyncResult = withContext(IO) {
         val body = createWriter<List<Reading>>().writeValueAsBytes(readingsToUpload)
         var totalReadingsDownloaded = 0
+        var failedParse = false
         val networkResult = http.makeRequest(
             method = Http.Method.POST,
             url = urlManager.getReadingsSync(lastSyncTimestamp),
@@ -760,25 +771,29 @@ class RestApi constructor(
         ) { inputStream ->
             Log.d(TAG, "Parsing readings now")
 
-            val readerForReading = JacksonMapper.createReader<Reading>()
-
-            readerForReading.createParser(inputStream).use { parser ->
-                var totalDownloaded = 0
-                var totalToDownload = 0
-                parser.parseObject {
-                    when (currentName) {
-                        ReadingSyncField.READINGS.text -> {
-                            Log.d(TAG, "Starting to parse readings array")
-                            parseObjectArray<Reading>(readerForReading) {
-                                readingChannel.send(it)
-                                totalDownloaded++
-                                totalReadingsDownloaded++
-                                reportProgressBlock(totalDownloaded, totalToDownload)
+            try {
+                val readerForReading = JacksonMapper.createReader<Reading>()
+                readerForReading.createParser(inputStream).use { parser ->
+                    var totalDownloaded = 0
+                    var totalToDownload = 0
+                    parser.parseObject {
+                        when (currentName) {
+                            ReadingSyncField.READINGS.text -> {
+                                Log.d(TAG, "Starting to parse readings array")
+                                parseObjectArray<Reading>(readerForReading) {
+                                    readingChannel.send(it)
+                                    totalDownloaded++
+                                    totalReadingsDownloaded++
+                                    reportProgressBlock(totalDownloaded, totalToDownload)
+                                }
+                                readingChannel.close()
                             }
-                            readingChannel.close()
                         }
                     }
                 }
+            } catch (e: Exception) {
+                Log.e(TAG, e.toString())
+                failedParse = true
             }
 
             withContext(Dispatchers.Main) {
@@ -793,7 +808,11 @@ class RestApi constructor(
                 // In case we return early, these need to be closed. These are idempotent
                 // operations, so it doesn't do anything on Successes where we don't return
                 // early.
-                readingChannel.close()
+                if (failedParse) {
+                    readingChannel.close(SyncException("readings sync response parsing had failure(s)"))
+                } else {
+                    readingChannel.close()
+                }
             } else {
                 // Fail these channels if not successful (note: idempotent operations)
                 readingChannel.close(SyncException("failed to sync readings"))
@@ -837,37 +856,48 @@ class RestApi constructor(
             val body = createWriter<List<Referral>>().writeValueAsBytes(referralsToUpload)
             var totalReferralsDownloaded = 0
             var errors: String? = null
+            var failedParse = false
             val networkResult = http.makeRequest(
                 method = Http.Method.POST,
                 url = urlManager.getReferralsSync(lastSyncTimestamp),
                 headers = headers,
                 requestBody = buildJsonRequestBody(body),
             ) { inputStream ->
-                val reader = JacksonMapper.readerForReferral
-                reader.createParser(inputStream).use { parser ->
-                    parser.parseObject {
-                        when (currentName) {
-                            ReferralSyncField.REFERRALS.text -> {
-                                parseObjectArray<Referral>(reader) {
-                                    referralChannel.send(it)
-                                    totalReferralsDownloaded++
-                                    reportProgressBlock(totalReferralsDownloaded, totalReferralsDownloaded)
+
+                try {
+                    val reader = JacksonMapper.readerForReferral
+                    reader.createParser(inputStream).use { parser ->
+                        parser.parseObject {
+                            when (currentName) {
+                                ReferralSyncField.REFERRALS.text -> {
+                                    parseObjectArray<Referral>(reader) {
+                                        referralChannel.send(it)
+                                        totalReferralsDownloaded++
+                                        reportProgressBlock(totalReferralsDownloaded, totalReferralsDownloaded)
+                                    }
+                                    referralChannel.close()
                                 }
-                                referralChannel.close()
-                            }
-                            ReferralSyncField.ERRORS.text -> {
-                                // TODO: Parse array of objects (refer to issue #38)
-                                nextToken()
-                                errors = readValueAsTree<JsonNode>().toPrettyString()
+                                ReferralSyncField.ERRORS.text -> {
+                                    // TODO: Parse array of objects (refer to issue #62)
+                                    nextToken()
+                                    errors = readValueAsTree<JsonNode>().toPrettyString()
+                                }
                             }
                         }
                     }
+                } catch (e: Exception) {
+                    Log.e(TAG, e.toString())
+                    failedParse = true
                 }
             }.also {
                 if (it is NetworkResult.Success) {
                     // In case we return early, this needs to be closed. These is an idempotent
                     // operation, so it doesn't do anything on Successes where we don't return early
-                    referralChannel.close()
+                    if (failedParse) {
+                        referralChannel.close(SyncException("referrals sync response parsing had failure(s)"))
+                    } else {
+                        referralChannel.close()
+                    }
                 } else {
                     // Fail the channel if not successful (note: idempotent operation).
                     referralChannel.close(SyncException("referral download wasn't done properly"))
@@ -906,37 +936,48 @@ class RestApi constructor(
             val body = createWriter<List<Assessment>>().writeValueAsBytes(assessmentsToUpload)
             var totalAssessmentsDownloaded = 0
             var errors: String? = null
+            var failedParse = false
             val networkResult = http.makeRequest(
                 method = Http.Method.POST,
                 url = urlManager.getAssessmentsSync(lastSyncTimestamp),
                 headers = headers,
                 requestBody = buildJsonRequestBody(body),
             ) { inputStream ->
-                val reader = JacksonMapper.readerForAssessment
-                reader.createParser(inputStream).use { parser ->
-                    parser.parseObject {
-                        when (currentName) {
-                            AssessmentSyncField.ASSESSMENTS.text -> {
-                                parseObjectArray<Assessment>(reader) {
-                                    assessmentChannel.send(it)
-                                    totalAssessmentsDownloaded++
-                                    reportProgressBlock(totalAssessmentsDownloaded, totalAssessmentsDownloaded)
+
+                try {
+                    val reader = JacksonMapper.readerForAssessment
+                    reader.createParser(inputStream).use { parser ->
+                        parser.parseObject {
+                            when (currentName) {
+                                AssessmentSyncField.ASSESSMENTS.text -> {
+                                    parseObjectArray<Assessment>(reader) {
+                                        assessmentChannel.send(it)
+                                        totalAssessmentsDownloaded++
+                                        reportProgressBlock(totalAssessmentsDownloaded, totalAssessmentsDownloaded)
+                                    }
+                                    assessmentChannel.close()
                                 }
-                                assessmentChannel.close()
-                            }
-                            AssessmentSyncField.ERRORS.text -> {
-                                // TODO: Parse array of objects (refer to issue #38)
-                                nextToken()
-                                errors = readValueAsTree<JsonNode>().toPrettyString()
+                                AssessmentSyncField.ERRORS.text -> {
+                                    // TODO: Parse array of objects (refer to issue #62)
+                                    nextToken()
+                                    errors = readValueAsTree<JsonNode>().toPrettyString()
+                                }
                             }
                         }
                     }
+                } catch (e: Exception) {
+                    Log.e(TAG, e.toString())
+                    failedParse = true
                 }
             }.also {
                 if (it is NetworkResult.Success) {
                     // In case we return early, this needs to be closed. These is an idempotent
                     // operation, so it doesn't do anything on Successes where we don't return early
-                    assessmentChannel.close()
+                    if (failedParse) {
+                        assessmentChannel.close(SyncException("assessments sync response parsing had failure(s)"))
+                    } else {
+                        assessmentChannel.close()
+                    }
                 } else {
                     // Fail the channel if not successful (note: idempotent operation).
                     assessmentChannel.close(SyncException("assessment download wasn't done properly"))
@@ -987,7 +1028,7 @@ class RestApi constructor(
         ).also {
             if (it is NetworkResult.Success) {
                 if (failedParse) {
-                    Log.e(TAG, "Failed to parse all Health Facilities during Sync")
+                    healthFacilityChannel.close(SyncException("Failed to parse all Health Facilities during Sync"))
                 } else {
                     healthFacilityChannel.close()
                 }
