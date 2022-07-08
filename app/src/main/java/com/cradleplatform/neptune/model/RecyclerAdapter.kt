@@ -36,7 +36,6 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
             }
             val params = listView.layoutParams
             params.height = totalHeight + listView.dividerHeight * (listAdapter.count - 1)
-
             listView.layoutParams = params
         }
     }
@@ -79,6 +78,7 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
 
     override fun onBindViewHolder(holder: RecyclerAdapter.ViewHolder, position: Int) {
         holder.itemQuestion.text = form.questions[position].questionText
+
         when (form.questions[position].questionType) {
             "CATEGORY" -> {
                 holder.itemDatePicker.visibility = View.GONE
