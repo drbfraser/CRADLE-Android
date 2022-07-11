@@ -8,18 +8,20 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.cradleplatform.neptune.database.daos.AssessmentDao
+import com.cradleplatform.neptune.database.daos.FormClassificationDao
 import com.cradleplatform.neptune.database.daos.HealthFacilityDao
 import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
 import com.cradleplatform.neptune.database.daos.ReferralDao
 import com.cradleplatform.neptune.database.views.LocalSearchPatient
 import com.cradleplatform.neptune.model.Assessment
+import com.cradleplatform.neptune.model.FormClassification
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 
-const val CURRENT_DATABASE_VERSION = 2
+const val CURRENT_DATABASE_VERSION = 3
 
 /**
  * An interface for the local CRADLE database.
@@ -30,7 +32,7 @@ const val CURRENT_DATABASE_VERSION = 2
  * TODO: Lower the version back to version 1 when the app is out of alpha testing. (Refer to issues ticket #28)
  */
 @Database(
-    entities = [Reading::class, Patient::class, HealthFacility::class, Referral::class, Assessment::class],
+    entities = [Reading::class, Patient::class, HealthFacility::class, Referral::class, Assessment::class, FormClassification::class],
     views = [LocalSearchPatient::class],
     version = CURRENT_DATABASE_VERSION,
     exportSchema = true
@@ -42,6 +44,7 @@ abstract class CradleDatabase : RoomDatabase() {
     abstract fun healthFacility(): HealthFacilityDao
     abstract fun referralDao(): ReferralDao
     abstract fun assessmentDao(): AssessmentDao
+    abstract fun formClassificationDao(): FormClassificationDao
 
     companion object {
         private const val DATABASE_NAME = "room-readingDB"
@@ -79,7 +82,7 @@ abstract class CradleDatabase : RoomDatabase() {
 @Suppress("MagicNumber", "NestedBlockDepth", "ObjectPropertyNaming")
 internal object Migrations {
     val ALL_MIGRATIONS: Array<Migration> by lazy {
-        arrayOf(MIGRATION_1_2)
+        arrayOf(MIGRATION_1_2, MIGRATION_2_3)
     }
     /**
      * Version 2:
@@ -149,6 +152,24 @@ internal object Migrations {
                 execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_Assessment_id` ON `Assessment` (`id`)")
                 execSQL("CREATE INDEX IF NOT EXISTS `index_Assessment_patientId` ON `Assessment` (`patientId`)")
             }
+        }
+    }
+
+    /**
+     * Version 3: add FormClassification
+     */
+    private val MIGRATION_2_3 = object : Migration(2, 3){
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL(
+                """
+                    CREATE TABLE IF NOT EXISTS FormClassification (
+                        `formClass` TEXT NOT NULL,
+                        `language` TEXT NOT NULL,
+                        `formTemplate` TEXT NOT NULL,
+                        PRIMARY KEY (formClass, language)
+                    )
+                """.trimIndent()
+            )
         }
     }
 }

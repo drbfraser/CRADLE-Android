@@ -13,7 +13,9 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.databinding.ActivityFormSelectionBinding
 import com.cradleplatform.neptune.viewmodel.FormSelectionViewModel
 import com.google.android.material.textfield.TextInputLayout
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class FormSelectionActivity : AppCompatActivity() {
 
     private var binding: ActivityFormSelectionBinding? = null

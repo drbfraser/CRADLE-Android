@@ -4,13 +4,19 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
+import com.cradleplatform.neptune.manager.FormManager
 import com.cradleplatform.neptune.model.FormTemplate
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class FormSelectionViewModel : ViewModel() {
+@HiltViewModel
+class FormSelectionViewModel @Inject constructor (
+    private val formManager: FormManager
+): ViewModel() {
 
     var formVersionLiveData: MutableLiveData<Array<String>> = MutableLiveData()
 
-    private val formTemplateList: LiveData<List<FormTemplate>> = getLiveDataFormList()
+    private val formTemplateList: LiveData<List<FormTemplate>> = MutableLiveData()//= formManager.getLiveDataFormTemplates()
 
     val formTemplateListAsString: LiveData<Array<String>> by lazy {
         formTemplateList.map { it.map(FormTemplate::name).distinct().toTypedArray() }
@@ -57,9 +63,4 @@ class FormSelectionViewModel : ViewModel() {
         return currentFormTemplateList.find { it.name == formName && it.lang == version } ?:
             error("FormTemplate cannot be found in the current list. Please check if parameter is correct")
     }
-}
-
-// TODO: replace this function with accessing local(Synced) FormTemplates (refer to issue #55)
-private fun getLiveDataFormList(): LiveData<List<FormTemplate>> {
-    return MutableLiveData()
 }

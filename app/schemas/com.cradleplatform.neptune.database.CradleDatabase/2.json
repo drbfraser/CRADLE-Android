@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "199972f7755416a077d88ca3e47df6d6",
+    "identityHash": "0aa04663f5346a29f1c1cbc4a619642c",
     "entities": [
       {
         "tableName": "Reading",
@@ -602,6 +602,39 @@
             ]
           }
         ]
+      },
+      {
+        "tableName": "FormClassification",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`formClass` TEXT NOT NULL, `language` TEXT NOT NULL, `formTemplate` TEXT NOT NULL, PRIMARY KEY(`formClass`, `language`))",
+        "fields": [
+          {
+            "fieldPath": "formClass",
+            "columnName": "formClass",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "formTemplate",
+            "columnName": "formTemplate",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "formClass",
+            "language"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
       }
     ],
     "views": [
@@ -612,7 +645,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '199972f7755416a077d88ca3e47df6d6')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0aa04663f5346a29f1c1cbc4a619642c')"
     ]
   }
 }
