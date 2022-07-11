@@ -16,7 +16,7 @@ class FormSelectionViewModel @Inject constructor (
 
     var formVersionLiveData: MutableLiveData<Array<String>> = MutableLiveData()
 
-    private val formTemplateList: LiveData<List<FormTemplate>> = MutableLiveData()//= formManager.getLiveDataFormTemplates()
+    private val formTemplateList: LiveData<List<FormTemplate>> = formManager.getLiveDataFormTemplates()
 
     val formTemplateListAsString: LiveData<Array<String>> by lazy {
         formTemplateList.map { it.map(FormTemplate::name).distinct().toTypedArray() }
