@@ -17,7 +17,7 @@ interface FormClassificationDao {
      * @param formClass an Entity of FormClassification to insert
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun addOrUpdateFormClassification(formClass: FormClassification)
+    suspend fun addOrUpdateFormClassification(formClass: FormClassification)
 
     /**
      * All FormClassifications in the table as LiveData List
