@@ -1,5 +1,7 @@
 package com.cradleplatform.neptune.net
 
+import com.cradleplatform.neptune.model.FormClassification
+
 data class HealthFacilitySyncResult(
     val networkResult: NetworkResult<Unit>,
     var totalHealthFacilitiesDownloaded: Int,
@@ -30,4 +32,10 @@ data class AssessmentSyncResult(
     var totalAssessmentsUploaded: Int,
     var totalAssessmentsDownloaded: Int,
     var errors: String?,
+)
+
+data class FormTemplateSyncResult(
+    val networkResult: NetworkResult<Unit>,
+    val totalFormClassifications: Int,
+    var totalFormsDownloaded: Int
 )

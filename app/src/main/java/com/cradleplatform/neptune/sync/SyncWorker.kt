@@ -14,16 +14,20 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.ext.Field
 import com.cradleplatform.neptune.manager.AssessmentManager
+import com.cradleplatform.neptune.manager.FormManager
 import com.cradleplatform.neptune.manager.HealthFacilityManager
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.manager.ReferralManager
 import com.cradleplatform.neptune.model.Assessment
+import com.cradleplatform.neptune.model.FormClassification
+import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.net.AssessmentSyncResult
+import com.cradleplatform.neptune.net.FormTemplateSyncResult
 import com.cradleplatform.neptune.net.HealthFacilitySyncResult
 import com.cradleplatform.neptune.net.PatientSyncResult
 import com.cradleplatform.neptune.net.ReadingSyncResult
@@ -33,6 +37,7 @@ import com.cradleplatform.neptune.net.RestApi
 import com.cradleplatform.neptune.net.SyncException
 import com.cradleplatform.neptune.utilities.RateLimitRunner
 import com.cradleplatform.neptune.utilities.UnixTimestamp
+import com.google.gson.Gson
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
@@ -61,6 +66,7 @@ class SyncWorker @AssistedInject constructor(
     private val referralManager: ReferralManager,
     private val assessmentManager: AssessmentManager,
     private val healthFacilityManager: HealthFacilityManager,
+    private val formManager: FormManager,
     private val sharedPreferences: SharedPreferences,
     private val database: CradleDatabase
 ) : CoroutineWorker(context, params) {
@@ -320,6 +326,16 @@ class SyncWorker @AssistedInject constructor(
             )
         }
 
+        val formTemplateResult = syncFormTemplates()
+        if(formTemplateResult.networkResult is NetworkResult.Success){
+
+        } else {
+            return Result.failure(
+                workDataOf(RESULT_MESSAGE to getResultErrorMessage(formTemplateResult.networkResult))
+            )
+        }
+
+
         return Result.success(
             workDataOf(
                 RESULT_MESSAGE to
@@ -328,7 +344,8 @@ class SyncWorker @AssistedInject constructor(
                         healthFacilitiesResult,
                         readingResult,
                         referralResult,
-                        assessmentResult
+                        assessmentResult,
+                        formTemplateResult
                     )
             )
         )
@@ -533,6 +550,28 @@ class SyncWorker @AssistedInject constructor(
         restApi.syncHealthFacilities(channel, lastSyncTime)
     }
 
+    private suspend fun syncFormTemplates() : FormTemplateSyncResult
+    = withContext(Dispatchers.Default) {
+        val channel = Channel<FormTemplate>()
+        launch {
+            try {
+                database.withTransaction {
+                    for(formTemplate in channel){
+                        //val formStr = Gson().toJson(formTemplate)
+                        //Log.d(TAG,"FORM TEMPLATE DEBUG======\n$formStr\n")
+                        Log.e(TAG,"adding ${formTemplate.name}")
+                        formManager.addFormTemplate(formTemplate)
+                    }
+                }
+            } catch (e: SyncException){
+                Log.e(TAG, "Failed to add form template during Sync, with error:\n $e")
+            }
+            withContext(Dispatchers.Main) { Log.d(TAG, "form template sync job is done") }
+        }
+
+        restApi.getAllFormTemplates(channel)
+    }
+
     private suspend fun reportProgress(
         state: State,
         progress: Int,
@@ -582,6 +621,7 @@ class SyncWorker @AssistedInject constructor(
         readingSyncResult: ReadingSyncResult,
         referralSyncResult: ReferralSyncResult,
         assessmentSyncResult: AssessmentSyncResult,
+        formTemplateSyncResult: FormTemplateSyncResult
     ): String {
         val success = patientSyncResult.networkResult.getStatusMessage(applicationContext)
         val totalPatientsUploaded = applicationContext.getString(
@@ -612,6 +652,9 @@ class SyncWorker @AssistedInject constructor(
         val totalAssessmentsDownloaded = applicationContext.getString(
             R.string.sync_total_assessments_downloaded_s, assessmentSyncResult.totalAssessmentsDownloaded
         )
+        val totalFormTemplateDownloaded = applicationContext.getString(
+            R.string.sync_total_form_templates_downloaded, formTemplateSyncResult.totalFormsDownloaded
+        )
 
         val errors = patientSyncResult.errors.let { if (it != "[ ]") "\nErrors:\n$it" else "" }
         return "$success\n" +
@@ -623,7 +666,8 @@ class SyncWorker @AssistedInject constructor(
             "$totalReferralsUploaded\n" +
             "$totalReferralsDownloaded\n" +
             "$totalAssessmentsUploaded\n" +
-            totalAssessmentsDownloaded +
+            "$totalAssessmentsDownloaded\n" +
+            "$totalFormTemplateDownloaded\n" +
             errors
     }
 }

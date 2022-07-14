@@ -199,6 +199,9 @@ class UrlManager @Inject constructor(val settings: Settings) {
     val userPatientAssociation: String
         get() = "$base/patientAssociations"
 
+    val getAllFormTemplates: String
+        get() = "$base/forms/classifications/summary"
+
     companion object {
         private const val TAG = "UrlManager"
     }
