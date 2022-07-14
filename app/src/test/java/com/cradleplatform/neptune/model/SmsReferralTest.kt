@@ -47,4 +47,30 @@ internal class SmsReferralTest {
             .writeValueAsBytes(patientAndReadings)
         return JacksonMapper.readerForPatientAndReadings.readValue(bytes)
     }
+
+    @Test
+    fun `create sms referral and write it and then parse it back `() {
+
+        // Changing this will affect other tests
+        val patientAndReferrals = deepCopyPatientAndReferrals(
+            CommonPatientReferralJsons.patientWithStandaloneReferral.second
+        )
+        
+        val referralId = UUID.randomUUID().toString()
+
+        val smsReferral = SmsReferral(referralId, patientAndReferrals)
+
+        val writer = JacksonMapper.createWriter<SmsReferral>()
+        val json = writer.writeValueAsString(smsReferral)
+
+        val reader = JacksonMapper.createReader<SmsReferral>()
+        val parsedSmsReferral = reader.readValue<SmsReferral>(json)
+        assertEquals(smsReferral, parsedSmsReferral)
+    }
+
+    private fun deepCopyPatientAndReferrals(patientAndReferrals: PatientAndReferrals): PatientAndReferrals {
+        val bytes = JacksonMapper.createWriter<PatientAndReferrals>()
+            .writeValueAsBytes(patientAndReferrals)
+        return JacksonMapper.readerForPatientAndReferrals.readValue(bytes)
+    }
 }
