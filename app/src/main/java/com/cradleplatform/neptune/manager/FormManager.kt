@@ -1,11 +1,9 @@
 package com.cradleplatform.neptune.manager
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.map
 import com.cradleplatform.neptune.database.daos.FormClassificationDao
 import com.cradleplatform.neptune.model.FormClassification
 import com.cradleplatform.neptune.model.FormTemplate
-import com.cradleplatform.neptune.model.Patient
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,7 +15,17 @@ import javax.inject.Singleton
 @Singleton
 class FormManager @Inject constructor (
     private val formClassDao: FormClassificationDao
-    ){
+) {
 
-    fun getLiveDataFormTemplates():LiveData<List<FormTemplate>> = formClassDao.getFormTemplates()
+    fun getLiveDataFormTemplates(): LiveData<List<FormTemplate>> = formClassDao.getFormTemplates()
+
+    suspend fun addFormTemplate(formTemplate: FormTemplate) {
+        formClassDao.addOrUpdateFormClassification(
+            FormClassification(
+                formTemplate.name,
+                formTemplate.lang,
+                formTemplate
+            )
+        )
+    }
 }
