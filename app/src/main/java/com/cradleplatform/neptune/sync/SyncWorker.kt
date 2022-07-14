@@ -191,12 +191,6 @@ class SyncWorker @AssistedInject constructor(
         val patientsLeftToUpload = patientManager.getNumberOfPatientsToUpload()
         if (patientsLeftToUpload > 0) {
             patientResult.totalPatientsUploaded -= patientsLeftToUpload
-
-            // FIXME: Clean this up
-            Log.wtf(
-                TAG,
-                "DEBUG: THERE ARE $patientsLeftToUpload PATIENTS LEFT TO UPLOAD"
-            )
         }
 
         if (patientResult.networkResult is NetworkResult.Success) {
@@ -552,9 +546,6 @@ class SyncWorker @AssistedInject constructor(
                 try {
                     database.withTransaction {
                         for (formTemplate in channel) {
-                            //val formStr = Gson().toJson(formTemplate)
-                            //Log.d(TAG,"FORM TEMPLATE DEBUG======\n$formStr\n")
-                            Log.e(TAG, "adding ${formTemplate.name}")
                             formManager.addFormTemplate(formTemplate)
                         }
                     }
