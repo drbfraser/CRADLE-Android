@@ -29,7 +29,7 @@ class FormRenderingActivity : AppCompatActivity() {
 
         //Check if question list contains category
         if (getNumOfCategory(form!!) <= 0) {
-            val intent = FormSelectionActivity.makeIntentForPatientId(this,id!!)
+            val intent = FormSelectionActivity.makeIntentForPatientId(this, id!!)
             startActivity(intent)
             finish()
         }

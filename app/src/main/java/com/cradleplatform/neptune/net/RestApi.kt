@@ -1,7 +1,6 @@
 package com.cradleplatform.neptune.net
 
 import android.content.SharedPreferences
-import android.os.Build
 import android.util.Log
 import com.cradleplatform.neptune.ext.jackson.forEachJackson
 import com.cradleplatform.neptune.ext.jackson.parseObject
@@ -38,10 +37,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
 import java.io.InputStream
-import java.io.InputStreamReader
 import java.math.BigInteger
-import java.util.Properties
-import java.util.stream.Collectors
 import javax.inject.Singleton
 
 /**
@@ -1063,9 +1059,9 @@ class RestApi constructor(
     ): FormTemplateSyncResult = withContext(IO) {
 
         var failedParse = false
-        var templateIds:MutableList<String> = mutableListOf()
-        var templateRequestList: MutableList<Pair<String,String>> = mutableListOf()
-        var classificationMap: MutableMap<String,String> = mutableMapOf()
+        var templateIds: MutableList<String> = mutableListOf()
+        var templateRequestList: MutableList<Pair<String, String>> = mutableListOf()
+        var classificationMap: MutableMap<String, String> = mutableMapOf()
         var totalClassifications: Int = 0
         var totalFormTemplates: Int = 0
 
@@ -1077,31 +1073,24 @@ class RestApi constructor(
 
                 try {
 
-                    /*
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        val reader = inputStream.reader().readText()//.lines().collect(Collectors.joining("\n"))
-                        Log.e(TAG,reader)
-                    }*/
-
                     val reader = Gson().newJsonReader(inputStream.bufferedReader())
                     reader.beginArray()
-                    while (reader.hasNext()){
+                    while (reader.hasNext()) {
 
                         var className = ""
                         var formId = ""
 
                         reader.beginObject()
-                        while (reader.hasNext()){
+                        while (reader.hasNext()) {
                             when (reader.nextName()) {
                                 "id" -> {
                                     formId = reader.nextString()
                                     templateIds.add(formId)
-                                    //Log.e(TAG,"IDS : ${value} ")
                                 }
                                 "classification" -> {
                                     reader.beginObject()
-                                    while (reader.hasNext()){
-                                        when (reader.nextName()){
+                                    while (reader.hasNext()) {
+                                        when (reader.nextName()) {
                                             "name" -> className = reader.nextString()
                                             else -> reader.skipValue()
                                         }
@@ -1109,18 +1098,15 @@ class RestApi constructor(
                                     reader.endObject()
                                 }
                                 else -> reader.skipValue()
-
                             }
                         }
                         reader.endObject()
                         classificationMap[formId] = className
-                        Log.e(TAG,"$formId, $className")
                     }
                     reader.endArray()
                     reader.close()
 
                     totalClassifications++
-
                 } catch (e: Exception) {
                     Log.e(TAG, e.toString())
                     failedParse = true
@@ -1128,7 +1114,7 @@ class RestApi constructor(
                 Unit
             }
         ).also {
-            for (formId in templateIds){
+            for (formId in templateIds) {
                 http.makeRequest(
                     method = Http.Method.GET,
                     url = urlManager.base + "/forms/templates/$formId/versions",
@@ -1140,21 +1126,18 @@ class RestApi constructor(
                         reader.beginObject()
                         reader.nextName()
                         reader.beginArray()
-                        while(reader.hasNext()){
+                        while (reader.hasNext()) {
                             val language = reader.nextString()
-                            templateRequestList.add(Pair(formId,language))
-                            //Log.e(TAG,"lang : $value ")
+                            templateRequestList.add(Pair(formId, language))
                         }
                         reader.endArray()
                         reader.endObject()
                     }
                 )
             }
-
         }.also {
-            templateRequestList.forEach { (formId,language) ->
+            templateRequestList.forEach { (formId, language) ->
 
-                //Log.e(TAG,"$formId,$language")
                 http.makeRequest(
                     method = Http.Method.GET,
                     url = urlManager.base + "/forms/templates/$formId?lang=$language",
@@ -1162,12 +1145,11 @@ class RestApi constructor(
                     inputStreamReader = { inputStream ->
 
                         var nextFormTemplate = Gson()
-                            .fromJson(inputStream.bufferedReader(),FormTemplate::class.java)
+                            .fromJson(inputStream.bufferedReader(), FormTemplate::class.java)
                             .copy(name = classificationMap[formId]!!)
 
                         formTemplateChannel.send(nextFormTemplate)
                         totalFormTemplates++
-
                     }
                 )
             }
@@ -1182,9 +1164,8 @@ class RestApi constructor(
                 formTemplateChannel.close(SyncException("failed to download all FormTemplates"))
             }
         }
-        FormTemplateSyncResult(result,totalClassifications,totalFormTemplates)
+        FormTemplateSyncResult(result, totalClassifications, totalFormTemplates)
     }
-
 
     /**
      * The common headers used for most API requests.
@@ -1202,8 +1183,6 @@ class RestApi constructor(
                 mapOf()
             }
         }
-
-    
 }
 
 class SyncException(message: String) : IOException(message)

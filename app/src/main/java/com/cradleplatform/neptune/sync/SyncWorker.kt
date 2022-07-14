@@ -20,7 +20,6 @@ import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.manager.ReferralManager
 import com.cradleplatform.neptune.model.Assessment
-import com.cradleplatform.neptune.model.FormClassification
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
@@ -37,7 +36,6 @@ import com.cradleplatform.neptune.net.RestApi
 import com.cradleplatform.neptune.net.SyncException
 import com.cradleplatform.neptune.utilities.RateLimitRunner
 import com.cradleplatform.neptune.utilities.UnixTimestamp
-import com.google.gson.Gson
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
@@ -327,14 +325,11 @@ class SyncWorker @AssistedInject constructor(
         }
 
         val formTemplateResult = syncFormTemplates()
-        if(formTemplateResult.networkResult is NetworkResult.Success){
-
-        } else {
+        if (formTemplateResult.networkResult !is NetworkResult.Success) {
             return Result.failure(
                 workDataOf(RESULT_MESSAGE to getResultErrorMessage(formTemplateResult.networkResult))
             )
         }
-
 
         return Result.success(
             workDataOf(
@@ -550,27 +545,27 @@ class SyncWorker @AssistedInject constructor(
         restApi.syncHealthFacilities(channel, lastSyncTime)
     }
 
-    private suspend fun syncFormTemplates() : FormTemplateSyncResult
-    = withContext(Dispatchers.Default) {
-        val channel = Channel<FormTemplate>()
-        launch {
-            try {
-                database.withTransaction {
-                    for(formTemplate in channel){
-                        //val formStr = Gson().toJson(formTemplate)
-                        //Log.d(TAG,"FORM TEMPLATE DEBUG======\n$formStr\n")
-                        Log.e(TAG,"adding ${formTemplate.name}")
-                        formManager.addFormTemplate(formTemplate)
+    private suspend fun syncFormTemplates(): FormTemplateSyncResult =
+        withContext(Dispatchers.Default) {
+            val channel = Channel<FormTemplate>()
+            launch {
+                try {
+                    database.withTransaction {
+                        for (formTemplate in channel) {
+                            //val formStr = Gson().toJson(formTemplate)
+                            //Log.d(TAG,"FORM TEMPLATE DEBUG======\n$formStr\n")
+                            Log.e(TAG, "adding ${formTemplate.name}")
+                            formManager.addFormTemplate(formTemplate)
+                        }
                     }
+                } catch (e: SyncException) {
+                    Log.e(TAG, "Failed to add form template during Sync, with error:\n $e")
                 }
-            } catch (e: SyncException){
-                Log.e(TAG, "Failed to add form template during Sync, with error:\n $e")
+                withContext(Dispatchers.Main) { Log.d(TAG, "form template sync job is done") }
             }
-            withContext(Dispatchers.Main) { Log.d(TAG, "form template sync job is done") }
-        }
 
-        restApi.getAllFormTemplates(channel)
-    }
+            restApi.getAllFormTemplates(channel)
+        }
 
     private suspend fun reportProgress(
         state: State,

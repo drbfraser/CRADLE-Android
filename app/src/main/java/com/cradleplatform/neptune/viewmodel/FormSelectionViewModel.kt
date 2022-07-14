@@ -12,7 +12,7 @@ import javax.inject.Inject
 @HiltViewModel
 class FormSelectionViewModel @Inject constructor (
     private val formManager: FormManager
-): ViewModel() {
+) : ViewModel() {
 
     var formVersionLiveData: MutableLiveData<Array<String>> = MutableLiveData()
 

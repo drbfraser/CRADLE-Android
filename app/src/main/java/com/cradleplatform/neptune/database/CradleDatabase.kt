@@ -32,7 +32,14 @@ const val CURRENT_DATABASE_VERSION = 3
  * TODO: Lower the version back to version 1 when the app is out of alpha testing. (Refer to issues ticket #28)
  */
 @Database(
-    entities = [Reading::class, Patient::class, HealthFacility::class, Referral::class, Assessment::class, FormClassification::class],
+    entities = [
+        Reading::class,
+        Patient::class,
+        HealthFacility::class,
+        Referral::class,
+        Assessment::class,
+        FormClassification::class
+    ],
     views = [LocalSearchPatient::class],
     version = CURRENT_DATABASE_VERSION,
     exportSchema = true
@@ -158,7 +165,7 @@ internal object Migrations {
     /**
      * Version 3: add FormClassification
      */
-    private val MIGRATION_2_3 = object : Migration(2, 3){
+    private val MIGRATION_2_3 = object : Migration(2, 3) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL(
                 """

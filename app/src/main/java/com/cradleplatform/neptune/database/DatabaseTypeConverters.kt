@@ -70,6 +70,5 @@ class DatabaseTypeConverters {
 
     @TypeConverter
     fun toFormTemplate(string: String?): FormTemplate? =
-        string?.let { Gson().fromJson(string, FormTemplate::class.java)}
-
+        string?.let { Gson().fromJson(string, FormTemplate::class.java) }
 }

@@ -1,6 +1,5 @@
 package com.cradleplatform.neptune.model
 
-
 import androidx.room.Entity
 
 /**
@@ -16,15 +15,12 @@ import androidx.room.Entity
  */
 @Entity(
     indices = [],
-    primaryKeys = ["formClass","language"]
+    primaryKeys = ["formClass", "language"]
 )
 class FormClassification(
-    var formClass:String,
+    var formClass: String,
 
-    var language:String,
+    var language: String,
 
     var formTemplate: FormTemplate
-) {
-
-
-}
+)
