@@ -28,7 +28,7 @@ import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
-class PatientReferralViewModel  @Inject constructor(
+class PatientReferralViewModel @Inject constructor(
     private val referralManager: ReferralManager,
     private val referralUploadManager: ReferralUploadManager,
     private val sharedPreferences: SharedPreferences,
@@ -153,5 +153,4 @@ class PatientReferralViewModel  @Inject constructor(
     ) {
         referralManager.addReferral(referralFromBuilder, false)
     }
-
 }

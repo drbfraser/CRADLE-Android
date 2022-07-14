@@ -1604,7 +1604,6 @@ class PatientReadingViewModel @Inject constructor(
 
         private val isSavingReferralMutex = Mutex()
         val isSavingReferral = MutableLiveData<Boolean>(false)
-
     }
 
     /** Advice fields */

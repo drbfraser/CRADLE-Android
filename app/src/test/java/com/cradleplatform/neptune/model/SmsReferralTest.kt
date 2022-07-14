@@ -55,7 +55,7 @@ internal class SmsReferralTest {
         val patientAndReferrals = deepCopyPatientAndReferrals(
             CommonPatientReferralJsons.patientWithStandaloneReferral.second
         )
-        
+
         val referralId = UUID.randomUUID().toString()
 
         val smsReferral = SmsReferral(referralId, patientAndReferrals)

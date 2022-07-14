@@ -34,7 +34,6 @@ import com.cradleplatform.neptune.view.DashBoardActivity.Companion.READING_ACTIV
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForEditReading
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForNewReadingExistingPatient
 import com.cradleplatform.neptune.view.ReadingActivity.Companion.makeIntentForRecheck
-import com.cradleplatform.neptune.view.ui.reading.ReferralDialogFragment
 import com.cradleplatform.neptune.viewmodel.ReadingRecyclerViewAdapter
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry

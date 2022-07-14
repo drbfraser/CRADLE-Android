@@ -18,9 +18,7 @@ import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.ActivityReferralBinding
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.model.Patient
-import com.cradleplatform.neptune.model.PatientAndReadings
 import com.cradleplatform.neptune.model.PatientAndReferrals
-import com.cradleplatform.neptune.model.SmsReadingWithReferral
 import com.cradleplatform.neptune.model.SmsReferral
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.viewmodel.PatientReferralViewModel
@@ -32,14 +30,13 @@ import kotlinx.coroutines.runBlocking
 import java.util.UUID
 import javax.inject.Inject
 
-
 @AndroidEntryPoint
 open class PatientReferralActivity : AppCompatActivity() {
 
     @Inject
     lateinit var patientManager: PatientManager
 
-    private lateinit var currPatient : Patient
+    private lateinit var currPatient: Patient
 
     private val viewModel: PatientReferralViewModel by viewModels()
 
