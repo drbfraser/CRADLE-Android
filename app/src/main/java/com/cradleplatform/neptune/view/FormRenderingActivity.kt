@@ -29,8 +29,7 @@ class FormRenderingActivity : AppCompatActivity() {
 
         //Check if question list contains category
         if (getNumOfCategory(form!!) <= 0) {
-            val intent = Intent(this, FormSelectionActivity::class.java)
-            intent.putExtra(EXTRA_PATIENT_ID, id)
+            val intent = FormSelectionActivity.makeIntentForPatientId(this,id!!)
             startActivity(intent)
             finish()
         }
@@ -105,7 +104,7 @@ class FormRenderingActivity : AppCompatActivity() {
 
         var newForm: FormTemplate = FormTemplate(
             form.version, form.name, form.dateCreated,
-            form.category, form.id, form.lastEdited, form.lang, firstQuestionList.toList()
+            form.id, form.lastEdited, form.lang, firstQuestionList.toList()
         )
 
         return newForm
@@ -126,7 +125,7 @@ class FormRenderingActivity : AppCompatActivity() {
 
         var newForm: FormTemplate = FormTemplate(
             form.version, form.name, form.dateCreated,
-            form.category, form.id, form.lastEdited, form.lang, restQuestionList.toList()
+            form.id, form.lastEdited, form.lang, restQuestionList.toList()
         )
 
         return newForm

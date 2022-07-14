@@ -15,7 +15,7 @@ data class FormTemplate(
     @SerializedName("version") val version: String,
     @SerializedName("name") val name: String,
     @SerializedName("dateCreated") val dateCreated: Int,
-    @SerializedName("category") val category: String,
+    //@SerializedName("category") val category: String,
     @SerializedName("id") val id: String,
     @SerializedName("lastEdited") val lastEdited: Int,
     @SerializedName("lang") val lang: String,
