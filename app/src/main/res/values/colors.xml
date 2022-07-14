@@ -19,4 +19,6 @@
     <color name="yellowDown">#f7b500</color>
     <color name="redDown">#cc0605</color>
 
+    <color name="button_selected_gray">#8d99ae</color>
+
 </resources>
