@@ -1113,57 +1113,64 @@ class RestApi constructor(
                 }
                 Unit
             }
-        ).also {
-            for (formId in templateIds) {
-                http.makeRequest(
-                    method = Http.Method.GET,
-                    url = urlManager.base + "/forms/templates/$formId/versions",
-                    headers = headers,
-                    inputStreamReader = { inputStream ->
 
-                        val reader = Gson().newJsonReader(inputStream.bufferedReader())
+        )
 
-                        reader.beginObject()
-                        reader.nextName()
-                        reader.beginArray()
-                        while (reader.hasNext()) {
-                            val language = reader.nextString()
-                            templateRequestList.add(Pair(formId, language))
-                        }
-                        reader.endArray()
-                        reader.endObject()
+        for (formId in templateIds) {
+            http.makeRequest(
+                method = Http.Method.GET,
+                url = urlManager.base + "/forms/templates/$formId/versions",
+                headers = headers,
+                inputStreamReader = { inputStream ->
+
+                    val reader = Gson().newJsonReader(inputStream.bufferedReader())
+
+                    reader.beginObject()
+                    reader.nextName()
+                    reader.beginArray()
+                    while (reader.hasNext()) {
+                        val language = reader.nextString()
+                        templateRequestList.add(Pair(formId, language))
                     }
-                )
-            }
-        }.also {
-            templateRequestList.forEach { (formId, language) ->
-
-                http.makeRequest(
-                    method = Http.Method.GET,
-                    url = urlManager.base + "/forms/templates/$formId?lang=$language",
-                    headers = headers,
-                    inputStreamReader = { inputStream ->
-
-                        var nextFormTemplate = Gson()
-                            .fromJson(inputStream.bufferedReader(), FormTemplate::class.java)
-                            .copy(name = classificationMap[formId]!!)
-
-                        formTemplateChannel.send(nextFormTemplate)
-                        totalFormTemplates++
-                    }
-                )
-            }
-        }.also {
-            if (it is NetworkResult.Success) {
-                if (failedParse) {
-                    formTemplateChannel.close(SyncException("failed to parse all FormTemplates"))
-                } else {
-                    formTemplateChannel.close()
+                    reader.endArray()
+                    reader.endObject()
+                    reader.close()
                 }
-            } else {
-                formTemplateChannel.close(SyncException("failed to download all FormTemplates"))
-            }
+            )
         }
+
+        for ((formId, language) in templateRequestList) {
+
+            http.makeRequest(
+                method = Http.Method.GET,
+                url = urlManager.base + "/forms/templates/$formId?lang=$language",
+                headers = headers,
+                inputStreamReader = { inputStream ->
+
+                    val reader = Gson().newJsonReader(inputStream.bufferedReader())
+
+                    var nextFormTemplate = Gson()
+                        .fromJson<FormTemplate>(reader, FormTemplate::class.java)
+                        .copy(name = classificationMap[formId]!!)
+
+                    formTemplateChannel.send(nextFormTemplate)
+                    totalFormTemplates++
+
+                    reader.close()
+                }
+            )
+        }
+
+        if (result is NetworkResult.Success) {
+            if (failedParse) {
+                formTemplateChannel.close(SyncException("failed to parse all FormTemplates"))
+            } else {
+                formTemplateChannel.close()
+            }
+        } else {
+            formTemplateChannel.close(SyncException("failed to download all FormTemplates"))
+        }
+
         FormTemplateSyncResult(result, totalClassifications, totalFormTemplates)
     }
 
