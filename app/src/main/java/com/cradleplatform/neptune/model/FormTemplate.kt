@@ -31,6 +31,7 @@ data class Questions(
     @SerializedName("mcOptions") val mcOptions: List<McOptions>,
     @SerializedName("questionIndex") val questionIndex: Int,
     @SerializedName("numMin") val numMin: Double,
+    @SerializedName("numMax") val numMax: Double,
     @SerializedName("questionId") val questionId: String,
     @SerializedName("questionText") val questionText: String,
     @SerializedName("questionType") val questionType: String,

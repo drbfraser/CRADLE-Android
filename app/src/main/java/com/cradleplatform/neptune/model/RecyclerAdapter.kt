@@ -1,5 +1,6 @@
 package com.cradleplatform.neptune.model
 
+import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.content.Context
 import android.graphics.Color
@@ -111,12 +112,14 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
                 holder.itemNumberAnswer.visibility = View.GONE
                 holder.itemDatePicker.visibility = View.GONE
                 holder.itemMultipleChoice.visibility = View.GONE
+                setHint(holder.itemTextAnswer, form.questions[position])
             }
             "INTEGER" -> {
                 holder.itemNumberAnswer.visibility = View.VISIBLE
                 holder.itemTextAnswer.visibility = View.GONE
                 holder.itemDatePicker.visibility = View.GONE
                 holder.itemMultipleChoice.visibility = View.GONE
+                setHint(holder.itemNumberAnswer, form.questions[position])
             }
             "MULTIPLE_CHOICE" -> {
                 holder.itemNumberAnswer.visibility = View.GONE
@@ -162,5 +165,27 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
         )
         dpd.datePicker.maxDate = System.currentTimeMillis()
         dpd.show()
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun setHint(hint: TextView, theQuestion: Questions) {
+        val type = theQuestion.questionType
+        var numMin: Double? = theQuestion.numMin
+        var numMax: Double? = theQuestion.numMax
+        val isRequired = theQuestion.required
+
+        if (type == "STRING") {
+            if (isRequired) {
+                hint.hint = "Required"
+            } else {
+                hint.hint = "Optional"
+            }
+        } else if (type == "INTEGER") {
+            if (isRequired) {
+                hint.hint = "Required: Input range: ($numMin, $numMax)"
+            } else {
+                hint.hint = "Optional"
+            }
+        }
     }
 }
