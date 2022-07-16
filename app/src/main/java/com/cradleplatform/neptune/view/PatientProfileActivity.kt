@@ -417,6 +417,11 @@ open class PatientProfileActivity : AppCompatActivity() {
             findViewById<Button>(R.id.newPatientReferralButton)
 
         createButton.visibility = View.VISIBLE
+
+        createButton.setOnClickListener { _: View? ->
+            val intent = PatientReferralActivity.makeIntentForPatient(this@PatientProfileActivity, currPatient)
+            startActivity(intent)
+        }
     }
 
     private fun setupCreateAndFillFormButton() {
