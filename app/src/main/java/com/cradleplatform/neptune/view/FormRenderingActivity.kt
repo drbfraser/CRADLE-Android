@@ -31,6 +31,7 @@ class FormRenderingActivity : AppCompatActivity() {
         if (getNumOfCategory(form!!) <= 0) {
             val intent = Intent(this, FormSelectionActivity::class.java)
             intent.putExtra(EXTRA_PATIENT_ID, id)
+            intent.putExtra("SUBMITTED", "true")
             startActivity(intent)
             finish()
         }

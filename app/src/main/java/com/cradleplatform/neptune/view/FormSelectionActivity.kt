@@ -71,7 +71,8 @@ class FormSelectionActivity : AppCompatActivity() {
                     Toast.LENGTH_SHORT
                 ).show()
             } else {
-                val formTemplate = viewModel.getFormTemplateFromNameAndVersion(formTemplateName, formLanguage)
+                val formTemplate =
+                    viewModel.getFormTemplateFromNameAndVersion(formTemplateName, formLanguage)
 
                 val intent = FormRenderingActivity.makeIntentWithFormTemplate(
                     this@FormSelectionActivity,
@@ -101,5 +102,14 @@ class FormSelectionActivity : AppCompatActivity() {
             Intent(context, FormSelectionActivity::class.java).apply {
                 putExtra(EXTRA_PATIENT_ID, patientId)
             }
+    }
+
+    override fun onBackPressed() {
+        var isSubmitted: String? = intent.getStringExtra("SUBMITTED")
+        if (isSubmitted != null) {
+            Toast.makeText(this, "form has submitted, can not go back!", Toast.LENGTH_SHORT).show()
+        } else {
+            super.onBackPressed()
+        }
     }
 }
