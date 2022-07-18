@@ -650,6 +650,9 @@
     <string name="form_selection_hint">Form*</string>
     <string name="form_language_hint">Language*</string>
     <string name="fetch_form_button_text">Fetch Form</string>
+    <string name="is_required">Required</string>
+    <string name="is_optional">Optional</string>
+    <string name="data_range">Input range:</string>
 
     <plurals name="unuploaded_reading_signout_message">
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>

@@ -1,6 +1,5 @@
 package com.cradleplatform.neptune.model
 
-import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.content.Context
 import android.graphics.Color
@@ -112,14 +111,14 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
                 holder.itemNumberAnswer.visibility = View.GONE
                 holder.itemDatePicker.visibility = View.GONE
                 holder.itemMultipleChoice.visibility = View.GONE
-                setHint(holder.itemTextAnswer, form.questions[position])
+                setHint(holder.itemTextAnswer, form.questions[position], holder.context)
             }
             "INTEGER" -> {
                 holder.itemNumberAnswer.visibility = View.VISIBLE
                 holder.itemTextAnswer.visibility = View.GONE
                 holder.itemDatePicker.visibility = View.GONE
                 holder.itemMultipleChoice.visibility = View.GONE
-                setHint(holder.itemNumberAnswer, form.questions[position])
+                setHint(holder.itemNumberAnswer, form.questions[position], holder.context)
             }
             "MULTIPLE_CHOICE" -> {
                 holder.itemNumberAnswer.visibility = View.GONE
@@ -167,8 +166,7 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
         dpd.show()
     }
 
-    @SuppressLint("SetTextI18n")
-    private fun setHint(hint: TextView, theQuestion: Questions) {
+    private fun setHint(hint: TextView, theQuestion: Questions, context: Context) {
         val type = theQuestion.questionType
         var numMin: Double? = theQuestion.numMin
         var numMax: Double? = theQuestion.numMax
@@ -176,15 +174,16 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
 
         if (type == "STRING") {
             if (isRequired) {
-                hint.hint = "Required"
+                hint.hint = context.getString(R.string.is_required)
             } else {
-                hint.hint = "Optional"
+                hint.hint = context.getString(R.string.is_optional)
             }
         } else if (type == "INTEGER") {
             if (isRequired) {
-                hint.hint = "Required: Input range: ($numMin, $numMax)"
+                hint.hint = context.getString(R.string.is_required) + ": " +
+                    context.getString(R.string.data_range) + "($numMin, $numMax)"
             } else {
-                hint.hint = "Optional"
+                hint.hint = context.getString(R.string.is_optional)
             }
         }
     }
