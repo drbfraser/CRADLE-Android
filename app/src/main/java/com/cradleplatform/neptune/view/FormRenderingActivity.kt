@@ -117,7 +117,7 @@ class FormRenderingActivity : AppCompatActivity() {
 
         var newForm: FormTemplate = FormTemplate(
             form.version, form.name, form.dateCreated,
-            form.id, form.lastEdited, form.lang, firstQuestionList.toList()
+            form.category, form.id, form.lastEdited, form.lang, firstQuestionList.toList()
         )
 
         return newForm
@@ -138,7 +138,7 @@ class FormRenderingActivity : AppCompatActivity() {
 
         var newForm: FormTemplate = FormTemplate(
             form.version, form.name, form.dateCreated,
-            form.id, form.lastEdited, form.lang, restQuestionList.toList()
+            form.category, form.id, form.lastEdited, form.lang, restQuestionList.toList()
         )
 
         return newForm
