@@ -29,7 +29,10 @@ class FormRenderingActivity : AppCompatActivity() {
 
         //Check if question list contains category
         if (getNumOfCategory(form!!) <= 0) {
-            val intent = Intent(this, FormSelectionActivity::class.java)
+            val intent = Intent(
+                this,
+                FormSelectionActivity::class.java
+            ).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             intent.putExtra(EXTRA_PATIENT_ID, id)
             intent.putExtra("SUBMITTED", "true")
             startActivity(intent)

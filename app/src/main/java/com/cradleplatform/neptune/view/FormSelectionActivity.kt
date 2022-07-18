@@ -117,12 +117,14 @@ class FormSelectionActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
 
-        var intent = currentID?.let {
+        val intent = currentID?.let {
             PatientProfileActivity.makeIntentForPatientId(
                 this@FormSelectionActivity,
                 it
             )
         }
-        startActivity(intent)
+        if (intent != null) {
+            startActivity(intent)
+        }
     }
 }
