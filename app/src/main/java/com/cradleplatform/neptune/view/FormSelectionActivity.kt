@@ -85,7 +85,8 @@ class FormSelectionActivity : AppCompatActivity() {
                 val intent = FormRenderingActivity.makeIntentWithFormTemplate(
                     this@FormSelectionActivity,
                     formTemplate,
-                    intent.getStringExtra(EXTRA_PATIENT_ID)!!
+                    intent.getStringExtra(EXTRA_PATIENT_ID)!!,
+                    intent.getSerializableExtra(FORM_SELECTION_EXTRA_PATIENT) as Patient
                 )
 
                 startActivity(intent)
@@ -116,6 +117,7 @@ class FormSelectionActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
+        //super.onBackPressed()
 
         val intent = currentID?.let {
             PatientProfileActivity.makeIntentForPatientId(
@@ -123,6 +125,7 @@ class FormSelectionActivity : AppCompatActivity() {
                 it
             )
         }
+
         if (intent != null) {
             startActivity(intent)
         }
