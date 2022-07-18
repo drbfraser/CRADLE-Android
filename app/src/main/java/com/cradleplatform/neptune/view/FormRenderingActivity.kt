@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.model.FormTemplate
+import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Questions
 import com.cradleplatform.neptune.model.RecyclerAdapter
 
@@ -26,11 +27,18 @@ class FormRenderingActivity : AppCompatActivity() {
 
         form = intent.getSerializableExtra(EXTRA_FORM_TEMPLATE) as FormTemplate
         var id = intent.getStringExtra(EXTRA_PATIENT_ID)
+        val patient = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT) as Patient
 
         //Check if question list contains category
         if (getNumOfCategory(form!!) <= 0) {
-            val intent = Intent(this, FormSelectionActivity::class.java)
+            val intent = FormSelectionActivity.makeIntentForPatientId(
+                this@FormRenderingActivity,
+                id!!,
+                patient
+            )
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             intent.putExtra(EXTRA_PATIENT_ID, id)
+            intent.putExtra("SUBMITTED", "true")
             startActivity(intent)
             finish()
         }
@@ -50,7 +58,7 @@ class FormRenderingActivity : AppCompatActivity() {
 
         btnNext?.setOnClickListener {
             val newForm: FormTemplate = getRestCategory(form!!)
-            val intent = makeIntentWithFormTemplate(this, newForm, id!!)
+            val intent = makeIntentWithFormTemplate(this, newForm, id!!, patient)
             startActivity(intent)
         }
 
@@ -63,15 +71,19 @@ class FormRenderingActivity : AppCompatActivity() {
     companion object {
         private const val EXTRA_FORM_TEMPLATE = "JSON string for form template"
         private const val EXTRA_PATIENT_ID = "Patient id that the form is created for"
+        private const val EXTRA_PATIENT_OBJECT = "The Patient object used to start patient profile"
 
         @JvmStatic
         fun makeIntentWithFormTemplate(
             context: Context,
             formTemplate: FormTemplate,
-            patientId: String
+            patientId: String,
+            patient: Patient
         ): Intent {
             val bundle = Bundle()
             bundle.putSerializable(EXTRA_FORM_TEMPLATE, formTemplate)
+            bundle.putSerializable(EXTRA_PATIENT_OBJECT, patient)
+
             return Intent(context, FormRenderingActivity::class.java).apply {
                 this.putExtra(EXTRA_PATIENT_ID, patientId)
                 this.putExtras(bundle)

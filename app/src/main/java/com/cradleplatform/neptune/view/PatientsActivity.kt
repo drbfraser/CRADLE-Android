@@ -408,4 +408,10 @@ class PatientsActivity : AppCompatActivity() {
             return Intent(context, PatientsActivity::class.java)
         }
     }
+
+    override fun onBackPressed() {
+
+        val intent = Intent(this, DashBoardActivity::class.java)
+        startActivity(intent)
+    }
 }

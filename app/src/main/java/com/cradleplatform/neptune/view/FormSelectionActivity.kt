@@ -11,6 +11,7 @@ import androidx.core.widget.doOnTextChanged
 import androidx.databinding.DataBindingUtil
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.databinding.ActivityFormSelectionBinding
+import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.viewmodel.FormSelectionViewModel
 import com.google.android.material.textfield.TextInputLayout
 
@@ -19,6 +20,10 @@ class FormSelectionActivity : AppCompatActivity() {
     private var binding: ActivityFormSelectionBinding? = null
 
     private val viewModel: FormSelectionViewModel by viewModels()
+
+    private var currentID: String? = null
+
+    private var currentPatient: Patient? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,6 +35,9 @@ class FormSelectionActivity : AppCompatActivity() {
             lifecycleOwner = this@FormSelectionActivity
             executePendingBindings()
         }
+
+        currentID = intent.getStringExtra(EXTRA_PATIENT_ID)!!
+        currentPatient = intent.getSerializableExtra(FORM_SELECTION_EXTRA_PATIENT) as Patient?
 
         setUpFetchFormButton()
         setUpFormVersionOnChange()
@@ -71,13 +79,16 @@ class FormSelectionActivity : AppCompatActivity() {
                     Toast.LENGTH_SHORT
                 ).show()
             } else {
-                val formTemplate = viewModel.getFormTemplateFromNameAndVersion(formTemplateName, formLanguage)
+                val formTemplate =
+                    viewModel.getFormTemplateFromNameAndVersion(formTemplateName, formLanguage)
 
                 val intent = FormRenderingActivity.makeIntentWithFormTemplate(
                     this@FormSelectionActivity,
                     formTemplate,
-                    intent.getStringExtra(EXTRA_PATIENT_ID)!!
+                    intent.getStringExtra(EXTRA_PATIENT_ID)!!,
+                    intent.getSerializableExtra(FORM_SELECTION_EXTRA_PATIENT) as Patient
                 )
+
                 startActivity(intent)
             }
         }
@@ -95,11 +106,28 @@ class FormSelectionActivity : AppCompatActivity() {
 
     companion object {
         private const val EXTRA_PATIENT_ID = "PatientID that a new form will be created for"
+        private const val FORM_SELECTION_EXTRA_PATIENT = "Patient"
 
         @JvmStatic
-        fun makeIntentForPatientId(context: Context, patientId: String): Intent =
+        fun makeIntentForPatientId(context: Context, patientId: String, patient: Patient): Intent =
             Intent(context, FormSelectionActivity::class.java).apply {
                 putExtra(EXTRA_PATIENT_ID, patientId)
+                putExtra(FORM_SELECTION_EXTRA_PATIENT, patient)
             }
+    }
+
+    override fun onBackPressed() {
+        //super.onBackPressed()
+
+        val intent = currentID?.let {
+            PatientProfileActivity.makeIntentForPatientId(
+                this@FormSelectionActivity,
+                it
+            )
+        }
+
+        if (intent != null) {
+            startActivity(intent)
+        }
     }
 }
