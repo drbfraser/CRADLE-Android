@@ -20,14 +20,22 @@ interface FormClassificationDao {
     suspend fun addOrUpdateFormClassification(formClass: FormClassification)
 
     /**
-     * All FormClassifications in the table as LiveData List
+     * All [FormClassification]s in the table as LiveData List
      */
-    @Query("SELECT * FROM FormClassification ORDER BY formClass ASC")
-    fun getFormClassifications(): LiveData<List<FormClassification>>
+    @Query("SELECT * FROM FormClassification ORDER BY formClassName ASC")
+    fun getAllFormClassifications(): LiveData<List<FormClassification>>
 
     /**
-     * All FormTemplates as LiveData List
+     * All [FormTemplate]s in the table as LiveData List
      */
-    @Query("SELECT formTemplate FROM FormClassification ORDER BY formClass ASC")
-    fun getFormTemplates(): LiveData<List<FormTemplate>>
+    @Query("SELECT formTemplate FROM FormClassification ORDER BY formClassName ASC")
+    fun getAllFormTemplates(): LiveData<List<FormTemplate>>
+
+    /**
+     * Search for a list of [FormTemplate]s with their name(Classification) = [name]
+     *
+     * @param name the name of classification to search for
+     */
+    @Query("SELECT formTemplate FROM FormClassification WHERE formClassName = :name")
+    suspend fun getFormTemplateByName(name: String): List<FormTemplate>
 }

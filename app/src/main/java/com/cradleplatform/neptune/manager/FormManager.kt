@@ -17,15 +17,15 @@ class FormManager @Inject constructor (
     private val formClassDao: FormClassificationDao
 ) {
 
-    fun getLiveDataFormTemplates(): LiveData<List<FormTemplate>> = formClassDao.getFormTemplates()
+    suspend fun searchForFormTemplateWithName(formClassName: String): List<FormTemplate> =
+        formClassDao.getFormTemplateByName(formClassName)
 
-    suspend fun addFormTemplate(formTemplate: FormTemplate) {
-        formClassDao.addOrUpdateFormClassification(
-            FormClassification(
-                formTemplate.name,
-                formTemplate.lang,
-                formTemplate
-            )
-        )
-    }
+    suspend fun addFormByClassification(formClass: FormClassification) =
+        formClassDao.addOrUpdateFormClassification(formClass)
+
+    fun getLiveDataFormTemplates(): LiveData<List<FormTemplate>> =
+        formClassDao.getAllFormTemplates()
+
+    fun getLiveDataFormClassifications(): LiveData<List<FormClassification>> =
+        formClassDao.getAllFormClassifications()
 }
