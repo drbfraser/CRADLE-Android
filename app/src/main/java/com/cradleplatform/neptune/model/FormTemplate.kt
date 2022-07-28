@@ -13,30 +13,61 @@ Currently using Gson, could use another library if needed.
 data class FormTemplate(
 
     @SerializedName("version") val version: String,
-    @SerializedName("name") val name: String,
+    @SerializedName("archived") val archived: Boolean,
     @SerializedName("dateCreated") val dateCreated: Int,
-    //@SerializedName("category") val category: String,
     @SerializedName("id") val id: String,
-    @SerializedName("lastEdited") val lastEdited: Int,
-    @SerializedName("lang") val lang: String,
-    @SerializedName("questions") val questions: List<Questions>
-) : Serializable
+    @SerializedName("formClassificationId") val formClassId: String,
+    @SerializedName("questions") val questions: List<Questions>,
+
+) : Serializable {
+
+    fun languageVersions(): List<String> {
+        val languageVersions = mutableListOf<String>()
+
+        val languageHash: HashMap<String, Int> = HashMap()
+
+        for (question in questions) {
+            question.languageVersions.forEach { questionVersions ->
+                val currentCount = languageHash[questionVersions.language]
+                languageHash[questionVersions.language] = (currentCount?.let { it + 1 }) ?: 1
+            }
+        }
+
+        var maxCount = 0
+        languageHash.forEach { (language, count) ->
+            if (count > maxCount) {
+                maxCount = count
+                languageVersions.clear()
+            }
+            languageVersions.add(language)
+        }
+
+        return languageVersions
+    }
+}
 
 data class Questions(
-
     @SerializedName("id") val id: String,
     @SerializedName("visibleCondition") val visibleCondition: List<VisibleCondition>,
     @SerializedName("isBlank") val isBlank: Boolean,
     @SerializedName("formTemplateId") val formTemplateId: String,
     @SerializedName("mcOptions") val mcOptions: List<McOptions>,
     @SerializedName("questionIndex") val questionIndex: Int,
-    @SerializedName("numMin") val numMin: Double,
+    @SerializedName("numMin") val numMin: Double?,
     @SerializedName("questionId") val questionId: String,
-    @SerializedName("questionText") val questionText: String,
+    //val questionText: String,
     @SerializedName("questionType") val questionType: String,
-    @SerializedName("answers") val answers: Answers,
+    @SerializedName("answers") val answers: Answers?,
     @SerializedName("hasCommentAttached") val hasCommentAttached: Boolean,
-    @SerializedName("required") val required: Boolean
+    @SerializedName("required") val required: Boolean,
+    @SerializedName("questionLangVersions") val languageVersions: List<QuestionLangVersion>
+) : Serializable
+
+data class QuestionLangVersion(
+    @SerializedName("lang") val language: String,
+    @SerializedName("qid") val parentId: String,
+    @SerializedName("questionText") val questionText: String,
+    @SerializedName("id") val questionTextId: Int,
 ) : Serializable
 
 data class McOptions(
