@@ -32,8 +32,7 @@ data class AssessmentSyncResult(
     var errors: String?,
 )
 
-data class FormTemplateSyncResult(
+data class FormSyncResult(
     val networkResult: NetworkResult<Unit>,
-    val totalFormClassifications: Int,
-    var totalFormsDownloaded: Int
+    val totalFormClassDownloaded: Int
 )

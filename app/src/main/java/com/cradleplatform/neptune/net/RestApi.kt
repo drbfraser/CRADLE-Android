@@ -9,6 +9,7 @@ import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.manager.LoginResponse
 import com.cradleplatform.neptune.manager.UrlManager
 import com.cradleplatform.neptune.model.Assessment
+import com.cradleplatform.neptune.model.FormClassification
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.GestationalAgeMonths
 import com.cradleplatform.neptune.model.GlobalPatient
@@ -27,7 +28,7 @@ import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper.createWriter
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.channels.SendChannel
@@ -1043,70 +1044,50 @@ class RestApi constructor(
 
     /**
      * Get all [FormTemplate]s from the server.
-     * The parsed results will be sent in the resulting [formTemplateChannel].
+     * The parsed results will be sent in the resulting [formChannel].
      *
-     * [formTemplateChannel] will be failed (see [SendChannel.close]) if [Failure] or
+     * [formChannel] will be failed (see [SendChannel.close]) if [Failure] or
      * [NetworkException] is returned, so using any of the Channels can result in a [SyncException]
      * that should be caught by anything handling the Channels.
      *
-     * @return A [FormTemplateSyncResult] containing [Success] if the parsing succeeds,
+     * @return A [FormSyncResult] containing [Success] if the parsing succeeds,
      * otherwise a [Failure] or [NetworkException] if parsing or the connection fail,
-     * with a number [FormTemplateSyncResult.totalFormsDownloaded] indicating
+     * with a number [FormSyncResult.totalFormsDownloaded] indicating
      * how many form templates are downloaded in total
      */
     suspend fun getAllFormTemplates(
-        formTemplateChannel: SendChannel<FormTemplate>
-    ): FormTemplateSyncResult = withContext(IO) {
+        formChannel: SendChannel<FormClassification>
+    ): FormSyncResult = withContext(IO) {
 
         var failedParse = false
-        var templateIds: MutableList<String> = mutableListOf()
-        var templateRequestList: MutableList<Pair<String, String>> = mutableListOf()
-        var classificationMap: MutableMap<String, String> = mutableMapOf()
-        var totalClassifications: Int = 0
-        var totalFormTemplates: Int = 0
+        var totalClassifications = 0
 
         val result = http.makeRequest(
             method = Http.Method.GET,
-            url = urlManager.getAllFormTemplates,
+            url = urlManager.getAllFormsAsSummary,
             headers = headers,
             inputStreamReader = { inputStream ->
 
                 try {
+                    // Create Gson instance with custom deserializer
+                    val customGson = GsonBuilder()
+                        .registerTypeAdapter(
+                            FormClassification::class.java,
+                            FormClassification.DeserializerFromFormTemplateStream()
+                        ).create()
 
-                    val reader = Gson().newJsonReader(inputStream.bufferedReader())
+                    val reader = customGson.newJsonReader(inputStream.bufferedReader())
                     reader.beginArray()
                     while (reader.hasNext()) {
-
-                        var className = ""
-                        var formId = ""
-
-                        reader.beginObject()
-                        while (reader.hasNext()) {
-                            when (reader.nextName()) {
-                                "id" -> {
-                                    formId = reader.nextString()
-                                    templateIds.add(formId)
-                                }
-                                "classification" -> {
-                                    reader.beginObject()
-                                    while (reader.hasNext()) {
-                                        when (reader.nextName()) {
-                                            "name" -> className = reader.nextString()
-                                            else -> reader.skipValue()
-                                        }
-                                    }
-                                    reader.endObject()
-                                }
-                                else -> reader.skipValue()
-                            }
-                        }
-                        reader.endObject()
-                        classificationMap[formId] = className
+                        val form = customGson.fromJson<FormClassification>(
+                            reader,
+                            FormClassification::class.java
+                        )
+                        formChannel.send(form)
+                        totalClassifications++
                     }
                     reader.endArray()
                     reader.close()
-
-                    totalClassifications++
                 } catch (e: Exception) {
                     Log.e(TAG, e.toString())
                     failedParse = true
@@ -1114,57 +1095,18 @@ class RestApi constructor(
                 Unit
             }
         ).also {
-            for (formId in templateIds) {
-                http.makeRequest(
-                    method = Http.Method.GET,
-                    url = urlManager.base + "/forms/templates/$formId/versions",
-                    headers = headers,
-                    inputStreamReader = { inputStream ->
-
-                        val reader = Gson().newJsonReader(inputStream.bufferedReader())
-
-                        reader.beginObject()
-                        reader.nextName()
-                        reader.beginArray()
-                        while (reader.hasNext()) {
-                            val language = reader.nextString()
-                            templateRequestList.add(Pair(formId, language))
-                        }
-                        reader.endArray()
-                        reader.endObject()
-                    }
-                )
-            }
-        }.also {
-            templateRequestList.forEach { (formId, language) ->
-
-                http.makeRequest(
-                    method = Http.Method.GET,
-                    url = urlManager.base + "/forms/templates/$formId?lang=$language",
-                    headers = headers,
-                    inputStreamReader = { inputStream ->
-
-                        var nextFormTemplate = Gson()
-                            .fromJson(inputStream.bufferedReader(), FormTemplate::class.java)
-                            .copy(name = classificationMap[formId]!!)
-
-                        formTemplateChannel.send(nextFormTemplate)
-                        totalFormTemplates++
-                    }
-                )
-            }
-        }.also {
             if (it is NetworkResult.Success) {
                 if (failedParse) {
-                    formTemplateChannel.close(SyncException("failed to parse all FormTemplates"))
+                    formChannel.close(SyncException("failed to parse all FormTemplates"))
                 } else {
-                    formTemplateChannel.close()
+                    formChannel.close()
                 }
             } else {
-                formTemplateChannel.close(SyncException("failed to download all FormTemplates"))
+                formChannel.close(SyncException("failed to download all FormTemplates"))
             }
         }
-        FormTemplateSyncResult(result, totalClassifications, totalFormTemplates)
+
+        FormSyncResult(result, totalClassifications)
     }
 
     /**

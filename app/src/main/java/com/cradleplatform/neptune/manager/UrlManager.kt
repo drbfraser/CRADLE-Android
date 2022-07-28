@@ -42,6 +42,12 @@ class UrlManager @Inject constructor(val settings: Settings) {
         get() = "$base/mobile/assessments"
 
     /**
+     * Endpoint for getting All FormTemplates and it's classifications as summaries
+     */
+    val getAllFormsAsSummary: String
+        get() = "$base/forms/classifications/summary"
+
+    /**
      * Endpoint for posting a new patient.
      */
     val postPatient: String
@@ -198,9 +204,6 @@ class UrlManager @Inject constructor(val settings: Settings) {
 
     val userPatientAssociation: String
         get() = "$base/patientAssociations"
-
-    val getAllFormTemplates: String
-        get() = "$base/forms/classifications/summary"
 
     companion object {
         private const val TAG = "UrlManager"
