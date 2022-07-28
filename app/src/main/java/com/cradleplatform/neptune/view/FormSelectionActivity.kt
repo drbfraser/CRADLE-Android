@@ -73,11 +73,12 @@ class FormSelectionActivity : AppCompatActivity() {
                     Toast.LENGTH_SHORT
                 ).show()
             } else {
-                val formTemplate = viewModel.getFormTemplateFromNameAndVersion(formTemplateName, formLanguage)
+                val formTemplate = viewModel.getFormTemplateFromName(formTemplateName)//, formLanguage)
 
                 val intent = FormRenderingActivity.makeIntentWithFormTemplate(
                     this@FormSelectionActivity,
                     formTemplate,
+                    formLanguage,
                     intent.getStringExtra(EXTRA_PATIENT_ID)!!
                 )
                 startActivity(intent)

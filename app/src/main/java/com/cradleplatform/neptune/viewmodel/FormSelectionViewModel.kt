@@ -4,9 +4,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
+import androidx.lifecycle.viewModelScope
 import com.cradleplatform.neptune.manager.FormManager
+import com.cradleplatform.neptune.model.FormClassification
 import com.cradleplatform.neptune.model.FormTemplate
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -16,10 +19,15 @@ class FormSelectionViewModel @Inject constructor (
 
     var formVersionLiveData: MutableLiveData<Array<String>> = MutableLiveData()
 
-    private val formTemplateList: LiveData<List<FormTemplate>> = formManager.getLiveDataFormTemplates()
+    private val formClassList: LiveData<List<FormClassification>> =
+        formManager.getLiveDataFormClassifications()
 
     val formTemplateListAsString: LiveData<Array<String>> by lazy {
-        formTemplateList.map { it.map(FormTemplate::name).distinct().toTypedArray() }
+        formClassList.map { formClassificationList ->
+            formClassificationList.map { formClass ->
+                formClass.formClassName
+            }.toTypedArray()
+        }
     }
 
     /**
@@ -29,13 +37,21 @@ class FormSelectionViewModel @Inject constructor (
      *
      * throws error if none is available, user should make sure that the inputs parameters is retrieved from
      * the sets of LiveData provided by this class.
+     *
+     * @param formName the name (in Classification) of a FormTemplate
      */
-    private fun getFormTemplateVersionsFromName(formName: String): List<String> {
-        val formTemplateVersions = formTemplateList.value!!.filter { it.name == formName }.map(FormTemplate::lang)
-        if (formTemplateVersions.isEmpty()) {
-            error("Unable to match FormTemplate from name when finding Versions")
+    private suspend fun getFormTemplateVersionsFromName(formName: String): List<String> {
+        val formTemplateResults = formManager.searchForFormTemplateWithName(formName)
+
+        if (formTemplateResults.size > 1) {
+            error("Too many FormTemplate name matched when searching with name")
+        } else if (formTemplateResults.isEmpty()) {
+            error("Unable to match FormTemplate from name")
         }
-        return formTemplateVersions
+
+        val formTemplate = formTemplateResults[0]
+
+        return formTemplate.languageVersions()
     }
 
     /**
@@ -44,23 +60,24 @@ class FormSelectionViewModel @Inject constructor (
      * This function is bound to when a user selects a formTemplate from the dropdown list for [FormTemplate]s
      */
     fun formTemplateChanged(formName: String) {
-        formVersionLiveData.postValue(
-            getFormTemplateVersionsFromName(formName).toTypedArray()
-        )
+        viewModelScope.launch {
+            val langVersions = getFormTemplateVersionsFromName(formName)
+            formVersionLiveData.postValue(langVersions.toTypedArray())
+        }
     }
 
     /**
-     * returns [FormTemplate] that matches the input [formName] and [version]
+     * returns [FormTemplate] that matches the input [formName]
      *
      * throws errors if not found, user should make sure that the inputs parameters is retrieved from
      * the sets of LiveData provided by this class.
      */
-    fun getFormTemplateFromNameAndVersion(formName: String, version: String): FormTemplate {
-        val currentFormTemplateList = formTemplateList.value
-        if (currentFormTemplateList.isNullOrEmpty()) {
-            error("Tried to retrieve FormTemplate by name when no FormTemplate is available")
+    fun getFormTemplateFromName(formName: String): FormTemplate {
+        val currentFormClassList = formClassList.value
+        if (currentFormClassList.isNullOrEmpty()) {
+            error("Tried to retrieve FormTemplate by name when no FormClass is available")
         }
-        return currentFormTemplateList.find { it.name == formName && it.lang == version } ?:
+        return currentFormClassList.find { it.formClassName == formName }?.formTemplate ?:
             error("FormTemplate cannot be found in the current list. Please check if parameter is correct")
     }
 }
