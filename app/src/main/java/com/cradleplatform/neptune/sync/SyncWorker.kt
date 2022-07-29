@@ -191,12 +191,6 @@ class SyncWorker @AssistedInject constructor(
         val patientsLeftToUpload = patientManager.getNumberOfPatientsToUpload()
         if (patientsLeftToUpload > 0) {
             patientResult.totalPatientsUploaded -= patientsLeftToUpload
-
-            // FIXME: Clean this up
-            Log.wtf(
-                TAG,
-                "DEBUG: THERE ARE $patientsLeftToUpload PATIENTS LEFT TO UPLOAD"
-            )
         }
 
         if (patientResult.networkResult is NetworkResult.Success) {

@@ -2,6 +2,8 @@ package com.cradleplatform.neptune.model
 
 import android.app.DatePickerDialog
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,6 +12,7 @@ import android.widget.Button
 import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import java.util.Calendar
@@ -69,6 +72,16 @@ class RecyclerAdapter(myForm: FormTemplate, selectedLanguage: String) :
                     itemMultipleChoice.getItemAtPosition(position).toString(),
                     Toast.LENGTH_SHORT
                 ).show()
+
+                if ((view.background as? ColorDrawable)?.color == ContextCompat.getColor(
+                        context,
+                        R.color.button_selected_gray
+                    )
+                ) {
+                    view.setBackgroundColor(Color.parseColor("#d9d9d9"))
+                } else {
+                    view.setBackgroundColor(Color.parseColor("#8d99ae"))
+                }
             }
         }
     }
@@ -91,6 +104,7 @@ class RecyclerAdapter(myForm: FormTemplate, selectedLanguage: String) :
                 holder.itemTextAnswer.visibility = View.GONE
                 holder.itemNumberAnswer.visibility = View.GONE
                 holder.itemMultipleChoice.visibility = View.GONE
+                holder.itemQuestion.textSize = 25F
             }
             "DATE" -> {
                 holder.itemDatePicker.visibility = View.VISIBLE
