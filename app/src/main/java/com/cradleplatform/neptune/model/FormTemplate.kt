@@ -15,6 +15,7 @@ data class FormTemplate(
     @SerializedName("version") val version: String,
     @SerializedName("archived") val archived: Boolean,
     @SerializedName("dateCreated") val dateCreated: Int,
+    @SerializedName("category") val category: String,
     @SerializedName("id") val id: String,
     @SerializedName("formClassificationId") val formClassId: String,
     @SerializedName("questions") val questions: List<Questions>,
@@ -47,13 +48,15 @@ data class FormTemplate(
 }
 
 data class Questions(
+
     @SerializedName("id") val id: String,
     @SerializedName("visibleCondition") val visibleCondition: List<VisibleCondition>,
     @SerializedName("isBlank") val isBlank: Boolean,
     @SerializedName("formTemplateId") val formTemplateId: String,
     @SerializedName("mcOptions") val mcOptions: List<McOptions>,
     @SerializedName("questionIndex") val questionIndex: Int,
-    @SerializedName("numMin") val numMin: Double?,
+    @SerializedName("numMin") val numMin: Double,
+    @SerializedName("numMax") val numMax: Double,
     @SerializedName("questionId") val questionId: String,
     //val questionText: String,
     @SerializedName("questionType") val questionType: String,

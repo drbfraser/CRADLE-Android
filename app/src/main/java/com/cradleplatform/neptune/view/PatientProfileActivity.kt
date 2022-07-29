@@ -147,7 +147,8 @@ open class PatientProfileActivity : AppCompatActivity() {
             button.backgroundTintList = ContextCompat.getColorStateList(this, R.color.redDown)
             button.text = getString(R.string.new_reading_is_required_now)
         } else {
-            button.backgroundTintList = ContextCompat.getColorStateList(this, R.color.colorPrimaryLight)
+            button.backgroundTintList =
+                ContextCompat.getColorStateList(this, R.color.colorPrimaryLight)
             button.text = getString(R.string.create_new_reading)
         }
     }
@@ -265,7 +266,8 @@ open class PatientProfileActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val intent = EditPregnancyActivity.makeIntentWithPatientId(this, patient.id, patient.isPregnant)
+            val intent =
+                EditPregnancyActivity.makeIntentWithPatientId(this, patient.id, patient.isPregnant)
             startActivity(intent)
         }
     }
@@ -368,19 +370,22 @@ open class PatientProfileActivity : AppCompatActivity() {
     private fun getThisPatientsReadings(): List<Reading> {
         // TODO: as per MOB-270, we should not have database retrieval operations within runBlocking.
         //  (refer to issue #37)
-        val readings: List<Reading> = runBlocking { readingManager.getReadingsByPatientId(currPatient.id) }
+        val readings: List<Reading> =
+            runBlocking { readingManager.getReadingsByPatientId(currPatient.id) }
         val comparator: Comparator<Reading> = Reading.DescendingDateComparator
         return readings.sortedWith(comparator)
     }
 
     private fun getThisPatientsReferrals(): List<Referral>? {
-        val referrals: List<Referral>? = runBlocking { referralManager.getReferralByPatientId(currPatient.id) }
+        val referrals: List<Referral>? =
+            runBlocking { referralManager.getReferralByPatientId(currPatient.id) }
         val comparator: Comparator<Referral> = Referral.DescendingDateComparator
         return referrals?.sortedWith(comparator)
     }
 
     private fun getThisPatientAssessments(): List<Assessment>? {
-        val assessments: List<Assessment>? = runBlocking { assessmentManager.getAssessmentByPatientId(currPatient.id) }
+        val assessments: List<Assessment>? =
+            runBlocking { assessmentManager.getAssessmentByPatientId(currPatient.id) }
         val comparator: Comparator<Assessment> = Assessment.DescendingDateComparator
         return assessments?.sortedWith(comparator)
     }
@@ -417,6 +422,14 @@ open class PatientProfileActivity : AppCompatActivity() {
             findViewById<Button>(R.id.newPatientReferralButton)
 
         createButton.visibility = View.VISIBLE
+
+        createButton.setOnClickListener { _: View? ->
+            val intent = PatientReferralActivity.makeIntentForPatient(
+                this@PatientProfileActivity,
+                currPatient
+            )
+            startActivity(intent)
+        }
     }
 
     private fun setupCreateAndFillFormButton() {
@@ -424,7 +437,11 @@ open class PatientProfileActivity : AppCompatActivity() {
 
         createFormButton.visibility = View.VISIBLE
         createFormButton.setOnClickListener {
-            val intent = FormSelectionActivity.makeIntentForPatientId(this@PatientProfileActivity, currPatient.id)
+            val intent = FormSelectionActivity.makeIntentForPatientId(
+                this@PatientProfileActivity,
+                currPatient.id,
+                currPatient
+            )
             startActivity(intent)
         }
     }
@@ -536,5 +553,11 @@ open class PatientProfileActivity : AppCompatActivity() {
         // setupEmptyState()
         setupReadingsRecyclerView()
         setupLineChart()
+    }
+
+    override fun onBackPressed() {
+
+        var intent = PatientsActivity.makeIntent(this@PatientProfileActivity)
+        startActivity(intent)
     }
 }

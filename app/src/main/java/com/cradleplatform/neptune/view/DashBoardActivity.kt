@@ -7,19 +7,18 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.ImageButton
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.utilities.CustomToast
+import com.cradleplatform.neptune.utilities.Util
 import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
 import com.cradleplatform.neptune.viewmodel.SyncRemainderHelper
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-
-import android.widget.TextView
-import com.cradleplatform.neptune.utilities.Util
 
 @AndroidEntryPoint
 class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
@@ -161,5 +160,8 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         const val READING_ACTIVITY_DONE = 12345
         const val OPACITY_HALF = 0.5f
         const val OPACITY_FULL = 1.0f
+    }
+
+    override fun onBackPressed() {
     }
 }

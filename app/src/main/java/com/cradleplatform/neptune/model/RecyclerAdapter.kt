@@ -117,12 +117,14 @@ class RecyclerAdapter(myForm: FormTemplate, selectedLanguage: String) :
                 holder.itemNumberAnswer.visibility = View.GONE
                 holder.itemDatePicker.visibility = View.GONE
                 holder.itemMultipleChoice.visibility = View.GONE
+                setHint(holder.itemTextAnswer, form.questions[position], holder.context)
             }
             "INTEGER" -> {
                 holder.itemNumberAnswer.visibility = View.VISIBLE
                 holder.itemTextAnswer.visibility = View.GONE
                 holder.itemDatePicker.visibility = View.GONE
                 holder.itemMultipleChoice.visibility = View.GONE
+                setHint(holder.itemNumberAnswer, form.questions[position], holder.context)
             }
             "MULTIPLE_CHOICE" -> {
                 holder.itemNumberAnswer.visibility = View.GONE
@@ -168,5 +170,27 @@ class RecyclerAdapter(myForm: FormTemplate, selectedLanguage: String) :
         )
         dpd.datePicker.maxDate = System.currentTimeMillis()
         dpd.show()
+    }
+
+    private fun setHint(hint: TextView, theQuestion: Questions, context: Context) {
+        val type = theQuestion.questionType
+        var numMin: Double? = theQuestion.numMin
+        var numMax: Double? = theQuestion.numMax
+        val isRequired = theQuestion.required
+
+        if (type == "STRING") {
+            if (isRequired) {
+                hint.hint = context.getString(R.string.is_required)
+            } else {
+                hint.hint = context.getString(R.string.is_optional)
+            }
+        } else if (type == "INTEGER") {
+            if (isRequired) {
+                hint.hint = context.getString(R.string.is_required) + ": " +
+                    context.getString(R.string.data_range) + "($numMin, $numMax)"
+            } else {
+                hint.hint = context.getString(R.string.is_optional)
+            }
+        }
     }
 }

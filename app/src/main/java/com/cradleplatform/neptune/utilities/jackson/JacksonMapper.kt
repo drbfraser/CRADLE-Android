@@ -6,6 +6,7 @@ import com.cradleplatform.neptune.model.GlobalPatient
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.PatientAndReadings
+import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.fasterxml.jackson.databind.ObjectReader
@@ -28,6 +29,10 @@ internal object JacksonMapper {
 
     val readerForPatientAndReadings: ObjectReader by lazy {
         mapper.readerFor(PatientAndReadings::class.java)
+    }
+
+    val readerForPatientAndReferrals: ObjectReader by lazy {
+        mapper.readerFor(PatientAndReferrals::class.java)
     }
 
     val readerForHealthFacility: ObjectReader by lazy {
