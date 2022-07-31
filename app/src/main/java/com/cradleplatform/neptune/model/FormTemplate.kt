@@ -35,7 +35,7 @@ data class Questions(
     @SerializedName("questionId") val questionId: String,
     @SerializedName("questionText") val questionText: String,
     @SerializedName("questionType") val questionType: String,
-    @SerializedName("answers") val answers: Answers,
+    @SerializedName("answers") var answers: Answers,
     @SerializedName("hasCommentAttached") val hasCommentAttached: Boolean,
     @SerializedName("required") val required: Boolean
 ) : Serializable
@@ -50,10 +50,10 @@ data class VisibleCondition(
 
     @SerializedName("qidx") val qidx: Int,
     @SerializedName("relation") val relation: String,
-    @SerializedName("answers") val answers: Answers
+    @SerializedName("answers") var answers: Answers
 ) : Serializable
 
 data class Answers(
 
-    @SerializedName("answers") val answers: String?,
+    @SerializedName("answers") var answers: String?,
 ) : Serializable
