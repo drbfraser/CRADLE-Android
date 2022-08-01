@@ -1,10 +1,15 @@
 package com.cradleplatform.neptune.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.cradleplatform.neptune.model.Answers
+import com.cradleplatform.neptune.model.DtoData
 import com.cradleplatform.neptune.model.FormTemplate
+import com.cradleplatform.neptune.net.MyHttpClient
+import com.google.gson.Gson
+import com.loopj.android.http.AsyncHttpResponseHandler
+import com.loopj.android.http.RequestParams
+import cz.msebera.android.httpclient.Header
 
 class FormRenderingViewModel : ViewModel() {
 
@@ -18,18 +23,15 @@ class FormRenderingViewModel : ViewModel() {
 
     fun addAnswer(answer: Pair<Int, String>) {
         if (form.contains(answer)) {
-            Log.i("MVVM", "exist already!")
             return
         }
         for (i in form) {
             if (i.first == answer.first) {
                 form[form.indexOf(i)] = answer
-                Log.i("MVVM", "question $i has been rewrite")
                 return
             }
         }
         form.add(answer)
-        Log.i("MVVM", "Before sorted: $form")
         form.sortBy { it.first }
     }
 
@@ -42,6 +44,29 @@ class FormRenderingViewModel : ViewModel() {
     }
 
     fun submitForm() {
-        Log.i("MVVM", "Form needs to be submitted: $myFormResult")
+        postForm()
+    }
+
+    private fun postForm() {
+        var pForm = DtoData.resultForm
+        var param = RequestParams()
+        var parajson = Gson().toJson(pForm)
+        param.add("resultForm", parajson)
+        MyHttpClient.post(
+            //TODO: Change the url with web endpoint
+            "http://baidu.com", param,
+            object : AsyncHttpResponseHandler() {
+                override fun onSuccess(p0: Int, p1: Array<out Header>?, p2: ByteArray?) {
+                }
+
+                override fun onFailure(
+                    p0: Int,
+                    p1: Array<out Header>?,
+                    p2: ByteArray?,
+                    p3: Throwable?
+                ) {
+                }
+            }
+        )
     }
 }

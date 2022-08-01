@@ -1,5 +1,6 @@
 package com.cradleplatform.neptune.model
 
+import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Context
 import android.graphics.Color
@@ -7,19 +8,25 @@ import android.graphics.drawable.ColorDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.model.RecyclerAdapter.Utility.hideKeyboard
+import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
 import java.util.Calendar
 
-class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapter.ViewHolder>() {
+class RecyclerAdapter(myForm: FormTemplate, myViewModel: FormRenderingViewModel) :
+    RecyclerView.Adapter<RecyclerAdapter.ViewHolder>() {
     private var form: FormTemplate = myForm
     private var selectedDate: String? = null
+    private var viewModel = myViewModel
 
     object Utility {
         fun setListViewHeightBasedOnChildren(listView: ListView) {
@@ -41,6 +48,25 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
             params.height = totalHeight + listView.dividerHeight * (listAdapter.count - 1)
             listView.layoutParams = params
         }
+
+        fun Fragment.hideKeyboard() {
+            view?.let { activity?.hideKeyboard(it) }
+        }
+
+        fun Activity.hideKeyboard() {
+            hideKeyboard(currentFocus ?: View(this))
+        }
+
+        fun Context.hideKeyboard(view: View) {
+            val inputMethodManager =
+                getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+        }
+
+        fun View.hideKeyboard() {
+            val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(windowToken, 0)
+        }
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -59,28 +85,6 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
             itemMultipleChoice.choiceMode = ListView.CHOICE_MODE_MULTIPLE
             itemMultipleChoice.setItemChecked(position, true)
             itemNumberAnswer = itemView.findViewById(R.id.et_num_answer)
-
-            itemDatePicker.setOnClickListener {
-                clickDataPicker(context, itemDatePicker)
-            }
-
-            itemMultipleChoice.setOnItemClickListener { parent, view, position, id ->
-                Toast.makeText(
-                    context,
-                    itemMultipleChoice.getItemAtPosition(position).toString(),
-                    Toast.LENGTH_SHORT
-                ).show()
-
-                if ((view.background as? ColorDrawable)?.color == ContextCompat.getColor(
-                        context,
-                        R.color.button_selected_gray
-                    )
-                ) {
-                    view.setBackgroundColor(Color.parseColor("#d9d9d9"))
-                } else {
-                    view.setBackgroundColor(Color.parseColor("#8d99ae"))
-                }
-            }
         }
     }
 
@@ -90,8 +94,68 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
     }
 
     override fun onBindViewHolder(holder: RecyclerAdapter.ViewHolder, position: Int) {
+        // Hide keyboard if lost focus
+        holder.itemNumberAnswer.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+
+                holder.context.hideKeyboard(holder.itemNumberAnswer)
+            }
+        }
+
+        //Store user input of type int
+        holder.itemNumberAnswer.setOnClickListener {
+            var questionIndex = form.questions[position].questionIndex
+            var textAnswer = holder.itemNumberAnswer.text.toString()
+            var answer = Pair(questionIndex, textAnswer)
+            viewModel.addAnswer(answer)
+            viewModel.currentAnswer.value = textAnswer
+            DtoData.form.add(answer)
+        }
+
+        //Store user input of type string
+        holder.itemTextAnswer.setOnClickListener {
+            var questionIndex = form.questions[position].questionIndex
+            var textAnswer = holder.itemTextAnswer.text.toString()
+            var answer = Pair(questionIndex, textAnswer)
+            viewModel.addAnswer(answer)
+            viewModel.currentAnswer.value = textAnswer
+            DtoData.form.add(answer)
+        }
+
+        //Store user input of type Date
+        holder.itemDatePicker.setOnClickListener {
+            clickDataPicker(holder.context, holder.itemDatePicker, position, holder)
+        }
+
+        //Store user input of type multiple choice
+        holder.itemMultipleChoice.setOnItemClickListener { parent, view, myPosition, id ->
+            Toast.makeText(
+                holder.context,
+                holder.itemMultipleChoice.getItemAtPosition(myPosition).toString(),
+                Toast.LENGTH_SHORT
+            ).show()
+
+            if ((view.background as? ColorDrawable)?.color == ContextCompat.getColor(
+                    holder.context,
+                    R.color.button_selected_gray
+                )
+            ) {
+                view.setBackgroundColor(Color.parseColor("#d9d9d9"))
+            } else {
+                view.setBackgroundColor(Color.parseColor("#8d99ae"))
+            }
+
+            var questionIndex = form.questions[position].questionIndex
+            var textAnswer = holder.itemMultipleChoice.getItemAtPosition(myPosition).toString()
+            var answer = Pair(questionIndex, textAnswer)
+            viewModel.addAnswer(answer)
+            viewModel.currentAnswer.value = textAnswer
+            DtoData.form.add(answer)
+        }
+
         holder.itemQuestion.text = form.questions[position].questionText
 
+        //Rendering the question card
         when (form.questions[position].questionType) {
             "CATEGORY" -> {
                 holder.itemDatePicker.visibility = View.GONE
@@ -146,7 +210,12 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
         return form.questions.size
     }
 
-    private fun clickDataPicker(context: Context, itemDatePicker: Button) {
+    private fun clickDataPicker(
+        context: Context,
+        itemDatePicker: Button,
+        position: Int,
+        holder: RecyclerAdapter.ViewHolder
+    ) {
         val calender = Calendar.getInstance()
         val year = calender.get(Calendar.YEAR)
         val month = calender.get(Calendar.MONTH)
@@ -157,6 +226,8 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
                 val date = "$selectedYear/${selectedMonth + 1}/$selectedDayOfMonth"
                 selectedDate = date
                 itemDatePicker.text = selectedDate
+
+                okClick(position, holder)
             },
             year,
             month,
@@ -164,6 +235,15 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
         )
         dpd.datePicker.maxDate = System.currentTimeMillis()
         dpd.show()
+    }
+
+    private fun okClick(position: Int, holder: RecyclerAdapter.ViewHolder) {
+        var questionIndex = form.questions[position].questionIndex
+        var textAnswer = holder.itemDatePicker.text.toString()
+        var answer = Pair(questionIndex, textAnswer)
+        viewModel.addAnswer(answer)
+        viewModel.currentAnswer.value = textAnswer
+        DtoData.form.add(answer)
     }
 
     private fun setHint(hint: TextView, theQuestion: Questions, context: Context) {
