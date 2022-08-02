@@ -15,6 +15,9 @@
     <!-- Notification Channel -->
     <string name="notification_id">iCradle</string>
 
+    <!-- AES encryption key -->
+    <string name="aes_secret_key">LmSqh79undnObe47p56Q06XIR7JoRZu4GYTlu+6bUt4=</string>
+
     <!-- Recheck Duration -->
     <integer name="recheck_duration">15</integer>
 
