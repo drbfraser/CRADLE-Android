@@ -1,6 +1,5 @@
 package com.cradleplatform.neptune.model
 
-import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Context
 import android.graphics.Color
@@ -8,22 +7,20 @@ import android.graphics.drawable.ColorDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
-import com.cradleplatform.neptune.model.RecyclerAdapter.Utility.hideKeyboard
+import com.cradleplatform.neptune.ext.hideKeyboard
 import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
 import java.util.Calendar
 
-class RecyclerAdapter(myForm: FormTemplate, myViewModel: FormRenderingViewModel) :
-    RecyclerView.Adapter<RecyclerAdapter.ViewHolder>() {
+class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewModel) :
+    RecyclerView.Adapter<RenderingController.ViewHolder>() {
     private var form: FormTemplate = myForm
     private var selectedDate: String? = null
     private var viewModel = myViewModel
@@ -48,25 +45,6 @@ class RecyclerAdapter(myForm: FormTemplate, myViewModel: FormRenderingViewModel)
             params.height = totalHeight + listView.dividerHeight * (listAdapter.count - 1)
             listView.layoutParams = params
         }
-
-        fun Fragment.hideKeyboard() {
-            view?.let { activity?.hideKeyboard(it) }
-        }
-
-        fun Activity.hideKeyboard() {
-            hideKeyboard(currentFocus ?: View(this))
-        }
-
-        fun Context.hideKeyboard(view: View) {
-            val inputMethodManager =
-                getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-            inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
-        }
-
-        fun View.hideKeyboard() {
-            val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(windowToken, 0)
-        }
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -88,12 +66,15 @@ class RecyclerAdapter(myForm: FormTemplate, myViewModel: FormRenderingViewModel)
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerAdapter.ViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int
+    ): RenderingController.ViewHolder {
         val v = LayoutInflater.from(parent.context).inflate(R.layout.card_layout, parent, false)
         return ViewHolder(v)
     }
 
-    override fun onBindViewHolder(holder: RecyclerAdapter.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: RenderingController.ViewHolder, position: Int) {
         // Hide keyboard if lost focus
         holder.itemNumberAnswer.setOnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) {
@@ -214,7 +195,7 @@ class RecyclerAdapter(myForm: FormTemplate, myViewModel: FormRenderingViewModel)
         context: Context,
         itemDatePicker: Button,
         position: Int,
-        holder: RecyclerAdapter.ViewHolder
+        holder: RenderingController.ViewHolder
     ) {
         val calender = Calendar.getInstance()
         val year = calender.get(Calendar.YEAR)
@@ -237,7 +218,7 @@ class RecyclerAdapter(myForm: FormTemplate, myViewModel: FormRenderingViewModel)
         dpd.show()
     }
 
-    private fun okClick(position: Int, holder: RecyclerAdapter.ViewHolder) {
+    private fun okClick(position: Int, holder: RenderingController.ViewHolder) {
         var questionIndex = form.questions[position].questionIndex
         var textAnswer = holder.itemDatePicker.text.toString()
         var answer = Pair(questionIndex, textAnswer)

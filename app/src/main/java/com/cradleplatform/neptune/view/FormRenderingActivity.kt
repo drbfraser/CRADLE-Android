@@ -7,23 +7,33 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.manager.FormManager
 import com.cradleplatform.neptune.model.DtoData
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Questions
-import com.cradleplatform.neptune.model.RecyclerAdapter
+import com.cradleplatform.neptune.model.RenderingController
 import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+@Suppress("LargeClass")
+@AndroidEntryPoint
 class FormRenderingActivity : AppCompatActivity() {
 
     private var layoutManager: RecyclerView.LayoutManager? = null
-    private var adapter: RecyclerView.Adapter<RecyclerAdapter.ViewHolder>? = null
+    private var adapter: RecyclerView.Adapter<RenderingController.ViewHolder>? = null
     private var form: FormTemplate? = null
     private var btnNext: Button? = null
     lateinit var viewModel: FormRenderingViewModel
+
+    @Inject
+    lateinit var mFormManager: FormManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,7 +74,10 @@ class FormRenderingActivity : AppCompatActivity() {
 
             DtoData.template?.let { viewModel.generateForm(it) }
             DtoData.resultForm = viewModel.myFormResult
-            viewModel.submitForm()
+
+            lifecycleScope.launch {
+                viewModel.submitForm(mFormManager)
+            }
             startActivity(intent)
             finish()
             return
@@ -92,7 +105,7 @@ class FormRenderingActivity : AppCompatActivity() {
 
         val firstCategory: FormTemplate = getFirstCategory(form!!)
 
-        adapter = RecyclerAdapter(firstCategory, viewModel)
+        adapter = RenderingController(firstCategory, viewModel)
         recyclerView.adapter = adapter
     }
 
