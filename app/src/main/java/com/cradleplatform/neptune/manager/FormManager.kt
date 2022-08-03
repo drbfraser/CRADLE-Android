@@ -1,7 +1,6 @@
 package com.cradleplatform.neptune.manager
 
 import com.cradleplatform.neptune.model.FormTemplate
-import com.cradleplatform.neptune.net.NetworkResult
 import com.cradleplatform.neptune.net.RestApi
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -16,9 +15,7 @@ class FormManager @Inject constructor(
     suspend fun putFormTemplate(form: FormTemplate?) {
         form?.run {
             val result = mRestApi.putFormTemplate(form)
-            if (result is NetworkResult.Success) { //200-299
-            } else {
-            }
+            //Use (result is NetworkResult.Success) to check if success
         }
     }
 }
