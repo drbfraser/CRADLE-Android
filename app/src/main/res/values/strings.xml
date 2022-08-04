@@ -13,6 +13,8 @@
         <p>App requires some permissions:</p>
         <h3>Camera</h3>
         <p>App uses the camera to take a photo of the CRADLE VSA\'s screen after it measures vitals.</p>
+        <h3>SMS</h3>
+        <p>App may automatically send SMS messages to a relay point after creating a reading, referral, or form response.</p>
         ]]>
     </string>
 
