@@ -302,7 +302,8 @@ class LoginActivity : AppCompatActivity() {
         private const val EXTRA_DISPLAY_MESSAGE_BODY = "display_message_body"
 
         // Tags for creating the SyncWorker job
-        private const val WORK_TAG = "Sync-DownloadPatientsReadingsAssessmentsReferralsFacilities"
+        private const val WORK_TAG =
+            "Sync-DownloadPatientsReadingsAssessmentsReferralsFacilitiesForms"
         private const val WORK_NAME = "SyncWorkerUniqueSync"
         private const val LAST_SYNC_JOB_UUID = "lastSyncJobUuid"
 
