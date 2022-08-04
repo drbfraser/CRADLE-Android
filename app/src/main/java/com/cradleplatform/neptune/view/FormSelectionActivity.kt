@@ -81,7 +81,7 @@ class FormSelectionActivity : AppCompatActivity() {
                     Toast.LENGTH_SHORT
                 ).show()
             } else {
-                val formTemplate = viewModel.getFormTemplateFromName(formTemplateName)//, formLanguage)
+                val formTemplate = viewModel.getFormTemplateFromName(formTemplateName)
 
                 val intent = FormRenderingActivity.makeIntentWithFormTemplate(
                     this@FormSelectionActivity,
