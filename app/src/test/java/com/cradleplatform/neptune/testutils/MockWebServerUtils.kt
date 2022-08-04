@@ -15,6 +15,57 @@ import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
 
 object MockWebServerUtils {
+
+    /**
+     * Generic function to create a pair of [RestApi] and [MockWebServer] with given
+     * [sharedPreferences] (mocked) if given, otherwise it will default to empty mocked one.
+     *
+     * The resulting Mock server with be a blank one(no logical endpoints),
+     * This blank server should be used along with [enqueueResponseToBlankServer] to hardcode
+     * predetermined response for testing restApi calls.
+     */
+    fun createRestApiWithBlankServer(
+        sharedPreferences: SharedPreferences? = null,
+    ): Pair<RestApi, MockWebServer> {
+        val mockServer = MockWebServer()
+
+        val mockSharedPrefs = sharedPreferences ?: mockk {
+            every { getString(any(), any()) } returns null
+        }
+
+        val mockSettings = mockk<Settings> {
+            every { networkHostname } returns mockServer.url("").host
+            every { networkPort } returns mockServer.port.toString()
+            every { networkUseHttps } returns false
+        }
+
+        val fakeUrlManager = UrlManager(mockSettings)
+
+        val restApi = RestApi(
+            sharedPreferences = mockSharedPrefs,
+            urlManager = fakeUrlManager,
+            http = Http()
+        )
+
+        return restApi to mockServer
+    }
+
+    /**
+     * Function to enqueue a response to a blank [MockWebServer]
+     *
+     * @param mockServer a blank [MockWebServer] made with [createRestApiWithBlankServer]
+     * @param responseCode the HTTP response code for the response to be queued
+     * @param body the body of the response to be queued
+     */
+    fun enqueueResponseToBlankServer(mockServer:MockWebServer, responseCode: Int ,body:String): Unit{
+        val determinedResponse :MockResponse = MockResponse()
+            .setBody(body)
+            .setResponseCode(responseCode)
+
+        mockServer.enqueue(determinedResponse)
+    }
+
+
     /**
      * Generic function to create a pair of [RestApi] and [MockWebServer] with given
      * [sharedPreferences] (mocked) if given, otherwise it will default to empty mocked one.
