@@ -2,10 +2,8 @@ package com.cradleplatform.neptune.view
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
+import android.content.SharedPreferences
 import android.os.Bundle
-import android.provider.Telephony
-import android.util.Base64
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -20,21 +18,33 @@ import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.SmsReferral
+import com.cradleplatform.neptune.utilities.AESEncrypter.Companion.getSecretKeyFromSetting
+import com.cradleplatform.neptune.utilities.RelayAction
+import com.cradleplatform.neptune.utilities.SMSMessageFormatter.Companion.encodeMsg
+import com.cradleplatform.neptune.utilities.SMSMessageFormatter.Companion.formatSMS
+import com.cradleplatform.neptune.utilities.SMSMessageFormatter.Companion.listToString
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
+import com.cradleplatform.neptune.utilities.sms.SMSReceiver
+import com.cradleplatform.neptune.utilities.sms.SMSSender
 import com.cradleplatform.neptune.viewmodel.PatientReferralViewModel
 import com.cradleplatform.neptune.viewmodel.ReferralFlowSaveResult
 import com.cradleplatform.neptune.viewmodel.ReferralOption
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import java.util.UUID
 import javax.inject.Inject
+import android.content.IntentFilter
+import androidx.core.content.edit
 
 @AndroidEntryPoint
 open class PatientReferralActivity : AppCompatActivity() {
+    @Inject
+    lateinit var sharedPreferences: SharedPreferences
 
     @Inject
     lateinit var patientManager: PatientManager
+
+    private lateinit var smsSender: SMSSender
 
     private lateinit var currPatient: Patient
 
@@ -43,6 +53,8 @@ open class PatientReferralActivity : AppCompatActivity() {
     private var binding: ActivityReferralBinding? = null
 
     private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent()
+
+    private lateinit var smsReceiver: SMSReceiver
 
     companion object {
         private const val EXTRA_PATIENT = "patient"
@@ -53,14 +65,6 @@ open class PatientReferralActivity : AppCompatActivity() {
             intent.putExtra(EXTRA_PATIENT, patient)
             return intent
         }
-
-        fun makeIntentForPatientIDReferral(
-            context: Context?,
-            patientId: String
-        ): Intent =
-            Intent(context, PatientReferralActivity::class.java).apply {
-                putExtra(EXTRA_PATIENT_ID, patientId)
-            }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,16 +76,26 @@ open class PatientReferralActivity : AppCompatActivity() {
             executePendingBindings()
         }
 
+        smsSender = SMSSender(sharedPreferences, this)
+
         populateCurrentPatient()
 
         setupToolBar()
         setupSendWebBtn()
         setupSendSMSBtn()
+        setupSMSReceiver()
     }
 
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return super.onSupportNavigateUp()
+    }
+
+    override fun onDestroy() {
+        if (smsReceiver != null) {
+            unregisterReceiver(smsReceiver)
+        }
+        super.onDestroy()
     }
 
     private fun populateCurrentPatient() {
@@ -160,7 +174,7 @@ open class PatientReferralActivity : AppCompatActivity() {
                                 getString(R.string.patient_referral_activity_save_success_smsneeded),
                                 Toast.LENGTH_LONG
                             ).show()
-                            launchSmsIntentAndFinish(smsSendResult.patientInfoForReferral)
+                            sendSms(smsSendResult.patientInfoForReferral)
                         }
                         is ReferralFlowSaveResult.ErrorConstructing -> {
                             Toast.makeText(
@@ -189,45 +203,39 @@ open class PatientReferralActivity : AppCompatActivity() {
         }
     }
 
-    private fun encodeBase64(json: String): String {
-        return Base64.encodeToString(json.toByteArray(), Base64.DEFAULT)
+    private fun setupSMSReceiver() {
+        val intentFilter = IntentFilter()
+        intentFilter.addAction("android.provider.Telephony.SMS_RECEIVED")
+        intentFilter.priority = Int.MAX_VALUE
+
+        smsReceiver = SMSReceiver(smsSender, getString(R.string.relay_phone_number))
+        registerReceiver(smsReceiver, intentFilter)
     }
 
-    private fun launchSmsIntentAndFinish(
+    private fun sendSms(
         patientAndReferrals: PatientAndReferrals
     ) {
-        this.run {
-            val smsIntent = makeSmsIntent(patientAndReferrals)
-            startActivity(smsIntent)
-            finish()
-        }
-    }
-
-    private fun makeSmsIntent(
-        patientAndReferrals: PatientAndReferrals
-    ): Intent {
-        val selectedHealthFacility = viewModel.getActiveHealthFacility()
-        val genReferralId = UUID.randomUUID().toString()
-        var referralMsg: String = "**referral message start: $genReferralId**\n"
         val json = JacksonMapper.createWriter<SmsReferral>().writeValueAsString(
             SmsReferral(
-                referralId = genReferralId,
                 patient = patientAndReferrals
             )
         )
-        val phoneNumber = selectedHealthFacility.phoneNumber
-        val uri = Uri.parse("smsto:$phoneNumber")
 
-        val encodedMsg = encodeBase64(json)
-        referralMsg += "$encodedMsg**end of referral message**"
+        val encodedMsg = encodeMsg(
+            json,
+            RelayAction.REFERRAL,
+            getSecretKeyFromSetting(getString(R.string.aes_secret_key))
+        )
+        val msgInPackets = listToString(formatSMS(encodedMsg))
 
-        return Intent(Intent.ACTION_SENDTO, uri).apply {
-            putExtra("address", phoneNumber)
-            putExtra("sms_body", referralMsg)
-
-            Telephony.Sms.getDefaultSmsPackage(applicationContext)?.let {
-                setPackage(it)
-            }
+        sharedPreferences.edit(commit = true) {
+            putString(getString(R.string.sms_relay_list_key), msgInPackets)
         }
+        smsSender.sendSmsMessage(false)
+
+        Toast.makeText(
+            this, getString(R.string.sms_sender_send),
+            Toast.LENGTH_LONG
+        ).show()
     }
 }
