@@ -12,7 +12,12 @@ enum class RelayAction {
 
 class SMSMessageFormatter {
     companion object {
-        // send 5 packets at once through MultipartTextMessage
+        /**
+         * Send 2 packets at once through MultipartTextMessage.
+         * Currently set to 2 as <= 320 chars is recommended by Twilio, a leading 3rd party SMS provider
+         * Since the message is greater than 160 chars, only 153 can be used for contents.
+         * First 7 are reserved for header.
+         */
         private const val PACKET_SIZE = 153 * 2
         private const val MAX_PACKET_NUMBER = 99
 
@@ -38,6 +43,7 @@ class SMSMessageFormatter {
             while (smsMsg.isNotEmpty()) {
                 var remainingLength = if (smsMsg.length < PACKET_SIZE) smsMsg.length else PACKET_SIZE
 
+                // no special operations here as MultipartTextMessage automatically orders sms
                 packets.add(smsMsg.substring(0, remainingLength))
                 smsMsg = smsMsg.drop(remainingLength)
             }

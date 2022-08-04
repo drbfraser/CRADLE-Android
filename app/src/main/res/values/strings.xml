@@ -128,7 +128,8 @@
     <string name="discard_dialog_new_patient_and_reading">Discard this new patient and reading?</string>
     <string name="discard_dialog_title">Discard?</string>
 
-    <!-- SMS Text Message Referral -->
+    <!-- SMS Text Message Relay -->
+    <string name="sms_relay_list_key">SMS Relay Content Treemap</string>
 
     <!-- SMS Text Message Referral - SMS content-->
     <!-- NOTE: May not want to translate, as sent to doctors -->

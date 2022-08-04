@@ -1,8 +1,6 @@
 package com.cradleplatform.neptune.utilities
 
-import android.content.res.Resources
 import android.util.Base64
-import com.cradleplatform.neptune.R
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
@@ -12,8 +10,7 @@ class AESEncrypter {
     companion object {
         private const val TRANSFORMATION = "AES/ECB/PKCS5PADDING"
 
-        fun getSecretKeyFromSetting(): SecretKey {
-            val settingKey = Resources.getSystem().getString(R.string.aes_secret_key)
+        fun getSecretKeyFromSetting(settingKey: String): SecretKey {
             val encodedKey = Base64.decode(settingKey, Base64.DEFAULT)
             return SecretKeySpec(encodedKey, 0, encodedKey.size, "AES")
         }

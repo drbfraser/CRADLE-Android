@@ -51,12 +51,12 @@ class SmsTests {
         val encodedMsg = Base64.encodeToString(formattedMsg, 0)
 
         val packets = SMSMessageFormatter.formatSMS(encodedMsg)
-        val maxPacketSize = 160
+        val maxPacketSize = 153 * 2
         val maxPacketCount = 100
 
         Assertions.assertTrue(packets.size < maxPacketCount)
         for (packet: String in packets) {
-            Assertions.assertTrue(packet.length < maxPacketSize)
+            Assertions.assertTrue(packet.length <= maxPacketSize)
         }
     }
 
