@@ -303,7 +303,7 @@ class LoginActivity : AppCompatActivity() {
 
         // Tags for creating the SyncWorker job
         private const val WORK_TAG =
-            "Sync-DownloadPatientsReadingsAssessmentsReferralsFacilitiesForms"
+            "SyncLogin-DownloadPatientsReadingsAssessmentsReferralsFacilitiesForms"
         private const val WORK_NAME = "SyncWorkerUniqueSync"
         private const val LAST_SYNC_JOB_UUID = "lastSyncJobUuid"
 
