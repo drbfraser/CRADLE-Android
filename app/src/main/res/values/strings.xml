@@ -659,6 +659,8 @@
     <string name="is_required">Required</string>
     <string name="is_optional">Optional</string>
     <string name="data_range">Input range:</string>
+    <string name="sync_activity_status_downloading_health_facilities">Downloading Health Facilities</string>
+    <string name="sync_activitiy_status_downloading_form_templates">Downloading Form Templates</string>
 
 
     <plurals name="unuploaded_reading_signout_message">
