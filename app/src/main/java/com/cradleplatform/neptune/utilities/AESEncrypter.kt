@@ -10,7 +10,7 @@ import javax.crypto.spec.SecretKeySpec
 
 class AESEncrypter {
     companion object {
-        const val transformation = "AES/ECB/PKCS5PADDING"
+        private const val TRANSFORMATION = "AES/ECB/PKCS5PADDING"
 
         fun getSecretKeyFromSetting(): SecretKey {
             val settingKey = Resources.getSystem().getString(R.string.aes_secret_key)
@@ -25,7 +25,7 @@ class AESEncrypter {
         }
 
         fun encrypt(msgInByteArray: ByteArray, key: SecretKey): ByteArray {
-            val cipher = Cipher.getInstance(transformation)
+            val cipher = Cipher.getInstance(TRANSFORMATION)
             cipher.init(Cipher.ENCRYPT_MODE, key)
 
             return cipher.doFinal(msgInByteArray)
@@ -38,7 +38,7 @@ class AESEncrypter {
         }
 
         fun decrypt(msgInByteArray: ByteArray, key: SecretKey): ByteArray {
-            val cipher = Cipher.getInstance(transformation)
+            val cipher = Cipher.getInstance(TRANSFORMATION)
             cipher.init(Cipher.DECRYPT_MODE, key)
 
             return cipher.doFinal(msgInByteArray)
