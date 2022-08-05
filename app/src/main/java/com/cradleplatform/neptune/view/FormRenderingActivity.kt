@@ -46,6 +46,9 @@ class FormRenderingActivity : AppCompatActivity() {
         var i = getNumOfCategory(form!!)
         Toast.makeText(this, "$i pages remaining", Toast.LENGTH_SHORT).show()
 
+        val languageSelected = intent.getStringExtra(EXTRA_LANGUAGE_SELECTED)
+            ?: error("language selection missing from FormRenderingActivity Intent")
+
         layoutManager = LinearLayoutManager(this)
 
         var recyclerView = findViewById<RecyclerView>(R.id.myRecyclerView)
@@ -58,25 +61,33 @@ class FormRenderingActivity : AppCompatActivity() {
 
         btnNext?.setOnClickListener {
             val newForm: FormTemplate = getRestCategory(form!!)
-            val intent = makeIntentWithFormTemplate(this, newForm, id!!, patient)
+            val intent = makeIntentWithFormTemplate(
+                this,
+                newForm,
+                languageSelected,
+                id!!,
+                patient
+            )
             startActivity(intent)
         }
 
         val firstCategory: FormTemplate = getFirstCategory(form!!)
 
-        adapter = RecyclerAdapter(firstCategory)
+        adapter = RecyclerAdapter(firstCategory, languageSelected)
         recyclerView.adapter = adapter
     }
 
     companion object {
         private const val EXTRA_FORM_TEMPLATE = "JSON string for form template"
         private const val EXTRA_PATIENT_ID = "Patient id that the form is created for"
+        private const val EXTRA_LANGUAGE_SELECTED = "String of language selected for a FormTemplate"
         private const val EXTRA_PATIENT_OBJECT = "The Patient object used to start patient profile"
 
         @JvmStatic
         fun makeIntentWithFormTemplate(
             context: Context,
             formTemplate: FormTemplate,
+            formLanguage: String,
             patientId: String,
             patient: Patient
         ): Intent {
@@ -86,6 +97,7 @@ class FormRenderingActivity : AppCompatActivity() {
 
             return Intent(context, FormRenderingActivity::class.java).apply {
                 this.putExtra(EXTRA_PATIENT_ID, patientId)
+                this.putExtra(EXTRA_LANGUAGE_SELECTED, formLanguage)
                 this.putExtras(bundle)
             }
         }
@@ -115,12 +127,7 @@ class FormRenderingActivity : AppCompatActivity() {
             }
         }
 
-        var newForm: FormTemplate = FormTemplate(
-            form.version, form.name, form.dateCreated,
-            form.category, form.id, form.lastEdited, form.lang, firstQuestionList.toList()
-        )
-
-        return newForm
+        return form.copy(questions = firstQuestionList.toList())
     }
 
     fun getRestCategory(form: FormTemplate): FormTemplate {
@@ -136,11 +143,6 @@ class FormRenderingActivity : AppCompatActivity() {
             }
         }
 
-        var newForm: FormTemplate = FormTemplate(
-            form.version, form.name, form.dateCreated,
-            form.category, form.id, form.lastEdited, form.lang, restQuestionList.toList()
-        )
-
-        return newForm
+        return form.copy(questions = restQuestionList.toList())
     }
 }

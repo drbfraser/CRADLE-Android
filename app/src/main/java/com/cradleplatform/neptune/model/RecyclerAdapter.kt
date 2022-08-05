@@ -17,8 +17,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import java.util.Calendar
 
-class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapter.ViewHolder>() {
+class RecyclerAdapter(myForm: FormTemplate, selectedLanguage: String) :
+    RecyclerView.Adapter<RecyclerAdapter.ViewHolder>() {
     private var form: FormTemplate = myForm
+    private val formLanguage: String = selectedLanguage
     private var selectedDate: String? = null
 
     object Utility {
@@ -90,7 +92,11 @@ class RecyclerAdapter(myForm: FormTemplate) : RecyclerView.Adapter<RecyclerAdapt
     }
 
     override fun onBindViewHolder(holder: RecyclerAdapter.ViewHolder, position: Int) {
-        holder.itemQuestion.text = form.questions[position].questionText
+
+        holder.itemQuestion.text = form.questions[position]
+            .languageVersions.find { it.language == formLanguage }
+            ?.questionText
+            ?: "Question Language Error: Does not support selected language($formLanguage)"
 
         when (form.questions[position].questionType) {
             "CATEGORY" -> {

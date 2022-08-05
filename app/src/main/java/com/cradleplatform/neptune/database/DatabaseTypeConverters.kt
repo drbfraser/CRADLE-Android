@@ -3,12 +3,14 @@ package com.cradleplatform.neptune.database
 import androidx.room.TypeConverter
 import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.BloodPressure
+import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.GestationalAge
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.Sex
 import com.cradleplatform.neptune.model.UrineTest
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.google.gson.Gson
 
 /**
  * A list of [TypeConverter] to save objects into room database
@@ -61,4 +63,12 @@ class DatabaseTypeConverters {
 
     @TypeConverter
     fun fromFollowUp(assessment: Assessment?): String? = writeStringByJackson(assessment)
+
+    @TypeConverter
+    fun fromFormTemplate(formTemplate: FormTemplate?): String? =
+        formTemplate?.let { Gson().toJson(formTemplate) }
+
+    @TypeConverter
+    fun toFormTemplate(string: String?): FormTemplate? =
+        string?.let { Gson().fromJson(string, FormTemplate::class.java) }
 }

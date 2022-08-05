@@ -14,7 +14,9 @@ import com.cradleplatform.neptune.databinding.ActivityFormSelectionBinding
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.viewmodel.FormSelectionViewModel
 import com.google.android.material.textfield.TextInputLayout
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class FormSelectionActivity : AppCompatActivity() {
 
     private var binding: ActivityFormSelectionBinding? = null
@@ -79,12 +81,12 @@ class FormSelectionActivity : AppCompatActivity() {
                     Toast.LENGTH_SHORT
                 ).show()
             } else {
-                val formTemplate =
-                    viewModel.getFormTemplateFromNameAndVersion(formTemplateName, formLanguage)
+                val formTemplate = viewModel.getFormTemplateFromName(formTemplateName)
 
                 val intent = FormRenderingActivity.makeIntentWithFormTemplate(
                     this@FormSelectionActivity,
                     formTemplate,
+                    formLanguage,
                     intent.getStringExtra(EXTRA_PATIENT_ID)!!,
                     intent.getSerializableExtra(FORM_SELECTION_EXTRA_PATIENT) as Patient
                 )

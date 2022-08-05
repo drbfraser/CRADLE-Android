@@ -9,6 +9,8 @@ import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.manager.LoginResponse
 import com.cradleplatform.neptune.manager.UrlManager
 import com.cradleplatform.neptune.model.Assessment
+import com.cradleplatform.neptune.model.FormClassification
+import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.GestationalAgeMonths
 import com.cradleplatform.neptune.model.GlobalPatient
 import com.cradleplatform.neptune.model.HealthFacility
@@ -27,6 +29,7 @@ import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper.createWriter
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.google.gson.GsonBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.channels.SendChannel
@@ -1070,6 +1073,73 @@ class RestApi constructor(
             }
         }
         HealthFacilitySyncResult(networkResult, totalHealthFacilitiesDownloaded)
+    }
+
+    /**
+     * Get all [FormTemplate]s from the server.
+     * The parsed results will be sent in the resulting [formChannel].
+     *
+     * [formChannel] will be failed (see [SendChannel.close]) if [Failure] or
+     * [NetworkException] is returned, so using any of the Channels can result in a [SyncException]
+     * that should be caught by anything handling the Channels.
+     *
+     * @return A [FormSyncResult] containing [Success] if the parsing succeeds,
+     * otherwise a [Failure] or [NetworkException] if parsing or the connection fail,
+     * with a number [FormSyncResult.totalFormsDownloaded] indicating
+     * how many form templates are downloaded in total
+     */
+    suspend fun getAllFormTemplates(
+        formChannel: SendChannel<FormClassification>
+    ): FormSyncResult = withContext(IO) {
+
+        var failedParse = false
+        var totalClassifications = 0
+
+        val result = http.makeRequest(
+            method = Http.Method.GET,
+            url = urlManager.getAllFormsAsSummary,
+            headers = headers,
+            inputStreamReader = { inputStream ->
+
+                try {
+                    // Create Gson instance with custom deserializer
+                    val customGson = GsonBuilder()
+                        .registerTypeAdapter(
+                            FormClassification::class.java,
+                            FormClassification.DeserializerFromFormTemplateStream()
+                        ).create()
+
+                    val reader = customGson.newJsonReader(inputStream.bufferedReader())
+                    reader.beginArray()
+                    while (reader.hasNext()) {
+                        val form = customGson.fromJson<FormClassification>(
+                            reader,
+                            FormClassification::class.java
+                        )
+                        formChannel.send(form)
+                        totalClassifications++
+                    }
+                    reader.endArray()
+                    reader.close()
+                } catch (e: Exception) {
+                    Log.e(TAG, e.toString())
+                    failedParse = true
+                }
+                Unit
+            }
+        ).also {
+            if (it is NetworkResult.Success) {
+                if (failedParse) {
+                    formChannel.close(SyncException("failed to parse all FormTemplates"))
+                } else {
+                    formChannel.close()
+                }
+            } else {
+                formChannel.close(SyncException("failed to download all FormTemplates"))
+            }
+        }
+
+        FormSyncResult(result, totalClassifications)
     }
 
     /**

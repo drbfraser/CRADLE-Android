@@ -443,7 +443,7 @@ style:
     active: false
   ReturnCount:
     active: true
-    max: 5
+    max: 8
     excludedFunctions: "equals"
   SafeCast:
     active: true
