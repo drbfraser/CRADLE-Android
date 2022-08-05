@@ -489,7 +489,7 @@
     <string name="patient_referral_activity_save_error_unknown">An unknown error has occurred.</string>
     <string name="sms_sender_send">Sending SMS message in packets. Please do not exit the view until all messages have been sent.</string>
     <string name="sms_packet_sent">Sending packet message.</string>
-    <string name="sms_all_sent">All packets sent. Exiting the view.</string>
+    <string name="sms_all_sent">All packets sent.</string>
     <string name="patient_profile_age_label">Age</string>
     <string name="patient_profile_age_about_n_years_old">About %1$d years old</string>
     <string name="patient_profile_age_n_years_old">%1$d years old</string>
