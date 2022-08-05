@@ -18,11 +18,11 @@ import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.SmsReferral
-import com.cradleplatform.neptune.utilities.AESEncrypter.Companion.getSecretKeyFromSetting
+import com.cradleplatform.neptune.utilities.AESEncrypter.Companion.getSecretKeyFromString
 import com.cradleplatform.neptune.utilities.RelayAction
-import com.cradleplatform.neptune.utilities.SMSMessageFormatter.Companion.encodeMsg
-import com.cradleplatform.neptune.utilities.SMSMessageFormatter.Companion.formatSMS
-import com.cradleplatform.neptune.utilities.SMSMessageFormatter.Companion.listToString
+import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.encodeMsg
+import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.formatSMS
+import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.listToString
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.utilities.sms.SMSReceiver
 import com.cradleplatform.neptune.utilities.sms.SMSSender
@@ -224,7 +224,7 @@ open class PatientReferralActivity : AppCompatActivity() {
         val encodedMsg = encodeMsg(
             json,
             RelayAction.REFERRAL,
-            getSecretKeyFromSetting(getString(R.string.aes_secret_key))
+            getSecretKeyFromString(getString(R.string.aes_secret_key))
         )
         val msgInPackets = listToString(formatSMS(encodedMsg))
 

@@ -10,7 +10,7 @@ enum class RelayAction {
     FORMRESPONSE
 }
 
-class SMSMessageFormatter {
+class SMSFormatter {
     companion object {
         /**
          * Send 2 packets at once through MultipartTextMessage.

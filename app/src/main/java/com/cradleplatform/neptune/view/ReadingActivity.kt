@@ -33,7 +33,7 @@ import com.cradleplatform.neptune.ext.hideKeyboard
 import com.cradleplatform.neptune.net.NetworkResult
 import com.cradleplatform.neptune.utilities.AESEncrypter
 import com.cradleplatform.neptune.utilities.RelayAction
-import com.cradleplatform.neptune.utilities.SMSMessageFormatter
+import com.cradleplatform.neptune.utilities.SMSFormatter
 import com.cradleplatform.neptune.utilities.sms.SMSReceiver
 import com.cradleplatform.neptune.utilities.sms.SMSSender
 import com.cradleplatform.neptune.view.ui.reading.PatientIdConflictDialogFragment
@@ -478,13 +478,13 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
     }
 
     override fun sendSmsMessage(data: String) {
-        val encodedMsg = SMSMessageFormatter.encodeMsg(
+        val encodedMsg = SMSFormatter.encodeMsg(
             data,
             RelayAction.READING,
-            AESEncrypter.getSecretKeyFromSetting(getString(R.string.aes_secret_key))
+            AESEncrypter.getSecretKeyFromString(getString(R.string.aes_secret_key))
         )
         val msgInPackets =
-            SMSMessageFormatter.listToString(SMSMessageFormatter.formatSMS(encodedMsg))
+            SMSFormatter.listToString(SMSFormatter.formatSMS(encodedMsg))
 
         sharedPreferences.edit(commit = true) {
             putString(getString(R.string.sms_relay_list_key), msgInPackets)

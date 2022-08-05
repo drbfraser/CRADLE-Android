@@ -7,8 +7,8 @@ import android.telephony.SmsManager
 import com.cradleplatform.neptune.R
 import android.widget.Toast
 import androidx.core.content.edit
-import com.cradleplatform.neptune.utilities.SMSMessageFormatter.Companion.listToString
-import com.cradleplatform.neptune.utilities.SMSMessageFormatter.Companion.stringToList
+import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.listToString
+import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.stringToList
 import com.cradleplatform.neptune.view.PatientReferralActivity
 import com.cradleplatform.neptune.view.ReadingActivity
 

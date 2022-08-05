@@ -10,7 +10,7 @@ class AESEncrypter {
     companion object {
         private const val TRANSFORMATION = "AES/ECB/PKCS5PADDING"
 
-        fun getSecretKeyFromSetting(settingKey: String): SecretKey {
+        fun getSecretKeyFromString(settingKey: String): SecretKey {
             val encodedKey = Base64.decode(settingKey, Base64.DEFAULT)
             return SecretKeySpec(encodedKey, 0, encodedKey.size, "AES")
         }
