@@ -70,8 +70,9 @@ class DataModule {
     @Provides
     @Singleton
     fun provideFormManager(
+        restApi:RestApi,
         formClassificationDao: FormClassificationDao
-    ) = FormManager(formClassificationDao)
+    ) = FormManager(restApi,formClassificationDao)
 
     @Provides
     @Singleton

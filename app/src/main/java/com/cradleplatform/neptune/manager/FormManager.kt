@@ -5,7 +5,6 @@ import com.cradleplatform.neptune.net.RestApi
 import androidx.lifecycle.LiveData
 import com.cradleplatform.neptune.database.daos.FormClassificationDao
 import com.cradleplatform.neptune.model.FormClassification
-import com.cradleplatform.neptune.model.FormTemplate
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,6 +21,7 @@ class FormManager @Inject constructor(
 ) {
     suspend fun putFormTemplate(form: FormTemplate?) {
         form?.run {
+            // TODO: add error checking (refer to issue #81)
             val result = mRestApi.putFormTemplate(form)
             //Use (result is NetworkResult.Success) to check if success
         }
