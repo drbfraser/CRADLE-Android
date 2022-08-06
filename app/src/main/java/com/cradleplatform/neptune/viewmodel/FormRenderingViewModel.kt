@@ -35,7 +35,7 @@ class FormRenderingViewModel : ViewModel() {
         myFormResult = template
         for (answer in form) {
             val theAnswer = Answers(answer.second)
-            myFormResult!!.questions[answer.first].answers = theAnswer
+            myFormResult!!.questions!![answer.first].answers = theAnswer
         }
     }
 

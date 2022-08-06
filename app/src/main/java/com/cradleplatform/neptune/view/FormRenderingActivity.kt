@@ -146,10 +146,10 @@ class FormRenderingActivity : AppCompatActivity() {
 
     private fun getNumOfCategory(form: FormTemplate): Int {
         var num = 0
-        if (form.questions.isEmpty()) {
+        if (form.questions!!.isEmpty()) {
             return num
         }
-        for (question in form.questions) {
+        for (question in form.questions!!) {
             if (question.questionType == "CATEGORY") {
                 num += 1
             }
@@ -158,7 +158,7 @@ class FormRenderingActivity : AppCompatActivity() {
     }
 
     private fun getFirstCategory(form: FormTemplate): FormTemplate {
-        var questionList: List<Questions> = form.questions
+        var questionList: List<Questions> = form.questions!!
         var firstQuestionList: MutableList<Questions> = mutableListOf()
         for (i in questionList.indices) {
             if (questionList[i].questionType == "CATEGORY" && i != 0) {
@@ -172,7 +172,7 @@ class FormRenderingActivity : AppCompatActivity() {
     }
 
     private fun getRestCategory(form: FormTemplate): FormTemplate {
-        var questionList: List<Questions> = form.questions
+        var questionList: List<Questions> = form.questions!!
         var restQuestionList: MutableList<Questions> = mutableListOf()
         var notFirstCATEGORY: Boolean = false
         for (i in questionList.indices) {
