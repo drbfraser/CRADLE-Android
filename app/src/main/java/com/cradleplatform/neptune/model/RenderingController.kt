@@ -15,13 +15,16 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.ext.hideKeyboard
+import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
 import java.util.Calendar
 
-class RecyclerAdapter(myForm: FormTemplate, selectedLanguage: String) :
-    RecyclerView.Adapter<RecyclerAdapter.ViewHolder>() {
+class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewModel, selectedLanguage: String) :
+    RecyclerView.Adapter<RenderingController.ViewHolder>() {
     private var form: FormTemplate = myForm
     private val formLanguage: String = selectedLanguage
     private var selectedDate: String? = null
+    private var viewModel = myViewModel
 
     object Utility {
         fun setListViewHeightBasedOnChildren(listView: ListView) {
@@ -61,44 +64,84 @@ class RecyclerAdapter(myForm: FormTemplate, selectedLanguage: String) :
             itemMultipleChoice.choiceMode = ListView.CHOICE_MODE_MULTIPLE
             itemMultipleChoice.setItemChecked(position, true)
             itemNumberAnswer = itemView.findViewById(R.id.et_num_answer)
-
-            itemDatePicker.setOnClickListener {
-                clickDataPicker(context, itemDatePicker)
-            }
-
-            itemMultipleChoice.setOnItemClickListener { parent, view, position, id ->
-                Toast.makeText(
-                    context,
-                    itemMultipleChoice.getItemAtPosition(position).toString(),
-                    Toast.LENGTH_SHORT
-                ).show()
-
-                if ((view.background as? ColorDrawable)?.color == ContextCompat.getColor(
-                        context,
-                        R.color.button_selected_gray
-                    )
-                ) {
-                    view.setBackgroundColor(Color.parseColor("#d9d9d9"))
-                } else {
-                    view.setBackgroundColor(Color.parseColor("#8d99ae"))
-                }
-            }
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerAdapter.ViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int
+    ): RenderingController.ViewHolder {
         val v = LayoutInflater.from(parent.context).inflate(R.layout.card_layout, parent, false)
         return ViewHolder(v)
     }
 
-    override fun onBindViewHolder(holder: RecyclerAdapter.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: RenderingController.ViewHolder, position: Int) {
+        // Hide keyboard if lost focus
+        holder.itemNumberAnswer.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
 
-        holder.itemQuestion.text = form.questions[position]
-            .languageVersions.find { it.language == formLanguage }
+                holder.context.hideKeyboard(holder.itemNumberAnswer)
+            }
+        }
+
+        //Store user input of type int
+        holder.itemNumberAnswer.setOnClickListener {
+            val questionIndex = form.questions!![position].questionIndex!!
+            val textAnswer = holder.itemNumberAnswer.text.toString()
+            val answer = Pair(questionIndex, textAnswer)
+            viewModel.addAnswer(answer)
+            viewModel.currentAnswer.value = textAnswer
+            DtoData.form.add(answer)
+        }
+
+        //Store user input of type string
+        holder.itemTextAnswer.setOnClickListener {
+            val questionIndex = form.questions!![position].questionIndex!!
+            val textAnswer = holder.itemTextAnswer.text.toString()
+            val answer = Pair(questionIndex, textAnswer)
+            viewModel.addAnswer(answer)
+            viewModel.currentAnswer.value = textAnswer
+            DtoData.form.add(answer)
+        }
+
+        //Store user input of type Date
+        holder.itemDatePicker.setOnClickListener {
+            clickDataPicker(holder.context, holder.itemDatePicker, position, holder)
+        }
+
+        //Store user input of type multiple choice
+        holder.itemMultipleChoice.setOnItemClickListener { parent, view, myPosition, id ->
+            Toast.makeText(
+                holder.context,
+                holder.itemMultipleChoice.getItemAtPosition(myPosition).toString(),
+                Toast.LENGTH_SHORT
+            ).show()
+
+            if ((view.background as? ColorDrawable)?.color == ContextCompat.getColor(
+                    holder.context,
+                    R.color.button_selected_gray
+                )
+            ) {
+                view.setBackgroundColor(Color.parseColor("#d9d9d9"))
+            } else {
+                view.setBackgroundColor(Color.parseColor("#8d99ae"))
+            }
+
+            val questionIndex = form.questions!![position].questionIndex!!
+            val textAnswer = holder.itemMultipleChoice.getItemAtPosition(myPosition).toString()
+            val answer = Pair(questionIndex, textAnswer)
+            viewModel.addAnswer(answer)
+            viewModel.currentAnswer.value = textAnswer
+            DtoData.form.add(answer)
+        }
+
+        holder.itemQuestion.text = form.questions!![position]
+            .languageVersions!!.find { it.language == formLanguage }
             ?.questionText
             ?: "Question Language Error: Does not support selected language($formLanguage)"
 
-        when (form.questions[position].questionType) {
+        //Rendering the question card
+        when (form.questions!![position].questionType) {
             "CATEGORY" -> {
                 holder.itemDatePicker.visibility = View.GONE
                 holder.itemTextAnswer.visibility = View.GONE
@@ -117,23 +160,24 @@ class RecyclerAdapter(myForm: FormTemplate, selectedLanguage: String) :
                 holder.itemNumberAnswer.visibility = View.GONE
                 holder.itemDatePicker.visibility = View.GONE
                 holder.itemMultipleChoice.visibility = View.GONE
-                setHint(holder.itemTextAnswer, form.questions[position], holder.context)
+                setHint(holder.itemTextAnswer, form.questions!![position], holder.context)
             }
             "INTEGER" -> {
                 holder.itemNumberAnswer.visibility = View.VISIBLE
                 holder.itemTextAnswer.visibility = View.GONE
                 holder.itemDatePicker.visibility = View.GONE
                 holder.itemMultipleChoice.visibility = View.GONE
-                setHint(holder.itemNumberAnswer, form.questions[position], holder.context)
+                setHint(holder.itemNumberAnswer, form.questions!![position], holder.context)
             }
+
             "MULTIPLE_CHOICE" -> {
                 holder.itemNumberAnswer.visibility = View.GONE
                 holder.itemDatePicker.visibility = View.GONE
                 holder.itemTextAnswer.visibility = View.GONE
 
-                var questionList: MutableList<String> = mutableListOf()
-                for (mcOption in form.questions[position].mcOptions) {
-                    questionList.add(mcOption.opt)
+                val questionList: MutableList<String> = mutableListOf()
+                for (mcOption in form.questions!![position].mcOptions!!) {
+                    questionList.add(mcOption.opt!!)
                 }
                 val adapter = ArrayAdapter<String>(
                     holder.context,
@@ -149,10 +193,15 @@ class RecyclerAdapter(myForm: FormTemplate, selectedLanguage: String) :
     }
 
     override fun getItemCount(): Int {
-        return form.questions.size
+        return form.questions!!.size
     }
 
-    private fun clickDataPicker(context: Context, itemDatePicker: Button) {
+    private fun clickDataPicker(
+        context: Context,
+        itemDatePicker: Button,
+        position: Int,
+        holder: RenderingController.ViewHolder
+    ) {
         val calender = Calendar.getInstance()
         val year = calender.get(Calendar.YEAR)
         val month = calender.get(Calendar.MONTH)
@@ -163,6 +212,8 @@ class RecyclerAdapter(myForm: FormTemplate, selectedLanguage: String) :
                 val date = "$selectedYear/${selectedMonth + 1}/$selectedDayOfMonth"
                 selectedDate = date
                 itemDatePicker.text = selectedDate
+
+                okClick(position, holder)
             },
             year,
             month,
@@ -172,11 +223,20 @@ class RecyclerAdapter(myForm: FormTemplate, selectedLanguage: String) :
         dpd.show()
     }
 
+    private fun okClick(position: Int, holder: RenderingController.ViewHolder) {
+        val questionIndex = form.questions!![position].questionIndex!!
+        val textAnswer = holder.itemDatePicker.text.toString()
+        val answer = Pair(questionIndex, textAnswer)
+        viewModel.addAnswer(answer)
+        viewModel.currentAnswer.value = textAnswer
+        DtoData.form.add(answer)
+    }
+
     private fun setHint(hint: TextView, theQuestion: Questions, context: Context) {
         val type = theQuestion.questionType
-        var numMin: Double? = theQuestion.numMin
-        var numMax: Double? = theQuestion.numMax
-        val isRequired = theQuestion.required
+        val numMin: Double? = theQuestion.numMin
+        val numMax: Double? = theQuestion.numMax
+        val isRequired = theQuestion.required!!
 
         if (type == "STRING") {
             if (isRequired) {

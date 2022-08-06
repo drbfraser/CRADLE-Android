@@ -1,6 +1,7 @@
 package com.cradleplatform.neptune.utilities.jackson
 
 import com.cradleplatform.neptune.model.Assessment
+import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.GestationalAge
 import com.cradleplatform.neptune.model.GlobalPatient
 import com.cradleplatform.neptune.model.HealthFacility
@@ -46,6 +47,10 @@ internal object JacksonMapper {
     val readerForPatient: ObjectReader by lazy { mapper.readerFor(Patient::class.java) }
 
     val writerForPatient: ObjectWriter by lazy { mapper.writerFor(Patient::class.java) }
+
+    val readerForm: ObjectReader by lazy { mapper.readerFor(FormTemplate::class.java) }
+
+    val writerForm: ObjectWriter by lazy { mapper.writerFor(FormTemplate::class.java) }
 
     val readerForGestAge: ObjectReader by lazy { mapper.readerFor(GestationalAge::class.java) }
 

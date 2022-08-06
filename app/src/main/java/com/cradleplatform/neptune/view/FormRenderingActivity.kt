@@ -6,28 +6,60 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.manager.FormManager
+import com.cradleplatform.neptune.model.DtoData
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Questions
-import com.cradleplatform.neptune.model.RecyclerAdapter
+import com.cradleplatform.neptune.model.RenderingController
+import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+@Suppress("LargeClass")
+@AndroidEntryPoint
 class FormRenderingActivity : AppCompatActivity() {
 
     private var layoutManager: RecyclerView.LayoutManager? = null
-    private var adapter: RecyclerView.Adapter<RecyclerAdapter.ViewHolder>? = null
+    private var adapter: RecyclerView.Adapter<RenderingController.ViewHolder>? = null
     private var form: FormTemplate? = null
     private var btnNext: Button? = null
+    lateinit var viewModel: FormRenderingViewModel
+
+    @Inject
+    lateinit var mFormManager: FormManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_form_rendering)
 
         form = intent.getSerializableExtra(EXTRA_FORM_TEMPLATE) as FormTemplate
-        var id = intent.getStringExtra(EXTRA_PATIENT_ID)
+        viewModel = ViewModelProvider(this).get(FormRenderingViewModel::class.java)
+
+        val id = intent.getStringExtra(EXTRA_PATIENT_ID)
         val patient = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT) as Patient
+
+        //Get memory of user answers
+        if (DtoData.form.isNotEmpty()) {
+            for (a in DtoData.form) {
+                if (!viewModel.form.contains(a)) {
+                    viewModel.addAnswer(a)
+                }
+            }
+            //Reset the memory to the latest user answers
+            DtoData.form = viewModel.form
+        }
+
+        //Store the raw form template if there is not one in memory
+        if (DtoData.template == null) {
+            DtoData.template = form
+        }
 
         //Check if question list contains category
         if (getNumOfCategory(form!!) <= 0) {
@@ -39,8 +71,16 @@ class FormRenderingActivity : AppCompatActivity() {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             intent.putExtra(EXTRA_PATIENT_ID, id)
             intent.putExtra("SUBMITTED", "true")
+
+            DtoData.template?.let { viewModel.generateForm(it) }
+            DtoData.resultForm = viewModel.myFormResult
+
+            lifecycleScope.launch {
+                viewModel.submitForm(mFormManager)
+            }
             startActivity(intent)
             finish()
+            return
         }
 
         var i = getNumOfCategory(form!!)
@@ -68,12 +108,13 @@ class FormRenderingActivity : AppCompatActivity() {
                 id!!,
                 patient
             )
+            viewModel.currentCategory = viewModel.currentCategory + 1
             startActivity(intent)
         }
 
         val firstCategory: FormTemplate = getFirstCategory(form!!)
 
-        adapter = RecyclerAdapter(firstCategory, languageSelected)
+        adapter = RenderingController(firstCategory, viewModel, languageSelected)
         recyclerView.adapter = adapter
     }
 
@@ -103,12 +144,12 @@ class FormRenderingActivity : AppCompatActivity() {
         }
     }
 
-    fun getNumOfCategory(form: FormTemplate): Int {
+    private fun getNumOfCategory(form: FormTemplate): Int {
         var num = 0
-        if (form.questions.isEmpty()) {
+        if (form.questions!!.isEmpty()) {
             return num
         }
-        for (question in form.questions) {
+        for (question in form.questions!!) {
             if (question.questionType == "CATEGORY") {
                 num += 1
             }
@@ -116,8 +157,8 @@ class FormRenderingActivity : AppCompatActivity() {
         return num
     }
 
-    fun getFirstCategory(form: FormTemplate): FormTemplate {
-        var questionList: List<Questions> = form.questions
+    private fun getFirstCategory(form: FormTemplate): FormTemplate {
+        var questionList: List<Questions> = form.questions!!
         var firstQuestionList: MutableList<Questions> = mutableListOf()
         for (i in questionList.indices) {
             if (questionList[i].questionType == "CATEGORY" && i != 0) {
@@ -130,8 +171,8 @@ class FormRenderingActivity : AppCompatActivity() {
         return form.copy(questions = firstQuestionList.toList())
     }
 
-    fun getRestCategory(form: FormTemplate): FormTemplate {
-        var questionList: List<Questions> = form.questions
+    private fun getRestCategory(form: FormTemplate): FormTemplate {
+        var questionList: List<Questions> = form.questions!!
         var restQuestionList: MutableList<Questions> = mutableListOf()
         var notFirstCATEGORY: Boolean = false
         for (i in questionList.indices) {

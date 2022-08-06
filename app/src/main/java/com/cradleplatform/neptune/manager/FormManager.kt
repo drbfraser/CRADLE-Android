@@ -1,21 +1,31 @@
 package com.cradleplatform.neptune.manager
 
+import com.cradleplatform.neptune.model.FormTemplate
+import com.cradleplatform.neptune.net.RestApi
 import androidx.lifecycle.LiveData
 import com.cradleplatform.neptune.database.daos.FormClassificationDao
 import com.cradleplatform.neptune.model.FormClassification
-import com.cradleplatform.neptune.model.FormTemplate
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Manager for FormTemplate and FormClassifications
+ * Manager for FormTemplate and FormClassifications and
+ * to submit the form with user's answers.
  *
  * Interacts with the [FormClassification] table in the database.
  */
 @Singleton
-class FormManager @Inject constructor (
+class FormManager @Inject constructor(
+    private val mRestApi: RestApi,
     private val formClassDao: FormClassificationDao
 ) {
+    suspend fun putFormTemplate(form: FormTemplate?) {
+        form?.run {
+            // TODO: add error checking (refer to issue #81)
+            val result = mRestApi.putFormTemplate(form)
+            //Use (result is NetworkResult.Success) to check if success
+        }
+    }
 
     suspend fun searchForFormTemplateWithName(formClassName: String): List<FormTemplate> =
         formClassDao.getFormTemplateByName(formClassName)

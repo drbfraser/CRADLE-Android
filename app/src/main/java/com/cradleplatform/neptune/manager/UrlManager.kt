@@ -21,6 +21,13 @@ class UrlManager @Inject constructor(val settings: Settings) {
         get() = "$base/user/auth"
 
     /**
+     * Endpoint for submitting the form.
+     */
+
+    val formTemplateAction: String
+        get() = "$base/forms/responses"
+
+    /**
      * Endpoint for retrieving health facility information.
      */
     val healthFacilities: String
@@ -172,7 +179,11 @@ class UrlManager @Inject constructor(val settings: Settings) {
     /**
      * Get statistics for a given facility ID between two dates
      */
-    fun getStatisticsForFacilityBetween(date1: BigInteger, date2: BigInteger, filterFacility: String): String =
+    fun getStatisticsForFacilityBetween(
+        date1: BigInteger,
+        date2: BigInteger,
+        filterFacility: String
+    ): String =
         "$base/stats/facility/$filterFacility?from=$date1&to=$date2"
 
     /**

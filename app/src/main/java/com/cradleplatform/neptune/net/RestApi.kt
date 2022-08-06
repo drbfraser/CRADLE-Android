@@ -464,6 +464,24 @@ class RestApi constructor(
         }
 
     /**
+     * Uploads form template with user's answers
+     **
+     * @param mFormTemplate : the form object to upload
+     * @return whether the request was successful or not
+     */
+    suspend fun putFormTemplate(mFormTemplate: FormTemplate): NetworkResult<Unit> =
+        withContext(IO) {
+            val body = JacksonMapper.writerForm.writeValueAsBytes(mFormTemplate)
+            http.makeRequest(
+                method = Http.Method.PUT,
+                url = urlManager.formTemplateAction,
+                headers = headers,
+                requestBody = buildJsonRequestBody(body),
+                inputStreamReader = {},
+            )
+        }
+
+    /**
      * Uploads a patient's demographic information with the intent of modifying
      * an existing patient already on the server. To upload a new patient
      * use [postPatient].
@@ -580,6 +598,7 @@ class RestApi constructor(
         var pregnancyOutcome: String? = null
         var pregnancyStartDate: Int? = null
     }
+
     suspend fun postPregnancy(patient: Patient): NetworkResult<PregnancyResponse> =
         withContext(IO) {
             val jsonObject = JSONObject()
@@ -729,7 +748,10 @@ class RestApi constructor(
                                     parseObjectArray<Patient>(reader) {
                                         patientChannel.send(it)
                                         totalPatientsDownloaded++
-                                        reportProgressBlock(totalPatientsDownloaded, totalPatientsDownloaded)
+                                        reportProgressBlock(
+                                            totalPatientsDownloaded,
+                                            totalPatientsDownloaded
+                                        )
                                     }
                                     patientChannel.close()
                                 }
@@ -909,7 +931,10 @@ class RestApi constructor(
                                     parseObjectArray<Referral>(reader) {
                                         referralChannel.send(it)
                                         totalReferralsDownloaded++
-                                        reportProgressBlock(totalReferralsDownloaded, totalReferralsDownloaded)
+                                        reportProgressBlock(
+                                            totalReferralsDownloaded,
+                                            totalReferralsDownloaded
+                                        )
                                     }
                                     referralChannel.close()
                                 }
@@ -939,7 +964,12 @@ class RestApi constructor(
                     referralChannel.close(SyncException("referral download wasn't done properly"))
                 }
             }
-            ReferralSyncResult(networkResult, referralsToUpload.size, totalReferralsDownloaded, errors)
+            ReferralSyncResult(
+                networkResult,
+                referralsToUpload.size,
+                totalReferralsDownloaded,
+                errors
+            )
         }
 
     /**
@@ -989,7 +1019,10 @@ class RestApi constructor(
                                     parseObjectArray<Assessment>(reader) {
                                         assessmentChannel.send(it)
                                         totalAssessmentsDownloaded++
-                                        reportProgressBlock(totalAssessmentsDownloaded, totalAssessmentsDownloaded)
+                                        reportProgressBlock(
+                                            totalAssessmentsDownloaded,
+                                            totalAssessmentsDownloaded
+                                        )
                                     }
                                     assessmentChannel.close()
                                 }
@@ -1019,7 +1052,12 @@ class RestApi constructor(
                     assessmentChannel.close(SyncException("assessment download wasn't done properly"))
                 }
             }
-            AssessmentSyncResult(networkResult, assessmentsToUpload.size, totalAssessmentsDownloaded, errors)
+            AssessmentSyncResult(
+                networkResult,
+                assessmentsToUpload.size,
+                totalAssessmentsDownloaded,
+                errors
+            )
         }
 
     /**

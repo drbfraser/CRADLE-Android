@@ -167,6 +167,7 @@ dependencies {
     implementation 'com.github.PhilJay:MPAndroidChart:3.1.0'
 
     implementation 'com.github.MikeOrtiz:TouchImageView:3.0.1'
+    implementation 'com.loopj.android:android-async-http:1.4.11'
 
     implementation "com.google.dagger:hilt-android:$hilt_version"
     kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
