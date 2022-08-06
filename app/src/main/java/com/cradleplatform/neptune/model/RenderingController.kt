@@ -21,7 +21,10 @@ import java.util.Calendar
 
 class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewModel) :
     RecyclerView.Adapter<RenderingController.ViewHolder>() {
+class RecyclerAdapter(myForm: FormTemplate, selectedLanguage: String) :
+    RecyclerView.Adapter<RecyclerAdapter.ViewHolder>() {
     private var form: FormTemplate = myForm
+    private val formLanguage: String = selectedLanguage
     private var selectedDate: String? = null
     private var viewModel = myViewModel
 
@@ -134,7 +137,12 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
             DtoData.form.add(answer)
         }
 
-        holder.itemQuestion.text = form.questions[position].questionText
+    override fun onBindViewHolder(holder: RecyclerAdapter.ViewHolder, position: Int) {
+
+        holder.itemQuestion.text = form.questions[position]
+            .languageVersions.find { it.language == formLanguage }
+            ?.questionText
+            ?: "Question Language Error: Does not support selected language($formLanguage)"
 
         //Rendering the question card
         when (form.questions[position].questionType) {

@@ -49,6 +49,12 @@ class UrlManager @Inject constructor(val settings: Settings) {
         get() = "$base/mobile/assessments"
 
     /**
+     * Endpoint for getting All FormTemplates and it's classifications as summaries
+     */
+    val getAllFormsAsSummary: String
+        get() = "$base/forms/classifications/summary"
+
+    /**
      * Endpoint for posting a new patient.
      */
     val postPatient: String

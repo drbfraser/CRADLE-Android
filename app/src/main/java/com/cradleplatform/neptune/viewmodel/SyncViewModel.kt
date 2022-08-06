@@ -132,7 +132,8 @@ class SyncViewModel @Inject constructor(
 
     companion object {
         private const val TAG = "SyncViewModel"
-        private const val WORK_TAG = "Sync-UploadDownloadPatientsAndReadings"
+        private const val WORK_TAG =
+            "Sync-DownloadPatientsReadingsAssessmentsReferralsFacilitiesForms"
         private const val WORK_NAME = "SyncWorkerUniqueSync"
         private const val LAST_SYNC_JOB_UUID = "lastSyncJobUuid"
     }
