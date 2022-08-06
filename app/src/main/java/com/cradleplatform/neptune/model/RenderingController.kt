@@ -87,9 +87,9 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
 
        //Store user input of type int
        holder.itemNumberAnswer.setOnClickListener {
-           var questionIndex = form.questions!![position].questionIndex!!
-           var textAnswer = holder.itemNumberAnswer.text.toString()
-           var answer = Pair(questionIndex, textAnswer)
+           val questionIndex = form.questions!![position].questionIndex!!
+           val textAnswer = holder.itemNumberAnswer.text.toString()
+           val answer = Pair(questionIndex, textAnswer)
            viewModel.addAnswer(answer)
            viewModel.currentAnswer.value = textAnswer
            DtoData.form.add(answer)
@@ -97,9 +97,9 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
 
        //Store user input of type string
        holder.itemTextAnswer.setOnClickListener {
-           var questionIndex = form.questions!![position].questionIndex!!
-           var textAnswer = holder.itemTextAnswer.text.toString()
-           var answer = Pair(questionIndex, textAnswer)
+           val questionIndex = form.questions!![position].questionIndex!!
+           val textAnswer = holder.itemTextAnswer.text.toString()
+           val answer = Pair(questionIndex, textAnswer)
            viewModel.addAnswer(answer)
            viewModel.currentAnswer.value = textAnswer
            DtoData.form.add(answer)
@@ -128,9 +128,9 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
                view.setBackgroundColor(Color.parseColor("#8d99ae"))
            }
 
-           var questionIndex = form.questions!![position].questionIndex!!
-           var textAnswer = holder.itemMultipleChoice.getItemAtPosition(myPosition).toString()
-           var answer = Pair(questionIndex, textAnswer)
+           val questionIndex = form.questions!![position].questionIndex!!
+           val textAnswer = holder.itemMultipleChoice.getItemAtPosition(myPosition).toString()
+           val answer = Pair(questionIndex, textAnswer)
            viewModel.addAnswer(answer)
            viewModel.currentAnswer.value = textAnswer
            DtoData.form.add(answer)
@@ -176,7 +176,7 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
                holder.itemDatePicker.visibility = View.GONE
                holder.itemTextAnswer.visibility = View.GONE
 
-               var questionList: MutableList<String> = mutableListOf()
+               val questionList: MutableList<String> = mutableListOf()
                for (mcOption in form.questions!![position].mcOptions!!) {
                    questionList.add(mcOption.opt!!)
                }
@@ -225,9 +225,9 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
    }
 
    private fun okClick(position: Int, holder: RenderingController.ViewHolder) {
-       var questionIndex = form.questions!![position].questionIndex!!
-       var textAnswer = holder.itemDatePicker.text.toString()
-       var answer = Pair(questionIndex, textAnswer)
+       val questionIndex = form.questions!![position].questionIndex!!
+       val textAnswer = holder.itemDatePicker.text.toString()
+       val answer = Pair(questionIndex, textAnswer)
        viewModel.addAnswer(answer)
        viewModel.currentAnswer.value = textAnswer
        DtoData.form.add(answer)
@@ -235,8 +235,8 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
 
    private fun setHint(hint: TextView, theQuestion: Questions, context: Context) {
        val type = theQuestion.questionType
-       var numMin: Double? = theQuestion.numMin
-       var numMax: Double? = theQuestion.numMax
+       val numMin: Double? = theQuestion.numMin
+       val numMax: Double? = theQuestion.numMax
        val isRequired = theQuestion.required!!
 
        if (type == "STRING") {

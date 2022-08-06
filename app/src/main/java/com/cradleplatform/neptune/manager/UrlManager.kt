@@ -23,9 +23,9 @@ class UrlManager @Inject constructor(val settings: Settings) {
     /**
      * Endpoint for submitting the form.
      */
-    //TODO: change the url to web end-point
+
     val formTemplateAction: String
-        get() = "https://www.baidu.com"
+        get() = "$base/forms/responses"
 
     /**
      * Endpoint for retrieving health facility information.
