@@ -63,29 +63,29 @@ data class FormTemplate(
         //nullCheckResult = nullCheckResult && this@FormTemplate.version != null
         this@FormTemplate.version ?: let {
             nullCheckResult = false
-            Log.e(TAG,"[version] was null")
+            Log.e(TAG, "[version] was null")
         }
         this@FormTemplate.archived ?: let {
             nullCheckResult = false
-            Log.e(TAG,"[archived] was null")
+            Log.e(TAG, "[archived] was null")
         }
         this@FormTemplate.dateCreated ?: let {
             nullCheckResult = false
-            Log.e(TAG,"[dateCreated] was null")
+            Log.e(TAG, "[dateCreated] was null")
         }
         this@FormTemplate.id ?: let {
             nullCheckResult = false
-            Log.e(TAG,"[id] was null")
+            Log.e(TAG, "[id] was null")
         }
         this@FormTemplate.formClassId ?: let {
             nullCheckResult = false
-            Log.e(TAG,"[formClassId] was null")
+            Log.e(TAG, "[formClassId] was null")
         }
 
         this@FormTemplate.questions?.forEach { it.deepNullCheck() }
             ?: let {
                 nullCheckResult = false
-                Log.w(Questions.TAG,"[questions] was null")
+                Log.w(Questions.TAG, "[questions] was null")
             }
 
         return nullCheckResult
@@ -117,76 +117,75 @@ data class Questions(
     fun deepNullCheck(): Boolean {
         var nullCheckResult = true
 
-        this@Questions.id ?: let{
+        this@Questions.id ?: let {
             nullCheckResult = false
-            Log.w(TAG,"[id] was null")
+            Log.w(TAG, "[id] was null")
         }
-        this@Questions.isBlank ?: let{
+        this@Questions.isBlank ?: let {
             nullCheckResult = false
-            Log.w(TAG,"[isBlank] was null")
-        }
-
-        this@Questions.formTemplateId ?: let{
-            nullCheckResult = false
-            Log.w(TAG,"[formTemplateId] was null")
+            Log.w(TAG, "[isBlank] was null")
         }
 
-        this@Questions.questionIndex ?: let{
+        this@Questions.formTemplateId ?: let {
             nullCheckResult = false
-            Log.w(TAG,"[questionIndex] was null")
+            Log.w(TAG, "[formTemplateId] was null")
         }
 
-        this@Questions.numMax ?: let{
+        this@Questions.questionIndex ?: let {
             nullCheckResult = false
-            Log.w(TAG,"[numMax] was null")
+            Log.w(TAG, "[questionIndex] was null")
         }
 
-        this@Questions.numMin ?: let{
+        this@Questions.numMax ?: let {
             nullCheckResult = false
-            Log.w(TAG,"[numMin] was null")
+            Log.w(TAG, "[numMax] was null")
         }
 
-        this@Questions.questionId ?: let{
+        this@Questions.numMin ?: let {
             nullCheckResult = false
-            Log.w(TAG,"[questionId] was null")
+            Log.w(TAG, "[numMin] was null")
         }
 
-        this@Questions.questionType ?: let{
+        this@Questions.questionId ?: let {
             nullCheckResult = false
-            Log.w(TAG,"[questionType] was null")
+            Log.w(TAG, "[questionId] was null")
         }
 
-        this@Questions.answers ?: let{
+        this@Questions.questionType ?: let {
             nullCheckResult = false
-            Log.w(TAG,"[answers] was null")
+            Log.w(TAG, "[questionType] was null")
         }
 
-        this@Questions.hasCommentAttached ?: let{
+        this@Questions.answers ?: let {
             nullCheckResult = false
-            Log.w(TAG,"[hasCommentAttached] was null")
+            Log.w(TAG, "[answers] was null")
         }
 
-        this@Questions.required ?: let{
+        this@Questions.hasCommentAttached ?: let {
             nullCheckResult = false
-            Log.w(TAG,"[required] was null")
+            Log.w(TAG, "[hasCommentAttached] was null")
+        }
+
+        this@Questions.required ?: let {
+            nullCheckResult = false
+            Log.w(TAG, "[required] was null")
         }
 
         this@Questions.languageVersions?.forEach { it.deepNullCheck() }
             ?: let {
                 nullCheckResult = false
-                Log.w(TAG,"[languageVersions] was null")
+                Log.w(TAG, "[languageVersions] was null")
             }
-
 
         this@Questions.mcOptions?.forEach { it.deepNullCheck() }
             ?: let {
                 nullCheckResult = false
-                Log.w(TAG,"[mcOptions] was null")
+                Log.w(TAG, "[mcOptions] was null")
             }
-        this@Questions.visibleCondition?.forEach{ it.deepNullCheck() }
+        this@Questions.visibleCondition?.forEach { it.deepNullCheck() }
             ?: let {
                 nullCheckResult = false
-                Log.w(TAG,"[visibleCondition] was null")
+                Log.w(TAG, "[visibleCondition] was null")
             }
 
         return nullCheckResult
@@ -207,21 +206,21 @@ data class QuestionLangVersion(
     fun deepNullCheck(): Boolean {
         var nullCheckResult = true
 
-        this@QuestionLangVersion.language ?: let{
+        this@QuestionLangVersion.language ?: let {
             nullCheckResult = false
-            Log.w(TAG,"[language] was null")
+            Log.w(TAG, "[language] was null")
         }
-        this@QuestionLangVersion.parentId ?: let{
+        this@QuestionLangVersion.parentId ?: let {
             nullCheckResult = false
-            Log.w(TAG,"[parentId] was null")
+            Log.w(TAG, "[parentId] was null")
         }
-        this@QuestionLangVersion.questionText ?: let{
+        this@QuestionLangVersion.questionText ?: let {
             nullCheckResult = false
-            Log.w(TAG,"[questionText] was null")
+            Log.w(TAG, "[questionText] was null")
         }
-        this@QuestionLangVersion.language ?: let{
+        this@QuestionLangVersion.language ?: let {
             nullCheckResult = false
-            Log.w(TAG,"[language] was null")
+            Log.w(TAG, "[language] was null")
         }
 
         return nullCheckResult
@@ -240,13 +239,13 @@ data class McOptions(
     fun deepNullCheck(): Boolean {
         var nullCheckResult = true
 
-        this@McOptions.mcid ?: let{
+        this@McOptions.mcid ?: let {
             nullCheckResult = false
-            Log.w(TAG,"[mcid] was null")
+            Log.w(TAG, "[mcid] was null")
         }
-        this@McOptions.opt ?: let{
+        this@McOptions.opt ?: let {
             nullCheckResult = false
-            Log.w(TAG,"[opt] was null")
+            Log.w(TAG, "[opt] was null")
         }
 
         return nullCheckResult
@@ -267,17 +266,17 @@ data class VisibleCondition(
     fun deepNullCheck(): Boolean {
         var nullCheckResult = true
 
-        this@VisibleCondition.qidx ?: let{
+        this@VisibleCondition.qidx ?: let {
             nullCheckResult = false
-            Log.w(TAG,"[qidx] was null")
+            Log.w(TAG, "[qidx] was null")
         }
-        this@VisibleCondition.relation ?: let{
+        this@VisibleCondition.relation ?: let {
             nullCheckResult = false
-            Log.w(TAG,"[relation] was null")
+            Log.w(TAG, "[relation] was null")
         }
-        this@VisibleCondition.answers ?: let{
+        this@VisibleCondition.answers ?: let {
             nullCheckResult = false
-            Log.w(TAG,"[answers] was null")
+            Log.w(TAG, "[answers] was null")
         }
 
         return nullCheckResult
@@ -296,9 +295,9 @@ data class Answers(
     fun deepNullCheck(): Boolean {
         var nullCheckResult = true
 
-        this@Answers.answers ?: let{
+        this@Answers.answers ?: let {
             nullCheckResult = false
-            Log.w(TAG,"[answers] was null")
+            Log.w(TAG, "[answers] was null")
         }
 
         return nullCheckResult
@@ -308,4 +307,3 @@ data class Answers(
         const val TAG = "FormAnswer"
     }
 }
-
