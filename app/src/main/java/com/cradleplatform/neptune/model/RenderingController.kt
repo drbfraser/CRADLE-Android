@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.ext.hideKeyboard
+import com.cradleplatform.neptune.model.QuestionTypeEnum.*
 import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
 import java.util.Calendar
 
@@ -91,7 +92,6 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
             val answer = Pair(questionIndex, textAnswer)
             viewModel.addAnswer(answer)
             viewModel.currentAnswer.value = textAnswer
-            DtoData.form.add(answer)
         }
 
         //Store user input of type string
@@ -101,7 +101,6 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
             val answer = Pair(questionIndex, textAnswer)
             viewModel.addAnswer(answer)
             viewModel.currentAnswer.value = textAnswer
-            DtoData.form.add(answer)
         }
 
         //Store user input of type Date
@@ -132,7 +131,6 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
             val answer = Pair(questionIndex, textAnswer)
             viewModel.addAnswer(answer)
             viewModel.currentAnswer.value = textAnswer
-            DtoData.form.add(answer)
         }
 
         holder.itemQuestion.text = form.questions!![position]
@@ -142,27 +140,27 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
 
         //Rendering the question card
         when (form.questions!![position].questionType) {
-            "CATEGORY" -> {
+            CATEGORY -> {
                 holder.itemDatePicker.visibility = View.GONE
                 holder.itemTextAnswer.visibility = View.GONE
                 holder.itemNumberAnswer.visibility = View.GONE
                 holder.itemMultipleChoice.visibility = View.GONE
                 holder.itemQuestion.textSize = 25F
             }
-            "DATE" -> {
+            DATE -> {
                 holder.itemDatePicker.visibility = View.VISIBLE
                 holder.itemTextAnswer.visibility = View.GONE
                 holder.itemNumberAnswer.visibility = View.GONE
                 holder.itemMultipleChoice.visibility = View.GONE
             }
-            "STRING" -> {
+            STRING -> {
                 holder.itemTextAnswer.visibility = View.VISIBLE
                 holder.itemNumberAnswer.visibility = View.GONE
                 holder.itemDatePicker.visibility = View.GONE
                 holder.itemMultipleChoice.visibility = View.GONE
                 setHint(holder.itemTextAnswer, form.questions!![position], holder.context)
             }
-            "INTEGER" -> {
+            INTEGER -> {
                 holder.itemNumberAnswer.visibility = View.VISIBLE
                 holder.itemTextAnswer.visibility = View.GONE
                 holder.itemDatePicker.visibility = View.GONE
@@ -170,7 +168,7 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
                 setHint(holder.itemNumberAnswer, form.questions!![position], holder.context)
             }
 
-            "MULTIPLE_CHOICE" -> {
+            MULTIPLE_CHOICE -> {
                 holder.itemNumberAnswer.visibility = View.GONE
                 holder.itemDatePicker.visibility = View.GONE
                 holder.itemTextAnswer.visibility = View.GONE
@@ -229,22 +227,21 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
         val answer = Pair(questionIndex, textAnswer)
         viewModel.addAnswer(answer)
         viewModel.currentAnswer.value = textAnswer
-        DtoData.form.add(answer)
     }
 
-    private fun setHint(hint: TextView, theQuestion: Questions, context: Context) {
+    private fun setHint(hint: TextView, theQuestion: Question, context: Context) {
         val type = theQuestion.questionType
         val numMin: Double? = theQuestion.numMin
         val numMax: Double? = theQuestion.numMax
         val isRequired = theQuestion.required!!
 
-        if (type == "STRING") {
+        if (type == STRING) {
             if (isRequired) {
                 hint.hint = context.getString(R.string.is_required)
             } else {
                 hint.hint = context.getString(R.string.is_optional)
             }
-        } else if (type == "INTEGER") {
+        } else if (type == INTEGER) {
             if (isRequired) {
                 hint.hint = context.getString(R.string.is_required) + ": " +
                     context.getString(R.string.data_range) + "($numMin, $numMax)"

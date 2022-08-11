@@ -1,6 +1,7 @@
 package com.cradleplatform.neptune.model
 
 import android.util.Log
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
@@ -24,7 +25,7 @@ data class FormTemplate(
     @SerializedName("dateCreated") val dateCreated: Int?,
     @SerializedName("id") val id: String?,
     @SerializedName("formClassificationId") val formClassId: String?,
-    @SerializedName("questions") val questions: List<Questions>?,
+    @SerializedName("questions") val questions: List<Question>?,
 
 ) : Serializable {
 
@@ -85,7 +86,7 @@ data class FormTemplate(
         this@FormTemplate.questions?.forEach { it.deepNullCheck() }
             ?: let {
                 nullCheckResult = false
-                Log.w(Questions.TAG, "[questions] was null")
+                Log.w(Question.TAG, "[questions] was null")
             }
 
         return nullCheckResult
@@ -96,19 +97,31 @@ data class FormTemplate(
     }
 }
 
-data class Questions(
+enum class QuestionTypeEnum {
+    INTEGER,
+    DECIMAL,
+    STRING,
+    MULTIPLE_CHOICE,
+    MULTIPLE_SELECT,
+    DATE,
+    TIME,
+    DATETIME,
+    CATEGORY,
+}
+
+data class Question(
 
     @SerializedName("id") val id: String?,
     @SerializedName("visibleCondition") val visibleCondition: List<VisibleCondition>?,
     @SerializedName("isBlank") val isBlank: Boolean?,
     @SerializedName("formTemplateId") val formTemplateId: String?,
-    @SerializedName("mcOptions") val mcOptions: List<McOptions>?,
+    @SerializedName("mcOptions") val mcOptions: List<McOption>?,
     @SerializedName("questionIndex") val questionIndex: Int?,
     @SerializedName("numMin") val numMin: Double?,
     @SerializedName("numMax") val numMax: Double?,
     @SerializedName("questionId") val questionId: String?,
-    @SerializedName("questionType") val questionType: String?,
-    @SerializedName("answers") var answers: Answers?,
+    @SerializedName("questionType") val questionType: QuestionTypeEnum?,
+    //@SerializedName("answers") var answers: Answers?,
     @SerializedName("hasCommentAttached") val hasCommentAttached: Boolean?,
     @SerializedName("required") val required: Boolean?,
     @SerializedName("questionLangVersions") val languageVersions: List<QuestionLangVersion>?
@@ -117,72 +130,72 @@ data class Questions(
     fun deepNullCheck(): Boolean {
         var nullCheckResult = true
 
-        this@Questions.id ?: let {
+        this@Question.id ?: let {
             nullCheckResult = false
             Log.w(TAG, "[id] was null")
         }
-        this@Questions.isBlank ?: let {
+        this@Question.isBlank ?: let {
             nullCheckResult = false
             Log.w(TAG, "[isBlank] was null")
         }
 
-        this@Questions.formTemplateId ?: let {
+        this@Question.formTemplateId ?: let {
             nullCheckResult = false
             Log.w(TAG, "[formTemplateId] was null")
         }
 
-        this@Questions.questionIndex ?: let {
+        this@Question.questionIndex ?: let {
             nullCheckResult = false
             Log.w(TAG, "[questionIndex] was null")
         }
 
-        this@Questions.numMax ?: let {
+        this@Question.numMax ?: let {
             nullCheckResult = false
             Log.w(TAG, "[numMax] was null")
         }
 
-        this@Questions.numMin ?: let {
+        this@Question.numMin ?: let {
             nullCheckResult = false
             Log.w(TAG, "[numMin] was null")
         }
 
-        this@Questions.questionId ?: let {
+        this@Question.questionId ?: let {
             nullCheckResult = false
             Log.w(TAG, "[questionId] was null")
         }
 
-        this@Questions.questionType ?: let {
+        this@Question.questionType ?: let {
             nullCheckResult = false
             Log.w(TAG, "[questionType] was null")
         }
-
+/*
         this@Questions.answers ?: let {
             nullCheckResult = false
             Log.w(TAG, "[answers] was null")
         }
-
-        this@Questions.hasCommentAttached ?: let {
+*/
+        this@Question.hasCommentAttached ?: let {
             nullCheckResult = false
             Log.w(TAG, "[hasCommentAttached] was null")
         }
 
-        this@Questions.required ?: let {
+        this@Question.required ?: let {
             nullCheckResult = false
             Log.w(TAG, "[required] was null")
         }
 
-        this@Questions.languageVersions?.forEach { it.deepNullCheck() }
+        this@Question.languageVersions?.forEach { it.deepNullCheck() }
             ?: let {
                 nullCheckResult = false
                 Log.w(TAG, "[languageVersions] was null")
             }
 
-        this@Questions.mcOptions?.forEach { it.deepNullCheck() }
+        this@Question.mcOptions?.forEach { it.deepNullCheck() }
             ?: let {
                 nullCheckResult = false
                 Log.w(TAG, "[mcOptions] was null")
             }
-        this@Questions.visibleCondition?.forEach { it.deepNullCheck() }
+        this@Question.visibleCondition?.forEach { it.deepNullCheck() }
             ?: let {
                 nullCheckResult = false
                 Log.w(TAG, "[visibleCondition] was null")
@@ -230,7 +243,7 @@ data class QuestionLangVersion(
     }
 }
 
-data class McOptions(
+data class McOption(
 
     @SerializedName("mcid") val mcid: Int?,
     @SerializedName("opt") val opt: String?
@@ -239,11 +252,11 @@ data class McOptions(
     fun deepNullCheck(): Boolean {
         var nullCheckResult = true
 
-        this@McOptions.mcid ?: let {
+        this@McOption.mcid ?: let {
             nullCheckResult = false
             Log.w(TAG, "[mcid] was null")
         }
-        this@McOptions.opt ?: let {
+        this@McOption.opt ?: let {
             nullCheckResult = false
             Log.w(TAG, "[opt] was null")
         }
@@ -260,7 +273,7 @@ data class VisibleCondition(
 
     @SerializedName("qidx") val qidx: Int?,
     @SerializedName("relation") val relation: String?,
-    @SerializedName("answers") var answers: Answers?
+    @SerializedName("answers") var answerCondition: Answer?
 ) : Serializable {
 
     fun deepNullCheck(): Boolean {
@@ -274,7 +287,8 @@ data class VisibleCondition(
             nullCheckResult = false
             Log.w(TAG, "[relation] was null")
         }
-        this@VisibleCondition.answers ?: let {
+
+        this@VisibleCondition.answerCondition ?: let {
             nullCheckResult = false
             Log.w(TAG, "[answers] was null")
         }
@@ -287,23 +301,66 @@ data class VisibleCondition(
     }
 }
 
-data class Answers(
-
-    @SerializedName("answers") var answers: String?,
+/**
+ *
+ *  Answer could be any one of the following
+ *  {
+ *      "number":    123.4,
+ *      "text":      "Hello world 123! :)",
+ *      "mcidArray": [0, 1],
+ *      "comment":   "example comment"
+ *  }
+ */
+data class Answer private constructor(
+    //@Expose(serialize = false, deserialize = false)
+    //val questionType: QuestionTypeEnum?,
+    @SerializedName("number") val numericAnswer: String?,
+    @SerializedName("text") val textAnswer: String?,
+    @SerializedName("mcidArray") val mcidArrayAnswer: List<Integer>?,
+    @SerializedName("comment") val comment: String?,
 ) : Serializable {
 
-    fun deepNullCheck(): Boolean {
-        var nullCheckResult = true
+    fun isValidAnswer() : Boolean {
+        var nullCount = 0
+        numericAnswer?: nullCount++
+        textAnswer?: nullCount++
+        mcidArrayAnswer?: nullCount++
 
-        this@Answers.answers ?: let {
-            nullCheckResult = false
-            Log.w(TAG, "[answers] was null")
-        }
-
-        return nullCheckResult
+        return nullCount == 1
     }
 
+    fun isNumericAnswer() : Boolean = numericAnswer != null && isValidAnswer()
+    fun isTextAnswer() : Boolean = textAnswer != null && isValidAnswer()
+    fun isMcAnswer() : Boolean = mcidArrayAnswer != null && isValidAnswer()
+
     companion object {
-        const val TAG = "FormAnswer"
+        private val TAG = "FormAnswer"
+
+        fun createNumericAnswer(numericString: String, comment: String?) : Answer {
+            return Answer(
+                numericAnswer = numericString,
+                null,
+                null,
+                comment
+            )
+        }
+
+        fun createTextAnswer(textString: String, comment: String?) : Answer {
+            return Answer(
+                null,
+                textAnswer = textString,
+                null,
+                comment
+            )
+        }
+
+        fun createMcAnswer(mcidArray: List<Integer>, comment: String?) : Answer {
+            return Answer(
+                null,
+                null,
+                mcidArrayAnswer = mcidArray,
+                comment
+            )
+        }
     }
 }
