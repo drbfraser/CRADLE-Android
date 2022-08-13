@@ -24,7 +24,7 @@ class UrlManager @Inject constructor(val settings: Settings) {
      * Endpoint for submitting the form.
      */
 
-    val formTemplateAction: String
+    val uploadFormResponse: String
         get() = "$base/forms/responses"
 
     /**

@@ -17,9 +17,12 @@ import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.model.QuestionTypeEnum
 import com.cradleplatform.neptune.model.RenderingController
+import com.cradleplatform.neptune.net.NetworkResult
 import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @Suppress("LargeClass")
@@ -65,9 +68,35 @@ class FormRenderingActivity : AppCompatActivity() {
             intent.putExtra(EXTRA_PATIENT_ID, patientId)
             intent.putExtra("SUBMITTED", "true")
 
-            lifecycleScope.launch {
-                viewModel.submitForm(patientId = patientId, selectedLanguage = languageSelected)
+            lifecycleScope.launch(Dispatchers.IO) {
+                val result = viewModel.submitForm(
+                    patientId = patientId,
+                    selectedLanguage = languageSelected
+                )
+                if (result is NetworkResult.Success) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            applicationContext,
+                            "Form Response Submitted",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            applicationContext,
+                            "Form Response Submission failed with error:\n ${
+                            result.getStatusMessage(
+                                applicationContext
+                            )
+                            }",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+                Unit
             }
+
             startActivity(intent)
             finish()
             return

@@ -7,6 +7,7 @@ import androidx.lifecycle.LiveData
 import com.cradleplatform.neptune.database.daos.FormClassificationDao
 import com.cradleplatform.neptune.model.FormClassification
 import com.cradleplatform.neptune.model.FormResponse
+import com.cradleplatform.neptune.net.NetworkResult
 import com.google.gson.GsonBuilder
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -22,17 +23,15 @@ class FormManager @Inject constructor(
     private val mRestApi: RestApi,
     private val formClassDao: FormClassificationDao
 ) {
-    fun submitFormToWebAsResponse(formResponse: FormResponse) {
-        // TODO: add error checking (refer to issue #81)
+    suspend fun submitFormToWebAsResponse(formResponse: FormResponse): NetworkResult<Unit> {
 
         val formStr = GsonBuilder().setPrettyPrinting().create().toJson(formResponse)
         val formChunks = formStr.chunked(2048)
         formChunks.forEach {
-            Log.e("DEBUG_TAG", it)
+            Log.d("SendingForm", it)
         }
 
-        //val result = mRestApi.putFormTemplate(form)
-        //Use (result is NetworkResult.Success) to check if success
+        return mRestApi.putFormResponse(formResponse)
     }
 
     suspend fun searchForFormTemplateWithName(formClassName: String): List<FormTemplate> =

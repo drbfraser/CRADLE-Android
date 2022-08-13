@@ -10,6 +10,7 @@ import com.cradleplatform.neptune.manager.LoginResponse
 import com.cradleplatform.neptune.manager.UrlManager
 import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.FormClassification
+import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.GestationalAgeMonths
 import com.cradleplatform.neptune.model.GlobalPatient
@@ -29,6 +30,7 @@ import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper.createWriter
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
@@ -469,12 +471,12 @@ class RestApi constructor(
      * @param mFormTemplate : the form object to upload
      * @return whether the request was successful or not
      */
-    suspend fun putFormTemplate(mFormTemplate: FormTemplate): NetworkResult<Unit> =
+    suspend fun putFormResponse(mFormResponse: FormResponse): NetworkResult<Unit> =
         withContext(IO) {
-            val body = JacksonMapper.writerForm.writeValueAsBytes(mFormTemplate)
+            val body = Gson().toJson(mFormResponse).toByteArray()
             http.makeRequest(
                 method = Http.Method.PUT,
-                url = urlManager.formTemplateAction,
+                url = urlManager.uploadFormResponse,
                 headers = headers,
                 requestBody = buildJsonRequestBody(body),
                 inputStreamReader = {},

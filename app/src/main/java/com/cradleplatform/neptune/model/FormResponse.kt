@@ -40,20 +40,10 @@ class FormResponse(
             answers
         )
 
-        Log.e(TAG, "SIZE: ${formTemplate.questions.size} ${questionResponses.size}")
-
         if (questionResponses.size != formTemplate.questions.size) {
             // FIXME: re-evaluate error handling
-            //throw IllegalArgumentException()
             Log.e(TAG, "FormTemplate.questions size mismatch response size in FormResponse")
         }
-/*
-        val formStr = GsonBuilder().setPrettyPrinting().create().toJson(answers)
-        val formChunks = formStr.chunked(2048)
-        formChunks.forEach{
-            Log.e(TAG,it)
-        }
-   */
     }
 
     private fun createQuestionResponses(
@@ -62,8 +52,6 @@ class FormResponse(
         answers: Map<String, Answer>
     ): List<QuestionResponse> {
         val responseList: MutableList<QuestionResponse> = mutableListOf()
-
-        Log.e(TAG, "answers sizes: ${answers.count()}")
 
         questions.forEach { question ->
 
@@ -76,12 +64,9 @@ class FormResponse(
 
             val response = answers[question.questionId]
             val languageQuestionText = question.languageVersions?.find { it.language == language }?.questionText
-            if (languageQuestionText == null) {
-                throw IllegalArgumentException(
+                ?: throw IllegalArgumentException(
                     "Failed to create FormResponse: Language does not exist in FormTemplate"
                 )
-                return@forEach
-            }
 
             if (response != null) {
 
@@ -98,7 +83,6 @@ class FormResponse(
                     languageSpecificText = languageQuestionText
                 )
                 responseList.add(questionResponse)
-                Log.e(TAG, "ADDING RESPONSE")
             } else if (question.required == true) {
                 Log.e(TAG, "Failed to create FormResponse: Required question does not have an answer")
             /*
