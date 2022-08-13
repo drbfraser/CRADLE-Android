@@ -4,6 +4,7 @@ import android.app.DatePickerDialog
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +14,8 @@ import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.util.forEach
+import androidx.core.view.forEach
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.ext.hideKeyboard
@@ -77,6 +80,9 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
     }
 
     override fun onBindViewHolder(holder: RenderingController.ViewHolder, position: Int) {
+
+        val questionId = form.questions!![position].questionId
+
         // Hide keyboard if lost focus
         holder.itemNumberAnswer.setOnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) {
@@ -87,20 +93,20 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
 
         //Store user input of type int
         holder.itemNumberAnswer.setOnClickListener {
-            val questionIndex = form.questions!![position].questionIndex!!
-            val textAnswer = holder.itemNumberAnswer.text.toString()
-            val answer = Pair(questionIndex, textAnswer)
-            viewModel.addAnswer(answer)
-            viewModel.currentAnswer.value = textAnswer
+            val numericalAnswer = holder.itemNumberAnswer.text.toString()
+            viewModel.addAnswer(
+                questionId!!,
+                Answer.createNumericAnswer(numericalAnswer)
+            )
         }
 
         //Store user input of type string
         holder.itemTextAnswer.setOnClickListener {
-            val questionIndex = form.questions!![position].questionIndex!!
             val textAnswer = holder.itemTextAnswer.text.toString()
-            val answer = Pair(questionIndex, textAnswer)
-            viewModel.addAnswer(answer)
-            viewModel.currentAnswer.value = textAnswer
+            viewModel.addAnswer(
+                questionId!!,
+                Answer.createTextAnswer(textAnswer)
+            )
         }
 
         //Store user input of type Date
@@ -126,11 +132,11 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
                 view.setBackgroundColor(Color.parseColor("#8d99ae"))
             }
 
-            val questionIndex = form.questions!![position].questionIndex!!
-            val textAnswer = holder.itemMultipleChoice.getItemAtPosition(myPosition).toString()
-            val answer = Pair(questionIndex, textAnswer)
-            viewModel.addAnswer(answer)
-            viewModel.currentAnswer.value = textAnswer
+            val mcAnswer = mcidArrayFromListView(holder.itemMultipleChoice)
+            viewModel.addAnswer(
+                questionId!!,
+                Answer.createMcAnswer(mcAnswer)
+            )
         }
 
         holder.itemQuestion.text = form.questions!![position]
@@ -222,11 +228,12 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
     }
 
     private fun okClick(position: Int, holder: RenderingController.ViewHolder) {
-        val questionIndex = form.questions!![position].questionIndex!!
+        val questionId = form.questions!![position].questionId!!
         val textAnswer = holder.itemDatePicker.text.toString()
-        val answer = Pair(questionIndex, textAnswer)
-        viewModel.addAnswer(answer)
-        viewModel.currentAnswer.value = textAnswer
+        viewModel.addAnswer(
+            questionId,
+            Answer.createTextAnswer(textAnswer)
+        )
     }
 
     private fun setHint(hint: TextView, theQuestion: Question, context: Context) {
@@ -249,5 +256,16 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
                 hint.hint = context.getString(R.string.is_optional)
             }
         }
+    }
+
+    private fun mcidArrayFromListView(listView: ListView): List<Int> {
+
+        val checkedItemList = mutableListOf<Int>()
+        listView.checkedItemPositions.forEach { key, selected ->
+            if (selected) {
+                checkedItemList.add(key)
+            }
+        }
+        return checkedItemList
     }
 }

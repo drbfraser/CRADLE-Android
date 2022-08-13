@@ -1,7 +1,6 @@
 package com.cradleplatform.neptune.model
 
 import android.util.Log
-import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
@@ -316,27 +315,27 @@ data class Answer private constructor(
     //val questionType: QuestionTypeEnum?,
     @SerializedName("number") val numericAnswer: String?,
     @SerializedName("text") val textAnswer: String?,
-    @SerializedName("mcidArray") val mcidArrayAnswer: List<Integer>?,
+    @SerializedName("mcidArray") val mcidArrayAnswer: List<Int>?,
     @SerializedName("comment") val comment: String?,
 ) : Serializable {
 
-    fun isValidAnswer() : Boolean {
+    fun isValidAnswer(): Boolean {
         var nullCount = 0
-        numericAnswer?: nullCount++
-        textAnswer?: nullCount++
-        mcidArrayAnswer?: nullCount++
+        numericAnswer ?: nullCount++
+        textAnswer ?: nullCount++
+        mcidArrayAnswer ?: nullCount++
 
         return nullCount == 1
     }
 
-    fun isNumericAnswer() : Boolean = numericAnswer != null && isValidAnswer()
-    fun isTextAnswer() : Boolean = textAnswer != null && isValidAnswer()
-    fun isMcAnswer() : Boolean = mcidArrayAnswer != null && isValidAnswer()
+    fun isNumericAnswer(): Boolean = numericAnswer != null && isValidAnswer()
+    fun isTextAnswer(): Boolean = textAnswer != null && isValidAnswer()
+    fun isMcAnswer(): Boolean = mcidArrayAnswer != null && isValidAnswer()
 
     companion object {
         private val TAG = "FormAnswer"
 
-        fun createNumericAnswer(numericString: String, comment: String?) : Answer {
+        fun createNumericAnswer(numericString: String, comment: String = ""): Answer {
             return Answer(
                 numericAnswer = numericString,
                 null,
@@ -345,7 +344,7 @@ data class Answer private constructor(
             )
         }
 
-        fun createTextAnswer(textString: String, comment: String?) : Answer {
+        fun createTextAnswer(textString: String, comment: String = ""): Answer {
             return Answer(
                 null,
                 textAnswer = textString,
@@ -354,7 +353,7 @@ data class Answer private constructor(
             )
         }
 
-        fun createMcAnswer(mcidArray: List<Integer>, comment: String?) : Answer {
+        fun createMcAnswer(mcidArray: List<Int>, comment: String = ""): Answer {
             return Answer(
                 null,
                 null,

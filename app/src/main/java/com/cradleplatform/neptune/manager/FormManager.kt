@@ -1,10 +1,13 @@
 package com.cradleplatform.neptune.manager
 
+import android.util.Log
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.net.RestApi
 import androidx.lifecycle.LiveData
 import com.cradleplatform.neptune.database.daos.FormClassificationDao
 import com.cradleplatform.neptune.model.FormClassification
+import com.cradleplatform.neptune.model.FormResponse
+import com.google.gson.GsonBuilder
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -19,12 +22,17 @@ class FormManager @Inject constructor(
     private val mRestApi: RestApi,
     private val formClassDao: FormClassificationDao
 ) {
-    suspend fun putFormTemplate(form: FormTemplate?) {
-        form?.run {
-            // TODO: add error checking (refer to issue #81)
-            val result = mRestApi.putFormTemplate(form)
-            //Use (result is NetworkResult.Success) to check if success
+    fun submitFormToWebAsResponse(formResponse: FormResponse) {
+        // TODO: add error checking (refer to issue #81)
+
+        val formStr = GsonBuilder().setPrettyPrinting().create().toJson(formResponse)
+        val formChunks = formStr.chunked(2048)
+        formChunks.forEach {
+            Log.e("DEBUG_TAG", it)
         }
+
+        //val result = mRestApi.putFormTemplate(form)
+        //Use (result is NetworkResult.Success) to check if success
     }
 
     suspend fun searchForFormTemplateWithName(formClassName: String): List<FormTemplate> =
