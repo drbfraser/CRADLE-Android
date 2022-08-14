@@ -3,13 +3,28 @@ package com.cradleplatform.neptune.model
 import android.util.Log
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
-import java.lang.IllegalArgumentException
+import kotlin.IllegalArgumentException
 
 /**
- * The [FormTemplate] must be deeply non-null ([FormTemplate.deepNullCheck] == true)
+ *  A filled FormTemplate with a selected [language] containing [questionResponses] (answers) to questions.
+ *  This class is mainly passed to submit(post) filled forms as [FormResponse]s to backend and is
+ *      formatted according to backend's form object designs.
+ *
+ *  @param patientId The id for the patient this form is filled for
+ *  @param formTemplate The template of the form this [FormResponse] is for
+ *   The [FormTemplate] must be deeply non-null ([FormTemplate.isDeeplyNonNull] == true)
+ *   (or in other words, must be valid. There should be no null parameters if parsed correctly)
+ *  @param language The language selected for this response, must exist in original [FormTemplate]
+ *  @param answers A Map of <questionId, Answer> to pass as responses
+ *
+ *  @throws IllegalArgumentException if passed parameters is invalid:
+ *   1) [FormTemplate], [Question]s has null fields
+ *   2) The [language] was not found in [FormTemplate]
+ *   3) A Required [Question] (isRequired == true) has no response passed
  */
-
-class FormResponse(
+class FormResponse
+@Throws(IllegalArgumentException::class)
+constructor(
     patientId: String,
     formTemplate: FormTemplate,
     language: String,
@@ -27,8 +42,9 @@ class FormResponse(
 
     init {
 
-        if (!formTemplate.deepNullCheck()) {
-            throw NullPointerException("FormTemplate passed for FormResponse creation has null parameter")
+        // FormTemplate should not have any null values if parsed correctly
+        if (!formTemplate.isDeeplyNonNull()) {
+            throw IllegalArgumentException("FormTemplate passed for FormResponse creation has null parameter")
         }
 
         this@FormResponse.archived = formTemplate.archived!!
@@ -39,11 +55,6 @@ class FormResponse(
             language,
             answers
         )
-
-        if (questionResponses.size != formTemplate.questions.size) {
-            // FIXME: re-evaluate error handling
-            Log.e(TAG, "FormTemplate.questions size mismatch response size in FormResponse")
-        }
     }
 
     private fun createQuestionResponses(
@@ -55,11 +66,10 @@ class FormResponse(
 
         questions.forEach { question ->
 
-            Log.e(TAG, "FOREACH: question[${question.questionId!!}]")
-
-            if (!question.deepNullCheck()) {
-                Log.w(TAG, "Null required field found during QuestionResponse creation, skipping question")
-                return@forEach
+            if (!question.isDeeplyNonNull()) {
+                throw IllegalArgumentException(
+                    "Failed to create FormResponse: QuestionTemplate has null fields"
+                )
             }
 
             val response = answers[question.questionId]
@@ -72,7 +82,7 @@ class FormResponse(
 
                 val questionResponse = QuestionResponse(
                     questionType = question.questionType!!,
-                    hasCommentAttached = question.hasCommentAttached!!,
+                    hasCommentAttached = response.hasComment(),
                     answers = response,
                     required = question.required!!,
                     visibleCondition = question.visibleCondition!!,
@@ -84,13 +94,11 @@ class FormResponse(
                 )
                 responseList.add(questionResponse)
             } else if (question.required == true) {
-                Log.e(TAG, "Failed to create FormResponse: Required question does not have an answer")
-            /*
                 throw IllegalArgumentException(
                     "Failed to create FormResponse: Required question does not have an answer"
-                )*/
+                )
             } else {
-                Log.w(TAG, "Answer Missing for questionId(${question.questionId})")
+                Log.w(TAG, "Answer Missing for questionId(${question.questionId}) in form ${question.formTemplateId}")
             }
         }
 
