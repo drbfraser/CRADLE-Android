@@ -57,6 +57,7 @@ constructor(
         )
     }
 
+    @Suppress("ThrowsCount")
     private fun createQuestionResponses(
         questions: List<Question>,
         language: String,

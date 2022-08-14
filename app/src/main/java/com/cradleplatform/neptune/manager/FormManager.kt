@@ -1,6 +1,5 @@
 package com.cradleplatform.neptune.manager
 
-import android.util.Log
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.net.RestApi
 import androidx.lifecycle.LiveData
@@ -8,7 +7,6 @@ import com.cradleplatform.neptune.database.daos.FormClassificationDao
 import com.cradleplatform.neptune.model.FormClassification
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.net.NetworkResult
-import com.google.gson.GsonBuilder
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -16,7 +14,8 @@ import javax.inject.Singleton
  * Manager for FormTemplate and FormClassifications and
  * to submit the form with user's answers.
  *
- * Interacts with the [FormClassification] table in the database.
+ * Interacts with the [FormClassification] table in the database
+ *  and uses [RestApi] for submitting [FormResponse]s
  */
 @Singleton
 class FormManager @Inject constructor(
@@ -24,13 +23,6 @@ class FormManager @Inject constructor(
     private val formClassDao: FormClassificationDao
 ) {
     suspend fun submitFormToWebAsResponse(formResponse: FormResponse): NetworkResult<Unit> {
-
-        val formStr = GsonBuilder().setPrettyPrinting().create().toJson(formResponse)
-        val formChunks = formStr.chunked(2048)
-        formChunks.forEach {
-            Log.d("SendingForm", it)
-        }
-
         return mRestApi.putFormResponse(formResponse)
     }
 
