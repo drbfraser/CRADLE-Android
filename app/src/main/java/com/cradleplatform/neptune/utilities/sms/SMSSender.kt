@@ -30,9 +30,9 @@ class SMSSender(
 
             // if acknowledgement received, remove window block and proceed to next
             if (acknowledged) {
-                val finishedMsg = context.getString(R.string.sms_all_sent)
                 smsRelayMsgList.removeAt(0)
                 if (smsRelayMsgList.isEmpty()) {
+                    val finishedMsg = context.getString(R.string.sms_all_sent)
                     smsManager.sendTextMessage(phoneNumber, null, finishedMsg, null, null)
                     Toast.makeText(
                         context, finishedMsg,
