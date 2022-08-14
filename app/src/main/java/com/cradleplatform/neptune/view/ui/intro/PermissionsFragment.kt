@@ -142,7 +142,10 @@ class PermissionsFragment : IntroBaseFragment() {
         private val requiredPermissions = arrayOf(
             Manifest.permission.CAMERA,
             Manifest.permission.INTERNET,
-            Manifest.permission.ACCESS_NETWORK_STATE
+            Manifest.permission.ACCESS_NETWORK_STATE,
+            Manifest.permission.RECEIVE_SMS,
+            Manifest.permission.READ_SMS,
+            Manifest.permission.SEND_SMS
         )
         private const val MY_PERMISSIONS_REQUEST = 1515
         fun newInstance(): PermissionsFragment {

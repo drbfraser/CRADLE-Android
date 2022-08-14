@@ -2,6 +2,8 @@ package com.cradleplatform.neptune.view
 
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.content.SharedPreferences
 import android.content.res.Resources
 import android.os.Bundle
 import android.util.Log
@@ -16,6 +18,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.edit
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
@@ -28,6 +31,11 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.databinding.ActivityReadingBinding
 import com.cradleplatform.neptune.ext.hideKeyboard
 import com.cradleplatform.neptune.net.NetworkResult
+import com.cradleplatform.neptune.utilities.AESEncrypter
+import com.cradleplatform.neptune.utilities.RelayAction
+import com.cradleplatform.neptune.utilities.SMSFormatter
+import com.cradleplatform.neptune.utilities.sms.SMSReceiver
+import com.cradleplatform.neptune.utilities.sms.SMSSender
 import com.cradleplatform.neptune.view.ui.reading.PatientIdConflictDialogFragment
 import com.cradleplatform.neptune.view.ui.reading.ReferralDialogFragment
 import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel
@@ -37,6 +45,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 private const val TAG = "ReadingActivity"
 
@@ -51,6 +60,13 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
     // ViewModel shared by all Fragments.
     private val viewModel: PatientReadingViewModel by viewModels()
 
+    @Inject
+    lateinit var sharedPreferences: SharedPreferences
+
+    private lateinit var smsSender: SMSSender
+
+    private lateinit var smsReceiver: SMSReceiver
+
     /**
      * Called only from tests. Creates and returns a new [CountingIdlingResource].
      * This is null if and only if this [ReadingActivity] is not being tested under Espresso.
@@ -63,9 +79,18 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
             }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d(TAG, "onDestroy()")
+    override fun onResume() {
+        super.onResume()
+        setupSMSReceiver()
+    }
+
+    override fun onStop() {
+        if (smsReceiver != null) {
+            unregisterReceiver(smsReceiver)
+        }
+
+        super.onStop()
+        Log.d(TAG, "onStop()")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,6 +101,8 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
             lifecycleOwner = this@ReadingActivity
             executePendingBindings()
         }
+
+        smsSender = SMSSender(sharedPreferences, this)
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar3)
         setSupportActionBar(toolbar)
@@ -391,6 +418,15 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
         }
     }
 
+    private fun setupSMSReceiver() {
+        val intentFilter = IntentFilter()
+        intentFilter.addAction("android.provider.Telephony.SMS_RECEIVED")
+        intentFilter.priority = Int.MAX_VALUE
+
+        smsReceiver = SMSReceiver(smsSender, getString(R.string.relay_phone_number))
+        registerReceiver(smsReceiver, intentFilter)
+    }
+
     enum class LaunchReason {
         LAUNCH_REASON_NEW, LAUNCH_REASON_EDIT_READING, LAUNCH_REASON_RECHECK, LAUNCH_REASON_NONE,
         LAUNCH_REASON_EXISTINGNEW
@@ -443,5 +479,26 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
         val intent = intent
         intent.putExtra(EXTRA_SNACKBAR_MSG, data)
         setResult(RESULT_OK, intent)
+    }
+
+    override fun sendSmsMessage(data: String) {
+        val encodedMsg = SMSFormatter.encodeMsg(
+            data,
+            RelayAction.READING,
+            AESEncrypter.getSecretKeyFromString(getString(R.string.aes_secret_key))
+        )
+        val msgInPackets =
+            SMSFormatter.listToString(SMSFormatter.formatSMS(encodedMsg))
+
+        sharedPreferences.edit(commit = true) {
+            putString(getString(R.string.sms_relay_list_key), msgInPackets)
+        }
+
+        smsSender.sendSmsMessage(false)
+
+        Toast.makeText(
+            this, getString(R.string.sms_sender_send),
+            Toast.LENGTH_LONG
+        ).show()
     }
 }

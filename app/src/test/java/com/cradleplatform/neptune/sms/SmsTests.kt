@@ -5,7 +5,7 @@ import com.cradleplatform.neptune.model.CommonPatientReferralJsons
 import com.cradleplatform.neptune.utilities.AESEncrypter
 import com.cradleplatform.neptune.utilities.GzipCompressor
 import com.cradleplatform.neptune.utilities.RelayAction
-import com.cradleplatform.neptune.utilities.SMSMessageFormatter
+import com.cradleplatform.neptune.utilities.SMSFormatter
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions
 
@@ -50,13 +50,13 @@ class SmsTests {
         val formattedMsg = AESEncrypter.encrypt(GzipCompressor.compress(msgWithAction), secretKey)
         val encodedMsg = Base64.encodeToString(formattedMsg, 0)
 
-        val packets = SMSMessageFormatter.formatSMS(encodedMsg)
-        val maxPacketSize = 160
+        val packets = SMSFormatter.formatSMS(encodedMsg)
+        val maxPacketSize = 153 * 2
         val maxPacketCount = 100
 
         Assertions.assertTrue(packets.size < maxPacketCount)
         for (packet: String in packets) {
-            Assertions.assertTrue(packet.length < maxPacketSize)
+            Assertions.assertTrue(packet.length <= maxPacketSize)
         }
     }
 
@@ -72,8 +72,8 @@ class SmsTests {
         val formattedMsg = AESEncrypter.encrypt(compressedMsg, secretKey)
         val encodedMsg = Base64.encodeToString(formattedMsg, 0)
 
-        val packets = SMSMessageFormatter.formatSMS(encodedMsg)
-        val packetMsg = SMSMessageFormatter.parseSMS(packets)
+        val packets = SMSFormatter.formatSMS(encodedMsg)
+        val packetMsg = SMSFormatter.parseSMS(packets)
 
         Assertions.assertEquals(packetMsg, encodedMsg)
 

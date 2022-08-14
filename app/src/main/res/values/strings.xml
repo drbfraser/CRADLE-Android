@@ -13,6 +13,8 @@
         <p>App requires some permissions:</p>
         <h3>Camera</h3>
         <p>App uses the camera to take a photo of the CRADLE VSA\'s screen after it measures vitals.</p>
+        <h3>SMS</h3>
+        <p>App may automatically send SMS messages to a relay point after creating a reading, referral, or form response.</p>
         ]]>
     </string>
 
@@ -126,7 +128,8 @@
     <string name="discard_dialog_new_patient_and_reading">Discard this new patient and reading?</string>
     <string name="discard_dialog_title">Discard?</string>
 
-    <!-- SMS Text Message Referral -->
+    <!-- SMS Text Message Relay -->
+    <string name="sms_relay_list_key">SMS Relay Content Treemap</string>
 
     <!-- SMS Text Message Referral - SMS content-->
     <!-- NOTE: May not want to translate, as sent to doctors -->
@@ -484,6 +487,9 @@
     <string name="patient_referral_activity_save_error_construction">>An error has occurred when trying to save the referral. Please recheck the fields.</string>
     <string name="patient_referral_activity_save_error_upload">An error has occurred when trying to uploading the referral to the server.</string>
     <string name="patient_referral_activity_save_error_unknown">An unknown error has occurred.</string>
+    <string name="sms_sender_send">Sending SMS message in packets. Please do not exit the view until all messages have been sent.</string>
+    <string name="sms_packet_sent">Sending packet message.</string>
+    <string name="sms_all_sent">All packets sent.</string>
     <string name="patient_profile_age_label">Age</string>
     <string name="patient_profile_age_about_n_years_old">About %1$d years old</string>
     <string name="patient_profile_age_n_years_old">%1$d years old</string>

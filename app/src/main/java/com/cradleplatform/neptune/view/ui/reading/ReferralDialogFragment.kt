@@ -3,11 +3,7 @@ package com.cradleplatform.neptune.view.ui.reading
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.provider.Telephony
-import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -35,7 +31,6 @@ import com.cradleplatform.neptune.viewmodel.ReferralDialogViewModel
 import com.cradleplatform.neptune.viewmodel.ReferralOption
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import java.util.UUID
 
 /**
  * src: https://medium.com/alexander-schaefer/
@@ -90,6 +85,7 @@ class ReferralDialogFragment : DialogFragment() {
             dataBindingComponent
         )
         binding = dataBinding
+
         return dataBinding.root
     }
 
@@ -150,10 +146,7 @@ class ReferralDialogFragment : DialogFragment() {
             when (smsSendResult) {
                 is ReadingFlowSaveResult.SaveSuccessful.ReferralSmsNeeded -> {
                     showStatusToast(view.context, smsSendResult, ReferralOption.SMS)
-                    launchSmsIntentAndFinish(
-                        selectedHealthFacilityName,
-                        smsSendResult.patientInfoForReferral
-                    )
+                    sendSms(smsSendResult.patientInfoForReferral)
                 }
                 else -> {
                     showStatusToast(view.context, smsSendResult, ReferralOption.SMS)
@@ -164,53 +157,16 @@ class ReferralDialogFragment : DialogFragment() {
         }
     }
 
-    private fun launchSmsIntentAndFinish(
-        selectedHealthFacilityName: String,
+    private fun sendSms(
         patientAndReadings: PatientAndReadings
     ) {
-        activity?.run {
-            val smsIntent = makeSmsIntent(selectedHealthFacilityName, patientAndReadings)
-            startActivity(smsIntent)
-            finish()
-        }
-    }
-
-    private fun encodeBase64(json: String): String {
-        return Base64.encodeToString(json.toByteArray(), Base64.DEFAULT)
-    }
-
-    private fun makeSmsIntent(
-        selectedHealthFacilityName: String,
-        patientAndReadings: PatientAndReadings
-    ): Intent {
-        val selectedHealthFacility =
-            referralDialogViewModel.getHealthFacilityFromHealthFacilityName(
-                selectedHealthFacilityName
-            )
-        val genReferralId = UUID.randomUUID().toString()
-        var referralMsg: String = "**referral message start: $genReferralId**\n"
         val json = JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
             SmsReadingWithReferral(
-                referralId = genReferralId,
                 patient = patientAndReadings
             )
         )
-        val phoneNumber = selectedHealthFacility.phoneNumber
-        val uri = Uri.parse("smsto:$phoneNumber")
 
-        val encodedMsg = encodeBase64(json)
-        referralMsg += "$encodedMsg**end of referral message**"
-
-        return Intent(Intent.ACTION_SENDTO, uri).apply {
-            putExtra("address", phoneNumber)
-            putExtra("sms_body", referralMsg)
-
-            // Use default SMS app if supported
-            // https://stackoverflow.com/a/24804601
-            Telephony.Sms.getDefaultSmsPackage(context)?.let {
-                setPackage(it)
-            }
-        }
+        dataPasser.sendSmsMessage(json)
     }
 
     private suspend fun handleWebReferralSend(view: View) {
@@ -333,5 +289,7 @@ class ReferralDialogFragment : DialogFragment() {
 
     interface OnReadingSendWebSnackbarMsgPass {
         fun onMsgPass(data: String)
+
+        fun sendSmsMessage(data: String)
     }
 }
