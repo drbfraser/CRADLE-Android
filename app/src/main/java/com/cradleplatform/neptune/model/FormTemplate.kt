@@ -10,12 +10,11 @@ import java.io.Serializable
  *  'Answers' class could be any type of user input, just add String type for now.
  *  Currently using Gson, could use another library if needed.
  *
- *  Field Nullability
+ *  !!Field Nullability!!
  *
  *  As it is possible that Gson bypasses non-null check when paring,
  *  (reference: https://stackoverflow.com/questions/71923931/null-safety-issues-with-gson-in-kotlin)
  *  every auto-parsed field is nullable, so that user requires to perform null-safety check
- *
  */
 data class FormTemplate(
 
@@ -56,11 +55,15 @@ data class FormTemplate(
         return languageVersions
     }
 
-    fun deepNullCheck(): Boolean {
+    /**
+     * Performs a Null-check for every inner fields in the [FormTemplate]
+     *
+     * @return true of
+     */
+    fun isDeeplyNonNull(): Boolean {
 
         var nullCheckResult = true
 
-        //nullCheckResult = nullCheckResult && this@FormTemplate.version != null
         this@FormTemplate.version ?: let {
             nullCheckResult = false
             Log.e(TAG, "[version] was null")
@@ -82,7 +85,7 @@ data class FormTemplate(
             Log.e(TAG, "[formClassId] was null")
         }
 
-        this@FormTemplate.questions?.forEach { it.deepNullCheck() }
+        this@FormTemplate.questions?.forEach { it.isDeeplyNonNull() }
             ?: let {
                 nullCheckResult = false
                 Log.w(Question.TAG, "[questions] was null")
@@ -109,7 +112,6 @@ enum class QuestionTypeEnum {
 }
 
 data class Question(
-
     @SerializedName("id") val id: String?,
     @SerializedName("visibleCondition") val visibleCondition: List<VisibleCondition>?,
     @SerializedName("isBlank") val isBlank: Boolean?,
@@ -126,7 +128,7 @@ data class Question(
     @SerializedName("questionLangVersions") val languageVersions: List<QuestionLangVersion>?
 ) : Serializable {
 
-    fun deepNullCheck(): Boolean {
+    fun isDeeplyNonNull(): Boolean {
         var nullCheckResult = true
 
         this@Question.id ?: let {
@@ -167,12 +169,7 @@ data class Question(
             nullCheckResult = false
             Log.w(TAG, "[questionType] was null")
         }
-/*
-        this@Questions.answers ?: let {
-            nullCheckResult = false
-            Log.w(TAG, "[answers] was null")
-        }
-*/
+
         this@Question.hasCommentAttached ?: let {
             nullCheckResult = false
             Log.w(TAG, "[hasCommentAttached] was null")
@@ -183,18 +180,18 @@ data class Question(
             Log.w(TAG, "[required] was null")
         }
 
-        this@Question.languageVersions?.forEach { it.deepNullCheck() }
+        this@Question.languageVersions?.forEach { it.isDeeplyNonNull() }
             ?: let {
                 nullCheckResult = false
                 Log.w(TAG, "[languageVersions] was null")
             }
 
-        this@Question.mcOptions?.forEach { it.deepNullCheck() }
+        this@Question.mcOptions?.forEach { it.isDeeplyNonNull() }
             ?: let {
                 nullCheckResult = false
                 Log.w(TAG, "[mcOptions] was null")
             }
-        this@Question.visibleCondition?.forEach { it.deepNullCheck() }
+        this@Question.visibleCondition?.forEach { it.isDeeplyNonNull() }
             ?: let {
                 nullCheckResult = false
                 Log.w(TAG, "[visibleCondition] was null")
@@ -215,7 +212,7 @@ data class QuestionLangVersion(
     @SerializedName("id") val questionTextId: Int?,
 ) : Serializable {
 
-    fun deepNullCheck(): Boolean {
+    fun isDeeplyNonNull(): Boolean {
         var nullCheckResult = true
 
         this@QuestionLangVersion.language ?: let {
@@ -243,12 +240,11 @@ data class QuestionLangVersion(
 }
 
 data class McOption(
-
     @SerializedName("mcid") val mcid: Int?,
     @SerializedName("opt") val opt: String?
 ) : Serializable {
 
-    fun deepNullCheck(): Boolean {
+    fun isDeeplyNonNull(): Boolean {
         var nullCheckResult = true
 
         this@McOption.mcid ?: let {
@@ -269,13 +265,12 @@ data class McOption(
 }
 
 data class VisibleCondition(
-
     @SerializedName("qidx") val qidx: Int?,
     @SerializedName("relation") val relation: String?,
     @SerializedName("answers") var answerCondition: Answer?
 ) : Serializable {
 
-    fun deepNullCheck(): Boolean {
+    fun isDeeplyNonNull(): Boolean {
         var nullCheckResult = true
 
         this@VisibleCondition.qidx ?: let {
@@ -301,19 +296,23 @@ data class VisibleCondition(
 }
 
 /**
+ *  Represents a JSON style [Answer] object (different field names for different types of answer)
  *
- *  Answer could be any one of the following
- *  {
- *      "number":    123.4,
- *      "text":      "Hello world 123! :)",
- *      "mcidArray": [0, 1],
- *      "comment":   "example comment"
- *  }
+ *  Answer could be any one of the following:
+ *
+ *  1) "number", numeric values, can be any subclass of abstract class [Number], eg. Long, Double
+ *      { "number": 123.4 }
+ *  2) "text", Textual input, potentially including date-time object
+ *      { "text": "Hello world 123! :)" }
+ *  3) "mcidArray", Array of selected mc choice(s),eg [0,3] for choice 1 and 4, with 2 and 3 not selected
+ *      { "mcidArray": [0, 1] }
+ *
+ *  only one of the above field can be non-null, so that when serialized,
+ *    only one type (or with comment) is in the Json object
+ *
  */
 data class Answer private constructor(
-    //@Expose(serialize = false, deserialize = false)
-    //val questionType: QuestionTypeEnum?,
-    @SerializedName("number") val numericAnswer: String?,
+    @SerializedName("number") val numericAnswer: Number?,
     @SerializedName("text") val textAnswer: String?,
     @SerializedName("mcidArray") val mcidArrayAnswer: List<Int>?,
     @SerializedName("comment") val comment: String?,
@@ -331,11 +330,12 @@ data class Answer private constructor(
     fun isNumericAnswer(): Boolean = numericAnswer != null && isValidAnswer()
     fun isTextAnswer(): Boolean = textAnswer != null && isValidAnswer()
     fun isMcAnswer(): Boolean = mcidArrayAnswer != null && isValidAnswer()
+    fun hasComment(): Boolean = !(comment?.isNullOrEmpty() ?: true)
 
     companion object {
         private val TAG = "FormAnswer"
 
-        fun createNumericAnswer(numericString: String, comment: String = ""): Answer {
+        fun createNumericAnswer(numericString: Number, comment: String = ""): Answer {
             return Answer(
                 numericAnswer = numericString,
                 null,

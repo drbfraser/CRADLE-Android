@@ -92,11 +92,13 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
 
         //Store user input of type int
         holder.itemNumberAnswer.setOnClickListener {
-            val numericalAnswer = holder.itemNumberAnswer.text.toString()
-            viewModel.addAnswer(
-                questionId!!,
-                Answer.createNumericAnswer(numericalAnswer)
-            )
+            // can be Double or Long
+            holder.itemNumberAnswer.text.toString().toDoubleOrNull()?.let {
+                viewModel.addAnswer(
+                    questionId!!,
+                    Answer.createNumericAnswer(it)
+                )
+            }
         }
 
         //Store user input of type string
