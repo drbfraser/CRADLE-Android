@@ -8,8 +8,8 @@ import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.net.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
+import kotlin.jvm.Throws
 
 @HiltViewModel
 class FormRenderingViewModel @Inject constructor(
@@ -26,16 +26,17 @@ class FormRenderingViewModel @Inject constructor(
         Log.e("FORMVIEWMODEL", "adding answer for [$questionId]")
     }
 
+    @Throws(IllegalArgumentException::class, NullPointerException::class)
     suspend fun submitForm(patientId: String, selectedLanguage: String): NetworkResult<Unit> {
         return if (currentFormTemplate != null) {
-                mFormManager.submitFormToWebAsResponse(
-                    FormResponse(
-                        patientId = patientId,
-                        formTemplate = dataTransferTemplate!!,
-                        language = selectedLanguage,
-                        answers = currentAnswers
-                    )
+            mFormManager.submitFormToWebAsResponse(
+                FormResponse(
+                    patientId = patientId,
+                    formTemplate = dataTransferTemplate!!,
+                    language = selectedLanguage,
+                    answers = currentAnswers
                 )
+            )
         } else {
             error("FormTemplate does not exist: Current displaying FormTemplate is null")
         }

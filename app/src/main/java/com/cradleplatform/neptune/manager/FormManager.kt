@@ -16,7 +16,8 @@ import javax.inject.Singleton
  * Manager for FormTemplate and FormClassifications and
  * to submit the form with user's answers.
  *
- * Interacts with the [FormClassification] table in the database.
+ * Interacts with the [FormClassification] table in the database
+ *  and uses [RestApi] for submitting [FormResponse]s
  */
 @Singleton
 class FormManager @Inject constructor(
@@ -24,13 +25,6 @@ class FormManager @Inject constructor(
     private val formClassDao: FormClassificationDao
 ) {
     suspend fun submitFormToWebAsResponse(formResponse: FormResponse): NetworkResult<Unit> {
-
-        val formStr = GsonBuilder().setPrettyPrinting().create().toJson(formResponse)
-        val formChunks = formStr.chunked(2048)
-        formChunks.forEach {
-            Log.d("SendingForm", it)
-        }
-
         return mRestApi.putFormResponse(formResponse)
     }
 

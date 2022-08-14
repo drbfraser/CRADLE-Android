@@ -18,6 +18,7 @@ import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.model.QuestionTypeEnum
 import com.cradleplatform.neptune.model.RenderingController
 import com.cradleplatform.neptune.net.NetworkResult
+import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -69,29 +70,33 @@ class FormRenderingActivity : AppCompatActivity() {
             intent.putExtra("SUBMITTED", "true")
 
             lifecycleScope.launch(Dispatchers.IO) {
-                val result = viewModel.submitForm(
-                    patientId = patientId,
-                    selectedLanguage = languageSelected
-                )
-                if (result is NetworkResult.Success) {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(
-                            applicationContext,
-                            "Form Response Submitted",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                } else {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(
-                            applicationContext,
-                            "Form Response Submission failed with error:\n ${
-                            result.getStatusMessage(
-                                applicationContext
+
+                try {
+                    val result = viewModel.submitForm(patientId, languageSelected)
+                    if (result is NetworkResult.Success) {
+                        withContext(Dispatchers.Main) {
+                            CustomToast.shortToast(
+                                applicationContext,
+                                "Form Response Submitted"
                             )
-                            }",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        }
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            CustomToast.shortToast(
+                                applicationContext,
+                                "Form Response Submission failed with network error:\n " +
+                                    "${result.getStatusMessage(applicationContext)}"
+                            )
+                        }
+                    }
+                } catch (exception: IllegalArgumentException) {
+                    withContext(Dispatchers.Main) {
+                        CustomToast.shortToast(
+                            applicationContext,
+                            "Form Response Failed to Create(Malformed):\n" +
+                                "${exception.message}"
+                        )
+                        exception.printStackTrace()
                     }
                 }
                 Unit
