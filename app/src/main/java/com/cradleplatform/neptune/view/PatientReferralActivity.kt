@@ -67,6 +67,11 @@ open class PatientReferralActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        setupSMSReceiver()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_referral, dataBindingComponent)
@@ -83,7 +88,6 @@ open class PatientReferralActivity : AppCompatActivity() {
         setupToolBar()
         setupSendWebBtn()
         setupSendSMSBtn()
-        setupSMSReceiver()
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -91,11 +95,11 @@ open class PatientReferralActivity : AppCompatActivity() {
         return super.onSupportNavigateUp()
     }
 
-    override fun onDestroy() {
+    override fun onStop() {
         if (smsReceiver != null) {
             unregisterReceiver(smsReceiver)
         }
-        super.onDestroy()
+        super.onStop()
     }
 
     private fun populateCurrentPatient() {

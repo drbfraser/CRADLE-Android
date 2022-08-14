@@ -79,13 +79,18 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
             }
     }
 
-    override fun onDestroy() {
+    override fun onResume() {
+        super.onResume()
+        setupSMSReceiver()
+    }
+
+    override fun onStop() {
         if (smsReceiver != null) {
             unregisterReceiver(smsReceiver)
         }
 
-        super.onDestroy()
-        Log.d(TAG, "onDestroy()")
+        super.onStop()
+        Log.d(TAG, "onStop()")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -103,7 +108,6 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
         setSupportActionBar(toolbar)
 
         setUpNavController()
-        setupSMSReceiver()
     }
 
     private fun setUpNavController() {
