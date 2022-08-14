@@ -1077,7 +1077,8 @@ class RestApi constructor(
      */
     suspend fun syncHealthFacilities(
         healthFacilityChannel: SendChannel<HealthFacility>,
-        lastSyncTimestamp: BigInteger = BigInteger.valueOf(1L)
+        lastSyncTimestamp: BigInteger = BigInteger.valueOf(1L),
+        reportProgressBlock: suspend (Int, Int) -> Unit,
     ): HealthFacilitySyncResult = withContext(IO) {
         var totalHealthFacilitiesDownloaded = 0
         var failedParse = false
@@ -1092,6 +1093,10 @@ class RestApi constructor(
                         iterator.forEachJackson {
                             healthFacilityChannel.send(it)
                             totalHealthFacilitiesDownloaded++
+                            reportProgressBlock(
+                                totalHealthFacilitiesDownloaded,
+                                totalHealthFacilitiesDownloaded
+                            )
                         }
                     }
                 } catch (e: Exception) {
@@ -1127,7 +1132,8 @@ class RestApi constructor(
      * how many form templates are downloaded in total
      */
     suspend fun getAllFormTemplates(
-        formChannel: SendChannel<FormClassification>
+        formChannel: SendChannel<FormClassification>,
+        reportProgressBlock: suspend (Int, Int) -> Unit,
     ): FormSyncResult = withContext(IO) {
 
         var failedParse = false
@@ -1156,6 +1162,7 @@ class RestApi constructor(
                         )
                         formChannel.send(form)
                         totalClassifications++
+                        reportProgressBlock(totalClassifications, totalClassifications)
                     }
                     reader.endArray()
                     reader.close()

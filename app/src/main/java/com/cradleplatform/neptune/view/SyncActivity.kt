@@ -139,6 +139,12 @@ class SyncActivity : AppCompatActivity() {
                     SyncWorker.State.DOWNLOADING_ASSESSMENTS -> getString(
                         R.string.sync_activity_status_downloading_assessments
                     )
+                    SyncWorker.State.DOWNLOADING_HEALTH_FACILITIES -> getString(
+                        R.string.sync_activity_status_downloading_health_facilities
+                    )
+                    SyncWorker.State.DOWNLOADING_FORM_TEMPLATES -> getString(
+                        R.string.sync_activitiy_status_downloading_form_templates
+                    )
                 }
                 if (syncStatusText.text != newStateString) {
                     syncStatusText.text = newStateString
