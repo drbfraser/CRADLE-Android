@@ -23,7 +23,7 @@ class FormRenderingViewModel @Inject constructor(
 
     fun addAnswer(questionId: String, answer: Answer) {
         currentAnswers[questionId] = answer
-        Log.e("FORMVIEWMODEL", "adding answer for [$questionId]")
+        Log.d(TAG, "adding answer for [$questionId]")
     }
 
     @Throws(IllegalArgumentException::class, NullPointerException::class)
@@ -72,6 +72,7 @@ class FormRenderingViewModel @Inject constructor(
      */
     private companion object {
         //Current user answer
+        private const val TAG = "FormRenderingViewModel"
         private val currentAnswers = mutableMapOf<String, Answer>()
         private var dataTransferTemplate: FormTemplate? = null // data transfer object
     }
