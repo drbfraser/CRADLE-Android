@@ -122,7 +122,6 @@ data class Question(
     @SerializedName("numMax") val numMax: Double?,
     @SerializedName("questionId") val questionId: String?,
     @SerializedName("questionType") val questionType: QuestionTypeEnum?,
-    //@SerializedName("answers") var answers: Answers?,
     @SerializedName("hasCommentAttached") val hasCommentAttached: Boolean?,
     @SerializedName("required") val required: Boolean?,
     @SerializedName("questionLangVersions") val languageVersions: List<QuestionLangVersion>?
@@ -330,7 +329,7 @@ data class Answer private constructor(
     fun isNumericAnswer(): Boolean = numericAnswer != null && isValidAnswer()
     fun isTextAnswer(): Boolean = textAnswer != null && isValidAnswer()
     fun isMcAnswer(): Boolean = mcidArrayAnswer != null && isValidAnswer()
-    fun hasComment(): Boolean = !(comment?.isNullOrEmpty() ?: true)
+    fun hasComment(): Boolean = !(comment?.isEmpty() ?: true)
 
     companion object {
         private val TAG = "FormAnswer"

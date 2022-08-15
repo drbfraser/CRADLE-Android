@@ -44,7 +44,6 @@ class FormRenderingActivity : AppCompatActivity() {
 
         val formTemplateFromIntent = intent.getSerializableExtra(EXTRA_FORM_TEMPLATE) as FormTemplate
         viewModel.currentFormTemplate = formTemplateFromIntent
-        //viewModel = ViewModelProvider(this).get(FormRenderingViewModel::class.java)
 
         val patientId = intent.getStringExtra(EXTRA_PATIENT_ID)
         val patient = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT) as Patient
@@ -99,7 +98,6 @@ class FormRenderingActivity : AppCompatActivity() {
                         exception.printStackTrace()
                     }
                 }
-                Unit
             }
 
             startActivity(intent)
