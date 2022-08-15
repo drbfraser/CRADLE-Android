@@ -181,7 +181,17 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
                 holder.itemTextAnswer.visibility = View.GONE
 
                 val questionList: MutableList<String> = mutableListOf()
-                for (mcOption in form.questions!![position].mcOptions!!) {
+                val langMcOptions: List<McOption> = form.questions!![position]
+                    .languageVersions!!.find { it.language == formLanguage }
+                    ?.mcOptions
+                    ?: listOf( // stud list for displaying language not supported error
+                        McOption(
+                            -1,
+                            "Question Language Error: Does not support selected language($formLanguage)"
+                        )
+                    )
+
+                for (mcOption in langMcOptions) {
                     questionList.add(mcOption.opt!!)
                 }
                 val adapter = ArrayAdapter<String>(

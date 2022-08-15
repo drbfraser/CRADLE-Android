@@ -74,10 +74,13 @@ constructor(
             }
 
             val response = answers[question.questionId]
-            val languageQuestionText = question.languageVersions?.find { it.language == language }?.questionText
+
+            val languageVersion = question.languageVersions?.find { it.language == language }
+            val languageQuestionText = languageVersion?.questionText
                 ?: throw IllegalArgumentException(
                     "Failed to create FormResponse: Language does not exist in FormTemplate"
                 )
+            val languageMcOptions = languageVersion.mcOptions ?: listOf() // default to empty list []
 
             if (response != null) {
 
@@ -89,7 +92,7 @@ constructor(
                     visibleCondition = question.visibleCondition!!,
                     isBlank = false, // blank refers to FormTemplates, not blank to FormResponses
                     formTemplateId = question.formTemplateId!!,
-                    mcOptions = question.mcOptions!!,
+                    mcOptions = languageMcOptions,
                     questionIndex = question.questionIndex!!,
                     languageSpecificText = languageQuestionText
                 )

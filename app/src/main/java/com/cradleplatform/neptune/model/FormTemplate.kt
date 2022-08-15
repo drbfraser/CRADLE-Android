@@ -120,7 +120,6 @@ data class Question(
     @SerializedName("visibleCondition") val visibleCondition: List<VisibleCondition>?,
     @SerializedName("isBlank") val isBlank: Boolean?, // Should be true for FormTemplates
     @SerializedName("formTemplateId") val formTemplateId: String?, // Backend-Nullable
-    @SerializedName("mcOptions") val mcOptions: List<McOption>?,
     @SerializedName("questionIndex") val questionIndex: Int?,
     @SerializedName("numMin") val numMin: Double?, // Backend-Nullable
     @SerializedName("numMax") val numMax: Double?, // Backend-Nullable
@@ -184,16 +183,14 @@ data class Question(
                 Log.w(TAG, "[languageVersions] was null")
             }
 
-        this@Question.mcOptions?.forEach { it.verifyIntegrity() }
-            ?: let {
+        this@Question.visibleCondition?.forEach {
+            if (!it.verifyIntegrity()) {
                 nullCheckResult = false
-                Log.w(TAG, "[mcOptions] was null")
             }
-        this@Question.visibleCondition?.forEach { it.verifyIntegrity() }
-            ?: let {
-                nullCheckResult = false
-                Log.w(TAG, "[visibleCondition] was null")
-            }
+        } ?: let {
+            nullCheckResult = false
+            Log.w(TAG, "[visibleCondition] was null")
+        }
 
         return nullCheckResult
     }
@@ -208,6 +205,7 @@ data class QuestionLangVersion(
     @SerializedName("qid") val parentId: String?,
     @SerializedName("questionText") val questionText: String?,
     @SerializedName("id") val questionTextId: Int?,
+    @SerializedName("mcOptions") val mcOptions: List<McOption>?,
 ) : Serializable {
 
     fun verifyIntegrity(): Boolean {
@@ -228,6 +226,14 @@ data class QuestionLangVersion(
         this@QuestionLangVersion.language ?: let {
             nullCheckResult = false
             Log.w(TAG, "[language] was null")
+        }
+        this@QuestionLangVersion.mcOptions?.forEach {
+            if (!it.verifyIntegrity()) {
+                nullCheckResult = false
+            }
+        } ?: let {
+            nullCheckResult = false
+            Log.w(TAG, "[mcOptions] was null")
         }
 
         return nullCheckResult
