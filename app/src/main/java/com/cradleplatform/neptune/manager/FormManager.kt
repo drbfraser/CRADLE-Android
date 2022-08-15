@@ -23,7 +23,7 @@ class FormManager @Inject constructor(
     private val formClassDao: FormClassificationDao
 ) {
     suspend fun submitFormToWebAsResponse(formResponse: FormResponse): NetworkResult<Unit> {
-        return mRestApi.putFormResponse(formResponse)
+        return mRestApi.postFormResponse(formResponse)
     }
 
     suspend fun searchForFormTemplateWithName(formClassName: String): List<FormTemplate> =

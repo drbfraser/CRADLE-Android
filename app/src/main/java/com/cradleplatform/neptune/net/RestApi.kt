@@ -471,11 +471,11 @@ class RestApi constructor(
      * @param mFormTemplate : the form object to upload
      * @return whether the request was successful or not
      */
-    suspend fun putFormResponse(mFormResponse: FormResponse): NetworkResult<Unit> =
+    suspend fun postFormResponse(mFormResponse: FormResponse): NetworkResult<Unit> =
         withContext(IO) {
             val body = Gson().toJson(mFormResponse).toByteArray()
             http.makeRequest(
-                method = Http.Method.PUT,
+                method = Http.Method.POST,
                 url = urlManager.uploadFormResponse,
                 headers = headers,
                 requestBody = buildJsonRequestBody(body),
