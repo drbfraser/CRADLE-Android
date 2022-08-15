@@ -146,6 +146,12 @@ class FormRenderingActivity : AppCompatActivity() {
                 num += 1
             }
         }
+
+        // if there is no explicit categories, and questions is not empty
+        if (num == 0) {
+            num = 1
+        }
+
         return num
     }
 
