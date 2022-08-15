@@ -18,8 +18,10 @@ import java.io.Serializable
  */
 data class FormTemplate(
 
+    // version (assigned by system admin to loosely track version. May be "Jan 2022", or "V1", ...)
     @SerializedName("version") val version: String?,
     @SerializedName("archived") val archived: Boolean?,
+    // timestamp (filled by server when created)
     @SerializedName("dateCreated") val dateCreated: Int?,
     @SerializedName("id") val id: String?,
     @SerializedName("formClassificationId") val formClassId: String?,
@@ -56,11 +58,13 @@ data class FormTemplate(
     }
 
     /**
-     * Performs a Null-check for every inner fields in the [FormTemplate]
+     *  Performs a Null-check for every inner fields in the [FormTemplate] that
+     *  should not be null except backend-nullable fields. This is to verify if
+     *  class was parsed successfully
      *
-     * @return true of
+     *  @return true if integrity verified
      */
-    fun isDeeplyNonNull(): Boolean {
+    fun verifyIntegrity(): Boolean {
 
         var nullCheckResult = true
 
@@ -85,7 +89,7 @@ data class FormTemplate(
             Log.e(TAG, "[formClassId] was null")
         }
 
-        this@FormTemplate.questions?.forEach { it.isDeeplyNonNull() }
+        this@FormTemplate.questions?.forEach { it.verifyIntegrity() }
             ?: let {
                 nullCheckResult = false
                 Log.w(Question.TAG, "[questions] was null")
@@ -114,12 +118,13 @@ enum class QuestionTypeEnum {
 data class Question(
     @SerializedName("id") val id: String?,
     @SerializedName("visibleCondition") val visibleCondition: List<VisibleCondition>?,
-    @SerializedName("isBlank") val isBlank: Boolean?,
-    @SerializedName("formTemplateId") val formTemplateId: String?,
+    @SerializedName("isBlank") val isBlank: Boolean?, // Should be true for FormTemplates
+    @SerializedName("formTemplateId") val formTemplateId: String?, // Backend-Nullable
     @SerializedName("mcOptions") val mcOptions: List<McOption>?,
     @SerializedName("questionIndex") val questionIndex: Int?,
-    @SerializedName("numMin") val numMin: Double?,
-    @SerializedName("numMax") val numMax: Double?,
+    @SerializedName("numMin") val numMin: Double?, // Backend-Nullable
+    @SerializedName("numMax") val numMax: Double?, // Backend-Nullable
+    @SerializedName("stringMaxLength") val stringMaxLength: Integer?, // Backend-Nullable
     @SerializedName("questionId") val questionId: String?,
     @SerializedName("questionType") val questionType: QuestionTypeEnum?,
     @SerializedName("hasCommentAttached") val hasCommentAttached: Boolean?,
@@ -127,7 +132,11 @@ data class Question(
     @SerializedName("questionLangVersions") val languageVersions: List<QuestionLangVersion>?
 ) : Serializable {
 
-    fun isDeeplyNonNull(): Boolean {
+    /**
+     * Checks if fields has been parsed successfully, where fields should not be null except:
+     * backend-nullable fields like formTemplateId, numMin, numMax, stringMaxLength
+     */
+    fun verifyIntegrity(): Boolean {
         var nullCheckResult = true
 
         this@Question.id ?: let {
@@ -147,16 +156,6 @@ data class Question(
         this@Question.questionIndex ?: let {
             nullCheckResult = false
             Log.w(TAG, "[questionIndex] was null")
-        }
-
-        this@Question.numMax ?: let {
-            nullCheckResult = false
-            Log.w(TAG, "[numMax] was null")
-        }
-
-        this@Question.numMin ?: let {
-            nullCheckResult = false
-            Log.w(TAG, "[numMin] was null")
         }
 
         this@Question.questionId ?: let {
@@ -179,18 +178,18 @@ data class Question(
             Log.w(TAG, "[required] was null")
         }
 
-        this@Question.languageVersions?.forEach { it.isDeeplyNonNull() }
+        this@Question.languageVersions?.forEach { it.verifyIntegrity() }
             ?: let {
                 nullCheckResult = false
                 Log.w(TAG, "[languageVersions] was null")
             }
 
-        this@Question.mcOptions?.forEach { it.isDeeplyNonNull() }
+        this@Question.mcOptions?.forEach { it.verifyIntegrity() }
             ?: let {
                 nullCheckResult = false
                 Log.w(TAG, "[mcOptions] was null")
             }
-        this@Question.visibleCondition?.forEach { it.isDeeplyNonNull() }
+        this@Question.visibleCondition?.forEach { it.verifyIntegrity() }
             ?: let {
                 nullCheckResult = false
                 Log.w(TAG, "[visibleCondition] was null")
@@ -211,7 +210,7 @@ data class QuestionLangVersion(
     @SerializedName("id") val questionTextId: Int?,
 ) : Serializable {
 
-    fun isDeeplyNonNull(): Boolean {
+    fun verifyIntegrity(): Boolean {
         var nullCheckResult = true
 
         this@QuestionLangVersion.language ?: let {
@@ -243,7 +242,7 @@ data class McOption(
     @SerializedName("opt") val opt: String?
 ) : Serializable {
 
-    fun isDeeplyNonNull(): Boolean {
+    fun verifyIntegrity(): Boolean {
         var nullCheckResult = true
 
         this@McOption.mcid ?: let {
@@ -269,7 +268,7 @@ data class VisibleCondition(
     @SerializedName("answers") var answerCondition: Answer?
 ) : Serializable {
 
-    fun isDeeplyNonNull(): Boolean {
+    fun verifyIntegrity(): Boolean {
         var nullCheckResult = true
 
         this@VisibleCondition.qidx ?: let {

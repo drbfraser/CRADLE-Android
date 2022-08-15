@@ -12,7 +12,7 @@ import kotlin.IllegalArgumentException
  *
  *  @param patientId The id for the patient this form is filled for
  *  @param formTemplate The template of the form this [FormResponse] is for
- *   The [FormTemplate] must be deeply non-null ([FormTemplate.isDeeplyNonNull] == true)
+ *   The [FormTemplate] must be deeply non-null ([FormTemplate.verifyIntegrity] == true)
  *   (or in other words, must be valid. There should be no null parameters if parsed correctly)
  *  @param language The language selected for this response, must exist in original [FormTemplate]
  *  @param answers A Map of <questionId, Answer> to pass as responses
@@ -43,7 +43,7 @@ constructor(
     init {
 
         // FormTemplate should not have any null values if parsed correctly
-        if (!formTemplate.isDeeplyNonNull()) {
+        if (!formTemplate.verifyIntegrity()) {
             throw IllegalArgumentException("FormTemplate passed for FormResponse creation has null parameter")
         }
 
@@ -67,7 +67,7 @@ constructor(
 
         questions.forEach { question ->
 
-            if (!question.isDeeplyNonNull()) {
+            if (!question.verifyIntegrity()) {
                 throw IllegalArgumentException(
                     "Failed to create FormResponse: QuestionTemplate has null fields"
                 )
@@ -87,7 +87,7 @@ constructor(
                     answers = response,
                     required = question.required!!,
                     visibleCondition = question.visibleCondition!!,
-                    isBlank = question.isBlank!!,
+                    isBlank = false, // blank refers to FormTemplates, not blank to FormResponses
                     formTemplateId = question.formTemplateId!!,
                     mcOptions = question.mcOptions!!,
                     questionIndex = question.questionIndex!!,
@@ -139,7 +139,7 @@ class QuestionResponse(
     @SerializedName("answers") var answers: Answer,
     @SerializedName("required") val required: Boolean,
     @SerializedName("visibleCondition") val visibleCondition: List<VisibleCondition>,
-    @SerializedName("isBlank") val isBlank: Boolean,
+    @SerializedName("isBlank") val isBlank: Boolean = false,
     @SerializedName("formTemplateId") val formTemplateId: String,
     @SerializedName("mcOptions") val mcOptions: List<McOption>,
     @SerializedName("questionIndex") val questionIndex: Int,
