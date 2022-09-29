@@ -47,12 +47,15 @@ class FormSelectionActivity : AppCompatActivity() {
     }
 
     private fun setUpFormVersionOnChange() {
-        val formSelection = findViewById<TextInputLayout>(R.id.form_selection_text_input)
+        val formSelectionInput = findViewById<TextInputLayout>(R.id.form_selection_text_input)
         val formLanguageInput = findViewById<TextInputLayout>(R.id.form_language_text_input)
-        formSelection.editText!!.doOnTextChanged { text, _, _, _ ->
+
+        //Crashing on Typing -> Commented
+        formSelectionInput.editText!!.doOnTextChanged { text, _, _, _ ->
             viewModel.formTemplateChanged(text.toString())
             formLanguageInput.editText!!.text.clear()
         }
+
     }
 
     private fun setUpFetchFormButton() {
@@ -97,7 +100,7 @@ class FormSelectionActivity : AppCompatActivity() {
     }
 
     private fun setUpActionBar() {
-        supportActionBar?.title = getString(R.string.form_selection_activity_title)
+        supportActionBar?.title = getString(R.string.create_new_form)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 
