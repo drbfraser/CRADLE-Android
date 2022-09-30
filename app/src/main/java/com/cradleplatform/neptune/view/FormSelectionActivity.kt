@@ -55,7 +55,6 @@ class FormSelectionActivity : AppCompatActivity() {
             viewModel.formTemplateChanged(text.toString())
             formLanguageInput.editText!!.text.clear()
         }
-
     }
 
     private fun setUpFetchFormButton() {
