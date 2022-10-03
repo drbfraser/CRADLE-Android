@@ -35,6 +35,16 @@ class FormRenderingActivity : AppCompatActivity() {
     @Inject
     lateinit var mFormManager: FormManager
 
+    override fun onResume() {
+        super.onResume()
+        val btnBack: Button = findViewById(R.id.btn_back)
+
+        btnBack.setOnClickListener {
+            println("hello")
+            finish()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_form_rendering)
