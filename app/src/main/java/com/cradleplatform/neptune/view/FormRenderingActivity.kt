@@ -33,7 +33,6 @@ class FormRenderingActivity : AppCompatActivity() {
     private var patientID = ""
     private lateinit var patientObject: Patient
 
-
     @Inject
     lateinit var mFormManager: FormManager
 
@@ -44,7 +43,6 @@ class FormRenderingActivity : AppCompatActivity() {
         btnBack.setOnClickListener {
             finish()
         }
-
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -102,7 +100,7 @@ class FormRenderingActivity : AppCompatActivity() {
 
         supportActionBar?.title = "$totalPages page(s) left"
 
-        val btnNext: Button  = findViewById(R.id.btn_submit)
+        val btnNext: Button = findViewById(R.id.btn_submit)
         if (getNumOfCategory(getRestCategory(form!!)) == 0) {
             btnNext.text = "Submit"
         }
