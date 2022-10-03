@@ -33,7 +33,7 @@ class Http {
         .connectTimeout(30L, TimeUnit.SECONDS)
         .readTimeout(30L, TimeUnit.SECONDS)
         .writeTimeout(30L, TimeUnit.SECONDS)
-        //.connectionSpecs(listOf(ConnectionSpec.MODERN_TLS, ConnectionSpec.CLEARTEXT))
+        .connectionSpecs(listOf(ConnectionSpec.MODERN_TLS, ConnectionSpec.CLEARTEXT))
         .certificatePinner(
             // Setup pins so that it's harder to do man-in-the-middle attacks.
             // We're currently pinning against the leaf certificate's SubjectPublicKeyInfo;

@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
-import androidx.appcompat.app.AlertDialog
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -29,18 +29,18 @@ class FormRenderingActivity : AppCompatActivity() {
     private var layoutManager: RecyclerView.LayoutManager? = null
     private var adapter: RecyclerView.Adapter<RenderingController.ViewHolder>? = null
     private var form: FormTemplate? = null
+    private var btnNext: Button? = null
     lateinit var viewModel: FormRenderingViewModel
-    private var patientID = ""
-    private lateinit var patientObject: Patient
 
     @Inject
     lateinit var mFormManager: FormManager
 
     override fun onResume() {
         super.onResume()
-
         val btnBack: Button = findViewById(R.id.btn_back)
+
         btnBack.setOnClickListener {
+            println("hello")
             finish()
         }
     }
@@ -49,14 +49,11 @@ class FormRenderingActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_form_rendering)
 
-        //setting the arrow on actionbar
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
         form = intent.getSerializableExtra(EXTRA_FORM_TEMPLATE) as FormTemplate
         viewModel = ViewModelProvider(this).get(FormRenderingViewModel::class.java)
 
-        patientID = intent.getStringExtra(EXTRA_PATIENT_ID).toString()
-        patientObject = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT) as Patient
+        val id = intent.getStringExtra(EXTRA_PATIENT_ID)
+        val patient = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT) as Patient
 
         //Get memory of user answers
         if (DtoData.form.isNotEmpty()) {
@@ -78,11 +75,11 @@ class FormRenderingActivity : AppCompatActivity() {
         if (getNumOfCategory(form!!) <= 0) {
             val intent = FormSelectionActivity.makeIntentForPatientId(
                 this@FormRenderingActivity,
-                patientID,
-                patientObject
+                id!!,
+                patient
             )
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            intent.putExtra(EXTRA_PATIENT_ID, patientID)
+            intent.putExtra(EXTRA_PATIENT_ID, id)
             intent.putExtra("SUBMITTED", "true")
 
             DtoData.template?.let { viewModel.generateForm(it) }
@@ -96,62 +93,39 @@ class FormRenderingActivity : AppCompatActivity() {
             return
         }
 
-        var totalPages = getNumOfCategory(form!!)
-
-        supportActionBar?.title = "$totalPages page(s) left"
-
-        val btnNext: Button = findViewById(R.id.btn_submit)
-        if (getNumOfCategory(getRestCategory(form!!)) == 0) {
-            btnNext.text = "Submit"
-        }
+        var i = getNumOfCategory(form!!)
+        Toast.makeText(this, "$i pages remaining", Toast.LENGTH_SHORT).show()
 
         val languageSelected = intent.getStringExtra(EXTRA_LANGUAGE_SELECTED)
             ?: error("language selection missing from FormRenderingActivity Intent")
 
-        btnNext.setOnClickListener {
+        layoutManager = LinearLayoutManager(this)
+
+        var recyclerView = findViewById<RecyclerView>(R.id.myRecyclerView)
+        recyclerView.layoutManager = layoutManager
+
+        btnNext = findViewById(R.id.btn_submit)
+        if (getNumOfCategory(getRestCategory(form!!)) == 0) {
+            btnNext?.text = "Submit"
+        }
+
+        btnNext?.setOnClickListener {
             val newForm: FormTemplate = getRestCategory(form!!)
             val intent = makeIntentWithFormTemplate(
                 this,
                 newForm,
                 languageSelected,
-                patientID,
-                patientObject
+                id!!,
+                patient
             )
             viewModel.currentCategory = viewModel.currentCategory + 1
             startActivity(intent)
         }
 
-        layoutManager = LinearLayoutManager(this)
-
-        val recyclerView = findViewById<RecyclerView>(R.id.myRecyclerView)
-        recyclerView.layoutManager = layoutManager
-
         val firstCategory: FormTemplate = getFirstCategory(form!!)
 
         adapter = RenderingController(firstCategory, viewModel, languageSelected)
         recyclerView.adapter = adapter
-    }
-
-    override fun onSupportNavigateUp(): Boolean {
-
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Are you sure?")
-        builder.setMessage("This will discard the form!")
-
-        builder.setPositiveButton(R.string.yes) { _, _ ->
-            val intent = FormSelectionActivity.makeIntentForPatientId(
-                this@FormRenderingActivity,
-                patientID,
-                patientObject
-            )
-            startActivity(intent)
-        }
-
-        builder.setNegativeButton(R.string.no) { _, _ ->
-            //Do nothing...
-        }
-        builder.show()
-        return true
     }
 
     companion object {
@@ -182,7 +156,9 @@ class FormRenderingActivity : AppCompatActivity() {
 
     private fun getNumOfCategory(form: FormTemplate): Int {
         var num = 0
-
+        if (form.questions!!.isEmpty()) {
+            return num
+        }
         for (question in form.questions!!) {
             if (question.questionType == "CATEGORY") {
                 num += 1
@@ -192,8 +168,8 @@ class FormRenderingActivity : AppCompatActivity() {
     }
 
     private fun getFirstCategory(form: FormTemplate): FormTemplate {
-        val questionList: List<Questions> = form.questions!!
-        val firstQuestionList: MutableList<Questions> = mutableListOf()
+        var questionList: List<Questions> = form.questions!!
+        var firstQuestionList: MutableList<Questions> = mutableListOf()
         for (i in questionList.indices) {
             if (questionList[i].questionType == "CATEGORY" && i != 0) {
                 break
@@ -206,9 +182,9 @@ class FormRenderingActivity : AppCompatActivity() {
     }
 
     private fun getRestCategory(form: FormTemplate): FormTemplate {
-        val questionList: List<Questions> = form.questions!!
-        val restQuestionList: MutableList<Questions> = mutableListOf()
-        var notFirstCATEGORY = false
+        var questionList: List<Questions> = form.questions!!
+        var restQuestionList: MutableList<Questions> = mutableListOf()
+        var notFirstCATEGORY: Boolean = false
         for (i in questionList.indices) {
             if (questionList[i].questionType == "CATEGORY" && i != 0) {
                 notFirstCATEGORY = true
