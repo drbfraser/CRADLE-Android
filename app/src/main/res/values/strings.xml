@@ -658,7 +658,7 @@
     <string name="textview">TextView</string>
     <string name="warn_no_form_template_selected">Please Select a form</string>
     <string name="war_no_form_language_selected">Please Select a Language</string>
-    <string name="form_selection_activity_title">Create New Form</string>
+    <string name="create_new_form">Create New Form</string>
     <string name="form_selection_hint">Form*</string>
     <string name="form_language_hint">Language*</string>
     <string name="fetch_form_button_text">Fetch Form</string>
@@ -667,6 +667,7 @@
     <string name="data_range">Input range:</string>
     <string name="sync_activity_status_downloading_health_facilities">Downloading Health Facilities</string>
     <string name="sync_activitiy_status_downloading_form_templates">Downloading Form Templates</string>
+    <string name="pencil_icon_for_edit">Pencil icon for edit</string>
 
 
     <plurals name="unuploaded_reading_signout_message">
