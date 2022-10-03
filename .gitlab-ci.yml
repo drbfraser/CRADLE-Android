@@ -21,7 +21,7 @@ code_analysis:
   rules:
     - if: '$CI_PIPELINE_SOURCE != "schedule" && $CI_MERGE_REQUEST_ID == null'
   script:
-    - ./gradlew detekt --info --stacktrace
+    - ./gradlew detekt
   tags:
     - docker
 
