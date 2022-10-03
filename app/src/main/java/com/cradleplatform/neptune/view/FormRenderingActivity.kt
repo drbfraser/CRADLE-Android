@@ -30,6 +30,7 @@ class FormRenderingActivity : AppCompatActivity() {
     private var adapter: RecyclerView.Adapter<RenderingController.ViewHolder>? = null
     private var form: FormTemplate? = null
     private var btnNext: Button? = null
+    private var requiredAnswer: Boolean = false
     lateinit var viewModel: FormRenderingViewModel
 
     @Inject
@@ -171,6 +172,9 @@ class FormRenderingActivity : AppCompatActivity() {
         var questionList: List<Questions> = form.questions!!
         var firstQuestionList: MutableList<Questions> = mutableListOf()
         for (i in questionList.indices) {
+            if (questionList[i].required == true) {
+                requiredAnswer = true
+            }
             if (questionList[i].questionType == "CATEGORY" && i != 0) {
                 break
             } else {
