@@ -71,7 +71,7 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
         parent: ViewGroup,
         viewType: Int
     ): RenderingController.ViewHolder {
-        val v = LayoutInflater.from(parent.context).inflate(R.layout.card_layout, parent, false)
+        val v = LayoutInflater.from(parent.context).inflate(R.layout.form_question_card_layout, parent, false)
         return ViewHolder(v)
     }
 
@@ -149,7 +149,7 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
                 holder.itemMultipleChoice.visibility = View.GONE
                 holder.itemQuestion.textSize = 25F
             }
-            "DATE" -> {
+            "DATETIME" -> {
                 holder.itemDatePicker.visibility = View.VISIBLE
                 holder.itemTextAnswer.visibility = View.GONE
                 holder.itemNumberAnswer.visibility = View.GONE
