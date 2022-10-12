@@ -13,6 +13,7 @@ import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.ext.hideKeyboard
@@ -85,7 +86,7 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
         }
 
         //Store user input of type int
-        holder.itemNumberAnswer.setOnClickListener {
+        holder.itemNumberAnswer.doAfterTextChanged {
             val questionIndex = form.questions!![position].questionIndex!!
             val textAnswer = holder.itemNumberAnswer.text.toString()
             val answer = Pair(questionIndex, textAnswer)
@@ -95,7 +96,7 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
         }
 
         //Store user input of type string
-        holder.itemTextAnswer.setOnClickListener {
+        holder.itemTextAnswer.doAfterTextChanged {
             val questionIndex = form.questions!![position].questionIndex!!
             val textAnswer = holder.itemTextAnswer.text.toString()
             val answer = Pair(questionIndex, textAnswer)
@@ -105,7 +106,7 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
         }
 
         //Store user input of type Date
-        holder.itemDatePicker.setOnClickListener {
+        holder.itemDatePicker.doAfterTextChanged {
             clickDataPicker(holder.context, holder.itemDatePicker, position, holder)
         }
 
