@@ -15,10 +15,10 @@
 
         <SwitchPreference
             android:defaultValue="@string/settings_default_server_use_https"
-            android:enabled="false"
+            android:enabled="true"
             android:key="@string/key_server_use_https"
             android:title="Use HTTPS"
-            app:isPreferenceVisible="false" />
+            app:isPreferenceVisible="true" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Optical Character Recognition">

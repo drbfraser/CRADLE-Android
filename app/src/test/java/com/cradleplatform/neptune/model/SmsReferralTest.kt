@@ -29,10 +29,7 @@ internal class SmsReferralTest {
             userId = null
         )
 
-
-        val referralId = UUID.randomUUID().toString()
-
-        val smsReferral = SmsReadingWithReferral(referralId, patientAndReadings)
+        val smsReferral = SmsReadingWithReferral(patientAndReadings)
 
         val writer = JacksonMapper.createWriter<SmsReadingWithReferral>()
         val json = writer.writeValueAsString(smsReferral)
@@ -56,9 +53,7 @@ internal class SmsReferralTest {
             CommonPatientReferralJsons.patientWithStandaloneReferral.second
         )
 
-        val referralId = UUID.randomUUID().toString()
-
-        val smsReferral = SmsReferral(referralId, patientAndReferrals)
+        val smsReferral = SmsReferral(patientAndReferrals)
 
         val writer = JacksonMapper.createWriter<SmsReferral>()
         val json = writer.writeValueAsString(smsReferral)

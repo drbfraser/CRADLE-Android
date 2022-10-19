@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
+import androidx.appcompat.app.AlertDialog
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -38,12 +39,24 @@ class FormRenderingActivity : AppCompatActivity() {
     @Inject
     lateinit var mFormManager: FormManager
 
+    override fun onResume() {
+        super.onResume()
+
+        val btnBack: Button = findViewById(R.id.btn_back)
+        btnBack.setOnClickListener {
+            finish()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_form_rendering)
 
         val formTemplateFromIntent = intent.getSerializableExtra(EXTRA_FORM_TEMPLATE) as FormTemplate
         viewModel.currentFormTemplate = formTemplateFromIntent
+        //setting the arrow on actionbar
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
 
         val patientId = intent.getStringExtra(EXTRA_PATIENT_ID)
         val patient = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT) as Patient
@@ -99,7 +112,6 @@ class FormRenderingActivity : AppCompatActivity() {
                     }
                 }
             }
-
             startActivity(intent)
             finish()
             return
@@ -177,6 +189,28 @@ class FormRenderingActivity : AppCompatActivity() {
         }
 
         return form.copy(questions = restQuestionList.toList())
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Are you sure?")
+        builder.setMessage("This will discard the form!")
+
+        builder.setPositiveButton(R.string.yes) { _, _ ->
+            val intent = FormSelectionActivity.makeIntentForPatientId(
+                this@FormRenderingActivity,
+                patientID,
+                patientObject
+            )
+            startActivity(intent)
+        }
+
+        builder.setNegativeButton(R.string.no) { _, _ ->
+            //Do nothing...
+        }
+        builder.show()
+        return true
     }
 
     companion object {

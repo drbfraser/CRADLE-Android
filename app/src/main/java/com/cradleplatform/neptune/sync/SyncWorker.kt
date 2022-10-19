@@ -76,6 +76,10 @@ class SyncWorker @AssistedInject constructor(
         UPLOADING_PATIENTS,
         DOWNLOADING_PATIENTS,
         /**
+         * Downloading the full health facility list from server
+         */
+        DOWNLOADING_HEALTH_FACILITIES,
+        /**
          * Checking the server for new readings, referrals, assessments by uploading an empty list
          */
         CHECKING_SERVER_READINGS,
@@ -92,7 +96,11 @@ class SyncWorker @AssistedInject constructor(
          */
         CHECKING_SERVER_ASSESSMENTS,
         UPLOADING_ASSESSMENTS,
-        DOWNLOADING_ASSESSMENTS
+        DOWNLOADING_ASSESSMENTS,
+        /**
+         * Downloading Form Tempalates from server
+         */
+        DOWNLOADING_FORM_TEMPLATES,
     }
 
     companion object {
@@ -536,7 +544,16 @@ class SyncWorker @AssistedInject constructor(
             withContext(Dispatchers.Main) { Log.d(TAG, "health facilities sync job is done") }
         }
 
-        restApi.syncHealthFacilities(channel, lastSyncTime)
+        restApi.syncHealthFacilities(
+            channel,
+            lastSyncTime
+        ) { current, total ->
+            reportProgress(
+                state = State.DOWNLOADING_HEALTH_FACILITIES,
+                progress = current,
+                total = total,
+            )
+        }
     }
 
     private suspend fun syncFormTemplates(): FormSyncResult =
@@ -555,7 +572,13 @@ class SyncWorker @AssistedInject constructor(
                 withContext(Dispatchers.Main) { Log.d(TAG, "form template sync job is done") }
             }
 
-            restApi.getAllFormTemplates(channel)
+            restApi.getAllFormTemplates(channel) { current, total ->
+                reportProgress(
+                    state = State.DOWNLOADING_HEALTH_FACILITIES,
+                    progress = current,
+                    total = total,
+                )
+            }
         }
 
     private suspend fun reportProgress(

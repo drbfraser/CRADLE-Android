@@ -18,6 +18,7 @@
             android:id="@+id/form_selection_text_input"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="0dp"
+            android:inputType="none"
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
             android:hint="@string/form_selection_hint"
@@ -30,6 +31,8 @@
 
             <AutoCompleteTextView
                 android:id="@+id/form_selection_auto_complete_text"
+                android:focusable='false'
+                android:cursorVisible='false'
                 setMaterialSpinnerItemsWithArray="@{viewModel.formTemplateListAsString}"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -52,6 +55,8 @@
 
             <AutoCompleteTextView
                 android:id="@+id/form_language_auto_complete_text"
+                android:focusable='false'
+                android:cursorVisible='false'
                 setMaterialSpinnerItemsWithArray="@{viewModel.formVersionLiveData}"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
