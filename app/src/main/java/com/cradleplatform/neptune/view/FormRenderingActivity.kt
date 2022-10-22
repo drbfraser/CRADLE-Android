@@ -34,6 +34,8 @@ class FormRenderingActivity : AppCompatActivity() {
     private var layoutManager: RecyclerView.LayoutManager? = null
     private var adapter: RecyclerView.Adapter<RenderingController.ViewHolder>? = null
     private var btnNext: Button? = null
+    private var patient: Patient? = null
+    private var patientId: String? = null
     val viewModel: FormRenderingViewModel by viewModels()
 
     @Inject
@@ -57,9 +59,8 @@ class FormRenderingActivity : AppCompatActivity() {
         //setting the arrow on actionbar
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-
-        val patientId = intent.getStringExtra(EXTRA_PATIENT_ID)
-        val patient = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT) as Patient
+        patientId = intent.getStringExtra(EXTRA_PATIENT_ID)!!
+        patient = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT)!! as Patient
         val languageSelected = intent.getStringExtra(EXTRA_LANGUAGE_SELECTED)
             ?: error("language selection missing from FormRenderingActivity Intent")
         val isCalledFromSelf = intent.getBooleanExtra(FLAG_IS_RECURSIVE_CALL, false)
@@ -75,16 +76,16 @@ class FormRenderingActivity : AppCompatActivity() {
             val intent = FormSelectionActivity.makeIntentForPatientId(
                 this@FormRenderingActivity,
                 patientId!!,
-                patient
+                patient!!
             )
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            intent.putExtra(EXTRA_PATIENT_ID, patientId)
+            intent.putExtra(EXTRA_PATIENT_ID, patientId!!)
             intent.putExtra("SUBMITTED", "true")
 
             lifecycleScope.launch(Dispatchers.IO) {
 
                 try {
-                    val result = viewModel.submitForm(patientId, languageSelected)
+                    val result = viewModel.submitForm(patientId!!, languageSelected)
                     if (result is NetworkResult.Success) {
                         withContext(Dispatchers.Main) {
                             CustomToast.shortToast(
@@ -134,7 +135,7 @@ class FormRenderingActivity : AppCompatActivity() {
                 newForm,
                 languageSelected,
                 patientId!!,
-                patient
+                patient!!
             )
             startActivity(intent)
         }
@@ -200,8 +201,8 @@ class FormRenderingActivity : AppCompatActivity() {
         builder.setPositiveButton(R.string.yes) { _, _ ->
             val intent = FormSelectionActivity.makeIntentForPatientId(
                 this@FormRenderingActivity,
-                patientID,
-                patientObject
+                patientId!!,
+                patient!!
             )
             startActivity(intent)
         }
