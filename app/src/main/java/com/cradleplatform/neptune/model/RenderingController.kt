@@ -13,9 +13,13 @@ import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.util.forEach
+import androidx.core.view.forEach
+import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.ext.hideKeyboard
+import com.cradleplatform.neptune.model.QuestionTypeEnum.*
 import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
 import java.util.Calendar
 
@@ -76,6 +80,9 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
     }
 
     override fun onBindViewHolder(holder: RenderingController.ViewHolder, position: Int) {
+
+        val questionId = form.questions!![position].questionId
+
         // Hide keyboard if lost focus
         holder.itemNumberAnswer.setOnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) {
@@ -85,27 +92,27 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
         }
 
         //Store user input of type int
-        holder.itemNumberAnswer.setOnClickListener {
-            val questionIndex = form.questions!![position].questionIndex!!
-            val textAnswer = holder.itemNumberAnswer.text.toString()
-            val answer = Pair(questionIndex, textAnswer)
-            viewModel.addAnswer(answer)
-            viewModel.currentAnswer.value = textAnswer
-            DtoData.form.add(answer)
+        holder.itemNumberAnswer.doAfterTextChanged {
+            // can be Double or Long
+            holder.itemNumberAnswer.text.toString().toDoubleOrNull()?.let {
+                viewModel.addAnswer(
+                    questionId!!,
+                    Answer.createNumericAnswer(it)
+                )
+            }
         }
 
         //Store user input of type string
-        holder.itemTextAnswer.setOnClickListener {
-            val questionIndex = form.questions!![position].questionIndex!!
+        holder.itemTextAnswer.doAfterTextChanged {
             val textAnswer = holder.itemTextAnswer.text.toString()
-            val answer = Pair(questionIndex, textAnswer)
-            viewModel.addAnswer(answer)
-            viewModel.currentAnswer.value = textAnswer
-            DtoData.form.add(answer)
+            viewModel.addAnswer(
+                questionId!!,
+                Answer.createTextAnswer(textAnswer)
+            )
         }
 
         //Store user input of type Date
-        holder.itemDatePicker.setOnClickListener {
+        holder.itemDatePicker.doAfterTextChanged {
             clickDataPicker(holder.context, holder.itemDatePicker, position, holder)
         }
 
@@ -127,12 +134,11 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
                 view.setBackgroundColor(Color.parseColor("#8d99ae"))
             }
 
-            val questionIndex = form.questions!![position].questionIndex!!
-            val textAnswer = holder.itemMultipleChoice.getItemAtPosition(myPosition).toString()
-            val answer = Pair(questionIndex, textAnswer)
-            viewModel.addAnswer(answer)
-            viewModel.currentAnswer.value = textAnswer
-            DtoData.form.add(answer)
+            val mcAnswer = mcidArrayFromListView(holder.itemMultipleChoice)
+            viewModel.addAnswer(
+                questionId!!,
+                Answer.createMcAnswer(mcAnswer)
+            )
         }
 
         holder.itemQuestion.text = form.questions!![position]
@@ -142,27 +148,27 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
 
         //Rendering the question card
         when (form.questions!![position].questionType) {
-            "CATEGORY" -> {
+            CATEGORY -> {
                 holder.itemDatePicker.visibility = View.GONE
                 holder.itemTextAnswer.visibility = View.GONE
                 holder.itemNumberAnswer.visibility = View.GONE
                 holder.itemMultipleChoice.visibility = View.GONE
                 holder.itemQuestion.textSize = 25F
             }
-            "DATE" -> {
+            DATE -> {
                 holder.itemDatePicker.visibility = View.VISIBLE
                 holder.itemTextAnswer.visibility = View.GONE
                 holder.itemNumberAnswer.visibility = View.GONE
                 holder.itemMultipleChoice.visibility = View.GONE
             }
-            "STRING" -> {
+            STRING -> {
                 holder.itemTextAnswer.visibility = View.VISIBLE
                 holder.itemNumberAnswer.visibility = View.GONE
                 holder.itemDatePicker.visibility = View.GONE
                 holder.itemMultipleChoice.visibility = View.GONE
                 setHint(holder.itemTextAnswer, form.questions!![position], holder.context)
             }
-            "INTEGER" -> {
+            INTEGER -> {
                 holder.itemNumberAnswer.visibility = View.VISIBLE
                 holder.itemTextAnswer.visibility = View.GONE
                 holder.itemDatePicker.visibility = View.GONE
@@ -170,7 +176,7 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
                 setHint(holder.itemNumberAnswer, form.questions!![position], holder.context)
             }
 
-            "MULTIPLE_CHOICE" -> {
+            MULTIPLE_CHOICE -> {
                 holder.itemNumberAnswer.visibility = View.GONE
                 holder.itemDatePicker.visibility = View.GONE
                 holder.itemTextAnswer.visibility = View.GONE
@@ -224,27 +230,27 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
     }
 
     private fun okClick(position: Int, holder: RenderingController.ViewHolder) {
-        val questionIndex = form.questions!![position].questionIndex!!
+        val questionId = form.questions!![position].questionId!!
         val textAnswer = holder.itemDatePicker.text.toString()
-        val answer = Pair(questionIndex, textAnswer)
-        viewModel.addAnswer(answer)
-        viewModel.currentAnswer.value = textAnswer
-        DtoData.form.add(answer)
+        viewModel.addAnswer(
+            questionId,
+            Answer.createTextAnswer(textAnswer)
+        )
     }
 
-    private fun setHint(hint: TextView, theQuestion: Questions, context: Context) {
+    private fun setHint(hint: TextView, theQuestion: Question, context: Context) {
         val type = theQuestion.questionType
         val numMin: Double? = theQuestion.numMin
         val numMax: Double? = theQuestion.numMax
         val isRequired = theQuestion.required!!
 
-        if (type == "STRING") {
+        if (type == STRING) {
             if (isRequired) {
                 hint.hint = context.getString(R.string.is_required)
             } else {
                 hint.hint = context.getString(R.string.is_optional)
             }
-        } else if (type == "INTEGER") {
+        } else if (type == INTEGER) {
             if (isRequired) {
                 hint.hint = context.getString(R.string.is_required) + ": " +
                     context.getString(R.string.data_range) + "($numMin, $numMax)"
@@ -252,5 +258,16 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
                 hint.hint = context.getString(R.string.is_optional)
             }
         }
+    }
+
+    private fun mcidArrayFromListView(listView: ListView): List<Int> {
+
+        val checkedItemList = mutableListOf<Int>()
+        listView.checkedItemPositions.forEach { key, selected ->
+            if (selected) {
+                checkedItemList.add(key)
+            }
+        }
+        return checkedItemList
     }
 }

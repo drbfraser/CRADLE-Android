@@ -5,21 +5,26 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AlertDialog
+import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.FormManager
-import com.cradleplatform.neptune.model.DtoData
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.Patient
-import com.cradleplatform.neptune.model.Questions
+import com.cradleplatform.neptune.model.Question
+import com.cradleplatform.neptune.model.QuestionTypeEnum
 import com.cradleplatform.neptune.model.RenderingController
+import com.cradleplatform.neptune.net.NetworkResult
+import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @Suppress("LargeClass")
@@ -28,10 +33,10 @@ class FormRenderingActivity : AppCompatActivity() {
 
     private var layoutManager: RecyclerView.LayoutManager? = null
     private var adapter: RecyclerView.Adapter<RenderingController.ViewHolder>? = null
-    private var form: FormTemplate? = null
-    lateinit var viewModel: FormRenderingViewModel
-    private var patientID = ""
-    private lateinit var patientObject: Patient
+    private var btnNext: Button? = null
+    private var patient: Patient? = null
+    private var patientId: String? = null
+    val viewModel: FormRenderingViewModel by viewModels()
 
     @Inject
     lateinit var mFormManager: FormManager
@@ -49,87 +54,142 @@ class FormRenderingActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_form_rendering)
 
+        val formTemplateFromIntent = intent.getSerializableExtra(EXTRA_FORM_TEMPLATE) as FormTemplate
+        viewModel.currentFormTemplate = formTemplateFromIntent
         //setting the arrow on actionbar
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        form = intent.getSerializableExtra(EXTRA_FORM_TEMPLATE) as FormTemplate
-        viewModel = ViewModelProvider(this).get(FormRenderingViewModel::class.java)
-
-        patientID = intent.getStringExtra(EXTRA_PATIENT_ID).toString()
-        patientObject = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT) as Patient
-
-        //Get memory of user answers
-        if (DtoData.form.isNotEmpty()) {
-            for (a in DtoData.form) {
-                if (!viewModel.form.contains(a)) {
-                    viewModel.addAnswer(a)
-                }
-            }
-            //Reset the memory to the latest user answers
-            DtoData.form = viewModel.form
-        }
+        patientId = intent.getStringExtra(EXTRA_PATIENT_ID)!!
+        patient = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT)!! as Patient
+        val languageSelected = intent.getStringExtra(EXTRA_LANGUAGE_SELECTED)
+            ?: error("language selection missing from FormRenderingActivity Intent")
+        val isCalledFromSelf = intent.getBooleanExtra(FLAG_IS_RECURSIVE_CALL, false)
 
         //Store the raw form template if there is not one in memory
-        if (DtoData.template == null) {
-            DtoData.template = form
+        if (!isCalledFromSelf) {
+            viewModel.resetRenderingFormAndAnswers()
+            viewModel.setRenderingFormIfNull(viewModel.currentFormTemplate!!)
         }
 
         //Check if question list contains category
-        if (getNumOfCategory(form!!) <= 0) {
+        if (getNumOfCategory(viewModel.currentFormTemplate!!) <= 0) {
             val intent = FormSelectionActivity.makeIntentForPatientId(
                 this@FormRenderingActivity,
-                patientID,
-                patientObject
+                patientId!!,
+                patient!!
             )
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            intent.putExtra(EXTRA_PATIENT_ID, patientID)
+            intent.putExtra(EXTRA_PATIENT_ID, patientId!!)
             intent.putExtra("SUBMITTED", "true")
 
-            DtoData.template?.let { viewModel.generateForm(it) }
-            DtoData.resultForm = viewModel.myFormResult
+            lifecycleScope.launch(Dispatchers.IO) {
 
-            lifecycleScope.launch {
-                viewModel.submitForm(mFormManager)
+                try {
+                    val result = viewModel.submitForm(patientId!!, languageSelected)
+                    if (result is NetworkResult.Success) {
+                        withContext(Dispatchers.Main) {
+                            CustomToast.shortToast(
+                                applicationContext,
+                                "Form Response Submitted"
+                            )
+                        }
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            CustomToast.shortToast(
+                                applicationContext,
+                                "Form Response Submission failed with network error:\n " +
+                                    "${result.getStatusMessage(applicationContext)}"
+                            )
+                        }
+                    }
+                } catch (exception: IllegalArgumentException) {
+                    withContext(Dispatchers.Main) {
+                        CustomToast.shortToast(
+                            applicationContext,
+                            "Form Response Failed to Create(Malformed):\n" +
+                                "${exception.message}"
+                        )
+                        exception.printStackTrace()
+                    }
+                }
             }
             startActivity(intent)
             finish()
             return
         }
 
-        var totalPages = getNumOfCategory(form!!)
+        layoutManager = LinearLayoutManager(this)
 
-        supportActionBar?.title = "$totalPages page(s) left"
+        var recyclerView = findViewById<RecyclerView>(R.id.myRecyclerView)
+        recyclerView.layoutManager = layoutManager
 
-        val btnNext: Button = findViewById(R.id.btn_submit)
-        if (getNumOfCategory(getRestCategory(form!!)) == 0) {
-            btnNext.text = "Submit"
+        btnNext = findViewById(R.id.btn_submit)
+        if (getNumOfCategory(getRestCategory(formTemplateFromIntent)) == 0) {
+            btnNext?.text = "Submit"
         }
 
-        val languageSelected = intent.getStringExtra(EXTRA_LANGUAGE_SELECTED)
-            ?: error("language selection missing from FormRenderingActivity Intent")
-
-        btnNext.setOnClickListener {
-            val newForm: FormTemplate = getRestCategory(form!!)
-            val intent = makeIntentWithFormTemplate(
+        btnNext?.setOnClickListener {
+            val newForm: FormTemplate = getRestCategory(formTemplateFromIntent)
+            val intent = makeIntentFromSelf(
                 this,
                 newForm,
                 languageSelected,
-                patientID,
-                patientObject
+                patientId!!,
+                patient!!
             )
-            viewModel.currentCategory = viewModel.currentCategory + 1
             startActivity(intent)
         }
 
-        layoutManager = LinearLayoutManager(this)
-
-        val recyclerView = findViewById<RecyclerView>(R.id.myRecyclerView)
-        recyclerView.layoutManager = layoutManager
-
-        val firstCategory: FormTemplate = getFirstCategory(form!!)
+        val firstCategory: FormTemplate = getFirstCategory(formTemplateFromIntent)
 
         adapter = RenderingController(firstCategory, viewModel, languageSelected)
         recyclerView.adapter = adapter
+
+        var i = getNumOfCategory(formTemplateFromIntent)
+        Toast.makeText(this, "$i pages remaining", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun getNumOfCategory(form: FormTemplate): Int {
+        var num = 0
+        if (form.questions!!.isEmpty()) {
+            return num
+        }
+        for (question in form.questions) {
+            if (question.questionType == QuestionTypeEnum.CATEGORY) {
+                num += 1
+            }
+        }
+        return num
+    }
+
+    private fun getFirstCategory(form: FormTemplate): FormTemplate {
+        var questionList: List<Question> = form.questions!!
+        var firstQuestionList: MutableList<Question> = mutableListOf()
+        for (i in questionList.indices) {
+            if (questionList[i].questionType == QuestionTypeEnum.CATEGORY && i != 0) {
+                break
+            } else {
+                firstQuestionList.add(questionList[i])
+            }
+        }
+
+        return form.copy(questions = firstQuestionList.toList())
+    }
+
+    private fun getRestCategory(form: FormTemplate): FormTemplate {
+        val questionList: List<Question> = form.questions!!
+        val restQuestionList: MutableList<Question> = mutableListOf()
+        var notFirstCATEGORY: Boolean = false
+        for (i in questionList.indices) {
+            if (questionList[i].questionType == QuestionTypeEnum.CATEGORY && i != 0) {
+                notFirstCATEGORY = true
+            }
+            if (notFirstCATEGORY) {
+                restQuestionList.add(questionList[i])
+            }
+        }
+
+        return form.copy(questions = restQuestionList.toList())
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -141,8 +201,8 @@ class FormRenderingActivity : AppCompatActivity() {
         builder.setPositiveButton(R.string.yes) { _, _ ->
             val intent = FormSelectionActivity.makeIntentForPatientId(
                 this@FormRenderingActivity,
-                patientID,
-                patientObject
+                patientId!!,
+                patient!!
             )
             startActivity(intent)
         }
@@ -159,6 +219,7 @@ class FormRenderingActivity : AppCompatActivity() {
         private const val EXTRA_PATIENT_ID = "Patient id that the form is created for"
         private const val EXTRA_LANGUAGE_SELECTED = "String of language selected for a FormTemplate"
         private const val EXTRA_PATIENT_OBJECT = "The Patient object used to start patient profile"
+        private const val FLAG_IS_RECURSIVE_CALL = "Intent make from self"
 
         @JvmStatic
         fun makeIntentWithFormTemplate(
@@ -178,46 +239,22 @@ class FormRenderingActivity : AppCompatActivity() {
                 this.putExtras(bundle)
             }
         }
-    }
 
-    private fun getNumOfCategory(form: FormTemplate): Int {
-        var num = 0
-
-        for (question in form.questions!!) {
-            if (question.questionType == "CATEGORY") {
-                num += 1
-            }
+        @JvmStatic
+        private fun makeIntentFromSelf(
+            context: Context,
+            formTemplate: FormTemplate,
+            formLanguage: String,
+            patientId: String,
+            patient: Patient
+        ): Intent {
+            return makeIntentWithFormTemplate(
+                context,
+                formTemplate,
+                formLanguage,
+                patientId,
+                patient
+            ).putExtra(FLAG_IS_RECURSIVE_CALL, true)
         }
-        return num
-    }
-
-    private fun getFirstCategory(form: FormTemplate): FormTemplate {
-        val questionList: List<Questions> = form.questions!!
-        val firstQuestionList: MutableList<Questions> = mutableListOf()
-        for (i in questionList.indices) {
-            if (questionList[i].questionType == "CATEGORY" && i != 0) {
-                break
-            } else {
-                firstQuestionList.add(questionList[i])
-            }
-        }
-
-        return form.copy(questions = firstQuestionList.toList())
-    }
-
-    private fun getRestCategory(form: FormTemplate): FormTemplate {
-        val questionList: List<Questions> = form.questions!!
-        val restQuestionList: MutableList<Questions> = mutableListOf()
-        var notFirstCATEGORY = false
-        for (i in questionList.indices) {
-            if (questionList[i].questionType == "CATEGORY" && i != 0) {
-                notFirstCATEGORY = true
-            }
-            if (notFirstCATEGORY) {
-                restQuestionList.add(questionList[i])
-            }
-        }
-
-        return form.copy(questions = restQuestionList.toList())
     }
 }

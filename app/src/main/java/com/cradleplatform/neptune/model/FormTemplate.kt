@@ -10,21 +10,22 @@ import java.io.Serializable
  *  'Answers' class could be any type of user input, just add String type for now.
  *  Currently using Gson, could use another library if needed.
  *
- *  Field Nullability
+ *  !!Field Nullability!!
  *
  *  As it is possible that Gson bypasses non-null check when paring,
  *  (reference: https://stackoverflow.com/questions/71923931/null-safety-issues-with-gson-in-kotlin)
  *  every auto-parsed field is nullable, so that user requires to perform null-safety check
- *
  */
 data class FormTemplate(
 
+    // version (assigned by system admin to loosely track version. May be "Jan 2022", or "V1", ...)
     @SerializedName("version") val version: String?,
     @SerializedName("archived") val archived: Boolean?,
+    // timestamp (filled by server when created)
     @SerializedName("dateCreated") val dateCreated: Int?,
     @SerializedName("id") val id: String?,
     @SerializedName("formClassificationId") val formClassId: String?,
-    @SerializedName("questions") val questions: List<Questions>?,
+    @SerializedName("questions") val questions: List<Question>?,
 
 ) : Serializable {
 
@@ -56,11 +57,17 @@ data class FormTemplate(
         return languageVersions
     }
 
-    fun deepNullCheck(): Boolean {
+    /**
+     *  Performs a Null-check for every inner fields in the [FormTemplate] that
+     *  should not be null except backend-nullable fields. This is to verify if
+     *  class was parsed successfully
+     *
+     *  @return true if integrity verified
+     */
+    fun verifyIntegrity(): Boolean {
 
         var nullCheckResult = true
 
-        //nullCheckResult = nullCheckResult && this@FormTemplate.version != null
         this@FormTemplate.version ?: let {
             nullCheckResult = false
             Log.e(TAG, "[version] was null")
@@ -82,10 +89,10 @@ data class FormTemplate(
             Log.e(TAG, "[formClassId] was null")
         }
 
-        this@FormTemplate.questions?.forEach { it.deepNullCheck() }
+        this@FormTemplate.questions?.forEach { it.verifyIntegrity() }
             ?: let {
                 nullCheckResult = false
-                Log.w(Questions.TAG, "[questions] was null")
+                Log.w(Question.TAG, "[questions] was null")
             }
 
         return nullCheckResult
@@ -96,93 +103,93 @@ data class FormTemplate(
     }
 }
 
-data class Questions(
+enum class QuestionTypeEnum {
+    INTEGER,
+    DECIMAL,
+    STRING,
+    MULTIPLE_CHOICE,
+    MULTIPLE_SELECT,
+    DATE,
+    TIME,
+    DATETIME,
+    CATEGORY,
+}
 
+data class Question(
     @SerializedName("id") val id: String?,
     @SerializedName("visibleCondition") val visibleCondition: List<VisibleCondition>?,
-    @SerializedName("isBlank") val isBlank: Boolean?,
-    @SerializedName("formTemplateId") val formTemplateId: String?,
-    @SerializedName("mcOptions") val mcOptions: List<McOptions>?,
+    @SerializedName("isBlank") val isBlank: Boolean?, // Should be true for FormTemplates
+    @SerializedName("formTemplateId") val formTemplateId: String?, // Backend-Nullable
+    @SerializedName("mcOptions") val mcOptions: List<McOption>?,
     @SerializedName("questionIndex") val questionIndex: Int?,
-    @SerializedName("numMin") val numMin: Double?,
-    @SerializedName("numMax") val numMax: Double?,
+    @SerializedName("numMin") val numMin: Double?, // Backend-Nullable
+    @SerializedName("numMax") val numMax: Double?, // Backend-Nullable
+    @SerializedName("stringMaxLength") val stringMaxLength: Integer?, // Backend-Nullable
     @SerializedName("questionId") val questionId: String?,
-    @SerializedName("questionType") val questionType: String?,
-    @SerializedName("answers") var answers: Answers?,
+    @SerializedName("questionType") val questionType: QuestionTypeEnum?,
     @SerializedName("hasCommentAttached") val hasCommentAttached: Boolean?,
     @SerializedName("required") val required: Boolean?,
     @SerializedName("questionLangVersions") val languageVersions: List<QuestionLangVersion>?
 ) : Serializable {
 
-    fun deepNullCheck(): Boolean {
+    /**
+     * Checks if fields has been parsed successfully, where fields should not be null except:
+     * backend-nullable fields like formTemplateId, numMin, numMax, stringMaxLength
+     */
+    fun verifyIntegrity(): Boolean {
         var nullCheckResult = true
 
-        this@Questions.id ?: let {
+        this@Question.id ?: let {
             nullCheckResult = false
             Log.w(TAG, "[id] was null")
         }
-        this@Questions.isBlank ?: let {
+        this@Question.isBlank ?: let {
             nullCheckResult = false
             Log.w(TAG, "[isBlank] was null")
         }
 
-        this@Questions.formTemplateId ?: let {
+        this@Question.formTemplateId ?: let {
             nullCheckResult = false
             Log.w(TAG, "[formTemplateId] was null")
         }
 
-        this@Questions.questionIndex ?: let {
+        this@Question.questionIndex ?: let {
             nullCheckResult = false
             Log.w(TAG, "[questionIndex] was null")
         }
 
-        this@Questions.numMax ?: let {
-            nullCheckResult = false
-            Log.w(TAG, "[numMax] was null")
-        }
-
-        this@Questions.numMin ?: let {
-            nullCheckResult = false
-            Log.w(TAG, "[numMin] was null")
-        }
-
-        this@Questions.questionId ?: let {
+        this@Question.questionId ?: let {
             nullCheckResult = false
             Log.w(TAG, "[questionId] was null")
         }
 
-        this@Questions.questionType ?: let {
+        this@Question.questionType ?: let {
             nullCheckResult = false
             Log.w(TAG, "[questionType] was null")
         }
 
-        this@Questions.answers ?: let {
-            nullCheckResult = false
-            Log.w(TAG, "[answers] was null")
-        }
-
-        this@Questions.hasCommentAttached ?: let {
+        this@Question.hasCommentAttached ?: let {
             nullCheckResult = false
             Log.w(TAG, "[hasCommentAttached] was null")
         }
 
-        this@Questions.required ?: let {
+        this@Question.required ?: let {
             nullCheckResult = false
             Log.w(TAG, "[required] was null")
         }
 
-        this@Questions.languageVersions?.forEach { it.deepNullCheck() }
+        this@Question.languageVersions?.forEach { it.verifyIntegrity() }
             ?: let {
                 nullCheckResult = false
                 Log.w(TAG, "[languageVersions] was null")
             }
 
-        this@Questions.mcOptions?.forEach { it.deepNullCheck() }
+        this@Question.mcOptions?.forEach { it.verifyIntegrity() }
             ?: let {
                 nullCheckResult = false
                 Log.w(TAG, "[mcOptions] was null")
             }
-        this@Questions.visibleCondition?.forEach { it.deepNullCheck() }
+        this@Question.visibleCondition?.forEach { it.verifyIntegrity() }
             ?: let {
                 nullCheckResult = false
                 Log.w(TAG, "[visibleCondition] was null")
@@ -203,7 +210,7 @@ data class QuestionLangVersion(
     @SerializedName("id") val questionTextId: Int?,
 ) : Serializable {
 
-    fun deepNullCheck(): Boolean {
+    fun verifyIntegrity(): Boolean {
         var nullCheckResult = true
 
         this@QuestionLangVersion.language ?: let {
@@ -230,20 +237,19 @@ data class QuestionLangVersion(
     }
 }
 
-data class McOptions(
-
+data class McOption(
     @SerializedName("mcid") val mcid: Int?,
     @SerializedName("opt") val opt: String?
 ) : Serializable {
 
-    fun deepNullCheck(): Boolean {
+    fun verifyIntegrity(): Boolean {
         var nullCheckResult = true
 
-        this@McOptions.mcid ?: let {
+        this@McOption.mcid ?: let {
             nullCheckResult = false
             Log.w(TAG, "[mcid] was null")
         }
-        this@McOptions.opt ?: let {
+        this@McOption.opt ?: let {
             nullCheckResult = false
             Log.w(TAG, "[opt] was null")
         }
@@ -257,13 +263,12 @@ data class McOptions(
 }
 
 data class VisibleCondition(
-
     @SerializedName("qidx") val qidx: Int?,
     @SerializedName("relation") val relation: String?,
-    @SerializedName("answers") var answers: Answers?
+    @SerializedName("answers") var answerCondition: Answer?
 ) : Serializable {
 
-    fun deepNullCheck(): Boolean {
+    fun verifyIntegrity(): Boolean {
         var nullCheckResult = true
 
         this@VisibleCondition.qidx ?: let {
@@ -274,7 +279,8 @@ data class VisibleCondition(
             nullCheckResult = false
             Log.w(TAG, "[relation] was null")
         }
-        this@VisibleCondition.answers ?: let {
+
+        this@VisibleCondition.answerCondition ?: let {
             nullCheckResult = false
             Log.w(TAG, "[answers] was null")
         }
@@ -287,23 +293,71 @@ data class VisibleCondition(
     }
 }
 
-data class Answers(
-
-    @SerializedName("answers") var answers: String?,
+/**
+ *  Represents a JSON style [Answer] object (different field names for different types of answer)
+ *
+ *  Answer could be any one of the following:
+ *
+ *  1) "number", numeric values, can be any subclass of abstract class [Number], eg. Long, Double
+ *      { "number": 123.4 }
+ *  2) "text", Textual input, potentially including date-time object
+ *      { "text": "Hello world 123! :)" }
+ *  3) "mcidArray", Array of selected mc choice(s),eg [0,3] for choice 1 and 4, with 2 and 3 not selected
+ *      { "mcidArray": [0, 1] }
+ *
+ *  only one of the above field can be non-null, so that when serialized,
+ *    only one type (or with comment) is in the Json object
+ *
+ */
+data class Answer private constructor(
+    @SerializedName("number") val numericAnswer: Number?,
+    @SerializedName("text") val textAnswer: String?,
+    @SerializedName("mcidArray") val mcidArrayAnswer: List<Int>?,
+    @SerializedName("comment") val comment: String?,
 ) : Serializable {
 
-    fun deepNullCheck(): Boolean {
-        var nullCheckResult = true
+    fun isValidAnswer(): Boolean {
+        var nullCount = 0
+        numericAnswer ?: nullCount++
+        textAnswer ?: nullCount++
+        mcidArrayAnswer ?: nullCount++
 
-        this@Answers.answers ?: let {
-            nullCheckResult = false
-            Log.w(TAG, "[answers] was null")
-        }
-
-        return nullCheckResult
+        return nullCount == 1
     }
 
+    fun isNumericAnswer(): Boolean = numericAnswer != null && isValidAnswer()
+    fun isTextAnswer(): Boolean = textAnswer != null && isValidAnswer()
+    fun isMcAnswer(): Boolean = mcidArrayAnswer != null && isValidAnswer()
+    fun hasComment(): Boolean = !(comment?.isEmpty() ?: true)
+
     companion object {
-        const val TAG = "FormAnswer"
+        private val TAG = "FormAnswer"
+
+        fun createNumericAnswer(numericString: Number, comment: String = ""): Answer {
+            return Answer(
+                numericAnswer = numericString,
+                null,
+                null,
+                comment
+            )
+        }
+
+        fun createTextAnswer(textString: String, comment: String = ""): Answer {
+            return Answer(
+                null,
+                textAnswer = textString,
+                null,
+                comment
+            )
+        }
+
+        fun createMcAnswer(mcidArray: List<Int>, comment: String = ""): Answer {
+            return Answer(
+                null,
+                null,
+                mcidArrayAnswer = mcidArray,
+                comment
+            )
+        }
     }
 }

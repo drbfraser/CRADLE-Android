@@ -5,6 +5,8 @@ import com.cradleplatform.neptune.net.RestApi
 import androidx.lifecycle.LiveData
 import com.cradleplatform.neptune.database.daos.FormClassificationDao
 import com.cradleplatform.neptune.model.FormClassification
+import com.cradleplatform.neptune.model.FormResponse
+import com.cradleplatform.neptune.net.NetworkResult
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -12,19 +14,16 @@ import javax.inject.Singleton
  * Manager for FormTemplate and FormClassifications and
  * to submit the form with user's answers.
  *
- * Interacts with the [FormClassification] table in the database.
+ * Interacts with the [FormClassification] table in the database
+ *  and uses [RestApi] for submitting [FormResponse]s
  */
 @Singleton
 class FormManager @Inject constructor(
     private val mRestApi: RestApi,
     private val formClassDao: FormClassificationDao
 ) {
-    suspend fun putFormTemplate(form: FormTemplate?) {
-        form?.run {
-            // TODO: add error checking (refer to issue #81)
-            val result = mRestApi.putFormTemplate(form)
-            //Use (result is NetworkResult.Success) to check if success
-        }
+    suspend fun submitFormToWebAsResponse(formResponse: FormResponse): NetworkResult<Unit> {
+        return mRestApi.postFormResponse(formResponse)
     }
 
     suspend fun searchForFormTemplateWithName(formClassName: String): List<FormTemplate> =
