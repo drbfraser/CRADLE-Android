@@ -5,29 +5,28 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="5dp"
-    app:cardBackgroundColor='@color/white'
     app:cardCornerRadius="12dp"
-    app:cardElevation="3dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="@color/black"
+    app:cardUseCompatPadding="true"
     app:contentPadding="4dp">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/relativeLayout"
+    <LinearLayout
+        android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:background="@color/black"
+        android:orientation="vertical"
+        android:padding="8dp">
 
         <TextView
             android:id="@+id/tv_question"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_width="361dp"
+            android:layout_height="31dp"
             android:layout_marginBottom="20dp"
             android:gravity="center"
             android:text="hi this is a question"
-            app:layout_constraintBottom_toTopOf="@+id/et_answer"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.498"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:textColor="@color/white" />
 
         <EditText
             android:id="@+id/et_answer"
@@ -35,14 +34,12 @@
             android:layout_height="50dp"
             android:layout_marginLeft="6dp"
             android:layout_marginBottom="20dp"
+            android:backgroundTint="@color/white"
             android:hint=""
             android:imeOptions="actionSend"
             android:inputType="text"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_question" />
+            android:textColor="@color/white"
+            android:visibility="gone" />
 
         <EditText
             android:id="@+id/et_num_answer"
@@ -50,14 +47,12 @@
             android:layout_height="50dp"
             android:layout_marginLeft="6dp"
             android:layout_marginBottom="20dp"
+            android:backgroundTint="@color/white"
             android:hint=""
             android:imeOptions="actionSend"
             android:inputType="number"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_question" />
+            android:textColor="@color/white"
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/btn_date_picker"
@@ -67,25 +62,17 @@
             android:text="Select Date"
             android:textColor="@color/white"
             android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_question" />
+            />
 
-        <ListView
+        <RadioGroup
             android:id="@+id/lv_multiple_choice"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="20dp"
             android:background="#d9d9d9"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_question"
-            app:layout_constraintVertical_bias="0.642" />
+            android:visibility="gone" />
 
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
 
 </androidx.cardview.widget.CardView>

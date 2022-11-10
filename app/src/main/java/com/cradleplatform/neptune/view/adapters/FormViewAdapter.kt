@@ -1,56 +1,101 @@
-package com.cradleplatform.neptune.model
+package com.cradleplatform.neptune.view.adapters
 
-import android.app.DatePickerDialog
-import android.content.Context
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.ListView
-import android.widget.TextView
-import android.widget.Toast
 import androidx.core.content.ContextCompat
-import androidx.core.util.forEach
-import androidx.core.view.forEach
-import androidx.core.widget.doAfterTextChanged
+import androidx.core.view.marginTop
+import androidx.core.view.setPadding
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
-import com.cradleplatform.neptune.ext.hideKeyboard
+import com.cradleplatform.neptune.databinding.CardLayoutBinding
+import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.model.QuestionTypeEnum.*
-import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
-import java.util.Calendar
+import java.text.Normalizer.Form
 
-class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewModel, selectedLanguage: String) :
-    RecyclerView.Adapter<RenderingController.ViewHolder>() {
-    private var form: FormTemplate = myForm
-    private val formLanguage: String = selectedLanguage
-    private var selectedDate: String? = null
-    private var viewModel = myViewModel
+/**
+ * A custom adapter for rendering a list of questions
+ * @param context The context of the application
+ * @param questions The list of questions to render
+ * @param viewModel The view model for the form rendering (Question Class serves as the information holder)
+ */
+class FormViewAdapter(private val mList: MutableList<Question>) : RecyclerView.Adapter<FormViewAdapter.ViewHolder>(){
 
-    object Utility {
-        fun setListViewHeightBasedOnChildren(listView: ListView) {
+    inner class ViewHolder(val binding : CardLayoutBinding) : RecyclerView.ViewHolder(binding.root)
 
-            val listAdapter = listView.adapter
-                ?: // pre-condition
-                return
-            var totalHeight = 0
-            var i = 0
-            val len = listAdapter.count
-            while (i < len) {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        return ViewHolder(CardLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+    }
 
-                val listItem = listAdapter.getView(i, null, listView)
-                listItem.measure(0, 0)
-                totalHeight += listItem.measuredHeight
-                i++
-            }
-            val params = listView.layoutParams
-            params.height = totalHeight + listView.dividerHeight * (listAdapter.count - 1)
-            listView.layoutParams = params
+    override fun getItemCount(): Int {
+        return mList.size
+    }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+
+        //Setting the question text
+        holder.binding.tvQuestion.text = mList[position].languageVersions?.get(0)?.questionText ?: "No Question Text" // have to replace 0 with language
+
+       // Log.d("TEST123", mList[position].questionType.toString() + " " + mList[position].languageVersions?.get(0)?.questionText.toString())
+        //Log.d("TEST123",
+          //  (mList[position].questionType.toString() == "CATEGORY").toString() + " " + mList[position].languageVersions?.get(0)?.questionText.toString())
+
+        if (mList[position].questionType.toString() == "CATEGORY"){
+            holder.binding.tvQuestion.textSize = 28f
+            holder.binding.cardView.setCardBackgroundColor(ContextCompat.getColor(holder.binding.root.context, R.color.colorPrimaryDark))
+            holder.binding.linearLayout.background = ContextCompat.getDrawable(holder.binding.root.context, R.color.colorPrimaryDark)
+        }
+        else if (mList[position].questionType.toString() == "STRING"){
+            holder.binding.etAnswer.visibility = View.VISIBLE
+        }
+        else if (mList[position].questionType.toString() == "DATETIME"){
+            holder.binding.btnDatePicker.visibility = View.VISIBLE
+        }
+        else if (mList[position].questionType.toString() == "INTEGER"){
+            holder.binding.etNumAnswer.visibility = View.VISIBLE
+        }
+        else if (mList[position].questionType.toString() == "MULTIPLE_CHOICE"){
+            Log.d("TEST123", mList[position].mcOptions.toString())
+            //holder.binding. //Radi Group
         }
     }
+}
+
+/*
+class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewModel, selectedLanguage: String) :
+   RecyclerView.Adapter<RenderingController.
+   ViewHolder>() {
+   private var form: FormTemplate = myForm
+   private val formLanguage: String = selectedLanguage
+   private var selectedDate: String? = null
+   private var viewModel = myViewModel
+
+
+   object Utility {
+       fun setListViewHeightBasedOnChildren(listView: ListView) {
+
+           val listAdapter = listView.adapter
+               ?: // pre-condition
+               return
+           var totalHeight = 0
+           var i = 0
+           val len = listAdapter.count
+           while (i < len) {
+
+               val listItem = listAdapter.getView(i, null, listView)
+               listItem.measure(0, 0)
+               totalHeight += listItem.measuredHeight
+               i++
+           }
+           val params = listView.layoutParams
+           params.height = totalHeight + listView.dividerHeight * (listAdapter.count - 1)
+           listView.layoutParams = params
+       }
+   }
+
+
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var itemQuestion: TextView
@@ -86,7 +131,6 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
         // Hide keyboard if lost focus
         holder.itemNumberAnswer.setOnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) {
-
                 holder.context.hideKeyboard(holder.itemNumberAnswer)
             }
         }
@@ -271,3 +315,5 @@ class RenderingController(myForm: FormTemplate, myViewModel: FormRenderingViewMo
         return checkedItemList
     }
 }
+
+ */

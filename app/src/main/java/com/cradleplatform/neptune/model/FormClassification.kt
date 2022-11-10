@@ -1,5 +1,6 @@
 package com.cradleplatform.neptune.model
 
+import android.util.Log
 import androidx.room.Entity
 import com.google.gson.Gson
 import com.google.gson.JsonDeserializationContext
@@ -42,9 +43,11 @@ class FormClassification(
         ): FormClassification {
 
             val formTemplate = Gson().fromJson(json, FormTemplate::class.java)
+            Log.d("FormClassification", "FormTemplate: $formTemplate")
 
             var className: String
             var classId: String
+
             json!!.asJsonObject.let { rootObject ->
                 rootObject!!.getAsJsonObject("classification").let {
                     classification ->
