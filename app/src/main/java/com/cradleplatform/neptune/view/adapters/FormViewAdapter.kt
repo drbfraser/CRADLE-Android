@@ -1,10 +1,14 @@
 package com.cradleplatform.neptune.view.adapters
 
+import android.app.DatePickerDialog
+import android.content.Context
 import android.graphics.Color
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.RadioButton
 import androidx.core.content.ContextCompat
 import androidx.core.view.marginTop
 import androidx.core.view.setPadding
@@ -14,6 +18,7 @@ import com.cradleplatform.neptune.databinding.CardLayoutBinding
 import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.model.QuestionTypeEnum.*
 import java.text.Normalizer.Form
+import java.util.Calendar
 
 /**
  * A custom adapter for rendering a list of questions
@@ -23,9 +28,12 @@ import java.text.Normalizer.Form
  */
 class FormViewAdapter(private val mList: MutableList<Question>) : RecyclerView.Adapter<FormViewAdapter.ViewHolder>(){
 
+    lateinit var context : Context
+
     inner class ViewHolder(val binding : CardLayoutBinding) : RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        context = parent.context
         return ViewHolder(CardLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
@@ -38,12 +46,20 @@ class FormViewAdapter(private val mList: MutableList<Question>) : RecyclerView.A
         //Setting the question text
         holder.binding.tvQuestion.text = mList[position].languageVersions?.get(0)?.questionText ?: "No Question Text" // have to replace 0 with language
 
-       // Log.d("TEST123", mList[position].questionType.toString() + " " + mList[position].languageVersions?.get(0)?.questionText.toString())
+         Log.d("TEST123", mList[position].questionType.toString() + " " + mList[position].languageVersions?.get(0)?.questionText.toString())
         //Log.d("TEST123",
           //  (mList[position].questionType.toString() == "CATEGORY").toString() + " " + mList[position].languageVersions?.get(0)?.questionText.toString())
 
+
+        //Depending on question type, we are setting one of the four possible types of inputs to visible.
+        holder.binding.tvQuestion.textSize = 20f
+
         if (mList[position].questionType.toString() == "CATEGORY"){
+            //Setting Text Size for Categories (Headings)
             holder.binding.tvQuestion.textSize = 28f
+
+            //Setting Colors
+            holder.binding.tvQuestion.setTextColor(Color.parseColor("#FFFFFF"))
             holder.binding.cardView.setCardBackgroundColor(ContextCompat.getColor(holder.binding.root.context, R.color.colorPrimaryDark))
             holder.binding.linearLayout.background = ContextCompat.getDrawable(holder.binding.root.context, R.color.colorPrimaryDark)
         }
@@ -52,15 +68,54 @@ class FormViewAdapter(private val mList: MutableList<Question>) : RecyclerView.A
         }
         else if (mList[position].questionType.toString() == "DATETIME"){
             holder.binding.btnDatePicker.visibility = View.VISIBLE
+
+            //Enabling Click on Select Date
+            holder.binding.btnDatePicker.setOnClickListener {
+                clickDatePicker(context, holder.binding.btnDatePicker, 0, holder);
+            }
         }
         else if (mList[position].questionType.toString() == "INTEGER"){
             holder.binding.etNumAnswer.visibility = View.VISIBLE
         }
         else if (mList[position].questionType.toString() == "MULTIPLE_CHOICE"){
-            Log.d("TEST123", mList[position].mcOptions.toString())
-            //holder.binding. //Radi Group
+            holder.binding.rgMultipleChoice.visibility = View.VISIBLE
+
+            //Programmatically adding radio buttons for each option
+           mList[position].languageVersions?.get(0)?.mcOptions?.forEach {
+               val radioButton = RadioButton(context)
+               radioButton.text = it.opt
+               holder.binding.rgMultipleChoice.addView(radioButton)
+           }
         }
+
+
     }
+}
+
+private fun clickDatePicker(
+    context: Context,
+    itemDatePicker: Button,
+    position: Int,
+    holder: FormViewAdapter.ViewHolder
+) {
+    val calender = Calendar.getInstance()
+    val year = calender.get(Calendar.YEAR)
+    val month = calender.get(Calendar.MONTH)
+    val day = calender.get(Calendar.DAY_OF_MONTH)
+    val dpd = DatePickerDialog(
+        context,
+        { view, selectedYear, selectedMonth, selectedDayOfMonth ->
+            val date = "$selectedYear/${selectedMonth + 1}/$selectedDayOfMonth"
+            itemDatePicker.text = date
+
+            //okClick(position, holder)
+        },
+        year,
+        month,
+        day
+    )
+    dpd.datePicker.maxDate = System.currentTimeMillis()
+    dpd.show()
 }
 
 /*

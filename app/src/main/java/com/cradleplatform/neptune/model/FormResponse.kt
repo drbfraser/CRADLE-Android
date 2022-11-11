@@ -80,7 +80,7 @@ constructor(
                 )
 
             if (response != null) {
-
+                var list : List<McOption> = listOf()
                 val questionResponse = QuestionResponse(
                     questionType = question.questionType!!,
                     hasCommentAttached = response.hasComment(),
@@ -89,7 +89,8 @@ constructor(
                     visibleCondition = question.visibleCondition!!,
                     isBlank = false, // blank refers to FormTemplates, not blank to FormResponses
                     formTemplateId = question.formTemplateId!!,
-                    mcOptions = question.mcOptions!!,
+                    //mcOptions = question.mcOptions!!,
+                    list,
                     questionIndex = question.questionIndex!!,
                     languageSpecificText = languageQuestionText
                 )

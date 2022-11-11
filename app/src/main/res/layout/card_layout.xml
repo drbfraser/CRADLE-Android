@@ -9,45 +9,47 @@
     app:cardElevation="4dp"
     app:cardBackgroundColor="@color/black"
     app:cardUseCompatPadding="true"
-    app:contentPadding="4dp">
+    app:contentPadding="10dp">
 
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/black"
+        android:background="@color/white"
         android:orientation="vertical"
-        android:padding="8dp">
+        android:gravity="center"
+        android:padding="0dp">
 
         <TextView
             android:id="@+id/tv_question"
-            android:layout_width="361dp"
-            android:layout_height="31dp"
+            android:layout_width="320dp"
+            android:layout_height="53dp"
             android:layout_marginBottom="20dp"
             android:gravity="center"
             android:text="hi this is a question"
-            android:textColor="@color/white" />
+            android:textColor="@color/black" />
 
         <EditText
             android:id="@+id/et_answer"
-            android:layout_width="355dp"
+            android:layout_width="326dp"
             android:layout_height="50dp"
             android:layout_marginLeft="6dp"
             android:layout_marginBottom="20dp"
-            android:backgroundTint="@color/white"
+            android:backgroundTint="@color/black"
             android:hint=""
             android:imeOptions="actionSend"
             android:inputType="text"
+            android:paddingBottom="20dp"
             android:textColor="@color/white"
             android:visibility="gone" />
 
         <EditText
             android:id="@+id/et_num_answer"
-            android:layout_width="355dp"
+            android:layout_width="325dp"
             android:layout_height="50dp"
             android:layout_marginLeft="6dp"
             android:layout_marginBottom="20dp"
-            android:backgroundTint="@color/white"
+            android:backgroundTint="@color/black"
             android:hint=""
             android:imeOptions="actionSend"
             android:inputType="number"
@@ -56,20 +58,25 @@
 
         <Button
             android:id="@+id/btn_date_picker"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="173dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="15dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/rounded_button"
             android:text="Select Date"
-            android:textColor="@color/white"
-            android:visibility="gone"
-            />
+            android:textColor="@color/black"
+            android:visibility="gone" />
 
         <RadioGroup
-            android:id="@+id/lv_multiple_choice"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="20dp"
+            android:id="@+id/rg_multiple_choice"
+            android:layout_width="85dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
             android:background="#d9d9d9"
+            android:backgroundTint="@color/white"
+            android:gravity="left"
+            android:orientation="vertical"
+            android:paddingBottom="20dp"
             android:visibility="gone" />
 
 

@@ -46,10 +46,13 @@ class FormRenderingActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
+        /*
         val btnBack: Button = findViewById(R.id.btn_back)
         btnBack.setOnClickListener {
             finish()
         }
+
+         */
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,6 +78,9 @@ class FormRenderingActivity : AppCompatActivity() {
 
         var listOfQuestionLists  = fullQuestionList(formTemplateFromIntent)
 
+        listOfQuestionLists.forEach {
+            Log.d("Question", it.toString())
+        }
         //Log.d("TEST123", listOfQuestionLists.size.toString())
 
         layoutManager = LinearLayoutManager(this)
