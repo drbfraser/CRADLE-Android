@@ -1,6 +1,7 @@
 package com.cradleplatform.neptune.view.adapters
 
 import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.content.Context
 import android.graphics.Color
 import android.util.Log
@@ -102,20 +103,38 @@ private fun clickDatePicker(
     val year = calender.get(Calendar.YEAR)
     val month = calender.get(Calendar.MONTH)
     val day = calender.get(Calendar.DAY_OF_MONTH)
+
+    val hr = calender.get(Calendar.HOUR)
+    val min = calender.get(Calendar.MINUTE)
+
+    val tpd = TimePickerDialog(
+        context,
+        { view, selectedHour, selectedMinute ->
+            val time = "$selectedHour:$selectedMinute"
+            itemDatePicker.text = itemDatePicker.text.toString() + " " + time
+        },
+        hr,
+        min,
+        true
+    )
+
     val dpd = DatePickerDialog(
         context,
         { view, selectedYear, selectedMonth, selectedDayOfMonth ->
             val date = "$selectedYear/${selectedMonth + 1}/$selectedDayOfMonth"
             itemDatePicker.text = date
 
+            tpd.show()
             //okClick(position, holder)
         },
         year,
         month,
         day
     )
+
     dpd.datePicker.maxDate = System.currentTimeMillis()
     dpd.show()
+
 }
 
 /*
