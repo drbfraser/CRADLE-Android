@@ -80,7 +80,11 @@ constructor(
                 )
 
             if (response != null) {
-                var list : List<McOption> = listOf()
+
+                var mcOptionList: List<McOption> = question.languageVersions.find {
+                    it.language == language
+                }?.mcOptions ?: listOf()
+
                 val questionResponse = QuestionResponse(
                     questionType = question.questionType!!,
                     hasCommentAttached = response.hasComment(),
@@ -89,12 +93,13 @@ constructor(
                     visibleCondition = question.visibleCondition!!,
                     isBlank = false, // blank refers to FormTemplates, not blank to FormResponses
                     formTemplateId = question.formTemplateId!!,
-                    //mcOptions = question.mcOptions!!,
-                    list,
+                    mcOptions = mcOptionList,
+                    //TODO(mcOptions Return?)
                     questionIndex = question.questionIndex!!,
                     languageSpecificText = languageQuestionText
                 )
                 responseList.add(questionResponse)
+
             } else if (question.required == true) {
                 throw IllegalArgumentException(
                     "Failed to create FormResponse: Required question does not have an answer"

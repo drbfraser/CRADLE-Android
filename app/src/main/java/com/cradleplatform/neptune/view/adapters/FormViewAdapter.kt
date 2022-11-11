@@ -1,5 +1,6 @@
 package com.cradleplatform.neptune.view.adapters
 
+import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
@@ -44,10 +45,12 @@ class FormViewAdapter(private val mList: MutableList<Question>) : RecyclerView.A
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
-        //Setting the question text
-        holder.binding.tvQuestion.text = mList[position].languageVersions?.get(0)?.questionText ?: "No Question Text" // have to replace 0 with language
+        //TODO(have to replace 0 with language)
 
-         Log.d("TEST123", mList[position].questionType.toString() + " " + mList[position].languageVersions?.get(0)?.questionText.toString())
+        //Setting the question text
+        holder.binding.tvQuestion.text = mList[position].languageVersions?.get(0)?.questionText ?: "No Question Text"
+
+         //Log.d("TEST123", mList[position].questionType.toString() + " " + mList[position].languageVersions?.get(0)?.questionText.toString())
         //Log.d("TEST123",
           //  (mList[position].questionType.toString() == "CATEGORY").toString() + " " + mList[position].languageVersions?.get(0)?.questionText.toString())
 
@@ -64,9 +67,11 @@ class FormViewAdapter(private val mList: MutableList<Question>) : RecyclerView.A
             holder.binding.cardView.setCardBackgroundColor(ContextCompat.getColor(holder.binding.root.context, R.color.colorPrimaryDark))
             holder.binding.linearLayout.background = ContextCompat.getDrawable(holder.binding.root.context, R.color.colorPrimaryDark)
         }
+
         else if (mList[position].questionType.toString() == "STRING"){
             holder.binding.etAnswer.visibility = View.VISIBLE
         }
+
         else if (mList[position].questionType.toString() == "DATETIME"){
             holder.binding.btnDatePicker.visibility = View.VISIBLE
 
@@ -75,9 +80,11 @@ class FormViewAdapter(private val mList: MutableList<Question>) : RecyclerView.A
                 clickDatePicker(context, holder.binding.btnDatePicker, 0, holder);
             }
         }
+
         else if (mList[position].questionType.toString() == "INTEGER"){
             holder.binding.etNumAnswer.visibility = View.VISIBLE
         }
+
         else if (mList[position].questionType.toString() == "MULTIPLE_CHOICE"){
             holder.binding.rgMultipleChoice.visibility = View.VISIBLE
 
@@ -88,53 +95,51 @@ class FormViewAdapter(private val mList: MutableList<Question>) : RecyclerView.A
                holder.binding.rgMultipleChoice.addView(radioButton)
            }
         }
-
-
     }
 }
 
+@SuppressLint("SetTextI18n")
 private fun clickDatePicker(
-    context: Context,
-    itemDatePicker: Button,
-    position: Int,
-    holder: FormViewAdapter.ViewHolder
-) {
-    val calender = Calendar.getInstance()
-    val year = calender.get(Calendar.YEAR)
-    val month = calender.get(Calendar.MONTH)
-    val day = calender.get(Calendar.DAY_OF_MONTH)
+        context: Context,
+        itemDatePicker: Button,
+        position: Int,
+        holder: FormViewAdapter.ViewHolder
+    ) {
+        val calender = Calendar.getInstance()
+        val year = calender.get(Calendar.YEAR)
+        val month = calender.get(Calendar.MONTH)
+        val day = calender.get(Calendar.DAY_OF_MONTH)
 
-    val hr = calender.get(Calendar.HOUR)
-    val min = calender.get(Calendar.MINUTE)
+        val hr = calender.get(Calendar.HOUR)
+        val min = calender.get(Calendar.MINUTE)
 
-    val tpd = TimePickerDialog(
-        context,
-        { view, selectedHour, selectedMinute ->
-            val time = "$selectedHour:$selectedMinute"
-            itemDatePicker.text = itemDatePicker.text.toString() + " " + time
-        },
-        hr,
-        min,
-        true
-    )
+        val tpd = TimePickerDialog(
+            context,
+            { view, selectedHour, selectedMinute ->
+                val time = "$selectedHour:$selectedMinute"
+                itemDatePicker.text = itemDatePicker.text.toString() + " " + time
+            },
+            hr,
+            min,
+            true
+        )
 
-    val dpd = DatePickerDialog(
-        context,
-        { view, selectedYear, selectedMonth, selectedDayOfMonth ->
-            val date = "$selectedYear/${selectedMonth + 1}/$selectedDayOfMonth"
-            itemDatePicker.text = date
+        val dpd = DatePickerDialog(
+            context,
+            { view, selectedYear, selectedMonth, selectedDayOfMonth ->
+                val date = "$selectedYear/${selectedMonth + 1}/$selectedDayOfMonth"
+                itemDatePicker.text = date
 
-            tpd.show()
-            //okClick(position, holder)
-        },
-        year,
-        month,
-        day
-    )
+                tpd.show()
+                //okClick(position, holder)
+            },
+            year,
+            month,
+            day
+        )
 
-    dpd.datePicker.maxDate = System.currentTimeMillis()
-    dpd.show()
-
+        dpd.datePicker.maxDate = System.currentTimeMillis()
+        dpd.show()
 }
 
 /*
