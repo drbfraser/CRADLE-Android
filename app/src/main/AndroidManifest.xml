@@ -83,6 +83,7 @@
             android:name=".view.FormSelectionActivity"
             android:label="Form Selection"
             android:screenOrientation="portrait" />
+        <activity android:name=".view.PinPassActivity" />
 
         <receiver android:name=".utilities.notification.NotificationPublisher"/>
 
