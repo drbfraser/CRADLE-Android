@@ -119,7 +119,7 @@ data class Question(
     @SerializedName("visibleCondition") val visibleCondition: List<VisibleCondition>?,
     @SerializedName("isBlank") val isBlank: Boolean?, // Should be true for FormTemplates
     @SerializedName("formTemplateId") val formTemplateId: String?, // Backend-Nullable
-   //@SerializedName("mcOptions") val mcOptions: List<McOption>?,
+    //@SerializedName("mcOptions") val mcOptions: List<McOption>?,
     @SerializedName("questionIndex") val questionIndex: Int?,
     @SerializedName("numMin") val numMin: Double?, // Backend-Nullable
     @SerializedName("numMax") val numMax: Double?, // Backend-Nullable
@@ -145,7 +145,7 @@ data class Question(
             "questionType=$questionType, " +
             "hasCommentAttached=$hasCommentAttached, " +
             "required=$required, " +
-            "languageVersions=${languageVersions.toString()})"
+            "languageVersions=$languageVersions)"
     }
 
     /**

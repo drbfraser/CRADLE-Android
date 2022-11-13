@@ -100,7 +100,6 @@ constructor(
                     languageSpecificText = languageQuestionText
                 )
                 responseList.add(questionResponse)
-
             } else if (question.required == true) {
                 throw IllegalArgumentException(
                     "Failed to create FormResponse: Required question does not have an answer"
@@ -152,5 +151,3 @@ class QuestionResponse(
     @SerializedName("questionIndex") val questionIndex: Int,
     @SerializedName("questionText") val languageSpecificText: String,
 ) : Serializable
-
-

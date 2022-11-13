@@ -42,10 +42,9 @@ class FormClassification(
             context: JsonDeserializationContext?
         ): FormClassification {
 
-
             //printJson(json)
             val formTemplate = Gson().fromJson(json, FormTemplate::class.java)
-           // Log.d("FormClassification", "FormTemplate: $formTemplate")
+            // Log.d("FormClassification", "FormTemplate: $formTemplate")
 
             var className: String
             var classId: String
@@ -63,8 +62,7 @@ class FormClassification(
     }
 }
 
-
-fun printJson(json: JsonElement?){
+fun printJson(json: JsonElement?) {
     var sb = json.toString()
     if (sb.length > 4000) {
         Log.v("WEST123", "sb.length = " + sb.length)
