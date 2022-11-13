@@ -1,12 +1,11 @@
 package com.cradleplatform.neptune.view
 
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
-import androidx.appcompat.app.AlertDialog
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -22,6 +21,7 @@ import com.cradleplatform.neptune.net.NetworkResult
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.view.adapters.FormViewAdapter
 import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
+//import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -43,16 +43,26 @@ class FormRenderingActivity : AppCompatActivity() {
     @Inject
     lateinit var mFormManager: FormManager
 
-    override fun onResume() {
-        super.onResume()
+    override fun onSupportNavigateUp(): Boolean {
 
-        /*
-        val btnBack: Button = findViewById(R.id.btn_back)
-        btnBack.setOnClickListener {
-            finish()
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Are you sure?")
+        builder.setMessage("This will discard the form!")
+
+        builder.setPositiveButton(R.string.yes) { _, _ ->
+            val intent = FormSelectionActivity.makeIntentForPatientId(
+                this@FormRenderingActivity,
+                patientId!!,
+                patient!!
+            )
+            startActivity(intent)
         }
 
-         */
+        builder.setNegativeButton(R.string.no) { _, _ ->
+            //Do nothing...
+        }
+        builder.show()
+        return true
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,6 +72,7 @@ class FormRenderingActivity : AppCompatActivity() {
         //Getting the formTemplate from the intent
         val formTemplateFromIntent =
             intent.getSerializableExtra(EXTRA_FORM_TEMPLATE) as FormTemplate
+
         viewModel.currentFormTemplate = formTemplateFromIntent
         //setting the arrow on actionbar
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -76,11 +87,11 @@ class FormRenderingActivity : AppCompatActivity() {
         //Form a question list from Category to next category
         //Pass the list to recyclerView
 
-        var listOfQuestionLists  = fullQuestionList(formTemplateFromIntent)
+        //var listOfQuestionLists  = fullQuestionList(formTemplateFromIntent)
 
-        listOfQuestionLists.forEach {
-            Log.d("Question", it.toString())
-        }
+        //listOfQuestionLists.forEach {
+        //    Log.d("Question", it.toString())
+        //}
         //Log.d("TEST123", listOfQuestionLists.size.toString())
 
         layoutManager = LinearLayoutManager(this)
@@ -90,12 +101,47 @@ class FormRenderingActivity : AppCompatActivity() {
 
         recyclerView.recycledViewPool.setMaxRecycledViews(0,0)
 
-        adapter = FormViewAdapter(listOfQuestionLists)
+        adapter = FormViewAdapter(viewModel, languageSelected!!)
         recyclerView.adapter = adapter
 
-
+        findViewById<Button>(R.id.btn_submit).setOnClickListener {
+            formSubmission(languageSelected)
+        }
         //Log.d("TEST123", "FormTemplate: ${viewModel.currentFormTemplate}")
         //?: error("language selection missing from FormRenderingActivity Intent") // No need to handle, as the language is already selected in the previous activity
+    }
+
+    private fun formSubmission(languageSelected: String) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val result = viewModel.submitForm(patientId!!, languageSelected)
+                if (result is NetworkResult.Success) {
+                    withContext(Dispatchers.Main) {
+                        CustomToast.shortToast(
+                            applicationContext,
+                            "Form Response Submitted"
+                        )
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        CustomToast.shortToast(
+                            applicationContext,
+                            "Form Response Submission failed with network error:\n " +
+                                "${result.getStatusMessage(applicationContext)}"
+                        )
+                    }
+                }
+            } catch (exception: IllegalArgumentException) {
+                withContext(Dispatchers.Main) {
+                    CustomToast.shortToast(
+                        applicationContext,
+                        "Form Response Failed to Create(Malformed):\n" +
+                            "${exception.message}"
+                    )
+                    exception.printStackTrace()
+                }
+            }
+        }
     }
 
     private fun constructQuestionListForEachCategory(formTemplateFromIntent: FormTemplate): MutableList<MutableList<Question>> {
@@ -133,8 +179,39 @@ class FormRenderingActivity : AppCompatActivity() {
         return listOfQuestions
     }
 
+    companion object {
+        private const val EXTRA_FORM_TEMPLATE = "JSON string for form template"
+        private const val EXTRA_PATIENT_ID = "Patient id that the form is created for"
+        private const val EXTRA_LANGUAGE_SELECTED = "String of language selected for a FormTemplate"
+        private const val EXTRA_PATIENT_OBJECT = "The Patient object used to start patient profile"
+        private const val FLAG_IS_RECURSIVE_CALL = "Intent make from self"
+
+        @JvmStatic
+        fun makeIntentWithFormTemplate(
+            context: Context,
+            formTemplate: FormTemplate,
+            formLanguage: String,
+            patientId: String,
+            patient: Patient
+        ): Intent {
+            val bundle = Bundle()
+            bundle.putSerializable(EXTRA_FORM_TEMPLATE, formTemplate)
+            bundle.putSerializable(EXTRA_PATIENT_OBJECT, patient)
+
+            return Intent(context, FormRenderingActivity::class.java).apply {
+                this.putExtra(EXTRA_PATIENT_ID, patientId)
+                this.putExtra(EXTRA_LANGUAGE_SELECTED, formLanguage)
+                this.putExtras(bundle)
+            }
+        }
+    }
+}
+
+
+
+
     /*
-    val isCalledFromSelf = intent.getBooleanExtra(FLAG_IS_RECURSIVE_CALL, false)
+    val sCalledFromSelf = intent.getBooleanExtra(FLAG_IS_RECURSIVE_CALL, false)
 
     //Store the raw form template if there is not one in memory
     if (!isCalledFromSelf) {
@@ -265,73 +342,12 @@ private fun getRestCategory(form: FormTemplate): FormTemplate {
 
     return form.copy(questions = restQuestionList.toList())
 }
-*/
-    override fun onSupportNavigateUp(): Boolean {
 
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Are you sure?")
-        builder.setMessage("This will discard the form!")
 
-        builder.setPositiveButton(R.string.yes) { _, _ ->
-            val intent = FormSelectionActivity.makeIntentForPatientId(
-                this@FormRenderingActivity,
-                patientId!!,
-                patient!!
-            )
-            startActivity(intent)
-        }
 
-        builder.setNegativeButton(R.string.no) { _, _ ->
-            //Do nothing...
-        }
-        builder.show()
-        return true
-    }
+     */
 
-    companion object {
-        private const val EXTRA_FORM_TEMPLATE = "JSON string for form template"
-        private const val EXTRA_PATIENT_ID = "Patient id that the form is created for"
-        private const val EXTRA_LANGUAGE_SELECTED = "String of language selected for a FormTemplate"
-        private const val EXTRA_PATIENT_OBJECT = "The Patient object used to start patient profile"
-        private const val FLAG_IS_RECURSIVE_CALL = "Intent make from self"
 
-        @JvmStatic
-        fun makeIntentWithFormTemplate(
-            context: Context,
-            formTemplate: FormTemplate,
-            formLanguage: String,
-            patientId: String,
-            patient: Patient
-        ): Intent {
-            val bundle = Bundle()
-            bundle.putSerializable(EXTRA_FORM_TEMPLATE, formTemplate)
-            bundle.putSerializable(EXTRA_PATIENT_OBJECT, patient)
-
-            return Intent(context, FormRenderingActivity::class.java).apply {
-                this.putExtra(EXTRA_PATIENT_ID, patientId)
-                this.putExtra(EXTRA_LANGUAGE_SELECTED, formLanguage)
-                this.putExtras(bundle)
-            }
-        }
-
-        @JvmStatic
-        private fun makeIntentFromSelf(
-            context: Context,
-            formTemplate: FormTemplate,
-            formLanguage: String,
-            patientId: String,
-            patient: Patient
-        ): Intent {
-            return makeIntentWithFormTemplate(
-                context,
-                formTemplate,
-                formLanguage,
-                patientId,
-                patient
-            ).putExtra(FLAG_IS_RECURSIVE_CALL, true)
-        }
-    }
-}
 
 /* Question List Test Loop
 

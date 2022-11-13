@@ -1,3 +1,4 @@
+//TODO : Refractor
 package com.cradleplatform.neptune.model
 
 import android.util.Log
@@ -151,3 +152,5 @@ class QuestionResponse(
     @SerializedName("questionIndex") val questionIndex: Int,
     @SerializedName("questionText") val languageSpecificText: String,
 ) : Serializable
+
+

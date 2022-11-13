@@ -6,6 +6,7 @@ import com.cradleplatform.neptune.manager.FormManager
 import com.cradleplatform.neptune.model.Answer
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormTemplate
+import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.net.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -19,7 +20,13 @@ class FormRenderingViewModel @Inject constructor(
     //Raw form template
     var currentFormTemplate: FormTemplate? = null
 
-    //private var currentCategory: Int = 1
+    fun fullQuestionList(): MutableList<Question> {
+        var listOfQuestions : MutableList<Question> = mutableListOf()
+        currentFormTemplate?.questions?.forEach(){ Q ->
+            listOfQuestions.add(Q)
+        }
+        return listOfQuestions
+    }
 
     fun addAnswer(questionId: String, answer: Answer) {
         currentAnswers[questionId] = answer
@@ -77,3 +84,5 @@ class FormRenderingViewModel @Inject constructor(
         private var dataTransferTemplate: FormTemplate? = null // data transfer object
     }
 }
+
+

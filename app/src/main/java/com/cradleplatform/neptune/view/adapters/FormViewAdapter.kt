@@ -12,15 +12,15 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.RadioButton
 import androidx.core.content.ContextCompat
-import androidx.core.view.marginTop
-import androidx.core.view.setPadding
+import androidx.core.view.get
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.databinding.CardLayoutBinding
-import com.cradleplatform.neptune.model.Question
+import com.cradleplatform.neptune.model.Answer
 import com.cradleplatform.neptune.model.QuestionTypeEnum.*
-import java.text.Normalizer.Form
+import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
 import java.util.Calendar
+import kotlin.reflect.typeOf
 
 /**
  * A custom adapter for rendering a list of questions
@@ -28,15 +28,28 @@ import java.util.Calendar
  * @param questions The list of questions to render
  * @param viewModel The view model for the form rendering (Question Class serves as the information holder)
  */
-class FormViewAdapter(private val mList: MutableList<Question>) : RecyclerView.Adapter<FormViewAdapter.ViewHolder>(){
+class FormViewAdapter(
+    //private val mList: MutableList<Question>,
+    private var viewModel: FormRenderingViewModel,
+    private var languageSelected: String
+) : RecyclerView.Adapter<FormViewAdapter.ViewHolder>() {
 
-    lateinit var context : Context
+    lateinit var context: Context
 
-    inner class ViewHolder(val binding : CardLayoutBinding) : RecyclerView.ViewHolder(binding.root)
+    //Getting the Question List
+    private var mList = viewModel.fullQuestionList()
+
+    inner class ViewHolder(val binding: CardLayoutBinding) : RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         context = parent.context
-        return ViewHolder(CardLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+        return ViewHolder(
+            CardLayoutBinding.inflate(
+                LayoutInflater.from(parent.context),
+                parent,
+                false
+            )
+        )
     }
 
     override fun getItemCount(): Int {
@@ -48,62 +61,117 @@ class FormViewAdapter(private val mList: MutableList<Question>) : RecyclerView.A
         //TODO(have to replace 0 with language)
 
         //Setting the question text
-        holder.binding.tvQuestion.text = mList[position].languageVersions?.get(0)?.questionText ?: "No Question Text"
+        holder.binding.tvQuestion.text =
+            mList[position].languageVersions?.get(0)?.questionText ?: "No Question Text"
 
-         //Log.d("TEST123", mList[position].questionType.toString() + " " + mList[position].languageVersions?.get(0)?.questionText.toString())
+        //Log.d("TEST123", mList[position].questionType.toString() + " " + mList[position].languageVersions?.get(0)?.questionText.toString())
         //Log.d("TEST123",
-          //  (mList[position].questionType.toString() == "CATEGORY").toString() + " " + mList[position].languageVersions?.get(0)?.questionText.toString())
-
+        //  (mList[position].questionType.toString() == "CATEGORY").toString() + " " + mList[position].languageVersions?.get(0)?.questionText.toString())
 
         //Depending on question type, we are setting one of the four possible types of inputs to visible.
-        holder.binding.tvQuestion.textSize = 20f
+        holder.binding.tvQuestion.textSize = 18f
 
-        if (mList[position].questionType.toString() == "CATEGORY"){
-            //Setting Text Size for Categories (Headings)
-            holder.binding.tvQuestion.textSize = 28f
+        //Using Enum caused problems
+        when (mList[position].questionType.toString()) {
+            "CATEGORY" -> {
+                //Setting Text Size for Categories (Headings)
+                holder.binding.tvQuestion.textSize = 24f
 
-            //Setting Colors
-            holder.binding.tvQuestion.setTextColor(Color.parseColor("#FFFFFF"))
-            holder.binding.cardView.setCardBackgroundColor(ContextCompat.getColor(holder.binding.root.context, R.color.colorPrimaryDark))
-            holder.binding.linearLayout.background = ContextCompat.getDrawable(holder.binding.root.context, R.color.colorPrimaryDark)
-        }
+                //Setting Colors
+                holder.binding.tvQuestion.setTextColor(Color.parseColor("#FFFFFF"))
+                holder.binding.cardView.setCardBackgroundColor(
+                    ContextCompat.getColor(
+                        holder.binding.root.context,
+                        R.color.colorPrimaryDark
+                    )
+                )
+                holder.binding.linearLayout.background =
+                    ContextCompat.getDrawable(holder.binding.root.context, R.color.colorPrimaryDark)
+            }
 
-        else if (mList[position].questionType.toString() == "STRING"){
-            holder.binding.etAnswer.visibility = View.VISIBLE
-        }
+            "STRING" -> {
+                holder.binding.etAnswer.visibility = View.VISIBLE
+            }
 
-        else if (mList[position].questionType.toString() == "DATETIME"){
-            holder.binding.btnDatePicker.visibility = View.VISIBLE
+            "DATETIME" -> {
+                holder.binding.btnDatePicker.visibility = View.VISIBLE
 
-            //Enabling Click on Select Date
-            holder.binding.btnDatePicker.setOnClickListener {
-                clickDatePicker(context, holder.binding.btnDatePicker, 0, holder);
+                //Enabling Click on Select Date
+                holder.binding.btnDatePicker.setOnClickListener {
+                    showDateTimePicker(
+                        context,
+                        holder.binding.btnDatePicker,
+                        holder,
+                        mList[position].questionId
+                    )
+                }
+            }
+
+            "INTEGER" -> {
+                holder.binding.etNumAnswer.visibility = View.VISIBLE
+            }
+
+            "MULTIPLE_CHOICE" -> {
+                holder.binding.rgMultipleChoice.visibility = View.VISIBLE
+
+                //Programmatically adding radio buttons for each option
+                mList[position].languageVersions?.get(0)?.mcOptions?.forEach {
+                    val radioButton = RadioButton(context)
+                    radioButton.text = it.opt
+                    radioButton.id = it.mcid!!
+                    holder.binding.rgMultipleChoice.addView(radioButton)
+                }
+            }
+
+            "MULTIPLE_SELECT" -> {
+                //
             }
         }
 
-        else if (mList[position].questionType.toString() == "INTEGER"){
-            holder.binding.etNumAnswer.visibility = View.VISIBLE
+        //Setting Listeners for EditTexts for Saving Answers
+        setEditTextListeners(position, holder)
+    }
+
+    private fun setEditTextListeners(position: Int, holder: ViewHolder) {
+        var questionID = mList[position].questionId!!
+
+        //String Answers Listener
+        holder.binding.etAnswer.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                //does not have focus
+                val textAnswer = holder.binding.etAnswer.text.toString()
+                viewModel.addAnswer(questionID, Answer.createTextAnswer(textAnswer))
+            }
         }
 
-        else if (mList[position].questionType.toString() == "MULTIPLE_CHOICE"){
-            holder.binding.rgMultipleChoice.visibility = View.VISIBLE
+        //Integer Answers Listener
+        holder.binding.etNumAnswer.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                val numAnswer = holder.binding.etAnswer.text.toString().toInt()
+                viewModel.addAnswer(questionID, Answer.createNumericAnswer(numAnswer))
+            }
+        }
 
-            //Programmatically adding radio buttons for each option
-           mList[position].languageVersions?.get(0)?.mcOptions?.forEach {
-               val radioButton = RadioButton(context)
-               radioButton.text = it.opt
-               holder.binding.rgMultipleChoice.addView(radioButton)
-           }
+        //Time and Date Answers Listener exists in the Dialog Below // saveAnswerForDateTime(holder, questionId)
+
+        //Multiple Choice Answers Listener
+        holder.binding.rgMultipleChoice.setOnCheckedChangeListener { radioGroup, i ->
+            var selectedID = radioGroup.checkedRadioButtonId
+            var selectedButton = radioGroup.findViewById<RadioButton>(selectedID)
+            //var selectedText = selectedButton.text.toString()
+            var mcidArray = listOf(selectedID)
+
+            viewModel.addAnswer(questionID, Answer.createMcAnswer(mcidArray))
+            //Log.d("TAG123", selectedButton.id.toString())
         }
     }
-}
 
-@SuppressLint("SetTextI18n")
-private fun clickDatePicker(
+    @SuppressLint("SetTextI18n")
+    private fun showDateTimePicker(
         context: Context,
         itemDatePicker: Button,
-        position: Int,
-        holder: FormViewAdapter.ViewHolder
+        holder: FormViewAdapter.ViewHolder,
+        questionId: String?
     ) {
         val calender = Calendar.getInstance()
         val year = calender.get(Calendar.YEAR)
@@ -118,6 +186,8 @@ private fun clickDatePicker(
             { view, selectedHour, selectedMinute ->
                 val time = "$selectedHour:$selectedMinute"
                 itemDatePicker.text = itemDatePicker.text.toString() + " " + time
+
+                saveAnswerForDateTime(holder, questionId)
             },
             hr,
             min,
@@ -131,7 +201,6 @@ private fun clickDatePicker(
                 itemDatePicker.text = date
 
                 tpd.show()
-                //okClick(position, holder)
             },
             year,
             month,
@@ -140,6 +209,16 @@ private fun clickDatePicker(
 
         dpd.datePicker.maxDate = System.currentTimeMillis()
         dpd.show()
+    }
+
+    private fun saveAnswerForDateTime(holder: FormViewAdapter.ViewHolder, questionId: String?) {
+        val textAnswer = holder.binding.btnDatePicker.text.toString()
+        Log.d("TAG123" , textAnswer)
+        viewModel.addAnswer(
+            questionId!!,
+            Answer.createTextAnswer(textAnswer)
+        )
+    }
 }
 
 /*
