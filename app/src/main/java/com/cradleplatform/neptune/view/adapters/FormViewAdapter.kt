@@ -13,7 +13,6 @@ import android.widget.Button
 import android.widget.RadioButton
 import android.widget.TextView
 import androidx.core.content.ContextCompat
-import androidx.core.view.get
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.databinding.CardLayoutBinding
