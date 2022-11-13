@@ -137,21 +137,21 @@ class FormRenderingActivity : AppCompatActivity() {
         var listOfQuestionsInSingleCategory: MutableList<Question> = mutableListOf()
         var listOfQuestionLists: MutableList<MutableList<Question>> = mutableListOf()
 
-        var flag = false // to check if the question is a category
+        var isCategory = false // to check if the question is a category
         formTemplateFromIntent.questions?.forEach() { Q ->
 
             //Log.d("TEST123", Q.questionType.toString())
             // if type == category and it's the first time a question of type category has been read
-            if (Q.questionType == QuestionTypeEnum.CATEGORY && !flag) {
-                flag = true
+            if (Q.questionType == QuestionTypeEnum.CATEGORY && !isCategory) {
+                isCategory = true
             }
             //else, store the current list if it's not empty and set it to empty
-            if (Q.questionType == QuestionTypeEnum.CATEGORY && flag) {
+            if (Q.questionType == QuestionTypeEnum.CATEGORY && isCategory) {
                 if (listOfQuestionsInSingleCategory.isNotEmpty()) {
                     listOfQuestionLists.add(listOfQuestionsInSingleCategory)
                     listOfQuestionsInSingleCategory = mutableListOf()
                 }
-                flag = false
+                isCategory = false
             }
 
             listOfQuestionsInSingleCategory.add(Q)
