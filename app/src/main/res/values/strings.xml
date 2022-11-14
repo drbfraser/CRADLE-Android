@@ -668,6 +668,8 @@
     <string name="sync_activity_status_downloading_health_facilities">Downloading Health Facilities</string>
     <string name="sync_activitiy_status_downloading_form_templates">Downloading Form Templates</string>
     <string name="pencil_icon_for_edit">Pencil icon for edit</string>
+    <string name="pinpass_enter_pin">Enter PIN</string>
+    <string name="pinpass_forgot_pin">Forgot PIN</string>
 
 
     <plurals name="unuploaded_reading_signout_message">

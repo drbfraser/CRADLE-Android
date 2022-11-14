@@ -8,12 +8,16 @@ import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.view.PinPassActivity
 
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
 import javax.inject.Inject
 
 /**
@@ -28,10 +32,12 @@ class CradleApplication : Application(), Configuration.Provider {
     var pinActivityActive: Boolean = false
 
     //Set desired timeout time in milliseconds
-    val timeoutTime = 30000
+    val timeoutTime = 1800000
 
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
+    @Inject
+    lateinit var loginManager: LoginManager
 
     override fun getWorkManagerConfiguration(): Configuration = Configuration.Builder()
         .setWorkerFactory(workerFactory)
@@ -71,18 +77,21 @@ class CradleApplication : Application(), Configuration.Provider {
                      *
                      * @pinActivityActive is required
                      * since onActivityCreated pops multiple times sometimes
+                     * Not consistent on how many times this is called for some reason
+                     * so this way to block multiple instances is required
+                     * Lock could also work, might be overkill
                      **/
 
                     if (System.currentTimeMillis() > lastTimeActive + timeoutTime
                         && lastTimeActive > 0 && !pinActivityActive
                     ) {
-                        Thread {
-                            Thread.sleep(500)
-                            pinActivityActive = true
+                        pinActivityActive = true
+                        appCoroutineScope.launch {
+                            delay(1000L)
                             val intent = Intent(activity, PinPassActivity::class.java)
                             intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
                             startActivity(intent)
-                        }.start()
+                        }
                     }
                 }
 
@@ -92,6 +101,12 @@ class CradleApplication : Application(), Configuration.Provider {
                 override fun onActivityStopped(activity: Activity) {
                     //Will track anytime it is not in foreground
                     lastTimeActive = System.currentTimeMillis()
+                    //If they try to override PIN by kill app this will still go off first
+                    if (pinActivityActive) {
+                        appCoroutineScope.launch {
+                            loginManager.logout()
+                        }
+                    }
                 }
                 override fun onActivitySaveInstanceState(activity: Activity, bundle: Bundle) {}
                 override fun onActivityDestroyed(activity: Activity) {}
@@ -99,7 +114,7 @@ class CradleApplication : Application(), Configuration.Provider {
         )
     }
 
-    public fun pinPassActivityFinished() {
+    fun pinPassActivityFinished() {
         pinActivityActive = false
     }
 }
