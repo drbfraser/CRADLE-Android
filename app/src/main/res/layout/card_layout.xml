@@ -1,91 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/card_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="5dp"
-    app:cardBackgroundColor='@color/white'
     app:cardCornerRadius="12dp"
-    app:cardElevation="3dp"
-    app:contentPadding="4dp">
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="@color/black"
+    app:cardUseCompatPadding="true"
+    app:contentPadding="10dp">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/relativeLayout"
+    <LinearLayout
+        android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:background="@color/white"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="0dp">
 
         <TextView
             android:id="@+id/tv_question"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_width="320dp"
+            android:layout_height="53dp"
             android:layout_marginBottom="20dp"
             android:gravity="center"
             android:text="hi this is a question"
-            app:layout_constraintBottom_toTopOf="@+id/et_answer"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.498"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:textColor="@color/black" />
 
         <EditText
             android:id="@+id/et_answer"
-            android:layout_width="355dp"
+            android:layout_width="326dp"
             android:layout_height="50dp"
             android:layout_marginLeft="6dp"
             android:layout_marginBottom="20dp"
+            android:backgroundTint="@color/black"
             android:hint=""
             android:imeOptions="actionSend"
             android:inputType="text"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_question" />
+            android:paddingBottom="20dp"
+            android:textColor="@color/black"
+            android:visibility="gone" />
 
         <EditText
             android:id="@+id/et_num_answer"
-            android:layout_width="355dp"
+            android:layout_width="325dp"
             android:layout_height="50dp"
             android:layout_marginLeft="6dp"
             android:layout_marginBottom="20dp"
+            android:backgroundTint="@color/black"
             android:hint=""
             android:imeOptions="actionSend"
             android:inputType="number"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_question" />
+            android:textColor="@color/black"
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/btn_date_picker"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="173dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="15dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/rounded_button"
             android:text="Select Date"
-            android:textColor="@color/white"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_question" />
+            android:textColor="@color/black"
+            android:visibility="gone" />
 
-        <ListView
-            android:id="@+id/lv_multiple_choice"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="20dp"
+        <RadioGroup
+            android:id="@+id/rg_multiple_choice"
+            android:layout_width="85dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
             android:background="#d9d9d9"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_question"
-            app:layout_constraintVertical_bias="0.642" />
+            android:backgroundTint="@color/white"
+            android:gravity="left"
+            android:orientation="vertical"
+            android:paddingBottom="20dp"
+            android:visibility="gone" />
 
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
 
 </androidx.cardview.widget.CardView>
