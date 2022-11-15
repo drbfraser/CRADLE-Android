@@ -81,6 +81,10 @@ constructor(
 
             if (response != null) {
 
+                var mcOptionList: List<McOption> = question.languageVersions.find {
+                    it.language == language
+                }?.mcOptions ?: listOf()
+
                 val questionResponse = QuestionResponse(
                     questionType = question.questionType!!,
                     hasCommentAttached = response.hasComment(),
@@ -89,7 +93,7 @@ constructor(
                     visibleCondition = question.visibleCondition!!,
                     isBlank = false, // blank refers to FormTemplates, not blank to FormResponses
                     formTemplateId = question.formTemplateId!!,
-                    mcOptions = question.mcOptions!!,
+                    mcOptions = mcOptionList,
                     questionIndex = question.questionIndex!!,
                     languageSpecificText = languageQuestionText
                 )

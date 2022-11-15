@@ -51,6 +51,7 @@ class FormSelectionActivity : AppCompatActivity() {
         val formLanguageInput = findViewById<TextInputLayout>(R.id.form_language_text_input)
 
         //Crashing on Typing -> Commented
+
         formSelectionInput.editText!!.doOnTextChanged { text, _, _, _ ->
             viewModel.formTemplateChanged(text.toString())
             formLanguageInput.editText!!.text.clear()

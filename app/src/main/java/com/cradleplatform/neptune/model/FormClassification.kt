@@ -1,5 +1,6 @@
 package com.cradleplatform.neptune.model
 
+import android.util.Log
 import androidx.room.Entity
 import com.google.gson.Gson
 import com.google.gson.JsonDeserializationContext
@@ -41,10 +42,13 @@ class FormClassification(
             context: JsonDeserializationContext?
         ): FormClassification {
 
+            //printJson(json)
             val formTemplate = Gson().fromJson(json, FormTemplate::class.java)
+            // Log.d("FormClassification", "FormTemplate: $formTemplate")
 
             var className: String
             var classId: String
+
             json!!.asJsonObject.let { rootObject ->
                 rootObject!!.getAsJsonObject("classification").let {
                     classification ->
@@ -55,5 +59,29 @@ class FormClassification(
 
             return FormClassification(classId, className, formTemplate)
         }
+    }
+}
+
+fun printJson(json: JsonElement?) {
+    var sb = json.toString()
+    if (sb.length > 4000) {
+        Log.v("WEST123", "sb.length = " + sb.length)
+        val chunkCount: Int = sb.length / 4000 // integer division
+        for (i in 0..chunkCount) {
+            val max = 4000 * (i + 1)
+            if (max >= sb.length) {
+                Log.v(
+                    "WEST123",
+                    "chunk " + i + " of " + chunkCount + ":" + sb.substring(4000 * i)
+                )
+            } else {
+                Log.v(
+                    "WEST123",
+                    "chunk " + i + " of " + chunkCount + ":" + sb.substring(4000 * i, max)
+                )
+            }
+        }
+    } else {
+        Log.v("WEST123", sb.toString())
     }
 }

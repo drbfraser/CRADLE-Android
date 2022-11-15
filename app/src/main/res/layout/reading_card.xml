@@ -108,15 +108,17 @@
                 android:id="@+id/diaBP"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
                 android:text="@string/not_available_n_slash_a"
                 app:layout_constraintBottom_toBottomOf="@+id/dbpName"
                 app:layout_constraintStart_toEndOf="@+id/dbpName"
-                app:layout_constraintTop_toTopOf="@+id/dbpName" />
+                app:layout_constraintTop_toTopOf="@+id/dbpName"
+                app:layout_constraintVertical_bias="1.0" />
 
             <TextView
                 android:id="@+id/heartRateName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="101dp"
+                android:layout_height="26dp"
                 android:layout_marginTop="8dp"
                 android:text="@string/heart_rate"
                 android:textColor="@color/black"
@@ -127,8 +129,8 @@
 
             <TextView
                 android:id="@+id/readingHeartRate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="30dp"
+                android:layout_height="20dp"
                 android:layout_marginStart="8dp"
                 android:text="@string/not_available_n_slash_a"
                 app:layout_constraintStart_toEndOf="@+id/heartRateName"
