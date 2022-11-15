@@ -19,7 +19,7 @@ class PinPassActivity : AppCompatActivity() {
     lateinit var loginManager: LoginManager
 
     //Temporary until function fully implemented
-    val password = "1234"
+    val pinCode = "1234"
 
     //TODO: Make this Activity also be able to set up the new PIN
 
@@ -49,11 +49,11 @@ class PinPassActivity : AppCompatActivity() {
         val incorrectText = findViewById<TextView>(R.id.pinPassIncorrectText)
 
         passText.doAfterTextChanged {
-            if (passText.text.toString() == password) {
+            if (passText.text.toString() == pinCode) {
                 app.pinPassActivityFinished()
                 finish()
             } else if (passText.text.toString().length == 4) {
-                incorrectText.setText("Wrong Pin")
+                incorrectText.text = getString(R.string.pinpass_incorrect_password)
                 passText.setText("")
             }
         }

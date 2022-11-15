@@ -318,4 +318,9 @@ class LoginActivity : AppCompatActivity() {
             displayMessageBodyRes?.let { putExtra(EXTRA_DISPLAY_MESSAGE_BODY, it) }
         }
     }
+
+    override fun onBackPressed() {
+        //Do not allow user to leave this screen until password is entered or app exited
+        //This is due to if opened from @PinPassActivity pressing back allow user to get back to app
+    }
 }

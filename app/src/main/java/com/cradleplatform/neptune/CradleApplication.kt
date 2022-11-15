@@ -31,7 +31,12 @@ class CradleApplication : Application(), Configuration.Provider {
     var lastTimeActive: Long = 0
     var pinActivityActive: Boolean = false
 
-    //Set desired timeout time in milliseconds
+    /**
+     * Set desired timeout time in milliseconds
+     * 10000 = 10 Seconds (For testing)
+     * 1800000 = 30 Minutes
+     * 86400000 = 24 Hours
+     */
     val timeoutTime = 1800000
 
     @Inject
@@ -86,7 +91,7 @@ class CradleApplication : Application(), Configuration.Provider {
                         && lastTimeActive > 0 && !pinActivityActive
                     ) {
                         pinActivityActive = true
-                        appCoroutineScope.launch {
+                        appCoroutineScope.launch(Dispatchers.Main) {
                             delay(1000L)
                             val intent = Intent(activity, PinPassActivity::class.java)
                             intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
