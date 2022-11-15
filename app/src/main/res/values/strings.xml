@@ -619,7 +619,7 @@
     <string name="end_date_calendar_icon_prompt">Click calendar icon to add end date</string>
     <string name="lbl_weeks">weeks</string>
     <string name="close_pregnancy">Close Pregnancy</string>
-    <string name="close">Close Pregnancy</string>
+    <string name="close">Close</string>
     <string name="add_pregnancy">Add Pregnancy</string>
     <string name="edit_pregnancy">Edit Pregnancy</string>
     <string name="edit_online_success_msg">Success - changes saved online</string>
