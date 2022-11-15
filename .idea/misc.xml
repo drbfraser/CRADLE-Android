@@ -1,14 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="DesignSurface">
-    <option name="filePathToZoomLevelMap">
-      <map>
-        <entry key="..\:/Users/Gabe/Desktop/Cradle/cradlemobile/app/src/main/res/layout/activity_login.xml" value="0.27309782608695654" />
-        <entry key="..\:/Users/Gabe/Desktop/Cradle/cradlemobile/app/src/main/res/layout/activity_pin_pass.xml" value="0.30480072463768115" />
-        <entry key="..\:/Users/Gabe/Desktop/Cradle/cradlemobile/app/src/main/res/xml/advanced_preferences.xml" value="0.425" />
-      </map>
-    </option>
-  </component>
   <component name="ExternalStorageConfigurationManager" enabled="true" />
   <component name="FrameworkDetectionExcludesConfiguration">
     <file type="web" url="file://$PROJECT_DIR$" />
