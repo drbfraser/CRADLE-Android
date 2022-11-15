@@ -42,8 +42,8 @@ class FormRenderingActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
 
         val builder = AlertDialog.Builder(this)
-        builder.setTitle("Are you sure?")
-        builder.setMessage("This will discard the form!")
+        builder.setTitle(R.string.are_you_sure)
+        builder.setMessage(R.string.discard_form_dialog)
 
         builder.setPositiveButton(R.string.yes) { _, _ ->
             val intent = FormSelectionActivity.makeIntentForPatientId(
@@ -94,12 +94,28 @@ class FormRenderingActivity : AppCompatActivity() {
         recyclerView.adapter = adapter
 
         findViewById<Button>(R.id.btn_submit).setOnClickListener {
-            formSubmission(languageSelected)
-            finish()
+            showFormSubmissionModeDialog(languageSelected)
         }
     }
 
-    private fun formSubmission(languageSelected: String) {
+    private fun showFormSubmissionModeDialog(languageSelected: String) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle(R.string.how_to_submit)
+        builder.setMessage(R.string.choose_an_option)
+
+        builder.setPositiveButton(R.string.http) { _, _ ->
+            formSubmissionInHTTP(languageSelected)
+            finish()
+        }
+
+        builder.setNegativeButton(R.string.SMS) { _, _ ->
+            //formSubmissionInSMS()
+            finish()
+        }
+        builder.show()
+    }
+
+    private fun formSubmissionInHTTP(languageSelected: String) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val result = viewModel.submitForm(patientId!!, languageSelected)

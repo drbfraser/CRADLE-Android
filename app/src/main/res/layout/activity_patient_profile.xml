@@ -263,73 +263,67 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/buttonLayout">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
+
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/textView43"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="24dp"
+                    android:layout_marginStart="10dp"
                     android:layout_marginTop="16dp"
                     android:text="@string/medical_information"
                     android:textColor="@color/black"
-                    android:textSize="24sp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:textSize="24sp" />
 
-                <TextView
-                    android:id="@+id/textView19"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="@string/pregnant"
-                    android:textColor="@color/black"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    app:layout_constraintStart_toStartOf="@+id/textView43"
-                    app:layout_constraintTop_toBottomOf="@+id/textView43" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
 
-                <TextView
-                    android:id="@+id/textView20"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:text="@string/no"
-                    android:textColor="@color/black"
-                    android:textSize="14sp"
-                    app:layout_constraintStart_toEndOf="@+id/textView19"
-                    app:layout_constraintTop_toTopOf="@+id/textView19" />
+                    <TextView
+                        android:id="@+id/textView19"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/pregnant"
+                        android:layout_marginStart="10dp"
+                        android:textColor="@color/black"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
 
-                <Button
-                    android:id="@+id/btn_pregnancy"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:layout_marginStart="7dp"
-                    android:layout_marginEnd="24dp"
-                    android:backgroundTint="@color/colorPrimaryLight"
-                    android:text="@string/add_pregnancy_btn"
-                    app:layout_constraintTop_toTopOf="@+id/textView20"
-                    app:layout_constraintBottom_toBottomOf="@id/textView20"
-                    app:layout_constraintEnd_toEndOf="parent"/>
+                    <TextView
+                        android:id="@+id/textView20"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:text="@string/no"
+                        android:textColor="@color/black"
+                        android:textSize="14sp" />
+
+                    <Button
+                        android:id="@+id/btn_pregnancy"
+                        android:layout_width="192dp"
+                        android:layout_height="50dp"
+                        android:layout_marginStart="80dp"
+                        android:backgroundTint="@color/colorPrimaryLight"
+                        android:text="@string/add_pregnancy_btn" />
+
+                </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/pregnancyLayout"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
                     android:gravity="start|center_vertical"
-                    android:orientation="horizontal"
-                    android:visibility="visible"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="@+id/textView19"
-                    app:layout_constraintTop_toBottomOf="@+id/textView19">
+                    android:orientation="horizontal">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/gestational_age"
+                        android:layout_marginStart="10dp"
                         android:textColor="@color/black"
                         android:textSize="14sp"
                         android:textStyle="bold" />
@@ -339,26 +333,23 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
-                        android:gravity="clip_horizontal|center|center_vertical"
-                        android:paddingEnd="8dp"
                         android:text="@string/not_available_n_slash_a"
                         android:textColor="@color/black"
-                        android:textSize="14sp"
-                        tools:ignore="RtlSymmetry" />
+                        android:textSize="14sp" />
 
                     <RadioGroup
                         android:id="@+id/gestationradioGroup"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:paddingBottom="2dp">
 
                         <RadioButton
                             android:id="@+id/monthradiobutton"
-                            android:layout_width="match_parent"
+                            android:layout_width="wrap_content"
                             android:layout_height="match_parent"
-                            android:text="@string/patient_profile_month"
                             android:layout_marginStart="33dp"
+                            android:text="@string/patient_profile_month"
                             android:textSize="12sp" />
 
                         <RadioButton
@@ -374,18 +365,16 @@
 
                 <LinearLayout
                     android:id="@+id/medicalLayout"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="start|center_vertical"
-                    android:orientation="horizontal"
-                    android:visibility="visible"
-                    app:layout_constraintStart_toStartOf="@+id/textView19"
-                    app:layout_constraintTop_toBottomOf="@+id/pregnancyLayout">
+                    android:orientation="horizontal">
 
                     <TextView
                         android:id="@+id/textView47"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
                         android:text="@string/medical_history"
                         android:textAlignment="viewStart"
                         android:textColor="@color/black"
@@ -394,76 +383,63 @@
 
                     <Button
                         android:id="@+id/medicalHistoryUpdateButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="50dp"
+                        android:layout_marginStart="165dp"
                         android:backgroundTint="@color/colorPrimaryLight"
-                        android:layout_width="match_parent"
-                        android:layout_height="36dp"
-                        android:layout_marginStart="86dp"
-                        android:layout_marginTop="5dp"
                         android:text="@string/patient_update_history" />
 
                 </LinearLayout>
 
-                <TextView
-                    android:id="@+id/medHistoryText"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
-                    android:text="@string/patient_profile_none_caps"
-                    android:textColor="@color/black"
-                    android:textSize="14sp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.0"
-                    app:layout_constraintStart_toStartOf="@+id/medicalLayout"
-                    app:layout_constraintTop_toBottomOf="@+id/medicalLayout" />
-
                 <LinearLayout
-                    android:id="@+id/drugLayout"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
-                    android:gravity="start|center_vertical"
-                    android:orientation="horizontal"
-                    android:visibility="visible"
-                    app:layout_constraintStart_toStartOf="@+id/medHistoryText"
-                    app:layout_constraintTop_toBottomOf="@+id/medHistoryText">
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
 
                     <TextView
-                        android:id="@+id/textView49"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/drug_history"
+                        android:id="@+id/medHistoryText"
+                        android:layout_width="377dp"
+                        android:layout_height="40dp"
+                        android:layout_marginStart="10dp"
+                        android:text="@string/patient_profile_none_caps"
                         android:textColor="@color/black"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                    android:id="@+id/textView49"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:text="@string/drug_history"
+                    android:textColor="@color/black"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
 
                     <Button
                         android:id="@+id/drugHistoryUpdateButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="50dp"
+                        android:layout_marginStart="185dp"
                         android:backgroundTint="@color/colorPrimaryLight"
-                        android:layout_width="match_parent"
-                        android:layout_height="36dp"
-                        android:layout_marginStart="105dp"
                         android:text="@string/patient_update_history" />
-
                 </LinearLayout>
 
                 <TextView
                     android:id="@+id/drugHistroyTxt"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginBottom="8dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginBottom="10dp"
                     android:text="@string/patient_profile_none_caps"
                     android:textColor="@color/black"
-                    android:textSize="14sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.0"
-                    app:layout_constraintStart_toStartOf="@+id/drugLayout"
-                    app:layout_constraintTop_toBottomOf="@+id/drugLayout"
-                    app:layout_constraintVertical_bias="1.0" />
+                    android:textSize="14sp"/>
 
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
+            </LinearLayout>
         </androidx.cardview.widget.CardView>
 
         <androidx.cardview.widget.CardView

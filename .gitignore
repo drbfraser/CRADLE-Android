@@ -20,6 +20,7 @@ out/
 .gradle/
 build/
 
+
 # Local configuration file (sdk path, etc)
 local.properties
 
@@ -36,6 +37,7 @@ proguard/
 captures/
 
 # IntelliJ
+.idea/
 *.iml
 .idea/codeStyles/Project.xml
 .idea/compiler.xml

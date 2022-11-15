@@ -1,4 +1,3 @@
-//TODO : Refractor
 package com.cradleplatform.neptune.model
 
 import android.util.Log
@@ -95,7 +94,6 @@ constructor(
                     isBlank = false, // blank refers to FormTemplates, not blank to FormResponses
                     formTemplateId = question.formTemplateId!!,
                     mcOptions = mcOptionList,
-                    //TODO(mcOptions Return?)
                     questionIndex = question.questionIndex!!,
                     languageSpecificText = languageQuestionText
                 )
