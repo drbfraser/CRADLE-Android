@@ -669,6 +669,8 @@
     <string name="sync_activitiy_status_downloading_form_templates">Downloading Form Templates</string>
     <string name="pencil_icon_for_edit">Pencil icon for edit</string>
     <string name="submit">Submit</string>
+    <string name="http">HTTP</string>
+    <string name="SMS">SMS</string>
 
 
     <plurals name="unuploaded_reading_signout_message">

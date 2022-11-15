@@ -94,12 +94,28 @@ class FormRenderingActivity : AppCompatActivity() {
         recyclerView.adapter = adapter
 
         findViewById<Button>(R.id.btn_submit).setOnClickListener {
-            formSubmission(languageSelected)
-            finish()
+            showFormSubmissionModeDialog(languageSelected)
         }
     }
 
-    private fun formSubmission(languageSelected: String) {
+    private fun showFormSubmissionModeDialog(languageSelected: String) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("How do you want to submit the form?")
+        builder.setMessage("Choose an option")
+
+        builder.setPositiveButton(R.string.http) { _, _ ->
+            formSubmissionInHTTP(languageSelected)
+            finish()
+        }
+
+        builder.setNegativeButton(R.string.SMS) { _, _ ->
+            //formSubmissionInSMS()
+            finish()
+        }
+        builder.show()
+    }
+
+    private fun formSubmissionInHTTP(languageSelected: String) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val result = viewModel.submitForm(patientId!!, languageSelected)
