@@ -42,8 +42,8 @@ class FormRenderingActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
 
         val builder = AlertDialog.Builder(this)
-        builder.setTitle("Are you sure?")
-        builder.setMessage("This will discard the form!")
+        builder.setTitle(R.string.are_you_sure)
+        builder.setMessage(R.string.discard_form_dialog)
 
         builder.setPositiveButton(R.string.yes) { _, _ ->
             val intent = FormSelectionActivity.makeIntentForPatientId(
@@ -100,8 +100,8 @@ class FormRenderingActivity : AppCompatActivity() {
 
     private fun showFormSubmissionModeDialog(languageSelected: String) {
         val builder = AlertDialog.Builder(this)
-        builder.setTitle("How do you want to submit the form?")
-        builder.setMessage("Choose an option")
+        builder.setTitle(R.string.how_to_submit)
+        builder.setMessage(R.string.choose_an_option)
 
         builder.setPositiveButton(R.string.http) { _, _ ->
             formSubmissionInHTTP(languageSelected)

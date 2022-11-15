@@ -671,6 +671,10 @@
     <string name="submit">Submit</string>
     <string name="http">HTTP</string>
     <string name="SMS">SMS</string>
+    <string name="discard_form_dialog">This will discard the form!</string>
+    <string name="are_you_sure">Are you sure?</string>
+    <string name="how_to_submit">How do you want to submit the form?</string>
+    <string name="choose_an_option">Choose an option!</string>
 
 
     <plurals name="unuploaded_reading_signout_message">
