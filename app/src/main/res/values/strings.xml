@@ -678,6 +678,7 @@
     <string name="are_you_sure">Are you sure?</string>
     <string name="how_to_submit">How do you want to submit the form?</string>
     <string name="choose_an_option">Choose an option!</string>
+    <string name="mc_unsupported">Multiple Choice does not support -> %s</string>
 
 
     <plurals name="unuploaded_reading_signout_message">

@@ -5,6 +5,7 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
 import android.graphics.Color
+import android.provider.Settings.Global.getString
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -13,6 +14,7 @@ import android.widget.Button
 import android.widget.RadioButton
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.TypedArrayUtils.getString
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.databinding.CardLayoutBinding
@@ -63,7 +65,7 @@ class FormViewAdapter(
 
         var questionText = langVersion?.find {
             it.language == languageSelected
-        }?.questionText ?: "Not Found"
+        }?.questionText ?: R.string.not_available.toString()
 
         holder.binding.tvQuestion.text = questionText
 
@@ -119,7 +121,7 @@ class FormViewAdapter(
                 val langMcOptions = mList[position].languageVersions?.find {
                     it.language == languageSelected
                 }?.mcOptions ?: listOf(
-                    McOption(-1, "Multiple Choice does not support -> $languageSelected")
+                    McOption(-1, context.resources.getString(R.string.mc_unsupported, languageSelected))
                 )
 
                 langMcOptions.forEach {
