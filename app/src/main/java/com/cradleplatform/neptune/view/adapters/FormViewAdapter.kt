@@ -119,7 +119,7 @@ class FormViewAdapter(
                 val langMcOptions = mList[position].languageVersions?.find {
                     it.language == languageSelected
                 }?.mcOptions ?: listOf(
-                    McOption(-1, "Form does not support -> $languageSelected")
+                    McOption(-1, "Multiple Choice does not support -> $languageSelected")
                 )
 
                 langMcOptions.forEach {
