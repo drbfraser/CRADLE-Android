@@ -119,7 +119,6 @@ data class Question(
     @SerializedName("visibleCondition") val visibleCondition: List<VisibleCondition>?,
     @SerializedName("isBlank") val isBlank: Boolean?, // Should be true for FormTemplates
     @SerializedName("formTemplateId") val formTemplateId: String?, // Backend-Nullable
-    //@SerializedName("mcOptions") val mcOptions: List<McOption>?,
     @SerializedName("questionIndex") val questionIndex: Int?,
     @SerializedName("numMin") val numMin: Double?, // Backend-Nullable
     @SerializedName("numMax") val numMax: Double?, // Backend-Nullable
@@ -136,7 +135,6 @@ data class Question(
             "visibleCondition=$visibleCondition, " +
             "isBlank=$isBlank, " +
             "formTemplateId=$formTemplateId," +
-            //" mcOptions=$mcOptions, " +
             "questionIndex=$questionIndex, " +
             "numMin=$numMin, " +
             "numMax=$numMax, " +
@@ -199,14 +197,7 @@ data class Question(
                 nullCheckResult = false
                 Log.w(TAG, "[languageVersions] was null")
             }
-/*
-        this@Question.mcOptions?.forEach { it.verifyIntegrity() }
-            ?: let {
-                nullCheckResult = false
-                Log.w(TAG, "[mcOptions] was null")
-            }
 
- */
         this@Question.visibleCondition?.forEach { it.verifyIntegrity() }
             ?: let {
                 nullCheckResult = false

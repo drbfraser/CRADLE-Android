@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -90,6 +91,9 @@ class FormRenderingActivity : AppCompatActivity() {
 
         recyclerView.recycledViewPool.setMaxRecycledViews(0, 0)
 
+        //check if language selected exists in the form template
+        //The language's available are already shown in the dropdown
+
         adapter = FormViewAdapter(viewModel, languageSelected!!)
         recyclerView.adapter = adapter
 
@@ -148,6 +152,7 @@ class FormRenderingActivity : AppCompatActivity() {
         }
     }
 
+    /*
     private fun questionsInASingleCategory(formTemplateFromIntent: FormTemplate) {
 
         var listOfQuestionsInSingleCategory: MutableList<Question> = mutableListOf()
@@ -175,20 +180,13 @@ class FormRenderingActivity : AppCompatActivity() {
         // listOfQuestionLists
     }
 
-    private fun fullQuestionList(formTemplateFromIntent: FormTemplate): MutableList<Question> {
-        var listOfQuestions: MutableList<Question> = mutableListOf()
-        formTemplateFromIntent.questions?.forEach() { Q ->
-            listOfQuestions.add(Q)
-        }
-        return listOfQuestions
-    }
+     */
 
     companion object {
         private const val EXTRA_FORM_TEMPLATE = "JSON string for form template"
         private const val EXTRA_PATIENT_ID = "Patient id that the form is created for"
         private const val EXTRA_LANGUAGE_SELECTED = "String of language selected for a FormTemplate"
         private const val EXTRA_PATIENT_OBJECT = "The Patient object used to start patient profile"
-        private const val FLAG_IS_RECURSIVE_CALL = "Intent make from self"
 
         @JvmStatic
         fun makeIntentWithFormTemplate(
@@ -210,30 +208,3 @@ class FormRenderingActivity : AppCompatActivity() {
         }
     }
 }
-/* Question List Test Loop
-
-         //Log formTemplateFromIntent
-       /*
-       formTemplateFromIntent.questions?.forEach(){ Q ->
-           Q.languageVersions?.get(0)?.questionText?.let { Log.d("TEST123", it); Log.d("TEST123",
-               Q.questionType.toString()
-           ) }
-       }
-
-        */
-
-       var i = 0;
-       listOfQuestionLists.forEach {
-           Log.d("TEST123", "Category $i")
-
-           for(question in it){
-               question.languageVersions?.get(0)?.questionText?.let { it1 ->
-                   Log.d("TEST123",
-                       it1 + "inside loop"
-                   )
-               }
-           }
-           i++
-       }
-
-        */
