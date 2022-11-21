@@ -4,7 +4,6 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -15,8 +14,6 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.FormManager
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.Patient
-import com.cradleplatform.neptune.model.Question
-import com.cradleplatform.neptune.model.QuestionTypeEnum
 import com.cradleplatform.neptune.net.NetworkResult
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.view.adapters.FormViewAdapter

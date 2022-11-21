@@ -116,13 +116,13 @@ class FormViewAdapter(
                 holder.binding.rgMultipleChoice.visibility = View.VISIBLE
 
                 //Programmatically adding radio buttons for each option
-                val langMcOptions = mList[position].languageVersions?.find{
+                val langMcOptions = mList[position].languageVersions?.find {
                     it.language == languageSelected
-                }?.mcOptions?: listOf(
+                }?.mcOptions ?: listOf(
                     McOption(-1, "Form does not support -> $languageSelected")
                 )
 
-               langMcOptions.forEach {
+                langMcOptions.forEach {
                     val radioButton = RadioButton(context)
                     radioButton.text = it.opt
                     radioButton.id = it.mcid!!
