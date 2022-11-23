@@ -2,8 +2,10 @@ package com.cradleplatform.neptune
 
 import android.app.Activity
 import android.app.Application
+import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.hilt.work.HiltWorkerFactory
@@ -17,6 +19,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 
 import javax.inject.Inject
 
@@ -28,8 +31,12 @@ import javax.inject.Inject
 @HiltAndroidApp
 class CradleApplication : Application(), Configuration.Provider {
     var isDisableBlurKit = false
+
     var lastTimeActive: Long = 0
     var pinActivityActive: Boolean = false
+    var appKilledLockout = false
+    //Mutex for Pin Activity starting
+    val lock = Mutex()
 
     /**
      * Set desired timeout time in milliseconds
@@ -37,7 +44,13 @@ class CradleApplication : Application(), Configuration.Provider {
      * 1800000 = 30 Minutes
      * 86400000 = 24 Hours
      */
-    val timeoutTime = 1800000
+    private val timeoutTime = 30000
+
+    //SharedPref Variables
+    private val timeSharePrefKey = "TIMESTAMP_KEY"
+    private val lockOutPrefKey = "LOCKOUT_KEY"
+    private val applicationSharedPrefName = "APPLICATION_SHARED_PREF"
+    lateinit var sharedPref: SharedPreferences
 
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
@@ -60,6 +73,10 @@ class CradleApplication : Application(), Configuration.Provider {
         // https://github.com/JakeWharton/ThreeTenABP
         AndroidThreeTen.init(this)
 
+        //Initialize Sharedpref
+        sharedPref = getSharedPreferences(applicationSharedPrefName, Context.MODE_PRIVATE) ?: return
+        appKilledLockout = sharedPref.getBoolean(lockOutPrefKey, false)
+
         // Disable rotation
         // source: https://stackoverflow.com/questions/6745797/how-to-set-entire-application-in-portrait-mode-only/9784269#9784269
         // register to be informed of activities starting up
@@ -73,31 +90,42 @@ class CradleApplication : Application(), Configuration.Provider {
                     activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
                     /**
+                     *Regarding launchPinActivity
                      *Thread is required since there is a race condition with internal mutexes
                      *This method will make sure pin is on top always and prevent crashes
                      *As well as making sure internal stack order is correct since we use
                      *FLAG_ACTIVITY_NEW_TASK which might mess things up if we try to race
                      *It is hacky, but the only way to launch multiple activities at once
-                     *without having all the intents
+                     *without having all the intents and no coupling
                      *
-                     * @pinActivityActive is required
-                     * since onActivityCreated pops multiple times sometimes
-                     * Not consistent on how many times this is called for some reason
-                     * so this way to block multiple instances is required
-                     * Lock could also work, might be overkill
+                     * Mutex is to prevent the opening of multiple instances of the
+                     * PIN pass activity
                      **/
 
-                    if (System.currentTimeMillis() > lastTimeActive + timeoutTime
-                        && lastTimeActive > 0 && !pinActivityActive
-                    ) {
-                        pinActivityActive = true
-                        appCoroutineScope.launch(Dispatchers.Main) {
-                            delay(1000L)
-                            val intent = Intent(activity, PinPassActivity::class.java)
-                            intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
-                            startActivity(intent)
+                    //If the the app was killed during Pin Activity
+                    if (appKilledLockout) {
+                        if (lock.tryLock())
+                            launchPinActvity(activity)
+                        appKilledLockout = false
+                    }
+
+                    //For auto login if user has not signed on in timeout time and app was closed
+                    if (lastTimeActive < 1 && loginManager.isLoggedIn()) {
+                        lastTimeActive = sharedPref.getLong(timeSharePrefKey, 0)
+                        if (System.currentTimeMillis() > lastTimeActive + timeoutTime) {
+                            if (lock.tryLock())
+                                launchPinActvity(activity)
                         }
                     }
+
+                    //For if the was just put into background
+                    if (System.currentTimeMillis() > lastTimeActive + timeoutTime
+                        && lastTimeActive > 0 && loginManager.isLoggedIn()
+                    ) {
+                        if (lock.tryLock())
+                            launchPinActvity(activity)
+                    }
+                    lastTimeActive = sharedPref.getLong(timeSharePrefKey, 0)
                 }
 
                 override fun onActivityStarted(activity: Activity) {}
@@ -106,20 +134,53 @@ class CradleApplication : Application(), Configuration.Provider {
                 override fun onActivityStopped(activity: Activity) {
                     //Will track anytime it is not in foreground
                     lastTimeActive = System.currentTimeMillis()
-                    //If they try to override PIN by kill app this will still go off first
-                    if (pinActivityActive) {
-                        appCoroutineScope.launch {
-                            loginManager.logout()
-                        }
+
+                    with(sharedPref.edit()) {
+                        putLong(timeSharePrefKey, lastTimeActive)
+                        apply()
                     }
                 }
                 override fun onActivitySaveInstanceState(activity: Activity, bundle: Bundle) {}
-                override fun onActivityDestroyed(activity: Activity) {}
+                override fun onActivityDestroyed(activity: Activity) {
+                    //If they try to override PIN by killing the app this will still go off first
+                    if (pinActivityActive) {
+                        appKilledLockout = true
+                        with(sharedPref.edit()) {
+                            putBoolean(lockOutPrefKey, appKilledLockout)
+                            apply()
+                        }
+                    } else {
+                        //This is to check the PIN has been successful and we don't need to
+                        //Pin log in when the session is over
+                        if (appKilledLockout) {
+                            appKilledLockout = false
+                            with(sharedPref.edit()) {
+                                putBoolean(lockOutPrefKey, appKilledLockout)
+                                apply()
+                            }
+                        }
+                    }
+                }
             }
         )
     }
 
     fun pinPassActivityFinished() {
         pinActivityActive = false
+    }
+
+    fun pinPassActivityStarted() {
+        pinActivityActive = true
+        lock.unlock()
+    }
+
+    private fun launchPinActvity(activity: Activity) {
+        appCoroutineScope.launch(Dispatchers.Main) {
+            //Do not lower delay there are a lot of activities on launch this needs to be last
+            delay(1000L)
+            val intent = Intent(activity, PinPassActivity::class.java)
+            intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+        }
     }
 }

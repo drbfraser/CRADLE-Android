@@ -28,6 +28,7 @@ class PinPassActivity : AppCompatActivity() {
         setContentView(R.layout.activity_pin_pass)
         app = this.application as CradleApplication
 
+        app.pinPassActivityStarted()
         setUpButtons()
         setUpPIN()
     }
