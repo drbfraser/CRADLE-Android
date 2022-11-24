@@ -18,6 +18,7 @@ import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.utilities.validateHostname
 import com.cradleplatform.neptune.utilities.validatePort
 import com.cradleplatform.neptune.view.LoginActivity
+import com.cradleplatform.neptune.view.PinPassActivity
 import com.cradleplatform.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
@@ -135,6 +136,15 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     .replace(android.R.id.content, AdvancedSettingsFragment())
                     .addToBackStack(AdvancedSettingsFragment::class.qualifiedName) // add to back stack with name
                     .commit()
+                true
+            }
+
+        findPreference(R.string.key_change_pin)
+            ?.withOnClickListener {
+                val intent = Intent(activity, PinPassActivity::class.java)
+                intent.putExtra("isChangePin", true)
+                startActivity(intent)
+                requireActivity().finishAffinity()
                 true
             }
 

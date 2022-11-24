@@ -5,6 +5,9 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.content.Intent.FLAG_ACTIVITY_NO_ANIMATION
+import android.content.Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+import android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
 import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.os.Bundle
@@ -42,15 +45,15 @@ class CradleApplication : Application(), Configuration.Provider {
      * Set desired timeout time in milliseconds
      * 10000 = 10 Seconds (For testing)
      * 1800000 = 30 Minutes
-     * 86400000 = 24 Hours
+     * 86400000 = 24 Hours (For Prod)
      */
-    private val timeoutTime = 30000
+    private val timeoutTime = 1800000
 
     //SharedPref Variables
     private val timeSharePrefKey = "TIMESTAMP_KEY"
     private val lockOutPrefKey = "LOCKOUT_KEY"
     private val applicationSharedPrefName = "APPLICATION_SHARED_PREF"
-    lateinit var sharedPref: SharedPreferences
+    private lateinit var sharedPref: SharedPreferences
 
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
@@ -108,7 +111,6 @@ class CradleApplication : Application(), Configuration.Provider {
                             launchPinActvity(activity)
                         appKilledLockout = false
                     }
-
                     //For auto login if user has not signed on in timeout time and app was closed
                     if (lastTimeActive < 1 && loginManager.isLoggedIn()) {
                         lastTimeActive = sharedPref.getLong(timeSharePrefKey, 0)
@@ -174,12 +176,23 @@ class CradleApplication : Application(), Configuration.Provider {
         lock.unlock()
     }
 
+    fun logOutofSession() {
+        appCoroutineScope.launch(Dispatchers.Main) {
+            loginManager.logout()
+        }
+    }
+
     private fun launchPinActvity(activity: Activity) {
         appCoroutineScope.launch(Dispatchers.Main) {
             //Do not lower delay there are a lot of activities on launch this needs to be last
             delay(1000L)
             val intent = Intent(activity, PinPassActivity::class.java)
             intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
+            intent.addFlags(FLAG_ACTIVITY_NO_ANIMATION)
+            //Flags to make sure this activity is always on top
+            intent.addFlags(FLAG_ACTIVITY_REORDER_TO_FRONT)
+            intent.addFlags(FLAG_ACTIVITY_SINGLE_TOP)
+            intent.putExtra("isChangePin", false)
             startActivity(intent)
         }
     }
