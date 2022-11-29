@@ -43,7 +43,7 @@ class CradleApplication : Application(), Configuration.Provider {
 
     /**
      * Set desired timeout time in milliseconds
-     * 10000 = 10 Seconds (For testing)
+     * 30000 = 30 Seconds (For testing)
      * 1800000 = 30 Minutes
      * 86400000 = 24 Hours (For Prod)
      */
@@ -106,7 +106,7 @@ class CradleApplication : Application(), Configuration.Provider {
                      **/
 
                     //If the the app was killed during Pin Activity
-                    if (appKilledLockout) {
+                    if (appKilledLockout && lastTimeActive < 1) {
                         if (lock.tryLock())
                             launchPinActvity(activity)
                         appKilledLockout = false

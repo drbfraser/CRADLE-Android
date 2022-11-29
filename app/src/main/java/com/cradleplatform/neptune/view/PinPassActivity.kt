@@ -8,20 +8,17 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
 import com.cradleplatform.neptune.CradleApplication
 import com.cradleplatform.neptune.R
-import com.cradleplatform.neptune.manager.LoginManager
-import javax.inject.Inject
 
 class PinPassActivity : AppCompatActivity() {
     lateinit var app: CradleApplication
-    @Inject
-    lateinit var loginManager: LoginManager
 
-    private val pinCodePrefKey = "PIN_CODE_KEY"
-    private val pinPassSharedPreferences = "PIN_SHARED_PREF"
+    private val pinCodePrefKey = getString(R.string.key_pin_shared_key)
+    private val pinPassSharedPreferences = getString(R.string.key_pin_shared_pref)
     private lateinit var sharedPref: SharedPreferences
 
     private val extraChangePin = "isChangePin"
@@ -32,8 +29,7 @@ class PinPassActivity : AppCompatActivity() {
      * Default password will be 0000 until we can figure out a way of getting the user
      * to generate their first PIN
      */
-    //TODO Implement way to get user to set their first PIN
-    private val defaultPinCode = "0000"
+    private val defaultPinCode = getString(R.string.key_pin_default_pin)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,6 +40,15 @@ class PinPassActivity : AppCompatActivity() {
 
         if (!isChangePinActive) {
             app = this.application as CradleApplication
+            if (pinCode == defaultPinCode) {
+                Toast.makeText(this, getString(R.string.pin_not_set), Toast.LENGTH_LONG).show()
+                app.pinPassActivityFinished()
+                app.logOutofSession()
+                val intent = Intent(this@PinPassActivity, LoginActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
+
             app.pinPassActivityStarted()
             setUpButtons(isChangePinActive)
             setUpPIN(isChangePinActive)
@@ -65,10 +70,20 @@ class PinPassActivity : AppCompatActivity() {
             }
         } else {
             forgotButton.setOnClickListener {
-                app.pinPassActivityFinished()
-                app.logOutofSession()
-                val intent = Intent(this@PinPassActivity, LoginActivity::class.java)
-                startActivity(intent)
+                AlertDialog.Builder(this@PinPassActivity)
+                    .setMessage(R.string.pin_alert_message)
+                    .setCancelable(true)
+                    .setTitle(R.string.pin_alert_title)
+                    .setPositiveButton(R.string.pin_alert_positive) { _, _ ->
+                        app.pinPassActivityFinished()
+                        app.logOutofSession()
+                        val intent = Intent(this@PinPassActivity, LoginActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    }
+                    .setNegativeButton(R.string.pin_alert_negative) { _, _ ->
+                    }
+                    .show()
             }
         }
     }
@@ -81,7 +96,7 @@ class PinPassActivity : AppCompatActivity() {
         if (isChangePinActive) {
             headerLine.text = getString(R.string.change_pin_act_first_enter)
             var confirmPin = false
-            var tempPin = "00000"
+            var tempPin = defaultPinCode
             passText.doAfterTextChanged {
                 if (!confirmPin && passText.text.toString().length == 4) {
                     tempPin = passText.text.toString()

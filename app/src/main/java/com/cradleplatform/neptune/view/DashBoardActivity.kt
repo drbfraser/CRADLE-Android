@@ -1,5 +1,6 @@
 package com.cradleplatform.neptune.view
 
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -8,6 +9,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import com.cradleplatform.neptune.R
@@ -28,6 +30,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dash_board)
+        checkPinIfPinSet()
         setupOnClickListner()
 
         val actionBar = supportActionBar
@@ -114,6 +117,22 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         statCardview.setOnClickListener(this)
         statImg.setOnClickListener(this)
         helpButton.setOnClickListener(this)
+    }
+
+    private fun checkPinIfPinSet() {
+        val pinCodePrefKey = getString(R.string.key_pin_shared_key)
+        val pinPassSharedPreferences = getString(R.string.key_pin_shared_pref)
+        val defaultPinCode = getString(R.string.key_pin_default_pin)
+        val sharedPref = getSharedPreferences(pinPassSharedPreferences, Context.MODE_PRIVATE) ?: return
+        if (sharedPref.getString(pinCodePrefKey, defaultPinCode) == defaultPinCode) {
+            AlertDialog.Builder(this@DashBoardActivity)
+                .setMessage(R.string.dash_pin_not_set)
+                .setCancelable(true)
+                .setTitle(R.string.dash_pin_not_set_title)
+                .setPositiveButton(R.string.dash_pin_not_set_button) { _, _ ->
+                }
+                .show()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

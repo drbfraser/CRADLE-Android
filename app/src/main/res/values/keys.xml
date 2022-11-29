@@ -18,4 +18,10 @@
     <string name="key_advanced_settings_settings_button">settings_advanced</string>
     <string name="key_sign_out">settings_sign_out</string>
     <string name="key_change_pin">settings_change_pin</string>
+
+    <!-- Pin Activity Prefs -->
+    <string name="key_pin_shared_pref">PIN_SHARED_PREF</string>
+    <string name="key_pin_shared_key">PIN_CODE_KEY</string>
+    <string name="key_pin_default_pin">aaaa</string>
+
 </resources>

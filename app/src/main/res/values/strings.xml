@@ -685,6 +685,14 @@
     <string name="change_pin_act_pin_saved">New PIN Saved</string>
     <string name="change_pin_act_incorrect">Does not match previous PIN retry or cancel</string>
     <string name="change_pin_act_cancel_button">Cancel</string>
+    <string name="pin_alert_message">This will log you out, once you log in please reset PIN in the settings</string>
+    <string name="pin_alert_title">Confirm</string>
+    <string name="pin_alert_positive">Log Out</string>
+    <string name="pin_alert_negative">Cancel</string>
+    <string name="pin_not_set">PIN not set, logging out</string>
+    <string name="dash_pin_not_set">PIN not set please create one in the setting menu on the top right</string>
+    <string name="dash_pin_not_set_button">Ok</string>
+    <string name="dash_pin_not_set_title">Warning</string>
 
 
     <plurals name="unuploaded_reading_signout_message">
