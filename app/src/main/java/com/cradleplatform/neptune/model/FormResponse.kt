@@ -74,7 +74,8 @@ constructor(
             }
 
             val response = answers[question.questionId]
-            val languageQuestionText = question.languageVersions?.find { it.language == language }?.questionText
+            val languageVersion = question.languageVersions?.find { it.language == language }
+            val languageQuestionText = languageVersion?.questionText
                 ?: throw IllegalArgumentException(
                     "Failed to create FormResponse: Language does not exist in FormTemplate"
                 )

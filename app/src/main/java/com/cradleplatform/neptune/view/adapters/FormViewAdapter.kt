@@ -5,6 +5,7 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
 import android.graphics.Color
+import android.provider.Settings.Global.getString
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -13,10 +14,12 @@ import android.widget.Button
 import android.widget.RadioButton
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.TypedArrayUtils.getString
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.databinding.CardLayoutBinding
 import com.cradleplatform.neptune.model.Answer
+import com.cradleplatform.neptune.model.McOption
 import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.model.QuestionTypeEnum.*
 import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
@@ -57,11 +60,14 @@ class FormViewAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
-        //TODO(have to replace 0 with language)
         //Setting the question text
         var langVersion = mList[position].languageVersions
-        var questionText = langVersion?.get(0)?.questionText
-        holder.binding.tvQuestion.text = questionText ?: "No Question Text"
+
+        var questionText = langVersion?.find {
+            it.language == languageSelected
+        }?.questionText ?: R.string.not_available.toString()
+
+        holder.binding.tvQuestion.text = questionText
 
         //Depending on question type, we are setting one of the four possible types of inputs to visible.
         holder.binding.tvQuestion.textSize = 18f
@@ -112,7 +118,13 @@ class FormViewAdapter(
                 holder.binding.rgMultipleChoice.visibility = View.VISIBLE
 
                 //Programmatically adding radio buttons for each option
-                mList[position].languageVersions?.get(0)?.mcOptions?.forEach {
+                val langMcOptions = mList[position].languageVersions?.find {
+                    it.language == languageSelected
+                }?.mcOptions ?: listOf(
+                    McOption(-1, context.resources.getString(R.string.mc_unsupported, languageSelected))
+                )
+
+                langMcOptions.forEach {
                     val radioButton = RadioButton(context)
                     radioButton.text = it.opt
                     radioButton.id = it.mcid!!

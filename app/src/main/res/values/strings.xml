@@ -678,6 +678,7 @@
     <string name="are_you_sure">Are you sure?</string>
     <string name="how_to_submit">How do you want to submit the form?</string>
     <string name="choose_an_option">Choose an option!</string>
+    <string name="mc_unsupported">Multiple Choice does not support -> %s</string>
     <string name="change_pin_message">Set up or change PIN, PIN entry is required when a certain amount of time has elapsed</string>
     <string name="change_pin_title">Set or Change PIN</string>
     <string name="change_pin_act_first_enter">Enter New PIN</string>
