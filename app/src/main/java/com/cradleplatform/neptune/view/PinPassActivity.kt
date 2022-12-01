@@ -17,23 +17,23 @@ import com.cradleplatform.neptune.R
 class PinPassActivity : AppCompatActivity() {
     lateinit var app: CradleApplication
 
-    private val pinCodePrefKey = getString(R.string.key_pin_shared_key)
-    private val pinPassSharedPreferences = getString(R.string.key_pin_shared_pref)
+    private lateinit var pinCodePrefKey: String
+    private lateinit var pinPassSharedPreferences: String
     private lateinit var sharedPref: SharedPreferences
 
     private val extraChangePin = "isChangePin"
 
     lateinit var pinCode: String
 
-    /**
-     * Default password will be 0000 until we can figure out a way of getting the user
-     * to generate their first PIN
-     */
-    private val defaultPinCode = getString(R.string.key_pin_default_pin)
+    private lateinit var defaultPinCode: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pin_pass)
+        pinCodePrefKey = getString(R.string.key_pin_shared_key)
+        pinPassSharedPreferences = getString(R.string.key_pin_shared_pref)
+        //Default Pin is aaaa
+        defaultPinCode = getString(R.string.key_pin_default_pin)
         val isChangePinActive = intent.getBooleanExtra(extraChangePin, true)
         sharedPref = getSharedPreferences(pinPassSharedPreferences, Context.MODE_PRIVATE) ?: return
         pinCode = sharedPref.getString(pinCodePrefKey, defaultPinCode)!!
@@ -62,7 +62,7 @@ class PinPassActivity : AppCompatActivity() {
         val forgotButton = findViewById<Button>(R.id.pinPassForgotButton)
 
         if (isChangePinActive) {
-            forgotButton.text = getString(R.string.change_pin_act_cancel_button)
+            forgotButton.text = getString(R.string.cancel)
             forgotButton.setOnClickListener {
                 val intent = Intent(this@PinPassActivity, DashBoardActivity::class.java)
                 startActivity(intent)
@@ -73,15 +73,15 @@ class PinPassActivity : AppCompatActivity() {
                 AlertDialog.Builder(this@PinPassActivity)
                     .setMessage(R.string.pin_alert_message)
                     .setCancelable(true)
-                    .setTitle(R.string.pin_alert_title)
-                    .setPositiveButton(R.string.pin_alert_positive) { _, _ ->
+                    .setTitle(R.string.confirm)
+                    .setPositiveButton(R.string.sign_out_dialog_yes_button) { _, _ ->
                         app.pinPassActivityFinished()
                         app.logOutofSession()
                         val intent = Intent(this@PinPassActivity, LoginActivity::class.java)
                         startActivity(intent)
                         finish()
                     }
-                    .setNegativeButton(R.string.pin_alert_negative) { _, _ ->
+                    .setNegativeButton(R.string.cancel) { _, _ ->
                     }
                     .show()
             }

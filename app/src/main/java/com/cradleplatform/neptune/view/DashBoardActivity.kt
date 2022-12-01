@@ -128,8 +128,8 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
             AlertDialog.Builder(this@DashBoardActivity)
                 .setMessage(R.string.dash_pin_not_set)
                 .setCancelable(true)
-                .setTitle(R.string.dash_pin_not_set_title)
-                .setPositiveButton(R.string.dash_pin_not_set_button) { _, _ ->
+                .setTitle(R.string.warning)
+                .setPositiveButton(R.string.ok) { _, _ ->
                 }
                 .show()
         }

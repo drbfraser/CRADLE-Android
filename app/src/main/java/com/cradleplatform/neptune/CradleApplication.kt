@@ -46,6 +46,8 @@ class CradleApplication : Application(), Configuration.Provider {
      * 30000 = 30 Seconds (For testing)
      * 1800000 = 30 Minutes
      * 86400000 = 24 Hours (For Prod)
+     * If this is changed also change change_pin_message in string.xml
+     * to match the time
      */
     private val timeoutTime = 1800000
 
