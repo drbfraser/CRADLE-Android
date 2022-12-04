@@ -679,6 +679,19 @@
     <string name="how_to_submit">How do you want to submit the form?</string>
     <string name="choose_an_option">Choose an option!</string>
     <string name="mc_unsupported">Multiple Choice does not support -> %s</string>
+    <string name="change_pin_message">Set up or change PIN, PIN entry is required when more than thirty minutes has elapsed</string>
+    <string name="change_pin_title">Set or Change PIN</string>
+    <string name="change_pin_act_first_enter">Enter New PIN</string>
+    <string name="change_pin_act_second_enter">Enter PIN again</string>
+    <string name="change_pin_act_pin_saved">New PIN Saved</string>
+    <string name="change_pin_act_incorrect">Does not match previous PIN retry or cancel</string>
+    <string name="pin_alert_message">This will log you out, once you log in please reset PIN in the settings</string>
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+    <string name="pin_not_set">PIN not set, logging out</string>
+    <string name="dash_pin_not_set">PIN not set please create one in the setting menu on the top right</string>
+    <string name="ok">OK</string>
+    <string name="warning">Warning</string>
 
 
     <plurals name="unuploaded_reading_signout_message">

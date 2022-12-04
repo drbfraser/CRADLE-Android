@@ -26,4 +26,9 @@
 
     <!-- Required Sync Period -->
     <integer name="settings_default_sync_period_hours">3</integer>
+
+    <!-- Pin Activity Prefs -->
+    <string name="key_pin_shared_pref">PIN_SHARED_PREF</string>
+    <string name="key_pin_shared_key">PIN_CODE_KEY</string>
+    <string name="key_pin_default_pin">aaaa</string>
 </resources>
