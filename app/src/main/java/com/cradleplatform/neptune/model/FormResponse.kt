@@ -101,7 +101,8 @@ constructor(
                 responseList.add(questionResponse)
             } else if (question.required == true) {
                 throw IllegalArgumentException(
-                    "Failed to create FormResponse: Required question does not have an answer"
+
+                    "Failed to create FormResponse: Required question does not have an answer $question"
                 )
             } else {
                 Log.w(TAG, "Answer Missing for questionId(${question.questionId}) in form ${question.formTemplateId}")
