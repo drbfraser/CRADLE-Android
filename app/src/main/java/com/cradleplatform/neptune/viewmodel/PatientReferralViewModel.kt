@@ -2,12 +2,14 @@ package com.cradleplatform.neptune.viewmodel
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
+import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.ext.getIntOrNull
 import com.cradleplatform.neptune.manager.HealthFacilityManager
 import com.cradleplatform.neptune.manager.LoginManager
@@ -29,14 +31,15 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PatientReferralViewModel @Inject constructor(
-    private val referralManager: ReferralManager,
-    private val referralUploadManager: ReferralUploadManager,
+    private val referralManager: ReferralManager, //for the internal database
+    private val referralUploadManager: ReferralUploadManager, //for the backend database
     private val sharedPreferences: SharedPreferences,
     private val healthFacilityManager: HealthFacilityManager,
     @ApplicationContext private val app: Context
 ) : ViewModel() {
+
     val healthFacilityToUse = MediatorLiveData<String>()
-    val comments = MutableLiveData<String>("")
+    val comments = MutableLiveData("")
 
     private val selectedHealthFacilities: LiveData<List<HealthFacility>> =
         healthFacilityManager.getLiveListSelected
@@ -102,6 +105,7 @@ class PatientReferralViewModel @Inject constructor(
         patient: Patient
     ): ReferralFlowSaveResult = withContext(Dispatchers.Default) {
         val currentTime = UnixTimestamp.now.toLong()
+        //create a referral object
         val referral =
             Referral(
                 id = UUID.randomUUID().toString(),
@@ -119,12 +123,13 @@ class PatientReferralViewModel @Inject constructor(
                 lastEdited = currentTime
             )
 
+        //Upload using the defined method ( Web or Sms)
         when (referralOption) {
             ReferralOption.WEB -> {
                 val result = referralUploadManager.uploadReferralViaWeb(patient, referral)
 
                 if (result is NetworkResult.Success) {
-                    // Save the patient and referral in local database
+                    // Store the referral object into internal DB
                     handleStoringReferralFromBuilders(referral)
 
                     return@withContext ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded

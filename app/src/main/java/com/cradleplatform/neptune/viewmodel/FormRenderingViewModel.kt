@@ -8,13 +8,15 @@ import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.net.NetworkResult
+import com.cradleplatform.neptune.viewmodel.HTTP_SMS_Bridge.DatabaseObject
+import com.cradleplatform.neptune.viewmodel.HTTP_SMS_Bridge.HttpSmsService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlin.jvm.Throws
 
 @HiltViewModel
 class FormRenderingViewModel @Inject constructor(
     private val mFormManager: FormManager,
+    private val HttpSmsService: HttpSmsService
 ) : ViewModel() {
 
     //Raw form template
@@ -33,9 +35,17 @@ class FormRenderingViewModel @Inject constructor(
         Log.d(TAG, "adding answer for [$questionId]")
     }
 
-    @Throws(IllegalArgumentException::class, NullPointerException::class)
-    suspend fun submitForm(patientId: String, selectedLanguage: String): NetworkResult<Unit> {
+    suspend fun submitForm(patientId: String, selectedLanguage: String) {
         return if (currentFormTemplate != null) {
+            val formResponse = FormResponse(
+                patientId = patientId,
+                formTemplate = currentFormTemplate!!,
+                language = selectedLanguage,
+                answers = currentAnswers
+            )
+            HttpSmsService.upload(DatabaseObject.FormResponseWrapper(formResponse))
+
+            /*
             mFormManager.submitFormToWebAsResponse(
                 FormResponse(
                     patientId = patientId,
@@ -44,6 +54,9 @@ class FormRenderingViewModel @Inject constructor(
                     answers = currentAnswers
                 )
             )
+
+             */
+
         } else {
             error("FormTemplate does not exist: Current displaying FormTemplate is null")
         }

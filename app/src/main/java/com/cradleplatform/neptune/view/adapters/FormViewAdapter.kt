@@ -121,6 +121,7 @@ class FormViewAdapter(
                 val langMcOptions = mList[position].languageVersions?.find {
                     it.language == languageSelected
                 }?.mcOptions ?: listOf(
+                    //Error Language Not Found
                     McOption(-1, context.resources.getString(R.string.mc_unsupported, languageSelected))
                 )
 

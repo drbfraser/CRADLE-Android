@@ -118,6 +118,8 @@ class FormRenderingActivity : AppCompatActivity() {
 
     private fun formSubmissionInHTTP(languageSelected: String) {
         lifecycleScope.launch(Dispatchers.IO) {
+            viewModel.submitForm(patientId!!, languageSelected)
+            /*
             try {
                 val result = viewModel.submitForm(patientId!!, languageSelected)
                 if (result is NetworkResult.Success) {
@@ -146,8 +148,13 @@ class FormRenderingActivity : AppCompatActivity() {
                     exception.printStackTrace()
                 }
             }
+            */
         }
     }
+
+
+
+
 
     /*
     private fun questionsInASingleCategory(formTemplateFromIntent: FormTemplate) {
