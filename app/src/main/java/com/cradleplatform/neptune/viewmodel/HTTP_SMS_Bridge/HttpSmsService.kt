@@ -25,11 +25,16 @@ import javax.inject.Inject
  * in the phone memory for when the phone is offline. Its singular implementation has to be implemented elsewhere.
  */
 
+enum class Protocol {
+    HTTP,
+    SMS
+}
+
 sealed class DatabaseObject{
     data class Patient(val patient: Patient) : DatabaseObject()
     data class Referral(val referral: Referral) : DatabaseObject()
     //data class Reading(val reading: Reading) : DatabaseObject()
-    data class FormResponseWrapper(val formResponse: FormResponse) : DatabaseObject()
+    data class FormResponseWrapper(val formResponse: FormResponse, val submissionMode: Protocol) : DatabaseObject()
 }
 
 class HttpSmsService @Inject constructor(private val restApi: RestApi) {
@@ -37,18 +42,24 @@ class HttpSmsService @Inject constructor(private val restApi: RestApi) {
         when (databaseObject) {
             //is DatabaseObject.Patient -> uploadPatient(databaseObject.patient)
             //is Reading -> uploadReading(databaseObject.referral)
-            is DatabaseObject.FormResponseWrapper -> uploadForm(databaseObject.formResponse)
+            is DatabaseObject.FormResponseWrapper -> uploadForm(databaseObject)
             else -> {
                 Log.d("HttpSmsService", "Error: Unknown database object type")
             }
         }
     }
 
-    private suspend fun uploadForm(formResponse: FormResponse) {
-        when (restApi.postFormResponse(formResponse)) {
-            is NetworkResult.Success -> Log.d("HTTP_SMS_BRIDGE", "Form uploaded successfully")
-            is NetworkResult.Failure -> Log.d("HTTP_SMS_BRIDGE", "Form upload failed")
-            is NetworkResult.NetworkException -> Log.d("HTTP_SMS_BRIDGE", "Form upload failed")
+    private suspend fun uploadForm(formResponseWrapper : DatabaseObject.FormResponseWrapper) {
+        when (formResponseWrapper.submissionMode) {
+            Protocol.HTTP -> {
+                when (restApi.postFormResponse(formResponseWrapper.formResponse)) {
+                    is NetworkResult.Success -> Log.d("HTTP_SMS_BRIDGE","Form uploaded successfully")
+                    is NetworkResult.Failure -> Log.d("HTTP_SMS_BRIDGE", "Form upload failed")
+                    is NetworkResult.NetworkException -> Log.d("HTTP_SMS_BRIDGE","Form upload failed")
+                }
+            }
+            Protocol.SMS -> {
+            }
         }
     }
 }

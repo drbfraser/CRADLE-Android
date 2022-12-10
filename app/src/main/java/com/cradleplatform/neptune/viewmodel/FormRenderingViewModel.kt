@@ -10,6 +10,7 @@ import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.net.NetworkResult
 import com.cradleplatform.neptune.viewmodel.HTTP_SMS_Bridge.DatabaseObject
 import com.cradleplatform.neptune.viewmodel.HTTP_SMS_Bridge.HttpSmsService
+import com.cradleplatform.neptune.viewmodel.HTTP_SMS_Bridge.Protocol
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -35,7 +36,7 @@ class FormRenderingViewModel @Inject constructor(
         Log.d(TAG, "adding answer for [$questionId]")
     }
 
-    suspend fun submitForm(patientId: String, selectedLanguage: String) {
+    suspend fun submitForm(patientId: String, selectedLanguage: String, submissionMode: String) {
         return if (currentFormTemplate != null) {
             val formResponse = FormResponse(
                 patientId = patientId,
@@ -43,7 +44,7 @@ class FormRenderingViewModel @Inject constructor(
                 language = selectedLanguage,
                 answers = currentAnswers
             )
-            HttpSmsService.upload(DatabaseObject.FormResponseWrapper(formResponse))
+            HttpSmsService.upload(DatabaseObject.FormResponseWrapper(formResponse, Protocol.valueOf(submissionMode)))
 
             /*
             mFormManager.submitFormToWebAsResponse(

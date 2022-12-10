@@ -105,7 +105,7 @@ class FormRenderingActivity : AppCompatActivity() {
         builder.setMessage(R.string.choose_an_option)
 
         builder.setPositiveButton(R.string.http) { _, _ ->
-            formSubmissionInHTTP(languageSelected)
+            formSubmissionInHTTP(languageSelected, "HTTP")
             finish()
         }
 
@@ -116,39 +116,9 @@ class FormRenderingActivity : AppCompatActivity() {
         builder.show()
     }
 
-    private fun formSubmissionInHTTP(languageSelected: String) {
+    private fun formSubmissionInHTTP(languageSelected: String, submissionMode: String) {
         lifecycleScope.launch(Dispatchers.IO) {
-            viewModel.submitForm(patientId!!, languageSelected)
-            /*
-            try {
-                val result = viewModel.submitForm(patientId!!, languageSelected)
-                if (result is NetworkResult.Success) {
-                    withContext(Dispatchers.Main) {
-                        CustomToast.shortToast(
-                            applicationContext,
-                            "Form Response Submitted"
-                        )
-                    }
-                } else {
-                    withContext(Dispatchers.Main) {
-                        CustomToast.shortToast(
-                            applicationContext,
-                            "Form Response Submission failed with network error:\n " +
-                                "${result.getStatusMessage(applicationContext)}"
-                        )
-                    }
-                }
-            } catch (exception: IllegalArgumentException) {
-                withContext(Dispatchers.Main) {
-                    CustomToast.shortToast(
-                        applicationContext,
-                        "Form Response Failed to Create(Malformed):\n" +
-                            "${exception.message}"
-                    )
-                    exception.printStackTrace()
-                }
-            }
-            */
+            viewModel.submitForm(patientId!!, languageSelected, submissionMode)
         }
     }
 
