@@ -127,7 +127,7 @@ open class PatientReferralActivity : AppCompatActivity() {
         val sendBtn = findViewById<Button>(R.id.send_web_button)
         sendBtn.setOnClickListener {
             lifecycleScope.launch {
-                when (viewModel.saveReferral(ReferralOption.WEB, currPatient)) {
+                when (viewModel.saveReferral(ReferralOption.HTML, currPatient)) {
                     is ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded -> {
                         Toast.makeText(
                             it.context,

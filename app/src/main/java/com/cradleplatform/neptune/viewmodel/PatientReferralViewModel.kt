@@ -2,14 +2,12 @@ package com.cradleplatform.neptune.viewmodel
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
-import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.ext.getIntOrNull
 import com.cradleplatform.neptune.manager.HealthFacilityManager
 import com.cradleplatform.neptune.manager.LoginManager
@@ -22,6 +20,7 @@ import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.net.NetworkResult
 import com.cradleplatform.neptune.utilities.UnixTimestamp
 import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
+import com.cradleplatform.neptune.net.HttpSmsService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -31,6 +30,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PatientReferralViewModel @Inject constructor(
+    private val httpSmsService: HttpSmsService,
     private val referralManager: ReferralManager, //for the internal database
     private val referralUploadManager: ReferralUploadManager, //for the backend database
     private val sharedPreferences: SharedPreferences,
@@ -125,15 +125,15 @@ class PatientReferralViewModel @Inject constructor(
 
         //Upload using the defined method ( Web or Sms)
         when (referralOption) {
-            ReferralOption.WEB -> {
+            ReferralOption.HTML -> {
                 val result = referralUploadManager.uploadReferralViaWeb(patient, referral)
 
                 if (result is NetworkResult.Success) {
                     // Store the referral object into internal DB
                     handleStoringReferralFromBuilders(referral)
-
                     return@withContext ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded
-                } else {
+                }
+                else {
                     return@withContext ReferralFlowSaveResult.ErrorUploadingReferral
                 }
             }

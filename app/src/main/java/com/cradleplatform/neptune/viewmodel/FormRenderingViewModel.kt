@@ -2,22 +2,20 @@ package com.cradleplatform.neptune.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.cradleplatform.neptune.manager.FormManager
 import com.cradleplatform.neptune.model.Answer
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.Question
-import com.cradleplatform.neptune.net.NetworkResult
-import com.cradleplatform.neptune.viewmodel.HTTP_SMS_Bridge.DatabaseObject
-import com.cradleplatform.neptune.viewmodel.HTTP_SMS_Bridge.HttpSmsService
-import com.cradleplatform.neptune.viewmodel.HTTP_SMS_Bridge.Protocol
+import com.cradleplatform.neptune.net.DatabaseObject
+import com.cradleplatform.neptune.net.HttpSmsService
+import com.cradleplatform.neptune.net.Protocol
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class FormRenderingViewModel @Inject constructor(
-    private val mFormManager: FormManager,
-    private val HttpSmsService: HttpSmsService
+    //private val mFormManager: FormManager,
+    private val httpSmsService: HttpSmsService
 ) : ViewModel() {
 
     //Raw form template
@@ -44,20 +42,7 @@ class FormRenderingViewModel @Inject constructor(
                 language = selectedLanguage,
                 answers = currentAnswers
             )
-            HttpSmsService.upload(DatabaseObject.FormResponseWrapper(formResponse, Protocol.valueOf(submissionMode)))
-
-            /*
-            mFormManager.submitFormToWebAsResponse(
-                FormResponse(
-                    patientId = patientId,
-                    formTemplate = currentFormTemplate!!,
-                    language = selectedLanguage,
-                    answers = currentAnswers
-                )
-            )
-
-             */
-
+            httpSmsService.upload(DatabaseObject.FormResponseWrapper(formResponse, Protocol.valueOf(submissionMode)))
         } else {
             error("FormTemplate does not exist: Current displaying FormTemplate is null")
         }
