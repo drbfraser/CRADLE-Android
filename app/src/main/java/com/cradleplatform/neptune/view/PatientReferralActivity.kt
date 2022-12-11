@@ -35,6 +35,7 @@ import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import android.content.IntentFilter
 import androidx.core.content.edit
+import com.cradleplatform.neptune.net.Protocol
 
 @AndroidEntryPoint
 open class PatientReferralActivity : AppCompatActivity() {
@@ -86,8 +87,9 @@ open class PatientReferralActivity : AppCompatActivity() {
         populateCurrentPatient()
 
         setupToolBar()
-        setupSendWebBtn()
-        setupSendSMSBtn()
+        //setupSendWebBtn()
+        //setupSendSMSBtn()
+        setupSendButtons()
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -123,6 +125,23 @@ open class PatientReferralActivity : AppCompatActivity() {
         supportActionBar?.setTitle("Creating referral for " + currPatient.name)
     }
 
+    private fun setupSendButtons() {
+        val sendViaHTTP = findViewById<Button>(R.id.send_web_button)
+        sendViaHTTP.setOnClickListener {
+            lifecycleScope.launch{
+                val unusedResult =  viewModel.saveReferral("HTTP", currPatient)
+            }
+        }
+
+        val sendViaSMS = findViewById<Button>(R.id.send_sms_button)
+        sendViaSMS.setOnClickListener {
+            lifecycleScope.launch{
+                val unusedResult =  viewModel.saveReferral("SMS", currPatient)
+            }
+        }
+    }
+
+    /*
     private fun setupSendWebBtn() {
         val sendBtn = findViewById<Button>(R.id.send_web_button)
         sendBtn.setOnClickListener {
@@ -206,6 +225,7 @@ open class PatientReferralActivity : AppCompatActivity() {
             }
         }
     }
+    */
 
     private fun setupSMSReceiver() {
         val intentFilter = IntentFilter()

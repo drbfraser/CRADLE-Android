@@ -2,7 +2,12 @@ package com.cradleplatform.neptune.net
 
 import android.util.Log
 import com.cradleplatform.neptune.model.FormResponse
+import com.cradleplatform.neptune.model.Patient
+import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.Referral
+import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
+import com.cradleplatform.neptune.viewmodel.ReferralOption
+import java.net.HttpURLConnection
 import javax.inject.Inject
 
 /**
@@ -36,7 +41,7 @@ enum class Protocol {
 
 sealed class DatabaseObject {
     //data class PatientWrapper(val patient: Patient) : DatabaseObject()
-    data class ReferralWrapper(val referral: Referral, val submissionMode: Protocol) : DatabaseObject()
+    data class ReferralWrapper(val patient: Patient, val referral: Referral, val submissionMode: Protocol) : DatabaseObject()
     data class Reading(val reading: Reading, val submissionMode: Protocol) : DatabaseObject()
     data class FormResponseWrapper(val formResponse: FormResponse, val submissionMode: Protocol) : DatabaseObject()
 }
@@ -54,13 +59,38 @@ class HttpSmsService @Inject constructor(private val restApi: RestApi) {
         }
     }
 
-    private suspend fun uploadReferral(referralWrapper: DatabaseObject.ReferralWrapper) {
+    private suspend fun uploadReferral(referralWrapper: DatabaseObject.ReferralWrapper): NetworkResult<PatientAndReferrals> {
         when (referralWrapper.submissionMode) {
             Protocol.HTTP -> {
+                Log.d("HttpSmsService", "Uploading referral via HTTP")
+                val patientExists = when (val result = restApi.getPatientInfo(referralWrapper.patient.id)) {
+                    is NetworkResult.Failure ->
+                        if (result.statusCode == HttpURLConnection.HTTP_NOT_FOUND) {
+                            false
+                        } else {
+                            return result.cast()
+                        }
+                    is NetworkResult.Success -> true
+                    is NetworkResult.NetworkException -> return result.cast()
+                }
+
+                // If the patient exists we only need to upload the reading, if not
+                // then we need to upload the whole patient as well.
+                return if (patientExists) {
+                    restApi.postReferral(referralWrapper.referral).map { PatientAndReferrals(referralWrapper.patient, listOf(it)) }
+                } else {
+                    restApi.postPatient(PatientAndReferrals(referralWrapper.patient, listOf(referralWrapper.referral)))
+                }
             }
-            Protocol.SMS -> {
+            /*
+            Protocol.SMS ->
+                Log.e("Nada!", "nada" )
             }
+
+             */
         }
+        //Placeholder return statement, return errors more gracefully, remove the dependency for JacksonMapper
+        return NetworkResult.Failure(JacksonMapper.writerForReferral.writeValueAsBytes(referralWrapper.referral), HttpURLConnection.HTTP_INTERNAL_ERROR)
     }
 
     private suspend fun uploadForm(formResponseWrapper: DatabaseObject.FormResponseWrapper) {

@@ -1481,7 +1481,7 @@ class PatientReadingViewModel @Inject constructor(
                         // Upload patient and reading to the server, with the referral embedded in
                         // the reading.
                         val result =
-                            referralUploadManager.uploadReferralViaWeb(patient, readingFromBuilder)
+                            referralUploadManager.uploadReferralViaWebCoupled(patient, readingFromBuilder)
                         if (result is NetworkResult.Success) {
                             // Save the patient and reading in local database
                             // Note: If patient already exists on server, then

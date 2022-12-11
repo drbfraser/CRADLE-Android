@@ -15,12 +15,12 @@ import com.cradleplatform.neptune.manager.ReferralManager
 import com.cradleplatform.neptune.manager.ReferralUploadManager
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
-import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.Referral
-import com.cradleplatform.neptune.net.NetworkResult
+import com.cradleplatform.neptune.net.DatabaseObject
 import com.cradleplatform.neptune.utilities.UnixTimestamp
 import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
 import com.cradleplatform.neptune.net.HttpSmsService
+import com.cradleplatform.neptune.net.Protocol
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -101,7 +101,8 @@ class PatientReferralViewModel @Inject constructor(
     private fun isHealthCentreStringValid(healthFacility: String?) = !healthFacility.isNullOrBlank()
 
     suspend fun saveReferral(
-        referralOption: ReferralOption,
+        //referralOption: ReferralOption,
+        submissionMode: String,
         patient: Patient
     ): ReferralFlowSaveResult = withContext(Dispatchers.Default) {
         val currentTime = UnixTimestamp.now.toLong()
@@ -123,31 +124,45 @@ class PatientReferralViewModel @Inject constructor(
                 lastEdited = currentTime
             )
 
+        /** we are redirected all transactions to the sms service **/
+
+        httpSmsService.upload(DatabaseObject.ReferralWrapper(patient, referral, Protocol.valueOf(submissionMode)))
+
+        /** This line is just a placeholder to avoid a return error
+            Again, the way success is handled is not ideal, even if it might work
+            with the current structure, the flow is extremely disconnected and
+            does not work with all the components, we want a unified approach to
+            handling all sms / http transactions #refer to issue #111 **/
+        return@withContext ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded
+
+        /** This is the previous implementation, now its upto the sms service to divide html and sms
+         * ViewModels will only be responsible for requesting the service for upload **/
+
         //Upload using the defined method ( Web or Sms)
-        when (referralOption) {
-            ReferralOption.HTML -> {
-                val result = referralUploadManager.uploadReferralViaWeb(patient, referral)
-
-                if (result is NetworkResult.Success) {
-                    // Store the referral object into internal DB
-                    handleStoringReferralFromBuilders(referral)
-                    return@withContext ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded
-                }
-                else {
-                    return@withContext ReferralFlowSaveResult.ErrorUploadingReferral
-                }
-            }
-            ReferralOption.SMS -> {
-                // Store the referral object into internal DB
-                handleStoringReferralFromBuilders(referral)
-
-                // Pass a PatientAndReferrals object for the SMS message.
-                return@withContext ReferralFlowSaveResult.SaveSuccessful.ReferralSmsNeeded(
-                    PatientAndReferrals(patient, listOf(referral))
-                )
-            }
-            else -> error("unreachable")
-        }
+        // when (referralOption) {
+        //     ReferralOption.HTML -> {
+        //         val result = referralUploadManager.uploadReferralViaWeb(patient, referral)
+        //
+        //         if (result is NetworkResult.Success) {
+        //             // Store the referral object into internal DB
+        //             handleStoringReferralFromBuilders(referral)
+        //             return@withContext ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded
+        //         }
+        //         else {
+        //             return@withContext ReferralFlowSaveResult.ErrorUploadingReferral
+        //         }
+        //     }
+        //     ReferralOption.SMS -> {
+        //         // Store the referral object into internal DB
+        //         handleStoringReferralFromBuilders(referral)
+        //
+        //         // Pass a PatientAndReferrals object for the SMS message.
+        //         return@withContext ReferralFlowSaveResult.SaveSuccessful.ReferralSmsNeeded(
+        //             PatientAndReferrals(patient, listOf(referral))
+        //         )
+        //     }
+        //     else -> error("unreachable")
+        // }
     }
 
     /**
