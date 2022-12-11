@@ -27,15 +27,12 @@ import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.utilities.sms.SMSReceiver
 import com.cradleplatform.neptune.utilities.sms.SMSSender
 import com.cradleplatform.neptune.viewmodel.PatientReferralViewModel
-import com.cradleplatform.neptune.viewmodel.ReferralFlowSaveResult
-import com.cradleplatform.neptune.viewmodel.ReferralOption
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import android.content.IntentFilter
 import androidx.core.content.edit
-import com.cradleplatform.neptune.net.Protocol
 
 @AndroidEntryPoint
 open class PatientReferralActivity : AppCompatActivity() {
@@ -128,15 +125,15 @@ open class PatientReferralActivity : AppCompatActivity() {
     private fun setupSendButtons() {
         val sendViaHTTP = findViewById<Button>(R.id.send_web_button)
         sendViaHTTP.setOnClickListener {
-            lifecycleScope.launch{
-                val unusedResult =  viewModel.saveReferral("HTTP", currPatient)
+            lifecycleScope.launch {
+                val unusedResult = viewModel.saveReferral("HTTP", currPatient)
             }
         }
 
         val sendViaSMS = findViewById<Button>(R.id.send_sms_button)
         sendViaSMS.setOnClickListener {
-            lifecycleScope.launch{
-                val unusedResult =  viewModel.saveReferral("SMS", currPatient)
+            lifecycleScope.launch {
+                val unusedResult = viewModel.saveReferral("SMS", currPatient)
             }
         }
     }

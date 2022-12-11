@@ -4,9 +4,9 @@ import android.util.Log
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.PatientAndReferrals
+import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
-import com.cradleplatform.neptune.viewmodel.ReferralOption
 import java.net.HttpURLConnection
 import javax.inject.Inject
 
@@ -40,9 +40,13 @@ enum class Protocol {
 }
 
 sealed class DatabaseObject {
-    //data class PatientWrapper(val patient: Patient) : DatabaseObject()
-    data class ReferralWrapper(val patient: Patient, val referral: Referral, val submissionMode: Protocol) : DatabaseObject()
-    data class Reading(val reading: Reading, val submissionMode: Protocol) : DatabaseObject()
+    data class PatientWrapper(val patient: Patient) : DatabaseObject()
+    data class ReferralWrapper(
+        val patient: Patient,
+        val referral: Referral,
+        val submissionMode: Protocol
+    ) : DatabaseObject()
+    data class ReadingWrapper(val reading: Reading, val submissionMode: Protocol) : DatabaseObject()
     data class FormResponseWrapper(val formResponse: FormResponse, val submissionMode: Protocol) : DatabaseObject()
 }
 
@@ -59,10 +63,12 @@ class HttpSmsService @Inject constructor(private val restApi: RestApi) {
         }
     }
 
-    private suspend fun uploadReferral(referralWrapper: DatabaseObject.ReferralWrapper): NetworkResult<PatientAndReferrals> {
+    private suspend fun uploadReferral(referralWrapper: DatabaseObject.ReferralWrapper):
+        NetworkResult<PatientAndReferrals> {
         when (referralWrapper.submissionMode) {
             Protocol.HTTP -> {
-                // A copy of this code is in ReferralUploadManager.kt (the second function), but we need to modularize the code
+                // A copy of this code is in ReferralUploadManager.kt (the second function),
+                // but we need to modularize the code
                 // so everything must be refactored in here.
                 val patientExists = when (val result = restApi.getPatientInfo(referralWrapper.patient.id)) {
                     is NetworkResult.Failure ->
@@ -78,18 +84,25 @@ class HttpSmsService @Inject constructor(private val restApi: RestApi) {
                 // If the patient exists we only need to upload the reading, if not
                 // then we need to upload the whole patient as well.
                 return if (patientExists) {
-                    restApi.postReferral(referralWrapper.referral).map { PatientAndReferrals(referralWrapper.patient, listOf(it)) }
+                    restApi.postReferral(referralWrapper.referral).map {
+                        PatientAndReferrals(referralWrapper.patient, listOf(it))
+                    }
                 } else {
                     restApi.postPatient(PatientAndReferrals(referralWrapper.patient, listOf(referralWrapper.referral)))
                 }
             }
             /** Needs to be implemented
-            Protocol.SMS ->
-            }
+             Protocol.SMS ->
+             }
              **/
         }
         //Placeholder return statement, return errors more gracefully, remove the dependency for JacksonMapper
-        return NetworkResult.Failure(JacksonMapper.writerForReferral.writeValueAsBytes(referralWrapper.referral), HttpURLConnection.HTTP_INTERNAL_ERROR)
+        return NetworkResult.Failure(
+            JacksonMapper
+                .writerForReferral
+                .writeValueAsBytes(referralWrapper.referral),
+            HttpURLConnection.HTTP_INTERNAL_ERROR
+        )
     }
 
     private suspend fun uploadForm(formResponseWrapper: DatabaseObject.FormResponseWrapper) {
@@ -106,5 +119,3 @@ class HttpSmsService @Inject constructor(private val restApi: RestApi) {
         }
     }
 }
-
-

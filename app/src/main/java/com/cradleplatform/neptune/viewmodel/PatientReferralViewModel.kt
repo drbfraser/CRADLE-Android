@@ -129,10 +129,10 @@ class PatientReferralViewModel @Inject constructor(
         httpSmsService.upload(DatabaseObject.ReferralWrapper(patient, referral, Protocol.valueOf(submissionMode)))
 
         /** This line is just a placeholder to avoid a return error
-            Again, the way success is handled is not ideal, even if it might work
-            with the current structure, the flow is extremely disconnected and
-            does not work with all the components, we want a unified approach to
-            handling all sms / http transactions #refer to issue #111 **/
+         Again, the way success is handled is not ideal, even if it might work
+         with the current structure, the flow is extremely disconnected and
+         does not work with all the components, we want a unified approach to
+         handling all sms / http transactions #refer to issue #111 **/
         return@withContext ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded
 
         /** This is the previous implementation, now its upto the sms service to divide html and sms
