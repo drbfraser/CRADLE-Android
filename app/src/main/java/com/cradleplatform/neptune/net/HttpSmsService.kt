@@ -62,7 +62,8 @@ class HttpSmsService @Inject constructor(private val restApi: RestApi) {
     private suspend fun uploadReferral(referralWrapper: DatabaseObject.ReferralWrapper): NetworkResult<PatientAndReferrals> {
         when (referralWrapper.submissionMode) {
             Protocol.HTTP -> {
-                Log.d("HttpSmsService", "Uploading referral via HTTP")
+                // A copy of this code is in ReferralUploadManager.kt (the second function), but we need to modularize the code
+                // so everything must be refactored in here.
                 val patientExists = when (val result = restApi.getPatientInfo(referralWrapper.patient.id)) {
                     is NetworkResult.Failure ->
                         if (result.statusCode == HttpURLConnection.HTTP_NOT_FOUND) {
@@ -82,12 +83,10 @@ class HttpSmsService @Inject constructor(private val restApi: RestApi) {
                     restApi.postPatient(PatientAndReferrals(referralWrapper.patient, listOf(referralWrapper.referral)))
                 }
             }
-            /*
+            /** Needs to be implemented
             Protocol.SMS ->
-                Log.e("Nada!", "nada" )
             }
-
-             */
+             **/
         }
         //Placeholder return statement, return errors more gracefully, remove the dependency for JacksonMapper
         return NetworkResult.Failure(JacksonMapper.writerForReferral.writeValueAsBytes(referralWrapper.referral), HttpURLConnection.HTTP_INTERNAL_ERROR)
