@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.net
+package com.cradleplatform.neptune.http_sms_service.http
 
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit
  * Provides methods for making generic HTTP requests. The default implementation
  * uses OkHttp to perform the request.
  *
- * When communicating with the CRADLE server, the [com.cradleplatform.neptune.net.RestApi]
+ * When communicating with the CRADLE server, the [com.cradleplatform.neptune.http_sms_service.RestApi]
  * class should be used instead of this one.
  */
 class Http {
@@ -119,7 +119,10 @@ class Http {
                 if (it.isSuccessful) {
                     Log.i(TAG, "$message - Success ${it.code}")
                     // The byte stream is closed by the `use` function above.
-                    return@use NetworkResult.Success(inputStreamReader(it.body!!.byteStream()), it.code)
+                    return@use NetworkResult.Success(
+                        inputStreamReader(it.body!!.byteStream()),
+                        it.code
+                    )
                 } else {
                     Log.i(TAG, "$message - Failure ${it.code}")
                     return@use NetworkResult.Failure(it.body!!.bytes(), it.code)

@@ -5,9 +5,9 @@ import com.cradleplatform.neptune.model.PatientAndReadings
 import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
-import com.cradleplatform.neptune.net.NetworkResult
-import com.cradleplatform.neptune.net.RestApi
-import com.cradleplatform.neptune.net.map
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.http_sms_service.http.map
 import java.net.HttpURLConnection.HTTP_NOT_FOUND
 import javax.inject.Inject
 

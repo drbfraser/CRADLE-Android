@@ -41,7 +41,7 @@ import com.cradleplatform.neptune.model.Sex
 import com.cradleplatform.neptune.model.SymptomsState
 import com.cradleplatform.neptune.model.UrineTest
 import com.cradleplatform.neptune.model.Verifiable
-import com.cradleplatform.neptune.net.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.utilities.DateUtil
 import com.cradleplatform.neptune.utilities.LiveDataDynamicModelBuilder
 import com.cradleplatform.neptune.utilities.Months

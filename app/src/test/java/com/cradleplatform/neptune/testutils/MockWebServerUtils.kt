@@ -5,8 +5,8 @@ import com.cradleplatform.neptune.manager.UrlManager
 import com.cradleplatform.neptune.model.CommonPatientReadingJsons
 import com.cradleplatform.neptune.model.CommonReadingJsons
 import com.cradleplatform.neptune.model.Settings
-import com.cradleplatform.neptune.net.Http
-import com.cradleplatform.neptune.net.RestApi
+import com.cradleplatform.neptune.http_sms_service.http.Http
+import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import io.mockk.every
 import io.mockk.mockk
 import okhttp3.mockwebserver.Dispatcher

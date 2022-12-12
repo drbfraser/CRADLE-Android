@@ -6,8 +6,8 @@ import com.cradleplatform.neptune.manager.HealthFacilityManager
 import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Statistics
-import com.cradleplatform.neptune.net.NetworkResult
-import com.cradleplatform.neptune.net.RestApi
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.utilities.UnixTimestamp
 import com.cradleplatform.neptune.view.StatisticsFilterOptions
 import dagger.hilt.android.lifecycle.HiltViewModel

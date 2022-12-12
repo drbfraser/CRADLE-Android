@@ -6,9 +6,9 @@ import com.cradleplatform.neptune.model.Answer
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.Question
-import com.cradleplatform.neptune.net.DatabaseObject
-import com.cradleplatform.neptune.net.HttpSmsService
-import com.cradleplatform.neptune.net.Protocol
+import com.cradleplatform.neptune.http_sms_service.http.DatabaseObject
+import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
+import com.cradleplatform.neptune.http_sms_service.http.Protocol
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 

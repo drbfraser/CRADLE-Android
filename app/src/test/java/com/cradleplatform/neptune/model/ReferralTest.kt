@@ -1,8 +1,8 @@
 package com.cradleplatform.neptune.model
 
 import android.util.Log
-import com.cradleplatform.neptune.net.Http
-import com.cradleplatform.neptune.net.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.http.Http
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every

@@ -1,6 +1,7 @@
-package com.cradleplatform.neptune.net
+package com.cradleplatform.neptune.http_sms_service.http
 
 import android.util.Log
+import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.PatientAndReferrals
@@ -44,6 +45,8 @@ sealed class DatabaseObject {
     data class ReferralWrapper(
         val patient: Patient,
         val referral: Referral,
+        //val smsDataIfNeeded : String,
+        val smsSender: SMSSender,
         val submissionMode: Protocol
     ) : DatabaseObject()
     data class ReadingWrapper(val reading: Reading, val submissionMode: Protocol) : DatabaseObject()
@@ -91,12 +94,12 @@ class HttpSmsService @Inject constructor(private val restApi: RestApi) {
                     restApi.postPatient(PatientAndReferrals(referralWrapper.patient, listOf(referralWrapper.referral)))
                 }
             }
-            /** Needs to be implemented
-             Protocol.SMS ->
+             Protocol.SMS -> {
+                referralWrapper.smsSender.sendSmsMessage(false)
              }
-             **/
+
         }
-        //Placeholder return statement, return errors more gracefully, remove the dependency for JacksonMapper
+        //TODO: Placeholder return statement, return errors more gracefully, remove the dependency for JacksonMapper
         return NetworkResult.Failure(
             JacksonMapper
                 .writerForReferral

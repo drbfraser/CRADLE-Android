@@ -22,8 +22,8 @@ import com.cradleplatform.neptune.ext.isConnected
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.model.GlobalPatient
-import com.cradleplatform.neptune.net.NetworkResult
-import com.cradleplatform.neptune.net.RestApi
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.viewmodel.GlobalPatientAdapter
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint

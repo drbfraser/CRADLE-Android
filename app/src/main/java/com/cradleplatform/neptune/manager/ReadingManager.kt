@@ -5,9 +5,9 @@ import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.database.daos.ReadingDao
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.RetestGroup
-import com.cradleplatform.neptune.net.NetworkResult
-import com.cradleplatform.neptune.net.RestApi
-import com.cradleplatform.neptune.net.map
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.http_sms_service.http.map
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
