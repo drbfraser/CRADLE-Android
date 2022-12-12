@@ -50,7 +50,10 @@ sealed class DatabaseObject {
         val submissionMode: Protocol
     ) : DatabaseObject()
     data class ReadingWrapper(val reading: Reading, val submissionMode: Protocol) : DatabaseObject()
-    data class FormResponseWrapper(val formResponse: FormResponse, val submissionMode: Protocol) : DatabaseObject()
+    data class FormResponseWrapper(val formResponse: FormResponse,
+        val smsSender: SMSSender,
+        val submissionMode: Protocol,
+    ) : DatabaseObject()
 }
 
 class HttpSmsService @Inject constructor(private val restApi: RestApi) {
@@ -108,16 +111,24 @@ class HttpSmsService @Inject constructor(private val restApi: RestApi) {
     }
 
     private suspend fun uploadForm(formResponseWrapper: DatabaseObject.FormResponseWrapper) {
-        when (formResponseWrapper.submissionMode) {
-            Protocol.HTTP -> {
-                when (restApi.postFormResponse(formResponseWrapper.formResponse)) {
-                    is NetworkResult.Success -> Log.d("HTTP_SMS_BRIDGE", "Form uploaded successfully")
-                    is NetworkResult.Failure -> Log.d("HTTP_SMS_BRIDGE", "Form upload failed")
-                    is NetworkResult.NetworkException -> Log.d("HTTP_SMS_BRIDGE", "Form upload failed")
+            when (formResponseWrapper.submissionMode) {
+                Protocol.HTTP -> {
+                    when (restApi.postFormResponse(formResponseWrapper.formResponse)) {
+                        is NetworkResult.Success -> Log.d(
+                            "HTTP_SMS_BRIDGE",
+                            "Form uploaded successfully"
+                        )
+                        is NetworkResult.Failure -> Log.d("HTTP_SMS_BRIDGE", "Form upload failed")
+                        is NetworkResult.NetworkException -> Log.d(
+                            "HTTP_SMS_BRIDGE",
+                            "Form upload failed"
+                        )
+                    }
                 }
-            }
-            Protocol.SMS -> {
+                Protocol.SMS -> {
+                    formResponseWrapper.smsSender.sendSmsMessage(false)
+                }
             }
         }
     }
-}
+

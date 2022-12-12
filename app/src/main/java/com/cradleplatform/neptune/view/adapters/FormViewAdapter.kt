@@ -134,7 +134,7 @@ class FormViewAdapter(
             }
 
             "MULTIPLE_SELECT" -> {
-                //
+                //Needs a form to test with multiple selections available (Currently only one selection available)
             }
         }
 

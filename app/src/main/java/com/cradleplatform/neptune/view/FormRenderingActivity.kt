@@ -107,7 +107,7 @@ class FormRenderingActivity : AppCompatActivity() {
         }
 
         builder.setNegativeButton(R.string.SMS) { _, _ ->
-            //formSubmission(languageSelected, "SMS")
+            formSubmission(languageSelected, "SMS")
             finish()
         }
         builder.show()
@@ -115,7 +115,7 @@ class FormRenderingActivity : AppCompatActivity() {
 
     private fun formSubmission(languageSelected: String, submissionMode: String) {
         lifecycleScope.launch(Dispatchers.IO) {
-            viewModel.submitForm(patientId!!, languageSelected, submissionMode)
+            viewModel.submitForm(patientId!!, languageSelected, submissionMode, applicationContext)
         }
     }
 
