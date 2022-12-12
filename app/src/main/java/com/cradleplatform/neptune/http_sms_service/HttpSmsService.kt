@@ -94,10 +94,9 @@ class HttpSmsService @Inject constructor(private val restApi: RestApi) {
                     restApi.postPatient(PatientAndReferrals(referralWrapper.patient, listOf(referralWrapper.referral)))
                 }
             }
-             Protocol.SMS -> {
+            Protocol.SMS -> {
                 referralWrapper.smsSender.sendSmsMessage(false)
-             }
-
+            }
         }
         //TODO: Placeholder return statement, return errors more gracefully, remove the dependency for JacksonMapper
         return NetworkResult.Failure(

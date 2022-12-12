@@ -13,7 +13,6 @@ import com.cradleplatform.neptune.view.PatientReferralActivity
 import com.cradleplatform.neptune.view.ReadingActivity
 
 import java.lang.Exception
-import javax.inject.Singleton
 
 class SMSSender(
     private val sharedPreferences: SharedPreferences,

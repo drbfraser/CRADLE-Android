@@ -20,7 +20,8 @@ class SMSReceiver(private val smsSender: SMSSender, private val relayPhoneNumber
             val messageBody = smsMessage.messageBody
             if (smsMessage.originatingAddress.equals(relayPhoneNumber) && messageBody.contentEquals(
                     ACKNOWLEDGEMENT
-                )) {
+                )
+            ) {
                 smsSender.sendSmsMessage(true)
             }
         }

@@ -2,7 +2,6 @@ package com.cradleplatform.neptune.viewmodel
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.core.content.edit
 import androidx.lifecycle.LiveData
@@ -137,50 +136,49 @@ class PatientReferralViewModel @Inject constructor(
             )
 
         /** we are redirected all transactions to the sms service **/
-        var patientAndReferrals =  PatientAndReferrals(patient, listOf(referral))
-        // This implementation is commented inside the PatientReferralActivity in the function sendSms(), it has been moved since.
-        val msgInPackets = SMSFormatter.listToString(SMSFormatter.formatSMS(
-            SMSFormatter.encodeMsg(
-                JacksonMapper.createWriter<SmsReferral>().writeValueAsString(
-                    SmsReferral(
-                        patient = patientAndReferrals
-                    )
-                ),
-                RelayAction.REFERRAL,
-                AESEncrypter.
-                getSecretKeyFromString(applicationContext.getString(R.string.aes_secret_key))
+        var patientAndReferrals = PatientAndReferrals(patient, listOf(referral))
+        // This implementation is commented inside the PatientReferralActivity in the function sendSms(),
+        // it has been moved since.
+        val msgInPackets = SMSFormatter.listToString(
+            SMSFormatter.formatSMS(
+                SMSFormatter.encodeMsg(
+                    JacksonMapper.createWriter<SmsReferral>().writeValueAsString(
+                        SmsReferral(
+                            patient = patientAndReferrals
+                        )
+                    ),
+                    RelayAction.REFERRAL,
+                    AESEncrypter.
+                        getSecretKeyFromString(applicationContext.getString(R.string.aes_secret_key))
+                )
             )
-        ))
+        )
+        // No point in saving to shared prefs perhaps? I do not know why they used it before, the message could be sent
+        // as an argument
         sharedPreferences.edit(commit = true) {
             putString(applicationContext.getString(R.string.sms_relay_list_key), msgInPackets)
         }
 
         /**Sending an sms sender is also to the service is also not ideal
-        //instead change the approach so that SMS sender becomes an injectable class
-        // then inject and pass the sms content and let the class handle the sending inside a coroutine
-        //this implementation exists in many places, changing all of them is not possible with the time available
-        //so to not break the build an sms sender object is being sent to the service */
+         //instead change the approach so that SMS sender becomes an injectable class
+         // then inject and pass the sms content and let the class handle the sending inside a coroutine
+         //this implementation exists in many places, changing all of them is not possible with the time available
+         //so to not break the build an sms sender object is being sent to the service, REFER to issue # */
         val smsSender = SMSSender(sharedPreferences, applicationContext)
 
-        httpSmsService.upload(DatabaseObject.ReferralWrapper(patient,
-            referral,
-            smsSender,
-            Protocol.valueOf(submissionMode)))
-
-        //Actually, this could have been easily done in the activity, but since a referral object is needed for the
-        //patientAndReferral, previously bad implementation has forced me to do this here
-
-
-        // No point in saving to shared prefs perhaps? I do not know why they used it before
-
-
+        httpSmsService.upload(
+            DatabaseObject.ReferralWrapper(
+                patient,
+                referral,
+                smsSender,
+                Protocol.valueOf(submissionMode)
+            )
+        )
 
         CustomToast.shortToast(applicationContext, applicationContext.getString(R.string.sms_sender_send))
 
         // saves the data in internal db
         handleStoringReferralFromBuilders(referral)
-
-
 
         /** This line is just a placeholder to avoid a return error
          Again, the way success is handled is not ideal, even if it might work
