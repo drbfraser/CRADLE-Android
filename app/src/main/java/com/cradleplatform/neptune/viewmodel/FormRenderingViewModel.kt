@@ -78,8 +78,13 @@ class FormRenderingViewModel @Inject constructor(
 
             val smsSender = SMSSender(sharedPreferences, applicationContext)
 
-            httpSmsService.upload(DatabaseObject.FormResponseWrapper(formResponse, smsSender, Protocol.valueOf(submissionMode)))
-
+            httpSmsService.upload(
+                DatabaseObject.FormResponseWrapper(
+                    formResponse,
+                    smsSender,
+                    Protocol.valueOf(submissionMode)
+                )
+            )
         } else {
             error("FormTemplate does not exist: Current displaying FormTemplate is null")
         }
