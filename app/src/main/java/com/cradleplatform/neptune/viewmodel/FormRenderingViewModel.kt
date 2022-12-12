@@ -1,20 +1,33 @@
 package com.cradleplatform.neptune.viewmodel
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
+import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
-import com.cradleplatform.neptune.manager.FormManager
+import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.http_sms_service.http.DatabaseObject
 import com.cradleplatform.neptune.model.Answer
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.Question
-import com.cradleplatform.neptune.net.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
+import com.cradleplatform.neptune.http_sms_service.http.Protocol
+import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.utilities.AESEncrypter.Companion.getSecretKeyFromString
+import com.cradleplatform.neptune.utilities.RelayAction
+import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.encodeMsg
+import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.formatSMS
+import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.listToString
+import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlin.jvm.Throws
 
 @HiltViewModel
 class FormRenderingViewModel @Inject constructor(
-    private val mFormManager: FormManager,
+    //private val mFormManager: FormManager,
+    private val httpSmsService: HttpSmsService,
+    private val sharedPreferences: SharedPreferences,
 ) : ViewModel() {
 
     //Raw form template
@@ -33,15 +46,43 @@ class FormRenderingViewModel @Inject constructor(
         Log.d(TAG, "adding answer for [$questionId]")
     }
 
-    @Throws(IllegalArgumentException::class, NullPointerException::class)
-    suspend fun submitForm(patientId: String, selectedLanguage: String): NetworkResult<Unit> {
+    suspend fun submitForm(
+        patientId: String,
+        selectedLanguage: String,
+        submissionMode: String,
+        applicationContext: Context
+    ) {
         return if (currentFormTemplate != null) {
-            mFormManager.submitFormToWebAsResponse(
-                FormResponse(
-                    patientId = patientId,
-                    formTemplate = currentFormTemplate!!,
-                    language = selectedLanguage,
-                    answers = currentAnswers
+            val formResponse = FormResponse(
+                patientId = patientId,
+                formTemplate = currentFormTemplate!!,
+                language = selectedLanguage,
+                answers = currentAnswers
+            )
+
+            val json = JacksonMapper.createWriter<FormResponse>().writeValueAsString(
+                formResponse
+            )
+
+            val encodedMsg = encodeMsg(
+                json,
+                RelayAction.FORMRESPONSE,
+                getSecretKeyFromString(applicationContext.getString(R.string.aes_secret_key))
+            )
+            val msgInPackets = listToString(formatSMS(encodedMsg))
+
+            /*This is something that needs to reworked, refer to issue #114*/
+            sharedPreferences.edit(commit = true) {
+                putString(applicationContext.getString(R.string.sms_relay_list_key), msgInPackets)
+            }
+
+            val smsSender = SMSSender(sharedPreferences, applicationContext)
+
+            httpSmsService.upload(
+                DatabaseObject.FormResponseWrapper(
+                    formResponse,
+                    smsSender,
+                    Protocol.valueOf(submissionMode)
                 )
             )
         } else {

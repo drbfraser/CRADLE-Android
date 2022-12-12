@@ -121,6 +121,7 @@ class FormViewAdapter(
                 val langMcOptions = mList[position].languageVersions?.find {
                     it.language == languageSelected
                 }?.mcOptions ?: listOf(
+                    //Error Language Not Found
                     McOption(-1, context.resources.getString(R.string.mc_unsupported, languageSelected))
                 )
 
@@ -133,7 +134,7 @@ class FormViewAdapter(
             }
 
             "MULTIPLE_SELECT" -> {
-                //
+                //Needs a form to test with multiple selections available (Currently only one selection available)
             }
         }
 

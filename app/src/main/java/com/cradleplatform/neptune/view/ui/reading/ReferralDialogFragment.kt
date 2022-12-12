@@ -176,14 +176,14 @@ class ReferralDialogFragment : DialogFragment() {
                 referralDialogViewModel.healthFacilityToUse.value ?: return
 
             val smsSendResult = viewModel.saveWithReferral(
-                ReferralOption.WEB,
+                ReferralOption.HTML,
                 comment,
                 selectedHealthFacilityName
             )
 
             if (smsSendResult is ReadingFlowSaveResult.SaveSuccessful) {
                 // Nothing left for us to do.
-                dataPasser.onMsgPass(getToastMessageForStatus(view.context, smsSendResult, ReferralOption.WEB))
+                dataPasser.onMsgPass(getToastMessageForStatus(view.context, smsSendResult, ReferralOption.HTML))
                 activity?.finish()
             }
         } finally {
@@ -208,7 +208,7 @@ class ReferralDialogFragment : DialogFragment() {
         result: ReadingFlowSaveResult,
         referralOption: ReferralOption
     ) = when (referralOption) {
-        ReferralOption.WEB -> when (result) {
+        ReferralOption.HTML -> when (result) {
             is ReadingFlowSaveResult.SaveSuccessful -> {
                 check(result is ReadingFlowSaveResult.SaveSuccessful.NoSmsNeeded)
                 if (launchReason == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {

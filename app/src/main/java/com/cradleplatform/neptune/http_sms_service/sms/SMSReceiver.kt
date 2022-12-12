@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.utilities.sms
+package com.cradleplatform.neptune.http_sms_service.sms
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -18,7 +18,10 @@ class SMSReceiver(private val smsSender: SMSSender, private val relayPhoneNumber
             // if smsMessage is null, we continue to the next one
             val smsMessage = SmsMessage.createFromPdu(element as ByteArray?) ?: continue
             val messageBody = smsMessage.messageBody
-            if (smsMessage.originatingAddress.equals(relayPhoneNumber) && messageBody.contentEquals(ACKNOWLEDGEMENT)) {
+            if (smsMessage.originatingAddress.equals(relayPhoneNumber) && messageBody.contentEquals(
+                    ACKNOWLEDGEMENT
+                )
+            ) {
                 smsSender.sendSmsMessage(true)
             }
         }

@@ -26,7 +26,7 @@ import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Statistics
 import com.cradleplatform.neptune.model.UserRole
-import com.cradleplatform.neptune.net.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.sync.SyncWorker
 import com.cradleplatform.neptune.utilities.BarGraphValueFormatter
 import com.cradleplatform.neptune.utilities.CustomToast

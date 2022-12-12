@@ -19,7 +19,7 @@ import com.cradleplatform.neptune.model.GestationalAgeMonths
 import com.cradleplatform.neptune.model.GestationalAgeWeeks
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Verifiable
-import com.cradleplatform.neptune.net.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.utilities.LiveDataDynamicModelBuilder
 import com.cradleplatform.neptune.utilities.Months
 import com.cradleplatform.neptune.utilities.Seconds

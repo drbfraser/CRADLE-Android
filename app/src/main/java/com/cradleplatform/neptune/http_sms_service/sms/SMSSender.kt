@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.utilities.sms
+package com.cradleplatform.neptune.http_sms_service.sms
 
 import android.app.Activity
 import android.content.Context
@@ -48,6 +48,7 @@ class SMSSender(
             try {
                 val packetMsg = smsRelayMsgList.first()
                 val packetMsgDivided = smsManager.divideMessage(packetMsg)
+                //TODO: Discuss with Dr. Brian about using the sendMultiPartTextMessage method as it is API 30+ only
                 smsManager.sendMultipartTextMessage(phoneNumber, null, packetMsgDivided, null, null)
                 Toast.makeText(
                     context, context.getString(R.string.sms_packet_sent),

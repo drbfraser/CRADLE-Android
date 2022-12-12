@@ -1,6 +1,8 @@
-package com.cradleplatform.neptune.net
+package com.cradleplatform.neptune.http_sms_service
 
 import android.util.Log
+import com.cradleplatform.neptune.http_sms_service.http.Http
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every

@@ -18,8 +18,8 @@ import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.manager.ReferralManager
 import com.cradleplatform.neptune.manager.UrlManager
 import com.cradleplatform.neptune.model.Settings
-import com.cradleplatform.neptune.net.Http
-import com.cradleplatform.neptune.net.RestApi
+import com.cradleplatform.neptune.http_sms_service.http.Http
+import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

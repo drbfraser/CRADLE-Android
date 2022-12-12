@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.net
+package com.cradleplatform.neptune.http_sms_service.http
 
 import org.json.JSONArray
 import org.json.JSONObject

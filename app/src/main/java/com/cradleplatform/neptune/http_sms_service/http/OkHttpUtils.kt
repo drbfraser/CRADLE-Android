@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.net
+package com.cradleplatform.neptune.http_sms_service.http
 
 import kotlinx.coroutines.runBlocking
 import okhttp3.MediaType.Companion.toMediaType

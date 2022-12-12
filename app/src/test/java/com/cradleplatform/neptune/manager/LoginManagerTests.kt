@@ -6,8 +6,8 @@ import android.util.Log
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.model.UserRole
-import com.cradleplatform.neptune.net.NetworkResult
-import com.cradleplatform.neptune.net.RestApi
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.testutils.MockDependencyUtils
 import com.cradleplatform.neptune.testutils.MockWebServerUtils
 import com.cradleplatform.neptune.utilities.SharedPreferencesMigration

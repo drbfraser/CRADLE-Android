@@ -1,6 +1,8 @@
-package com.cradleplatform.neptune.net
+package com.cradleplatform.neptune.http_sms_service
 
 import android.util.Log
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.manager.LoginResponse
 import com.cradleplatform.neptune.testutils.MockWebServerUtils
 import io.mockk.every

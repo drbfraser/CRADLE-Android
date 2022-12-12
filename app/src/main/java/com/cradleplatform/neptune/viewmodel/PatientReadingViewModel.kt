@@ -41,7 +41,7 @@ import com.cradleplatform.neptune.model.Sex
 import com.cradleplatform.neptune.model.SymptomsState
 import com.cradleplatform.neptune.model.UrineTest
 import com.cradleplatform.neptune.model.Verifiable
-import com.cradleplatform.neptune.net.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.utilities.DateUtil
 import com.cradleplatform.neptune.utilities.LiveDataDynamicModelBuilder
 import com.cradleplatform.neptune.utilities.Months
@@ -1477,15 +1477,14 @@ class PatientReadingViewModel @Inject constructor(
 
                 // Handle the referral based on the type.
                 when (referralOption) {
-                    ReferralOption.WEB -> {
+                    ReferralOption.HTML -> {
                         // Upload patient and reading to the server, with the referral embedded in
                         // the reading.
                         val result =
-                            referralUploadManager.uploadReferralViaWeb(patient, readingFromBuilder)
+                            referralUploadManager.uploadReferralViaWebCoupled(patient, readingFromBuilder)
                         if (result is NetworkResult.Success) {
                             // Save the patient and reading in local database
                             // Note: If patient already exists on server, then
-                            // patientFromServer == patient.
                             val patientFromServer = result.value.patient
                             val readingFromServer = result.value.readings[0]
                             check(readingFromBuilder.id == readingFromServer.id)
@@ -1999,7 +1998,7 @@ class PatientReadingViewModel @Inject constructor(
 }
 
 enum class ReferralOption {
-    NONE, SMS, WEB
+    NONE, SMS, HTML
 }
 
 /**

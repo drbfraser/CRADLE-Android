@@ -1,10 +1,10 @@
-package com.cradleplatform.neptune.net
+package com.cradleplatform.neptune.http_sms_service.http
 
 import android.content.Context
 import com.cradleplatform.neptune.R
-import com.cradleplatform.neptune.net.NetworkResult.Failure
-import com.cradleplatform.neptune.net.NetworkResult.NetworkException
-import com.cradleplatform.neptune.net.NetworkResult.Success
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult.Failure
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult.NetworkException
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult.Success
 
 /**
  * The result of a network request.

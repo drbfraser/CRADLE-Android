@@ -14,14 +14,11 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.FormManager
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.Patient
-import com.cradleplatform.neptune.net.NetworkResult
-import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.view.adapters.FormViewAdapter
 import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @Suppress("LargeClass")
@@ -105,47 +102,20 @@ class FormRenderingActivity : AppCompatActivity() {
         builder.setMessage(R.string.choose_an_option)
 
         builder.setPositiveButton(R.string.http) { _, _ ->
-            formSubmissionInHTTP(languageSelected)
+            formSubmission(languageSelected, "HTTP")
             finish()
         }
 
         builder.setNegativeButton(R.string.SMS) { _, _ ->
-            //formSubmissionInSMS()
+            formSubmission(languageSelected, "SMS")
             finish()
         }
         builder.show()
     }
 
-    private fun formSubmissionInHTTP(languageSelected: String) {
+    private fun formSubmission(languageSelected: String, submissionMode: String) {
         lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val result = viewModel.submitForm(patientId!!, languageSelected)
-                if (result is NetworkResult.Success) {
-                    withContext(Dispatchers.Main) {
-                        CustomToast.shortToast(
-                            applicationContext,
-                            "Form Response Submitted"
-                        )
-                    }
-                } else {
-                    withContext(Dispatchers.Main) {
-                        CustomToast.shortToast(
-                            applicationContext,
-                            "Form Response Submission failed with network error:\n " +
-                                "${result.getStatusMessage(applicationContext)}"
-                        )
-                    }
-                }
-            } catch (exception: IllegalArgumentException) {
-                withContext(Dispatchers.Main) {
-                    CustomToast.shortToast(
-                        applicationContext,
-                        "Form Response Failed to Create(Malformed):\n" +
-                            "${exception.message}"
-                    )
-                    exception.printStackTrace()
-                }
-            }
+            viewModel.submitForm(patientId!!, languageSelected, submissionMode, applicationContext)
         }
     }
 

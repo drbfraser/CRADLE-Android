@@ -194,7 +194,7 @@
     <string name="dialog_missing_information_message">Some required fields from PATIENT or CONFIRM VITALS tabs are missing. Please enter this data before referring patient.</string>
     <string name="referral_dialog_title">Send referral</string>
     <string name="referral_dialog_button_send_sms">Send SMS</string>
-    <string name="referral_dialog_button_send_web">Send web</string>
+    <string name="referral_dialog_button_send_web">Send HTML</string>
     <string name="no_health_facility_dialog_title">No health facility selected</string>
     <string name="no_health_facility_dialog_message">Please add a health facility in the settings menu</string>
     <string name="not_available_n_slash_a">N/A</string>
