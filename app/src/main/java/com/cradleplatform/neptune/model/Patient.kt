@@ -72,7 +72,7 @@ import kotlin.reflect.KProperty
  * @property drugLastEdited Last time drug info was edited OFFLINE -> will be null if no offline edits
  * @property medicalLastEdited Last time medical info was edited OFFLINE -> will be null if no offline edits
  * @property lastServerUpdate Last time the patient has gotten updated from the server.
- * @property isArchive The flag of either the patient is archived or not
+ * @property isArchived The flag of either the patient is archived or not
  */
 @Entity(
     indices = [
@@ -103,7 +103,7 @@ data class Patient(
     @ColumnInfo var drugLastEdited: Long? = null,
     @ColumnInfo var medicalLastEdited: Long? = null,
     @ColumnInfo var lastServerUpdate: Long? = null,
-    @ColumnInfo var isArchive: Boolean = false
+    @ColumnInfo var isArchived: Boolean = false
 ) : Serializable, Verifiable<Patient> {
     override fun isValueForPropertyValid(
         property: KProperty<*>,
@@ -441,7 +441,7 @@ data class Patient(
                 gen.writeOptLongField(PatientField.DRUG_LAST_EDITED, drugLastEdited)
                 gen.writeOptLongField(PatientField.MEDICAL_LAST_EDITED, medicalLastEdited)
                 gen.writeOptLongField(PatientField.LAST_SERVER_UPDATE, lastServerUpdate)
-                gen.writeBooleanField(PatientField.IS_ARCHIVE, isArchive)
+                gen.writeBooleanField(PatientField.IS_ARCHIVED, isArchived)
             }
         }
 
@@ -491,7 +491,7 @@ data class Patient(
             val allergy = get(PatientField.ALLERGY)?.textValue() ?: ""
             val lastEdited = get(PatientField.LAST_EDITED)?.asLong()
             val lastServerUpdate = get(PatientField.LAST_SERVER_UPDATE)?.asLong()
-            val isArchive = get(PatientField.IS_ARCHIVE)?.asBoolean() ?: false
+            val isArchived = get(PatientField.IS_ARCHIVED)?.booleanValue() ?: false
 
             // The following fields are set to null because if we are receiving patient information
             // from the server, it guarantees there are no un-uploaded edits on android
@@ -517,7 +517,7 @@ data class Patient(
                 drugLastEdited = null,
                 medicalLastEdited = null,
                 lastServerUpdate = lastServerUpdate,
-                isArchive = isArchive
+                isArchived = isArchived
             )
         }
 
@@ -819,7 +819,7 @@ private enum class PatientField(override val text: String) : Field {
     LAST_SERVER_UPDATE("base"),
     READINGS("readings"),
     REFERRALS("referrals"),
-    IS_ARCHIVE("isArchived")
+    IS_ARCHIVED("isArchived")
 }
 
 /**
