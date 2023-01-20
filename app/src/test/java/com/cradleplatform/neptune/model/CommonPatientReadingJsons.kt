@@ -38,6 +38,7 @@ object CommonPatientReadingJsons {
     "patientName": "Another patient",
     "patientSex": "MALE",
     "isPregnant": false,
+    "isArchived": false,
     "medicalHistory": "",
     "drugHistory": "History",
     "allergy": "Seasonal allergies",
@@ -108,6 +109,7 @@ object CommonPatientReadingJsons {
         second = PatientAndReadings(
             Patient(
                 isPregnant = false,
+                isArchived = false,
                 name = "Another patient",
                 id = "123456",
                 gestationalAge = null,
@@ -212,6 +214,7 @@ object CommonPatientReadingJsons {
     "householdNumber": "95682385",
     "lastEdited": 1604883600,
     "isPregnant": true,
+    "isArchived": true,
     "patientId": "3459834789348",
     "pregnancyStartDate": 1590969549,
     "drugHistory": "Some drug history",
@@ -251,6 +254,7 @@ object CommonPatientReadingJsons {
         second = PatientAndReadings(
             Patient(
                 isPregnant = true,
+                isArchived = true,
                 name = "Test patient",
                 id = "3459834789348",
                 gestationalAge = GestationalAgeWeeks(BigInteger.valueOf(1590969549L)),
@@ -319,6 +323,7 @@ object CommonPatientReadingJsons {
     "patientName": "Name",
     "patientSex": "OTHER",
     "isPregnant": true,
+    "isArchived": false,
     "gestationalAgeUnit": "MONTHS",
     "pregnancyStartDate": 1584245042,
     "medicalHistory": "med hustory",
@@ -394,6 +399,7 @@ object CommonPatientReadingJsons {
                 name = "Name",
                 sex = Sex.OTHER,
                 isPregnant = true,
+                isArchived = false,
                 gestationalAge = GestationalAgeMonths(timestamp = BigInteger.valueOf(1584245042L)),
                 medicalHistory = "med hustory",
                 allergy = "Seasonal allergies",
@@ -478,6 +484,7 @@ object CommonPatientReadingJsons {
     "patientName": "PatientNoSymptoms",
     "patientSex": "MALE",
     "isPregnant": false,
+    "isArchived": true,
     "medicalHistory": "",
     "allergy": "",
     "drugHistory": "Morphine",
@@ -518,6 +525,7 @@ object CommonPatientReadingJsons {
                 name = "PatientNoSymptoms",
                 sex = Sex.MALE,
                 isPregnant = false,
+                isArchived = true,
                 gestationalAge = null,
                 medicalHistory = "",
                 allergy = "",
