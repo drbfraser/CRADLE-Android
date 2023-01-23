@@ -88,7 +88,8 @@ class FormRenderingActivity : AppCompatActivity() {
         //check if language selected exists in the form template
         //The language's available are already shown in the dropdown
 
-        adapter = FormViewAdapter(viewModel, languageSelected!!)
+        adapter = FormViewAdapter(viewModel, languageSelected!!, patient)
+
         recyclerView.adapter = adapter
 
         findViewById<Button>(R.id.btn_submit).setOnClickListener {

@@ -5,7 +5,6 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
 import android.graphics.Color
-import android.provider.Settings.Global.getString
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -14,12 +13,12 @@ import android.widget.Button
 import android.widget.RadioButton
 import android.widget.TextView
 import androidx.core.content.ContextCompat
-import androidx.core.content.res.TypedArrayUtils.getString
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.databinding.CardLayoutBinding
 import com.cradleplatform.neptune.model.Answer
 import com.cradleplatform.neptune.model.McOption
+import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.model.QuestionTypeEnum.*
 import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
@@ -33,7 +32,8 @@ import java.util.Calendar
  */
 class FormViewAdapter(
     private var viewModel: FormRenderingViewModel,
-    private var languageSelected: String
+    private var languageSelected: String,
+    private var patient: Patient?
 ) : RecyclerView.Adapter<FormViewAdapter.ViewHolder>() {
 
     lateinit var context: Context
@@ -92,7 +92,7 @@ class FormViewAdapter(
 
             "STRING" -> {
                 holder.binding.etAnswer.visibility = View.VISIBLE
-                setHint(holder.binding.etAnswer, mList[position], context)
+                setHint(holder.binding.etAnswer, mList[position], context, questionText)
             }
 
             "DATETIME" -> {
@@ -111,7 +111,7 @@ class FormViewAdapter(
 
             "INTEGER" -> {
                 holder.binding.etNumAnswer.visibility = View.VISIBLE
-                setHint(holder.binding.etAnswer, mList[position], context)
+                setHint(holder.binding.etAnswer, mList[position], context, questionText)
             }
 
             "MULTIPLE_CHOICE" -> {
@@ -230,17 +230,21 @@ class FormViewAdapter(
         )
     }
 
-    private fun setHint(hint: TextView, theQuestion: Question, context: Context) {
-        val type = theQuestion.questionType
-        val numMin: Double? = theQuestion.numMin
-        val numMax: Double? = theQuestion.numMax
-        val isRequired = theQuestion.required!!
+    private fun setHint(hint: TextView, question: Question, context: Context, questionText: String?) {
+        val type = question.questionType
+        val numMin: Double? = question.numMin
+        val numMax: Double? = question.numMax
+        val isRequired = question.required!!
+
+        prePopulateText(hint, questionText)
 
         if (type == STRING) {
-            if (isRequired) {
-                hint.hint = context.getString(R.string.is_required)
-            } else {
-                hint.hint = context.getString(R.string.is_optional)
+            if (hint.text.isEmpty()) {
+                if (isRequired) {
+                    hint.hint = context.getString(R.string.is_required)
+                } else {
+                    hint.hint = context.getString(R.string.is_optional)
+                }
             }
         } else if (type == INTEGER) {
             if (isRequired) {
@@ -249,6 +253,13 @@ class FormViewAdapter(
             } else {
                 hint.hint = context.getString(R.string.is_optional)
             }
+        }
+    }
+
+    private fun prePopulateText(textView: TextView, questionText: String?) {
+        //TODO below only works for english
+        when (questionText) {
+            context.getString(R.string.form_patient_name) -> textView.text = patient?.name ?: ""
         }
     }
 }
