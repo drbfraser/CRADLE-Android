@@ -42,7 +42,8 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".view.SplashActivity"
-            android:theme="@style/SplashTheme">
+            android:theme="@style/SplashTheme"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -63,7 +64,8 @@
             android:name=".view.PatientsActivity"
             android:label="@string/title_activity_patients"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
             </intent-filter>

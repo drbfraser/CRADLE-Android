@@ -127,12 +127,22 @@ class NotificationManagerCustom {
             notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, notificationID)
             notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, notification)
 
-            return PendingIntent.getBroadcast(
-                context,
-                notificationID,
-                notificationIntent,
-                0
-            )
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                PendingIntent.getBroadcast(
+                    context,
+                    notificationID,
+                    notificationIntent,
+                    PendingIntent.FLAG_IMMUTABLE
+                )
+            } else {
+                PendingIntent.getBroadcast(
+                    context,
+                    notificationID,
+                    notificationIntent,
+                    0
+                )
+            }
+
         }
 
         fun cancelScheduledNotification(
