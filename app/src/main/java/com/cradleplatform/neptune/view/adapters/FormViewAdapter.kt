@@ -21,6 +21,7 @@ import com.cradleplatform.neptune.model.McOption
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.model.QuestionTypeEnum.*
+import com.cradleplatform.neptune.utilities.DateUtil
 import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
 import java.util.Calendar
 
@@ -92,7 +93,7 @@ class FormViewAdapter(
 
             "STRING" -> {
                 holder.binding.etAnswer.visibility = View.VISIBLE
-                setHint(holder.binding.etAnswer, mList[position], context, questionText)
+                setHint(holder.binding.etAnswer, mList[position], context)
             }
 
             "DATETIME" -> {
@@ -111,7 +112,7 @@ class FormViewAdapter(
 
             "INTEGER" -> {
                 holder.binding.etNumAnswer.visibility = View.VISIBLE
-                setHint(holder.binding.etAnswer, mList[position], context, questionText)
+                setHint(holder.binding.etNumAnswer, mList[position], context)
             }
 
             "MULTIPLE_CHOICE" -> {
@@ -230,13 +231,13 @@ class FormViewAdapter(
         )
     }
 
-    private fun setHint(hint: TextView, question: Question, context: Context, questionText: String?) {
+    private fun setHint(hint: TextView, question: Question, context: Context) {
         val type = question.questionType
         val numMin: Double? = question.numMin
         val numMax: Double? = question.numMax
         val isRequired = question.required!!
 
-        prePopulateText(hint, questionText)
+        prePopulateText(hint, question.questionId)
 
         if (type == STRING) {
             if (hint.text.isEmpty()) {
@@ -247,19 +248,21 @@ class FormViewAdapter(
                 }
             }
         } else if (type == INTEGER) {
-            if (isRequired) {
-                hint.hint = context.getString(R.string.is_required) + ": " +
-                    context.getString(R.string.data_range) + "($numMin, $numMax)"
-            } else {
-                hint.hint = context.getString(R.string.is_optional)
+            if (hint.text.isEmpty()) {
+                if (isRequired) {
+                    hint.hint = context.getString(R.string.is_required) + ": " +
+                        context.getString(R.string.data_range) + "($numMin, $numMax)"
+                } else {
+                    hint.hint = context.getString(R.string.is_optional)
+                }
             }
         }
     }
 
-    private fun prePopulateText(textView: TextView, questionText: String?) {
-        //TODO below only works for english
-        when (questionText) {
+    private fun prePopulateText(textView: TextView, questionID: String?) {
+        when (questionID) {
             context.getString(R.string.form_patient_name) -> textView.text = patient?.name ?: ""
+            context.getString(R.string.form_patient_age) -> textView.text = DateUtil.getAgeFromDOB(patient?.dob)
         }
     }
 }

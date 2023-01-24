@@ -700,5 +700,6 @@
     </plurals>
 
     <!-- Form Strings -->
-    <string name="form_patient_name">Patient Name</string>
+    <string name="form_patient_name">patient-name</string>
+    <string name="form_patient_age">patient-age</string>
 </resources>
