@@ -261,8 +261,20 @@ class FormViewAdapter(
 
     private fun prePopulateText(textView: TextView, questionID: String?) {
         when (questionID) {
-            context.getString(R.string.form_patient_name) -> textView.text = patient?.name ?: ""
-            context.getString(R.string.form_patient_age) -> textView.text = DateUtil.getAgeFromDOB(patient?.dob)
+            context.getString(R.string.form_patient_name) -> {
+                if (!patient?.name.isNullOrEmpty()) {
+                    textView.text = patient!!.name
+                    // Focus is not on edit text during pre population
+                    viewModel.addAnswer(questionID, Answer.createTextAnswer(patient!!.name))
+                }
+            }
+            context.getString(R.string.form_patient_age) -> {
+                val age = DateUtil.getAgeFromDOB(patient?.dob)
+                if (age.isNotEmpty()) {
+                    textView.text = age
+                    viewModel.addAnswer(questionID, Answer.createNumericAnswer(age.toInt()))
+                }
+            }
         }
     }
 }
