@@ -698,4 +698,8 @@
         <item quantity="one">%1$d reading still needs to be uploaded to the server. This reading will be lost after signing out!</item>
         <item quantity="other">%1$d readings still need to be uploaded to the server. These readings will be lost after signing out!</item>
     </plurals>
+
+    <!-- Form Strings -->
+    <string name="form_patient_name">patient-name</string>
+    <string name="form_patient_age">patient-age</string>
 </resources>

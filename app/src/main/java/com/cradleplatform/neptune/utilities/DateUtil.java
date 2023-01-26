@@ -2,6 +2,8 @@ package com.cradleplatform.neptune.utilities;
 
 import android.util.Log;
 
+import com.cradleplatform.neptune.model.Patient;
+
 import org.threeten.bp.Instant;
 import org.threeten.bp.ZoneId;
 import org.threeten.bp.ZonedDateTime;
@@ -9,6 +11,7 @@ import org.threeten.bp.format.DateTimeFormatter;
 import org.threeten.bp.temporal.ChronoUnit;
 
 import java.math.BigInteger;
+import java.text.ParseException;
 
 public class DateUtil {
 
@@ -109,6 +112,24 @@ public class DateUtil {
         }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         return dateFromAge.format(formatter);
+    }
+
+    /**
+     * @param dob Date of birth
+     * @return Age or empty string if error
+     */
+    public static String getAgeFromDOB(String dob) {
+        int ageFromDob = 0;
+        if (!Util.stringNullOrEmpty(dob)) {
+            try {
+                ageFromDob = Patient.calculateAgeFromDateString(dob);
+            } catch (ParseException ignored) { }
+        }
+        if (ageFromDob == 0) {
+            return "";
+        } else {
+            return String.valueOf(ageFromDob);
+        }
     }
 
     /**
