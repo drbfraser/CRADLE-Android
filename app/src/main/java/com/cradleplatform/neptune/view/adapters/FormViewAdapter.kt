@@ -126,12 +126,22 @@ class FormViewAdapter(
                     McOption(-1, context.resources.getString(R.string.mc_unsupported, languageSelected))
                 )
 
+                var genderMCId = -1
                 langMcOptions.forEach {
                     val radioButton = RadioButton(context)
                     radioButton.text = it.opt
                     radioButton.id = it.mcid!!
                     holder.binding.rgMultipleChoice.addView(radioButton)
+
+                    if (patient?.sex?.name?.equals(it.opt,true) == true) {
+                        genderMCId = radioButton.id
+                    }
                 }
+                if (genderMCId != -1) {
+                    //TODO add logic to save gender selection
+                    holder.binding.rgMultipleChoice.check(genderMCId)
+                }
+
             }
 
             "MULTIPLE_SELECT" -> {
