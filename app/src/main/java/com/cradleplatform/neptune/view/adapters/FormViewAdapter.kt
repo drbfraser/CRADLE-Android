@@ -126,7 +126,8 @@ class FormViewAdapter(
                     McOption(-1, context.resources.getString(R.string.mc_unsupported, languageSelected))
                 )
 
-                var genderMCId = -1
+                //Keep track of radio button id to select
+                var autoFillMCId = -1
                 langMcOptions.forEach {
                     val radioButton = RadioButton(context)
                     radioButton.text = it.opt
@@ -135,18 +136,31 @@ class FormViewAdapter(
 
                     //logic for pre population
                     when (mList[position].questionId) {
+
                         context.getString(R.string.form_patient_sex) -> {
                             if (patient?.sex?.name?.equals(it.opt, true) == true) {
-                                genderMCId = radioButton.id
+                                autoFillMCId = radioButton.id
+                            }
+                        }
+
+                        context.getString(R.string.form_patient_has_allergy) -> {
+                            val hasAllergy = !patient?.allergy.isNullOrEmpty()
+                            if (hasAllergy &&
+                                    it.opt.equals(context.getString(R.string.form_allergy_yes),true)) {
+                                autoFillMCId = radioButton.id
+                            }
+                            if (!hasAllergy &&
+                                    it.opt.equals(context.getString(R.string.form_allergy_no), true)) {
+                                autoFillMCId = radioButton.id
                             }
                         }
                     }
                 }
-                if (genderMCId != -1) {
-                    holder.binding.rgMultipleChoice.check(genderMCId)
+                if (autoFillMCId != -1) {
+                    holder.binding.rgMultipleChoice.check(autoFillMCId)
                     //add answer to viewmodel
                     mList[position].questionId?.let {
-                        viewModel.addAnswer(it, Answer.createMcAnswer(listOf(genderMCId)))
+                        viewModel.addAnswer(it, Answer.createMcAnswer(listOf(autoFillMCId)))
                     }
                 }
             }
