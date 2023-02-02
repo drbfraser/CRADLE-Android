@@ -702,4 +702,5 @@
     <!-- Form Strings -->
     <string name="form_patient_name">patient-name</string>
     <string name="form_patient_age">patient-age</string>
+    <string name="form_patient_sex">patient-sex</string>
 </resources>

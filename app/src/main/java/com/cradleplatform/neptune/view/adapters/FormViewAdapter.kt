@@ -133,15 +133,21 @@ class FormViewAdapter(
                     radioButton.id = it.mcid!!
                     holder.binding.rgMultipleChoice.addView(radioButton)
 
-                    if (patient?.sex?.name?.equals(it.opt,true) == true) {
-                        genderMCId = radioButton.id
+                    //logic for pre population
+                    when (mList[position].questionId) {
+                        context.getString(R.string.form_patient_sex) -> {
+                            if (patient?.sex?.name?.equals(it.opt, true) == true) {
+                                genderMCId = radioButton.id
+                            }
+                        }
                     }
                 }
                 if (genderMCId != -1) {
-                    //TODO add logic to save gender selection
                     holder.binding.rgMultipleChoice.check(genderMCId)
+                    //add answer to viewmodel
+                    mList[position].questionId?.let {
+                        viewModel.addAnswer(it, Answer.createMcAnswer(listOf(genderMCId))) }
                 }
-
             }
 
             "MULTIPLE_SELECT" -> {
