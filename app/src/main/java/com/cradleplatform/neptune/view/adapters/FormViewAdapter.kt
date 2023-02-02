@@ -292,6 +292,12 @@ class FormViewAdapter(
                     viewModel.addAnswer(questionID, Answer.createNumericAnswer(age.toInt()))
                 }
             }
+            context.getString(R.string.form_patient_allergies) -> {
+                if (!patient?.allergy.isNullOrEmpty()) {
+                    textView.text = patient!!.allergy
+                    viewModel.addAnswer(questionID, Answer.createTextAnswer(patient!!.allergy))
+                }
+            }
         }
     }
 }
