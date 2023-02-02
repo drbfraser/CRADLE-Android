@@ -146,11 +146,13 @@ class FormViewAdapter(
                         context.getString(R.string.form_patient_has_allergy) -> {
                             val hasAllergy = !patient?.allergy.isNullOrEmpty()
                             if (hasAllergy &&
-                                    it.opt.equals(context.getString(R.string.form_allergy_yes),true)) {
+                                it.opt.equals(context.getString(R.string.form_allergy_yes), true)
+                            ) {
                                 autoFillMCId = radioButton.id
                             }
                             if (!hasAllergy &&
-                                    it.opt.equals(context.getString(R.string.form_allergy_no), true)) {
+                                it.opt.equals(context.getString(R.string.form_allergy_no), true)
+                            ) {
                                 autoFillMCId = radioButton.id
                             }
                         }
