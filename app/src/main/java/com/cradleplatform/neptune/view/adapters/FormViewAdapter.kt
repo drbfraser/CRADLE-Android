@@ -146,7 +146,8 @@ class FormViewAdapter(
                     holder.binding.rgMultipleChoice.check(genderMCId)
                     //add answer to viewmodel
                     mList[position].questionId?.let {
-                        viewModel.addAnswer(it, Answer.createMcAnswer(listOf(genderMCId))) }
+                        viewModel.addAnswer(it, Answer.createMcAnswer(listOf(genderMCId)))
+                    }
                 }
             }
 
