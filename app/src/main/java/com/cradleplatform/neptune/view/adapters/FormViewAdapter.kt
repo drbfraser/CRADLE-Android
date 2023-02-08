@@ -314,6 +314,12 @@ class FormViewAdapter(
                     viewModel.addAnswer(questionID, Answer.createTextAnswer(patient!!.allergy))
                 }
             }
+            context.getString(R.string.form_patient_medical_history) -> {
+                if (!patient?.medicalHistory.isNullOrEmpty()) {
+                    textView.text = patient!!.medicalHistory
+                    viewModel.addAnswer(questionID, Answer.createTextAnswer(patient!!.medicalHistory))
+                }
+            }
         }
     }
 }
