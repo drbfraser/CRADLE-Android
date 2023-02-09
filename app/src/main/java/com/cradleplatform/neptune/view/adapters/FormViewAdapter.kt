@@ -126,11 +126,44 @@ class FormViewAdapter(
                     McOption(-1, context.resources.getString(R.string.mc_unsupported, languageSelected))
                 )
 
+                //Keep track of radio button id to select
+                var autoFillMCId = -1
                 langMcOptions.forEach {
                     val radioButton = RadioButton(context)
                     radioButton.text = it.opt
                     radioButton.id = it.mcid!!
                     holder.binding.rgMultipleChoice.addView(radioButton)
+
+                    //logic for pre population
+                    when (mList[position].questionId) {
+
+                        context.getString(R.string.form_patient_sex) -> {
+                            if (patient?.sex?.name?.equals(it.opt, true) == true) {
+                                autoFillMCId = radioButton.id
+                            }
+                        }
+
+                        context.getString(R.string.form_patient_has_allergy) -> {
+                            val hasAllergy = !patient?.allergy.isNullOrEmpty()
+                            if (hasAllergy &&
+                                it.opt.equals(context.getString(R.string.yes), true)
+                            ) {
+                                autoFillMCId = radioButton.id
+                            }
+                            if (!hasAllergy &&
+                                it.opt.equals(context.getString(R.string.no), true)
+                            ) {
+                                autoFillMCId = radioButton.id
+                            }
+                        }
+                    }
+                }
+                if (autoFillMCId != -1) {
+                    holder.binding.rgMultipleChoice.check(autoFillMCId)
+                    //add answer to viewmodel
+                    mList[position].questionId?.let {
+                        viewModel.addAnswer(it, Answer.createMcAnswer(listOf(autoFillMCId)))
+                    }
                 }
             }
 
@@ -273,6 +306,18 @@ class FormViewAdapter(
                 if (age.isNotEmpty()) {
                     textView.text = age
                     viewModel.addAnswer(questionID, Answer.createNumericAnswer(age.toInt()))
+                }
+            }
+            context.getString(R.string.form_patient_allergies) -> {
+                if (!patient?.allergy.isNullOrEmpty()) {
+                    textView.text = patient!!.allergy
+                    viewModel.addAnswer(questionID, Answer.createTextAnswer(patient!!.allergy))
+                }
+            }
+            context.getString(R.string.form_patient_medical_history) -> {
+                if (!patient?.medicalHistory.isNullOrEmpty()) {
+                    textView.text = patient!!.medicalHistory
+                    viewModel.addAnswer(questionID, Answer.createTextAnswer(patient!!.medicalHistory))
                 }
             }
         }
