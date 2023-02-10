@@ -117,7 +117,7 @@ class FormRenderingViewModel @Inject constructor(
         } else {
             String.format(context.getString(R.string.form_question_is_required), questionText)
         }
-        Toast.makeText(context, toastText, Toast.LENGTH_LONG).show();
+        Toast.makeText(context, toastText, Toast.LENGTH_LONG).show()
     }
 
     private companion object {
