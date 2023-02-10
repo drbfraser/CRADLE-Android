@@ -706,4 +706,6 @@
     <string name="form_patient_allergies">patient-allergies</string>
     <string name="form_patient_has_allergy">patient-has-allergy</string>
     <string name="form_patient_medical_history">patient-medical-history</string>
+    <string name="form_generic_is_required">Please fill out all required fields</string>
+    <string name="form_question_is_required">Please fill required field: %s</string>
 </resources>
