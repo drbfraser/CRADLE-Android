@@ -3,6 +3,7 @@ package com.cradleplatform.neptune.viewmodel
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import android.widget.Toast
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import com.cradleplatform.neptune.R
@@ -89,6 +90,36 @@ class FormRenderingViewModel @Inject constructor(
             error("FormTemplate does not exist: Current displaying FormTemplate is null")
         }
     }
+
+    /**
+     * Returns true if all required fields filled
+     * Else returns false and shows user a toast of which field needs to be filled in
+     */
+    fun isRequiredFieldsFilled(languageSelected: String, context: Context): Boolean {
+        fullQuestionList().forEach {
+            if (it.required == true) {
+                val answer = currentAnswers[it.questionId]
+                if (answer?.isValidAnswer() != true) {
+                    createToast(it, languageSelected, context)
+                    return false
+                }
+            }
+        }
+        return true
+    }
+
+    private fun createToast(question: Question, languageSelected: String, context: Context) {
+        val questionText = question.languageVersions?.find { lang ->
+            lang.language == languageSelected
+        }?.questionText
+        val toastText = if (questionText.isNullOrEmpty()) {
+            context.getString(R.string.form_generic_is_required)
+        } else {
+            String.format(context.getString(R.string.form_question_is_required), questionText)
+        }
+        Toast.makeText(context, toastText, Toast.LENGTH_LONG).show()
+    }
+
     private companion object {
         //Current user answer
         private const val TAG = "FormRenderingViewModel"

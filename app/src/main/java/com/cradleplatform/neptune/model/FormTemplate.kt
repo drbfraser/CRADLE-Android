@@ -339,17 +339,12 @@ data class Answer private constructor(
 ) : Serializable {
 
     fun isValidAnswer(): Boolean {
-        var nullCount = 0
-        numericAnswer ?: nullCount++
-        textAnswer ?: nullCount++
-        mcidArrayAnswer ?: nullCount++
-
-        return nullCount == 1
+        if (numericAnswer != null) return true
+        if (mcidArrayAnswer != null && mcidArrayAnswer.isNotEmpty()) return true
+        if (textAnswer?.isNotEmpty() == true) return true
+        return false
     }
 
-    fun isNumericAnswer(): Boolean = numericAnswer != null && isValidAnswer()
-    fun isTextAnswer(): Boolean = textAnswer != null && isValidAnswer()
-    fun isMcAnswer(): Boolean = mcidArrayAnswer != null && isValidAnswer()
     fun hasComment(): Boolean = !(comment?.isEmpty() ?: true)
 
     companion object {

@@ -93,7 +93,10 @@ class FormRenderingActivity : AppCompatActivity() {
         recyclerView.adapter = adapter
 
         findViewById<Button>(R.id.btn_submit).setOnClickListener {
-            showFormSubmissionModeDialog(languageSelected)
+            //A toast is displayed to user if require field is not filled
+            if (viewModel.isRequiredFieldsFilled(languageSelected, applicationContext)) {
+                showFormSubmissionModeDialog(languageSelected)
+            }
         }
     }
 
