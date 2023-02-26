@@ -8,6 +8,7 @@ import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.http_sms_service.http.DatabaseObject
+import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.model.Answer
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormTemplate
@@ -15,7 +16,7 @@ import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
 import com.cradleplatform.neptune.http_sms_service.http.Protocol
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
-import com.cradleplatform.neptune.utilities.AESEncrypter.Companion.getSecretKeyFromString
+import com.cradleplatform.neptune.utilities.AESEncryptor.Companion.getSecretKeyFromString
 import com.cradleplatform.neptune.utilities.RelayAction
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.encodeMsg
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.formatSMS
@@ -70,11 +71,16 @@ class FormRenderingViewModel @Inject constructor(
                 RelayAction.FORMRESPONSE,
                 getSecretKeyFromString(applicationContext.getString(R.string.aes_secret_key))
             )
-            val msgInPackets = listToString(formatSMS(encodedMsg))
+
+            val smsRelayRequestCounter = sharedPreferences.getLong(applicationContext.getString(R.string.sms_relay_request_counter), 0)
+
+            val msgInPackets = listToString(
+                formatSMS(encodedMsg, Http.Method.POST, smsRelayRequestCounter))
 
             /*This is something that needs to reworked, refer to issue #114*/
             sharedPreferences.edit(commit = true) {
                 putString(applicationContext.getString(R.string.sms_relay_list_key), msgInPackets)
+                putLong(applicationContext.getString(R.string.sms_relay_request_counter), smsRelayRequestCounter+1)
             }
 
             val smsSender = SMSSender(sharedPreferences, applicationContext)

@@ -19,6 +19,7 @@ import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.http_sms_service.http.DatabaseObject
+import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.utilities.UnixTimestamp
 import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
 import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
@@ -26,7 +27,7 @@ import com.cradleplatform.neptune.http_sms_service.http.Protocol
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.SmsReferral
-import com.cradleplatform.neptune.utilities.AESEncrypter
+import com.cradleplatform.neptune.utilities.AESEncryptor
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.RelayAction
 import com.cradleplatform.neptune.utilities.SMSFormatter
@@ -137,6 +138,8 @@ class PatientReferralViewModel @Inject constructor(
 
         /** we are redirected all transactions to the sms service **/
         var patientAndReferrals = PatientAndReferrals(patient, listOf(referral))
+        val smsRelayRequestCounter = sharedPreferences.getLong(applicationContext.getString(R.string.sms_relay_request_counter), 0)
+
         // This implementation is commented inside the PatientReferralActivity in the function sendSms(),
         // it has been moved since.
         val msgInPackets = SMSFormatter.listToString(
@@ -148,15 +151,17 @@ class PatientReferralViewModel @Inject constructor(
                         )
                     ),
                     RelayAction.REFERRAL,
-                    AESEncrypter.
+                    AESEncryptor.
                         getSecretKeyFromString(applicationContext.getString(R.string.aes_secret_key))
-                )
-            )
+                ),
+                Http.Method.POST, smsRelayRequestCounter
+            ),
         )
         // No point in saving to shared prefs perhaps? I do not know why they used it before, the message could be sent
         // as an argument
         sharedPreferences.edit(commit = true) {
             putString(applicationContext.getString(R.string.sms_relay_list_key), msgInPackets)
+            putLong(applicationContext.getString(R.string.sms_relay_request_counter), smsRelayRequestCounter+1)
         }
 
         /**Sending an sms sender is also to the service is also not ideal

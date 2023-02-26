@@ -1,8 +1,11 @@
 package com.cradleplatform.neptune.utilities
 
 import android.util.Base64
+import com.cradleplatform.neptune.http_sms_service.http.Http
+import com.google.firebase.crashlytics.internal.model.ImmutableList
 import com.google.gson.Gson
 import javax.crypto.SecretKey
+import kotlin.math.min
 
 enum class RelayAction {
     READING,
@@ -18,34 +21,67 @@ class SMSFormatter {
          * Since the message is greater than 160 chars, only 153 can be used for contents.
          * First 7 are reserved for header.
          */
-        private const val PACKET_SIZE = 153 * 2
+        const val PACKET_SIZE = 153 * 2
         private const val MAX_PACKET_NUMBER = 99
 
+
+        // Http Header
+        private const val SMS_TUNNEL_PROTOCOL_VERSION = "01"
+        private const val MAGIC_STRING = "CRADLE"
+        private const val FRAGMENT_HEADER_LENGTH = 3
+        private const val REQUEST_NUMBER_LENGTH = 6
+
         fun encodeMsg(msg: String, action: RelayAction, secretKey: SecretKey): String {
-            var smsMsg = "$action|$msg"
-            val formattedMsg = AESEncrypter.encrypt(GzipCompressor.compress(smsMsg), secretKey)
+            val formattedMsg = AESEncryptor.encrypt(GzipCompressor.compress(msg), secretKey)
             return Base64.encodeToString(formattedMsg, Base64.DEFAULT)
         }
 
-        fun formatSMS(msg: String): MutableList<String> {
+        private fun computeRequestHeaderLength(httpMethod: Http.Method): Int {
+
+            val baseHeaderContent: ImmutableList<Int> = ImmutableList.from(
+                SMS_TUNNEL_PROTOCOL_VERSION.length,
+                MAGIC_STRING.length,
+                REQUEST_NUMBER_LENGTH,
+                httpMethod.name.length,
+                FRAGMENT_HEADER_LENGTH
+            )
+
+            return baseHeaderContent.fold(0) { acc, i -> acc + i + 1 }
+        }
+
+        fun formatSMS(msg: String, httpMethod: Http.Method, currentRequestCounter: Long): MutableList<String> {
             val packets = mutableListOf<String>()
 
-            // Start from 0
-            val packetCount = kotlin.math.ceil(msg.length.toDouble() / PACKET_SIZE).toInt() - 1
+            var fragmentCount = 1
+            var msgIdx = 0
+            var currentFragmentSize = 0
 
-            if (packetCount > MAX_PACKET_NUMBER) {
-                throw IllegalArgumentException("Message size is too long")
+            // first compute the number of fragment required for the input message
+            val headerSize = computeRequestHeaderLength(httpMethod = httpMethod)
+
+            if(PACKET_SIZE < msg.length + headerSize) {
+                val remainderMsgLength = msg.length + headerSize - PACKET_SIZE
+                fragmentCount += kotlin.math.ceil(remainderMsgLength.toDouble() / (PACKET_SIZE - FRAGMENT_HEADER_LENGTH)).toInt()
             }
 
-            // function parameters are immutable
-            var smsMsg = msg
+            while(msgIdx < msg.length) {
 
-            while (smsMsg.isNotEmpty()) {
-                var remainingLength = if (smsMsg.length < PACKET_SIZE) smsMsg.length else PACKET_SIZE
+                // first fragment needs special header
+                val requestHeader: String = if(msgIdx == 0) {
+                    val currentRequestCounterPadded = currentRequestCounter.toString().padStart(REQUEST_NUMBER_LENGTH, '0')
+                    val fragmentCountPadded = fragmentCount.toString().padStart(FRAGMENT_HEADER_LENGTH, '0')
+                    "$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-$currentRequestCounterPadded-${httpMethod.name}-$fragmentCountPadded-"
+                } else {
+                    val fragmentNumber = currentFragmentSize.toString().padStart(FRAGMENT_HEADER_LENGTH, '0')
+                    "$fragmentNumber-"
+                }
 
-                // no special operations here as MultipartTextMessage automatically orders sms
-                packets.add(smsMsg.substring(0, remainingLength))
-                smsMsg = smsMsg.drop(remainingLength)
+                val remainingSpace = PACKET_SIZE - requestHeader.length
+                val currentFragment = requestHeader + msg.substring(msgIdx, min(msgIdx + remainingSpace, msg.length))
+                msgIdx = min(msgIdx + remainingSpace, msg.length)
+
+                packets.add(currentFragment)
+                currentFragmentSize += 1
             }
 
             return packets

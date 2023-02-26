@@ -18,7 +18,7 @@ class SMSReceiver(private val smsSender: SMSSender, private val relayPhoneNumber
             // if smsMessage is null, we continue to the next one
             val smsMessage = SmsMessage.createFromPdu(element as ByteArray?) ?: continue
             val messageBody = smsMessage.messageBody
-            if (smsMessage.originatingAddress.equals(relayPhoneNumber) && messageBody.contentEquals(
+            if (smsMessage.originatingAddress.equals(relayPhoneNumber) && messageBody.contains(
                     ACKNOWLEDGEMENT
                 )
             ) {

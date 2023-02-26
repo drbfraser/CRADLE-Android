@@ -20,6 +20,7 @@ import androidx.lifecycle.lifecycleScope
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.ReferralDialogBinding
+import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.model.PatientAndReadings
 import com.cradleplatform.neptune.model.SmsReadingWithReferral
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
@@ -166,7 +167,7 @@ class ReferralDialogFragment : DialogFragment() {
             )
         )
 
-        dataPasser.sendSmsMessage(json)
+        dataPasser.sendSmsMessage(json, Http.Method.POST)
     }
 
     private suspend fun handleWebReferralSend(view: View) {
@@ -289,7 +290,6 @@ class ReferralDialogFragment : DialogFragment() {
 
     interface OnReadingSendWebSnackbarMsgPass {
         fun onMsgPass(data: String)
-
-        fun sendSmsMessage(data: String)
+        fun sendSmsMessage(data: String, httpMethod: Http.Method)
     }
 }
