@@ -72,15 +72,21 @@ class FormRenderingViewModel @Inject constructor(
                 getSecretKeyFromString(applicationContext.getString(R.string.aes_secret_key))
             )
 
-            val smsRelayRequestCounter = sharedPreferences.getLong(applicationContext.getString(R.string.sms_relay_request_counter), 0)
+            val smsRelayRequestCounter = sharedPreferences.getLong(
+                applicationContext.getString(R.string.sms_relay_request_counter), 0
+            )
 
             val msgInPackets = listToString(
-                formatSMS(encodedMsg, Http.Method.POST, smsRelayRequestCounter))
+                formatSMS(encodedMsg, Http.Method.POST, smsRelayRequestCounter)
+            )
 
             /*This is something that needs to reworked, refer to issue #114*/
             sharedPreferences.edit(commit = true) {
                 putString(applicationContext.getString(R.string.sms_relay_list_key), msgInPackets)
-                putLong(applicationContext.getString(R.string.sms_relay_request_counter), smsRelayRequestCounter+1)
+                putLong(
+                    applicationContext.getString(R.string.sms_relay_request_counter),
+                    smsRelayRequestCounter + 1
+                )
             }
 
             val smsSender = SMSSender(sharedPreferences, applicationContext)

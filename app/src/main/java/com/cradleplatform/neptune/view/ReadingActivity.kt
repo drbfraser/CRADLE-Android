@@ -495,7 +495,7 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
             SMSFormatter.listToString(SMSFormatter.formatSMS(encodedMsg, httpMethod, smsRelayRequestCounter))
         sharedPreferences.edit(commit = true) {
             putString(getString(R.string.sms_relay_list_key), msgInPackets)
-            putLong(getString(R.string.sms_relay_request_counter), smsRelayRequestCounter+1)
+            putLong(getString(R.string.sms_relay_request_counter), smsRelayRequestCounter + 1)
         }
 
         smsSender.sendSmsMessage(false)

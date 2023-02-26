@@ -123,7 +123,8 @@ class PatientReferralViewModel @Inject constructor(
             Referral(
                 id = UUID.randomUUID().toString(),
                 comment = comments.value,
-                referralHealthFacilityName = healthFacilityToUse.value ?: error("No health facility selected"),
+                referralHealthFacilityName = healthFacilityToUse.value
+                    ?: error("No health facility selected"),
                 dateReferred = currentTime,
                 userId = sharedPreferences.getIntOrNull(LoginManager.USER_ID_KEY),
                 patientId = patient.id,
@@ -138,7 +139,9 @@ class PatientReferralViewModel @Inject constructor(
 
         /** we are redirected all transactions to the sms service **/
         var patientAndReferrals = PatientAndReferrals(patient, listOf(referral))
-        val smsRelayRequestCounter = sharedPreferences.getLong(applicationContext.getString(R.string.sms_relay_request_counter), 0)
+        val smsRelayRequestCounter = sharedPreferences.getLong(
+            applicationContext.getString(R.string.sms_relay_request_counter), 0
+        )
 
         // This implementation is commented inside the PatientReferralActivity in the function sendSms(),
         // it has been moved since.
@@ -151,8 +154,7 @@ class PatientReferralViewModel @Inject constructor(
                         )
                     ),
                     RelayAction.REFERRAL,
-                    AESEncryptor.
-                        getSecretKeyFromString(applicationContext.getString(R.string.aes_secret_key))
+                    AESEncryptor.getSecretKeyFromString(applicationContext.getString(R.string.aes_secret_key))
                 ),
                 Http.Method.POST, smsRelayRequestCounter
             ),
@@ -161,14 +163,19 @@ class PatientReferralViewModel @Inject constructor(
         // as an argument
         sharedPreferences.edit(commit = true) {
             putString(applicationContext.getString(R.string.sms_relay_list_key), msgInPackets)
-            putLong(applicationContext.getString(R.string.sms_relay_request_counter), smsRelayRequestCounter+1)
+            putLong(
+                applicationContext.getString(R.string.sms_relay_request_counter),
+                smsRelayRequestCounter + 1
+            )
         }
 
-        /**Sending an sms sender is also to the service is also not ideal
-         //instead change the approach so that SMS sender becomes an injectable class
-         // then inject and pass the sms content and let the class handle the sending inside a coroutine
-         //this implementation exists in many places, changing all of them is not possible with the time available
-         //so to not break the build an sms sender object is being sent to the service, REFER to issue # */
+        /**
+         * Sending an sms sender is also to the service is also not ideal
+         * instead change the approach so that SMS sender becomes an injectable class
+         * then inject and pass the sms content and let the class handle the sending inside a coroutine
+         * this implementation exists in many places, changing all of them is not possible with the time available
+         * so to not break the build an sms sender object is being sent to the service, REFER to issue
+         */
         val smsSender = SMSSender(sharedPreferences, applicationContext)
 
         httpSmsService.upload(
@@ -180,20 +187,27 @@ class PatientReferralViewModel @Inject constructor(
             )
         )
 
-        CustomToast.shortToast(applicationContext, applicationContext.getString(R.string.sms_sender_send))
+        CustomToast.shortToast(
+            applicationContext,
+            applicationContext.getString(R.string.sms_sender_send)
+        )
 
         // saves the data in internal db
         handleStoringReferralFromBuilders(referral)
 
-        /** This line is just a placeholder to avoid a return error
-         Again, the way success is handled is not ideal, even if it might work
-         with the current structure, the flow is extremely disconnected and
-         does not work with all the components, we want a unified approach to
-         handling all sms / http transactions #refer to issue #111 **/
+        /**
+         * This line is just a placeholder to avoid a return error.
+         * Again, the way success is handled is not ideal, even if it might work
+         * with the current structure, the flow is extremely disconnected and
+         * does not work with all the components, we want a unified approach to
+         * handling all sms / http transactions #refer to issue #111
+         */
         return@withContext ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded
 
-        /** This is the previous implementation, now its upto the sms service to divide html and sms
-         * ViewModels will only be responsible for requesting the service for upload **/
+        /**
+         * This is the previous implementation, now its upto the sms service to divide html and sms
+         * ViewModels will only be responsible for requesting the service for upload
+         */
 
         //Upload using the defined method ( Web or Sms)
         // when (referralOption) {
