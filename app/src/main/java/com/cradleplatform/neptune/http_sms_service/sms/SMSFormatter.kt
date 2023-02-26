@@ -52,7 +52,7 @@ class SMSFormatter {
         fun formatSMS(msg: String, httpMethod: Http.Method, currentRequestCounter: Long): MutableList<String> {
             val packets = mutableListOf<String>()
 
-            var fragmentCount = 1
+            var packetCount = 1
             var msgIdx = 0
             var currentFragmentSize = 0
 
@@ -61,15 +61,20 @@ class SMSFormatter {
 
             if(PACKET_SIZE < msg.length + headerSize) {
                 val remainderMsgLength = msg.length + headerSize - PACKET_SIZE
-                fragmentCount += kotlin.math.ceil(remainderMsgLength.toDouble() / (PACKET_SIZE - FRAGMENT_HEADER_LENGTH)).toInt()
+                packetCount += kotlin.math.ceil(remainderMsgLength.toDouble() / (PACKET_SIZE - FRAGMENT_HEADER_LENGTH)).toInt()
             }
+
+            if (packetCount > MAX_PACKET_NUMBER) {
+                throw IllegalArgumentException("Message size is too long")
+            }
+
 
             while(msgIdx < msg.length) {
 
                 // first fragment needs special header
                 val requestHeader: String = if(msgIdx == 0) {
                     val currentRequestCounterPadded = currentRequestCounter.toString().padStart(REQUEST_NUMBER_LENGTH, '0')
-                    val fragmentCountPadded = fragmentCount.toString().padStart(FRAGMENT_HEADER_LENGTH, '0')
+                    val fragmentCountPadded = packetCount.toString().padStart(FRAGMENT_HEADER_LENGTH, '0')
                     "$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-$currentRequestCounterPadded-${httpMethod.name}-$fragmentCountPadded-"
                 } else {
                     val fragmentNumber = currentFragmentSize.toString().padStart(FRAGMENT_HEADER_LENGTH, '0')
