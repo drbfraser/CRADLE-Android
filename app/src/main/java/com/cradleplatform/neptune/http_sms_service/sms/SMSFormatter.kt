@@ -25,9 +25,9 @@ class SMSFormatter {
         private const val MAX_PACKET_NUMBER = 99
 
         // Http Header
-        private const val SMS_TUNNEL_PROTOCOL_VERSION = "01"
-        private const val MAGIC_STRING = "CRADLE"
-        private const val FRAGMENT_HEADER_LENGTH = 3
+        const val SMS_TUNNEL_PROTOCOL_VERSION = "01"
+        const val MAGIC_STRING = "CRADLE"
+        const val FRAGMENT_HEADER_LENGTH = 3
         private const val REQUEST_NUMBER_LENGTH = 6
 
         fun encodeMsg(msg: String, action: RelayAction, secretKey: SecretKey): String {
