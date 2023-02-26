@@ -22,7 +22,7 @@ class SMSFormatter {
          * First 7 are reserved for header.
          */
         const val PACKET_SIZE = 153 * 2
-        private const val MAX_PACKET_NUMBER = 99
+        // private const val MAX_PACKET_NUMBER = 99
 
         // Http Header
         const val SMS_TUNNEL_PROTOCOL_VERSION = "01"
@@ -68,9 +68,11 @@ class SMSFormatter {
                     remainderMsgLength.toDouble() / (PACKET_SIZE - FRAGMENT_HEADER_LENGTH)
                 ).toInt()
             }
-            if (packetCount > MAX_PACKET_NUMBER) {
-                throw IllegalArgumentException("Message size is too long")
-            }
+
+            // if (packetCount > MAX_PACKET_NUMBER) {
+            //     throw IllegalArgumentException("Message size is too long")
+            // }
+
             while (msgIdx < msg.length) {
                 // first fragment needs special header
                 val requestHeader: String = if (msgIdx == 0) {
