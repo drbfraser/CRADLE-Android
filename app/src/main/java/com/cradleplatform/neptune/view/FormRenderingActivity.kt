@@ -65,6 +65,10 @@ class FormRenderingActivity : AppCompatActivity() {
             intent.getSerializableExtra(EXTRA_FORM_TEMPLATE) as FormTemplate
 
         viewModel.currentFormTemplate = formTemplateFromIntent
+
+        //Clear previous answers in view-model
+        viewModel.clearAnswers()
+
         //setting the arrow on actionbar
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 

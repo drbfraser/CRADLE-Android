@@ -48,6 +48,10 @@ class FormRenderingViewModel @Inject constructor(
         Log.d(TAG, "adding answer for [$questionId]")
     }
 
+    fun clearAnswers() {
+        currentAnswers.clear()
+    }
+
     suspend fun submitForm(
         patientId: String,
         selectedLanguage: String,
