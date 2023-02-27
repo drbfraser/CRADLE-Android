@@ -6,7 +6,7 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 
-class AESEncrypter {
+class AESEncryptor {
     companion object {
         private const val TRANSFORMATION = "AES/ECB/PKCS5PADDING"
 

@@ -131,6 +131,8 @@
     <!-- SMS Text Message Relay -->
     <string name="sms_relay_list_key">SMS Relay Content Treemap</string>
 
+    <string name="sms_relay_request_counter">SMS Relay Request Counter</string>
+
     <!-- SMS Text Message Referral - SMS content-->
     <!-- NOTE: May not want to translate, as sent to doctors -->
     <!-- TODO: Use translatable="false" if you need to enforce this, or create separate

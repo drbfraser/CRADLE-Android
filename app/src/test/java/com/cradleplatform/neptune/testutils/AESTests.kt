@@ -1,26 +1,27 @@
 package com.cradleplatform.neptune.testutils
 
 import com.cradleplatform.neptune.model.CommonPatientReferralJsons
-import com.cradleplatform.neptune.utilities.AESEncrypter
+import com.cradleplatform.neptune.utilities.AESEncryptor
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions
 
 class AESTests {
     @Test
-    fun `test_encryption_decryption`() {
+    fun test_encryption_decryption() {
         val originalMsg = CommonPatientReferralJsons.patientWithStandaloneReferral.first
-        val key = AESEncrypter.generateRandomKey()
-        val wrongKey = AESEncrypter.generateRandomKey()
+        println(originalMsg)
+        val key = AESEncryptor.generateRandomKey()
+        val wrongKey = AESEncryptor.generateRandomKey()
 
-        val encryptedMsg = AESEncrypter.encrypt(originalMsg, key)
+        val encryptedMsg = AESEncryptor.encrypt(originalMsg, key)
         Assertions.assertNotEquals(String(encryptedMsg), originalMsg)
 
         try {
-            AESEncrypter.decrypt(encryptedMsg, wrongKey)
+            AESEncryptor.decrypt(encryptedMsg, wrongKey)
             Assertions.fail()
         } catch (e:Exception) {}
 
-        val decryptedMsg = AESEncrypter.decrypt(encryptedMsg, key)
+        val decryptedMsg = AESEncryptor.decrypt(encryptedMsg, key)
         Assertions.assertEquals(String(decryptedMsg), originalMsg)
     }
 

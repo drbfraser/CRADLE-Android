@@ -1,8 +1,9 @@
 package com.cradleplatform.neptune.sms
 
 import android.util.Base64
+import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.model.CommonPatientReferralJsons
-import com.cradleplatform.neptune.utilities.AESEncrypter
+import com.cradleplatform.neptune.utilities.AESEncryptor
 import com.cradleplatform.neptune.utilities.GzipCompressor
 import com.cradleplatform.neptune.utilities.RelayAction
 import com.cradleplatform.neptune.utilities.SMSFormatter
@@ -14,14 +15,14 @@ class SmsTests {
     fun `test_compression_encryption_encoding_decoding_decryption_decompression`() {
         val originalMsg = CommonPatientReferralJsons.patientWithStandaloneReferral.first
         val originalSize = originalMsg.toByteArray(Charsets.UTF_8).size
-        val secretKey = AESEncrypter.generateRandomKey()
-        val wrongKey = AESEncrypter.generateRandomKey()
+        val secretKey = AESEncryptor.generateRandomKey()
+        val wrongKey = AESEncryptor.generateRandomKey()
 
         // compress first as gzip utilizes pattern recognition to reduce size
         val compressedMsg = GzipCompressor.compress(originalMsg)
         Assertions.assertTrue(compressedMsg.size < originalSize)
 
-        val encryptedMsg = AESEncrypter.encrypt(compressedMsg, secretKey)
+        val encryptedMsg = AESEncryptor.encrypt(compressedMsg, secretKey)
         Assertions.assertTrue(encryptedMsg.size < originalSize)
 
         val encodedMsg = Base64.encodeToString(encryptedMsg, 0)
@@ -29,11 +30,12 @@ class SmsTests {
         Assertions.assertEquals(String(encryptedMsg), String(decodedMsg))
 
         try {
-            AESEncrypter.decrypt(decodedMsg, wrongKey)
+            AESEncryptor.decrypt(decodedMsg, wrongKey)
             Assertions.fail()
-        } catch (e:Exception) {}
+        } catch (e: Exception) {
+        }
 
-        val decryptedMsg = AESEncrypter.decrypt(decodedMsg, secretKey)
+        val decryptedMsg = AESEncryptor.decrypt(decodedMsg, secretKey)
         Assertions.assertEquals(String(compressedMsg), String(decryptedMsg))
 
         val decompressedMsg = GzipCompressor.decompress(decryptedMsg)
@@ -43,14 +45,12 @@ class SmsTests {
     @Test
     fun `test_sms_packet_formatting_size`() {
         val originalMsg = CommonPatientReferralJsons.patientWithStandaloneReferral.first
-        val secretKey = AESEncrypter.generateRandomKey()
-        val action = RelayAction.REFERRAL
-        val msgWithAction = "$action|$originalMsg"
+        val secretKey = AESEncryptor.generateRandomKey()
 
-        val formattedMsg = AESEncrypter.encrypt(GzipCompressor.compress(msgWithAction), secretKey)
+        val formattedMsg = AESEncryptor.encrypt(GzipCompressor.compress(originalMsg), secretKey)
         val encodedMsg = Base64.encodeToString(formattedMsg, 0)
 
-        val packets = SMSFormatter.formatSMS(encodedMsg)
+        val packets = SMSFormatter.formatSMS(encodedMsg, Http.Method.POST, 0L)
         val maxPacketSize = 153 * 2
         val maxPacketCount = 100
 
@@ -63,33 +63,37 @@ class SmsTests {
     @Test
     fun `test_sms_packet_formatting_decoding`() {
         val originalMsg = CommonPatientReferralJsons.patientWithStandaloneReferral.first
-        val secretKey = AESEncrypter.generateRandomKey()
-        val action = RelayAction.REFERRAL
-        val msgWithAction = "$action|$originalMsg"
-        val wrongKey = AESEncrypter.generateRandomKey()
+        val secretKey = AESEncryptor.generateRandomKey()
+        val wrongKey = AESEncryptor.generateRandomKey()
 
-        val compressedMsg = GzipCompressor.compress(msgWithAction)
-        val formattedMsg = AESEncrypter.encrypt(compressedMsg, secretKey)
-        val encodedMsg = Base64.encodeToString(formattedMsg, 0)
+        val requestCounter = 0L
+        val httpMethod = Http.Method.POST
 
-        val packets = SMSFormatter.formatSMS(encodedMsg)
+        val encodedMsg = SMSFormatter.encodeMsg(
+            originalMsg,
+            RelayAction.READING,
+            secretKey
+        )
+
+        val packets = SMSFormatter.formatSMS(encodedMsg, httpMethod, requestCounter)
         val packetMsg = SMSFormatter.parseSMS(packets)
 
-        Assertions.assertEquals(packetMsg, encodedMsg)
+        // limit to 6 as there are 5 header components and 1 encrypted request data
+        val packetComponents = packetMsg.split('-', limit = 6)
+        println(packetComponents)
 
-        val decodedMsg = Base64.decode(packetMsg, 0)
-        Assertions.assertEquals(String(formattedMsg), String(decodedMsg))
+        // verify the header values/length are correct
+        Assertions.assertEquals(SMSFormatter.SMS_TUNNEL_PROTOCOL_VERSION, packetComponents[0])
+        Assertions.assertEquals(SMSFormatter.MAGIC_STRING, packetComponents[1])
+        Assertions.assertEquals(
+            requestCounter.toString().padStart(6, '0'), packetComponents[2]
+        )
+        Assertions.assertEquals(httpMethod.name, packetComponents[3])
+        Assertions.assertEquals(SMSFormatter.FRAGMENT_HEADER_LENGTH, packetComponents[4].length)
 
-        try {
-            AESEncrypter.decrypt(decodedMsg, wrongKey)
-            Assertions.fail()
-        } catch (e:Exception) {}
+        val encodedRequestData = packetComponents[5].split(Regex("[0-9]{3}-"))
+            .joinToString(separator = "")
 
-        val decryptedMsg = AESEncrypter.decrypt(decodedMsg, secretKey)
-        Assertions.assertEquals(String(compressedMsg), String(decryptedMsg))
-
-        val decompressedMsg = GzipCompressor.decompress(decryptedMsg)
-        Assertions.assertEquals(originalMsg, decompressedMsg.substringAfter('|'))
-        Assertions.assertEquals("$action", decompressedMsg.substringBefore('|'))
+        Assertions.assertEquals(encodedMsg, encodedRequestData)
     }
 }
