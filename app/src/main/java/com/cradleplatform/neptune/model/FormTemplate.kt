@@ -123,7 +123,7 @@ data class Question(
     @SerializedName("numMin") val numMin: Double?, // Backend-Nullable
     @SerializedName("numMax") val numMax: Double?, // Backend-Nullable
     @SerializedName("stringMaxLength") val stringMaxLength: Integer?, // Backend-Nullable
-    @SerializedName("questionId") val questionId: String?,
+    @SerializedName("questionId") var questionId: String?,
     @SerializedName("questionType") val questionType: QuestionTypeEnum?,
     @SerializedName("hasCommentAttached") val hasCommentAttached: Boolean?,
     @SerializedName("required") val required: Boolean?,

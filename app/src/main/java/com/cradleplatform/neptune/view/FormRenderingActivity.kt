@@ -65,6 +65,7 @@ class FormRenderingActivity : AppCompatActivity() {
             intent.getSerializableExtra(EXTRA_FORM_TEMPLATE) as FormTemplate
 
         viewModel.currentFormTemplate = formTemplateFromIntent
+        viewModel.populateEmptyIds(applicationContext)
 
         //Clear previous answers in view-model
         viewModel.clearAnswers()

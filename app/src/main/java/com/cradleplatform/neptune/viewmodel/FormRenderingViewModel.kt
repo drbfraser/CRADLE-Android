@@ -16,6 +16,7 @@ import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
 import com.cradleplatform.neptune.http_sms_service.http.Protocol
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.model.QuestionTypeEnum
 import com.cradleplatform.neptune.utilities.AESEncryptor.Companion.getSecretKeyFromString
 import com.cradleplatform.neptune.utilities.RelayAction
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.encodeMsg
@@ -34,6 +35,14 @@ class FormRenderingViewModel @Inject constructor(
 
     //Raw form template
     var currentFormTemplate: FormTemplate? = null
+
+    fun populateEmptyIds(context: Context) {
+        currentFormTemplate?.questions?.forEachIndexed { index, Q ->
+            if (Q.questionId?.isEmpty() == true && Q.questionType != QuestionTypeEnum.CATEGORY) {
+                Q.questionId = String.format(context.getString(R.string.form_generic_id), index)
+            }
+        }
+    }
 
     fun fullQuestionList(): MutableList<Question> {
         var listOfQuestions: MutableList<Question> = mutableListOf()

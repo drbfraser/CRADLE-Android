@@ -710,4 +710,5 @@
     <string name="form_patient_medical_history">patient-medical-history</string>
     <string name="form_generic_is_required">Please fill out all required fields</string>
     <string name="form_question_is_required">Please fill required field: %s</string>
+    <string name="form_generic_id">Generic id %d</string>
 </resources>
