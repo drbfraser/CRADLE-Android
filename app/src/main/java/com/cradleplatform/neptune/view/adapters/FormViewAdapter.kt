@@ -94,6 +94,13 @@ class FormViewAdapter(
             "STRING" -> {
                 holder.binding.etAnswer.visibility = View.VISIBLE
                 setHint(holder.binding.etAnswer, mList[position], context)
+
+                //If question has answer repopulate it
+                val answer = viewModel.getTextAnswer(mList[position].questionId)
+                if (answer?.isNotEmpty() == true) {
+                    val textView = holder.binding.etAnswer as TextView
+                    textView.text = answer
+                }
             }
 
             "DATETIME" -> {
@@ -113,6 +120,12 @@ class FormViewAdapter(
             "INTEGER" -> {
                 holder.binding.etNumAnswer.visibility = View.VISIBLE
                 setHint(holder.binding.etNumAnswer, mList[position], context)
+
+                //If question has answer repopulate it
+                viewModel.getNumericAnswer(mList[position].questionId)?.toInt()?.let {
+                    val textView = holder.binding.etNumAnswer as TextView
+                    textView.text = it.toString()
+                }
             }
 
             "MULTIPLE_CHOICE" -> {
@@ -164,6 +177,11 @@ class FormViewAdapter(
                     mList[position].questionId?.let {
                         viewModel.addAnswer(it, Answer.createMcAnswer(listOf(autoFillMCId)))
                     }
+                } else {
+                    //If question has answer repopulate it
+                    viewModel.getMCAnswer(mList[position].questionId)?.getOrNull(0)?.let {
+                        holder.binding.rgMultipleChoice.check(it)
+                    }
                 }
             }
 
@@ -191,8 +209,12 @@ class FormViewAdapter(
         //Integer Answers Listener
         holder.binding.etNumAnswer.setOnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) {
-                val numAnswer = holder.binding.etNumAnswer.text.toString().toInt()
-                viewModel.addAnswer(questionID, Answer.createNumericAnswer(numAnswer))
+                val numText = holder.binding.etNumAnswer.text.toString()
+                if (numText.isNotEmpty()) {
+                    viewModel.addAnswer(questionID, Answer.createNumericAnswer(numText.toInt()))
+                } else {
+                    viewModel.deleteAnswer(questionID)
+                }
             }
         }
 
