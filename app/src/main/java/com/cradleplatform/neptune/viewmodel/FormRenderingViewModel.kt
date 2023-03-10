@@ -57,6 +57,25 @@ class FormRenderingViewModel @Inject constructor(
         Log.d(TAG, "adding answer for [$questionId]")
     }
 
+    fun deleteAnswer(questionId: String) {
+        currentAnswers.remove(questionId)
+    }
+
+    fun getTextAnswer(questionId: String?): String? {
+        if (questionId == null) return null
+        return currentAnswers[questionId]?.textAnswer
+    }
+
+    fun getNumericAnswer(questionId: String?): Number? {
+        if (questionId == null) return null
+        return currentAnswers[questionId]?.numericAnswer
+    }
+
+    fun getMCAnswer(questionId: String?): List<Int>? {
+        if (questionId == null) return null
+        return currentAnswers[questionId]?.mcidArrayAnswer
+    }
+
     fun clearAnswers() {
         currentAnswers.clear()
     }
