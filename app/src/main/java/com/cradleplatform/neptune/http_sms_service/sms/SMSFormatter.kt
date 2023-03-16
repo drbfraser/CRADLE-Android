@@ -1,7 +1,6 @@
 package com.cradleplatform.neptune.utilities
 
 import android.util.Base64
-import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.google.firebase.crashlytics.internal.model.ImmutableList
 import com.google.gson.Gson
 import javax.crypto.SecretKey
