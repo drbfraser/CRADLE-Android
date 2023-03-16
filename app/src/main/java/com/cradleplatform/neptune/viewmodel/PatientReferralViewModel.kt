@@ -153,10 +153,9 @@ class PatientReferralViewModel @Inject constructor(
                             patient = patientAndReferrals
                         )
                     ),
-                    RelayAction.REFERRAL,
                     AESEncryptor.getSecretKeyFromString(applicationContext.getString(R.string.aes_secret_key))
                 ),
-                Http.Method.POST, smsRelayRequestCounter
+                smsRelayRequestCounter
             ),
         )
         // No point in saving to shared prefs perhaps? I do not know why they used it before, the message could be sent

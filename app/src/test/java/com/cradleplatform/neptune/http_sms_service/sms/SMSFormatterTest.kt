@@ -20,7 +20,6 @@ internal class SMSFormatterTest {
 
         val encodedMsg = SMSFormatter.encodeMsg(
             originalMsg,
-            RelayAction.READING,
             key
         )
         Assertions.assertNotEquals(encodedMsg, originalMsg)
@@ -35,10 +34,9 @@ internal class SMSFormatterTest {
     @Test
     fun testFormatSMS() {
         val testProcessedData = CommonProcessedHttpRequest.testData1
-        val testHttpMethod = Http.Method.POST
         val currentRequestCounter = 8581L
 
-        val result = SMSFormatter.formatSMS(testProcessedData, testHttpMethod, currentRequestCounter)
+        val result = SMSFormatter.formatSMS(testProcessedData, currentRequestCounter)
 
         for (i in 0 until result.size) {
             if (i < result.size - 1)

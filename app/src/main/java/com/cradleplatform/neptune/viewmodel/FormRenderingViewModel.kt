@@ -100,7 +100,6 @@ class FormRenderingViewModel @Inject constructor(
 
             val encodedMsg = encodeMsg(
                 json,
-                RelayAction.FORMRESPONSE,
                 getSecretKeyFromString(applicationContext.getString(R.string.aes_secret_key))
             )
 
@@ -109,7 +108,7 @@ class FormRenderingViewModel @Inject constructor(
             )
 
             val msgInPackets = listToString(
-                formatSMS(encodedMsg, Http.Method.POST, smsRelayRequestCounter)
+                formatSMS(encodedMsg, smsRelayRequestCounter)
             )
 
             /*This is something that needs to reworked, refer to issue #114*/

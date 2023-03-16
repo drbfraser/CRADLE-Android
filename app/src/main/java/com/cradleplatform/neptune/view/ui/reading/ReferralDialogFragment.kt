@@ -167,7 +167,7 @@ class ReferralDialogFragment : DialogFragment() {
             )
         )
 
-        dataPasser.sendSmsMessage(json, Http.Method.POST)
+        dataPasser.sendSmsMessage(json)
     }
 
     private suspend fun handleWebReferralSend(view: View) {
@@ -290,6 +290,6 @@ class ReferralDialogFragment : DialogFragment() {
 
     interface OnReadingSendWebSnackbarMsgPass {
         fun onMsgPass(data: String)
-        fun sendSmsMessage(data: String, httpMethod: Http.Method)
+        fun sendSmsMessage(data: String)
     }
 }

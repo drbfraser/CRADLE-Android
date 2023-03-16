@@ -482,17 +482,22 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
         setResult(RESULT_OK, intent)
     }
 
-    override fun sendSmsMessage(data: String, httpMethod: Http.Method) {
+    override fun sendSmsMessage(data: String) {
+
+        println("data")
+        println(data)
         val encodedMsg = SMSFormatter.encodeMsg(
             data,
-            RelayAction.READING,
             AESEncryptor.getSecretKeyFromString(getString(R.string.aes_secret_key))
         )
+
+        println("encodedMsg")
+        println(encodedMsg)
 
         val smsRelayRequestCounter = sharedPreferences.getLong(getString(R.string.sms_relay_request_counter), 0)
 
         val msgInPackets =
-            SMSFormatter.listToString(SMSFormatter.formatSMS(encodedMsg, httpMethod, smsRelayRequestCounter))
+            SMSFormatter.listToString(SMSFormatter.formatSMS(encodedMsg, smsRelayRequestCounter))
         sharedPreferences.edit(commit = true) {
             putString(getString(R.string.sms_relay_list_key), msgInPackets)
             putLong(getString(R.string.sms_relay_request_counter), smsRelayRequestCounter + 1)

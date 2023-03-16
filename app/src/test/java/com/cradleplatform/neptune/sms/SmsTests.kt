@@ -50,7 +50,7 @@ class SmsTests {
         val formattedMsg = AESEncryptor.encrypt(GzipCompressor.compress(originalMsg), secretKey)
         val encodedMsg = Base64.encodeToString(formattedMsg, 0)
 
-        val packets = SMSFormatter.formatSMS(encodedMsg, Http.Method.POST, 0L)
+        val packets = SMSFormatter.formatSMS(encodedMsg, 0L)
         val maxPacketSize = 153 * 2
         val maxPacketCount = 100
 
@@ -64,22 +64,17 @@ class SmsTests {
     fun `test_sms_packet_formatting_decoding`() {
         val originalMsg = CommonPatientReferralJsons.patientWithStandaloneReferral.first
         val secretKey = AESEncryptor.generateRandomKey()
-        val wrongKey = AESEncryptor.generateRandomKey()
-
         val requestCounter = 0L
-        val httpMethod = Http.Method.POST
 
         val encodedMsg = SMSFormatter.encodeMsg(
             originalMsg,
-            RelayAction.READING,
             secretKey
         )
 
-        val packets = SMSFormatter.formatSMS(encodedMsg, httpMethod, requestCounter)
+        val packets = SMSFormatter.formatSMS(encodedMsg, requestCounter)
         val packetMsg = SMSFormatter.parseSMS(packets)
-
-        // limit to 6 as there are 5 header components and 1 encrypted request data
-        val packetComponents = packetMsg.split('-', limit = 6)
+        // limit to 5 as there are 4 header components and 1 encrypted request data
+        val packetComponents = packetMsg.split('-', limit = 5)
         println(packetComponents)
 
         // verify the header values/length are correct
@@ -88,12 +83,9 @@ class SmsTests {
         Assertions.assertEquals(
             requestCounter.toString().padStart(6, '0'), packetComponents[2]
         )
-        Assertions.assertEquals(httpMethod.name, packetComponents[3])
-        Assertions.assertEquals(SMSFormatter.FRAGMENT_HEADER_LENGTH, packetComponents[4].length)
-
-        val encodedRequestData = packetComponents[5].split(Regex("[0-9]{3}-"))
+        Assertions.assertEquals(SMSFormatter.FRAGMENT_HEADER_LENGTH, packetComponents[3].length)
+        val encodedRequestData = packetComponents[4].split(Regex("[0-9]{3}-"))
             .joinToString(separator = "")
-
         Assertions.assertEquals(encodedMsg, encodedRequestData)
     }
 }
