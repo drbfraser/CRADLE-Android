@@ -31,8 +31,6 @@ class SMSFormatter {
 
         fun encodeMsg(msg: String, secretKey: SecretKey): String {
             val formattedMsg = AESEncryptor.encrypt(GzipCompressor.compress(msg), secretKey)
-            println("formattedMsg")
-            println(formattedMsg)
             return Base64.encodeToString(formattedMsg, Base64.DEFAULT)
         }
 
@@ -72,9 +70,6 @@ class SMSFormatter {
             //     throw IllegalArgumentException("Message size is too long")
             // }
 
-            println(msg)
-            println(msg.indexOf("\n"))
-
             while (msgIdx < msg.length) {
                 // first fragment needs special header
                 val requestHeader: String = if (msgIdx == 0) {
@@ -96,8 +91,6 @@ class SMSFormatter {
                 val remainingSpace = PACKET_SIZE - requestHeader.length
                 val currentFragment =
                     requestHeader + msg.substring(msgIdx, min(msgIdx + remainingSpace, msg.length))
-                println(currentFragment)
-                println(currentFragment.length)
                 msgIdx = min(msgIdx + remainingSpace, msg.length)
 
                 packets.add(currentFragment)

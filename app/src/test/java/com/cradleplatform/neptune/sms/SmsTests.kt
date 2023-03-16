@@ -75,7 +75,6 @@ class SmsTests {
         val packetMsg = SMSFormatter.parseSMS(packets)
         // limit to 5 as there are 4 header components and 1 encrypted request data
         val packetComponents = packetMsg.split('-', limit = 5)
-        println(packetComponents)
 
         // verify the header values/length are correct
         Assertions.assertEquals(SMSFormatter.SMS_TUNNEL_PROTOCOL_VERSION, packetComponents[0])
