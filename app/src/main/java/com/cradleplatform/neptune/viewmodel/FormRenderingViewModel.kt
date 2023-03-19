@@ -8,7 +8,6 @@ import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.http_sms_service.http.DatabaseObject
-import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.model.Answer
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormTemplate
@@ -18,7 +17,6 @@ import com.cradleplatform.neptune.http_sms_service.http.Protocol
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.model.QuestionTypeEnum
 import com.cradleplatform.neptune.utilities.AESEncryptor.Companion.getSecretKeyFromString
-import com.cradleplatform.neptune.utilities.RelayAction
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.encodeMsg
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.formatSMS
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.listToString
@@ -100,7 +98,6 @@ class FormRenderingViewModel @Inject constructor(
 
             val encodedMsg = encodeMsg(
                 json,
-                RelayAction.FORMRESPONSE,
                 getSecretKeyFromString(applicationContext.getString(R.string.aes_secret_key))
             )
 
@@ -109,7 +106,7 @@ class FormRenderingViewModel @Inject constructor(
             )
 
             val msgInPackets = listToString(
-                formatSMS(encodedMsg, Http.Method.POST, smsRelayRequestCounter)
+                formatSMS(encodedMsg, smsRelayRequestCounter)
             )
 
             /*This is something that needs to reworked, refer to issue #114*/

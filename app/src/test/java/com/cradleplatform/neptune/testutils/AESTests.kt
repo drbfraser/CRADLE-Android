@@ -9,7 +9,6 @@ class AESTests {
     @Test
     fun test_encryption_decryption() {
         val originalMsg = CommonPatientReferralJsons.patientWithStandaloneReferral.first
-        println(originalMsg)
         val key = AESEncryptor.generateRandomKey()
         val wrongKey = AESEncryptor.generateRandomKey()
 

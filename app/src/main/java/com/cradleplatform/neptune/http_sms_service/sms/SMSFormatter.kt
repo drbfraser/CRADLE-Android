@@ -1,7 +1,6 @@
 package com.cradleplatform.neptune.utilities
 
 import android.util.Base64
-import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.google.firebase.crashlytics.internal.model.ImmutableList
 import com.google.gson.Gson
 import javax.crypto.SecretKey
@@ -30,18 +29,17 @@ class SMSFormatter {
         const val FRAGMENT_HEADER_LENGTH = 3
         private const val REQUEST_NUMBER_LENGTH = 6
 
-        fun encodeMsg(msg: String, action: RelayAction, secretKey: SecretKey): String {
+        fun encodeMsg(msg: String, secretKey: SecretKey): String {
             val formattedMsg = AESEncryptor.encrypt(GzipCompressor.compress(msg), secretKey)
             return Base64.encodeToString(formattedMsg, Base64.DEFAULT)
         }
 
-        private fun computeRequestHeaderLength(httpMethod: Http.Method): Int {
+        private fun computeRequestHeaderLength(): Int {
 
             val baseHeaderContent: ImmutableList<Int> = ImmutableList.from(
                 SMS_TUNNEL_PROTOCOL_VERSION.length,
                 MAGIC_STRING.length,
                 REQUEST_NUMBER_LENGTH,
-                httpMethod.name.length,
                 FRAGMENT_HEADER_LENGTH
             )
 
@@ -50,7 +48,6 @@ class SMSFormatter {
 
         fun formatSMS(
             msg: String,
-            httpMethod: Http.Method,
             currentRequestCounter: Long
         ): MutableList<String> {
             val packets = mutableListOf<String>()
@@ -60,7 +57,7 @@ class SMSFormatter {
             var currentFragmentSize = 0
 
             // first compute the number of fragment required for the input message
-            val headerSize = computeRequestHeaderLength(httpMethod = httpMethod)
+            val headerSize = computeRequestHeaderLength()
 
             if (PACKET_SIZE < msg.length + headerSize) {
                 val remainderMsgLength = msg.length + headerSize - PACKET_SIZE
@@ -84,7 +81,6 @@ class SMSFormatter {
                     $SMS_TUNNEL_PROTOCOL_VERSION-
                     $MAGIC_STRING-
                     $currentRequestCounterPadded-
-                    ${httpMethod.name}-
                     $fragmentCountPadded-
                     """.trimIndent().replace("\n", "")
                 } else {

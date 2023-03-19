@@ -19,7 +19,6 @@ import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.http_sms_service.http.DatabaseObject
-import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.utilities.UnixTimestamp
 import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
 import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
@@ -29,7 +28,6 @@ import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.SmsReferral
 import com.cradleplatform.neptune.utilities.AESEncryptor
 import com.cradleplatform.neptune.utilities.CustomToast
-import com.cradleplatform.neptune.utilities.RelayAction
 import com.cradleplatform.neptune.utilities.SMSFormatter
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -153,10 +151,9 @@ class PatientReferralViewModel @Inject constructor(
                             patient = patientAndReferrals
                         )
                     ),
-                    RelayAction.REFERRAL,
                     AESEncryptor.getSecretKeyFromString(applicationContext.getString(R.string.aes_secret_key))
                 ),
-                Http.Method.POST, smsRelayRequestCounter
+                smsRelayRequestCounter
             ),
         )
         // No point in saving to shared prefs perhaps? I do not know why they used it before, the message could be sent

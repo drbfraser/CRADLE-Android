@@ -30,10 +30,8 @@ import androidx.test.espresso.idling.CountingIdlingResource
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.databinding.ActivityReadingBinding
 import com.cradleplatform.neptune.ext.hideKeyboard
-import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.utilities.AESEncryptor
-import com.cradleplatform.neptune.utilities.RelayAction
 import com.cradleplatform.neptune.utilities.SMSFormatter
 import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
@@ -482,17 +480,16 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
         setResult(RESULT_OK, intent)
     }
 
-    override fun sendSmsMessage(data: String, httpMethod: Http.Method) {
+    override fun sendSmsMessage(data: String) {
         val encodedMsg = SMSFormatter.encodeMsg(
             data,
-            RelayAction.READING,
             AESEncryptor.getSecretKeyFromString(getString(R.string.aes_secret_key))
         )
 
         val smsRelayRequestCounter = sharedPreferences.getLong(getString(R.string.sms_relay_request_counter), 0)
 
         val msgInPackets =
-            SMSFormatter.listToString(SMSFormatter.formatSMS(encodedMsg, httpMethod, smsRelayRequestCounter))
+            SMSFormatter.listToString(SMSFormatter.formatSMS(encodedMsg, smsRelayRequestCounter))
         sharedPreferences.edit(commit = true) {
             putString(getString(R.string.sms_relay_list_key), msgInPackets)
             putLong(getString(R.string.sms_relay_request_counter), smsRelayRequestCounter + 1)
