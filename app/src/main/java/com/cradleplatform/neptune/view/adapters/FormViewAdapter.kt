@@ -6,10 +6,13 @@ import android.app.TimePickerDialog
 import android.content.Context
 import android.graphics.Color
 import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.CheckBox
+import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.TextView
 import androidx.core.content.ContextCompat
@@ -187,6 +190,28 @@ class FormViewAdapter(
 
             "MULTIPLE_SELECT" -> {
                 //Needs a form to test with multiple selections available (Currently only one selection available)
+                holder.binding.linearLayout.visibility = View.VISIBLE
+
+                val langMcOptions = mList[position].languageVersions?.find {
+                    it.language == languageSelected
+                }?.mcOptions
+
+                if (langMcOptions?.isNotEmpty() == true) {
+                    langMcOptions.forEach {
+                        val checkBox = CheckBox(context)
+                        checkBox.text = it.opt
+                        checkBox.gravity = Gravity.LEFT
+                        checkBox.layoutParams =
+                            LinearLayout.LayoutParams(
+                                ViewGroup.LayoutParams.WRAP_CONTENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT
+                            )
+                        holder.binding.linearLayout.addView(checkBox)
+                    }
+
+                } else {
+                    holder.binding.linearLayout.visibility = View.GONE
+                }
             }
         }
 
