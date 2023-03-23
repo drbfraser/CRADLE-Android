@@ -76,6 +76,8 @@ class FormViewAdapter(
         //Depending on question type, we are setting one of the four possible types of inputs to visible.
         holder.binding.tvQuestion.textSize = 18f
 
+        var questionID = mList[position].questionId!!
+
         //Using Enum caused problems
         when (mList[position].questionType.toString()) {
             "CATEGORY" -> {
@@ -206,9 +208,24 @@ class FormViewAdapter(
                                 ViewGroup.LayoutParams.WRAP_CONTENT,
                                 ViewGroup.LayoutParams.WRAP_CONTENT
                             )
-                        holder.binding.linearLayout.addView(checkBox)
-                    }
 
+                        //TODO logic for reinitializing check box after scroll needed
+
+                        holder.binding.linearLayout.addView(checkBox)
+
+                        checkBox.setOnCheckedChangeListener { _ , isChecked ->
+                            val currMCAnswers: ArrayList<Int> = ArrayList(viewModel.getMCAnswer(questionID) ?: listOf())
+
+                            if (isChecked) {
+                                it.mcid?.let { id -> currMCAnswers.add(id) }
+                            } else {
+                                it.mcid?.let { id -> currMCAnswers.remove(id) }
+                            }
+
+                            viewModel.addAnswer(questionID, Answer.createMcAnswer(currMCAnswers))
+                        }
+
+                    }
                 } else {
                     holder.binding.linearLayout.visibility = View.GONE
                 }
