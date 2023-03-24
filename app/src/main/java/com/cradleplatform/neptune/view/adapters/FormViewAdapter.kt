@@ -209,11 +209,12 @@ class FormViewAdapter(
                                 ViewGroup.LayoutParams.WRAP_CONTENT
                             )
 
-                        //TODO logic for reinitializing check box after scroll needed
+                        val mcAnswers = viewModel.getMCAnswer(questionID)
+                        if (mcAnswers?.contains(it.mcid) == true) checkBox.isChecked = true
 
                         holder.binding.linearLayout.addView(checkBox)
 
-                        checkBox.setOnCheckedChangeListener { _ , isChecked ->
+                        checkBox.setOnCheckedChangeListener { _, isChecked ->
                             val currMCAnswers: ArrayList<Int> = ArrayList(viewModel.getMCAnswer(questionID) ?: listOf())
 
                             if (isChecked) {
@@ -224,7 +225,6 @@ class FormViewAdapter(
 
                             viewModel.addAnswer(questionID, Answer.createMcAnswer(currMCAnswers))
                         }
-
                     }
                 } else {
                     holder.binding.linearLayout.visibility = View.GONE
