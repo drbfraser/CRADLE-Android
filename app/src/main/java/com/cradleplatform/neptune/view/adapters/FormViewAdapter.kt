@@ -191,7 +191,6 @@ class FormViewAdapter(
             }
 
             "MULTIPLE_SELECT" -> {
-                //Needs a form to test with multiple selections available (Currently only one selection available)
                 holder.binding.checkboxContainer.visibility = View.VISIBLE
 
                 val langMcOptions = mList[position].languageVersions?.find {
@@ -227,7 +226,7 @@ class FormViewAdapter(
                         }
                     }
                 } else {
-                    holder.binding.linearLayout.visibility = View.GONE
+                    holder.binding.checkboxContainer.visibility = View.GONE
                 }
             }
         }
