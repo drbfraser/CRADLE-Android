@@ -192,7 +192,7 @@ class FormViewAdapter(
 
             "MULTIPLE_SELECT" -> {
                 //Needs a form to test with multiple selections available (Currently only one selection available)
-                holder.binding.linearLayout.visibility = View.VISIBLE
+                holder.binding.checkboxContainer.visibility = View.VISIBLE
 
                 val langMcOptions = mList[position].languageVersions?.find {
                     it.language == languageSelected
@@ -212,7 +212,7 @@ class FormViewAdapter(
                         val mcAnswers = viewModel.getMCAnswer(questionID)
                         if (mcAnswers?.contains(it.mcid) == true) checkBox.isChecked = true
 
-                        holder.binding.linearLayout.addView(checkBox)
+                        holder.binding.checkboxContainer.addView(checkBox)
 
                         checkBox.setOnCheckedChangeListener { _, isChecked ->
                             val currMCAnswers: ArrayList<Int> = ArrayList(viewModel.getMCAnswer(questionID) ?: listOf())
