@@ -16,6 +16,7 @@ import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.view.setPadding
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.databinding.CardLayoutBinding
@@ -207,6 +208,7 @@ class FormViewAdapter(
                                 ViewGroup.LayoutParams.WRAP_CONTENT,
                                 ViewGroup.LayoutParams.WRAP_CONTENT
                             )
+                        checkBox.setPadding(8)
 
                         val mcAnswers = viewModel.getMCAnswer(questionID)
                         if (mcAnswers?.contains(it.mcid) == true) checkBox.isChecked = true
