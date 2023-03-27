@@ -6,13 +6,17 @@ import android.app.TimePickerDialog
 import android.content.Context
 import android.graphics.Color
 import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.CheckBox
+import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.view.setPadding
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.databinding.CardLayoutBinding
@@ -72,6 +76,8 @@ class FormViewAdapter(
 
         //Depending on question type, we are setting one of the four possible types of inputs to visible.
         holder.binding.tvQuestion.textSize = 18f
+
+        var questionID = mList[position].questionId!!
 
         //Using Enum caused problems
         when (mList[position].questionType.toString()) {
@@ -186,7 +192,44 @@ class FormViewAdapter(
             }
 
             "MULTIPLE_SELECT" -> {
-                //Needs a form to test with multiple selections available (Currently only one selection available)
+                holder.binding.checkboxContainer.visibility = View.VISIBLE
+
+                val langMcOptions = mList[position].languageVersions?.find {
+                    it.language == languageSelected
+                }?.mcOptions
+
+                if (langMcOptions?.isNotEmpty() == true) {
+                    langMcOptions.forEach {
+                        val checkBox = CheckBox(context)
+                        checkBox.text = it.opt
+                        checkBox.gravity = Gravity.LEFT
+                        checkBox.layoutParams =
+                            LinearLayout.LayoutParams(
+                                ViewGroup.LayoutParams.WRAP_CONTENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT
+                            )
+                        checkBox.setPadding(8)
+
+                        val mcAnswers = viewModel.getMCAnswer(questionID)
+                        if (mcAnswers?.contains(it.mcid) == true) checkBox.isChecked = true
+
+                        holder.binding.checkboxContainer.addView(checkBox)
+
+                        checkBox.setOnCheckedChangeListener { _, isChecked ->
+                            val currMCAnswers: ArrayList<Int> = ArrayList(viewModel.getMCAnswer(questionID) ?: listOf())
+
+                            if (isChecked) {
+                                it.mcid?.let { id -> currMCAnswers.add(id) }
+                            } else {
+                                it.mcid?.let { id -> currMCAnswers.remove(id) }
+                            }
+
+                            viewModel.addAnswer(questionID, Answer.createMcAnswer(currMCAnswers))
+                        }
+                    }
+                } else {
+                    holder.binding.checkboxContainer.visibility = View.GONE
+                }
             }
         }
 
