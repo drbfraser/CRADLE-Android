@@ -216,6 +216,8 @@ dependencies {
     //   org.json is not considered free (it has the don't-use-for-evil clause).
     testImplementation "org.json:json:20200518"
     testImplementation "io.mockk:mockk:1.11.0"
+    testImplementation 'org.mockito:mockito-core:2.19.0'
+    testImplementation "org.mockito:mockito-inline:2.8.47"
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     // https://github.com/android/testing-samples/tree/master/ui/espresso/IdlingResourceSample
     implementation 'androidx.test.espresso:espresso-idling-resource:3.3.0'
