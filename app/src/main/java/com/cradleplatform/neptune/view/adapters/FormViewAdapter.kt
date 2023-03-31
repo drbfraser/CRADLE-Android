@@ -17,6 +17,7 @@ import android.widget.RadioButton
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.view.setPadding
+import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.databinding.CardLayoutBinding
@@ -241,23 +242,20 @@ class FormViewAdapter(
         var questionID = mList[position].questionId!!
 
         //String Answers Listener
-        holder.binding.etAnswer.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus) {
-                //does not have focus
-                val textAnswer = holder.binding.etAnswer.text.toString()
-                viewModel.addAnswer(questionID, Answer.createTextAnswer(textAnswer))
+        holder.binding.etAnswer.doOnTextChanged { text, _, _, _ ->
+            if (text.toString().isNotEmpty()) {
+                viewModel.addAnswer(questionID, Answer.createTextAnswer(text.toString()))
+            } else {
+                viewModel.deleteAnswer(questionID)
             }
         }
 
-        //Integer Answers Listener
-        holder.binding.etNumAnswer.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus) {
-                val numText = holder.binding.etNumAnswer.text.toString()
-                if (numText.isNotEmpty()) {
-                    viewModel.addAnswer(questionID, Answer.createNumericAnswer(numText.toInt()))
-                } else {
-                    viewModel.deleteAnswer(questionID)
-                }
+        holder.binding.etNumAnswer.doOnTextChanged { text, _, _, _ ->
+            val numText = text.toString()
+            if (numText.isNotEmpty()) {
+                viewModel.addAnswer(questionID, Answer.createNumericAnswer(numText.toInt()))
+            } else {
+                viewModel.deleteAnswer(questionID)
             }
         }
 
