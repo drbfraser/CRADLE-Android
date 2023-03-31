@@ -2,7 +2,6 @@ package com.cradleplatform.neptune.viewmodel
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 import android.widget.Toast
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModel

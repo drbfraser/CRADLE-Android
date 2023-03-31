@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class FormSelectionViewModel @Inject constructor (
+class FormSelectionViewModel @Inject constructor(
     private val formManager: FormManager
 ) : ViewModel() {
 
