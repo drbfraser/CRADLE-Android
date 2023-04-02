@@ -2,7 +2,6 @@ package com.cradleplatform.neptune.viewmodel
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 import android.widget.Toast
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
@@ -52,7 +51,6 @@ class FormRenderingViewModel @Inject constructor(
 
     fun addAnswer(questionId: String, answer: Answer) {
         currentAnswers[questionId] = answer
-        Log.d(TAG, "adding answer for [$questionId]")
     }
 
     fun deleteAnswer(questionId: String) {
@@ -162,8 +160,6 @@ class FormRenderingViewModel @Inject constructor(
     }
 
     private companion object {
-        //Current user answer
-        private const val TAG = "FormRenderingViewModel"
         private val currentAnswers = mutableMapOf<String, Answer>()
     }
 }
