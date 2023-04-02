@@ -33,7 +33,6 @@ class SMSSender(
                 smsRelayMsgList.removeAt(0)
                 if (smsRelayMsgList.isEmpty()) {
                     val finishedMsg = context.getString(R.string.sms_all_sent)
-                    smsManager.sendTextMessage(phoneNumber, null, finishedMsg, null, null)
                     Toast.makeText(
                         context, finishedMsg,
                         Toast.LENGTH_LONG
