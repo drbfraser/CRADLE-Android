@@ -125,7 +125,7 @@ class HttpSmsService @Inject constructor(private val restApi: RestApi) {
             Protocol.HTTP -> {
                 when (restApi.postFormResponse(formResponseWrapper.formResponse)) {
                     is NetworkResult.Success -> {
-                        Log.d("HTTP_SMS_BRIDGE","Form uploaded successfully")
+                        Log.d("HTTP_SMS_BRIDGE", "Form uploaded successfully")
                         Handler(Looper.getMainLooper()).post {
                             Toast.makeText(context, formSuccess, Toast.LENGTH_LONG).show()
                         }
