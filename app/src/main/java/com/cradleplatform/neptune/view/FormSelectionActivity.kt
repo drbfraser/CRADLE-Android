@@ -3,6 +3,7 @@ package com.cradleplatform.neptune.view
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -10,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doOnTextChanged
 import androidx.databinding.DataBindingUtil
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.binding.MaterialSpinnerArrayAdapter
 import com.cradleplatform.neptune.databinding.ActivityFormSelectionBinding
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.viewmodel.FormSelectionViewModel
@@ -49,12 +51,23 @@ class FormSelectionActivity : AppCompatActivity() {
     private fun setUpFormVersionOnChange() {
         val formSelectionInput = findViewById<TextInputLayout>(R.id.form_selection_text_input)
         val formLanguageInput = findViewById<TextInputLayout>(R.id.form_language_text_input)
-
-        //Crashing on Typing -> Commented
+        val formAutoComplete = findViewById<AutoCompleteTextView>(R.id.form_selection_auto_complete_text)
 
         formSelectionInput.editText!!.doOnTextChanged { text, _, _, _ ->
-            viewModel.formTemplateChanged(text.toString())
-            formLanguageInput.editText!!.text.clear()
+            if (viewModel.isValidFormTemplate(text.toString())) {
+                viewModel.formTemplateChanged(text.toString())
+                formLanguageInput.editText!!.text.clear()
+            } else {
+                val filteredList = viewModel.getFilteredList(text.toString())
+                if (filteredList != null) {
+                    val adapter = MaterialSpinnerArrayAdapter(
+                        this,
+                        R.layout.list_dropdown_menu_item,
+                        filteredList,
+                    )
+                    formAutoComplete.setAdapter(adapter)
+                }
+            }
         }
     }
 
