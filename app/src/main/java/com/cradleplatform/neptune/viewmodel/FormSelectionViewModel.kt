@@ -54,6 +54,22 @@ class FormSelectionViewModel @Inject constructor(
         return formTemplate.languageVersions()
     }
 
+    fun isValidFormTemplate(formName: String): Boolean {
+        return formTemplateListAsString.value?.contains(formName) ?: false
+    }
+
+    fun getFilteredList(text: String?): Array<String>? {
+        var filteredList = formTemplateListAsString.value
+
+        if (text?.isNotEmpty() == true) {
+            filteredList = filteredList?.filter {
+                it.startsWith(text.toString(), true)
+            }?.toTypedArray()
+        }
+
+        return filteredList
+    }
+
     /**
      * Populates the dropdown list for languages available for a specific [FormTemplate].
      *
