@@ -1,9 +1,7 @@
 package com.cradleplatform.neptune.testutils
 
-import android.util.Base64
 import com.cradleplatform.neptune.model.CommonPatientReferralJsons
 import com.cradleplatform.neptune.utilities.AESEncryptor
-import com.cradleplatform.neptune.utilities.SMSFormatter
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions
 
