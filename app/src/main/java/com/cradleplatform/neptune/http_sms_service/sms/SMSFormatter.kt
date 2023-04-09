@@ -33,7 +33,8 @@ class SMSFormatter {
             // TODO: Currently use hardcoded-key for admin with the first 32 bytes
             val formattedMsg = AESEncryptor.encrypt(
                 GzipCompressor.compress(msg),
-                secretKey)
+                secretKey
+            )
             return Base64.encodeToString(formattedMsg, Base64.DEFAULT)
         }
 
