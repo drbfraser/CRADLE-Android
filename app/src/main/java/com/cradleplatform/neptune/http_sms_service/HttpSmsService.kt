@@ -1,6 +1,11 @@
 package com.cradleplatform.neptune.http_sms_service.http
 
+import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import android.widget.Toast
+import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.Patient
@@ -54,6 +59,7 @@ sealed class DatabaseObject {
         val formResponse: FormResponse,
         val smsSender: SMSSender,
         val submissionMode: Protocol,
+        val context: Context
     ) : DatabaseObject()
 }
 
@@ -112,21 +118,37 @@ class HttpSmsService @Inject constructor(private val restApi: RestApi) {
     }
 
     private suspend fun uploadForm(formResponseWrapper: DatabaseObject.FormResponseWrapper) {
+        val context = formResponseWrapper.context
+        val formSuccess = context.getString(R.string.form_submission_success)
+        val formFailed = context.getString(R.string.form_submission_failed)
         when (formResponseWrapper.submissionMode) {
             Protocol.HTTP -> {
                 when (restApi.postFormResponse(formResponseWrapper.formResponse)) {
-                    is NetworkResult.Success -> Log.d(
-                        "HTTP_SMS_BRIDGE",
-                        "Form uploaded successfully"
-                    )
-                    is NetworkResult.Failure -> Log.d("HTTP_SMS_BRIDGE", "Form upload failed")
-                    is NetworkResult.NetworkException -> Log.d(
-                        "HTTP_SMS_BRIDGE",
-                        "Form upload failed"
-                    )
+                    is NetworkResult.Success -> {
+                        Log.d("HTTP_SMS_BRIDGE", "Form uploaded successfully")
+                        Handler(Looper.getMainLooper()).post {
+                            Toast.makeText(context, formSuccess, Toast.LENGTH_LONG).show()
+                        }
+                    }
+
+                    is NetworkResult.Failure -> {
+                        Log.d("HTTP_SMS_BRIDGE", "Form upload failed")
+                        Handler(Looper.getMainLooper()).post {
+                            Toast.makeText(context, formFailed, Toast.LENGTH_LONG).show()
+                        }
+                    }
+
+                    is NetworkResult.NetworkException -> {
+                        Log.d("HTTP_SMS_BRIDGE", "Form upload failed")
+                        Handler(Looper.getMainLooper()).post {
+                            Toast.makeText(context, formFailed, Toast.LENGTH_LONG).show()
+                        }
+                    }
                 }
             }
+
             Protocol.SMS -> {
+                //TODO Add toast for if sms form message was sent successfully or not
                 formResponseWrapper.smsSender.sendSmsMessage(false)
             }
         }

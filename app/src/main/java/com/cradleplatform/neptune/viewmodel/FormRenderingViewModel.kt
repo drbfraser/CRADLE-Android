@@ -122,7 +122,8 @@ class FormRenderingViewModel @Inject constructor(
                 DatabaseObject.FormResponseWrapper(
                     formResponse,
                     smsSender,
-                    Protocol.valueOf(submissionMode)
+                    Protocol.valueOf(submissionMode),
+                    applicationContext
                 )
             )
         } else {
