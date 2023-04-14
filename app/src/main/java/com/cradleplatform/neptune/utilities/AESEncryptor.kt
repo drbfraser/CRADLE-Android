@@ -1,14 +1,17 @@
 package com.cradleplatform.neptune.utilities
 
 import android.util.Base64
+import java.security.SecureRandom
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
+import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
 class AESEncryptor {
     companion object {
-        private const val TRANSFORMATION = "AES/ECB/PKCS5PADDING"
+        private const val TRANSFORMATION = "AES/CBC/PKCS5PADDING"
+        private const val ivSize = 16
 
         fun getSecretKeyFromString(settingKey: String): SecretKey {
             val encodedKey = Base64.decode(settingKey, Base64.DEFAULT)
@@ -21,11 +24,26 @@ class AESEncryptor {
             return keyGen.generateKey()
         }
 
-        fun encrypt(msgInByteArray: ByteArray, key: SecretKey): ByteArray {
-            val cipher = Cipher.getInstance(TRANSFORMATION)
-            cipher.init(Cipher.ENCRYPT_MODE, key)
+        private fun generateRandomIV(): ByteArray {
+            val iv = ByteArray(ivSize)
+            val secureRandom = SecureRandom()
+            secureRandom.nextBytes(iv)
+            return iv
+        }
 
-            return cipher.doFinal(msgInByteArray)
+        fun encrypt(msgInByteArray: ByteArray, key: SecretKey): ByteArray {
+            val iv = generateRandomIV()
+            val ivSpec = IvParameterSpec(iv)
+            val cipher = Cipher.getInstance(TRANSFORMATION)
+            cipher.init(Cipher.ENCRYPT_MODE, key, ivSpec)
+
+            val encryptedMsg = cipher.doFinal(msgInByteArray)
+            val fullCipher = ByteArray(iv.size + encryptedMsg.size)
+
+            System.arraycopy(iv, 0, fullCipher, 0, iv.size)
+            System.arraycopy(encryptedMsg, 0, fullCipher, iv.size, encryptedMsg.size)
+
+            return fullCipher
         }
 
         fun encrypt(msg: String, key: SecretKey): ByteArray {
@@ -35,10 +53,13 @@ class AESEncryptor {
         }
 
         fun decrypt(msgInByteArray: ByteArray, key: SecretKey): ByteArray {
+            val iv = msgInByteArray.copyOfRange(0, ivSize)
+            val ivSpec = IvParameterSpec(iv)
+            val encryptedMsg = msgInByteArray.copyOfRange(ivSize, msgInByteArray.size)
             val cipher = Cipher.getInstance(TRANSFORMATION)
-            cipher.init(Cipher.DECRYPT_MODE, key)
+            cipher.init(Cipher.DECRYPT_MODE, key, ivSpec)
 
-            return cipher.doFinal(msgInByteArray)
+            return cipher.doFinal(encryptedMsg)
         }
     }
 }

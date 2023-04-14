@@ -30,7 +30,11 @@ class SMSFormatter {
         private const val REQUEST_NUMBER_LENGTH = 6
 
         fun encodeMsg(msg: String, secretKey: SecretKey): String {
-            val formattedMsg = AESEncryptor.encrypt(GzipCompressor.compress(msg), secretKey)
+            // TODO: Currently use hardcoded-key for admin with the first 32 bytes
+            val formattedMsg = AESEncryptor.encrypt(
+                GzipCompressor.compress(msg),
+                secretKey
+            )
             return Base64.encodeToString(formattedMsg, Base64.DEFAULT)
         }
 
