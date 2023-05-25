@@ -29,7 +29,7 @@ class FormSelectionActivity : AppCompatActivity() {
 
     private var currentPatient: Patient? = null
 
-    private val FORMUPLIFTENABLED = false
+    private val formUpliftEnabled = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -101,7 +101,7 @@ class FormSelectionActivity : AppCompatActivity() {
             } else {
                 val formTemplate = viewModel.getFormTemplateFromName(formTemplateName)
 
-                val intent = if (FORMUPLIFTENABLED) {
+                val intent = if (formUpliftEnabled) {
                     FormRenderingActivityUplift.makeIntentWithFormTemplate(
                         this@FormSelectionActivity,
                         formTemplate,
