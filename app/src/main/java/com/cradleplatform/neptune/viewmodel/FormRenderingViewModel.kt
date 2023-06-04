@@ -62,13 +62,13 @@ class FormRenderingViewModel @Inject constructor(
 
         if (indicesOfCategory[0] != 0) {
             // There is uncategorized questions at start
-            val sublist = currentFormTemplate!!.questions?.subList(0,indicesOfCategory[0])
+            val sublist = currentFormTemplate!!.questions?.subList(0, indicesOfCategory[0])
             val uncategorizedPair = Pair(categoryName, sublist)
             categoryList.add(uncategorizedPair)
             indicesOfCategory.removeAt(0)
         }
-        indicesOfCategory.forEachIndexed { i , categoryIndex ->
-            var langVersion =  currentFormTemplate!!.questions!![categoryIndex].languageVersions
+        indicesOfCategory.forEachIndexed { i, categoryIndex ->
+            var langVersion = currentFormTemplate!!.questions!![categoryIndex].languageVersions
             categoryName = langVersion?.find {
                 it.language == languageSelected
             }?.questionText ?: R.string.not_available.toString()
@@ -79,7 +79,7 @@ class FormRenderingViewModel @Inject constructor(
                     // it is last category therefore sublist to end
                     currentFormTemplate!!.questions!!.size
                 } else {
-                    indicesOfCategory[i+1]
+                    indicesOfCategory[i + 1]
                 }
                 val sublist = currentFormTemplate!!.questions?.subList(categoryIndex + 1, indexOfNextCategory)
                 val categoryPair = Pair(categoryName, sublist)
