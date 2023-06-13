@@ -212,6 +212,27 @@ class FormRenderingViewModel @Inject constructor(
         Toast.makeText(context, toastText, Toast.LENGTH_LONG).show()
     }
 
+    fun getRequiredFieldsText(questions: List<Question>?): String {
+        var total = 0
+        questions?.forEach {
+            if (it.required == true) {
+                //TODO check if required field is filled here.
+                total++
+            }
+        }
+        return "Required 0/$total"
+    }
+
+    fun getOptionalFieldsText(questions: List<Question>?): String {
+        var total = 0
+        questions?.forEach {
+            if (it.required != true) {
+                total++
+            }
+        }
+        return "Optional 0/$total"
+    }
+
     private companion object {
         private val currentAnswers = mutableMapOf<String, Answer>()
     }

@@ -8,9 +8,12 @@ import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.activity.viewModels
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.Patient
+import com.cradleplatform.neptune.model.Question
+import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @Suppress("LargeClass")
@@ -18,34 +21,48 @@ import dagger.hilt.android.AndroidEntryPoint
 class FormRenderingActivityUplift : AppCompatActivity() {
     private lateinit var bottomSheetCurrentSection: TextView
     private lateinit var bottomSheetCategoryContainer: LinearLayout
+    val viewModel: FormRenderingViewModel by viewModels()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_form_rendering_uplift)
-        setUpBottomSheet()
+
+        //Getting the formTemplate from the intent
+        val formTemplateFromIntent =
+            intent.getSerializableExtra(EXTRA_FORM_TEMPLATE) as FormTemplate
+
+        viewModel.currentFormTemplate = formTemplateFromIntent
+        viewModel.populateEmptyIds(applicationContext)
+
+        //Clear previous answers in view-model
+        viewModel.clearAnswers()
+
+        setUpBottomSheet(intent.getStringExtra(EXTRA_LANGUAGE_SELECTED))
     }
 
-    private fun setUpBottomSheet() {
+    private fun setUpBottomSheet(languageSelected: String?) {
         bottomSheetCurrentSection = findViewById(R.id.bottomSheetCurrentSection)
         bottomSheetCategoryContainer = findViewById(R.id.form_category_container)
         bottomSheetCurrentSection.text = "Section 1/4" //TODO add attachment to Viewmodel here
 
-        //add categories TODO Here we will simply populate and put up each category
-        val category = getCategoryRow()
-        bottomSheetCategoryContainer.addView(category)
-
-        //Keep a list of the views while inflating so we know how to reference
+        val categoryViewList: MutableList<View> = mutableListOf()
+        viewModel.getCategorizedQuestions(languageSelected ?: "English").forEach {
+            val category = getCategoryRow(it)
+            bottomSheetCategoryContainer.addView(category)
+            categoryViewList.add(category)
+        }
     }
 
-    private fun getCategoryRow(): View {
+    private fun getCategoryRow(categoryPair: Pair<String, List<Question>?>): View {
         val category = this.layoutInflater.inflate(R.layout.category_row_item, null)
         val requiredTextView: TextView = category.findViewById(R.id.category_row_required_tv)
         val optionalTextView: TextView = category.findViewById(R.id.category_row_optional_tv)
         val button: Button = category.findViewById(R.id.category_row_btn)
 
-        button.text = "Referred By"
-        requiredTextView.text = "Required 2/4"
-        optionalTextView.text = "Optional 1/12"
+        button.text = categoryPair.first
+        requiredTextView.text = viewModel.getRequiredFieldsText(categoryPair.second)
+        optionalTextView.text = viewModel.getOptionalFieldsText(categoryPair.second)
         return category
     }
 
