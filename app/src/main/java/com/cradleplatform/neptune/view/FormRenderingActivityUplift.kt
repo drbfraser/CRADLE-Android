@@ -23,7 +23,6 @@ class FormRenderingActivityUplift : AppCompatActivity() {
     private lateinit var bottomSheetCategoryContainer: LinearLayout
     val viewModel: FormRenderingViewModel by viewModels()
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_form_rendering_uplift)
