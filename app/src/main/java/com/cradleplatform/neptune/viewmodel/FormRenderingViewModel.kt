@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.widget.Toast
 import androidx.core.content.edit
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.http_sms_service.http.DatabaseObject
@@ -32,6 +34,16 @@ class FormRenderingViewModel @Inject constructor(
 
     //Raw form template
     var currentFormTemplate: FormTemplate? = null
+    private val _currentCategory: MutableLiveData<Int> = MutableLiveData(1)
+    var categoryList: List<Pair<String, List<Question>?>>? = null
+
+    fun currentCategory(): LiveData<Int> {
+        return _currentCategory
+    }
+
+    fun changeCategory(currCategory: Int) {
+        _currentCategory.value = currCategory
+    }
 
     fun populateEmptyIds(context: Context) {
         currentFormTemplate?.questions?.forEachIndexed { index, Q ->
@@ -41,7 +53,11 @@ class FormRenderingViewModel @Inject constructor(
         }
     }
 
-    fun getCategorizedQuestions(languageSelected: String): List<Pair<String, List<Question>?>> {
+    fun setCategorizedQuestions(languageSelected: String) {
+        categoryList = getCategorizedQuestions(languageSelected)
+    }
+
+    private fun getCategorizedQuestions(languageSelected: String): List<Pair<String, List<Question>?>> {
         if (currentFormTemplate?.questions.isNullOrEmpty()) {
             return listOf()
         }
@@ -68,7 +84,7 @@ class FormRenderingViewModel @Inject constructor(
             indicesOfCategory.removeAt(0)
         }
         indicesOfCategory.forEachIndexed { i, categoryIndex ->
-            var langVersion = currentFormTemplate!!.questions!![categoryIndex].languageVersions
+            val langVersion = currentFormTemplate!!.questions!![categoryIndex].languageVersions
             categoryName = langVersion?.find {
                 it.language == languageSelected
             }?.questionText ?: R.string.not_available.toString()

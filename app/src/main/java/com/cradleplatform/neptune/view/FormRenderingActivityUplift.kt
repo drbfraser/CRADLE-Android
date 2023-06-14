@@ -14,6 +14,7 @@ import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
 
 @Suppress("LargeClass")
@@ -21,6 +22,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class FormRenderingActivityUplift : AppCompatActivity() {
     private lateinit var bottomSheetCurrentSection: TextView
     private lateinit var bottomSheetCategoryContainer: LinearLayout
+    private lateinit var bottomSheetBehaviour: BottomSheetBehavior<View>
     val viewModel: FormRenderingViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,30 +38,64 @@ class FormRenderingActivityUplift : AppCompatActivity() {
 
         //Clear previous answers in view-model
         viewModel.clearAnswers()
+        viewModel.changeCategory(1)
 
         setUpBottomSheet(intent.getStringExtra(EXTRA_LANGUAGE_SELECTED))
+
+        //observe changes to current category
+        viewModel.currentCategory().observe(this) {
+            categoryChanged(it)
+        }
+    }
+
+    private fun categoryChanged(currCategory: Int) {
+        bottomSheetCurrentSection.text = String.format(getString(R.string.form_current_section),
+            currCategory, viewModel.categoryList?.size ?: 1)
+
+        bottomSheetBehaviour.state = BottomSheetBehavior.STATE_COLLAPSED
+
+        //TODO will add logic for changing questions here.
     }
 
     private fun setUpBottomSheet(languageSelected: String?) {
-        bottomSheetCurrentSection = findViewById(R.id.bottomSheetCurrentSection)
         bottomSheetCategoryContainer = findViewById(R.id.form_category_container)
-        bottomSheetCurrentSection.text = "Section 1/4" //TODO add attachment to Viewmodel here
+        bottomSheetCurrentSection = findViewById(R.id.bottomSheetCurrentSection)
+        bottomSheetBehaviour = BottomSheetBehavior.from(findViewById(R.id.form_bottom_sheet))
+
+        val bottomSheetCallback = object : BottomSheetBehavior.BottomSheetCallback() {
+
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                when (newState) {
+                    BottomSheetBehavior.STATE_EXPANDED -> println("Inder expanded") //TO DO switch icons here
+                    BottomSheetBehavior.STATE_COLLAPSED -> println("Inder collapsed")
+                }
+            }
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                // Do nothing
+            }
+        }
+        bottomSheetBehaviour.addBottomSheetCallback(bottomSheetCallback)
 
         val categoryViewList: MutableList<View> = mutableListOf()
-        viewModel.getCategorizedQuestions(languageSelected ?: "English").forEach {
-            val category = getCategoryRow(it)
+        viewModel.setCategorizedQuestions(languageSelected ?: "English")
+        viewModel.categoryList?.forEachIndexed { index, pair ->
+            val category = getCategoryRow(pair, index + 1)
             bottomSheetCategoryContainer.addView(category)
             categoryViewList.add(category)
         }
     }
 
-    private fun getCategoryRow(categoryPair: Pair<String, List<Question>?>): View {
+    private fun getCategoryRow(categoryPair: Pair<String, List<Question>?>, categoryNumber: Int): View {
         val category = this.layoutInflater.inflate(R.layout.category_row_item, null)
         val requiredTextView: TextView = category.findViewById(R.id.category_row_required_tv)
         val optionalTextView: TextView = category.findViewById(R.id.category_row_optional_tv)
         val button: Button = category.findViewById(R.id.category_row_btn)
 
         button.text = categoryPair.first
+        button.setOnClickListener {
+            viewModel.changeCategory(categoryNumber)
+        }
         requiredTextView.text = viewModel.getRequiredFieldsText(categoryPair.second)
         optionalTextView.text = viewModel.getOptionalFieldsText(categoryPair.second)
         return category

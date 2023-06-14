@@ -6,6 +6,7 @@
     android:layout_height="wrap_content"
     app:behavior_hideable="false"
     app:behavior_peekHeight="50dp"
+    android:id="@+id/form_bottom_sheet"
     app:layout_behavior="@string/bottom_sheet_behavior">
 
     <LinearLayout
