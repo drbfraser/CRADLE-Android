@@ -49,8 +49,10 @@ class FormRenderingActivityUplift : AppCompatActivity() {
     }
 
     private fun categoryChanged(currCategory: Int) {
-        bottomSheetCurrentSection.text = String.format(getString(R.string.form_current_section),
-            currCategory, viewModel.categoryList?.size ?: 1)
+        bottomSheetCurrentSection.text = String.format(
+            getString(R.string.form_current_section),
+            currCategory, viewModel.categoryList?.size ?: 1
+        )
 
         bottomSheetBehaviour.state = BottomSheetBehavior.STATE_COLLAPSED
 
