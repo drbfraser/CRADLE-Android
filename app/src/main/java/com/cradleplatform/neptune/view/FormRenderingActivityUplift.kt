@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.viewModels
@@ -23,6 +24,8 @@ class FormRenderingActivityUplift : AppCompatActivity() {
     private lateinit var bottomSheetCurrentSection: TextView
     private lateinit var bottomSheetCategoryContainer: LinearLayout
     private lateinit var bottomSheetBehaviour: BottomSheetBehavior<View>
+    private lateinit var formStateBtn: ImageButton
+
     val viewModel: FormRenderingViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,6 +58,8 @@ class FormRenderingActivityUplift : AppCompatActivity() {
         )
 
         bottomSheetBehaviour.state = BottomSheetBehavior.STATE_COLLAPSED
+        formStateBtn.background = getDrawable(R.drawable.ic_baseline_arrow_up_24)
+
 
         //TODO will add logic for changing questions here.
     }
@@ -63,21 +68,21 @@ class FormRenderingActivityUplift : AppCompatActivity() {
         bottomSheetCategoryContainer = findViewById(R.id.form_category_container)
         bottomSheetCurrentSection = findViewById(R.id.bottomSheetCurrentSection)
         bottomSheetBehaviour = BottomSheetBehavior.from(findViewById(R.id.form_bottom_sheet))
+        formStateBtn = findViewById(R.id.form_state_button)
 
-        val bottomSheetCallback = object : BottomSheetBehavior.BottomSheetCallback() {
-
-            override fun onStateChanged(bottomSheet: View, newState: Int) {
-                when (newState) {
-                    BottomSheetBehavior.STATE_EXPANDED -> println("Inder expanded") //TO DO switch icons here
-                    BottomSheetBehavior.STATE_COLLAPSED -> println("Inder collapsed")
+        bottomSheetBehaviour.isDraggable = false
+        formStateBtn.setOnClickListener {
+            when (bottomSheetBehaviour.state) {
+                BottomSheetBehavior.STATE_EXPANDED -> {
+                    bottomSheetBehaviour.state = BottomSheetBehavior.STATE_COLLAPSED
+                    formStateBtn.background = getDrawable(R.drawable.ic_baseline_arrow_up_24)
+                }
+                else -> {
+                    bottomSheetBehaviour.state = BottomSheetBehavior.STATE_EXPANDED
+                    formStateBtn.background = getDrawable(R.drawable.ic_baseline_arrow_down_24)
                 }
             }
-
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                // Do nothing
-            }
         }
-        bottomSheetBehaviour.addBottomSheetCallback(bottomSheetCallback)
 
         val categoryViewList: MutableList<View> = mutableListOf()
         viewModel.setCategorizedQuestions(languageSelected ?: "English")
