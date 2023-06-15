@@ -60,7 +60,6 @@ class FormRenderingActivityUplift : AppCompatActivity() {
         bottomSheetBehaviour.state = BottomSheetBehavior.STATE_COLLAPSED
         formStateBtn.background = getDrawable(R.drawable.ic_baseline_arrow_up_24)
 
-
         //TODO will add logic for changing questions here.
     }
 
