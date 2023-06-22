@@ -1,32 +1,67 @@
 package com.cradleplatform.neptune.view
 
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Question
+import com.cradleplatform.neptune.view.adapters.FormViewAdapter
 import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Suppress("LargeClass")
 @AndroidEntryPoint
 class FormRenderingActivityUplift : AppCompatActivity() {
+    private var layoutManager: RecyclerView.LayoutManager? = null
+    private var adapter: RecyclerView.Adapter<FormViewAdapter.ViewHolder>? = null
+    private var patient: Patient? = null
+    private var patientId: String? = null
+    private var languageSelected: String? = null
     private lateinit var bottomSheetCurrentSection: TextView
     private lateinit var bottomSheetCategoryContainer: LinearLayout
     private lateinit var bottomSheetBehaviour: BottomSheetBehavior<View>
     private lateinit var formStateBtn: ImageButton
-
     val viewModel: FormRenderingViewModel by viewModels()
+
+    override fun onSupportNavigateUp(): Boolean {
+
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle(R.string.are_you_sure)
+        builder.setMessage(R.string.discard_form_dialog)
+
+        builder.setPositiveButton(R.string.yes) { _, _ ->
+            val intent = FormSelectionActivity.makeIntentForPatientId(
+                this@FormRenderingActivityUplift,
+                patientId!!,
+                patient!!
+            )
+            startActivity(intent)
+        }
+
+        builder.setNegativeButton(R.string.no) { _, _ ->
+            //Do nothing...
+        }
+        builder.show()
+        return true
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,6 +83,67 @@ class FormRenderingActivityUplift : AppCompatActivity() {
         //observe changes to current category
         viewModel.currentCategory().observe(this) {
             categoryChanged(it)
+        }
+
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        //Getting the patient from the intent (ID and Patient Object)
+        patientId = intent.getStringExtra(EXTRA_PATIENT_ID)!!
+        patient = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT)!! as Patient
+
+        //Getting the language selected from the intent
+        languageSelected = intent.getStringExtra(EXTRA_LANGUAGE_SELECTED)
+
+        //Form a question list from Category to next category
+        //Pass the list to recyclerView
+
+        layoutManager = LinearLayoutManager(this)
+
+        var recyclerView = findViewById<RecyclerView>(R.id.form_recycler_view)
+        recyclerView.layoutManager = layoutManager
+
+        recyclerView.recycledViewPool.setMaxRecycledViews(0, 0)
+
+        //check if language selected exists in the form template
+        //The language's available are already shown in the dropdown
+
+        adapter = FormViewAdapter(viewModel, languageSelected!!, patient)
+
+        recyclerView.adapter = adapter
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_forms, menu)
+        return true
+    }
+
+    fun onSubmitFormAction(menuItem: MenuItem) {
+        //A toast is displayed to user if require field is not filled
+        if (viewModel.isRequiredFieldsFilled(languageSelected!!, applicationContext)) {
+            showFormSubmissionModeDialog(languageSelected!!)
+        }
+    }
+
+    private fun showFormSubmissionModeDialog(languageSelected: String) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle(R.string.how_to_submit)
+        builder.setMessage(R.string.choose_an_option)
+
+        builder.setPositiveButton(R.string.http) { _, _ ->
+            formSubmission(languageSelected, "HTTP")
+            finish()
+        }
+
+        builder.setNegativeButton(R.string.SMS) { _, _ ->
+            formSubmission(languageSelected, "SMS")
+            finish()
+        }
+        builder.show()
+    }
+
+    private fun formSubmission(languageSelected: String, submissionMode: String) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            viewModel.submitForm(patientId!!, languageSelected, submissionMode, applicationContext)
         }
     }
 
