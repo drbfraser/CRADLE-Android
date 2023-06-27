@@ -117,6 +117,13 @@ class FormRenderingViewModel @Inject constructor(
         return listOfQuestions
     }
 
+    fun getCurrentQuestionsList(): List<Question> {
+        if (currentCategory().value == null) {
+            return listOf()
+        }
+        return categoryList?.getOrNull(currentCategory().value!! - 1)?.second ?: listOf()
+    }
+
     fun addAnswer(questionId: String, answer: Answer) {
         currentAnswers[questionId] = answer
     }

@@ -20,7 +20,7 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Question
-import com.cradleplatform.neptune.view.adapters.FormViewAdapter
+import com.cradleplatform.neptune.view.adapters.FormViewAdapterUplift
 import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
@@ -31,10 +31,11 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class FormRenderingActivityUplift : AppCompatActivity() {
     private var layoutManager: RecyclerView.LayoutManager? = null
-    private var adapter: RecyclerView.Adapter<FormViewAdapter.ViewHolder>? = null
+    private var adapter: RecyclerView.Adapter<FormViewAdapterUplift.ViewHolder>? = null
     private var patient: Patient? = null
     private var patientId: String? = null
     private var languageSelected: String? = null
+    private lateinit var recyclerView: RecyclerView
     private lateinit var bottomSheetCurrentSection: TextView
     private lateinit var bottomSheetCategoryContainer: LinearLayout
     private lateinit var bottomSheetBehaviour: BottomSheetBehavior<View>
@@ -99,7 +100,7 @@ class FormRenderingActivityUplift : AppCompatActivity() {
 
         layoutManager = LinearLayoutManager(this)
 
-        var recyclerView = findViewById<RecyclerView>(R.id.form_recycler_view)
+        recyclerView = findViewById<RecyclerView>(R.id.form_recycler_view)
         recyclerView.layoutManager = layoutManager
 
         recyclerView.recycledViewPool.setMaxRecycledViews(0, 0)
@@ -107,7 +108,7 @@ class FormRenderingActivityUplift : AppCompatActivity() {
         //check if language selected exists in the form template
         //The language's available are already shown in the dropdown
 
-        adapter = FormViewAdapter(viewModel, languageSelected!!, patient)
+        adapter = FormViewAdapterUplift(viewModel, languageSelected!!, patient)
 
         recyclerView.adapter = adapter
     }
@@ -156,7 +157,8 @@ class FormRenderingActivityUplift : AppCompatActivity() {
         bottomSheetBehaviour.state = BottomSheetBehavior.STATE_COLLAPSED
         formStateBtn.background = getDrawable(R.drawable.ic_baseline_arrow_up_24)
 
-        //TODO will add logic for changing questions here.
+        adapter = FormViewAdapterUplift(viewModel, languageSelected!!, patient)
+        recyclerView.adapter = adapter
     }
 
     private fun setUpBottomSheet(languageSelected: String?) {
