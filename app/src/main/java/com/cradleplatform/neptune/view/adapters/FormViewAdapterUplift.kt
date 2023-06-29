@@ -264,12 +264,9 @@ class FormViewAdapterUplift(
         //Multiple Choice Answers Listener
         holder.binding.rgMultipleChoice.setOnCheckedChangeListener { radioGroup, i ->
             var selectedID = radioGroup.checkedRadioButtonId
-            var selectedButton = radioGroup.findViewById<RadioButton>(selectedID)
-            //var selectedText = selectedButton.text.toString()
             var mcidArray = listOf(selectedID)
 
             viewModel.addAnswer(questionID, Answer.createMcAnswer(mcidArray))
-            //Log.d("TAG123", selectedButton.id.toString())
         }
     }
 
