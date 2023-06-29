@@ -35,6 +35,7 @@ class FormRenderingActivityUplift : AppCompatActivity() {
     private var patient: Patient? = null
     private var patientId: String? = null
     private var languageSelected: String? = null
+    private var categoryViewList: MutableList<View> = mutableListOf()
     private lateinit var recyclerView: RecyclerView
     private lateinit var bottomSheetCurrentSection: TextView
     private lateinit var bottomSheetCategoryContainer: LinearLayout
@@ -84,6 +85,11 @@ class FormRenderingActivityUplift : AppCompatActivity() {
         //observe changes to current category
         viewModel.currentCategory().observe(this) {
             categoryChanged(it)
+        }
+
+        //observe changes to current answers
+        viewModel.currentAnswers().observe(this) {
+            updateQuestionsTotalText()
         }
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -161,6 +167,18 @@ class FormRenderingActivityUplift : AppCompatActivity() {
         recyclerView.adapter = adapter
     }
 
+    private fun updateQuestionsTotalText() {
+        viewModel.categoryList?.forEachIndexed { index, pair ->
+            val categoryView = categoryViewList.getOrNull(index)
+            if (categoryView != null) {
+                val requiredTextView: TextView = categoryView.findViewById(R.id.category_row_required_tv)
+                val optionalTextView: TextView = categoryView.findViewById(R.id.category_row_optional_tv)
+                requiredTextView.text = viewModel.getRequiredFieldsText(pair.second)
+                optionalTextView.text = viewModel.getOptionalFieldsText(pair.second)
+            }
+        }
+    }
+
     private fun setUpBottomSheet(languageSelected: String?) {
         bottomSheetCategoryContainer = findViewById(R.id.form_category_container)
         bottomSheetCurrentSection = findViewById(R.id.bottomSheetCurrentSection)
@@ -181,7 +199,6 @@ class FormRenderingActivityUplift : AppCompatActivity() {
             }
         }
 
-        val categoryViewList: MutableList<View> = mutableListOf()
         viewModel.setCategorizedQuestions(languageSelected ?: "English")
         viewModel.categoryList?.forEachIndexed { index, pair ->
             val category = getCategoryRow(pair, index + 1)
