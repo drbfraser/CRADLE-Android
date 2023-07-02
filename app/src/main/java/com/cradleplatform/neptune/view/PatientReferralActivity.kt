@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import android.content.IntentFilter
+import com.cradleplatform.neptune.manager.LoginManager
 
 @AndroidEntryPoint
 open class PatientReferralActivity : AppCompatActivity() {
@@ -138,7 +139,8 @@ open class PatientReferralActivity : AppCompatActivity() {
         intentFilter.addAction("android.provider.Telephony.SMS_RECEIVED")
         intentFilter.priority = Int.MAX_VALUE
 
-        smsReceiver = SMSReceiver(smsSender, getString(R.string.relay_phone_number))
+        val phoneNumber =  sharedPreferences.getString(LoginManager.PHONE_NUMBER, null) ?: error("invalid phone number")
+        smsReceiver = SMSReceiver(smsSender, phoneNumber)
         registerReceiver(smsReceiver, intentFilter)
     }
 

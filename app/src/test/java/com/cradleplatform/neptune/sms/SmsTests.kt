@@ -15,8 +15,10 @@ class SmsTests {
     fun `test_compression_encryption_encoding_decoding_decryption_decompression`() {
         val originalMsg = CommonPatientReferralJsons.patientWithStandaloneReferral.first
         val originalSize = originalMsg.toByteArray(Charsets.UTF_8).size
-        val secretKey = AESEncryptor.generateRandomKey()
-        val wrongKey = AESEncryptor.generateRandomKey()
+        val stringKey = AESEncryptor.generateRandomKey("test@test.com")
+        val wrongStringKey = AESEncryptor.generateRandomKey("wrong@test.com")
+        val secretKey = AESEncryptor.getSecretKeyFromString(stringKey)
+        val wrongKey = AESEncryptor.getSecretKeyFromString(wrongStringKey)
 
         // compress first as gzip utilizes pattern recognition to reduce size
         val compressedMsg = GzipCompressor.compress(originalMsg)
@@ -45,7 +47,8 @@ class SmsTests {
     @Test
     fun `test_sms_packet_formatting_size`() {
         val originalMsg = CommonPatientReferralJsons.patientWithStandaloneReferral.first
-        val secretKey = AESEncryptor.generateRandomKey()
+        val stringKey = AESEncryptor.generateRandomKey("test@test.com")
+        val secretKey = AESEncryptor.getSecretKeyFromString(stringKey)
 
         val formattedMsg = AESEncryptor.encrypt(GzipCompressor.compress(originalMsg), secretKey)
         val encodedMsg = Base64.encodeToString(formattedMsg, 0)
@@ -63,7 +66,8 @@ class SmsTests {
     @Test
     fun `test_sms_packet_formatting_decoding`() {
         val originalMsg = CommonPatientReferralJsons.patientWithStandaloneReferral.first
-        val secretKey = AESEncryptor.generateRandomKey()
+        val stringKey = AESEncryptor.generateRandomKey("test@test.com")
+        val secretKey = AESEncryptor.getSecretKeyFromString(stringKey)
         val requestCounter = 0L
 
         val encodedMsg = SMSFormatter.encodeMsg(
