@@ -144,7 +144,7 @@ class PatientReferralViewModel @Inject constructor(
         // This implementation is commented inside the PatientReferralActivity in the function sendSms(),
         // it has been moved since.
         val email = sharedPreferences.getString(LoginManager.EMAIL_KEY, null) ?: error("Encrypt failed")
-        val stringKey =  AESEncryptor.generateRandomKey(email)
+        val stringKey = AESEncryptor.generateRandomKey(email)
         val msgInPackets = SMSFormatter.listToString(
             SMSFormatter.formatSMS(
                 SMSFormatter.encodeMsg(

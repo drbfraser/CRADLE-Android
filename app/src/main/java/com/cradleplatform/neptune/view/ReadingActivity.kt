@@ -423,7 +423,7 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
         intentFilter.addAction("android.provider.Telephony.SMS_RECEIVED")
         intentFilter.priority = Int.MAX_VALUE
 
-        val phoneNumber = sharedPreferences.getString(LoginManager.PHONE_NUMBER, null)  ?: error("invalid phone number")
+        val phoneNumber = sharedPreferences.getString(LoginManager.PHONE_NUMBER, null) ?: error("invalid phone number")
         smsReceiver = SMSReceiver(smsSender, phoneNumber)
         registerReceiver(smsReceiver, intentFilter)
     }
@@ -484,7 +484,7 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
 
     override fun sendSmsMessage(data: String) {
         val email = sharedPreferences.getString(LoginManager.EMAIL_KEY, null) ?: error("Encrypt failed")
-        val stringKey =  AESEncryptor.generateRandomKey(email)
+        val stringKey = AESEncryptor.generateRandomKey(email)
         val encodedMsg = SMSFormatter.encodeMsg(data, AESEncryptor.getSecretKeyFromString(stringKey))
 
         val smsRelayRequestCounter = sharedPreferences.getLong(getString(R.string.sms_relay_request_counter), 0)

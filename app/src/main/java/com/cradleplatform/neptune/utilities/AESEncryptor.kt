@@ -22,7 +22,7 @@ class AESEncryptor {
                 .digest(email.toByteArray())
                 .joinToString("") { "%02x".format(it) }
             val keySize = 32 // specify the desired key size here
-            return  hashedKey.substring(0, keySize)
+            return hashedKey.substring(0, keySize)
         }
 
         private fun generateRandomIV(): ByteArray {
