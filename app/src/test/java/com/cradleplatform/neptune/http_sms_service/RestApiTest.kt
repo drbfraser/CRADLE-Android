@@ -58,6 +58,7 @@ internal class RestApiTest {
                                 "role": "VHT",
                                 "firstName": "TestVHT",
                                 "healthFacilityName": "H0000",
+                                "phoneNumber" : "123-4567-8910"
                                 "isLoggedIn": true,
                                 "userId": 3,
                                 "token": "test-token",
@@ -130,7 +131,8 @@ internal class RestApiTest {
             firstName = "TestVHT",
             healthFacilityName = "H0000",
             userId = 3,
-            token = "test-token"
+            token = "test-token",
+            phoneNumber = "123-4567-8910"
         )
 
         assertEquals(expectedLoginResponseForVht, loginResponse)
