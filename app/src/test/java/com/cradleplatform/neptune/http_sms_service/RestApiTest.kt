@@ -58,7 +58,7 @@ internal class RestApiTest {
                                 "role": "VHT",
                                 "firstName": "TestVHT",
                                 "healthFacilityName": "H0000",
-                                "phoneNumber" : "123-4567-8910"
+                                "phoneNumber" : "123-4567-8910",
                                 "isLoggedIn": true,
                                 "userId": 3,
                                 "token": "test-token",
