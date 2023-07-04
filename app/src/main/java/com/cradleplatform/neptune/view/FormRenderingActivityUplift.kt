@@ -214,8 +214,18 @@ class FormRenderingActivityUplift : AppCompatActivity() {
         val button: Button = category.findViewById(R.id.category_row_btn)
 
         button.text = categoryPair.first
+        if (categoryNumber == 1) {
+            // set the first button as selected
+            button.background = getDrawable(R.drawable.rounded_button_green)
+        }
         button.setOnClickListener {
             viewModel.changeCategory(categoryNumber)
+            categoryViewList.forEach { categoryView ->
+                categoryView.findViewById<Button>(R.id.category_row_btn)?.let { button ->
+                    button.background = getDrawable(R.drawable.rounded_button_grey)
+                }
+            }
+            it.background = getDrawable(R.drawable.rounded_button_green)
         }
         requiredTextView.text = viewModel.getRequiredFieldsText(categoryPair.second)
         optionalTextView.text = viewModel.getOptionalFieldsText(categoryPair.second)

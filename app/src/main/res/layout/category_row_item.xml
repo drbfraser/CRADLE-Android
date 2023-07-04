@@ -8,30 +8,38 @@
     android:paddingBottom="6dp">
 
     <Button
-        android:layout_width="100dp"
+        android:layout_width="140dp"
         android:layout_height="50dp"
         android:id="@+id/category_row_btn"
         android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp"
-        android:textSize="10sp"
+        android:layout_marginEnd="40dp"
+        android:textSize="14sp"
+        android:background="@drawable/rounded_button_grey"
         android:textAllCaps="false"
-        tools:text="Refferred By"/>
+        tools:text="Referred By"/>
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="110dp"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
         android:orientation="vertical">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/category_row_required_tv"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:textSize="14sp"
             tools:text="Required 0/1"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/category_row_optional_tv"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:textSize="14sp"
             tools:text="Optional 0/1"/>
 
     </LinearLayout>
