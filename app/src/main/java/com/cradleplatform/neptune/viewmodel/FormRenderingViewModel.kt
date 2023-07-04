@@ -35,10 +35,16 @@ class FormRenderingViewModel @Inject constructor(
     //Raw form template
     var currentFormTemplate: FormTemplate? = null
     private val _currentCategory: MutableLiveData<Int> = MutableLiveData(1)
+    private val _currentAnswers: MutableLiveData<Map<String, Answer>?> = MutableLiveData(mutableMapOf())
+
     var categoryList: List<Pair<String, List<Question>?>>? = null
 
     fun currentCategory(): LiveData<Int> {
         return _currentCategory
+    }
+
+    fun currentAnswers(): LiveData<Map<String, Answer>?> {
+        return _currentAnswers
     }
 
     fun changeCategory(currCategory: Int) {
@@ -126,10 +132,12 @@ class FormRenderingViewModel @Inject constructor(
 
     fun addAnswer(questionId: String, answer: Answer) {
         currentAnswers[questionId] = answer
+        _currentAnswers.value = currentAnswers
     }
 
     fun deleteAnswer(questionId: String) {
         currentAnswers.remove(questionId)
+        _currentAnswers.value = currentAnswers
     }
 
     fun getTextAnswer(questionId: String?): String? {
@@ -237,23 +245,30 @@ class FormRenderingViewModel @Inject constructor(
 
     fun getRequiredFieldsText(questions: List<Question>?): String {
         var total = 0
+        var totalAnswered = 0
         questions?.forEach {
             if (it.required == true) {
-                //TODO check if required field is filled here.
+                if (currentAnswers[it.questionId] != null) {
+                    totalAnswered++
+                }
                 total++
             }
         }
-        return "Required 0/$total"
+        return "Required $totalAnswered/$total"
     }
 
     fun getOptionalFieldsText(questions: List<Question>?): String {
         var total = 0
+        var totalAnswered = 0
         questions?.forEach {
             if (it.required != true) {
+                if (currentAnswers[it.questionId] != null) {
+                    totalAnswered++
+                }
                 total++
             }
         }
-        return "Optional 0/$total"
+        return "Optional $totalAnswered/$total"
     }
 
     private companion object {

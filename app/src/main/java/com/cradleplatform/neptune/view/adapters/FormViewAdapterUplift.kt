@@ -5,7 +5,6 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
 import android.graphics.Color
-import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -317,7 +316,6 @@ class FormViewAdapterUplift(
 
     private fun saveAnswerForDateTime(holder: FormViewAdapterUplift.ViewHolder, questionId: String?) {
         val textAnswer = holder.binding.btnDatePicker.text.toString()
-        Log.d("TAG123", textAnswer)
         viewModel.addAnswer(
             questionId!!,
             Answer.createTextAnswer(textAnswer)

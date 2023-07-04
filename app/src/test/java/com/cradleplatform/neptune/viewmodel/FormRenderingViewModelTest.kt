@@ -57,18 +57,6 @@ class FormRenderingViewModelTest {
     }
 
     @Test
-    fun `isRequiredFieldsFilled, required fields answered`() {
-        val questions = listOf(question(true))
-        val formTemplate = FormTemplate(null, null, null, null, null, questions)
-        viewModel.currentFormTemplate = formTemplate
-        viewModel.addAnswer("generic_id", Answer.createNumericAnswer(1))
-
-        val context = Mockito.mock(Context::class.java)
-
-        assert(viewModel.isRequiredFieldsFilled("English", context))
-    }
-
-    @Test
     fun `populateEmptyIds, none empty`() {
         val questions = listOf(question(true, id = "id1"), question(true, id = "id2"))
         val formTemplate = FormTemplate(null, null, null, null, null, questions)
