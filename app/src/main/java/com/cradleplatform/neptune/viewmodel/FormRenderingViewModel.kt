@@ -2,7 +2,9 @@ package com.cradleplatform.neptune.viewmodel
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.drawable.Drawable
 import android.widget.Toast
+import androidx.core.content.ContextCompat.getDrawable
 import androidx.core.content.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -243,7 +245,11 @@ class FormRenderingViewModel @Inject constructor(
         Toast.makeText(context, toastText, Toast.LENGTH_LONG).show()
     }
 
-    fun getRequiredFieldsText(questions: List<Question>?): String {
+    /**
+     * Returns pair that contains required fields text and required fields icon
+     * Else returns false and shows user a toast of which field needs to be filled in
+     */
+    fun getRequiredFieldsTextAndIcon(questions: List<Question>?, context: Context): Pair<String, Drawable?> {
         var total = 0
         var totalAnswered = 0
         questions?.forEach {
@@ -254,7 +260,11 @@ class FormRenderingViewModel @Inject constructor(
                 total++
             }
         }
-        return "Required $totalAnswered/$total"
+        var drawable = getDrawable(context, R.drawable.ic_baseline_warning_24)
+        if (totalAnswered == total) {
+            drawable = getDrawable(context, R.drawable.ic_baseline_check_circle_24)
+        }
+        return Pair("Required $totalAnswered/$total", drawable)
     }
 
     fun getOptionalFieldsText(questions: List<Question>?): String {

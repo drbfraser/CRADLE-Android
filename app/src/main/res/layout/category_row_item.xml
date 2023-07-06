@@ -44,4 +44,12 @@
 
     </LinearLayout>
 
+    <ImageView
+        android:id="@+id/category_row_indicator_icon"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="40dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_baseline_check_circle_24"/>
+
 </LinearLayout>
