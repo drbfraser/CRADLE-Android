@@ -247,7 +247,6 @@ class FormRenderingViewModel @Inject constructor(
 
     /**
      * Returns pair that contains required fields text and required fields icon
-     * Else returns false and shows user a toast of which field needs to be filled in
      */
     fun getRequiredFieldsTextAndIcon(questions: List<Question>?, context: Context): Pair<String, Drawable?> {
         var total = 0
