@@ -21,5 +21,7 @@
     <color name="redDown">#cc0605</color>
 
     <color name="button_selected_gray">#8d99ae</color>
+    <color name="button_unselected_gray">#DCDADA</color>
+    <color name="button_selected_green">#13D30F</color>
 
 </resources>

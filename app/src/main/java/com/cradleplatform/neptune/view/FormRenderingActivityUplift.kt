@@ -9,6 +9,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.viewModels
@@ -172,9 +173,16 @@ class FormRenderingActivityUplift : AppCompatActivity() {
             val categoryView = categoryViewList.getOrNull(index)
             if (categoryView != null) {
                 val requiredTextView: TextView = categoryView.findViewById(R.id.category_row_required_tv)
+                val requiredIcon: ImageView = categoryView.findViewById(R.id.category_row_indicator_icon)
                 val optionalTextView: TextView = categoryView.findViewById(R.id.category_row_optional_tv)
-                requiredTextView.text = viewModel.getRequiredFieldsText(pair.second)
+                val requiredTextIconPair = viewModel.getRequiredFieldsTextAndIcon(pair.second, applicationContext)
+
+                requiredTextView.text = requiredTextIconPair.first
                 optionalTextView.text = viewModel.getOptionalFieldsText(pair.second)
+
+                requiredTextIconPair.second?.let {
+                    requiredIcon.setImageDrawable(it)
+                }
             }
         }
     }
@@ -212,13 +220,31 @@ class FormRenderingActivityUplift : AppCompatActivity() {
         val requiredTextView: TextView = category.findViewById(R.id.category_row_required_tv)
         val optionalTextView: TextView = category.findViewById(R.id.category_row_optional_tv)
         val button: Button = category.findViewById(R.id.category_row_btn)
+        val requiredIcon: ImageView = category.findViewById(R.id.category_row_indicator_icon)
+
+        val requiredTextIconPair = viewModel.getRequiredFieldsTextAndIcon(categoryPair.second, applicationContext)
 
         button.text = categoryPair.first
+        if (categoryNumber == 1) {
+            // set the first button as selected
+            button.background = getDrawable(R.drawable.rounded_button_green)
+        }
         button.setOnClickListener {
             viewModel.changeCategory(categoryNumber)
+            categoryViewList.forEach { categoryView ->
+                categoryView.findViewById<Button>(R.id.category_row_btn)?.let { button ->
+                    button.background = getDrawable(R.drawable.rounded_button_grey)
+                }
+            }
+            it.background = getDrawable(R.drawable.rounded_button_green)
         }
-        requiredTextView.text = viewModel.getRequiredFieldsText(categoryPair.second)
+        requiredTextView.text = requiredTextIconPair.first
         optionalTextView.text = viewModel.getOptionalFieldsText(categoryPair.second)
+
+        requiredTextIconPair.second?.let {
+            requiredIcon.setImageDrawable(it)
+        }
+
         return category
     }
 
