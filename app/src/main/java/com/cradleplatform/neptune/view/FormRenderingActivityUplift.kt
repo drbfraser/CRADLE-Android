@@ -156,6 +156,8 @@ class FormRenderingActivityUplift : AppCompatActivity() {
     }
 
     private fun categoryChanged(currCategory: Int) {
+        this.title = viewModel.categoryList?.getOrNull(currCategory - 1)?.first ?: "Cradle"
+
         bottomSheetCurrentSection.text = String.format(
             getString(R.string.form_current_section),
             currCategory, viewModel.categoryList?.size ?: 1
