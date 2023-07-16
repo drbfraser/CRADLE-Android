@@ -5,6 +5,9 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
 import android.graphics.Color
+import android.graphics.Typeface
+import android.text.SpannableString
+import android.text.style.StyleSpan
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -72,7 +75,20 @@ class FormViewAdapterUplift(
             it.language == languageSelected
         }?.questionText ?: R.string.not_available.toString()
 
-        holder.binding.tvQuestion.text = questionText
+        // add number of question in front of question
+        if (questionText != R.string.not_available.toString()) {
+            questionText = "${position + 1}. $questionText"
+        }
+
+        // add asterisk if field is required
+        if (mList[position].required == true) {
+            questionText += " *"
+        }
+
+        val boldQuestionString = SpannableString(questionText)
+        boldQuestionString.setSpan(StyleSpan(Typeface.BOLD), 0, boldQuestionString.length, 0)
+
+        holder.binding.tvQuestion.text = boldQuestionString
 
         //Depending on question type, we are setting one of the four possible types of inputs to visible.
         holder.binding.tvQuestion.textSize = 18f
