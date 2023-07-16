@@ -145,7 +145,9 @@ class PermissionsFragment : IntroBaseFragment() {
             Manifest.permission.ACCESS_NETWORK_STATE,
             Manifest.permission.RECEIVE_SMS,
             Manifest.permission.READ_SMS,
-            Manifest.permission.SEND_SMS
+            Manifest.permission.SEND_SMS,
+            Manifest.permission.READ_PHONE_STATE,
+            Manifest.permission.READ_PHONE_NUMBERS
         )
         private const val MY_PERMISSIONS_REQUEST = 1515
         fun newInstance(): PermissionsFragment {
