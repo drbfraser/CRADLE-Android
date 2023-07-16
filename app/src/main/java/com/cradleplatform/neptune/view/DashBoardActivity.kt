@@ -32,7 +32,9 @@ import javax.inject.Inject
 class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
     @Inject
     lateinit var sharedPreferences: SharedPreferences
-    var userPhoneNumber = ""
+
+    private val USER_PHONE_NUMBER_KEY = "user_phone_number"
+    private lateinit var userPhoneNumber: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,6 +48,8 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
             actionBar.setDisplayUseLogoEnabled(true)
             actionBar.title = ""
         }
+        // To detect change in user's phone number
+        userPhoneNumber = sharedPreferences.getString(USER_PHONE_NUMBER_KEY, "") ?: ""
 
         networkCheck()
         setVersionName()
@@ -63,10 +67,14 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
             val newPhoneNumber = telManager.line1Number
             if (!newPhoneNumber.equals(userPhoneNumber)){
                 Log.d("ReferralSMS", "phone number has changed --> Old = $userPhoneNumber / New = $newPhoneNumber")
+                userPhoneNumber = newPhoneNumber // Update the userPhoneNumber
+                sharedPreferences.edit().putString(USER_PHONE_NUMBER_KEY, userPhoneNumber).apply() // Store the updated value
+
                 // TODO: update the user's phone number in the database
             }
         }
-        // else: either the phone number doesn't exist or permission is not granted - userPhoneNumber would remain "" // TODO: check before sending SMS
+        // else: either the phone number doesn't exist or permission is not granted - userPhoneNumber would remain equal to ""
+        // TODO: check before sending SMS
     }
 
 
