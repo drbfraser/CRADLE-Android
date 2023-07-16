@@ -1,9 +1,14 @@
 package com.cradleplatform.neptune.view
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.telephony.TelephonyManager
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -12,6 +17,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import androidx.core.app.ActivityCompat
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.Util
@@ -26,6 +32,7 @@ import javax.inject.Inject
 class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
     @Inject
     lateinit var sharedPreferences: SharedPreferences
+    var userPhoneNumber = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +49,22 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
 
         networkCheck()
         setVersionName()
+        getUserNumber()
+        Log.d("ReferralSMS", "in DashBoardActivity: userPhoneNumber = $userPhoneNumber`")
     }
+
+    private fun getUserNumber() {
+        if ((ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED)
+            && (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_NUMBERS) == PackageManager.PERMISSION_GRANTED)
+            && (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED)
+        ) {
+            val telManager = this.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
+
+            userPhoneNumber = telManager.line1Number
+        }
+        // else: either the phone number doesn't exist or permission is not granted - userPhoneNumber would remain ""
+    }
+
 
     private fun networkCheck() {
         // Disable entering StatsActivity without network connectivity.
