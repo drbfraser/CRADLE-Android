@@ -49,20 +49,24 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
 
         networkCheck()
         setVersionName()
-        getUserNumber()
-        Log.d("ReferralSMS", "in DashBoardActivity: userPhoneNumber = $userPhoneNumber`")
+        updateUserNumber()
+
     }
 
-    private fun getUserNumber() {
+    private fun updateUserNumber() {
         if ((ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED)
             && (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_NUMBERS) == PackageManager.PERMISSION_GRANTED)
             && (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED)
         ) {
             val telManager = this.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
 
-            userPhoneNumber = telManager.line1Number
+            val newPhoneNumber = telManager.line1Number
+            if (!newPhoneNumber.equals(userPhoneNumber)){
+                Log.d("ReferralSMS", "phone number has changed --> Old = $userPhoneNumber / New = $newPhoneNumber")
+                // TODO: update the user's phone number in the database
+            }
         }
-        // else: either the phone number doesn't exist or permission is not granted - userPhoneNumber would remain ""
+        // else: either the phone number doesn't exist or permission is not granted - userPhoneNumber would remain "" // TODO: check before sending SMS
     }
 
 
