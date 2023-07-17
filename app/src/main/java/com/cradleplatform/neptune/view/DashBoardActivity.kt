@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.telephony.TelephonyManager
 import android.util.Log
@@ -33,7 +32,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
     @Inject
     lateinit var sharedPreferences: SharedPreferences
 
-    private val USER_PHONE_NUMBER_KEY = "user_phone_number"
+    private val userPhoneNumberKey = "user_phone_number"
     private lateinit var userPhoneNumber: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,31 +48,35 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
             actionBar.title = ""
         }
         // To detect change in user's phone number
-        userPhoneNumber = sharedPreferences.getString(USER_PHONE_NUMBER_KEY, "") ?: ""
+        userPhoneNumber = sharedPreferences.getString(userPhoneNumberKey, "") ?: ""
 
         networkCheck()
         setVersionName()
         updateUserNumber()
-
     }
 
     private fun updateUserNumber() {
-        if ((ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED)
-            && (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_NUMBERS) == PackageManager.PERMISSION_GRANTED)
-            && (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED)
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_SMS)
+                == PackageManager.PERMISSION_GRANTED
+            && ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_NUMBERS)
+                == PackageManager.PERMISSION_GRANTED
+            && ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
+                == PackageManager.PERMISSION_GRANTED
         ) {
             val telManager = this.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
 
             val newPhoneNumber = telManager.line1Number
-            if (!newPhoneNumber.equals(userPhoneNumber)){
-                Log.d("ReferralSMS", "phone number has changed --> Old = $userPhoneNumber / New = $newPhoneNumber")
-                userPhoneNumber = newPhoneNumber // Update the userPhoneNumber
-                sharedPreferences.edit().putString(USER_PHONE_NUMBER_KEY, userPhoneNumber).apply() // Store the updated value
+            if (!newPhoneNumber.equals(userPhoneNumber)) {
+                Log.d("ReferralSMS",
+                    "phone number has changed --> Old = $userPhoneNumber / New = $newPhoneNumber")
+                userPhoneNumber = newPhoneNumber
+                sharedPreferences.edit().putString(userPhoneNumberKey, userPhoneNumber).apply()
 
                 // TODO: update the user's phone number in the database
             }
         }
-        // else: either the phone number doesn't exist or permission is not granted - userPhoneNumber would remain equal to ""
+        // else: either the phone number doesn't exist
+            // or permission is not granted - userPhoneNumber would remain equal to ""
         // TODO: check before sending SMS
     }
 
@@ -89,15 +92,15 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         isNetworkAvailable.observe(this) {
             when (it) {
                 true -> {
-                    statImg.alpha = Companion.OPACITY_FULL
-                    statCardview.alpha = Companion.OPACITY_FULL
+                    statImg.alpha = OPACITY_FULL
+                    statCardview.alpha = OPACITY_FULL
                     statView.isClickable = true
                     statCardview.isClickable = true
                     statImg.isClickable = true
                 }
                 false -> {
-                    statImg.alpha = Companion.OPACITY_HALF
-                    statCardview.alpha = Companion.OPACITY_HALF
+                    statImg.alpha = OPACITY_HALF
+                    statCardview.alpha = OPACITY_HALF
                     statView.isClickable = false
                     statCardview.isClickable = false
                     statImg.isClickable = false
@@ -107,7 +110,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun setVersionName() {
-        val textView: TextView = findViewById<TextView>(R.id.versionNameTextView)
+        val textView: TextView = findViewById(R.id.versionNameTextView)
         textView.text = Util.getVersionName(this)
     }
 
