@@ -1,12 +1,8 @@
 package com.cradleplatform.neptune.view
-
-import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
 import android.os.Bundle
-import android.telephony.TelephonyManager
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -15,7 +11,6 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
-import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.utilities.CustomToast
@@ -32,9 +27,7 @@ import javax.inject.Inject
 class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
     @Inject
     lateinit var sharedPreferences: SharedPreferences
-
     private lateinit var userViewModel: UserViewModel
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,7 +44,6 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
 
         userViewModel = ViewModelProvider(this).get(UserViewModel::class.java)
         val previousPhoneNumber = sharedPreferences.getString(UserViewModel.userPhoneNumberKey, "") ?: ""
-        println("debug1: $previousPhoneNumber")
         userViewModel.setPreviousPhoneNumber(previousPhoneNumber)
         userViewModel.updateUserPhoneNumber()
 
