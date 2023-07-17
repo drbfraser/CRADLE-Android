@@ -7,6 +7,7 @@ import android.telephony.SmsManager
 import com.cradleplatform.neptune.R
 import android.widget.Toast
 import androidx.core.content.edit
+import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.listToString
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.stringToList
 import com.cradleplatform.neptune.view.PatientReferralActivity
@@ -22,7 +23,7 @@ class SMSSender(
     fun sendSmsMessage(acknowledged: Boolean) {
         val smsRelayContentKey = context.getString(R.string.sms_relay_list_key)
         val smsRelayContent = sharedPreferences.getString(smsRelayContentKey, null)
-        val phoneNumber = context.getString(R.string.relay_phone_number)
+        val phoneNumber = sharedPreferences.getString(LoginManager.PHONE_NUMBER, null)
         val smsManager: SmsManager = SmsManager.getDefault()
 
         if (!smsRelayContent.isNullOrEmpty()) {

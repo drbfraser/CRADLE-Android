@@ -9,8 +9,10 @@ class AESTests {
     @Test
     fun test_encryption_decryption() {
         val originalMsg = CommonPatientReferralJsons.patientWithStandaloneReferral.first
-        val key = AESEncryptor.generateRandomKey()
-        val wrongKey = AESEncryptor.generateRandomKey()
+        val stringKey = AESEncryptor.generateRandomKey("test@test.com")
+        val wrongStringKey = AESEncryptor.generateRandomKey("wrong@test.com")
+        val key = AESEncryptor.getSecretKeyFromString(stringKey)
+        val wrongKey = AESEncryptor.getSecretKeyFromString(wrongStringKey)
 
         val encryptedMsg = AESEncryptor.encrypt(originalMsg, key)
         Assertions.assertNotEquals(String(encryptedMsg), originalMsg)

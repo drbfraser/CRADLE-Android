@@ -2,15 +2,14 @@ package com.cradleplatform.neptune.utilities
 
 import android.util.Base64
 import java.security.SecureRandom
+import java.security.MessageDigest
 import javax.crypto.Cipher
-import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
-
 class AESEncryptor {
     companion object {
-        private const val TRANSFORMATION = "AES/CBC/PKCS5PADDING"
+        private const val TRANSFORMATION = "AES/CBC/PKCS5Padding"
         private const val ivSize = 16
 
         fun getSecretKeyFromString(settingKey: String): SecretKey {
@@ -18,10 +17,12 @@ class AESEncryptor {
             return SecretKeySpec(encodedKey, 0, encodedKey.size, "AES")
         }
 
-        fun generateRandomKey(): SecretKey {
-            val keyGen = KeyGenerator.getInstance("AES")
-            keyGen.init(256)
-            return keyGen.generateKey()
+        fun generateRandomKey(email: String): String {
+            val hashedKey = MessageDigest.getInstance("SHA-256")
+                .digest(email.toByteArray())
+                .joinToString("") { "%02x".format(it) }
+            val keySize = 32 // specify the desired key size here
+            return hashedKey.substring(0, keySize)
         }
 
         private fun generateRandomIV(): ByteArray {
@@ -42,7 +43,6 @@ class AESEncryptor {
 
             System.arraycopy(iv, 0, fullCipher, 0, iv.size)
             System.arraycopy(encryptedMsg, 0, fullCipher, iv.size, encryptedMsg.size)
-
             return fullCipher
         }
 

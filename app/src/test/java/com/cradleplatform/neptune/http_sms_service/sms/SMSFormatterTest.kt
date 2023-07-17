@@ -16,7 +16,8 @@ internal class SMSFormatterTest {
     @Test
     fun test_encodeMsg() {
         val originalMsg = CommonPatientReferralJsons.patientWithStandaloneReferral.first
-        val key = AESEncryptor.generateRandomKey()
+        val stringKey = AESEncryptor.generateRandomKey("test@test.com")
+        val key = AESEncryptor.getSecretKeyFromString(stringKey)
 
         val encodedMsg = SMSFormatter.encodeMsg(
             originalMsg,

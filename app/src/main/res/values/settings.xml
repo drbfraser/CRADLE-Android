@@ -15,12 +15,6 @@
     <!-- Notification Channel -->
     <string name="notification_id">iCradle</string>
 
-    <!-- AES encryption key -->
-    <string name="aes_secret_key">LmSqh79undnObe47p56Q06XIR7JoRZu4GYTlu+6bUt4=</string>
-
-    <!-- SMS relay phone number -->
-    <string name="relay_phone_number">+15555215556</string>
-
     <!-- Recheck Duration -->
     <integer name="recheck_duration">15</integer>
 
