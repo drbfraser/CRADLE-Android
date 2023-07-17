@@ -1,5 +1,4 @@
 package com.cradleplatform.neptune.viewmodel
-
 import android.Manifest
 import android.app.Application
 import android.content.Context.TELEPHONY_SERVICE
@@ -38,15 +37,13 @@ class UserViewModel @Inject constructor(
             val telManager = getApplication<Application>().getSystemService(TELEPHONY_SERVICE) as TelephonyManager
             val newPhoneNumber = telManager.line1Number
 
-            if(hasUserPhoneNumberChanged(newPhoneNumber)) {
+            if (hasUserPhoneNumberChanged(newPhoneNumber)) {
                 // Store the new phone number in SharedPreferences
                 sharedPreferences.edit().putString(userPhoneNumberKey, newPhoneNumber).apply()
 
                 // TODO: update the user's phone number in the database
             }
-        }
-        // else: either the phone number doesn't exist
-            // or permission is not granted - userPhoneNumber would remain equal to ""
+        } // else: user doesn't exist or permission is not granted
     }
 
     private fun hasUserPhoneNumberChanged(newPhoneNumber: String): Boolean {
