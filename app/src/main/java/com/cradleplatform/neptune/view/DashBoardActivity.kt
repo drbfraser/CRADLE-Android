@@ -56,19 +56,17 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun updateUserNumber() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_SMS)
-                == PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_NUMBERS)
-                == PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
-                == PackageManager.PERMISSION_GRANTED
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) ==
+            PackageManager.PERMISSION_GRANTED
+            && ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_NUMBERS) ==
+            PackageManager.PERMISSION_GRANTED
+            && ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) ==
+            PackageManager.PERMISSION_GRANTED
         ) {
             val telManager = this.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
-
             val newPhoneNumber = telManager.line1Number
-            if (!newPhoneNumber.equals(userPhoneNumber)) {
-                Log.d("ReferralSMS",
-                    "phone number has changed --> Old = $userPhoneNumber / New = $newPhoneNumber")
+
+            if (newPhoneNumber != userPhoneNumber) {
                 userPhoneNumber = newPhoneNumber
                 sharedPreferences.edit().putString(userPhoneNumberKey, userPhoneNumber).apply()
 
@@ -76,10 +74,9 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
             }
         }
         // else: either the phone number doesn't exist
-            // or permission is not granted - userPhoneNumber would remain equal to ""
+        // or permission is not granted - userPhoneNumber would remain equal to ""
         // TODO: check before sending SMS
     }
-
 
     private fun networkCheck() {
         // Disable entering StatsActivity without network connectivity.
