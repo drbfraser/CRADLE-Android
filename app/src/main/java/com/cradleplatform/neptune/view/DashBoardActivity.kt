@@ -16,12 +16,14 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.ViewModelProvider
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.Util
 import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
 import com.cradleplatform.neptune.viewmodel.SyncRemainderHelper
+import com.cradleplatform.neptune.viewmodel.UserViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -31,8 +33,8 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
     @Inject
     lateinit var sharedPreferences: SharedPreferences
 
-    private val userPhoneNumberKey = "user_phone_number"
-    private lateinit var userPhoneNumber: String
+    private lateinit var userViewModel: UserViewModel
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,35 +48,15 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
             actionBar.setDisplayUseLogoEnabled(true)
             actionBar.title = ""
         }
-        // To detect change in user's phone number
-        userPhoneNumber = sharedPreferences.getString(userPhoneNumberKey, "") ?: ""
+
+        userViewModel = ViewModelProvider(this).get(UserViewModel::class.java)
+        val previousPhoneNumber = sharedPreferences.getString(UserViewModel.userPhoneNumberKey, "") ?: ""
+        println("debug1: $previousPhoneNumber")
+        userViewModel.setPreviousPhoneNumber(previousPhoneNumber)
+        userViewModel.updateUserPhoneNumber()
 
         networkCheck()
         setVersionName()
-        updateUserNumber()
-    }
-
-    private fun updateUserNumber() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) ==
-            PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_NUMBERS) ==
-            PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) ==
-            PackageManager.PERMISSION_GRANTED
-        ) {
-            val telManager = this.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
-            val newPhoneNumber = telManager.line1Number
-
-            if (newPhoneNumber != userPhoneNumber) {
-                userPhoneNumber = newPhoneNumber
-                sharedPreferences.edit().putString(userPhoneNumberKey, userPhoneNumber).apply()
-
-                // TODO: update the user's phone number in the database
-            }
-        }
-        // else: either the phone number doesn't exist
-        // or permission is not granted - userPhoneNumber would remain equal to ""
-        // TODO: check before sending SMS
     }
 
     private fun networkCheck() {
