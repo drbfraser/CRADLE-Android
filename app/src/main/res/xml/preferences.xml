@@ -45,6 +45,11 @@
             android:title="@string/change_pin_title" />
 
         <Preference
+            android:key="@string/change_relay_phone_number"
+            android:summary="@string/relay_phone_number_message"
+            android:title="@string/change_relay_phone_number_title" />
+
+        <Preference
             android:key="@string/key_sign_out"
             android:summary="@string/normal_signout_message"
             android:title="@string/preference_sign_out_title" />

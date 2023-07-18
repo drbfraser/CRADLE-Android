@@ -245,6 +245,7 @@
     </plurals>
 
     <string name="normal_signout_message">You will be required to sign in again before using the application.</string>
+    <string name="relay_phone_number_message">Enter the desired phone number belonging to an admin/relay user</string>
     <string name="dashboard_new_patient">New Patient</string>
     <string name="dashboard_sync">Sync</string>
     <string name="dashboard_education">Education</string>
@@ -683,6 +684,7 @@
     <string name="mc_unsupported">Multiple Choice does not support -> %s</string>
     <string name="change_pin_message">Set up or change PIN, PIN entry is required when more than thirty minutes has elapsed</string>
     <string name="change_pin_title">Set or Change PIN</string>
+    <string name="change_relay_phone_number_title">Change relay phone number</string>
     <string name="change_pin_act_first_enter">Enter New PIN</string>
     <string name="change_pin_act_second_enter">Enter PIN again</string>
     <string name="change_pin_act_pin_saved">New PIN Saved</string>

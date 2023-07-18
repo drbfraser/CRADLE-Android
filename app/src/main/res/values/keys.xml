@@ -18,5 +18,6 @@
     <string name="key_advanced_settings_settings_button">settings_advanced</string>
     <string name="key_sign_out">settings_sign_out</string>
     <string name="key_change_pin">settings_change_pin</string>
+    <string name="change_relay_phone_number">You will be required to sign in again before using the application.</string>
 
 </resources>
