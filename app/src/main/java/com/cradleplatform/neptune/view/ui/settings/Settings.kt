@@ -1,5 +1,4 @@
 package com.cradleplatform.neptune.view.ui.settings
-
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
