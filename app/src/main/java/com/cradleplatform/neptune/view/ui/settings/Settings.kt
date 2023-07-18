@@ -29,7 +29,6 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import android.text.InputType
 
-
 @AndroidEntryPoint
 class SettingsActivity : AppCompatActivity() {
 
