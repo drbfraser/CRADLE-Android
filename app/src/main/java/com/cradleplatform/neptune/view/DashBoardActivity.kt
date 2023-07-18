@@ -43,8 +43,6 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         }
 
         userViewModel = ViewModelProvider(this).get(UserViewModel::class.java)
-        val previousPhoneNumber = sharedPreferences.getString(UserViewModel.userPhoneNumberKey, "") ?: ""
-        userViewModel.setPreviousPhoneNumber(previousPhoneNumber)
         userViewModel.updateUserPhoneNumber()
 
         networkCheck()
