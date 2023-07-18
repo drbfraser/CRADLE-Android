@@ -45,7 +45,7 @@
             android:title="@string/change_pin_title" />
 
         <Preference
-            android:key="@string/change_relay_phone_number"
+            android:key="@string/key_change_relay_phone_number"
             android:summary="@string/relay_phone_number_message"
             android:title="@string/change_relay_phone_number_title" />
 
