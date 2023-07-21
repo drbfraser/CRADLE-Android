@@ -42,6 +42,8 @@ class FormRenderingActivityUplift : AppCompatActivity() {
     private lateinit var bottomSheetCategoryContainer: LinearLayout
     private lateinit var bottomSheetBehaviour: BottomSheetBehavior<View>
     private lateinit var formStateBtn: ImageButton
+    private lateinit var formNextBtn: ImageButton
+    private lateinit var formPrevBtn: ImageButton
     val viewModel: FormRenderingViewModel by viewModels()
 
     override fun onSupportNavigateUp(): Boolean {
@@ -168,6 +170,9 @@ class FormRenderingActivityUplift : AppCompatActivity() {
 
         adapter = FormViewAdapterUplift(viewModel, languageSelected!!, patient)
         recyclerView.adapter = adapter
+
+        formNextBtn.background = viewModel.isNextButtonVisible(applicationContext)
+        formPrevBtn.background = viewModel.isPrevButtonVisible(applicationContext)
     }
 
     private fun updateQuestionsTotalText() {
@@ -214,6 +219,19 @@ class FormRenderingActivityUplift : AppCompatActivity() {
             val category = getCategoryRow(pair, index + 1)
             bottomSheetCategoryContainer.addView(category)
             categoryViewList.add(category)
+        }
+
+        formNextBtn = findViewById(R.id.form_next_category_button)
+        formPrevBtn = findViewById(R.id.form_prev_category_button)
+
+        formNextBtn.background = viewModel.isNextButtonVisible(applicationContext)
+        formPrevBtn.background = viewModel.isPrevButtonVisible(applicationContext)
+
+        formNextBtn.setOnClickListener {
+            viewModel.goNextCategory()
+        }
+        formPrevBtn.setOnClickListener {
+            viewModel.goPrevCategory()
         }
     }
 

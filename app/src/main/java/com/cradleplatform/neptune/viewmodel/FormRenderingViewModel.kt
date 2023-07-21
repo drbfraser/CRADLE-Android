@@ -280,6 +280,32 @@ class FormRenderingViewModel @Inject constructor(
         return "Optional $totalAnswered/$total"
     }
 
+    fun isNextButtonVisible(context: Context): Drawable? {
+        if (currentCategory().value == categoryList?.size) {
+            return getDrawable(context, R.drawable.ic_arrow_forward_grey_24)
+        }
+        return getDrawable(context, R.drawable.ic_arrow_forward_black_24)
+    }
+
+    fun isPrevButtonVisible(context: Context): Drawable? {
+        if (currentCategory().value == 1) {
+            return getDrawable(context, R.drawable.ic_arrow_prev_grey_24)
+        }
+        return getDrawable(context, R.drawable.ic_arrow_prev_black_24)
+    }
+
+    fun goNextCategory() {
+        if (currentCategory().value != categoryList?.size) {
+            changeCategory(_currentCategory.value?.plus(1) ?: 1)
+        }
+    }
+
+    fun goPrevCategory() {
+        if (currentCategory().value != 1) {
+            changeCategory(_currentCategory.value?.minus(1) ?: 1)
+        }
+    }
+
     private companion object {
         private val currentAnswers = mutableMapOf<String, Answer>()
     }
