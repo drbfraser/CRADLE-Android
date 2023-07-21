@@ -173,6 +173,14 @@ class FormRenderingActivityUplift : AppCompatActivity() {
 
         formNextBtn.background = viewModel.isNextButtonVisible(applicationContext)
         formPrevBtn.background = viewModel.isPrevButtonVisible(applicationContext)
+
+        categoryViewList.forEach { categoryView ->
+            categoryView.findViewById<Button>(R.id.category_row_btn)?.let { button ->
+                button.background = getDrawable(R.drawable.rounded_button_grey)
+            }
+        }
+        val button: Button? = categoryViewList.getOrNull(currCategory - 1)?.findViewById(R.id.category_row_btn)
+        button?.background = getDrawable(R.drawable.rounded_button_green)
     }
 
     private fun updateQuestionsTotalText() {
@@ -251,12 +259,6 @@ class FormRenderingActivityUplift : AppCompatActivity() {
         }
         button.setOnClickListener {
             viewModel.changeCategory(categoryNumber)
-            categoryViewList.forEach { categoryView ->
-                categoryView.findViewById<Button>(R.id.category_row_btn)?.let { button ->
-                    button.background = getDrawable(R.drawable.rounded_button_grey)
-                }
-            }
-            it.background = getDrawable(R.drawable.rounded_button_green)
         }
         requiredTextView.text = requiredTextIconPair.first
         optionalTextView.text = viewModel.getOptionalFieldsText(categoryPair.second)
