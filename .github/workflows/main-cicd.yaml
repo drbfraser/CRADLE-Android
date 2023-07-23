@@ -159,6 +159,12 @@ jobs:
         id: get-db-version
         run: echo "::set-output name=version::$(scripts/get-latest-db-version.sh)"
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
+        # Download Artifact (latest_db_version.json) generated in previous job
+      - name: Download Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: latest_db_version
+          path: ${{ env.CUSTOM_WORKSPACE }}
       - name: Copy Lates DB Version JSON
         run: cp latest_db_version.json "${{ steps.get-db-version.outputs.version }}.json"
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
