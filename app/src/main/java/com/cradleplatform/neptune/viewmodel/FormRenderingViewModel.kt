@@ -24,6 +24,7 @@ import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.encodeMsg
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.formatSMS
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.listToString
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
+import com.cradleplatform.neptune.view.FormRenderingActivityUplift
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -288,7 +289,7 @@ class FormRenderingViewModel @Inject constructor(
     }
 
     fun isPrevButtonVisible(context: Context): Drawable? {
-        if (currentCategory().value == 1) {
+        if (currentCategory().value == FormRenderingActivityUplift.FIRST_CATEGORY_POSITION) {
             return getDrawable(context, R.drawable.ic_arrow_prev_grey_24)
         }
         return getDrawable(context, R.drawable.ic_arrow_prev_black_24)

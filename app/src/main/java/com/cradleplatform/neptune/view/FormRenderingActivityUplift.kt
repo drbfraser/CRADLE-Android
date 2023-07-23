@@ -253,7 +253,7 @@ class FormRenderingActivityUplift : AppCompatActivity() {
         val requiredTextIconPair = viewModel.getRequiredFieldsTextAndIcon(categoryPair.second, applicationContext)
 
         button.text = categoryPair.first
-        if (categoryNumber == 1) {
+        if (categoryNumber == FIRST_CATEGORY_POSITION) {
             // set the first button as selected
             button.background = getDrawable(R.drawable.rounded_button_green)
         }
@@ -275,6 +275,7 @@ class FormRenderingActivityUplift : AppCompatActivity() {
         private const val EXTRA_PATIENT_ID = "Patient id that the form is created for"
         private const val EXTRA_LANGUAGE_SELECTED = "String of language selected for a FormTemplate"
         private const val EXTRA_PATIENT_OBJECT = "The Patient object used to start patient profile"
+        const val FIRST_CATEGORY_POSITION = 1
 
         @JvmStatic
         fun makeIntentWithFormTemplate(
