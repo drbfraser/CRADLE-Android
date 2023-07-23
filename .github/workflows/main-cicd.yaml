@@ -1,0 +1,365 @@
+name: 415-Cradle/Cradle-Mobile
+# Main GitHub CI/CD pipeline definition file
+# For syntax, see: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+env: 
+  CUSTOM_WORKSPACE: /isolated-build/repo
+
+jobs:
+  display_github_contexts:
+    runs-on: [self-hosted, docker]
+    container: 
+      image: node:14
+    steps:
+      - name: Display commonly used info
+        run: |
+          echo "  CI/CD Event Name  = ${{ github.event_name }}"
+          echo "  PR request Number = ${{ github.event.pull_request.number }}"
+          echo "  Refspec           = ${{ github.ref }}"
+          echo "  Branch name       = ${{ github.ref_name }}"
+          echo "  Commit SHA        = ${{ github.sha }}"
+      - name: Dump GitHub context
+        env:
+           GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+      - name: Dump job context
+        env:
+          JOB_CONTEXT: ${{ toJson(job) }}
+        run: echo "$JOB_CONTEXT"
+      - name: Dump steps context
+        env:
+          STEPS_CONTEXT: ${{ toJson(steps) }}
+        run: echo '$STEPS_CONTEXT'
+      - name: Dump runner context
+        env:
+          RUNNER_CONTEXT: ${{ toJson(runner) }}
+        run: echo '$RUNNER_CONTEXT'
+      - name: Dump strategy context
+        env:
+          STRATEGY_CONTEXT: ${{ toJson(strategy) }}
+        run: echo '$STRATEGY_CONTEXT'
+      - name: Dump matrix context
+        env:
+          MATRIX_CONTEXT: ${{ toJson(matrix) }}
+        run: echo "$MATRIX_CONTEXT"
+
+  code_analysis:
+    runs-on: [self-hosted, docker]
+    container:
+      image: cangol/android-gradle
+    steps:
+      - name: Checkout repository into Container
+        run: | 
+          # NOTE: This code is **copied** into all jobs that needs code inside a container because 
+          # each job has its own container (must checkout the code there). Reusable workflows don't
+          # work here because tehy cannot be called as steps in a job: they must be the entire job.
+          # 
+          # Checkout the correct branch of the repo _into_ a container (without using mounts)
+          # because the /actions/checkoutv3 action checks out code on the host and then mounts it;
+          # this causes many file permission issues (especially with images using older Git versions).
+          # NOTE: Added 'oauth2:' to the clone URL (https://stackoverflow.com/questions/42148841/github-clone-with-oauth-access-token)
+          mkdir /isolated-build; cd /isolated-build
+          HTTPS_PATH_WITH_TOKEN=`echo ${{ github.repositoryUrl }} | awk '{ gsub(/git:\/\//, "\n" ); print "https://oauth2:${{ secrets.GITHUB_TOKEN }}@" $1; }'`
+          echo "Cloning from '$HTTPS_PATH_WITH_TOKEN' (it should be https://<password>@<url>.<user>.<repo>)"
+          git clone $HTTPS_PATH_WITH_TOKEN repo
+          cd repo
+          export FETCH_REF=`echo ${{ github.ref }} | cut -c 6-`
+          echo "Fetching ref '${{ github.ref }}', which is branch '${{ github.ref_name }}' using refspec '$FETCH_REF'"        
+          git fetch origin $FETCH_REF:my_build_branch
+          git checkout my_build_branch        
+          echo "Resetting to SHA '${{ github.sha }}'"
+          git reset --hard ${{ github.sha }}
+      - name: Run static code analysis
+        run: ./gradlew detekt --info --stacktrace
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
+    
+  build:
+    name: Build and Assemble Debug APK
+    runs-on: [self-hosted, docker]
+    container:
+      image: cangol/android-gradle
+    outputs: 
+      db_version_artifact: latest_db_version.json
+    steps: 
+      - name: Checkout repository into Container
+        run: | 
+          # NOTE: This code is **copied** into all jobs that needs code inside a container because 
+          # each job has its own container (must checkout the code there). Reusable workflows don't
+          # work here because tehy cannot be called as steps in a job: they must be the entire job.
+          # 
+          # Checkout the correct branch of the repo _into_ a container (without using mounts)
+          # because the /actions/checkoutv3 action checks out code on the host and then mounts it;
+          # this causes many file permission issues (especially with images using older Git versions).
+          # NOTE: Added 'oauth2:' to the clone URL (https://stackoverflow.com/questions/42148841/github-clone-with-oauth-access-token)
+          mkdir /isolated-build; cd /isolated-build
+          HTTPS_PATH_WITH_TOKEN=`echo ${{ github.repositoryUrl }} | awk '{ gsub(/git:\/\//, "\n" ); print "https://oauth2:${{ secrets.GITHUB_TOKEN }}@" $1; }'`
+          echo "Cloning from '$HTTPS_PATH_WITH_TOKEN' (it should be https://<password>@<url>.<user>.<repo>)"
+          git clone $HTTPS_PATH_WITH_TOKEN repo
+          cd repo
+          export FETCH_REF=`echo ${{ github.ref }} | cut -c 6-`
+          echo "Fetching ref '${{ github.ref }}', which is branch '${{ github.ref_name }}' using refspec '$FETCH_REF'"        
+          git fetch origin $FETCH_REF:my_build_branch
+          git checkout my_build_branch        
+          echo "Resetting to SHA '${{ github.sha }}'"
+          git reset --hard ${{ github.sha }}
+      - name: Remove current database chema JSON
+        run: rm app/schemas/com.cradleplatform.neptune.database.CradleDatabase/*.json
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Assemble Debug APK
+        run: ./gradlew assembleDebug
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Get Latest DB Version
+        id: get-db-version
+        run: echo "::set-output name=version::$(scripts/get-latest-db-version.sh)"
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Copy Latest DB Version JSON
+        run: cp "app/schemas/com.cradleplatform.neptune.database.CradleDatabase/${{ steps.get-db-version.outputs.version }}.json" latest_db_version.json
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
+      - name:  Persist Latest DB Version JSON Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: latest_db_version
+          path: ${{ env.CUSTOM_WORKSPACE }}/latest_db_version.json
+
+  validate_database_json:
+    name: Validate Database JSON
+    runs-on: [self-hosted, docker]
+    container:
+      image: cangol/android-gradle
+    needs: [ build ]
+    steps: 
+      - name: Checkout repository into Container
+        run: | 
+          # NOTE: This code is **copied** into all jobs that needs code inside a container because 
+          # each job has its own container (must checkout the code there). Reusable workflows don't
+          # work here because tehy cannot be called as steps in a job: they must be the entire job.
+          # 
+          # Checkout the correct branch of the repo _into_ a container (without using mounts)
+          # because the /actions/checkoutv3 action checks out code on the host and then mounts it;
+          # this causes many file permission issues (especially with images using older Git versions).
+          # NOTE: Added 'oauth2:' to the clone URL (https://stackoverflow.com/questions/42148841/github-clone-with-oauth-access-token)
+          mkdir /isolated-build; cd /isolated-build
+          HTTPS_PATH_WITH_TOKEN=`echo ${{ github.repositoryUrl }} | awk '{ gsub(/git:\/\//, "\n" ); print "https://oauth2:${{ secrets.GITHUB_TOKEN }}@" $1; }'`
+          echo "Cloning from '$HTTPS_PATH_WITH_TOKEN' (it should be https://<password>@<url>.<user>.<repo>)"
+          git clone $HTTPS_PATH_WITH_TOKEN repo
+          cd repo
+          export FETCH_REF=`echo ${{ github.ref }} | cut -c 6-`
+          echo "Fetching ref '${{ github.ref }}', which is branch '${{ github.ref_name }}' using refspec '$FETCH_REF'"        
+          git fetch origin $FETCH_REF:my_build_branch
+          git checkout my_build_branch        
+          echo "Resetting to SHA '${{ github.sha }}'"
+          git reset --hard ${{ github.sha }}
+      - name: Get Latest DB Version 
+        id: get-db-version
+        run: echo "::set-output name=version::$(scripts/get-latest-db-version.sh)"
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Copy Lates DB Version JSON
+        run: cp latest_db_version.json "${{ steps.get-db-version.outputs.version }}.json"
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
+      - name:  Calculate SHA256 Checksum
+        run: |
+          sha256sum -b "${{ steps.get-db-version.outputs.version }}.json" > CHECKSUMS
+          sha256sum -c CHECKSUMS
+          touch SUCCESS
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Check for Wrong Database Schema JSON
+        run: |
+          if [[ ! -f "SUCCESS" ]]; then
+            echo "Wrong database schema JSON for current database version: ${{ steps.get-db-version.outputs.version }}.json"
+            echo "This is normally autogenerated by gradle, and you need to include / update it"
+            echo "Generate it by building in Android Studio or by doing ./gradlew build"
+            echo "Alternatively, you can get the JSON from the build artifacts."
+            exit 1
+          fi
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
+   
+  test:
+    name: Run Local Unit Tests
+    runs-on: [self-hosted, docker]
+    container:
+      image: cangol/android-gradle
+    needs: [ build ]
+    outputs: 
+      test_results: test-results/
+    steps: 
+      - name: Checkout repository into Container
+        run: | 
+          # NOTE: This code is **copied** into all jobs that needs code inside a container because 
+          # each job has its own container (must checkout the code there). Reusable workflows don't
+          # work here because tehy cannot be called as steps in a job: they must be the entire job.
+          # 
+          # Checkout the correct branch of the repo _into_ a container (without using mounts)
+          # because the /actions/checkoutv3 action checks out code on the host and then mounts it;
+          # this causes many file permission issues (especially with images using older Git versions).
+          # NOTE: Added 'oauth2:' to the clone URL (https://stackoverflow.com/questions/42148841/github-clone-with-oauth-access-token)
+          mkdir /isolated-build; cd /isolated-build
+          HTTPS_PATH_WITH_TOKEN=`echo ${{ github.repositoryUrl }} | awk '{ gsub(/git:\/\//, "\n" ); print "https://oauth2:${{ secrets.GITHUB_TOKEN }}@" $1; }'`
+          echo "Cloning from '$HTTPS_PATH_WITH_TOKEN' (it should be https://<password>@<url>.<user>.<repo>)"
+          git clone $HTTPS_PATH_WITH_TOKEN repo
+          cd repo
+          export FETCH_REF=`echo ${{ github.ref }} | cut -c 6-`
+          echo "Fetching ref '${{ github.ref }}', which is branch '${{ github.ref_name }}' using refspec '$FETCH_REF'"        
+          git fetch origin $FETCH_REF:my_build_branch
+          git checkout my_build_branch        
+          echo "Resetting to SHA '${{ github.sha }}'"
+          git reset --hard ${{ github.sha }}
+      - name: Run Local Unit Tests
+        run: ./gradlew test
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Persist Test Results
+        uses: actions/upload-artifact@v2
+        with: 
+          name: test_results
+          path: ${{ env.CUSTOM_WORKSPACE}}/app/build/test-results/
+
+
+######################
+# Scheduled jobs
+######################
+
+# Run Firebase Test Lab on Google Cloud for instrumented tests (database migration test, UI tests, etc.)
+# https://console.firebase.google.com/project/cradle-vsa/testlab/
+#
+# A service account needs to be created on GCP (under IAM & Admin). A key for the service account's
+# needs to be generated and stored in a pipeline variable as GCLOUD_SERVICE_ACCOUNT_KEY. See
+# https://console.cloud.google.com/iam-admin/serviceaccounts?project=cradle-vsa&supportedpurview=project.
+#
+# More references: https://firebase.google.com/docs/test-lab/android/continuous
+
+  firebase_test_lab:
+      name: Firebase Test Lab
+      runs-on: [self-hosted, docker]
+      container:
+        image: cangol/android-gradle
+      needs: [ build ]
+      # (Derived from the gcloud CLI help pages)
+      # A list of DIMENSION=VALUE pairs which specify a target device to test
+      # against. This flag may be repeated to specify multiple devices.
+      #
+      # The four device dimensions are: model, version, locale, and orientation.
+      # If any dimensions are omitted, they will use a default value. The default
+      # value, and all possible values, for each dimension can be found with
+      # the list command for that dimension, such as $ gcloud firebase test
+      # android models list. --device is now the preferred way to specify test
+      # devices and may not be used in conjunction with --devices-ids,
+      # --os-version-ids, --locales, or --orientations. Omitting all of the
+      # preceding dimension-related flags will run tests against a single
+      # device using defaults for all four device dimensions.
+      #
+      # Examples:
+      #     - model=Nexus6
+      #     - version=23,orientation=portrait
+      #     - model=shamu,version=22,locale=zh_CN,orientation=default
+      #
+      # Keep in mind: The free plan has a daily quota of 5 test runs with physical devices,
+      # and 10 test runs with virtual devices. See https://firebase.google.com/docs/test-lab/usage-quotas-pricing
+      # The quotas reset at midnight PST.
+      # Also, this is a space-separated list!
+      strategy: 
+        matrix:
+          device: 
+            - model: "Pixel2"
+              version: "26"
+            - model: "Pixel2"
+              version: "28"
+            - model: "hwALE-H"
+              version: "21"
+      env:
+        GCLOUD_SERVICE_ACCOUNT_KEY: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_KEY }}
+        GCLOUD_SDK_VERSION: 336.0.0
+        TARGET_DEVICES: ${{ matrix.device.model }}=Pixel2,${{ matrix.device.version }}
+      steps: 
+        - name: Checkout repository into Container
+          run: | 
+            # NOTE: This code is **copied** into all jobs that needs code inside a container because 
+            # each job has its own container (must checkout the code there). Reusable workflows don't
+            # work here because tehy cannot be called as steps in a job: they must be the entire job.
+            # 
+            # Checkout the correct branch of the repo _into_ a container (without using mounts)
+            # because the /actions/checkoutv3 action checks out code on the host and then mounts it;
+            # this causes many file permission issues (especially with images using older Git versions).
+            # NOTE: Added 'oauth2:' to the clone URL (https://stackoverflow.com/questions/42148841/github-clone-with-oauth-access-token)
+            mkdir /isolated-build; cd /isolated-build
+            HTTPS_PATH_WITH_TOKEN=`echo ${{ github.repositoryUrl }} | awk '{ gsub(/git:\/\//, "\n" ); print "https://oauth2:${{ secrets.GITHUB_TOKEN }}@" $1; }'`
+            echo "Cloning from '$HTTPS_PATH_WITH_TOKEN' (it should be https://<password>@<url>.<user>.<repo>)"
+            git clone $HTTPS_PATH_WITH_TOKEN repo
+            cd repo
+            export FETCH_REF=`echo ${{ github.ref }} | cut -c 6-`
+            echo "Fetching ref '${{ github.ref }}', which is branch '${{ github.ref_name }}' using refspec '$FETCH_REF'"        
+            git fetch origin $FETCH_REF:my_build_branch
+            git checkout my_build_branch        
+            echo "Resetting to SHA '${{ github.sha }}'"
+            git reset --hard ${{ github.sha }}
+        - name: Install Google Cloud SDK
+          run: |
+            if [ ! -f "google-cloud-sdk-${GCLOUD_SDK_VERSION}-linux-x86_64.tar.gz" ]; then
+              curl -O "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GCLOUD_SDK_VERSION}-linux-x86_64.tar.gz"
+            fi
+            tar -xzf "google-cloud-sdk-${GCLOUD_SDK_VERSION}-linux-x86_64.tar.gz"
+          working-directory: ${{ env.CUSTOM_WORKSPACE }}
+        - name: Authenticate with Google Cloud
+          run: |
+            echo "${GCLOUD_SERVICE_ACCOUNT_KEY}" > cradle-vsa-gitlab.json
+            account=$(jq -r .client_email cradle-vsa-gitlab.json)
+            project_id=$(jq -r .project_id cradle-vsa-gitlab.json)
+            ./google-cloud-sdk/bin/gcloud auth activate-service-account "$account" --key-file=cradle-vsa-gitlab.json --project="$project_id"
+          working-directory: ${{ env.CUSTOM_WORKSPACE }}
+        - name: Show Available Test Models
+          run: /google-cloud-sdk/bin/gcloud firebase test android models list
+          working-directory: ${{ env.CUSTOM_WORKSPACE }}
+        - name: Assemble Debug APK
+          run: ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest
+          working-directory: ${{ env.CUSTOM_WORKSPACE }}
+        - name: Run Firebase Test Lab
+          run: |
+            device_option="${{ matrix.device.model }}=${{ matrix.device.version }}"
+            ./google-cloud-sdk/bin/gcloud firebase test android run \
+              --type instrumentation \
+              --app app/build/outputs/apk/debug/app-debug.apk \
+              --test app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk \
+              --device="${device_option}" \
+              2>&1 | tee output.log
+            result=${PIPESTATUS[0]}
+            if [ $result -ne 0 ]; then
+              exit 1
+            fi
+          working-directory: ${{ env.CUSTOM_WORKSPACE }}
+        - name: Download Test Results
+          run: |
+            gcs_bucket=$(sed -ne "s/^Raw results will be stored in your GCS bucket at \[https:\/\/console\.developers\.google\.com\/storage\/browser\/\(.*\)\]$/\1/p" output.log)
+            gcs_bucket_path="gs://$gcs_bucket"
+            device_result_dir="${{ matrix.device.model }}-${{ matrix.device.version }}"
+            mkdir -p "gcstestresults/${device_result_dir}"
+            fullpath="${gcs_bucket_path}/${device_result_dir}/**/test*.xml"
+            ./google-cloud-sdk/bin/gsutil cp "$fullpath" "
+          working-directory: ${{ env.CUSTOM_WORKSPACE }}
+          
+
+
+
+
+
+
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
