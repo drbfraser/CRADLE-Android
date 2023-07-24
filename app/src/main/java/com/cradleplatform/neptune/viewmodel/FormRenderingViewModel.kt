@@ -25,6 +25,7 @@ import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.encodeMsg
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.formatSMS
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.listToString
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
+import com.cradleplatform.neptune.view.FormRenderingActivityUplift
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -278,6 +279,32 @@ class FormRenderingViewModel @Inject constructor(
             }
         }
         return "Optional $totalAnswered/$total"
+    }
+
+    fun isNextButtonVisible(context: Context): Drawable? {
+        if (currentCategory().value == categoryList?.size) {
+            return getDrawable(context, R.drawable.ic_arrow_forward_grey_24)
+        }
+        return getDrawable(context, R.drawable.ic_arrow_forward_black_24)
+    }
+
+    fun isPrevButtonVisible(context: Context): Drawable? {
+        if (currentCategory().value == FormRenderingActivityUplift.FIRST_CATEGORY_POSITION) {
+            return getDrawable(context, R.drawable.ic_arrow_prev_grey_24)
+        }
+        return getDrawable(context, R.drawable.ic_arrow_prev_black_24)
+    }
+
+    fun goNextCategory() {
+        if (currentCategory().value != categoryList?.size) {
+            changeCategory(_currentCategory.value?.plus(1) ?: 1)
+        }
+    }
+
+    fun goPrevCategory() {
+        if (currentCategory().value != 1) {
+            changeCategory(_currentCategory.value?.minus(1) ?: 1)
+        }
     }
 
     private companion object {

@@ -42,6 +42,8 @@ class FormRenderingActivityUplift : AppCompatActivity() {
     private lateinit var bottomSheetCategoryContainer: LinearLayout
     private lateinit var bottomSheetBehaviour: BottomSheetBehavior<View>
     private lateinit var formStateBtn: ImageButton
+    private lateinit var formNextBtn: ImageButton
+    private lateinit var formPrevBtn: ImageButton
     val viewModel: FormRenderingViewModel by viewModels()
 
     override fun onSupportNavigateUp(): Boolean {
@@ -168,6 +170,17 @@ class FormRenderingActivityUplift : AppCompatActivity() {
 
         adapter = FormViewAdapterUplift(viewModel, languageSelected!!, patient)
         recyclerView.adapter = adapter
+
+        formNextBtn.background = viewModel.isNextButtonVisible(applicationContext)
+        formPrevBtn.background = viewModel.isPrevButtonVisible(applicationContext)
+
+        categoryViewList.forEach { categoryView ->
+            categoryView.findViewById<Button>(R.id.category_row_btn)?.let { button ->
+                button.background = getDrawable(R.drawable.rounded_button_grey)
+            }
+        }
+        val button: Button? = categoryViewList.getOrNull(currCategory - 1)?.findViewById(R.id.category_row_btn)
+        button?.background = getDrawable(R.drawable.rounded_button_green)
     }
 
     private fun updateQuestionsTotalText() {
@@ -215,6 +228,19 @@ class FormRenderingActivityUplift : AppCompatActivity() {
             bottomSheetCategoryContainer.addView(category)
             categoryViewList.add(category)
         }
+
+        formNextBtn = findViewById(R.id.form_next_category_button)
+        formPrevBtn = findViewById(R.id.form_prev_category_button)
+
+        formNextBtn.background = viewModel.isNextButtonVisible(applicationContext)
+        formPrevBtn.background = viewModel.isPrevButtonVisible(applicationContext)
+
+        formNextBtn.setOnClickListener {
+            viewModel.goNextCategory()
+        }
+        formPrevBtn.setOnClickListener {
+            viewModel.goPrevCategory()
+        }
     }
 
     private fun getCategoryRow(categoryPair: Pair<String, List<Question>?>, categoryNumber: Int): View {
@@ -227,18 +253,12 @@ class FormRenderingActivityUplift : AppCompatActivity() {
         val requiredTextIconPair = viewModel.getRequiredFieldsTextAndIcon(categoryPair.second, applicationContext)
 
         button.text = categoryPair.first
-        if (categoryNumber == 1) {
+        if (categoryNumber == FIRST_CATEGORY_POSITION) {
             // set the first button as selected
             button.background = getDrawable(R.drawable.rounded_button_green)
         }
         button.setOnClickListener {
             viewModel.changeCategory(categoryNumber)
-            categoryViewList.forEach { categoryView ->
-                categoryView.findViewById<Button>(R.id.category_row_btn)?.let { button ->
-                    button.background = getDrawable(R.drawable.rounded_button_grey)
-                }
-            }
-            it.background = getDrawable(R.drawable.rounded_button_green)
         }
         requiredTextView.text = requiredTextIconPair.first
         optionalTextView.text = viewModel.getOptionalFieldsText(categoryPair.second)
@@ -255,6 +275,7 @@ class FormRenderingActivityUplift : AppCompatActivity() {
         private const val EXTRA_PATIENT_ID = "Patient id that the form is created for"
         private const val EXTRA_LANGUAGE_SELECTED = "String of language selected for a FormTemplate"
         private const val EXTRA_PATIENT_OBJECT = "The Patient object used to start patient profile"
+        const val FIRST_CATEGORY_POSITION = 1
 
         @JvmStatic
         fun makeIntentWithFormTemplate(
