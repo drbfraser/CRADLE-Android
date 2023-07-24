@@ -1,5 +1,4 @@
 package com.cradleplatform.neptune.view
-
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -12,12 +11,14 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import androidx.lifecycle.ViewModelProvider
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.Util
 import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
 import com.cradleplatform.neptune.viewmodel.SyncRemainderHelper
+import com.cradleplatform.neptune.viewmodel.UserViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -26,6 +27,7 @@ import javax.inject.Inject
 class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
     @Inject
     lateinit var sharedPreferences: SharedPreferences
+    private lateinit var userViewModel: UserViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,6 +41,9 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
             actionBar.setDisplayUseLogoEnabled(true)
             actionBar.title = ""
         }
+
+        userViewModel = ViewModelProvider(this).get(UserViewModel::class.java)
+        userViewModel.updateUserPhoneNumber()
 
         networkCheck()
         setVersionName()
@@ -55,15 +60,15 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         isNetworkAvailable.observe(this) {
             when (it) {
                 true -> {
-                    statImg.alpha = Companion.OPACITY_FULL
-                    statCardview.alpha = Companion.OPACITY_FULL
+                    statImg.alpha = OPACITY_FULL
+                    statCardview.alpha = OPACITY_FULL
                     statView.isClickable = true
                     statCardview.isClickable = true
                     statImg.isClickable = true
                 }
                 false -> {
-                    statImg.alpha = Companion.OPACITY_HALF
-                    statCardview.alpha = Companion.OPACITY_HALF
+                    statImg.alpha = OPACITY_HALF
+                    statCardview.alpha = OPACITY_HALF
                     statView.isClickable = false
                     statCardview.isClickable = false
                     statImg.isClickable = false
@@ -73,7 +78,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun setVersionName() {
-        val textView: TextView = findViewById<TextView>(R.id.versionNameTextView)
+        val textView: TextView = findViewById(R.id.versionNameTextView)
         textView.text = Util.getVersionName(this)
     }
 

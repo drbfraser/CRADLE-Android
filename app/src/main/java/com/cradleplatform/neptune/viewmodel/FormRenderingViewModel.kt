@@ -18,8 +18,9 @@ import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
 import com.cradleplatform.neptune.http_sms_service.http.Protocol
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.model.QuestionTypeEnum
-import com.cradleplatform.neptune.utilities.AESEncryptor.Companion.getSecretKeyFromString
+import com.cradleplatform.neptune.utilities.AESEncryptor
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.encodeMsg
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.formatSMS
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.listToString
@@ -180,10 +181,9 @@ class FormRenderingViewModel @Inject constructor(
                 formResponse
             )
 
-            val encodedMsg = encodeMsg(
-                json,
-                getSecretKeyFromString(applicationContext.getString(R.string.aes_secret_key))
-            )
+            val email = sharedPreferences.getString(LoginManager.EMAIL_KEY, null) ?: error("Encrypt failed")
+            val stringKey = AESEncryptor.generateRandomKey(email)
+            val encodedMsg = encodeMsg(json, AESEncryptor.getSecretKeyFromString(stringKey))
 
             val smsRelayRequestCounter = sharedPreferences.getLong(
                 applicationContext.getString(R.string.sms_relay_request_counter), 0

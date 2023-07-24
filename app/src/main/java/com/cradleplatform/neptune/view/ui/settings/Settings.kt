@@ -1,11 +1,12 @@
 package com.cradleplatform.neptune.view.ui.settings
-
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
+import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceFragmentCompat
@@ -26,6 +27,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import android.text.InputType
 
 @AndroidEntryPoint
 class SettingsActivity : AppCompatActivity() {
@@ -179,6 +181,30 @@ class SettingsFragment : PreferenceFragmentCompat() {
                             .show()
                     }
                 }
+                true
+            }
+
+        findPreference(R.string.key_change_relay_phone_number)
+            ?.withOnClickListener {
+                val phoneNumberEditText = EditText(requireContext())
+                phoneNumberEditText.hint = "Enter Phone Number"
+                phoneNumberEditText.inputType = InputType.TYPE_CLASS_PHONE
+                AlertDialog.Builder(requireActivity())
+                    .setTitle(R.string.change_relay_phone_number_title)
+                    .setView(phoneNumberEditText)
+                    .setPositiveButton("Save") { dialog, _ ->
+                        // val newPhoneNumber = phoneNumberEditText.text.toString().trim()
+                        // TODO: perform the appropriate API call to validate the phone number
+                        // TODO: if the phone number is valid, change the relay phone number
+                        // TODO: display appropriate toast depending on the result
+                        dialog.dismiss()
+                    }
+                    .setNegativeButton("Cancel") { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .setIcon(R.drawable.ic_sync)
+                    .create()
+                    .show()
                 true
             }
 
