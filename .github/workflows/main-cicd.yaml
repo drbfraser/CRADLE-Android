@@ -159,7 +159,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with: 
           name: test_results
-          path: ${{ env.CUSTOM_WORKSPACE}}/app/build/test-results/
+          path: ${{ env.CUSTOM_WORKSPACE }}/app/build/test-results/
 
 
 ######################
