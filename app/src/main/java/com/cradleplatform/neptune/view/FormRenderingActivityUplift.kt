@@ -167,6 +167,7 @@ class FormRenderingActivityUplift : AppCompatActivity() {
 
         bottomSheetBehaviour.state = BottomSheetBehavior.STATE_COLLAPSED
         formStateBtn.background = getDrawable(R.drawable.ic_baseline_arrow_up_24)
+        recyclerView.alpha = 1F
 
         adapter = FormViewAdapterUplift(viewModel, languageSelected!!, patient)
         recyclerView.adapter = adapter
@@ -212,10 +213,12 @@ class FormRenderingActivityUplift : AppCompatActivity() {
         formStateBtn.setOnClickListener {
             when (bottomSheetBehaviour.state) {
                 BottomSheetBehavior.STATE_EXPANDED -> {
+                    recyclerView.alpha = 1F
                     bottomSheetBehaviour.state = BottomSheetBehavior.STATE_COLLAPSED
                     formStateBtn.background = getDrawable(R.drawable.ic_baseline_arrow_up_24)
                 }
                 else -> {
+                    recyclerView.alpha = 0.3F
                     bottomSheetBehaviour.state = BottomSheetBehavior.STATE_EXPANDED
                     formStateBtn.background = getDrawable(R.drawable.ic_baseline_arrow_down_24)
                 }
