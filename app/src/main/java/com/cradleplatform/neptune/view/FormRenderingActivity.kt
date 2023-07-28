@@ -84,7 +84,7 @@ class FormRenderingActivity : AppCompatActivity() {
 
         //Clear previous answers in view-model
         viewModel.clearAnswers()
-        viewModel.changeCategory(1)
+        viewModel.changeCategory(FIRST_CATEGORY_POSITION)
 
         setUpBottomSheet(intent.getStringExtra(EXTRA_LANGUAGE_SELECTED))
 
