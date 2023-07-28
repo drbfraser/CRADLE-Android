@@ -100,11 +100,11 @@ class FormSelectionActivity : AppCompatActivity() {
                 val formTemplate = viewModel.getFormTemplateFromName(formTemplateName)
 
                 val intent = FormRenderingActivity.makeIntentWithFormTemplate(
-                        this@FormSelectionActivity,
-                        formTemplate,
-                        formLanguage,
-                        intent.getStringExtra(EXTRA_PATIENT_ID)!!,
-                        intent.getSerializableExtra(FORM_SELECTION_EXTRA_PATIENT) as Patient
+                    this@FormSelectionActivity,
+                    formTemplate,
+                    formLanguage,
+                    intent.getStringExtra(EXTRA_PATIENT_ID)!!,
+                    intent.getSerializableExtra(FORM_SELECTION_EXTRA_PATIENT) as Patient
                 )
 
                 startActivity(intent)
