@@ -3,9 +3,11 @@ package com.cradleplatform.neptune.view
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.graphics.Rect
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.MotionEvent
 import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
@@ -40,6 +42,7 @@ class FormRenderingActivityUplift : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var bottomSheetCurrentSection: TextView
     private lateinit var bottomSheetCategoryContainer: LinearLayout
+    private lateinit var bottomSheet: LinearLayout
     private lateinit var bottomSheetBehaviour: BottomSheetBehavior<View>
     private lateinit var formStateBtn: ImageButton
     private lateinit var formNextBtn: ImageButton
@@ -165,8 +168,7 @@ class FormRenderingActivityUplift : AppCompatActivity() {
             currCategory, viewModel.categoryList?.size ?: 1
         )
 
-        bottomSheetBehaviour.state = BottomSheetBehavior.STATE_COLLAPSED
-        formStateBtn.background = getDrawable(R.drawable.ic_baseline_arrow_up_24)
+        hideBottomSheet()
 
         adapter = FormViewAdapterUplift(viewModel, languageSelected!!, patient)
         recyclerView.adapter = adapter
@@ -205,19 +207,18 @@ class FormRenderingActivityUplift : AppCompatActivity() {
     private fun setUpBottomSheet(languageSelected: String?) {
         bottomSheetCategoryContainer = findViewById(R.id.form_category_container)
         bottomSheetCurrentSection = findViewById(R.id.bottomSheetCurrentSection)
-        bottomSheetBehaviour = BottomSheetBehavior.from(findViewById(R.id.form_bottom_sheet))
+        bottomSheet = findViewById(R.id.form_bottom_sheet)
+        bottomSheetBehaviour = BottomSheetBehavior.from(bottomSheet)
         formStateBtn = findViewById(R.id.form_state_button)
 
         bottomSheetBehaviour.isDraggable = false
         formStateBtn.setOnClickListener {
             when (bottomSheetBehaviour.state) {
                 BottomSheetBehavior.STATE_EXPANDED -> {
-                    bottomSheetBehaviour.state = BottomSheetBehavior.STATE_COLLAPSED
-                    formStateBtn.background = getDrawable(R.drawable.ic_baseline_arrow_up_24)
+                    hideBottomSheet()
                 }
                 else -> {
-                    bottomSheetBehaviour.state = BottomSheetBehavior.STATE_EXPANDED
-                    formStateBtn.background = getDrawable(R.drawable.ic_baseline_arrow_down_24)
+                    showBottomSheet()
                 }
             }
         }
@@ -268,6 +269,35 @@ class FormRenderingActivityUplift : AppCompatActivity() {
         }
 
         return category
+    }
+
+    private fun hideBottomSheet() {
+        recyclerView.alpha = 1F
+        bottomSheetBehaviour.state = BottomSheetBehavior.STATE_COLLAPSED
+        formStateBtn.background = getDrawable(R.drawable.ic_baseline_arrow_up_24)
+    }
+
+    private fun showBottomSheet() {
+        recyclerView.alpha = 0.3F
+        bottomSheetBehaviour.state = BottomSheetBehavior.STATE_EXPANDED
+        formStateBtn.background = getDrawable(R.drawable.ic_baseline_arrow_down_24)
+    }
+
+    /**
+     * Hide bottom sheet if clicked outside boundaries
+     * Code taken from: https://stackoverflow.com/questions/38185902/android-bottomsheet-how-to-collapse-when-clicked-outside
+     */
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            if (bottomSheetBehaviour.state == BottomSheetBehavior.STATE_EXPANDED) {
+                val outRect = Rect()
+                bottomSheet.getGlobalVisibleRect(outRect)
+                if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
+                    hideBottomSheet()
+                }
+            }
+        }
+        return super.dispatchTouchEvent(event)
     }
 
     companion object {
