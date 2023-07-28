@@ -5,7 +5,9 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
 import android.graphics.Color
-import android.util.Log
+import android.graphics.Typeface
+import android.text.SpannableString
+import android.text.style.StyleSpan
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -45,7 +47,7 @@ class FormViewAdapter(
     lateinit var context: Context
 
     //Getting the Question List
-    private var mList = viewModel.fullQuestionList()
+    private var mList = viewModel.getCurrentQuestionsList()
 
     inner class ViewHolder(val binding: CardLayoutBinding) : RecyclerView.ViewHolder(binding.root)
 
@@ -73,7 +75,20 @@ class FormViewAdapter(
             it.language == languageSelected
         }?.questionText ?: R.string.not_available.toString()
 
-        holder.binding.tvQuestion.text = questionText
+        // add number of question in front of question
+        if (questionText != R.string.not_available.toString()) {
+            questionText = "${position + 1}. $questionText"
+        }
+
+        // add asterisk if field is required
+        if (mList[position].required == true) {
+            questionText += " *"
+        }
+
+        val boldQuestionString = SpannableString(questionText)
+        boldQuestionString.setSpan(StyleSpan(Typeface.BOLD), 0, boldQuestionString.length, 0)
+
+        holder.binding.tvQuestion.text = boldQuestionString
 
         //Depending on question type, we are setting one of the four possible types of inputs to visible.
         holder.binding.tvQuestion.textSize = 18f
@@ -264,12 +279,9 @@ class FormViewAdapter(
         //Multiple Choice Answers Listener
         holder.binding.rgMultipleChoice.setOnCheckedChangeListener { radioGroup, i ->
             var selectedID = radioGroup.checkedRadioButtonId
-            var selectedButton = radioGroup.findViewById<RadioButton>(selectedID)
-            //var selectedText = selectedButton.text.toString()
             var mcidArray = listOf(selectedID)
 
             viewModel.addAnswer(questionID, Answer.createMcAnswer(mcidArray))
-            //Log.d("TAG123", selectedButton.id.toString())
         }
     }
 
@@ -320,7 +332,6 @@ class FormViewAdapter(
 
     private fun saveAnswerForDateTime(holder: FormViewAdapter.ViewHolder, questionId: String?) {
         val textAnswer = holder.binding.btnDatePicker.text.toString()
-        Log.d("TAG123", textAnswer)
         viewModel.addAnswer(
             questionId!!,
             Answer.createTextAnswer(textAnswer)
