@@ -63,11 +63,12 @@ class FormRenderingViewModel @Inject constructor(
         }
     }
 
-    fun setCategorizedQuestions(languageSelected: String) {
-        categoryList = getCategorizedQuestions(languageSelected)
+    fun setCategorizedQuestions(languageSelected: String, context: Context) {
+        categoryList = getCategorizedQuestions(languageSelected, context)
     }
 
-    private fun getCategorizedQuestions(languageSelected: String): List<Pair<String, List<Question>?>> {
+    private fun getCategorizedQuestions(languageSelected: String, context: Context):
+        List<Pair<String, List<Question>?>> {
         if (currentFormTemplate?.questions.isNullOrEmpty()) {
             return listOf()
         }
@@ -79,7 +80,7 @@ class FormRenderingViewModel @Inject constructor(
             }
         }
 
-        var categoryName = R.string.form_uncategorized.toString()
+        var categoryName = context.getString(R.string.form_uncategorized)
         if (indicesOfCategory.isEmpty()) {
             return listOf(Pair(categoryName, currentFormTemplate!!.questions))
         }
@@ -97,7 +98,7 @@ class FormRenderingViewModel @Inject constructor(
             val langVersion = currentFormTemplate!!.questions!![categoryIndex].languageVersions
             categoryName = langVersion?.find {
                 it.language == languageSelected
-            }?.questionText ?: R.string.not_available.toString()
+            }?.questionText ?: context.getString(R.string.not_available)
 
             if (categoryIndex != currentFormTemplate!!.questions!!.size - 1) {
                 //otherwise do not create a pair for this as category is last

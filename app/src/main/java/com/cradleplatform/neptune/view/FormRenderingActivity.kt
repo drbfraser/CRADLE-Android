@@ -223,7 +223,7 @@ class FormRenderingActivity : AppCompatActivity() {
             }
         }
 
-        viewModel.setCategorizedQuestions(languageSelected ?: "English")
+        viewModel.setCategorizedQuestions(languageSelected ?: "English", applicationContext)
         viewModel.categoryList?.forEachIndexed { index, pair ->
             val category = getCategoryRow(pair, index + 1)
             bottomSheetCategoryContainer.addView(category)
