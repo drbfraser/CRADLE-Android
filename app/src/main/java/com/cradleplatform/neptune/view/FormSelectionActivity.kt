@@ -29,8 +29,6 @@ class FormSelectionActivity : AppCompatActivity() {
 
     private var currentPatient: Patient? = null
 
-    private val formUpliftEnabled = false
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_form_selection)
@@ -101,23 +99,13 @@ class FormSelectionActivity : AppCompatActivity() {
             } else {
                 val formTemplate = viewModel.getFormTemplateFromName(formTemplateName)
 
-                val intent = if (formUpliftEnabled) {
-                    FormRenderingActivityUplift.makeIntentWithFormTemplate(
-                        this@FormSelectionActivity,
-                        formTemplate,
-                        formLanguage,
-                        intent.getStringExtra(EXTRA_PATIENT_ID)!!,
-                        intent.getSerializableExtra(FORM_SELECTION_EXTRA_PATIENT) as Patient
-                    )
-                } else {
-                    FormRenderingActivity.makeIntentWithFormTemplate(
-                        this@FormSelectionActivity,
-                        formTemplate,
-                        formLanguage,
-                        intent.getStringExtra(EXTRA_PATIENT_ID)!!,
-                        intent.getSerializableExtra(FORM_SELECTION_EXTRA_PATIENT) as Patient
-                    )
-                }
+                val intent = FormRenderingActivity.makeIntentWithFormTemplate(
+                    this@FormSelectionActivity,
+                    formTemplate,
+                    formLanguage,
+                    intent.getStringExtra(EXTRA_PATIENT_ID)!!,
+                    intent.getSerializableExtra(FORM_SELECTION_EXTRA_PATIENT) as Patient
+                )
 
                 startActivity(intent)
             }
