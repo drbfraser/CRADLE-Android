@@ -43,7 +43,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         }
 
         userViewModel = ViewModelProvider(this).get(UserViewModel::class.java)
-        userViewModel.updateUserPhoneNumber()
+        userViewModel.updateUserPhoneNumbers()
 
         networkCheck()
         setVersionName()
