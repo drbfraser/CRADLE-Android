@@ -16,7 +16,7 @@ class UserViewModel @Inject constructor(
     application: Application
 ) : AndroidViewModel(application) {
 
-    private lateinit var previousPhoneNumber: String
+    private lateinit var currentPhoneNumber: String
 
     companion object {
         const val userPhoneNumberKey = "user_phone_number"
@@ -33,7 +33,7 @@ class UserViewModel @Inject constructor(
             val telManager = getApplication<Application>().getSystemService(TELEPHONY_SERVICE) as TelephonyManager
             val newPhoneNumber = telManager.line1Number
 
-            previousPhoneNumber = sharedPreferences.getString(userPhoneNumberKey, "") ?: ""
+            currentPhoneNumber = sharedPreferences.getString(userPhoneNumberKey, "") ?: ""
 
             if (hasUserPhoneNumberChanged(newPhoneNumber)) {
                 // Store the new phone number in SharedPreferences
@@ -46,10 +46,10 @@ class UserViewModel @Inject constructor(
     }
 
     fun getCurrentUserPhoneNumber() : String {
-        return previousPhoneNumber
+        return currentPhoneNumber
     }
 
     private fun hasUserPhoneNumberChanged(newPhoneNumber: String): Boolean {
-        return newPhoneNumber != previousPhoneNumber
+        return newPhoneNumber != currentPhoneNumber
     }
 }
