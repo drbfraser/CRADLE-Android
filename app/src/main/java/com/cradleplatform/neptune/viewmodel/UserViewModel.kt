@@ -45,6 +45,10 @@ class UserViewModel @Inject constructor(
         } // else: user doesn't exist or permission is not granted
     }
 
+    fun getCurrentUserPhoneNumber() : String {
+        return previousPhoneNumber
+    }
+
     private fun hasUserPhoneNumberChanged(newPhoneNumber: String): Boolean {
         return newPhoneNumber != previousPhoneNumber
     }
