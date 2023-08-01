@@ -18,15 +18,11 @@ class UserViewModel @Inject constructor(
 
     private lateinit var previousPhoneNumber: String
 
-    private fun setPreviousPhoneNumber(phoneNumber: String) {
-        previousPhoneNumber = phoneNumber
-    }
-
     companion object {
         const val userPhoneNumberKey = "user_phone_number"
     }
 
-    fun updateUserPhoneNumber() {
+    fun updateUserPhoneNumbers() {
         if (ActivityCompat.checkSelfPermission(getApplication(), Manifest.permission.READ_SMS) ==
             PackageManager.PERMISSION_GRANTED
             && ActivityCompat.checkSelfPermission(getApplication(), Manifest.permission.READ_PHONE_NUMBERS) ==
@@ -37,14 +33,14 @@ class UserViewModel @Inject constructor(
             val telManager = getApplication<Application>().getSystemService(TELEPHONY_SERVICE) as TelephonyManager
             val newPhoneNumber = telManager.line1Number
 
-            val previousPhoneNumber = sharedPreferences.getString(UserViewModel.userPhoneNumberKey, "") ?: ""
-            setPreviousPhoneNumber(previousPhoneNumber)
+            previousPhoneNumber = sharedPreferences.getString(userPhoneNumberKey, "") ?: ""
 
             if (hasUserPhoneNumberChanged(newPhoneNumber)) {
                 // Store the new phone number in SharedPreferences
                 sharedPreferences.edit().putString(userPhoneNumberKey, newPhoneNumber).apply()
 
                 // TODO: update the user's phone number in the database
+                println("Debug-number: newPhoneNumber = $newPhoneNumber")
             }
         } // else: user doesn't exist or permission is not granted
     }
