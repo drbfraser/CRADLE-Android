@@ -192,7 +192,7 @@ class FormRenderingActivity : AppCompatActivity() {
             }
         }
         val button: Button? = categoryViewList.getOrNull(currCategory - 1)?.findViewById(R.id.category_row_btn)
-        button?.background = getDrawable(R.drawable.rounded_button_green)
+        button?.background = getDrawable(R.drawable.rounded_button_teal)
     }
 
     private fun updateQuestionsTotalText() {
@@ -266,7 +266,7 @@ class FormRenderingActivity : AppCompatActivity() {
         button.text = categoryPair.first
         if (categoryNumber == FIRST_CATEGORY_POSITION) {
             // set the first button as selected
-            button.background = getDrawable(R.drawable.rounded_button_green)
+            button.background = getDrawable(R.drawable.rounded_button_teal)
         }
         button.setOnClickListener {
             viewModel.changeCategory(categoryNumber)
