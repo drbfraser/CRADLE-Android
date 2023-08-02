@@ -21,6 +21,8 @@ import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.model.QuestionTypeEnum
 import com.cradleplatform.neptune.utilities.AESEncryptor
+import com.cradleplatform.neptune.utilities.NetworkHelper
+import com.cradleplatform.neptune.utilities.NetworkStatus
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.encodeMsg
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.formatSMS
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.listToString
@@ -162,6 +164,21 @@ class FormRenderingViewModel @Inject constructor(
 
     fun clearAnswers() {
         currentAnswers.clear()
+    }
+
+    fun getInternetTypeString(context: Context): String {
+        return when (NetworkHelper.isConnectedToInternet(context)) {
+            NetworkStatus.CELLULAR -> {
+                context.getString(R.string.form_dialog_connected_to_cellular)
+            }
+
+            NetworkStatus.WIFI -> {
+                context.getString(R.string.form_dialog_connected_to_wifi)
+            }
+            else -> {
+                ""
+            }
+        }
     }
 
     suspend fun submitForm(
