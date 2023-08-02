@@ -41,7 +41,7 @@ class UserViewModel @Inject constructor(
                 // Get the list of the user phone numbers that were fetched at login
                 val allPhoneNumbers = parsePhoneNumberString(sharedPreferences.getString(PHONE_NUMBERS, ""))
                 // Check if fetchedPhoneNumber is in allPhoneNumbers
-                if (!allPhoneNumbers.contains(fetchedPhoneNumber)){
+                if (!allPhoneNumbers.contains(fetchedPhoneNumber)) {
                     return fetchedPhoneNumber
                 }
             }
@@ -69,8 +69,7 @@ class UserViewModel @Inject constructor(
         println("Debug-number-view-model: allPhoneNumbers = $allPhoneNumbers")
     }
 
-
-    fun getCurrentUserPhoneNumber() : String {
+    fun getCurrentUserPhoneNumber(): String {
         return currentPhoneNumber
     }
 
@@ -78,7 +77,7 @@ class UserViewModel @Inject constructor(
         return fetchedPhoneNumber != currentPhoneNumber
     }
 
-    private fun parsePhoneNumberString(allPhoneNumbersString: String?) : List<String> {
+    private fun parsePhoneNumberString(allPhoneNumbersString: String?): List<String> {
         var allPhoneNumbers = listOf<String>()
         if (!allPhoneNumbersString.isNullOrEmpty()) {
             allPhoneNumbersString.split(",").also { allPhoneNumbers = it }

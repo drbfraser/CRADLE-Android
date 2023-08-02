@@ -139,7 +139,8 @@ open class PatientReferralActivity : AppCompatActivity() {
         intentFilter.addAction("android.provider.Telephony.SMS_RECEIVED")
         intentFilter.priority = Int.MAX_VALUE
 
-        val phoneNumber = sharedPreferences.getString(LoginManager.CURRENT_PHONE_NUMBER, null) ?: error("invalid phone number")
+        val phoneNumber = sharedPreferences.getString(LoginManager.CURRENT_PHONE_NUMBER, null)
+            ?: error("invalid phone number")
         smsReceiver = SMSReceiver(smsSender, phoneNumber)
         registerReceiver(smsReceiver, intentFilter)
     }

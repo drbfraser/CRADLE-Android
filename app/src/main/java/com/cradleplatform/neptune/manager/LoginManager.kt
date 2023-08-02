@@ -13,7 +13,6 @@ import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.utilities.SharedPreferencesMigration
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
