@@ -719,4 +719,8 @@
     <string name="form_submission_success">Form submitted successfully</string>
     <string name="form_uncategorized">Uncategorized</string>
     <string name="form_current_section">Section %d/%d</string>
+
+    <!-- User Phone Strings -->
+    <string name="phone_new_number_detected">A new number has been detected</string>
+    <string name="phone_update_number_to">Would you like to update number to %s</string>
 </resources>
