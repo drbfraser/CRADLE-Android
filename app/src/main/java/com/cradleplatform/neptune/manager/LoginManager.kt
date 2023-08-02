@@ -2,6 +2,7 @@ package com.cradleplatform.neptune.manager
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.text.TextUtils
 import android.util.Log
 import androidx.core.content.edit
 import com.cradleplatform.neptune.R
@@ -36,6 +37,7 @@ class LoginManager @Inject constructor(
         const val TOKEN_KEY = "token"
         const val EMAIL_KEY = "loginEmail"
         const val PHONE_NUMBERS = "phoneNumbers"
+        const val CURRENT_PHONE_NUMBER = "currentPhoneNumbers"
         const val USER_ID_KEY = "userId"
     }
 
@@ -79,13 +81,15 @@ class LoginManager @Inject constructor(
             if (loginResult is NetworkResult.Success) {
                 val loginResponse = loginResult.value
                 println("debug-login: $loginResponse")
+                //TODO: Consider using UserViewModel ?
                 sharedPreferences.edit(commit = true) {
                     putString(TOKEN_KEY, loginResponse.token)
                     putInt(USER_ID_KEY, loginResponse.userId)
                     putString(EMAIL_KEY, loginResponse.email)
                     // Convert phoneNumber list to a JSON string
-                    val phoneNumberJson = Gson().toJson(loginResponse.phoneNumbers)
-                    putString(PHONE_NUMBERS, phoneNumberJson)
+
+                    val phoneNumbersSerialized = TextUtils.join(",", loginResponse.phoneNumbers)
+                    putString(PHONE_NUMBERS, phoneNumbersSerialized)
                     putString(
                         context.getString(R.string.key_vht_name),
                         loginResponse.firstName
@@ -146,7 +150,7 @@ data class LoginResponse(
     @JsonProperty
     val healthFacilityName: String?,
     @JsonProperty
-    val phoneNumbers: List<String>?,
+    val phoneNumbers: List<String>,
     @JsonProperty
     val userId: Int,
     @JsonProperty
