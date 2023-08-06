@@ -16,6 +16,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * ViewModel for managing user-related operations and data.
+ * As of Aug 6, 2023: handles the detection of changes in users' phone numbers
+ * and updates platform's database.
+ * @param sharedPreferences The SharedPreferences instance for storing user data.
+ * @param application The application context.
+ * @param restApi The RestApi instance for making network requests.
+ */
 @HiltViewModel
 class UserViewModel @Inject constructor(
     private val sharedPreferences: SharedPreferences,
@@ -23,10 +31,13 @@ class UserViewModel @Inject constructor(
     private val restApi: RestApi
 ) : AndroidViewModel(application) {
 
+    // TODO: check whether is should be the source of SMS and handle the edge cases
+    //  - e.g.: User selects no when asked to update their phone number.
     private lateinit var currentPhoneNumber: String
 
     /**
-     * Checks if the current user's phone number, fetched from the Android device, matches the number stored in the platform's database.
+     * Checks if the current user's phone number, fetched from the Android device, matches the
+     * number stored in the platform's database.
      * If the phone number differs from the database, returns the new phone number.
      * If the phone number has not changed, returns an empty string.
      *
@@ -57,8 +68,15 @@ class UserViewModel @Inject constructor(
         return ""
     }
 
+    /**
+     * Updates the user's phone numbers in the platform's database and updates the
+     * current user's phone number.
+     *
+     * @param phoneNumber The new phone number to be associated with the user.
+     */
     fun updateUserPhoneNumbers(phoneNumber: String) {
         // Add the user's phone number to the database.
+        // TODO: Handle database update failure
         viewModelScope.launch {
             val userId = sharedPreferences.getInt(LoginManager.USER_ID_KEY, -1)
             if (userId != -1) {
@@ -68,7 +86,8 @@ class UserViewModel @Inject constructor(
         }
 
         val allPhoneNumbers = parsePhoneNumberString(sharedPreferences.getString(PHONE_NUMBERS, ""))
-        //TODO:
+        //TODO: CHECK of having CURRENT_PHONE_NUMBER is necessary
+        // TODO:Instead of sharedPreferences, use userViewModel's getCurrentUserPhoneNumber method
         // Set the current phone number - This number is the source of SMS and will be used to validate user
         // sharedPreferences.edit().putString(CURRENT_PHONE_NUMBER, fetchedPhoneNumber).apply()
         println("Debug-number-view-model: A new phone number has been detected")
@@ -76,14 +95,33 @@ class UserViewModel @Inject constructor(
         println("Debug-number-view-model: allPhoneNumbers = $allPhoneNumbers")
     }
 
+    /**
+     * Retrieves the current phone number associated with the user.
+     *
+     * @return The current user's phone number.
+     */
     fun getCurrentUserPhoneNumber(): String {
         return currentPhoneNumber
     }
 
+    /**
+     * Checks whether the user's phone number has changed from the previously fetched number.
+     *
+     * @param fetchedPhoneNumber The phone number fetched from the Android device.
+     * @return `true` if the phone number has changed, `false` otherwise.
+     */
     private fun hasUserPhoneNumberChanged(fetchedPhoneNumber: String): Boolean {
         return fetchedPhoneNumber != currentPhoneNumber
     }
 
+    /**
+     * Parses the comma-separated string of phone numbers (which is the encoding format in which
+     * all of the user's phone numbers are stored in the sharedPreferences) into a kotlin list of
+     * phone numbers (string).
+     *
+     * @param allPhoneNumbersString The string containing comma-separated phone numbers.
+     * @return A kotlin list of parsed phone numbers (string).
+     */
     private fun parsePhoneNumberString(allPhoneNumbersString: String?): List<String> {
         var allPhoneNumbers = listOf<String>()
         if (!allPhoneNumbersString.isNullOrEmpty()) {
