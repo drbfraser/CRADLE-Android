@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
+import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
@@ -142,9 +143,18 @@ class FormRenderingActivity : AppCompatActivity() {
         builder.setTitle(R.string.how_to_submit)
         builder.setMessage(R.string.choose_an_option)
 
-        builder.setPositiveButton(R.string.http) { _, _ ->
-            formSubmission(languageSelected, "HTTP")
-            finish()
+        val internetString = viewModel.getInternetTypeString(applicationContext)
+
+        if (internetString.isEmpty()) {
+            builder.setPositiveButton(getString(R.string.form_dialog_not_connected_internet)) { _, _ ->
+                val intent = Intent(Settings.ACTION_WIRELESS_SETTINGS)
+                startActivity(intent)
+            }
+        } else {
+            builder.setPositiveButton(internetString) { _, _ ->
+                formSubmission(languageSelected, "HTTP")
+                finish()
+            }
         }
 
         builder.setNegativeButton(R.string.SMS) { _, _ ->
@@ -182,7 +192,7 @@ class FormRenderingActivity : AppCompatActivity() {
             }
         }
         val button: Button? = categoryViewList.getOrNull(currCategory - 1)?.findViewById(R.id.category_row_btn)
-        button?.background = getDrawable(R.drawable.rounded_button_green)
+        button?.background = getDrawable(R.drawable.rounded_button_teal)
     }
 
     private fun updateQuestionsTotalText() {
@@ -256,7 +266,7 @@ class FormRenderingActivity : AppCompatActivity() {
         button.text = categoryPair.first
         if (categoryNumber == FIRST_CATEGORY_POSITION) {
             // set the first button as selected
-            button.background = getDrawable(R.drawable.rounded_button_green)
+            button.background = getDrawable(R.drawable.rounded_button_teal)
         }
         button.setOnClickListener {
             viewModel.changeCategory(categoryNumber)
