@@ -43,10 +43,11 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         }
 
         userViewModel = ViewModelProvider(this).get(UserViewModel::class.java)
-        userViewModel.isNewNumber().let {
+        userViewModel.getNewNumber().let {
             if (it.isNotEmpty()) {
                 showPhoneChangedDialog(it)
             }
+            // else: getNewNumber returned null meaning new phone number has not been detected
         }
 
         networkCheck()

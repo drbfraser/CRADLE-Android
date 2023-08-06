@@ -25,7 +25,14 @@ class UserViewModel @Inject constructor(
 
     private lateinit var currentPhoneNumber: String
 
-    fun isNewNumber(): String {
+    /**
+     * Checks if the current user's phone number, fetched from the Android device, matches the number stored in the platform's database.
+     * If the phone number differs from the database, returns the new phone number.
+     * If the phone number has not changed, returns an empty string.
+     *
+     * @return The new phone number if different from the database, otherwise an empty string.
+     */
+    fun getNewNumber(): String {
         if (ActivityCompat.checkSelfPermission(getApplication(), Manifest.permission.READ_SMS) ==
             PackageManager.PERMISSION_GRANTED
             && ActivityCompat.checkSelfPermission(getApplication(), Manifest.permission.READ_PHONE_NUMBERS) ==
@@ -46,7 +53,7 @@ class UserViewModel @Inject constructor(
                 }
             }
         }
-        // Is not a new number
+        // Fetched phone number is already stored in the databse
         return ""
     }
 
