@@ -2,7 +2,6 @@ package com.cradleplatform.neptune.manager
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.text.TextUtils
 import android.util.Log
 import androidx.core.content.edit
 import com.cradleplatform.neptune.R
@@ -85,9 +84,8 @@ class LoginManager @Inject constructor(
                     putString(TOKEN_KEY, loginResponse.token)
                     putInt(USER_ID_KEY, loginResponse.userId)
                     putString(EMAIL_KEY, loginResponse.email)
-                    // Convert phoneNumber list to a JSON string
 
-                    val phoneNumbersSerialized = TextUtils.join(",", loginResponse.phoneNumbers)
+                    val phoneNumbersSerialized = loginResponse.phoneNumbers.joinToString(",")
                     putString(PHONE_NUMBERS, phoneNumbersSerialized)
                     putString(
                         context.getString(R.string.key_vht_name),

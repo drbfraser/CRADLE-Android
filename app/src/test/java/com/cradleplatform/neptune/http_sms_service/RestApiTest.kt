@@ -132,7 +132,7 @@ internal class RestApiTest {
             healthFacilityName = "H0000",
             userId = 3,
             token = "test-token",
-            phoneNumber = "123-4567-8910"
+            phoneNumbers = listOf<String>("666-666-6666", "777-777-7777", "555-555-5555")
         )
 
         assertEquals(expectedLoginResponseForVht, loginResponse)
