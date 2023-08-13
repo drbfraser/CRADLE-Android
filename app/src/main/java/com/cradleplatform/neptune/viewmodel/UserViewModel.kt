@@ -86,7 +86,7 @@ class UserViewModel @Inject constructor(
         }
 
         val allPhoneNumbers = parsePhoneNumberString(sharedPreferences.getString(PHONE_NUMBERS, ""))
-        //TODO: CHECK of having CURRENT_PHONE_NUMBER is necessary
+        //TODO: CHECK if having CURRENT_PHONE_NUMBER is necessary
         // TODO:Instead of sharedPreferences, use userViewModel's getCurrentUserPhoneNumber method
         // Set the current phone number - This number is the source of SMS and will be used to validate user
         // sharedPreferences.edit().putString(CURRENT_PHONE_NUMBER, fetchedPhoneNumber).apply()
