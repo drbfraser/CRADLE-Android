@@ -9,6 +9,8 @@ import androidx.core.content.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.http_sms_service.http.DatabaseObject
 import com.cradleplatform.neptune.model.Answer
@@ -198,10 +200,25 @@ class FormRenderingViewModel @Inject constructor(
             val json = JacksonMapper.createWriter<FormResponse>().writeValueAsString(
                 formResponse
             )
+            // Create the same MasterKey for EncryptedSharedPreferences
+            val masterKeyAlias = MasterKey.Builder(applicationContext)
+                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                .build()
 
-            val email = sharedPreferences.getString(LoginManager.EMAIL_KEY, null) ?: error("Encrypt failed")
-            val stringKey = AESEncryptor.generateRandomKey(email)
-            val encodedMsg = encodeMsg(json, AESEncryptor.getSecretKeyFromString(stringKey))
+            // Create EncryptedSharedPreferences using the same master key
+            val encryptedPrefs = EncryptedSharedPreferences.create(
+                applicationContext,
+                "encrypted_prefs",
+                masterKeyAlias,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+
+            // Retrieve the encrypted secret key from EncryptedSharedPreferences
+            val smsSecretKey = encryptedPrefs.getString(LoginManager.SMS_K_Key, null)
+                ?: // TODO: handle the case when the secret key is not available
+                error("Encryption failed - no smsSecretKey is available")
+            val encodedMsg = encodeMsg(json, smsSecretKey)
 
             val smsRelayRequestCounter = sharedPreferences.getLong(
                 applicationContext.getString(R.string.sms_relay_request_counter), 0

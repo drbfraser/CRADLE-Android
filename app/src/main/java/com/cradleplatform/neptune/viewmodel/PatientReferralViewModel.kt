@@ -9,6 +9,8 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.ext.getIntOrNull
 import com.cradleplatform.neptune.manager.HealthFacilityManager
@@ -141,10 +143,26 @@ class PatientReferralViewModel @Inject constructor(
             applicationContext.getString(R.string.sms_relay_request_counter), 0
         )
 
+        val masterKeyAlias = MasterKey.Builder(applicationContext)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+
+        // Create EncryptedSharedPreferences using the same master key
+        val encryptedPrefs = EncryptedSharedPreferences.create(
+            applicationContext,
+            "encrypted_prefs",
+            masterKeyAlias,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+
+        // Retrieve the encrypted secret key from EncryptedSharedPreferences
+        val smsSecretKey = encryptedPrefs.getString(LoginManager.SMS_K_Key, null)
+            ?: // TODO: handle the case when the secret key is not available
+            error("Encryption failed - no smsSecretKey is available")
+
         // This implementation is commented inside the PatientReferralActivity in the function sendSms(),
         // it has been moved since.
-        val email = sharedPreferences.getString(LoginManager.EMAIL_KEY, null) ?: error("Encrypt failed")
-        val stringKey = AESEncryptor.generateRandomKey(email)
         val msgInPackets = SMSFormatter.listToString(
             SMSFormatter.formatSMS(
                 SMSFormatter.encodeMsg(
@@ -153,7 +171,7 @@ class PatientReferralViewModel @Inject constructor(
                             patient = patientAndReferrals
                         )
                     ),
-                    AESEncryptor.getSecretKeyFromString(stringKey)
+                    smsSecretKey
                 ),
                 smsRelayRequestCounter
             ),

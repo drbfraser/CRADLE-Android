@@ -1,9 +1,8 @@
 package com.cradleplatform.neptune.utilities
 
-import android.util.Base64
 import com.google.firebase.crashlytics.internal.model.ImmutableList
 import com.google.gson.Gson
-import javax.crypto.SecretKey
+import org.json.JSONObject
 import kotlin.math.min
 
 enum class RelayAction {
@@ -29,13 +28,18 @@ class SMSFormatter {
         const val FRAGMENT_HEADER_LENGTH = 3
         private const val REQUEST_NUMBER_LENGTH = 6
 
-        fun encodeMsg(msg: String, secretKey: SecretKey): String {
-            // TODO: Currently use hardcoded-key for admin with the first 32 bytes
-            val formattedMsg = AESEncryptor.encrypt(
-                GzipCompressor.compress(msg),
-                secretKey
-            )
-            return Base64.encodeToString(formattedMsg, Base64.DEFAULT)
+        // TODO: CHANGE TEST
+        fun encodeMsg(msg: String, secretKey: String): String {
+            val jsonObject = JSONObject(secretKey)
+            val key = jsonObject.optString("secret_Key")
+
+            if (key.isNotEmpty()) {
+                return AESEncryptor.encryptString(
+                    GzipCompressor.compress(msg),
+                    key
+                )
+            }
+            return ""
         }
 
         private fun computeRequestHeaderLength(): Int {

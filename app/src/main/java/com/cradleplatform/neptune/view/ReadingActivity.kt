@@ -25,6 +25,8 @@ import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.navOptions
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import androidx.test.espresso.IdlingResource
 import androidx.test.espresso.idling.CountingIdlingResource
 import com.cradleplatform.neptune.R
@@ -484,9 +486,28 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
     }
 
     override fun sendSmsMessage(data: String) {
-        val email = sharedPreferences.getString(LoginManager.EMAIL_KEY, null) ?: error("Encrypt failed")
-        val stringKey = AESEncryptor.generateRandomKey(email)
-        val encodedMsg = SMSFormatter.encodeMsg(data, AESEncryptor.getSecretKeyFromString(stringKey))
+        // Create the same MasterKey for EncryptedSharedPreferences
+        val masterKeyAlias = MasterKey.Builder(this@ReadingActivity)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+
+        // Create EncryptedSharedPreferences using the same master key
+        val encryptedPrefs = EncryptedSharedPreferences.create(
+            this@ReadingActivity,
+            "encrypted_prefs",
+            masterKeyAlias,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+
+        // Retrieve the encrypted secret key from EncryptedSharedPreferences
+        val smsSecretKey = encryptedPrefs.getString(LoginManager.SMS_K_Key, null)
+            ?: // TODO: handle the case when the secret key is not available
+            error("Encryption failed - no smsSecretKey is available")
+
+        // TODO: OKAY - REMOVE
+        // val stringKey = AESEncryptor.generateRandomKey(email)
+        val encodedMsg = SMSFormatter.encodeMsg(data, smsSecretKey)
 
         val smsRelayRequestCounter = sharedPreferences.getLong(getString(R.string.sms_relay_request_counter), 0)
 

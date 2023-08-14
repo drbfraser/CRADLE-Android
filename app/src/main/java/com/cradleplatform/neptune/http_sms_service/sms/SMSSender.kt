@@ -20,12 +20,14 @@ class SMSSender(
     private val context: Context
 ) {
 
+    // TODO: WTF is this??
     fun sendSmsMessage(acknowledged: Boolean) {
         val smsRelayContentKey = context.getString(R.string.sms_relay_list_key)
         val smsRelayContent = sharedPreferences.getString(smsRelayContentKey, null)
         // TODO: change phone number to current phone number
         val phoneNumber = sharedPreferences.getString(LoginManager.CURRENT_PHONE_NUMBER, null)
         val smsManager: SmsManager = SmsManager.getDefault()
+
 
         if (!smsRelayContent.isNullOrEmpty()) {
             val smsRelayMsgList = stringToList(smsRelayContent)

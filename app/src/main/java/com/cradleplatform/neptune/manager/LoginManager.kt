@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.core.content.edit
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.model.UserRole
@@ -35,7 +37,8 @@ class LoginManager @Inject constructor(
         const val TOKEN_KEY = "token"
         const val EMAIL_KEY = "loginEmail"
         const val PHONE_NUMBERS = "phoneNumbers"
-        const val CURRENT_PHONE_NUMBER = "currentPhoneNumbers"
+        const val CURRENT_PHONE_NUMBER = "currentPhoneNumbers" // Change this to relay phone number
+        const val SMS_K_Key = "sms_key_key"
         const val USER_ID_KEY = "userId"
     }
 
@@ -78,12 +81,32 @@ class LoginManager @Inject constructor(
             val loginResult = restApi.authenticate(email, password)
             if (loginResult is NetworkResult.Success) {
                 val loginResponse = loginResult.value
-                println("debug-login: $loginResponse")
-                //TODO: Consider using UserViewModel ?
+                val smsKey = loginResponse.smsKey // Extract smsKey
+
+                // create a master key for EncryptedSharedPreferences
+                val masterKeyAlias = MasterKey.Builder(context)
+                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                    .build()
+
+                // create EncryptedSharedPreferences
+                val encryptedPrefs = EncryptedSharedPreferences.create(
+                    context,
+                    "encrypted_prefs",
+                    masterKeyAlias,
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+                )
+
+                // store smsKey in EncryptedSharedPreferences
+                encryptedPrefs.edit(commit = true) {
+                    putString(SMS_K_Key, smsKey) // Store smsKey only
+                }
+                
                 sharedPreferences.edit(commit = true) {
                     putString(TOKEN_KEY, loginResponse.token)
                     putInt(USER_ID_KEY, loginResponse.userId)
                     putString(EMAIL_KEY, loginResponse.email)
+                    putString(CURRENT_PHONE_NUMBER, "+15555215554")  // TODO: change to dynamic relay phone number from settings
 
                     val phoneNumbersSerialized = loginResponse.phoneNumbers.joinToString(",")
                     putString(PHONE_NUMBERS, phoneNumbersSerialized)
@@ -151,5 +174,7 @@ data class LoginResponse(
     @JsonProperty
     val userId: Int,
     @JsonProperty
-    val token: String
+    val token: String,
+    @JsonProperty
+    val smsKey: String,
 )
