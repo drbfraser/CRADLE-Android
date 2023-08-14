@@ -43,7 +43,12 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         }
 
         userViewModel = ViewModelProvider(this).get(UserViewModel::class.java)
-        userViewModel.updateUserPhoneNumber()
+        userViewModel.getNewNumber().let {
+            if (it.isNotEmpty()) {
+                showPhoneChangedDialog(it)
+            }
+            // else: getNewNumber returned null meaning new phone number has not been detected
+        }
 
         networkCheck()
         setVersionName()
@@ -75,6 +80,25 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
                 }
             }
         }
+    }
+
+    private fun showPhoneChangedDialog(newPhoneNumber: String) {
+        // TODO: Let user know that a new phone number has been detected
+        // TODO: Ask user if they want to update their phone number
+        val builder = android.app.AlertDialog.Builder(this)
+        builder.setTitle(getString(R.string.phone_new_number_detected))
+        builder.setMessage(
+            String.format(getString(R.string.phone_update_number_to), newPhoneNumber)
+        )
+
+        builder.setNegativeButton("Yes") { _, _ ->
+            userViewModel.updateUserPhoneNumbers(newPhoneNumber)
+        }
+
+        builder.setPositiveButton("No") { _, _ ->
+            // Do nothing as user as clicked no
+        }
+        builder.show()
     }
 
     private fun setVersionName() {

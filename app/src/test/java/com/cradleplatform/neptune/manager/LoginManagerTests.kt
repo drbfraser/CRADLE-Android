@@ -45,7 +45,7 @@ internal class LoginManagerTests {
         private const val TEST_FIRST_NAME = "NAME PERSON"
         private const val TEST_USER_ID = 4
         private const val TEST_USER_EMAIL = "test-android@example.com"
-        private const val TEST_USER_PHONE_NUMBER = "123-4567-8910"
+        private val TEST_USER_PHONE_NUMBERS = listOf<String>("666-666-6666", "777-777-7777", "555-555-5555")
         private const val TEST_USER_PASSWORD = "password"
         private const val TEST_AUTH_TOKEN = "sOmEaUtHToken"
         private val TEST_USER_ROLE = UserRole.VHT
@@ -95,7 +95,7 @@ internal class LoginManagerTests {
                                         userId = TEST_USER_ID,
                                         firstName = TEST_FIRST_NAME,
                                         healthFacilityName = TEST_USER_FACILITY_NAME,
-                                        phoneNumber = TEST_USER_PHONE_NUMBER
+                                        phoneNumbers = TEST_USER_PHONE_NUMBERS
                                     )
                                 )
                             setResponseCode(200)

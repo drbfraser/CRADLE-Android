@@ -34,7 +34,8 @@ class LoginManager @Inject constructor(
         private const val TAG = "LoginManager"
         const val TOKEN_KEY = "token"
         const val EMAIL_KEY = "loginEmail"
-        const val PHONE_NUMBER = "phoneNumber"
+        const val PHONE_NUMBERS = "phoneNumbers"
+        const val CURRENT_PHONE_NUMBER = "currentPhoneNumbers"
         const val USER_ID_KEY = "userId"
     }
 
@@ -77,11 +78,15 @@ class LoginManager @Inject constructor(
             val loginResult = restApi.authenticate(email, password)
             if (loginResult is NetworkResult.Success) {
                 val loginResponse = loginResult.value
+                println("debug-login: $loginResponse")
+                //TODO: Consider using UserViewModel ?
                 sharedPreferences.edit(commit = true) {
                     putString(TOKEN_KEY, loginResponse.token)
                     putInt(USER_ID_KEY, loginResponse.userId)
                     putString(EMAIL_KEY, loginResponse.email)
-                    putString(PHONE_NUMBER, loginResponse.phoneNumber)
+
+                    val phoneNumbersSerialized = loginResponse.phoneNumbers.joinToString(",")
+                    putString(PHONE_NUMBERS, phoneNumbersSerialized)
                     putString(
                         context.getString(R.string.key_vht_name),
                         loginResponse.firstName
@@ -142,7 +147,7 @@ data class LoginResponse(
     @JsonProperty
     val healthFacilityName: String?,
     @JsonProperty
-    val phoneNumber: String?,
+    val phoneNumbers: List<String>,
     @JsonProperty
     val userId: Int,
     @JsonProperty

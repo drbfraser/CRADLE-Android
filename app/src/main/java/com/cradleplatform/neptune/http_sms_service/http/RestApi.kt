@@ -646,6 +646,23 @@ class RestApi constructor(
             )
         }
 
+    suspend fun postUserPhoneNumber(userID: Int, phoneNumber: String): NetworkResult<Unit> =
+        withContext(IO) {
+            val jsonObject = JSONObject()
+            jsonObject.put("newPhoneNumber", phoneNumber)
+            jsonObject.put("currentPhoneNumber", "")
+            jsonObject.put("oldPhoneNumber", "")
+            val mediaType = "application/json; charset=utf-8".toMediaType()
+            val requestBody = jsonObject.toString().toRequestBody(mediaType)
+            http.makeRequest(
+                method = Http.Method.POST,
+                url = urlManager.postUserPhoneNumber(userID),
+                headers = headers,
+                requestBody = requestBody,
+                inputStreamReader = {}
+            )
+        }
+
     /**
      * Sends a request to the server to associate the patient with a given [id]
      * to the currently logged in user.

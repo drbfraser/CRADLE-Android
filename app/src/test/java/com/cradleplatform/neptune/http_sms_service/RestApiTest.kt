@@ -58,7 +58,7 @@ internal class RestApiTest {
                                 "role": "VHT",
                                 "firstName": "TestVHT",
                                 "healthFacilityName": "H0000",
-                                "phoneNumber" : "123-4567-8910",
+                                "phoneNumbers": ["666-666-6666", "777-777-7777", "555-555-5555"],
                                 "isLoggedIn": true,
                                 "userId": 3,
                                 "token": "test-token",
@@ -121,7 +121,8 @@ internal class RestApiTest {
         val goodLoginResult = runBlocking {
             restApi.authenticate("vht@vht.com", "vht123")
         }
-        check(goodLoginResult is NetworkResult.Success) { "got $badLoginResult" }
+        println("debug-test: $goodLoginResult")
+        check(goodLoginResult is NetworkResult.Success) { "got $goodLoginResult" }
         assertEquals(200, goodLoginResult.statusCode)
         val loginResponse = goodLoginResult.value
 
@@ -132,7 +133,7 @@ internal class RestApiTest {
             healthFacilityName = "H0000",
             userId = 3,
             token = "test-token",
-            phoneNumber = "123-4567-8910"
+            phoneNumbers = listOf<String>("666-666-6666", "777-777-7777", "555-555-5555")
         )
 
         assertEquals(expectedLoginResponseForVht, loginResponse)

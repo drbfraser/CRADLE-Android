@@ -213,6 +213,13 @@ class UrlManager @Inject constructor(val settings: Settings) {
      */
     fun getAssessmentById(id: String): String = "$base/assessments/$id"
 
+    /**
+     * Endpoint for posting a new phone number for a user.
+     *
+     * @param id user id
+     */
+    fun postUserPhoneNumber(id: Int) = "$base/user/$id/phone"
+
     val userPatientAssociation: String
         get() = "$base/patientAssociations"
 
