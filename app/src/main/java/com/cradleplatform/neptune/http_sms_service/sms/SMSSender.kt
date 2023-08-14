@@ -20,7 +20,6 @@ class SMSSender(
     private val context: Context
 ) {
 
-    // TODO: WTF is this??
     fun sendSmsMessage(acknowledged: Boolean) {
         val smsRelayContentKey = context.getString(R.string.sms_relay_list_key)
         val smsRelayContent = sharedPreferences.getString(smsRelayContentKey, null)
@@ -51,6 +50,7 @@ class SMSSender(
             try {
                 val packetMsg = smsRelayMsgList.first()
                 val packetMsgDivided = smsManager.divideMessage(packetMsg)
+
                 //TODO: Discuss with Dr. Brian about using the sendMultiPartTextMessage method as it is API 30+ only
                 //TODO: change phone number - CHANGE this needs to be the destination phone number
                 smsManager.sendMultipartTextMessage(phoneNumber, null, packetMsgDivided, null, null)
