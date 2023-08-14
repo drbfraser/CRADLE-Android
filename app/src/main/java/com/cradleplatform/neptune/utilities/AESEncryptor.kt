@@ -12,11 +12,23 @@ class AESEncryptor {
         private const val TRANSFORMATION = "AES/CBC/PKCS5Padding"
         private const val ivSize = 16
 
+        private fun String.decodeHex(): ByteArray? {
+            if (length % 2 != 0) {
+                return null
+            }
+            return chunked(2)
+                .map { it.toInt(16).toByte() }
+                .toByteArray()
+        }
+
+
+        // TODO: REPLACE
         fun getSecretKeyFromString(settingKey: String): SecretKey {
             val encodedKey = Base64.decode(settingKey, Base64.DEFAULT)
             return SecretKeySpec(encodedKey, 0, encodedKey.size, "AES")
         }
 
+        // TODO: REMOVE SOS
         fun generateRandomKey(email: String): String {
             val hashedKey = MessageDigest.getInstance("SHA-256")
                 .digest(email.toByteArray())
@@ -25,6 +37,7 @@ class AESEncryptor {
             return hashedKey.substring(0, keySize)
         }
 
+        // TODO: REPLACE
         private fun generateRandomIV(): ByteArray {
             val iv = ByteArray(ivSize)
             val secureRandom = SecureRandom()
@@ -32,6 +45,7 @@ class AESEncryptor {
             return iv
         }
 
+        // TODO: REPLACE
         fun encrypt(msgInByteArray: ByteArray, key: SecretKey): ByteArray {
             val iv = generateRandomIV()
             val ivSpec = IvParameterSpec(iv)
@@ -46,12 +60,14 @@ class AESEncryptor {
             return fullCipher
         }
 
+        // TODO: REPLACE
         fun encrypt(msg: String, key: SecretKey): ByteArray {
             val msgInByteArray = msg.toByteArray(Charsets.UTF_8)
 
             return encrypt(msgInByteArray, key)
         }
 
+        // TODO: REPLACE
         fun decrypt(msgInByteArray: ByteArray, key: SecretKey): ByteArray {
             val iv = msgInByteArray.copyOfRange(0, ivSize)
             val ivSpec = IvParameterSpec(iv)
