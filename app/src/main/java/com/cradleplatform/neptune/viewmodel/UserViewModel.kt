@@ -10,8 +10,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.manager.LoginManager
-import com.cradleplatform.neptune.manager.LoginManager.Companion.CURRENT_PHONE_NUMBER
 import com.cradleplatform.neptune.manager.LoginManager.Companion.PHONE_NUMBERS
+import com.cradleplatform.neptune.manager.LoginManager.Companion.USER_CURRENT_PHONE_NUMBER
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -53,7 +53,7 @@ class UserViewModel @Inject constructor(
         ) {
             val telManager = getApplication<Application>().getSystemService(TELEPHONY_SERVICE) as TelephonyManager
             val fetchedPhoneNumber = telManager.line1Number
-            currentPhoneNumber = sharedPreferences.getString(CURRENT_PHONE_NUMBER, "") ?: ""
+            currentPhoneNumber = sharedPreferences.getString(USER_CURRENT_PHONE_NUMBER, "") ?: ""
 
             if (hasUserPhoneNumberChanged(fetchedPhoneNumber)) {
                 // Get the list of the user phone numbers that were fetched at login
@@ -81,18 +81,11 @@ class UserViewModel @Inject constructor(
             val userId = sharedPreferences.getInt(LoginManager.USER_ID_KEY, -1)
             if (userId != -1) {
                 val result = restApi.postUserPhoneNumber(userId, phoneNumber)
+                // TODO: if successful
+                sharedPreferences.edit().putString(USER_CURRENT_PHONE_NUMBER, phoneNumber).apply()
                 println("Debug-number-view-model: updating the database -> result = $result")
             }
         }
-
-        val allPhoneNumbers = parsePhoneNumberString(sharedPreferences.getString(PHONE_NUMBERS, ""))
-        //TODO: CHECK if having CURRENT_PHONE_NUMBER is necessary
-        // TODO:Instead of sharedPreferences, use userViewModel's getCurrentUserPhoneNumber method
-        // Set the current phone number - This number is the source of SMS and will be used to validate user
-        // sharedPreferences.edit().putString(CURRENT_PHONE_NUMBER, fetchedPhoneNumber).apply()
-        println("Debug-number-view-model: A new phone number has been detected")
-        println("Debug-number-view-model: fetchedPhoneNumber = $phoneNumber")
-        println("Debug-number-view-model: allPhoneNumbers = $allPhoneNumbers")
     }
 
     /**

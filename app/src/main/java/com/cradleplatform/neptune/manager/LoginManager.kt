@@ -35,8 +35,11 @@ class LoginManager @Inject constructor(
         const val TOKEN_KEY = "token"
         const val EMAIL_KEY = "loginEmail"
         const val PHONE_NUMBERS = "phoneNumbers"
-        const val CURRENT_PHONE_NUMBER = "currentPhoneNumbers"
+        const val USER_CURRENT_PHONE_NUMBER = "userCurrentPhoneNumber"
+        const val RELAY_CURRENT_PHONE_NUMBER = "relayPhoneNumber"
         const val USER_ID_KEY = "userId"
+        // the key for the default relay phone number in the settings.xml
+        const val KEY_DEFAULT_RELAY_PHONE_NUMBER = "settings_default_relay_phone_number"
     }
 
     fun isLoggedIn(): Boolean {
@@ -105,6 +108,9 @@ class LoginManager @Inject constructor(
                         SharedPreferencesMigration.KEY_SHARED_PREFERENCE_VERSION,
                         SharedPreferencesMigration.LATEST_SHARED_PREF_VERSION
                     )
+
+                    // Set the default value for the relay phone number - fetched from settings.xml
+                    setRelayPhoneNumber()
                 }
             } else {
                 return@withContext loginResult.cast()
@@ -129,7 +135,15 @@ class LoginManager @Inject constructor(
             clearAllTables()
         }
     }
+    // TODO
+    private fun setRelayPhoneNumber() {
+        // get the default relay phone number from settings.xml
+        val defaultRelayPhoneNumber = context.getString(R.string.settings_default_relay_phone_number)
+        // set the relay phone number to the default
+        sharedPreferences.edit().putString(RELAY_CURRENT_PHONE_NUMBER, defaultRelayPhoneNumber).apply()
+    }
 }
+
 
 /**
  * Models the response sent back by the server for /api/user/auth.

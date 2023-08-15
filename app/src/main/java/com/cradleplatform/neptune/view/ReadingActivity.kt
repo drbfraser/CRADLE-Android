@@ -423,9 +423,9 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
         intentFilter.addAction("android.provider.Telephony.SMS_RECEIVED")
         intentFilter.priority = Int.MAX_VALUE
 
-        val phoneNumber = sharedPreferences.getString(LoginManager.CURRENT_PHONE_NUMBER, null)
+        val relayPhoneNumber = sharedPreferences.getString(LoginManager.RELAY_CURRENT_PHONE_NUMBER, null)
             ?: error("invalid phone number")
-        smsReceiver = SMSReceiver(smsSender, phoneNumber)
+        smsReceiver = SMSReceiver(smsSender, relayPhoneNumber)
         registerReceiver(smsReceiver, intentFilter)
     }
 
