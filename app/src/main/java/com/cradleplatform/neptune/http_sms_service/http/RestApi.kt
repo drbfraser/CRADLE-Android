@@ -20,6 +20,7 @@ import com.cradleplatform.neptune.model.PatientAndReadings
 import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
+import com.cradleplatform.neptune.model.RelayPhoneNumberResponse
 import com.cradleplatform.neptune.model.Statistics
 import com.cradleplatform.neptune.sync.AssessmentSyncField
 import com.cradleplatform.neptune.sync.PatientSyncField
@@ -660,6 +661,16 @@ class RestApi constructor(
                 headers = headers,
                 requestBody = requestBody,
                 inputStreamReader = {}
+            )
+        }
+
+    suspend fun getAllRelayPhoneNumbers(): NetworkResult<RelayPhoneNumberResponse> =
+        withContext(IO) {
+            http.makeRequest(
+                method = Http.Method.GET,
+                url = urlManager.getAllRelayPhoneNumbers(),
+                headers = headers,
+                inputStreamReader = { JacksonMapper.readerForRelayPhoneNumberResponse.readValue(it) }
             )
         }
 

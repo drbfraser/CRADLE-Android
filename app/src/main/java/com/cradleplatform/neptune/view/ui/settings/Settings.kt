@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
-import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -30,6 +29,10 @@ import javax.inject.Inject
 import android.text.InputType
 import android.widget.ArrayAdapter
 import android.widget.ListView
+import android.widget.Toast
+import androidx.lifecycle.viewModelScope
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.http.RestApi
 
 @AndroidEntryPoint
 class SettingsActivity : AppCompatActivity() {
@@ -106,6 +109,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     @Inject
     lateinit var patientManager: PatientManager
+
+    @Inject
+    lateinit var restApi: RestApi
 
     override fun onResume() {
         super.onResume()
@@ -187,38 +193,49 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
 
         findPreference(R.string.key_change_relay_phone_number)?.withOnClickListener {
-            // val phoneNumbers = mutableListOf<String>()  // List to store fetched phone numbers
-            val phoneNumbers = mutableListOf(
-                "+1234567890",
-                "+9876543210",
-                "+5555555555"
-            )  // Test phone numbers
+            val phoneNumbers = mutableListOf<String>()  // list to store fetched phone numbers
+            var selectedPosition = -1
+            // fetch phone numbers from API and populate the 'phoneNumbers' list
+            lifecycleScope.launch {
+                val relayPhoneNumbers = restApi.getAllRelayPhoneNumbers()
+                if (relayPhoneNumbers is NetworkResult.Success) {
+                    phoneNumbers.addAll(relayPhoneNumbers.value.relayPhoneNumbers)
+                    val listView = ListView(requireContext())
+                    val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, phoneNumbers)
+                    listView.adapter = adapter
 
-            // TODO: Fetch phone numbers from API and populate the 'phoneNumbers' list
+                    listView.setOnItemClickListener { _, _, position, _ ->
+                        selectedPosition = position
+                    }
 
-            val listView = ListView(requireContext())
-            val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, phoneNumbers)
-            listView.adapter = adapter
-
-            listView.setOnItemClickListener { _, _, position, _ ->
-                val selectedPhoneNumber = phoneNumbers[position]
-                // TODO: Perform the appropriate action with the selected phone number
-                // This could include making API calls, changing the relay phone number, etc.
-                // Display appropriate toast messages as needed
-                println("debug-relay-numbers: selectedPhoneNumber=${selectedPhoneNumber}")
-            }
-
-            AlertDialog.Builder(requireActivity())
-                .setTitle(R.string.select_relay_phone_number_title)
-                .setView(listView)
-                .setNegativeButton("Cancel") { dialog, _ ->
-                    dialog.dismiss()
-                }.setPositiveButton("Submit") { dialog, _ ->
-                    dialog.dismiss()
+                    AlertDialog.Builder(requireActivity())
+                        .setTitle(R.string.select_relay_phone_number_title)
+                        .setView(listView)
+                        .setNegativeButton("Cancel") { dialog, _ ->
+                            dialog.dismiss()
+                        }.setPositiveButton("Submit") { dialog, _ ->
+                            if (selectedPosition != -1) {
+                                val selectedPhoneNumber = phoneNumbers[selectedPosition]
+                                println("debug-relay-numbers: storing selectedPhoneNumber=${selectedPhoneNumber}")
+                                // TODO: store selectedPhoneNumber in the shared preferences
+                                val toast = Toast.makeText(context, "Successfully updated the relay phone number.", Toast.LENGTH_SHORT)
+                                toast.show()
+                            }
+                            else{
+                                val toast = Toast.makeText(context, "Failed to update relay phone number. You need to select a phone number.", Toast.LENGTH_LONG)
+                                toast.show()
+                            }
+                            dialog.dismiss()
+                        }
+                        .setIcon(R.drawable.ic_edit_24)
+                        .create()
+                        .show()
                 }
-                .setIcon(R.drawable.ic_edit_24)
-                .create()
-                .show()
+                else {
+                    val toast = Toast.makeText(context, "Failed to fetch relay phone numbers. Check your connection", Toast.LENGTH_SHORT)
+                    toast.show()
+                }
+            }
             true
         }
 
