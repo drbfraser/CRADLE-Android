@@ -28,6 +28,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import android.text.InputType
+import android.widget.ArrayAdapter
+import android.widget.ListView
 
 @AndroidEntryPoint
 class SettingsActivity : AppCompatActivity() {
@@ -184,29 +186,42 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 true
             }
 
-        findPreference(R.string.key_change_relay_phone_number)
-            ?.withOnClickListener {
-                val phoneNumberEditText = EditText(requireContext())
-                phoneNumberEditText.hint = "Enter Phone Number"
-                phoneNumberEditText.inputType = InputType.TYPE_CLASS_PHONE
-                AlertDialog.Builder(requireActivity())
-                    .setTitle(R.string.change_relay_phone_number_title)
-                    .setView(phoneNumberEditText)
-                    .setPositiveButton("Save") { dialog, _ ->
-                        // val newPhoneNumber = phoneNumberEditText.text.toString().trim()
-                        // TODO: perform the appropriate API call to validate the phone number
-                        // TODO: if the phone number is valid, change the relay phone number
-                        // TODO: display appropriate toast depending on the result
-                        dialog.dismiss()
-                    }
-                    .setNegativeButton("Cancel") { dialog, _ ->
-                        dialog.dismiss()
-                    }
-                    .setIcon(R.drawable.ic_sync)
-                    .create()
-                    .show()
-                true
+        findPreference(R.string.key_change_relay_phone_number)?.withOnClickListener {
+            // val phoneNumbers = mutableListOf<String>()  // List to store fetched phone numbers
+            val phoneNumbers = mutableListOf(
+                "+1234567890",
+                "+9876543210",
+                "+5555555555"
+            )  // Test phone numbers
+
+            // TODO: Fetch phone numbers from API and populate the 'phoneNumbers' list
+
+            val listView = ListView(requireContext())
+            val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, phoneNumbers)
+            listView.adapter = adapter
+
+            listView.setOnItemClickListener { _, _, position, _ ->
+                val selectedPhoneNumber = phoneNumbers[position]
+                // TODO: Perform the appropriate action with the selected phone number
+                // This could include making API calls, changing the relay phone number, etc.
+                // Display appropriate toast messages as needed
+                println("debug-relay-numbers: selectedPhoneNumber=${selectedPhoneNumber}")
             }
+
+            AlertDialog.Builder(requireActivity())
+                .setTitle(R.string.select_relay_phone_number_title)
+                .setView(listView)
+                .setNegativeButton("Cancel") { dialog, _ ->
+                    dialog.dismiss()
+                }.setPositiveButton("Submit") { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .setIcon(R.drawable.ic_edit_24)
+                .create()
+                .show()
+            true
+        }
+
 
         findPreference(R.string.key_vht_name)
             ?.useDynamicSummary()
