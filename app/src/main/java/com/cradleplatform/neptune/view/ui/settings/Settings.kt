@@ -216,7 +216,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     val numberToPreselect = sharedPreferences.getString(CURRENT_RELAY_PHONE_NUMBER, "")
                     val preselectedIndex = phoneNumbers.indexOf(numberToPreselect)
                     if (preselectedIndex != -1) {
-                        selectedPosition = preselectedIndex
                         listView.setItemChecked(preselectedIndex, true)
                         adapter.notifyDataSetChanged()
                     }
