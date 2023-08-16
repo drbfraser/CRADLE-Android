@@ -33,6 +33,7 @@ import android.widget.Toast
 import androidx.lifecycle.viewModelScope
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.manager.LoginManager.Companion.CURRENT_RELAY_PHONE_NUMBER
 
 @AndroidEntryPoint
 class SettingsActivity : AppCompatActivity() {
@@ -200,14 +201,25 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 val relayPhoneNumbers = restApi.getAllRelayPhoneNumbers()
                 if (relayPhoneNumbers is NetworkResult.Success) {
                     phoneNumbers.addAll(relayPhoneNumbers.value.relayPhoneNumbers)
+
                     val listView = ListView(requireContext())
-                    val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, phoneNumbers)
+                    val adapter = ArrayAdapter(requireContext(), R.layout.list_item_relay, phoneNumbers)
                     listView.adapter = adapter
 
+                    listView.choiceMode = ListView.CHOICE_MODE_SINGLE
                     listView.setOnItemClickListener { _, _, position, _ ->
                         selectedPosition = position
+                        adapter.notifyDataSetChanged() // Refresh the ListView to update item backgrounds
                     }
 
+                    listView.selector = resources.getDrawable(R.drawable.list_item_selector_relay_numbers, null) // Set the selector drawable
+                    val numberToPreselect = sharedPreferences.getString(CURRENT_RELAY_PHONE_NUMBER, "")
+                    val preselectedIndex = phoneNumbers.indexOf(numberToPreselect)
+                    if (preselectedIndex != -1) {
+                        selectedPosition = preselectedIndex
+                        listView.setItemChecked(preselectedIndex, true)
+                        adapter.notifyDataSetChanged()
+                    }
                     AlertDialog.Builder(requireActivity())
                         .setTitle(R.string.select_relay_phone_number_title)
                         .setView(listView)
@@ -216,12 +228,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
                         }.setPositiveButton("Submit") { dialog, _ ->
                             if (selectedPosition != -1) {
                                 val selectedPhoneNumber = phoneNumbers[selectedPosition]
-                                println("debug-relay-numbers: storing selectedPhoneNumber=${selectedPhoneNumber}")
-                                // TODO: store selectedPhoneNumber in the shared preferences
+                                sharedPreferences.edit().putString(CURRENT_RELAY_PHONE_NUMBER, selectedPhoneNumber).apply()
                                 val toast = Toast.makeText(context, "Successfully updated the relay phone number.", Toast.LENGTH_SHORT)
                                 toast.show()
                             }
-                            else{
+                            else {
                                 val toast = Toast.makeText(context, "Failed to update relay phone number. You need to select a phone number.", Toast.LENGTH_LONG)
                                 toast.show()
                             }
@@ -230,15 +241,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
                         .setIcon(R.drawable.ic_edit_24)
                         .create()
                         .show()
-                }
-                else {
+                } else {
                     val toast = Toast.makeText(context, "Failed to fetch relay phone numbers. Check your connection", Toast.LENGTH_SHORT)
                     toast.show()
                 }
             }
             true
         }
-
 
         findPreference(R.string.key_vht_name)
             ?.useDynamicSummary()

@@ -25,4 +25,8 @@
     <string name="key_pin_shared_pref">PIN_SHARED_PREF</string>
     <string name="key_pin_shared_key">PIN_CODE_KEY</string>
     <string name="key_pin_default_pin">aaaa</string>
+
+    <!-- Default Relay Phone Number -->
+    <string name="settings_default_relay_phone_number">+15555215554</string>
+
 </resources>

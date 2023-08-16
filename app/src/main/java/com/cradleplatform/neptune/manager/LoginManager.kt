@@ -35,7 +35,8 @@ class LoginManager @Inject constructor(
         const val TOKEN_KEY = "token"
         const val EMAIL_KEY = "loginEmail"
         const val PHONE_NUMBERS = "phoneNumbers"
-        const val CURRENT_PHONE_NUMBER = "currentPhoneNumbers"
+        const val CURRENT_PHONE_NUMBER = "currentPhoneNumbers" // TODO: Change name
+        const val CURRENT_RELAY_PHONE_NUMBER = "currentRelayPhoneNumbers"
         const val USER_ID_KEY = "userId"
     }
 
@@ -105,6 +106,8 @@ class LoginManager @Inject constructor(
                         SharedPreferencesMigration.KEY_SHARED_PREFERENCE_VERSION,
                         SharedPreferencesMigration.LATEST_SHARED_PREF_VERSION
                     )
+
+                    setDefaultRelayPhoneNumber()
                 }
             } else {
                 return@withContext loginResult.cast()
@@ -112,6 +115,13 @@ class LoginManager @Inject constructor(
 
             return@withContext NetworkResult.Success(Unit, HTTP_OK)
         }
+    }
+
+    private fun setDefaultRelayPhoneNumber() {
+        // get the default relay phone number from settings.xml
+        val defaultRelayPhoneNumber = context.getString(R.string.settings_default_relay_phone_number)
+        // set the relay phone number to the default
+        sharedPreferences.edit().putString(CURRENT_RELAY_PHONE_NUMBER, defaultRelayPhoneNumber).apply()
     }
 
     suspend fun logout(): Unit = withContext(Dispatchers.IO) {
