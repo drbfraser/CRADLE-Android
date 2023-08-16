@@ -10,6 +10,7 @@ import com.cradleplatform.neptune.model.PatientAndReadings
 import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
+import com.cradleplatform.neptune.model.RelayPhoneNumberResponse
 import com.fasterxml.jackson.databind.ObjectReader
 import com.fasterxml.jackson.databind.ObjectWriter
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -63,6 +64,10 @@ internal object JacksonMapper {
     val readerForAssessment: ObjectReader by lazy { mapper.readerFor(Assessment::class.java) }
 
     val writerForAssessment: ObjectWriter by lazy { mapper.writerFor(Assessment::class.java) }
+
+    val readerForRelayPhoneNumberResponse: ObjectReader by lazy {
+        mapper.readerFor(RelayPhoneNumberResponse::class.java)
+    }
 
     fun createGlobalPatientsListReader(): ObjectReader =
         mapper.readerForListOf(GlobalPatient::class.java)

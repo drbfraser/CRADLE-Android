@@ -24,7 +24,7 @@ class SMSSender(
         val smsRelayContentKey = context.getString(R.string.sms_relay_list_key)
         val smsRelayContent = sharedPreferences.getString(smsRelayContentKey, null)
         // TODO: change phone number to current phone number
-        val phoneNumber = sharedPreferences.getString(LoginManager.CURRENT_PHONE_NUMBER, null)
+        val phoneNumber = sharedPreferences.getString(LoginManager.CURRENT_RELAY_PHONE_NUMBER, null)
         val smsManager: SmsManager = SmsManager.getDefault()
 
         if (!smsRelayContent.isNullOrEmpty()) {

@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
-import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -27,7 +26,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import android.text.InputType
+import android.widget.ArrayAdapter
+import android.widget.ListView
+import android.widget.Toast
+import androidx.core.content.res.ResourcesCompat
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.manager.LoginManager.Companion.CURRENT_RELAY_PHONE_NUMBER
+import com.cradleplatform.neptune.model.RelayPhoneNumberResponse
 
 @AndroidEntryPoint
 class SettingsActivity : AppCompatActivity() {
@@ -104,6 +110,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     @Inject
     lateinit var patientManager: PatientManager
+
+    @Inject
+    lateinit var restApi: RestApi
+
+    private var selectedPosition = -1 // the index of the selected relay phone number in the list view
 
     override fun onResume() {
         super.onResume()
@@ -184,29 +195,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 true
             }
 
-        findPreference(R.string.key_change_relay_phone_number)
-            ?.withOnClickListener {
-                val phoneNumberEditText = EditText(requireContext())
-                phoneNumberEditText.hint = "Enter Phone Number"
-                phoneNumberEditText.inputType = InputType.TYPE_CLASS_PHONE
-                AlertDialog.Builder(requireActivity())
-                    .setTitle(R.string.change_relay_phone_number_title)
-                    .setView(phoneNumberEditText)
-                    .setPositiveButton("Save") { dialog, _ ->
-                        // val newPhoneNumber = phoneNumberEditText.text.toString().trim()
-                        // TODO: perform the appropriate API call to validate the phone number
-                        // TODO: if the phone number is valid, change the relay phone number
-                        // TODO: display appropriate toast depending on the result
-                        dialog.dismiss()
-                    }
-                    .setNegativeButton("Cancel") { dialog, _ ->
-                        dialog.dismiss()
-                    }
-                    .setIcon(R.drawable.ic_sync)
-                    .create()
-                    .show()
-                true
+        findPreference(R.string.key_change_relay_phone_number)?.withOnClickListener {
+            lifecycleScope.launch {
+                val relayPhoneNumbers = restApi.getAllRelayPhoneNumbers()
+                handleRelayPhoneNumbersResult(relayPhoneNumbers)
             }
+            true
+        }
 
         findPreference(R.string.key_vht_name)
             ?.useDynamicSummary()
@@ -216,6 +211,88 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         findPreference(R.string.key_region)
             ?.useDynamicSummary()
+    }
+
+    /**
+     * Handles the result of fetching relay phone numbers from the API.
+     * @param result The network result containing the result and relay phone numbers (if result is successful).
+     */
+    private fun handleRelayPhoneNumbersResult(result: NetworkResult<RelayPhoneNumberResponse>) {
+        when (result) {
+            is NetworkResult.Success -> showRelayPhoneNumbersDialog(result.value.relayPhoneNumbers)
+            else -> showErrorToast("Failed to fetch relay phone numbers. Check your internet connection")
+        }
+    }
+
+    /**
+     * Displays a dialog containing the list of relay phone numbers.
+     * @param phoneNumbers The list of relay phone numbers to display.
+     */
+    private fun showRelayPhoneNumbersDialog(phoneNumbers: List<String>) {
+        val listView = ListView(requireContext())
+        val adapter = ArrayAdapter(requireContext(), R.layout.list_item_relay, phoneNumbers)
+        listView.adapter = adapter
+
+        listView.choiceMode = ListView.CHOICE_MODE_SINGLE
+
+        listView.setOnItemClickListener { _, _, position, _ ->
+            selectedPosition = position
+            adapter.notifyDataSetChanged()
+        }
+
+        listView.selector = ResourcesCompat.getDrawable(resources, R.drawable.list_item_selector_relay_numbers, null)
+        val numberToPreselect = sharedPreferences.getString(CURRENT_RELAY_PHONE_NUMBER, "")
+        val preselectedIndex = phoneNumbers.indexOf(numberToPreselect)
+        if (preselectedIndex != -1) {
+            listView.setItemChecked(preselectedIndex, true)
+            adapter.notifyDataSetChanged()
+        }
+
+        val dialog = createRelayPhoneNumberDialog(listView, phoneNumbers)
+        dialog.show()
+    }
+
+    /**
+     * Creates an AlertDialog for selecting a relay phone number from the list.
+     * @param listView The ListView containing the list of phone numbers.
+     * @param selectedPosition The initially selected position in the list.
+     * @param phoneNumbers The list of relay phone numbers.
+     * @return The AlertDialog instance.
+     */
+    private fun createRelayPhoneNumberDialog(listView: ListView, phoneNumbers: List<String>): AlertDialog {
+        return AlertDialog.Builder(requireActivity())
+            .setTitle(R.string.select_relay_phone_number_title)
+            .setView(listView)
+            .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton("Submit") { dialog, _ ->
+                if (selectedPosition != -1) {
+                    val selectedPhoneNumber = phoneNumbers[selectedPosition]
+                    sharedPreferences.edit().putString(CURRENT_RELAY_PHONE_NUMBER, selectedPhoneNumber).apply()
+                    showToast("Successfully updated the relay phone number.")
+                } else {
+                    showToast("Failed to update relay phone number. You need to select a phone number.")
+                }
+                dialog.dismiss()
+            }
+            .setIcon(R.drawable.ic_edit_24)
+            .create()
+    }
+
+    /**
+     * Displays a short-duration toast with the given message.
+     * @param message The message to display in the toast.
+     */
+    private fun showToast(message: String) {
+        val toast = Toast.makeText(context, message, Toast.LENGTH_SHORT)
+        toast.show()
+    }
+
+    /**
+     * Displays an error toast with the given error message.
+     * @param message The error message to display in the toast.
+     */
+    private fun showErrorToast(errorMessage: String) {
+        showToast(errorMessage)
     }
 
     private fun onSignOut() {

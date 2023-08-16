@@ -220,6 +220,12 @@ class UrlManager @Inject constructor(val settings: Settings) {
      */
     fun postUserPhoneNumber(id: Int) = "$base/user/$id/phone"
 
+    /**
+     * Endpoint for getting a list of all relay phone numbers.
+     *
+     */
+    fun getAllRelayPhoneNumbers() = "$base/phone/relays"
+
     val userPatientAssociation: String
         get() = "$base/patientAssociations"
 
