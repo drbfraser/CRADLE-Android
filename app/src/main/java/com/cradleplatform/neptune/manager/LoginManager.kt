@@ -35,7 +35,7 @@ class LoginManager @Inject constructor(
         const val TOKEN_KEY = "token"
         const val EMAIL_KEY = "loginEmail"
         const val PHONE_NUMBERS = "phoneNumbers"
-        const val CURRENT_PHONE_NUMBER = "currentPhoneNumbers" // TODO: Change name
+        const val CURRENT_USER_PHONE_NUMBER = "currentUserPhoneNumbers"
         const val CURRENT_RELAY_PHONE_NUMBER = "currentRelayPhoneNumbers"
         const val USER_ID_KEY = "userId"
     }

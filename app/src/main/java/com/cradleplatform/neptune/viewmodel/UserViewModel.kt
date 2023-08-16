@@ -10,7 +10,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.manager.LoginManager
-import com.cradleplatform.neptune.manager.LoginManager.Companion.CURRENT_PHONE_NUMBER
+import com.cradleplatform.neptune.manager.LoginManager.Companion.CURRENT_USER_PHONE_NUMBER
 import com.cradleplatform.neptune.manager.LoginManager.Companion.PHONE_NUMBERS
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -53,7 +53,7 @@ class UserViewModel @Inject constructor(
         ) {
             val telManager = getApplication<Application>().getSystemService(TELEPHONY_SERVICE) as TelephonyManager
             val fetchedPhoneNumber = telManager.line1Number
-            currentPhoneNumber = sharedPreferences.getString(CURRENT_PHONE_NUMBER, "") ?: ""
+            currentPhoneNumber = sharedPreferences.getString(CURRENT_USER_PHONE_NUMBER, "") ?: ""
 
             if (hasUserPhoneNumberChanged(fetchedPhoneNumber)) {
                 // Get the list of the user phone numbers that were fetched at login
