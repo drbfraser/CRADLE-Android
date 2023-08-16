@@ -26,12 +26,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import android.text.InputType
 import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
-import androidx.lifecycle.viewModelScope
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.manager.LoginManager.Companion.CURRENT_RELAY_PHONE_NUMBER
@@ -293,8 +291,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
      * Displays an error toast with the given error message.
      * @param message The error message to display in the toast.
      */
-    private fun showErrorToast(error_message: String) {
-        showToast(error_message)
+    private fun showErrorToast(errorMessage: String) {
+        showToast(errorMessage)
     }
 
     private fun onSignOut() {
