@@ -34,9 +34,9 @@ class LoginManager @Inject constructor(
         private const val TAG = "LoginManager"
         const val TOKEN_KEY = "token"
         const val EMAIL_KEY = "loginEmail"
-        const val PHONE_NUMBERS = "phoneNumbers"
-        const val CURRENT_USER_PHONE_NUMBER = "currentUserPhoneNumbers"
-        const val CURRENT_RELAY_PHONE_NUMBER = "currentRelayPhoneNumbers"
+        const val PHONE_NUMBERS = "phoneNumbers"  // A list of all phone numbers for the user - TODO: needs to be updated if a new phone number is detected
+        const val CURRENT_USER_PHONE_NUMBER = "currentUserPhoneNumbers" // The current phone number of the user - will be the source of SMS messages - TODO: null if it is not in the db and will not allow MSM
+        const val CURRENT_RELAY_PHONE_NUMBER = "currentRelayPhoneNumbers" // The current relay phone number - default stored in settings.xml and can be changed from the settings
         const val USER_ID_KEY = "userId"
     }
 
@@ -79,8 +79,6 @@ class LoginManager @Inject constructor(
             val loginResult = restApi.authenticate(email, password)
             if (loginResult is NetworkResult.Success) {
                 val loginResponse = loginResult.value
-                println("debug-login: $loginResponse")
-                //TODO: Consider using UserViewModel ?
                 sharedPreferences.edit(commit = true) {
                     putString(TOKEN_KEY, loginResponse.token)
                     putInt(USER_ID_KEY, loginResponse.userId)

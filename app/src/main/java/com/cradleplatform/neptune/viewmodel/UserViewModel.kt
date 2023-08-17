@@ -5,6 +5,7 @@ import android.content.Context.TELEPHONY_SERVICE
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.telephony.TelephonyManager
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -63,36 +64,70 @@ class UserViewModel @Inject constructor(
                     return fetchedPhoneNumber
                 }
             }
+            // Fetched phone number is already stored in the database
+            // sharedPreferences ==> CURRENT_USER_PHONE_NUMBER needs to be updated - This number is the source of SMS and will be used to validate user
+            sharedPreferences.edit().putString(CURRENT_USER_PHONE_NUMBER, fetchedPhoneNumber).apply()
         }
-        // Fetched phone number is already stored in the databse
+        // Fetched phone number is already stored in the database
         return ""
     }
 
     /**
-     * Updates the user's phone numbers in the platform's database and updates the
+     * Updates the user's phone numbers in the platform's database and the
      * current user's phone number.
      *
      * @param phoneNumber The new phone number to be associated with the user.
      */
-    fun updateUserPhoneNumbers(phoneNumber: String) {
+    fun updateUserPhoneNumbers(newPhoneNumber: String) {
         // Add the user's phone number to the database.
-        // TODO: Handle database update failure
+
         viewModelScope.launch {
             val userId = sharedPreferences.getInt(LoginManager.USER_ID_KEY, -1)
             if (userId != -1) {
-                val result = restApi.postUserPhoneNumber(userId, phoneNumber)
-                println("Debug-number-view-model: updating the database -> result = $result")
+                try {
+                    val result = restApi.postUserPhoneNumber(userId, newPhoneNumber)
+                    if (result.failed) {
+                        // Handle database update failure
+                        val errorMessage = "Failed to update your phone number. " +
+                            "You are not able to send SMS messages. " +
+                            "Please contact your administrator."
+                        showToast(errorMessage, true)
+                    } else {
+                        // Handle database update success
+                        // sharedPreferences ==> PHONE_NUMBERS needs to be updated
+                        val allPhoneNumbersList: List<String> = parsePhoneNumberString(sharedPreferences.getString(PHONE_NUMBERS, ""))
+                        val mutablePhoneNumbersList = allPhoneNumbersList.toMutableList()
+                        mutablePhoneNumbersList.add(newPhoneNumber)
+                        val updatedPhoneNumbersSerialized = mutablePhoneNumbersList.toList().joinToString(",")
+                        sharedPreferences.edit().putString(PHONE_NUMBERS, updatedPhoneNumbersSerialized).apply()
+
+                        // sharedPreferences ==> CURRENT_USER_PHONE_NUMBER needs to be updated - This number is the source of SMS and will be used to validate user
+                        sharedPreferences.edit().putString(CURRENT_USER_PHONE_NUMBER, newPhoneNumber).apply()
+
+                        val successMessage = "Phone number update was successful."
+                        showToast(successMessage, false)
+                    }
+                }
+                catch (e: Exception) {
+                    // Handle exceptions that might occur during the network request
+                    val errorMessage = "An error occurred while updating phone number."
+                    showToast(errorMessage, false)
+                }
             }
         }
 
-        val allPhoneNumbers = parsePhoneNumberString(sharedPreferences.getString(PHONE_NUMBERS, ""))
-        //TODO: CHECK if having CURRENT_PHONE_NUMBER is necessary
-        // TODO:Instead of sharedPreferences, use userViewModel's getCurrentUserPhoneNumber method
-        // Set the current phone number - This number is the source of SMS and will be used to validate user
-        // sharedPreferences.edit().putString(CURRENT_PHONE_NUMBER, fetchedPhoneNumber).apply()
-        println("Debug-number-view-model: A new phone number has been detected")
-        println("Debug-number-view-model: fetchedPhoneNumber = $phoneNumber")
-        println("Debug-number-view-model: allPhoneNumbers = $allPhoneNumbers")
+
+
+    }
+
+    private fun showToast(message: String, isLong: Boolean) {
+        if(isLong) {
+            Toast.makeText(getApplication(), message, Toast.LENGTH_LONG).show()
+        }
+        else {
+            Toast.makeText(getApplication(), message, Toast.LENGTH_SHORT).show()
+        }
+
     }
 
     /**

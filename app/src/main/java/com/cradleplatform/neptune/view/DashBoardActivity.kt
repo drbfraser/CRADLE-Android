@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.lifecycle.ViewModelProvider
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.Util
 import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
@@ -52,6 +53,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
 
         networkCheck()
         setVersionName()
+
     }
 
     private fun networkCheck() {
@@ -83,8 +85,6 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun showPhoneChangedDialog(newPhoneNumber: String) {
-        // TODO: Let user know that a new phone number has been detected
-        // TODO: Ask user if they want to update their phone number
         val builder = android.app.AlertDialog.Builder(this)
         builder.setTitle(getString(R.string.phone_new_number_detected))
         builder.setMessage(
