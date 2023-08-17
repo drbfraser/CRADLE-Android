@@ -32,7 +32,7 @@ import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
-import com.cradleplatform.neptune.manager.LoginManager.Companion.CURRENT_RELAY_PHONE_NUMBER
+import com.cradleplatform.neptune.manager.LoginManager.Companion.RELAY_PHONE_NUMBER
 import com.cradleplatform.neptune.model.RelayPhoneNumberResponse
 
 @AndroidEntryPoint
@@ -241,7 +241,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         listView.selector = ResourcesCompat.getDrawable(resources, R.drawable.list_item_selector_relay_numbers, null)
-        val numberToPreselect = sharedPreferences.getString(CURRENT_RELAY_PHONE_NUMBER, "")
+        val numberToPreselect = sharedPreferences.getString(RELAY_PHONE_NUMBER, "")
         val preselectedIndex = phoneNumbers.indexOf(numberToPreselect)
         if (preselectedIndex != -1) {
             listView.setItemChecked(preselectedIndex, true)
@@ -267,7 +267,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             .setPositiveButton("Submit") { dialog, _ ->
                 if (selectedPosition != -1) {
                     val selectedPhoneNumber = phoneNumbers[selectedPosition]
-                    sharedPreferences.edit().putString(CURRENT_RELAY_PHONE_NUMBER, selectedPhoneNumber).apply()
+                    sharedPreferences.edit().putString(RELAY_PHONE_NUMBER, selectedPhoneNumber).apply()
                     showToast("Successfully updated the relay phone number.")
                 } else {
                     showToast("Failed to update relay phone number. You need to select a phone number.")

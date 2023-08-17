@@ -11,7 +11,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.manager.LoginManager
-import com.cradleplatform.neptune.manager.LoginManager.Companion.CURRENT_USER_PHONE_NUMBER
+import com.cradleplatform.neptune.manager.LoginManager.Companion.USER_PHONE_NUMBER
 import com.cradleplatform.neptune.manager.LoginManager.Companion.PHONE_NUMBERS
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -54,7 +54,7 @@ class UserViewModel @Inject constructor(
         ) {
             val telManager = getApplication<Application>().getSystemService(TELEPHONY_SERVICE) as TelephonyManager
             val fetchedPhoneNumber = telManager.line1Number
-            currentPhoneNumber = sharedPreferences.getString(CURRENT_USER_PHONE_NUMBER, "") ?: ""
+            currentPhoneNumber = sharedPreferences.getString(USER_PHONE_NUMBER, "") ?: ""
 
             if (hasUserPhoneNumberChanged(fetchedPhoneNumber)) {
                 // Get the list of the user phone numbers that were fetched at login
@@ -65,8 +65,9 @@ class UserViewModel @Inject constructor(
                 }
             }
             // Fetched phone number is already stored in the database
-            // sharedPreferences ==> CURRENT_USER_PHONE_NUMBER needs to be updated - This number is the source of SMS and will be used to validate user
-            sharedPreferences.edit().putString(CURRENT_USER_PHONE_NUMBER, fetchedPhoneNumber).apply()
+            // sharedPreferences ==> USER_PHONE_NUMBER needs to be updated
+            // This number is the source of SMS and will be used to validate user
+            sharedPreferences.edit().putString(USER_PHONE_NUMBER, fetchedPhoneNumber).apply()
         }
         // Fetched phone number is already stored in the database
         return ""
@@ -95,14 +96,16 @@ class UserViewModel @Inject constructor(
                     } else {
                         // Handle database update success
                         // sharedPreferences ==> PHONE_NUMBERS needs to be updated
-                        val allPhoneNumbersList: List<String> = parsePhoneNumberString(sharedPreferences.getString(PHONE_NUMBERS, ""))
+                        val allPhoneNumbersString = sharedPreferences.getString(PHONE_NUMBERS, "")
+                        val allPhoneNumbersList = parsePhoneNumberString(allPhoneNumbersString)
                         val mutablePhoneNumbersList = allPhoneNumbersList.toMutableList()
                         mutablePhoneNumbersList.add(newPhoneNumber)
                         val updatedPhoneNumbersSerialized = mutablePhoneNumbersList.toList().joinToString(",")
                         sharedPreferences.edit().putString(PHONE_NUMBERS, updatedPhoneNumbersSerialized).apply()
 
-                        // sharedPreferences ==> CURRENT_USER_PHONE_NUMBER needs to be updated - This number is the source of SMS and will be used to validate user
-                        sharedPreferences.edit().putString(CURRENT_USER_PHONE_NUMBER, newPhoneNumber).apply()
+                        // sharedPreferences ==> USER_PHONE_NUMBER needs to be updated
+                        // This number is the source of SMS and will be used to validate user
+                        sharedPreferences.edit().putString(USER_PHONE_NUMBER, newPhoneNumber).apply()
 
                         val successMessage = "Phone number update was successful."
                         showToast(successMessage, false)
@@ -114,7 +117,6 @@ class UserViewModel @Inject constructor(
                 }
             }
         }
-
     }
 
     private fun showToast(message: String, isLong: Boolean) {

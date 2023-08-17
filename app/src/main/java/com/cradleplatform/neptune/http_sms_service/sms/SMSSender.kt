@@ -23,7 +23,7 @@ class SMSSender(
     fun sendSmsMessage(acknowledged: Boolean) {
         val smsRelayContentKey = context.getString(R.string.sms_relay_list_key)
         val smsRelayContent = sharedPreferences.getString(smsRelayContentKey, null)
-        val relayPhoneNumber = sharedPreferences.getString(LoginManager.CURRENT_RELAY_PHONE_NUMBER, null)
+        val relayPhoneNumber = sharedPreferences.getString(LoginManager.RELAY_PHONE_NUMBER, null)
         val smsManager: SmsManager = SmsManager.getDefault()
 
         if (!smsRelayContent.isNullOrEmpty()) {
