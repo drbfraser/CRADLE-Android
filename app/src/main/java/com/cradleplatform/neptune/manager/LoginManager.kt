@@ -34,9 +34,12 @@ class LoginManager @Inject constructor(
         private const val TAG = "LoginManager"
         const val TOKEN_KEY = "token"
         const val EMAIL_KEY = "loginEmail"
+        // A list of all phone numbers for the user
         const val PHONE_NUMBERS = "phoneNumbers"
-        const val CURRENT_USER_PHONE_NUMBER = "currentUserPhoneNumbers"
-        const val CURRENT_RELAY_PHONE_NUMBER = "currentRelayPhoneNumbers"
+        // The current phone number of the user - will be the source of SMS messages
+        const val USER_PHONE_NUMBER = "currentUserPhoneNumbers"
+        // The current relay phone number - default in settings.xml - changeable from the settings
+        const val RELAY_PHONE_NUMBER = "currentRelayPhoneNumbers"
         const val USER_ID_KEY = "userId"
     }
 
@@ -79,8 +82,6 @@ class LoginManager @Inject constructor(
             val loginResult = restApi.authenticate(email, password)
             if (loginResult is NetworkResult.Success) {
                 val loginResponse = loginResult.value
-                println("debug-login: $loginResponse")
-                //TODO: Consider using UserViewModel ?
                 sharedPreferences.edit(commit = true) {
                     putString(TOKEN_KEY, loginResponse.token)
                     putInt(USER_ID_KEY, loginResponse.userId)
@@ -121,7 +122,7 @@ class LoginManager @Inject constructor(
         // get the default relay phone number from settings.xml
         val defaultRelayPhoneNumber = context.getString(R.string.settings_default_relay_phone_number)
         // set the relay phone number to the default
-        sharedPreferences.edit().putString(CURRENT_RELAY_PHONE_NUMBER, defaultRelayPhoneNumber).apply()
+        sharedPreferences.edit().putString(RELAY_PHONE_NUMBER, defaultRelayPhoneNumber).apply()
     }
 
     suspend fun logout(): Unit = withContext(Dispatchers.IO) {

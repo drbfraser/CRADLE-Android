@@ -83,8 +83,6 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun showPhoneChangedDialog(newPhoneNumber: String) {
-        // TODO: Let user know that a new phone number has been detected
-        // TODO: Ask user if they want to update their phone number
         val builder = android.app.AlertDialog.Builder(this)
         builder.setTitle(getString(R.string.phone_new_number_detected))
         builder.setMessage(
