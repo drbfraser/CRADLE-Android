@@ -32,6 +32,7 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.ext.hideKeyboard
 import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.manager.SMSSecretKeyManager
 import com.cradleplatform.neptune.sync.SyncWorker
 import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.ADVANCED_SETTINGS_KEY
@@ -58,6 +59,9 @@ class LoginActivity : AppCompatActivity() {
 
     @Inject
     lateinit var loginManager: LoginManager
+
+    @Inject
+    lateinit var smsSecretKeyManager: SMSSecretKeyManager
 
     @Inject
     lateinit var workManager: WorkManager
@@ -167,7 +171,7 @@ class LoginActivity : AppCompatActivity() {
                             ExistingWorkPolicy.APPEND_OR_REPLACE,
                             workRequest
                         )
-
+                        synSNSSecretKey()
                         startIntroActivity()
                     }
                     is NetworkResult.Failure -> {
@@ -295,6 +299,26 @@ class LoginActivity : AppCompatActivity() {
             progressDialog.show()
             return progressDialog
         }
+
+    private suspend fun synSNSSecretKey(){
+        val userID = sharedPreferences.getInt(LoginManager.USER_ID_KEY, -1)
+        val message = smsSecretKeyManager.fetchSMSSecretKey(userID);
+        val result = smsSecretKeyManager.evaluateKey(userID, message)
+        if(result && (message == SMSSecretKeyManager.EXPIRED || message == SMSSecretKeyManager.WARN)){
+                Toast.makeText(
+                    this@LoginActivity,
+                    "Your key's Stale-date passed, so your key is updated automatically by server",
+                    Toast.LENGTH_LONG
+                )
+            }
+        if(result && message == SMSSecretKeyManager.NOTFOUND ){
+            Toast.makeText(
+                this@LoginActivity,
+                "Your secret key is created automatically by server",
+                Toast.LENGTH_LONG
+            )
+        }
+    }
 
     companion object {
         private const val EXTRA_SHOULD_DISPLAY_MESSAGE = "display_message_bool"

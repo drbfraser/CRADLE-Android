@@ -21,6 +21,7 @@ import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.RelayPhoneNumberResponse
+import com.cradleplatform.neptune.model.SmsSecretKey
 import com.cradleplatform.neptune.model.Statistics
 import com.cradleplatform.neptune.sync.AssessmentSyncField
 import com.cradleplatform.neptune.sync.PatientSyncField
@@ -581,6 +582,54 @@ class RestApi constructor(
                 headers = headers,
                 requestBody = buildJsonRequestBody(referralAsBytes),
                 inputStreamReader = { input -> JacksonMapper.readerForReferral.readValue(input) },
+            )
+        }
+
+    /**
+     * fetching sms secret key based on provided userId.
+     *
+     * @param userID userid currently log in
+     * @return the secret sms secret Key and it's status
+     */
+    suspend fun getSecretKey(userID: Int): NetworkResult<SmsSecretKey> =
+        withContext(IO) {
+            http.makeRequest(
+                method = Http.Method.GET,
+                url = urlManager.getSmsKey(userID),
+                headers = headers,
+                inputStreamReader = { JacksonMapper.mapper.readValue(it) }
+            )
+        }
+
+    /**
+     * updating sms secret key based on provided userId if stale_date or expiry_date passes.
+     *
+     * @param userID userid currently log in
+     * @return the secret sms secret Key and it's status
+     */
+    suspend fun updateSecretKey(userID: Int): NetworkResult<SmsSecretKey> =
+        withContext(IO) {
+            http.makeRequest(
+                method = Http.Method.PUT,
+                url = urlManager.getSmsKey(userID),
+                headers = headers,
+                inputStreamReader = { JacksonMapper.mapper.readValue(it) }
+            )
+        }
+
+    /**
+     * posting sms secret key based on provided userId if the suer does not have a sms secret key.
+     *
+     * @param userID userid currently log in
+     * @return the secret sms secret Key and it's status
+     */
+    suspend fun postSecretKey(userID: Int): NetworkResult<SmsSecretKey> =
+        withContext(IO) {
+            http.makeRequest(
+                method = Http.Method.POST,
+                url = urlManager.getSmsKey(userID),
+                headers = headers,
+                inputStreamReader = { JacksonMapper.mapper.readValue(it) }
             )
         }
 

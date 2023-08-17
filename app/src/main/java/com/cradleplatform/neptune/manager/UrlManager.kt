@@ -88,6 +88,13 @@ class UrlManager @Inject constructor(val settings: Settings) {
      */
     fun putPregnancy(pregnancyId: String): String = "$base/pregnancies/$pregnancyId"
 
+
+
+    /**
+     * Endpoint for getting secret key
+     */
+    fun getSmsKey(userID: Int): String = "$base/user/$userID/smsKey"
+
     /**
      * The base server URL.
      */
