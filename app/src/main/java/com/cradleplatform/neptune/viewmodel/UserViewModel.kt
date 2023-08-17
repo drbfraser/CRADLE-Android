@@ -107,8 +107,7 @@ class UserViewModel @Inject constructor(
                         val successMessage = "Phone number update was successful."
                         showToast(successMessage, false)
                     }
-                }
-                catch (e: Exception) {
+                } catch (e: Exception) {
                     // Handle exceptions that might occur during the network request
                     val errorMessage = "An error occurred while updating phone number."
                     showToast(errorMessage, false)
@@ -116,18 +115,14 @@ class UserViewModel @Inject constructor(
             }
         }
 
-
-
     }
 
     private fun showToast(message: String, isLong: Boolean) {
-        if(isLong) {
+        if (isLong) {
             Toast.makeText(getApplication(), message, Toast.LENGTH_LONG).show()
-        }
-        else {
+        } else {
             Toast.makeText(getApplication(), message, Toast.LENGTH_SHORT).show()
         }
-
     }
 
     /**

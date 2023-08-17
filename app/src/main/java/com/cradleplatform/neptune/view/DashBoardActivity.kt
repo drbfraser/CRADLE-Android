@@ -13,7 +13,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.lifecycle.ViewModelProvider
 import com.cradleplatform.neptune.R
-import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.Util
 import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
@@ -53,7 +52,6 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
 
         networkCheck()
         setVersionName()
-
     }
 
     private fun networkCheck() {
