@@ -89,8 +89,8 @@ class UserViewModel @Inject constructor(
                     val result = restApi.postUserPhoneNumber(userId, newPhoneNumber)
                     if (result.failed) {
                         // Handle database update failure
-                        val errorMessage = "Failed to update your phone number. " +
-                            "You are not able to send SMS messages. " +
+                        val errorMessage = "Failed to update your phone number.\n" +
+                            "You are not able to send SMS messages.\n" +
                             "Please contact your administrator."
                         showToast(errorMessage, true)
                     } else {
@@ -107,7 +107,7 @@ class UserViewModel @Inject constructor(
                         // This number is the source of SMS and will be used to validate user
                         sharedPreferences.edit().putString(USER_PHONE_NUMBER, newPhoneNumber).apply()
 
-                        val successMessage = "Phone number update was successful."
+                        val successMessage = "Successfully updated phone number."
                         showToast(successMessage, false)
                     }
                 } catch (e: Exception) {
