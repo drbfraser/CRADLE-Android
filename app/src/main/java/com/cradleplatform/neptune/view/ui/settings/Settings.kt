@@ -32,7 +32,7 @@ import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
-import com.cradleplatform.neptune.manager.LoginManager.Companion.RELAY_PHONE_NUMBER
+import com.cradleplatform.neptune.viewmodel.UserViewModel.Companion.RELAY_PHONE_NUMBER
 import com.cradleplatform.neptune.model.RelayPhoneNumberResponse
 
 @AndroidEntryPoint

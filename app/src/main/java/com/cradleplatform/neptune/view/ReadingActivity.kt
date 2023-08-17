@@ -35,11 +35,11 @@ import com.cradleplatform.neptune.utilities.AESEncryptor
 import com.cradleplatform.neptune.utilities.SMSFormatter
 import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
-import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.view.ui.reading.PatientIdConflictDialogFragment
 import com.cradleplatform.neptune.view.ui.reading.ReferralDialogFragment
 import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel
 import com.cradleplatform.neptune.viewmodel.ReadingFlowError
+import com.cradleplatform.neptune.viewmodel.UserViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -423,7 +423,7 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
         intentFilter.addAction("android.provider.Telephony.SMS_RECEIVED")
         intentFilter.priority = Int.MAX_VALUE
 
-        val phoneNumber = sharedPreferences.getString(LoginManager.RELAY_PHONE_NUMBER, null)
+        val phoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
             ?: error("invalid phone number")
         smsReceiver = SMSReceiver(smsSender, phoneNumber)
         registerReceiver(smsReceiver, intentFilter)
@@ -484,7 +484,7 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
     }
 
     override fun sendSmsMessage(data: String) {
-        val email = sharedPreferences.getString(LoginManager.EMAIL_KEY, null) ?: error("Encrypt failed")
+        val email = sharedPreferences.getString(UserViewModel.EMAIL_KEY, null) ?: error("Encrypt failed")
         val stringKey = AESEncryptor.generateRandomKey(email)
         val encodedMsg = SMSFormatter.encodeMsg(data, AESEncryptor.getSecretKeyFromString(stringKey))
 

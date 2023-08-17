@@ -12,7 +12,6 @@ import androidx.lifecycle.map
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.ext.getIntOrNull
 import com.cradleplatform.neptune.manager.HealthFacilityManager
-import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.manager.ReferralManager
 import com.cradleplatform.neptune.manager.ReferralUploadManager
 import com.cradleplatform.neptune.model.HealthFacility
@@ -124,7 +123,7 @@ class PatientReferralViewModel @Inject constructor(
                 referralHealthFacilityName = healthFacilityToUse.value
                     ?: error("No health facility selected"),
                 dateReferred = currentTime,
-                userId = sharedPreferences.getIntOrNull(LoginManager.USER_ID_KEY),
+                userId = sharedPreferences.getIntOrNull(UserViewModel.USER_ID_KEY),
                 patientId = patient.id,
                 actionTaken = null,
                 cancelReason = null,
@@ -143,7 +142,7 @@ class PatientReferralViewModel @Inject constructor(
 
         // This implementation is commented inside the PatientReferralActivity in the function sendSms(),
         // it has been moved since.
-        val email = sharedPreferences.getString(LoginManager.EMAIL_KEY, null) ?: error("Encrypt failed")
+        val email = sharedPreferences.getString(UserViewModel.EMAIL_KEY, null) ?: error("Encrypt failed")
         val stringKey = AESEncryptor.generateRandomKey(email)
         val msgInPackets = SMSFormatter.listToString(
             SMSFormatter.formatSMS(

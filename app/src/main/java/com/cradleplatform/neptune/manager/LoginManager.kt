@@ -18,6 +18,11 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection.HTTP_OK
+import com.cradleplatform.neptune.viewmodel.UserViewModel.Companion.TOKEN_KEY
+import com.cradleplatform.neptune.viewmodel.UserViewModel.Companion.USER_ID_KEY
+import com.cradleplatform.neptune.viewmodel.UserViewModel.Companion.PHONE_NUMBERS
+import com.cradleplatform.neptune.viewmodel.UserViewModel.Companion.EMAIL_KEY
+import com.cradleplatform.neptune.viewmodel.UserViewModel.Companion.RELAY_PHONE_NUMBER
 import javax.inject.Inject
 
 /**
@@ -29,19 +34,10 @@ class LoginManager @Inject constructor(
     private val database: CradleDatabase, // only for clearing database on logout
     @ApplicationContext private val context: Context
 ) {
-
-    companion object {
+    companion object{
         private const val TAG = "LoginManager"
-        const val TOKEN_KEY = "token"
-        const val EMAIL_KEY = "loginEmail"
-        // A list of all phone numbers for the user
-        const val PHONE_NUMBERS = "phoneNumbers"
-        // The current phone number of the user - will be the source of SMS messages
-        const val USER_PHONE_NUMBER = "currentUserPhoneNumbers"
-        // The current relay phone number - default in settings.xml - changeable from the settings
-        const val RELAY_PHONE_NUMBER = "currentRelayPhoneNumbers"
-        const val USER_ID_KEY = "userId"
     }
+
 
     fun isLoggedIn(): Boolean {
         sharedPreferences.run {
@@ -109,6 +105,10 @@ class LoginManager @Inject constructor(
                     )
 
                     setDefaultRelayPhoneNumber()
+
+                    val smsKey = loginResponse.smsKey // Extract smsKey
+                    // TODO: securely store the user SMS key
+
                 }
             } else {
                 return@withContext loginResult.cast()
@@ -162,5 +162,7 @@ data class LoginResponse(
     @JsonProperty
     val userId: Int,
     @JsonProperty
-    val token: String
+    val token: String,
+    @JsonProperty
+    val smsKey: String
 )

@@ -18,7 +18,6 @@ import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
 import com.cradleplatform.neptune.http_sms_service.http.Protocol
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
-import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.model.QuestionTypeEnum
 import com.cradleplatform.neptune.utilities.AESEncryptor
 import com.cradleplatform.neptune.utilities.NetworkHelper
@@ -33,7 +32,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FormRenderingViewModel @Inject constructor(
-    //private val mFormManager: FormManager,
     private val httpSmsService: HttpSmsService,
     private val sharedPreferences: SharedPreferences,
 ) : ViewModel() {
@@ -199,7 +197,7 @@ class FormRenderingViewModel @Inject constructor(
                 formResponse
             )
 
-            val email = sharedPreferences.getString(LoginManager.EMAIL_KEY, null) ?: error("Encrypt failed")
+            val email = sharedPreferences.getString(UserViewModel.EMAIL_KEY, null) ?: error("Encrypt failed")
             val stringKey = AESEncryptor.generateRandomKey(email)
             val encodedMsg = encodeMsg(json, AESEncryptor.getSecretKeyFromString(stringKey))
 

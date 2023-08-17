@@ -5,7 +5,6 @@ import android.util.Log
 import com.cradleplatform.neptune.ext.jackson.forEachJackson
 import com.cradleplatform.neptune.ext.jackson.parseObject
 import com.cradleplatform.neptune.ext.jackson.parseObjectArray
-import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.manager.LoginResponse
 import com.cradleplatform.neptune.manager.UrlManager
 import com.cradleplatform.neptune.model.Assessment
@@ -29,6 +28,7 @@ import com.cradleplatform.neptune.sync.ReferralSyncField
 import com.cradleplatform.neptune.sync.SyncWorker
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper.createWriter
+import com.cradleplatform.neptune.viewmodel.UserViewModel
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.gson.Gson
@@ -1226,7 +1226,7 @@ class RestApi constructor(
      */
     private val headers: Map<String, String>
         get() {
-            val token = sharedPreferences.getString(LoginManager.TOKEN_KEY, null)
+            val token = sharedPreferences.getString(UserViewModel.TOKEN_KEY, null)
             return if (token != null) {
                 mapOf("Authorization" to "Bearer $token")
             } else {
