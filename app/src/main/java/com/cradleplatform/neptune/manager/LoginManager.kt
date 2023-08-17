@@ -32,6 +32,7 @@ class LoginManager @Inject constructor(
     private val restApi: RestApi, // only for authenticating calls
     private val sharedPreferences: SharedPreferences,
     private val database: CradleDatabase, // only for clearing database on logout
+    private val smsKeyManager: SmsKeyManager,
     @ApplicationContext private val context: Context
 ) {
     companion object{
@@ -73,7 +74,6 @@ class LoginManager @Inject constructor(
             }
 
             // Send a request to the authentication endpoint to login
-            //
             // If we failed to login, return immediately
             val loginResult = restApi.authenticate(email, password)
             if (loginResult is NetworkResult.Success) {
@@ -106,14 +106,13 @@ class LoginManager @Inject constructor(
 
                     setDefaultRelayPhoneNumber()
 
+                    // Extract and securely store the smsKey
                     val smsKey = loginResponse.smsKey // Extract smsKey
-                    // TODO: securely store the user SMS key
-
+                    smsKeyManager.storeSmsKey(smsKey)
                 }
             } else {
                 return@withContext loginResult.cast()
             }
-
             return@withContext NetworkResult.Success(Unit, HTTP_OK)
         }
     }
@@ -139,6 +138,9 @@ class LoginManager @Inject constructor(
         database.run {
             clearAllTables()
         }
+
+        // Clear the stored SMS key as it will be different for the other users
+        smsKeyManager.clearSmsKey()
     }
 }
 
