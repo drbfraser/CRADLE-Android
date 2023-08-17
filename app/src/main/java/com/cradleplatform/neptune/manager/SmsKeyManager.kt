@@ -1,3 +1,5 @@
+package com.cradleplatform.neptune.manager
+
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
