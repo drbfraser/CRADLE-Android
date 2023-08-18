@@ -177,6 +177,8 @@
     <string name="login_successful">Login successful!</string>
     <string name="login_error">Invalid email or password.</string>
     <string name="login_activity_no_internet">No internet available</string>
+    <string name="update_SMSKey">Your key\'s Stale-date passed, so your key is updated automatically by server</string>
+    <string name="create_SMSKey">Your secret key is created automatically by server</string>
     <string name="activity_patients_no_patients_message">You don\'t have any patients right now.\n Go to the dashboard to create a new patient.</string>
     <string name="pregnant_question">Pregnant?</string>
     <string name="create_new_reading">Create New Reading</string>
