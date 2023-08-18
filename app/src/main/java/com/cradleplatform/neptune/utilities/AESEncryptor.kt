@@ -17,14 +17,6 @@ class AESEncryptor {
             return SecretKeySpec(encodedKey, 0, encodedKey.size, "AES")
         }
 
-        fun generateRandomKey(email: String): String {
-            val hashedKey = MessageDigest.getInstance("SHA-256")
-                .digest(email.toByteArray())
-                .joinToString("") { "%02x".format(it) }
-            val keySize = 32 // specify the desired key size here
-            return hashedKey.substring(0, keySize)
-        }
-
         private fun generateRandomIV(): ByteArray {
             val iv = ByteArray(ivSize)
             val secureRandom = SecureRandom()
@@ -58,7 +50,6 @@ class AESEncryptor {
             val encryptedMsg = msgInByteArray.copyOfRange(ivSize, msgInByteArray.size)
             val cipher = Cipher.getInstance(TRANSFORMATION)
             cipher.init(Cipher.DECRYPT_MODE, key, ivSpec)
-
             return cipher.doFinal(encryptedMsg)
         }
     }

@@ -93,7 +93,7 @@ class UrlManager @Inject constructor(val settings: Settings) {
     /**
      * Endpoint for getting secret key
      */
-    fun getSmsKey(userID: Int): String = "$base/user/$userID/smsKey"
+    fun getSmsKey(userID: Int): String = "$base/user/$userID/smskey"
 
     /**
      * The base server URL.

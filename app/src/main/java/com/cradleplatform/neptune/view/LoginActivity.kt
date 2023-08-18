@@ -307,16 +307,16 @@ class LoginActivity : AppCompatActivity() {
         if(result && (message == SMSSecretKeyManager.EXPIRED || message == SMSSecretKeyManager.WARN)){
                 Toast.makeText(
                     this@LoginActivity,
-                    "Your key's Stale-date passed, so your key is updated automatically by server",
+                    R.string.update_SMSKey,
                     Toast.LENGTH_LONG
-                )
+                ).show()
             }
         if(result && message == SMSSecretKeyManager.NOTFOUND ){
             Toast.makeText(
                 this@LoginActivity,
-                "Your secret key is created automatically by server",
+                R.string.create_SMSKey,
                 Toast.LENGTH_LONG
-            )
+            ).show()
         }
     }
 

@@ -17,6 +17,7 @@ class SMSSecretKeyManager @Inject constructor(
         const val EXPIRED = "EXPIRED"
         const val WARN = "WARN"
         const val NOTFOUND = "NOTFOUND"
+        const val NOTFOUND_KEY_ERROR_CODE = 424
     }
 
 
@@ -36,6 +37,9 @@ class SMSSecretKeyManager @Inject constructor(
             } else {
                 result.value.message
             }
+        }
+        if(result is NetworkResult.Failure && result.statusCode == NOTFOUND_KEY_ERROR_CODE){
+            return  NOTFOUND
         }
         return  null;
     }

@@ -21,7 +21,7 @@ import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.RelayPhoneNumberResponse
-import com.cradleplatform.neptune.model.SmsSecretKey
+import com.cradleplatform.neptune.model.SMSSecretKey
 import com.cradleplatform.neptune.model.Statistics
 import com.cradleplatform.neptune.sync.AssessmentSyncField
 import com.cradleplatform.neptune.sync.PatientSyncField
@@ -591,7 +591,7 @@ class RestApi constructor(
      * @param userID userid currently log in
      * @return the secret sms secret Key and it's status
      */
-    suspend fun getSecretKey(userID: Int): NetworkResult<SmsSecretKey> =
+    suspend fun getSecretKey(userID: Int): NetworkResult<SMSSecretKey> =
         withContext(IO) {
             http.makeRequest(
                 method = Http.Method.GET,
@@ -607,12 +607,17 @@ class RestApi constructor(
      * @param userID userid currently log in
      * @return the secret sms secret Key and it's status
      */
-    suspend fun updateSecretKey(userID: Int): NetworkResult<SmsSecretKey> =
+    suspend fun updateSecretKey(userID: Int): NetworkResult<SMSSecretKey> =
         withContext(IO) {
+            // need to body to call PUT, but does not requires the data, so using empty json
+            val jsonObject = JsonObject()
+            val mediaType = "application/json; charset=utf-8".toMediaType()
+            val requestBody = jsonObject.toString().toRequestBody(mediaType)
             http.makeRequest(
                 method = Http.Method.PUT,
                 url = urlManager.getSmsKey(userID),
                 headers = headers,
+                requestBody = requestBody,
                 inputStreamReader = { JacksonMapper.mapper.readValue(it) }
             )
         }
@@ -623,12 +628,17 @@ class RestApi constructor(
      * @param userID userid currently log in
      * @return the secret sms secret Key and it's status
      */
-    suspend fun postSecretKey(userID: Int): NetworkResult<SmsSecretKey> =
+    suspend fun postSecretKey(userID: Int): NetworkResult<SMSSecretKey> =
         withContext(IO) {
+            // need to body to call POST, but does not requires the data, so using empty json
+            val jsonObject = JsonObject()
+            val mediaType = "application/json; charset=utf-8".toMediaType()
+            val requestBody = jsonObject.toString().toRequestBody(mediaType)
             http.makeRequest(
                 method = Http.Method.POST,
                 url = urlManager.getSmsKey(userID),
                 headers = headers,
+                requestBody = requestBody,
                 inputStreamReader = { JacksonMapper.mapper.readValue(it) }
             )
         }

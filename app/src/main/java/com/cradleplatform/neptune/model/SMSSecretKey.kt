@@ -2,7 +2,7 @@ package com.cradleplatform.neptune.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
-data class SmsSecretKey(
+data class SMSSecretKey(
     @JsonProperty("sms_key")
     val smsKey: String,
     @JsonProperty("stale_date")

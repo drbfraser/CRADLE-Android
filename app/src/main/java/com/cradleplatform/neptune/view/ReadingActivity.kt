@@ -36,6 +36,7 @@ import com.cradleplatform.neptune.utilities.SMSFormatter
 import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.manager.LoginManager
+import com.cradleplatform.neptune.manager.SMSSecretKeyManager
 import com.cradleplatform.neptune.view.ui.reading.PatientIdConflictDialogFragment
 import com.cradleplatform.neptune.view.ui.reading.ReferralDialogFragment
 import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel
@@ -484,8 +485,7 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
     }
 
     override fun sendSmsMessage(data: String) {
-        val email = sharedPreferences.getString(LoginManager.EMAIL_KEY, null) ?: error("Encrypt failed")
-        val stringKey = AESEncryptor.generateRandomKey(email)
+        val stringKey = sharedPreferences.getString(SMSSecretKeyManager.SMS_SECRET_KEY, null) ?: error("Encrypt failed");
         val encodedMsg = SMSFormatter.encodeMsg(data, AESEncryptor.getSecretKeyFromString(stringKey))
 
         val smsRelayRequestCounter = sharedPreferences.getLong(getString(R.string.sms_relay_request_counter), 0)
