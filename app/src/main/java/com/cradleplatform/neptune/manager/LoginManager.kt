@@ -10,7 +10,6 @@ import com.cradleplatform.neptune.model.UserRole
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.utilities.SharedPreferencesMigration
-import com.cradleplatform.neptune.viewmodel.UserViewModel
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -24,6 +23,7 @@ import com.cradleplatform.neptune.viewmodel.UserViewModel.Companion.USER_ID_KEY
 import com.cradleplatform.neptune.viewmodel.UserViewModel.Companion.PHONE_NUMBERS
 import com.cradleplatform.neptune.viewmodel.UserViewModel.Companion.EMAIL_KEY
 import com.cradleplatform.neptune.viewmodel.UserViewModel.Companion.RELAY_PHONE_NUMBER
+import com.cradleplatform.neptune.viewmodel.UserViewModel.Companion.USER_PHONE_NUMBER
 import javax.inject.Inject
 
 /**
@@ -141,9 +141,13 @@ class LoginManager @Inject constructor(
             clearAllTables()
         }
 
-        // Clear ViewModel current user phone number
-        sharedPreferences.edit().remove(UserViewModel.USER_PHONE_NUMBER).apply()
-        // Clear the stored SMS key
+        // Clear all the user specific information from sharedPreferences
+        sharedPreferences.edit().remove(USER_PHONE_NUMBER).apply()
+        sharedPreferences.edit().remove(TOKEN_KEY).apply()
+        sharedPreferences.edit().remove(USER_ID_KEY).apply()
+        sharedPreferences.edit().remove(EMAIL_KEY).apply()
+        sharedPreferences.edit().remove(PHONE_NUMBERS).apply()
+        sharedPreferences.edit().remove(RELAY_PHONE_NUMBER).apply()
         smsKeyManager.clearSmsKey()
     }
 }
