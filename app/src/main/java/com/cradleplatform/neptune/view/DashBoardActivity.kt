@@ -24,7 +24,6 @@ import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
 import com.cradleplatform.neptune.viewmodel.SyncRemainderHelper
 import com.cradleplatform.neptune.viewmodel.UserViewModel
-import com.cradleplatform.neptune.viewmodel.UserViewModel.Companion.SMS_SECRET_KEY
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -107,7 +106,6 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
             val currentSmsKey = smsKeyManager.retrieveSmsKey()
             val smsKeyStatus = smsKeyManager.validateSmsKey(currentSmsKey)
             val userId = sharedPreferences.getInt(UserViewModel.USER_ID_KEY, -1)
-            println("debug-sms-key: smsKeyStatus=$smsKeyStatus")
             if (smsKeyStatus==SmsKeyManager.KeyState.NOTFOUND) {
                 // User doesn't have a valid sms key
                 coroutineScope.launch {

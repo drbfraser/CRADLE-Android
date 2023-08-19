@@ -120,14 +120,12 @@ class ReferralDialogFragment : DialogFragment() {
                 val currentSmsKey = smsKeyManager.retrieveSmsKey()
                 val keyStatus: SmsKeyManager.KeyState = smsKeyManager.validateSmsKey(currentSmsKey)
                 if (keyStatus == SmsKeyManager.KeyState.NORMAL || keyStatus == SmsKeyManager.KeyState.WARN) {
-                    // SmsKey is valid or stale ==> Send SMS
-                    println("debug-sms-key: SmsKey is valid or stale ==> Send SMS, currentSmsKey=$currentSmsKey")
+                    // SmsKey is normal or stale ==> Send SMS
                     referralDialogViewModel.isSending.value = true
                     lifecycleScope.launch { handleSmsReferralSend(view) }
                 }
                 else {
                     // SmsKey is invalid or expired ==> cannot send SMS
-                    println("debug-sms-key: SmsKey is invalid or expired ==> cannot send SMS, currentSmsKey=$currentSmsKey")
                     // Display a TOAST message to inform the user about the invalid or expired SMS key
                     val toastMessage = "Your SMS key has expired\n" +
                         "Unable to send SMS. Ensure internet connectivity and refresh your SMS key in the settings."
@@ -179,11 +177,20 @@ class ReferralDialogFragment : DialogFragment() {
     private fun sendSms(
         patientAndReadings: PatientAndReadings
     ) {
+        // TODO: Add target API endpoint information needed by the backend to json ??
         val json = JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
             SmsReadingWithReferral(
-                patient = patientAndReadings
+                patient = patientAndReadings,
+                requestNumber = "1",
+                method = "",
+                endpoint = "",
+                headers = "",
+                body = ""
             )
         )
+
+        println("debug-sms-key: patientAndReadings$patientAndReadings")
+        println("debug-sms-key: json$json")
 
         dataPasser.sendSmsMessage(json)
     }

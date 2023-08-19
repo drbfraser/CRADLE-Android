@@ -142,7 +142,7 @@ class LoginManager @Inject constructor(
         }
 
         // Clear ViewModel current user phone number
-        sharedPreferences.edit().putString(UserViewModel.USER_PHONE_NUMBER, "").apply()
+        sharedPreferences.edit().remove(UserViewModel.USER_PHONE_NUMBER).apply()
         // Clear the stored SMS key
         smsKeyManager.clearSmsKey()
     }

@@ -48,14 +48,17 @@ class SMSSender(
             try {
                 val packetMsg = smsRelayMsgList.first()
                 val packetMsgDivided = smsManager.divideMessage(packetMsg)
+
                 //TODO: Discuss with Dr. Brian about using the sendMultiPartTextMessage method as it is API 30+ only
                 //TODO: change phone number - CHANGE this needs to be the destination phone number
-                smsManager.sendMultipartTextMessage(relayPhoneNumber, null, packetMsgDivided, null, null)
+
+                smsManager.sendMultipartTextMessage(relayPhoneNumber, UserViewModel.USER_PHONE_NUMBER, packetMsgDivided, null, null)
                 Toast.makeText(
                     context, context.getString(R.string.sms_packet_sent),
                     Toast.LENGTH_LONG
                 ).show()
             } catch (ex: Exception) {
+                // TODO: Fix the error here ==> java.lang.NullPointerException: Can't toast on a thread that has not called Looper.prepare() when sending just a referral for a patient
                 Toast.makeText(
                     context, ex.message.toString(),
                     Toast.LENGTH_LONG

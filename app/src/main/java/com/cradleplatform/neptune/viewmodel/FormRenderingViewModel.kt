@@ -18,8 +18,8 @@ import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
 import com.cradleplatform.neptune.http_sms_service.http.Protocol
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.model.QuestionTypeEnum
-import com.cradleplatform.neptune.utilities.AESEncryptor
 import com.cradleplatform.neptune.utilities.NetworkHelper
 import com.cradleplatform.neptune.utilities.NetworkStatus
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.encodeMsg
@@ -32,8 +32,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FormRenderingViewModel @Inject constructor(
+    //private val mFormManager: FormManager,
     private val httpSmsService: HttpSmsService,
     private val sharedPreferences: SharedPreferences,
+    private var smsKeyManager : SmsKeyManager
 ) : ViewModel() {
 
     //Raw form template
@@ -192,14 +194,15 @@ class FormRenderingViewModel @Inject constructor(
                 language = selectedLanguage,
                 answers = currentAnswers
             )
-
             val json = JacksonMapper.createWriter<FormResponse>().writeValueAsString(
                 formResponse
             )
 
-            val email = sharedPreferences.getString(UserViewModel.EMAIL_KEY, null) ?: error("Encrypt failed")
-            val stringKey = AESEncryptor.generateRandomKey(email)
-            val encodedMsg = encodeMsg(json, AESEncryptor.getSecretKeyFromString(stringKey))
+            // Retrieve the encrypted secret key
+            val smsSecretKey = smsKeyManager.retrieveSmsKey()
+                ?: // TODO: handle the case when the secret key is not available
+                error("Encryption failed - no valid smsSecretKey is available")
+            val encodedMsg = encodeMsg(json, smsSecretKey)
 
             val smsRelayRequestCounter = sharedPreferences.getLong(
                 applicationContext.getString(R.string.sms_relay_request_counter), 0

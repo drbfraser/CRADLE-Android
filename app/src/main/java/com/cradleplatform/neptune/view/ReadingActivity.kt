@@ -25,6 +25,8 @@ import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.navOptions
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import androidx.test.espresso.IdlingResource
 import androidx.test.espresso.idling.CountingIdlingResource
 import com.cradleplatform.neptune.R
@@ -35,6 +37,8 @@ import com.cradleplatform.neptune.utilities.AESEncryptor
 import com.cradleplatform.neptune.utilities.SMSFormatter
 import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.manager.LoginManager
+import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.view.ui.reading.PatientIdConflictDialogFragment
 import com.cradleplatform.neptune.view.ui.reading.ReferralDialogFragment
 import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel
@@ -62,6 +66,9 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
+
+    @Inject
+    lateinit var smsKeyManager : SmsKeyManager
 
     private lateinit var smsSender: SMSSender
 
@@ -484,9 +491,12 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
     }
 
     override fun sendSmsMessage(data: String) {
-        val email = sharedPreferences.getString(UserViewModel.EMAIL_KEY, null) ?: error("Encrypt failed")
-        val stringKey = AESEncryptor.generateRandomKey(email)
-        val encodedMsg = SMSFormatter.encodeMsg(data, AESEncryptor.getSecretKeyFromString(stringKey))
+        // Retrieve the encrypted secret key for the current user
+        val smsSecretKey = smsKeyManager.retrieveSmsKey()
+            ?: // TODO: handle the case when the secret key is not available
+            error("Encryption failed - no valid smsSecretKey is available")
+
+        val encodedMsg = SMSFormatter.encodeMsg(data, smsSecretKey)
 
         val smsRelayRequestCounter = sharedPreferences.getLong(getString(R.string.sms_relay_request_counter), 0)
 
