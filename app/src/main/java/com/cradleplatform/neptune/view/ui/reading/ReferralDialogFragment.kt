@@ -20,6 +20,7 @@ import androidx.lifecycle.lifecycleScope
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.ReferralDialogBinding
+import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.model.PatientAndReadings
 import com.cradleplatform.neptune.model.SmsReadingWithReferral
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
@@ -31,6 +32,7 @@ import com.cradleplatform.neptune.viewmodel.ReferralDialogViewModel
 import com.cradleplatform.neptune.viewmodel.ReferralOption
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * src: https://medium.com/alexander-schaefer/
@@ -51,6 +53,10 @@ class ReferralDialogFragment : DialogFragment() {
     private lateinit var launchReason: ReadingActivity.LaunchReason
 
     lateinit var dataPasser: OnReadingSendWebSnackbarMsgPass
+
+    @Inject
+    lateinit var smsKeyManager: SmsKeyManager
+
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -110,9 +116,23 @@ class ReferralDialogFragment : DialogFragment() {
             if (referralDialogViewModel.isSelectedHealthFacilityValid() &&
                 referralDialogViewModel.isSending.value != true
             ) {
-                referralDialogViewModel.isSending.value = true
-
-                lifecycleScope.launch { handleSmsReferralSend(view) }
+                // Retrieve and validate the locally stored smsKey - allow user to send SMS if the smsKey is valid
+                val currentSmsKey = smsKeyManager.retrieveSmsKey()
+                val keyStatus: SmsKeyManager.KeyState = smsKeyManager.validateSmsKey(currentSmsKey)
+                if (keyStatus == SmsKeyManager.KeyState.NORMAL || keyStatus == SmsKeyManager.KeyState.WARN) {
+                    // SmsKey is valid or stale ==> Send SMS
+                    println("debug-sms-key: SmsKey is valid or stale ==> Send SMS, currentSmsKey=$currentSmsKey")
+                    referralDialogViewModel.isSending.value = true
+                    lifecycleScope.launch { handleSmsReferralSend(view) }
+                }
+                else {
+                    // SmsKey is invalid or expired ==> cannot send SMS
+                    println("debug-sms-key: SmsKey is invalid or expired ==> cannot send SMS, currentSmsKey=$currentSmsKey")
+                    // Display a TOAST message to inform the user about the invalid or expired SMS key
+                    val toastMessage = "Your SMS key has expired\n" +
+                        "Unable to send SMS. Ensure internet connectivity and refresh your SMS key in the settings."
+                    Toast.makeText(requireContext(), toastMessage, Toast.LENGTH_LONG).show()
+                }
             }
         }
 
@@ -121,7 +141,6 @@ class ReferralDialogFragment : DialogFragment() {
                 referralDialogViewModel.isSending.value != true
             ) {
                 referralDialogViewModel.isSending.value = true
-
                 lifecycleScope.launch { handleWebReferralSend(view) }
             }
         }

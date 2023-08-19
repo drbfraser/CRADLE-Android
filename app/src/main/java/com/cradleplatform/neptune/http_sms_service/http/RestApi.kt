@@ -20,6 +20,7 @@ import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.RelayPhoneNumberResponse
+import com.cradleplatform.neptune.model.SmsKeyResponse
 import com.cradleplatform.neptune.model.Statistics
 import com.cradleplatform.neptune.sync.AssessmentSyncField
 import com.cradleplatform.neptune.sync.PatientSyncField
@@ -673,6 +674,48 @@ class RestApi constructor(
                 inputStreamReader = { JacksonMapper.readerForRelayPhoneNumberResponse.readValue(it) }
             )
         }
+
+    suspend fun getCurrentSmsKey(userID: Int): NetworkResult<SmsKeyResponse> =
+        withContext(IO) {
+            http.makeRequest(
+                method = Http.Method.GET,
+                url = urlManager.smsKey(userID),
+                headers = headers,
+                inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) }
+            )
+        }
+
+    suspend fun refreshSmsKey(userID: Int): NetworkResult<SmsKeyResponse> =
+        withContext(IO) {
+            val jsonObject = JSONObject()
+            val mediaType = "application/json; charset=utf-8".toMediaType()
+            val requestBody = jsonObject.toString().toRequestBody(mediaType)
+            http.makeRequest(
+                method = Http.Method.PUT,
+                url = urlManager.smsKey(userID),
+                headers = headers,
+                requestBody = requestBody,
+                inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) }
+            )
+        }
+
+    suspend fun getNewSmsKey(userID: Int): NetworkResult<SmsKeyResponse> =
+        withContext(IO) {
+            val jsonObject = JSONObject()
+            val mediaType = "application/json; charset=utf-8".toMediaType()
+            val requestBody = jsonObject.toString().toRequestBody(mediaType)
+            http.makeRequest(
+                method = Http.Method.POST,
+                url = urlManager.smsKey(userID),
+                headers = headers,
+                requestBody = requestBody,
+                inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) }
+            )
+        }
+
+
+
+
 
     /**
      * Sends a request to the server to associate the patient with a given [id]

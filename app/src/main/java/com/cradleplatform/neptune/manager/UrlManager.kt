@@ -226,6 +226,13 @@ class UrlManager @Inject constructor(val settings: Settings) {
      */
     fun getAllRelayPhoneNumbers() = "$base/phone/relays"
 
+    /**
+     * Endpoint for Get/Post/Put the smsKey for the user
+     *
+     * @param id user id
+     */
+    fun smsKey(id: Int) = "$base/user/$id/smskey"
+
     val userPatientAssociation: String
         get() = "$base/patientAssociations"
 

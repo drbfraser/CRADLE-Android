@@ -39,7 +39,6 @@ class LoginManager @Inject constructor(
         private const val TAG = "LoginManager"
     }
 
-
     fun isLoggedIn(): Boolean {
         sharedPreferences.run {
             if (!contains(TOKEN_KEY)) {
@@ -107,8 +106,10 @@ class LoginManager @Inject constructor(
                     setDefaultRelayPhoneNumber()
 
                     // Extract and securely store the smsKey
-                    val smsKey = loginResponse.smsKey // Extract smsKey
+                    val smsKey = loginResponse.smsKey
+                    // TODO: Modify such that what ever is stored is just
                     smsKeyManager.storeSmsKey(smsKey)
+                    // TODO: todo check result
                 }
             } else {
                 return@withContext loginResult.cast()

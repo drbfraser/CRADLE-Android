@@ -8,19 +8,28 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.lifecycle.ViewModelProvider
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.manager.SmsKeyManager
+import com.cradleplatform.neptune.model.SmsKeyResponse
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.Util
 import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
 import com.cradleplatform.neptune.viewmodel.SyncRemainderHelper
 import com.cradleplatform.neptune.viewmodel.UserViewModel
+import com.cradleplatform.neptune.viewmodel.UserViewModel.Companion.SMS_SECRET_KEY
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -28,6 +37,14 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
     @Inject
     lateinit var sharedPreferences: SharedPreferences
     private lateinit var userViewModel: UserViewModel
+
+    @Inject
+    lateinit var smsKeyManager: SmsKeyManager
+    @Inject
+    lateinit var restApi: RestApi
+
+    private val coroutineScope = CoroutineScope(Dispatchers.Main)
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +69,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
 
         networkCheck()
         setVersionName()
+        validateSmsKeyAndPerformActions()
     }
 
     private fun networkCheck() {
@@ -80,6 +98,72 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
                 }
             }
         }
+    }
+
+    private fun validateSmsKeyAndPerformActions() {
+        // check SMS key validity only when there is internet connection
+        val isNetworkAvailable = NetworkAvailableLiveData(this).value
+        if ((isNetworkAvailable != null) && isNetworkAvailable) {
+            val currentSmsKey = smsKeyManager.retrieveSmsKey()
+            val smsKeyStatus = smsKeyManager.validateSmsKey(currentSmsKey)
+            val userId = sharedPreferences.getInt(UserViewModel.USER_ID_KEY, -1)
+            println("debug-sms-key: smsKeyStatus=$smsKeyStatus")
+            if (smsKeyStatus==SmsKeyManager.KeyState.NOTFOUND) {
+                // User doesn't have a valid sms key
+                coroutineScope.launch {
+                    val response = restApi.getNewSmsKey(userId)
+                    handleSmsKeyUpdateResult(response, true)
+                }
+            }
+            if (smsKeyStatus==SmsKeyManager.KeyState.EXPIRED) {
+                // User's sms key is expired
+                if (userId != -1) {
+                    coroutineScope.launch {
+                        val response = restApi.refreshSmsKey(userId)
+                        println("debug-sms-key: ==> response=$response")
+                        println("debug-sms-key: ==> stored=${smsKeyManager.retrieveSmsKey()}")
+                        handleSmsKeyUpdateResult(response, false)
+                    }
+                }
+            }
+            else if(smsKeyStatus==SmsKeyManager.KeyState.WARN) {
+                // User's sms key is stale - Warn the user to refresh their SmsKey
+                val daysUntilExpiry = smsKeyManager.getDaysUntilExpiry(currentSmsKey!!)
+                showExpiryWarning(applicationContext, daysUntilExpiry)
+            }
+        }
+    }
+
+    private fun handleSmsKeyUpdateResult(result: NetworkResult<SmsKeyResponse>, isNew: Boolean) {
+        when (result) {
+            is NetworkResult.Success -> {
+                val storeResult: Boolean = if (isNew) {
+                    smsKeyManager.storeSmsKey(result.value.toString())
+                } else {
+                    smsKeyManager.updateSmsKey(result.value)
+                }
+                if (storeResult) {
+                    showToast("Key update was successful")
+                    println("debug-sms-key: ==> Key update successful")
+                    println("debug-sms-key: updated stored key: ${smsKeyManager.retrieveSmsKey()}")
+                } else {
+                    showToast("Error: Key update was unsuccessful")
+                    println("debug-sms-key: ==> Key update unsuccessful ==> ${result.value.toString()}")
+                }
+            }
+            else -> showToast("Network Error: Key update unsuccessful")
+        }
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun showExpiryWarning(context: Context, daysUntilExpiry: Int) {
+        val message = "Warning: Your SMS key is set to expire in $daysUntilExpiry days.\n" +
+            "To avoid disruption, promptly refresh your SMS key through the settings."
+
+        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
     }
 
     private fun showPhoneChangedDialog(newPhoneNumber: String) {
