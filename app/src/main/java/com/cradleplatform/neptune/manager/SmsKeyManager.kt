@@ -120,7 +120,7 @@ class SmsKeyManager @Inject constructor(@ApplicationContext private val context:
         return daysUntilTarget.toInt()
     }
 
-    private fun convertToKeyValuePairs(obj: Any): String {
+    fun convertToKeyValuePairs(obj: Any): String {
         val keyValuePairs = mutableListOf<String>()
         val properties = obj::class.members.filterIsInstance<KProperty1<Any, *>>()
 

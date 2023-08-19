@@ -10,6 +10,7 @@ import com.cradleplatform.neptune.model.UserRole
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.utilities.SharedPreferencesMigration
+import com.cradleplatform.neptune.viewmodel.UserViewModel
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -140,7 +141,9 @@ class LoginManager @Inject constructor(
             clearAllTables()
         }
 
-        // Clear the stored SMS key as it will be different for the other users
+        // Clear ViewModel current user phone number
+        sharedPreferences.edit().putString(UserViewModel.USER_PHONE_NUMBER, "").apply()
+        // Clear the stored SMS key
         smsKeyManager.clearSmsKey()
     }
 }
