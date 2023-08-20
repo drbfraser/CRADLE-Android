@@ -204,12 +204,12 @@ data class Referral(
 }
 
 data class SmsReadingWithReferral(
-    val patient: PatientAndReadings,
     val requestNumber: String,
     val method: String,
     val endpoint: String,
     val headers: String,
-    val body: String)
+    val body: String
+    )
 
 data class SmsReferral(val patient: PatientAndReferrals)
 

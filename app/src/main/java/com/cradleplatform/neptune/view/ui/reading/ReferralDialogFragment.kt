@@ -178,20 +178,19 @@ class ReferralDialogFragment : DialogFragment() {
         patientAndReadings: PatientAndReadings
     ) {
         // TODO: Add target API endpoint information needed by the backend to json ??
+        // TODO: requestNumber=0 as it is not implemented in the backend yet
+        patientAndReadings
+        val patientAndReadingsJSON = JacksonMapper.createWriter<PatientAndReadings>().writeValueAsString(
+            patientAndReadings)
         val json = JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
             SmsReadingWithReferral(
-                patient = patientAndReadings,
-                requestNumber = "1",
-                method = "",
-                endpoint = "",
+                requestNumber = "0",
+                method = "POST",
+                endpoint = "api/patients",
                 headers = "",
-                body = ""
+                body = patientAndReadingsJSON
             )
         )
-
-        println("debug-sms-key: patientAndReadings$patientAndReadings")
-        println("debug-sms-key: json$json")
-
         dataPasser.sendSmsMessage(json)
     }
 
@@ -201,15 +200,15 @@ class ReferralDialogFragment : DialogFragment() {
             val selectedHealthFacilityName =
                 referralDialogViewModel.healthFacilityToUse.value ?: return
 
-            val smsSendResult = viewModel.saveWithReferral(
+            val webSendResult = viewModel.saveWithReferral(
                 ReferralOption.HTML,
                 comment,
                 selectedHealthFacilityName
             )
 
-            if (smsSendResult is ReadingFlowSaveResult.SaveSuccessful) {
+            if (webSendResult is ReadingFlowSaveResult.SaveSuccessful) {
                 // Nothing left for us to do.
-                dataPasser.onMsgPass(getToastMessageForStatus(view.context, smsSendResult, ReferralOption.HTML))
+                dataPasser.onMsgPass(getToastMessageForStatus(view.context, webSendResult, ReferralOption.HTML))
                 activity?.finish()
             }
         } finally {
