@@ -713,10 +713,6 @@ class RestApi constructor(
             )
         }
 
-
-
-
-
     /**
      * Sends a request to the server to associate the patient with a given [id]
      * to the currently logged in user.

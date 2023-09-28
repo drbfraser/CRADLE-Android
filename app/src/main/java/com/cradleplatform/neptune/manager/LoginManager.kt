@@ -36,7 +36,7 @@ class LoginManager @Inject constructor(
     private val smsKeyManager: SmsKeyManager,
     @ApplicationContext private val context: Context
 ) {
-    companion object{
+    companion object {
         private const val TAG = "LoginManager"
     }
 

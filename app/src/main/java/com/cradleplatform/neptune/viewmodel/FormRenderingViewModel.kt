@@ -35,7 +35,7 @@ class FormRenderingViewModel @Inject constructor(
     //private val mFormManager: FormManager,
     private val httpSmsService: HttpSmsService,
     private val sharedPreferences: SharedPreferences,
-    private var smsKeyManager : SmsKeyManager
+    private var smsKeyManager: SmsKeyManager
 ) : ViewModel() {
 
     //Raw form template

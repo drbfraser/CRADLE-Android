@@ -21,7 +21,6 @@ import com.cradleplatform.neptune.ext.getEnglishResources
 import com.cradleplatform.neptune.ext.getIntOrNull
 import com.cradleplatform.neptune.ext.setValueOnMainThread
 import com.cradleplatform.neptune.ext.use
-import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.manager.ReferralManager

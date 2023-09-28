@@ -209,7 +209,7 @@ data class SmsReadingWithReferral(
     val endpoint: String,
     val headers: String,
     val body: String
-    )
+)
 
 data class SmsReferral(val patient: PatientAndReferrals)
 

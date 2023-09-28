@@ -57,7 +57,6 @@ class ReferralDialogFragment : DialogFragment() {
     @Inject
     lateinit var smsKeyManager: SmsKeyManager
 
-
     override fun onAttach(context: Context) {
         super.onAttach(context)
         check(context is ReadingActivity)
@@ -123,8 +122,7 @@ class ReferralDialogFragment : DialogFragment() {
                     // SmsKey is normal or stale ==> Send SMS
                     referralDialogViewModel.isSending.value = true
                     lifecycleScope.launch { handleSmsReferralSend(view) }
-                }
-                else {
+                } else {
                     // SmsKey is invalid or expired ==> cannot send SMS
                     // Display a TOAST message to inform the user about the invalid or expired SMS key
                     val toastMessage = "Your SMS key has expired\n" +
@@ -181,7 +179,8 @@ class ReferralDialogFragment : DialogFragment() {
         // TODO: requestNumber=0 as it is not implemented in the backend yet
         patientAndReadings
         val patientAndReadingsJSON = JacksonMapper.createWriter<PatientAndReadings>().writeValueAsString(
-            patientAndReadings)
+            patientAndReadings
+        )
         val json = JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
             SmsReadingWithReferral(
                 requestNumber = "0",

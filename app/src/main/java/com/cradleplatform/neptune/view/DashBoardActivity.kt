@@ -44,7 +44,6 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dash_board)
@@ -106,14 +105,14 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
             val currentSmsKey = smsKeyManager.retrieveSmsKey()
             val smsKeyStatus = smsKeyManager.validateSmsKey(currentSmsKey)
             val userId = sharedPreferences.getInt(UserViewModel.USER_ID_KEY, -1)
-            if (smsKeyStatus==SmsKeyManager.KeyState.NOTFOUND) {
+            if (smsKeyStatus == SmsKeyManager.KeyState.NOTFOUND) {
                 // User doesn't have a valid sms key
                 coroutineScope.launch {
                     val response = restApi.getNewSmsKey(userId)
                     handleSmsKeyUpdateResult(response, true)
                 }
             }
-            if (smsKeyStatus==SmsKeyManager.KeyState.EXPIRED) {
+            if (smsKeyStatus == SmsKeyManager.KeyState.EXPIRED) {
                 // User's sms key is expired
                 if (userId != -1) {
                     coroutineScope.launch {
@@ -121,8 +120,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
                         handleSmsKeyUpdateResult(response, false)
                     }
                 }
-            }
-            else if(smsKeyStatus==SmsKeyManager.KeyState.WARN) {
+            } else if (smsKeyStatus == SmsKeyManager.KeyState.WARN) {
                 // User's sms key is stale - Warn the user to refresh their SmsKey
                 val daysUntilExpiry = smsKeyManager.getDaysUntilExpiry(currentSmsKey!!)
                 showExpiryWarning(applicationContext, daysUntilExpiry)
@@ -141,7 +139,6 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
                 }
                 if (storeResult) {
                     showToast("Key update was successful")
-
                 } else {
                     showToast("Error: Key update was unsuccessful")
                 }

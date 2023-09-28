@@ -45,7 +45,7 @@ class AESEncryptor {
             return sb.toString()
         }
 
-        private fun encryptMsg(plaintext: ByteArray, keySpec: SecretKeySpec): Pair<ByteArray, ByteArray>  {
+        private fun encryptMsg(plaintext: ByteArray, keySpec: SecretKeySpec): Pair<ByteArray, ByteArray> {
             val randomIV = ByteArray(ivSize)
             val random = SecureRandom()
             random.nextBytes(randomIV)
