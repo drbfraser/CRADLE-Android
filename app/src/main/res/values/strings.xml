@@ -213,6 +213,7 @@
     <string name="network_result_error_server_rejected_url">Server rejected URL; check server URL in settings.</string>
     <string name="network_result_error_reading_or_patient_might_already_exist">The reading or patient might already exist; check global patients</string>
     <string name="network_result_error_generic_status_code">Server rejected upload; check server URL in settings. Code %1$d</string>
+    <string name="network_detected_sync_reminder">"A connection has been detected and there is content to sync."</string>
     <string name="reading_not_pregnant">Not pregnant</string>
     <string name="patient_profile_reading_already_uploaded_snackbar">This reading is already uploaded to the server, unable to make changes to it.</string>
     <string name="patient_profile_reading_already_uploaded_cannot_delete_snackbar">This reading is already uploaded to the server; cannot delete the reading.</string>

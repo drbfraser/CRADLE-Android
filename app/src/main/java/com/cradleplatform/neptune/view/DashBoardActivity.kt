@@ -3,14 +3,17 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.utilities.CustomToast
@@ -80,6 +83,20 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
                 }
             }
         }
+
+        // Throughout application, notify user when internet connection is restored and there is content to sync.
+        val networkConnectionObserver = Observer<Boolean> { t ->
+            //    TODO: Check if there is content to sync
+            when (t) {
+                true -> {
+                    Toast.makeText(applicationContext, getString(R.string.network_detected_sync_reminder), Toast.LENGTH_LONG).show()
+                    Log.d(TAG, "DEBUG: Internet connection detected, and there is content to sync")
+                }
+            }
+        }
+
+        // Use .observeForever() so that observer lasts even when Activity ends.
+        isNetworkAvailable.observeForever(networkConnectionObserver)
     }
 
     private fun showPhoneChangedDialog(newPhoneNumber: String) {
@@ -206,6 +223,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         const val READING_ACTIVITY_DONE = 12345
         const val OPACITY_HALF = 0.5f
         const val OPACITY_FULL = 1.0f
+        private const val TAG = "DashBoardActivity"
     }
 
     override fun onBackPressed() {
