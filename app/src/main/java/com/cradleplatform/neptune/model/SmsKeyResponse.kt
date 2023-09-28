@@ -5,10 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty
 data class SmsKeyResponse(
     @JsonProperty("message")
     var message: String,
-    @JsonProperty("expiry_date")
-    var expiry_date: String,
-    @JsonProperty("stale_date")
-    var stale_date: String,
-    @JsonProperty("sms_key")
-    var sms_key: String
+    @JsonProperty("expiryDate")
+    var expiryDate: String,
+    @JsonProperty("staleDate")
+    var staleDate: String,
+    @JsonProperty("smsDey")
+    var smsKey: String
 )
