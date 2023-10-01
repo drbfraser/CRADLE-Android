@@ -62,6 +62,17 @@
             android:textColor="@color/black"
             android:visibility="gone" />
 
+        <Button
+            android:id="@+id/btn_date_time_picker"
+            android:layout_width="173dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="6dp"
+            android:background="@drawable/rounded_button"
+            android:text="Select Date and Time"
+            android:textColor="@color/black"
+            android:visibility="gone" />
+
         <RadioGroup
             android:id="@+id/rg_multiple_choice"
             android:layout_width="85dp"
