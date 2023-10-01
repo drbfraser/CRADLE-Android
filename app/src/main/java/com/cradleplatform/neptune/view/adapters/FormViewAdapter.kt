@@ -129,8 +129,22 @@ class FormViewAdapter(
                 holder.binding.btnDatePicker.visibility = View.VISIBLE
 
                 //Enabling Click on Select Date
-                holder.binding.btnDatePicker.setOnClickListener {
+                holder.binding.btnDateTimePicker.setOnClickListener {
                     showDateTimePicker(
+                        context,
+                        holder.binding.btnDateTimePicker,
+                        holder,
+                        mList[position].questionId
+                    )
+                }
+            }
+
+            "DATE" -> {
+                holder.binding.btnDatePicker.visibility = View.VISIBLE
+
+                //Enabling Click on Select Date
+                holder.binding.btnDatePicker.setOnClickListener {
+                    showDatePicker(
                         context,
                         holder.binding.btnDatePicker,
                         holder,
@@ -286,6 +300,33 @@ class FormViewAdapter(
     }
 
     @SuppressLint("SetTextI18n")
+    private fun showDatePicker(
+        context: Context,
+        itemDatePicker: Button,
+        holder: FormViewAdapter.ViewHolder,
+        questionId: String?
+    ) {
+        val calender = Calendar.getInstance()
+        val year = calender.get(Calendar.YEAR)
+        val month = calender.get(Calendar.MONTH)
+        val day = calender.get(Calendar.DAY_OF_MONTH)
+
+        val dpd = DatePickerDialog(
+            context,
+            { view, selectedYear, selectedMonth, selectedDayOfMonth ->
+                val date = "$selectedYear/${selectedMonth + 1}/$selectedDayOfMonth"
+                itemDatePicker.text = date
+                saveAnswerForDate(holder, questionId)
+            },
+            year,
+            month,
+            day
+        )
+
+        dpd.datePicker.maxDate = System.currentTimeMillis()
+        dpd.show()
+    }
+    @SuppressLint("SetTextI18n")
     private fun showDateTimePicker(
         context: Context,
         itemDatePicker: Button,
@@ -330,8 +371,15 @@ class FormViewAdapter(
         dpd.show()
     }
 
-    private fun saveAnswerForDateTime(holder: FormViewAdapter.ViewHolder, questionId: String?) {
+    private fun saveAnswerForDate(holder: FormViewAdapter.ViewHolder, questionId: String?) {
         val textAnswer = holder.binding.btnDatePicker.text.toString()
+        viewModel.addAnswer(
+            questionId!!,
+            Answer.createTextAnswer(textAnswer)
+        )
+    }
+    private fun saveAnswerForDateTime(holder: FormViewAdapter.ViewHolder, questionId: String?) {
+        val textAnswer = holder.binding.btnDateTimePicker.text.toString()
         viewModel.addAnswer(
             questionId!!,
             Answer.createTextAnswer(textAnswer)
