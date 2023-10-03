@@ -70,6 +70,7 @@ jobs:
     runs-on: [self-hosted, docker]
     container:
       image: cangol/android-gradle
+      options: --user 1001
     needs: [ build ]
     steps: 
       - name: Checkout repository into Container
