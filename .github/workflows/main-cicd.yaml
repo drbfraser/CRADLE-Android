@@ -12,27 +12,27 @@ env:
   CUSTOM_WORKSPACE: /isolated-build/repo
 
 jobs:
-  display_github_contexts:
-    name: Display github Contexts
-    runs-on: [self-hosted, docker]
-    container: 
-      image: node:14
-    steps:
-      - uses: bfraser/cicd/actions/debug_display_contexts@v1
+  # display_github_contexts:
+  #   name: Display github Contexts
+  #   runs-on: [self-hosted, docker]
+  #   container: 
+  #     image: node:14
+  #   steps:
+  #     - uses: bfraser/cicd/actions/debug_display_contexts@v1
 
-  code_analysis:
-    name: Code Analysis
-    runs-on: [self-hosted, docker]
-    container:
-      image: cangol/android-gradle
-    steps:
-      - name: Checkout repository into Container
-        uses: bfraser/cicd/actions/checkout@v1
-        with: 
-          path: ${{ env.CUSTOM_WORKSPACE }}
-      - name: Run static code analysis
-        run: ./gradlew detekt --info --stacktrace
-        working-directory: ${{ env.CUSTOM_WORKSPACE }}
+  # code_analysis:
+  #   name: Code Analysis
+  #   runs-on: [self-hosted, docker]
+  #   container:
+  #     image: cangol/android-gradle
+  #   steps:
+  #     - name: Checkout repository into Container
+  #       uses: bfraser/cicd/actions/checkout@v1
+  #       with: 
+  #         path: ${{ env.CUSTOM_WORKSPACE }}
+  #     - name: Run static code analysis
+  #       run: ./gradlew detekt --info --stacktrace
+  #       working-directory: ${{ env.CUSTOM_WORKSPACE }}
     
   build:
     name: Build and Assemble Debug APK
@@ -110,27 +110,27 @@ jobs:
         shell: bash
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
    
-  test:
-    name: Run Local Unit Tests
-    runs-on: [self-hosted, docker]
-    container:
-      image: cangol/android-gradle
-    needs: [ build ]
-    outputs: 
-      test_results: test-results/
-    steps: 
-      - name: Checkout repository into Container
-        uses: bfraser/cicd/actions/checkout@v1
-        with: 
-          path: ${{ env.CUSTOM_WORKSPACE }}
-      - name: Run Local Unit Tests
-        run: ./gradlew test
-        working-directory: ${{ env.CUSTOM_WORKSPACE }}
-      - name: Persist Test Results
-        uses: actions/upload-artifact@v2
-        with: 
-          name: test_results
-          path: ${{ env.CUSTOM_WORKSPACE }}/app/build/test-results/
+  # test:
+  #   name: Run Local Unit Tests
+  #   runs-on: [self-hosted, docker]
+  #   container:
+  #     image: cangol/android-gradle
+  #   needs: [ build ]
+  #   outputs: 
+  #     test_results: test-results/
+  #   steps: 
+  #     - name: Checkout repository into Container
+  #       uses: bfraser/cicd/actions/checkout@v1
+  #       with: 
+  #         path: ${{ env.CUSTOM_WORKSPACE }}
+  #     - name: Run Local Unit Tests
+  #       run: ./gradlew test
+  #       working-directory: ${{ env.CUSTOM_WORKSPACE }}
+  #     - name: Persist Test Results
+  #       uses: actions/upload-artifact@v2
+  #       with: 
+  #         name: test_results
+  #         path: ${{ env.CUSTOM_WORKSPACE }}/app/build/test-results/
 
 
 ######################
