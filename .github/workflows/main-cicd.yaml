@@ -1,4 +1,4 @@
-name: 415-Cradle/Cradle-Mobile
+name: Cradle-Mobile CI/CD Pipeline
 # Main GitHub CI/CD pipeline definition file
 # For syntax, see: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions
 
@@ -56,47 +56,21 @@ jobs:
         id: get-db-version
         run: echo "::set-output name=version::$(scripts/get-latest-db-version.sh)"
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
-      - name: Copy Latest DB Version JSON
-        run: cp "app/schemas/com.cradleplatform.neptune.database.CradleDatabase/${{ steps.get-db-version.outputs.version }}.json" latest_db_version.json
-        working-directory: ${{ env.CUSTOM_WORKSPACE }}
-      - name:  Persist Latest DB Version JSON Artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: latest_db_version
-          path: ${{ env.CUSTOM_WORKSPACE }}/latest_db_version.json
 
-  validate_database_json:
-    name: Validate Database JSON
-    runs-on: [self-hosted, docker]
-    if: false
-    container:
-      image: cangol/android-gradle
-    needs: [ build ]
-    steps: 
-      - name: Checkout repository into Container
-        uses: bfraser/cicd/actions/checkout@v1
-        with: 
-          path: ${{ env.CUSTOM_WORKSPACE }}
-      - name: Get Latest DB Version 
-        id: get-db-version
-        run: echo "::set-output name=version::$(scripts/get-latest-db-version.sh)"
+      # The below "Validate Database JSON" steps were in their own job; however,
+      # since these jobs are run in a container, downloading the .json file
+      # with actions/download-artifact@v2 caused EACCES errors in the home folder. 
+      # Steps moved here to simplify CI/CD operation and tasks.
+      - name: Validate Database JSON - Copy Latest DB Version JSON
+        run: cp "app/schemas/com.cradleplatform.neptune.database.CradleDatabase/${{ steps.get-db-version.outputs.version }}.json" .
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
-        # Download Artifact (latest_db_version.json) generated in previous job
-      - name: Download Artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: latest_db_version
-          path: ${{ env.CUSTOM_WORKSPACE }}
-      - name: Copy Lates DB Version JSON
-        run: cp latest_db_version.json "${{ steps.get-db-version.outputs.version }}.json"
-        working-directory: ${{ env.CUSTOM_WORKSPACE }}
-      - name:  Calculate SHA256 Checksum
+      - name: Validate Database JSON - Calculate SHA256 Checksum
         run: |
           sha256sum -b "${{ steps.get-db-version.outputs.version }}.json" > CHECKSUMS
           sha256sum -c CHECKSUMS
           touch SUCCESS
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
-      - name: Check for Wrong Database Schema JSON
+      - name: Validate Database JSON - Check for Wrong Database Schema JSON
         run: |
           if [ ! -f "SUCCESS" ]; then
             echo "Wrong database schema JSON for current database version: ${{ steps.get-db-version.outputs.version }}.json"
@@ -109,7 +83,7 @@ jobs:
           fi
         shell: bash
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
-   
+
   test:
     name: Run Local Unit Tests
     runs-on: [self-hosted, docker]
