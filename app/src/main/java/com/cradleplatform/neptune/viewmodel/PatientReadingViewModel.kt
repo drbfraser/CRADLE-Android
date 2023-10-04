@@ -602,8 +602,8 @@ class PatientReadingViewModel @Inject constructor(
             // Set the initial urine test checkbox state
             isUsingUrineTest.value =
                 if (reasonForLaunch != ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT_READING) {
-                    // Ensure urine test enabled by default for new readings like the frontend.
-                    true
+                    // Setting urine test to not needed by default
+                    false
                 } else {
                     // Otherwise, derive urine test usage state from the present urine test.
                     currentUrineTest != null

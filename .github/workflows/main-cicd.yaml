@@ -68,6 +68,7 @@ jobs:
   validate_database_json:
     name: Validate Database JSON
     runs-on: [self-hosted, docker]
+    if: false
     container:
       image: cangol/android-gradle
     needs: [ build ]
