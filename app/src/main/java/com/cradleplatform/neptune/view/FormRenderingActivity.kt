@@ -142,7 +142,7 @@ class FormRenderingActivity : AppCompatActivity() {
         val builder = AlertDialog.Builder(this)
         builder.setTitle(R.string.how_to_submit)
         builder.setMessage(R.string.choose_an_option)
-
+        // The ViewModel returns "CELLULAR" or "WIFI" or ""
         val internetString = viewModel.getInternetTypeString(applicationContext)
 
         if (internetString.isEmpty()) {
