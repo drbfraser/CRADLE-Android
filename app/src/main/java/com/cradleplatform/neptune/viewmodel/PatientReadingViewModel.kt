@@ -1477,7 +1477,7 @@ class PatientReadingViewModel @Inject constructor(
 
                 // Handle the referral based on the type.
                 when (referralOption) {
-                    ReferralOption.HTML -> {
+                    ReferralOption.HTTP -> {
                         // Upload patient and reading to the server, with the referral embedded in
                         // the reading.
                         val result =
@@ -1998,7 +1998,7 @@ class PatientReadingViewModel @Inject constructor(
 }
 
 enum class ReferralOption {
-    NONE, SMS, HTML
+    NONE, SMS, HTTP
 }
 
 /**
