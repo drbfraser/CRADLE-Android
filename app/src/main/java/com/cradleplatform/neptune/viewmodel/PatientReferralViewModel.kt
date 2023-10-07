@@ -186,11 +186,6 @@ class PatientReferralViewModel @Inject constructor(
             )
         )
 
-        CustomToast.shortToast(
-            applicationContext,
-            applicationContext.getString(R.string.sms_sender_send)
-        )
-
         // saves the data in internal db
         handleStoringReferralFromBuilders(referral)
 
