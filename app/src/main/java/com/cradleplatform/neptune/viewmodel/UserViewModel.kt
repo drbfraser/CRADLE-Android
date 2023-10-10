@@ -10,13 +10,9 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
-import com.cradleplatform.neptune.manager.AssessmentManager
 import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.manager.LoginManager.Companion.USER_PHONE_NUMBER
 import com.cradleplatform.neptune.manager.LoginManager.Companion.PHONE_NUMBERS
-import com.cradleplatform.neptune.manager.PatientManager
-import com.cradleplatform.neptune.manager.ReadingManager
-import com.cradleplatform.neptune.manager.ReferralManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject

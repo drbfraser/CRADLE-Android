@@ -206,7 +206,6 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         const val READING_ACTIVITY_DONE = 12345
         const val OPACITY_HALF = 0.5f
         const val OPACITY_FULL = 1.0f
-        private const val TAG = "DashBoardActivity"
     }
 
     override fun onBackPressed() {

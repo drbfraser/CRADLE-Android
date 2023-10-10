@@ -14,17 +14,14 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.hilt.work.HiltWorkerFactory
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.work.Configuration
-import com.cradleplatform.neptune.ext.setValueOnMainThread
 import com.cradleplatform.neptune.manager.AssessmentManager
 import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.manager.ReferralManager
 import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
-import com.cradleplatform.neptune.view.DashBoardActivity
 import com.cradleplatform.neptune.view.PinPassActivity
 
 import com.jakewharton.threetenabp.AndroidThreeTen
