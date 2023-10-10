@@ -11,9 +11,20 @@ import android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
 import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.hilt.work.HiltWorkerFactory
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.work.Configuration
+import com.cradleplatform.neptune.ext.setValueOnMainThread
+import com.cradleplatform.neptune.manager.AssessmentManager
 import com.cradleplatform.neptune.manager.LoginManager
+import com.cradleplatform.neptune.manager.PatientManager
+import com.cradleplatform.neptune.manager.ReadingManager
+import com.cradleplatform.neptune.manager.ReferralManager
+import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
+import com.cradleplatform.neptune.view.DashBoardActivity
 import com.cradleplatform.neptune.view.PinPassActivity
 
 import com.jakewharton.threetenabp.AndroidThreeTen
@@ -61,6 +72,14 @@ class CradleApplication : Application(), Configuration.Provider {
     lateinit var workerFactory: HiltWorkerFactory
     @Inject
     lateinit var loginManager: LoginManager
+    @Inject
+    lateinit var patientManager: PatientManager
+    @Inject
+    lateinit var readingManager: ReadingManager
+    @Inject
+    lateinit var referralManager: ReferralManager
+    @Inject
+    lateinit var assessmentManager: AssessmentManager
 
     override fun getWorkManagerConfiguration(): Configuration = Configuration.Builder()
         .setWorkerFactory(workerFactory)
@@ -167,6 +186,49 @@ class CradleApplication : Application(), Configuration.Provider {
                 }
             }
         )
+
+        doNetworkCheck()
+    }
+
+    private fun doNetworkCheck() {
+
+        val isNetworkAvailable = NetworkAvailableLiveData(this)
+
+        // Note: Observing must be done in View not ViewModel.
+        // Throughout application, notify user when internet connection is restored and there is content to sync.
+        val networkConnectionObserver = Observer<Boolean> { t ->
+            when (t) {
+                //    TODO: Check if there is content to sync
+                //    First, check if there is local content to upload.
+                true -> {
+                    Log.d(
+                        "CRADLEAPPTAG",
+                        "DEBUG: YES INTERNET"
+                    )
+
+                    appCoroutineScope.launch {
+                        val a = patientManager.getNumberOfPatientsToUpload()
+                        val b = readingManager.getNumberOfReadingsToUpload()
+                        val c = referralManager.getNumberOfReferralsToUpload()
+                        val d = assessmentManager.getNumberOfAssessmentsToUpload()
+
+                        Log.d("CRADLEAPPTAG", "$a $b $c $d")
+                        val numberOfItemsToUpload = a + b + c + d
+                        if (numberOfItemsToUpload > 0) {
+                            Toast.makeText(
+                                applicationContext,
+                                getString(R.string.network_detected_sync_reminder),
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+                }
+            }
+        }
+
+        // Use .observeForever() so that observer lasts even when Activity ends.
+        // TODO: only attach once
+        isNetworkAvailable.observeForever(networkConnectionObserver)
     }
 
     fun pinPassActivityFinished() {
