@@ -74,6 +74,11 @@ class ReferralManager @Inject constructor(
         referralDao.getAllReferralByPatientId(id)
 
     /**
+     * Get the number of referrals that have been created or edited offline
+     */
+    suspend fun getNumberOfReferralsToUpload(): Int = referralDao.countReferralsToUpload()
+
+    /**
      * Uploads an edited referrals to the server.
      *
      * @param referral the referral to upload

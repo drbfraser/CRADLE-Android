@@ -68,6 +68,11 @@ class ReadingManager @Inject constructor(
         readingDao.getAllReadingByPatientId(id)
 
     /**
+     * Get the number of readings that have been created or edited offline
+     */
+    suspend fun getNumberOfReadingsToUpload(): Int = readingDao.getNumberOfUnUploadedReadings()
+
+    /**
      * Returns all readings which have not been uploaded to the server yet.
      */
     suspend fun getUnUploadedReadings(): List<Reading> = readingDao.getAllUnUploadedReadings()

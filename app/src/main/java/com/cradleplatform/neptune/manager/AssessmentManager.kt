@@ -74,6 +74,11 @@ class AssessmentManager @Inject constructor(
         assessmentDao.getAllAssessmentByPatientId(id)
 
     /**
+     * Get the number of assessments that have been created or edited offline
+     */
+    suspend fun getNumberOfAssessmentsToUpload(): Int = assessmentDao.countAssessmentsToUpload()
+
+    /**
      * Uploads an edited assessments to the server.
      *
      * @param assessment the assessment to upload
