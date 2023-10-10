@@ -5,14 +5,10 @@ import android.content.Context.TELEPHONY_SERVICE
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.telephony.TelephonyManager
-import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.cradleplatform.neptune.ext.setValueOnMainThread
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.manager.AssessmentManager
 import com.cradleplatform.neptune.manager.LoginManager
@@ -36,29 +32,9 @@ import javax.inject.Inject
 @HiltViewModel
 class UserViewModel @Inject constructor(
     private val sharedPreferences: SharedPreferences,
-    private val patientManager: PatientManager,
-    private val readingManager: ReadingManager,
-    private val referralManager: ReferralManager,
-    private val assessmentManager: AssessmentManager,
     application: Application,
     private val restApi: RestApi
 ) : AndroidViewModel(application) {
-
-    fun hasDataToUpload(): LiveData<Int> {
-        val result = MutableLiveData<Int>(null)
-
-        viewModelScope.launch {
-            val a = patientManager.getNumberOfPatientsToUpload()
-            val b = readingManager.getNumberOfReadingsToUpload()
-            val c = referralManager.getNumberOfReferralsToUpload()
-            val d = assessmentManager.getNumberOfAssessmentsToUpload()
-
-            Log.d("DashboardActivity", "$a $b $c $d")
-            result.setValueOnMainThread(a + b + c + d)
-            result.postValue(a + b + c + d)
-        }
-        return result
-    }
 
     // TODO: check whether is should be the source of SMS and handle the edge cases
     //  - e.g.: User selects no when asked to update their phone number.
