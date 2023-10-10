@@ -84,18 +84,47 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
             }
         }
 
+        // Note: Observing must be done in View not ViewModel.
         // Throughout application, notify user when internet connection is restored and there is content to sync.
         val networkConnectionObserver = Observer<Boolean> { t ->
-            //    TODO: Check if there is content to sync
             when (t) {
+                //    TODO: Check if there is content to sync
+                //    First, check if there is local content to upload.
                 true -> {
-                    Toast.makeText(applicationContext, getString(R.string.network_detected_sync_reminder), Toast.LENGTH_LONG).show()
-                    Log.d(TAG, "DEBUG: Internet connection detected, and there is content to sync")
+                    Log.d(
+                        TAG,
+                        "DEBUG: YES INTERNET"
+                    )
+
+                    userViewModel.hasDataToUpload().observeForever { countDataToUpload ->
+
+                        Log.d(TAG, "hasDataToUpload: $countDataToUpload")
+                        // Then, also check if there is remote data to download.
+                        if (countDataToUpload != null && countDataToUpload > 0) {
+                            Toast.makeText(
+                                applicationContext,
+                                getString(R.string.network_detected_sync_reminder),
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+                }
+                else -> {
+                    Log.d(
+                        TAG,
+                        "DEBUG: NO INTERNET"
+                    )
+                    Toast.makeText(
+                        applicationContext,
+                        "Internet connection gone.",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
         }
 
         // Use .observeForever() so that observer lasts even when Activity ends.
+        // TODO: only attach once
         isNetworkAvailable.observeForever(networkConnectionObserver)
     }
 
