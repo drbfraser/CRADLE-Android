@@ -31,8 +31,8 @@ import com.cradleplatform.neptune.sync.SyncWorker
 import com.cradleplatform.neptune.utilities.BarGraphValueFormatter
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.DateUtil
-import com.cradleplatform.neptune.utilities.NetworkHelper
-import com.cradleplatform.neptune.utilities.NetworkStatus
+import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkHelper
+import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkStatus
 import com.cradleplatform.neptune.viewmodel.StatsViewModel
 import com.cradleplatform.neptune.viewmodel.SyncRemainderHelper
 import com.github.mikephil.charting.charts.BarChart

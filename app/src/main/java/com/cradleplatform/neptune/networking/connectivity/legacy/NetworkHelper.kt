@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.utilities
+package com.cradleplatform.neptune.networking.connectivity.legacy
 
 import android.content.Context
 import android.net.ConnectivityManager

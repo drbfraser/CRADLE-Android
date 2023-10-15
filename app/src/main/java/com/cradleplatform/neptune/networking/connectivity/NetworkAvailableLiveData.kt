@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.utilities.livedata
+package com.cradleplatform.neptune.networking.connectivity
 
 import android.content.BroadcastReceiver
 import android.content.Context
