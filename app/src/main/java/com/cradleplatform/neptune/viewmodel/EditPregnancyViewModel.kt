@@ -25,7 +25,7 @@ import com.cradleplatform.neptune.utilities.Months
 import com.cradleplatform.neptune.utilities.Seconds
 import com.cradleplatform.neptune.utilities.Weeks
 import com.cradleplatform.neptune.utilities.WeeksAndDays
-import com.cradleplatform.neptune.networking.connectivity.NetworkAvailableLiveData
+import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkAvailableLiveData
 import com.cradleplatform.neptune.viewmodel.EditPatientViewModel.SaveResult
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.lifecycle.HiltViewModel

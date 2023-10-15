@@ -20,7 +20,7 @@ import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.http_sms_service.http.DatabaseObject
 import com.cradleplatform.neptune.utilities.UnixTimestamp
-import com.cradleplatform.neptune.networking.connectivity.NetworkAvailableLiveData
+import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkAvailableLiveData
 import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
 import com.cradleplatform.neptune.http_sms_service.http.Protocol
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender

@@ -22,7 +22,7 @@ import com.cradleplatform.neptune.model.Verifiable
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.utilities.DateUtil
 import com.cradleplatform.neptune.utilities.LiveDataDynamicModelBuilder
-import com.cradleplatform.neptune.networking.connectivity.NetworkAvailableLiveData
+import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkAvailableLiveData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers

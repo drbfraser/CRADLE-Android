@@ -14,7 +14,7 @@ import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.utilities.UnixTimestamp
-import com.cradleplatform.neptune.networking.connectivity.NetworkAvailableLiveData
+import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkAvailableLiveData
 import com.cradleplatform.neptune.viewmodel.EditPatientViewModel.SaveResult
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText

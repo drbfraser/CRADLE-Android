@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.networking.connectivity
+package com.cradleplatform.neptune.networking.connectivity.legacy
 
 import android.content.BroadcastReceiver
 import android.content.Context

@@ -46,7 +46,7 @@ import com.cradleplatform.neptune.utilities.DateUtil
 import com.cradleplatform.neptune.utilities.LiveDataDynamicModelBuilder
 import com.cradleplatform.neptune.utilities.Months
 import com.cradleplatform.neptune.utilities.Weeks
-import com.cradleplatform.neptune.networking.connectivity.NetworkAvailableLiveData
+import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkAvailableLiveData
 import com.cradleplatform.neptune.view.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel.LiveDataInitializationManager
 import dagger.hilt.android.lifecycle.HiltViewModel
