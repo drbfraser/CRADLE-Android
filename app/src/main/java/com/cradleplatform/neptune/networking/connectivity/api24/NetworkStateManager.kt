@@ -1,0 +1,109 @@
+package com.cradleplatform.neptune.networking.connectivity.api24
+
+import android.os.Build
+import android.os.Looper
+import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import javax.inject.Singleton
+
+/**
+ * Singleton Manager class to maintain current Network-Status throughout the application.
+ * Can provide Wifi, Cellular capability status.
+ * TODO: Add support for API < 24 where NetworkCallback is not supported
+ * TODO: Refactor usages of NetworkAvailableLiveData & NetworkHelper to this file
+ * Modified from:
+ * https://medium.com/geekculture/implementing-an-active-network-state-monitor-in-android-dbbc24cf2bc5
+ */
+@Singleton
+class NetworkStateManager private constructor() {
+    // Defaulting to False
+    private val activeWifiStatus = MutableLiveData<Boolean>(false)
+    private val activeCellularDataStatus = MutableLiveData<Boolean>(false)
+    private val activeInternetStatus = MutableLiveData<Boolean>()
+    companion object {
+        private const val TAG = "NetworkStateManager"
+        private var INSTANCE: NetworkStateManager? = null
+        /** The defaultNetworkCallback is only available on >= API 24 */
+        private const val DEFAULT_NETWORK_CALLBACK_SUPPORTED_API_LEVEL = 24
+        private val isCallbackSupported =
+            Build.VERSION.SDK_INT >= DEFAULT_NETWORK_CALLBACK_SUPPORTED_API_LEVEL
+        @Synchronized
+        fun getInstance(): NetworkStateManager {
+            if (INSTANCE == null) {
+                Log.d(TAG, "getInstance() called: Creating new instance")
+                INSTANCE = NetworkStateManager()
+            }
+            return INSTANCE!!
+        }
+    }
+
+    /**
+     * Returns if Wifi OR Cellular data connectivity are available
+     */
+    fun getInternetConnectivityStatus(): LiveData<Boolean> {
+        Log.d(TAG, "getInternetConnectivityStatus() called")
+        return activeInternetStatus
+    }
+
+    /**
+     * Updates the active internet status live-data
+     */
+    fun setInternetConnectivityStatus(connectivityStatus: Boolean) {
+        Log.d(
+            TAG, "setInternetConnectivityStatus() called with: " +
+            "connectivityStatus = [$connectivityStatus]")
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            activeInternetStatus.value = connectivityStatus
+        } else {
+            activeInternetStatus.postValue(connectivityStatus)
+        }
+    }
+
+    /**
+     * Updates the active wifi status live-data
+     */
+    fun setWifiConnectivityStatus(connectivityStatus: Boolean) {
+        Log.d(
+            TAG, "setWifiConnectivityStatus() called with: " +
+            "connectivityStatus = [$connectivityStatus]")
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            activeWifiStatus.value = connectivityStatus
+        } else {
+            activeWifiStatus.postValue(connectivityStatus)
+        }
+    }
+
+    /**
+     * Returns the current wifi connectivity status
+     */
+    fun getWifiConnectivityStatus(): LiveData<Boolean> {
+        Log.d(TAG, "getWifiConnectivityStatus() called")
+        return activeWifiStatus
+    }
+
+    /**
+     * Updates the active cellular data status live-data
+     */
+    fun setCellularDataConnectivityStatus(connectivityStatus: Boolean) {
+        Log.d(
+            TAG, "setCellularDataConnectivityStatus() called with: " +
+            "connectivityStatus = [$connectivityStatus]")
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            activeCellularDataStatus.value = connectivityStatus
+        } else {
+            activeCellularDataStatus.postValue(connectivityStatus)
+        }
+    }
+
+    /**
+     * Returns the current cellular data connectivity status
+     */
+    fun getCellularDataConnectivityStatus(): LiveData<Boolean> {
+        Log.d(TAG, "getCellularDataConnectivityStatus() called")
+        return activeCellularDataStatus
+    }
+
+
+
+}
