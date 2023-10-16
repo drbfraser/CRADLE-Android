@@ -9,7 +9,7 @@ import javax.inject.Singleton
 
 /**
  * Singleton Manager class to maintain current Network-Status throughout the application.
- * Can provide Wifi, Cellular capability status.
+ * Can provide Wifi, Cellular, and general Internet connectivity status
  * TODO: Add support for API < 24 where NetworkCallback is not supported
  * TODO: Refactor usages of NetworkAvailableLiveData & NetworkHelper to this file
  * Modified from:
@@ -18,9 +18,10 @@ import javax.inject.Singleton
 @Singleton
 class NetworkStateManager private constructor() {
     // Defaulting to False
-    private val activeWifiStatus = MutableLiveData<Boolean>(false)
-    private val activeCellularDataStatus = MutableLiveData<Boolean>(false)
+    private val activeWifiStatus = MutableLiveData<Boolean>()
+    private val activeCellularDataStatus = MutableLiveData<Boolean>()
     private val activeInternetStatus = MutableLiveData<Boolean>()
+    // private val activeSmsStatus = MutableLiveData<Boolean>() // TODO: Implement another monitor
     companion object {
         private const val TAG = "NetworkStateManager"
         private var INSTANCE: NetworkStateManager? = null
@@ -98,12 +99,34 @@ class NetworkStateManager private constructor() {
 
     /**
      * Returns the current cellular data connectivity status
+     * NOTE: If WIFI is ON, this will return FALSE
      */
     fun getCellularDataConnectivityStatus(): LiveData<Boolean> {
         Log.d(TAG, "getCellularDataConnectivityStatus() called")
         return activeCellularDataStatus
     }
 
+    // /**
+    //  * Updates the active sms capability status live-data
+    //  */
+    // internal fun setSmsConnectivityStatus(connectivityStatus: Boolean) {
+    //     Log.d(
+    //         TAG, "setSmsConnectivityStatus() called with: " +
+    //             "connectivityStatus = [$connectivityStatus]")
+    //     if (Looper.myLooper() == Looper.getMainLooper()) {
+    //         activeSmsStatus.value = connectivityStatus
+    //     } else {
+    //         activeSmsStatus.postValue(connectivityStatus)
+    //     }
+    // }
+    //
+    // /**
+    //  * Returns the current active sms capability status
+    //  */
+    // fun getSmsConnectivityStatus(): LiveData<Boolean> {
+    //     Log.d(TAG, "getSmsConnectivityStatus() called")
+    //     return activeSmsStatus
+    // }
 
 
 }

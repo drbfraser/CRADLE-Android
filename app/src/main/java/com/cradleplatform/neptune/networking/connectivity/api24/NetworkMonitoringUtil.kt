@@ -19,10 +19,6 @@ class NetworkMonitoringUtil(private val context: Context) : ConnectivityManager.
         .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
         .build()
 
-    // private val mCellularDataNetworkRequest = NetworkRequest.Builder()
-    //     .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
-    //     .build()
-
     private val mConnectivityManager: ConnectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
@@ -57,23 +53,19 @@ class NetworkMonitoringUtil(private val context: Context) : ConnectivityManager.
         super.onCapabilitiesChanged(network, networkCapabilities)
         Log.d(TAG,"onCapabilityChanged() called.")
         // Check for specific network capabilities and perform actions accordingly
-        if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-            // Wi-Fi capabilities changed
-            if (networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
-                // Wi-Fi has internet access
+        // Wi-Fi capabilities changed
+        if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) &&
+            networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
                 mNetworkStateManager.setWifiConnectivityStatus(true)
-            } else {
+        } else {
                 mNetworkStateManager.setWifiConnectivityStatus(false)
-            }
         }
-        if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
-            // Cellular data capabilities changed
-            if (networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
-                // Cellular data has internet access
+        // Cellular data capabilities changed
+        if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) &&
+            networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
                 mNetworkStateManager.setCellularDataConnectivityStatus(true)
-            } else {
-                mNetworkStateManager.setCellularDataConnectivityStatus(false)
-            }
+        } else {
+            mNetworkStateManager.setCellularDataConnectivityStatus(false)
         }
     }
 
@@ -84,7 +76,6 @@ class NetworkMonitoringUtil(private val context: Context) : ConnectivityManager.
     fun registerNetworkCallbackEvents() {
         Log.d(TAG, "registerNetworkCallbackEvents() called")
         mConnectivityManager.registerNetworkCallback(mNetworkRequest, this)
-        // mConnectivityManager.registerNetworkCallback(mCellularDataNetworkRequest,this)
     }
 
     /**
