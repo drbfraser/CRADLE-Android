@@ -11,11 +11,21 @@ import android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
 import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import android.util.Log
+import androidx.activity.viewModels
+import androidx.core.content.edit
 import androidx.hilt.work.HiltWorkerFactory
+import androidx.lifecycle.Observer
 import androidx.work.Configuration
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.networking.connectivity.api24.NetworkMonitoringUtil
+import com.cradleplatform.neptune.sync.SyncWorker
 import com.cradleplatform.neptune.view.PinPassActivity
+import com.cradleplatform.neptune.viewmodel.SyncViewModel
 
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.hilt.android.HiltAndroidApp
@@ -24,6 +34,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
+import java.util.concurrent.TimeUnit
 
 import javax.inject.Inject
 
@@ -63,6 +74,9 @@ class CradleApplication : Application(), Configuration.Provider {
     @Inject
     lateinit var loginManager: LoginManager
 
+    @Inject
+    lateinit var workManager: WorkManager
+
     lateinit var networkMonitor: NetworkMonitoringUtil
 
     override fun getWorkManagerConfiguration(): Configuration = Configuration.Builder()
@@ -90,6 +104,8 @@ class CradleApplication : Application(), Configuration.Provider {
         // Check the network state before registering for the 'networkCallbackEvents'
         networkMonitor.checkNetworkState();
         networkMonitor.registerNetworkCallbackEvents();
+
+        startPeriodicSync()
 
         // Disable rotation
         // source: https://stackoverflow.com/questions/6745797/how-to-set-entire-application-in-portrait-mode-only/9784269#9784269
@@ -206,5 +222,34 @@ class CradleApplication : Application(), Configuration.Provider {
             intent.putExtra("isChangePin", false)
             startActivity(intent)
         }
+    }
+
+    // Set up a work request that makes the app periodically sync data.
+    // This logic is located here instead of in SyncViewModel.kt because it needs to be set up from the get-go, and not linked to a specific Activity.
+    private fun startPeriodicSync() {
+        val workRequest = PeriodicWorkRequestBuilder<SyncWorker>(16, TimeUnit.MINUTES)
+            .addTag(PERIODIC_WORK_TAG)
+            .build()
+        sharedPref.edit {
+            putString(LAST_SYNC_JOB_UUID, workRequest.id.toString())
+        }
+        workManager.enqueueUniquePeriodicWork(PERIODIC_WORK_NAME, ExistingPeriodicWorkPolicy.KEEP, workRequest)
+        Log.d(TAG, "Periodic work ${workRequest.id} enqueued")
+
+        val observer = Observer<List<WorkInfo>> { listOfWorkStatuses ->
+            Log.d(TAG, "Periodic work statuses: ".plus(listOfWorkStatuses.toString()))
+        }
+
+        WorkManager.getInstance(this)
+            .getWorkInfosByTagLiveData("Sync-PeriodicDownloadPatientsReadingsAssessmentsReferralsFacilitiesForms")
+            .observeForever(observer)
+    }
+
+    companion object {
+        private const val TAG = "CradleApplication"
+        private const val PERIODIC_WORK_TAG =
+            "Sync-PeriodicPatientsReadingsAssessmentsReferralsFacilitiesForms"
+        private const val PERIODIC_WORK_NAME = "CradleApplicationPeriodicSync"
+        private const val LAST_SYNC_JOB_UUID = "lastSyncJobUuid"
     }
 }
