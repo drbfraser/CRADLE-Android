@@ -31,8 +31,8 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.ext.hideKeyboard
-import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.networking.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.ADVANCED_SETTINGS_KEY
@@ -130,16 +130,6 @@ class LoginActivity : AppCompatActivity() {
         val noInternetText = findViewById<TextView>(R.id.internetAvailabilityTextView)
         val loginButton = findViewById<Button>(R.id.loginButton)
 
-        // isNetworkAvailable = NetworkAvailableLiveData(this).apply {
-        //     observe(this@LoginActivity) { netAvailable ->
-        //         netAvailable ?: return@observe
-        //         loginButton.isEnabled = netAvailable
-        //         // noInternetText.isVisible = !netAvailable
-        //         noInternetText.isVisible = true
-        //
-        //     }
-        // }
-
         isNetworkAvailable = networkManager.getInternetConnectivityStatus().apply {
             observe(this@LoginActivity) { netAvailable ->
                 netAvailable ?: return@observe
@@ -147,18 +137,6 @@ class LoginActivity : AppCompatActivity() {
                 noInternetText.isVisible = !netAvailable
             }
         }
-        //
-        // networkManager.getCellularDataConnectivityStatus().apply {
-        //     observe(this@LoginActivity) { wifiAvailble ->
-        //         wifiAvailble ?: return@observe
-        //         noInternetText.isVisible = true
-        //         if (wifiAvailble) {
-        //             noInternetText.setText("Cell Available")
-        //         } else {
-        //             noInternetText.setText("No cell")
-        //         }
-        //     }
-        // }
 
         loginButton.setOnClickListener {
             idlingResource?.increment()
