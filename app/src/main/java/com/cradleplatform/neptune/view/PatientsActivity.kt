@@ -31,7 +31,7 @@ import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkHelper
 import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkStatus
 import com.cradleplatform.neptune.viewmodel.LocalSearchPatientAdapter
 import com.cradleplatform.neptune.viewmodel.PatientListViewModel
-import com.cradleplatform.neptune.viewmodel.SyncReminderHelper
+import com.cradleplatform.neptune.sync.SyncReminderHelper
 import com.google.android.material.badge.BadgeDrawable
 import com.google.android.material.badge.BadgeUtils
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
