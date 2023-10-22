@@ -14,7 +14,7 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.databinding.ActivitySyncBinding
 import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import com.cradleplatform.neptune.utilities.DateUtil
-import com.cradleplatform.neptune.viewmodel.SyncViewModel
+import com.cradleplatform.neptune.sync.views.viewmodels.SyncViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigInteger
 import javax.inject.Inject

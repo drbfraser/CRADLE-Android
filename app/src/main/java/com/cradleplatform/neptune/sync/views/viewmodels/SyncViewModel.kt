@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.viewmodel
+package com.cradleplatform.neptune.sync.views.viewmodels
 
 import android.content.Context
 import android.content.SharedPreferences
