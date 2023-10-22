@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.sync
+package com.cradleplatform.neptune.sync.workers
 
 import android.content.Context
 import android.content.SharedPreferences

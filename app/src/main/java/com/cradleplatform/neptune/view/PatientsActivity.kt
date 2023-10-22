@@ -25,7 +25,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
-import com.cradleplatform.neptune.sync.SyncWorker
+import com.cradleplatform.neptune.sync.workers.SyncWorker
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkHelper
 import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkStatus

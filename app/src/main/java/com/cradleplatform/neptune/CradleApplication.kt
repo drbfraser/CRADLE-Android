@@ -12,7 +12,6 @@ import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.viewModels
 import androidx.core.content.edit
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.lifecycle.Observer
@@ -23,9 +22,8 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.networking.connectivity.api24.NetworkMonitoringUtil
-import com.cradleplatform.neptune.sync.SyncWorker
+import com.cradleplatform.neptune.sync.workers.SyncWorker
 import com.cradleplatform.neptune.view.PinPassActivity
-import com.cradleplatform.neptune.viewmodel.SyncViewModel
 
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.hilt.android.HiltAndroidApp

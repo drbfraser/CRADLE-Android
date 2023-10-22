@@ -22,11 +22,11 @@ import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.RelayPhoneNumberResponse
 import com.cradleplatform.neptune.model.Statistics
-import com.cradleplatform.neptune.sync.AssessmentSyncField
-import com.cradleplatform.neptune.sync.PatientSyncField
-import com.cradleplatform.neptune.sync.ReadingSyncField
-import com.cradleplatform.neptune.sync.ReferralSyncField
-import com.cradleplatform.neptune.sync.SyncWorker
+import com.cradleplatform.neptune.sync.workers.AssessmentSyncField
+import com.cradleplatform.neptune.sync.workers.PatientSyncField
+import com.cradleplatform.neptune.sync.workers.ReadingSyncField
+import com.cradleplatform.neptune.sync.workers.ReferralSyncField
+import com.cradleplatform.neptune.sync.workers.SyncWorker
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper.createWriter
 import com.fasterxml.jackson.databind.JsonNode

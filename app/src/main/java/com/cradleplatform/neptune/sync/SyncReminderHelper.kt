@@ -3,7 +3,7 @@ package com.cradleplatform.neptune.sync
 import android.content.Context
 import android.content.SharedPreferences
 import com.cradleplatform.neptune.R
-import com.cradleplatform.neptune.sync.SyncWorker
+import com.cradleplatform.neptune.sync.workers.SyncWorker
 import com.cradleplatform.neptune.utilities.DateUtil
 import java.math.BigInteger
 
