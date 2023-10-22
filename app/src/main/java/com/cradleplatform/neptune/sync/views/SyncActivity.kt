@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.view
+package com.cradleplatform.neptune.sync.views
 
 import android.content.SharedPreferences
 import android.os.Bundle

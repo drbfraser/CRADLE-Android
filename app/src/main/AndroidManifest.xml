@@ -33,7 +33,7 @@
             android:windowSoftInputMode="adjustPan"
             android:exported="false" />
         <activity
-            android:name=".view.SyncActivity"
+            android:name=".sync.views.SyncActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".view.GlobalPatientProfileActivity" />
         <activity
