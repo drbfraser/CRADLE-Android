@@ -17,7 +17,7 @@ import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.Util
 import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkAvailableLiveData
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
-import com.cradleplatform.neptune.viewmodel.SyncRemainderHelper
+import com.cradleplatform.neptune.viewmodel.SyncReminderHelper
 import com.cradleplatform.neptune.viewmodel.UserViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import dagger.hilt.android.AndroidEntryPoint
@@ -110,7 +110,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun reminderUserToSync() {
-        if (SyncRemainderHelper.checkIfOverTime(this, sharedPreferences))
+        if (SyncReminderHelper.checkIfOverTime(this, sharedPreferences))
             CustomToast.longToast(
                 this,
                 getString(R.string.remind_user_to_sync)

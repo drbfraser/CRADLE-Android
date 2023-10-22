@@ -7,7 +7,7 @@ import com.cradleplatform.neptune.sync.SyncWorker
 import com.cradleplatform.neptune.utilities.DateUtil
 import java.math.BigInteger
 
-class SyncRemainderHelper {
+class SyncReminderHelper {
     companion object {
         fun checkIfOverTime(context: Context, sharedPreferences: SharedPreferences): Boolean {
             val lastSyncTime = BigInteger(

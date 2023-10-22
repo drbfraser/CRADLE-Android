@@ -22,6 +22,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.test.espresso.IdlingResource
 import androidx.test.espresso.idling.CountingIdlingResource
@@ -32,6 +33,7 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.ext.hideKeyboard
 import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.networking.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.sync.SyncWorker
 import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkAvailableLiveData
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.ADVANCED_SETTINGS_KEY
@@ -62,7 +64,9 @@ class LoginActivity : AppCompatActivity() {
     @Inject
     lateinit var workManager: WorkManager
 
-    private lateinit var isNetworkAvailable: NetworkAvailableLiveData
+    private lateinit var isNetworkAvailable: LiveData<Boolean>
+
+    private lateinit var networkManager : NetworkStateManager
 
     private var idlingResource: CountingIdlingResource? = null
 
@@ -82,7 +86,7 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         showMessageIfPresent()
-
+        networkManager = NetworkStateManager.getInstance()
         if (loginManager.isLoggedIn()) {
             // no need to load anything if already logged in.
             startIntroActivity()
@@ -127,13 +131,35 @@ class LoginActivity : AppCompatActivity() {
         val noInternetText = findViewById<TextView>(R.id.internetAvailabilityTextView)
         val loginButton = findViewById<Button>(R.id.loginButton)
 
-        isNetworkAvailable = NetworkAvailableLiveData(this).apply {
+        // isNetworkAvailable = NetworkAvailableLiveData(this).apply {
+        //     observe(this@LoginActivity) { netAvailable ->
+        //         netAvailable ?: return@observe
+        //         loginButton.isEnabled = netAvailable
+        //         // noInternetText.isVisible = !netAvailable
+        //         noInternetText.isVisible = true
+        //
+        //     }
+        // }
+
+        isNetworkAvailable = networkManager.getInternetConnectivityStatus().apply {
             observe(this@LoginActivity) { netAvailable ->
                 netAvailable ?: return@observe
                 loginButton.isEnabled = netAvailable
                 noInternetText.isVisible = !netAvailable
             }
         }
+        //
+        // networkManager.getCellularDataConnectivityStatus().apply {
+        //     observe(this@LoginActivity) { wifiAvailble ->
+        //         wifiAvailble ?: return@observe
+        //         noInternetText.isVisible = true
+        //         if (wifiAvailble) {
+        //             noInternetText.setText("Cell Available")
+        //         } else {
+        //             noInternetText.setText("No cell")
+        //         }
+        //     }
+        // }
 
         loginButton.setOnClickListener {
             idlingResource?.increment()

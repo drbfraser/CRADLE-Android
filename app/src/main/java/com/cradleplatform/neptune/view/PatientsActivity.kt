@@ -31,7 +31,7 @@ import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkHelper
 import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkStatus
 import com.cradleplatform.neptune.viewmodel.LocalSearchPatientAdapter
 import com.cradleplatform.neptune.viewmodel.PatientListViewModel
-import com.cradleplatform.neptune.viewmodel.SyncRemainderHelper
+import com.cradleplatform.neptune.viewmodel.SyncReminderHelper
 import com.google.android.material.badge.BadgeDrawable
 import com.google.android.material.badge.BadgeUtils
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
@@ -363,7 +363,7 @@ class PatientsActivity : AppCompatActivity() {
 
         val test = resources.getInteger(R.integer.settings_default_sync_period_hours)
 
-        if (!SyncRemainderHelper.checkIfOverTime(this, sharedPreferences)) {
+        if (!SyncReminderHelper.checkIfOverTime(this, sharedPreferences)) {
             toolbar?.let {
                 BadgeUtils.detachBadgeDrawable(
                     badge,
