@@ -27,7 +27,7 @@ import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Statistics
 import com.cradleplatform.neptune.model.UserRole
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
-import com.cradleplatform.neptune.sync.workers.SyncWorker
+import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import com.cradleplatform.neptune.utilities.BarGraphValueFormatter
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.DateUtil
@@ -164,8 +164,8 @@ class StatsActivity : AppCompatActivity() {
     private fun checkLastSyncTimeAndUpdateSyncIcon() {
         val lastSyncTime = BigInteger(
             sharedPreferences.getString(
-                SyncWorker.LAST_PATIENT_SYNC,
-                SyncWorker.LAST_SYNC_DEFAULT.toString()
+                SyncAllWorker.LAST_PATIENT_SYNC,
+                SyncAllWorker.LAST_SYNC_DEFAULT.toString()
             )!!
         )
 

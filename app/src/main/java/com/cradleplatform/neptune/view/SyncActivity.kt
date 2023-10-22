@@ -12,7 +12,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.work.WorkInfo
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.databinding.ActivitySyncBinding
-import com.cradleplatform.neptune.sync.workers.SyncWorker
+import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import com.cradleplatform.neptune.utilities.DateUtil
 import com.cradleplatform.neptune.viewmodel.SyncViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -63,8 +63,8 @@ class SyncActivity : AppCompatActivity() {
                     text = ""
                     visibility = View.INVISIBLE
                 }
-                val state = SyncWorker.getState(workInfo)
-                val progressPair = SyncWorker.getProgress(workInfo)
+                val state = SyncAllWorker.getState(workInfo)
+                val progressPair = SyncAllWorker.getProgress(workInfo)
                 syncProgressBar.apply {
                     if (progressPair == null) {
                         isIndeterminate = true
@@ -98,51 +98,51 @@ class SyncActivity : AppCompatActivity() {
                 }
 
                 val newStateString = when (state) {
-                    SyncWorker.State.STARTING -> {
+                    SyncAllWorker.State.STARTING -> {
                         getString(R.string.sync_activity_status_beginning_upload)
                     }
-                    SyncWorker.State.CHECKING_SERVER_PATIENTS -> getString(
+                    SyncAllWorker.State.CHECKING_SERVER_PATIENTS -> getString(
                         R.string.sync_activity_status_checking_for_new_patients
                     )
-                    SyncWorker.State.UPLOADING_PATIENTS -> {
+                    SyncAllWorker.State.UPLOADING_PATIENTS -> {
                         getString(R.string.sync_activity_status_uploading_patients)
                     }
-                    SyncWorker.State.DOWNLOADING_PATIENTS -> getString(
+                    SyncAllWorker.State.DOWNLOADING_PATIENTS -> getString(
                         R.string.sync_activity_status_downloading_patients
                     )
-                    SyncWorker.State.CHECKING_SERVER_READINGS -> getString(
+                    SyncAllWorker.State.CHECKING_SERVER_READINGS -> getString(
                         R.string.sync_activity_status_checking_for_new_readings_referrals_and_assessments
                     )
-                    SyncWorker.State.UPLOADING_READINGS -> getString(
+                    SyncAllWorker.State.UPLOADING_READINGS -> getString(
                         R.string.sync_activity_status_uploading_readings_referrals
                     )
-                    SyncWorker.State.DOWNLOADING_READINGS -> getString(
+                    SyncAllWorker.State.DOWNLOADING_READINGS -> getString(
                         R.string.sync_activity_status_downloading_readings_referrals_and_assessments
                     )
 
-                    SyncWorker.State.CHECKING_SERVER_REFERRALS -> getString(
+                    SyncAllWorker.State.CHECKING_SERVER_REFERRALS -> getString(
                         R.string.sync_activity_status_checking_for_new_referrals
                     )
-                    SyncWorker.State.UPLOADING_REFERRALS -> getString(
+                    SyncAllWorker.State.UPLOADING_REFERRALS -> getString(
                         R.string.sync_activity_status_uploading_referrals
                     )
-                    SyncWorker.State.DOWNLOADING_REFERRALS -> getString(
+                    SyncAllWorker.State.DOWNLOADING_REFERRALS -> getString(
                         R.string.sync_activity_status_downloading_referrals
                     )
 
-                    SyncWorker.State.CHECKING_SERVER_ASSESSMENTS -> getString(
+                    SyncAllWorker.State.CHECKING_SERVER_ASSESSMENTS -> getString(
                         R.string.sync_activity_status_checking_for_new_assessments
                     )
-                    SyncWorker.State.UPLOADING_ASSESSMENTS -> getString(
+                    SyncAllWorker.State.UPLOADING_ASSESSMENTS -> getString(
                         R.string.sync_activity_status_uploading_assessments
                     )
-                    SyncWorker.State.DOWNLOADING_ASSESSMENTS -> getString(
+                    SyncAllWorker.State.DOWNLOADING_ASSESSMENTS -> getString(
                         R.string.sync_activity_status_downloading_assessments
                     )
-                    SyncWorker.State.DOWNLOADING_HEALTH_FACILITIES -> getString(
+                    SyncAllWorker.State.DOWNLOADING_HEALTH_FACILITIES -> getString(
                         R.string.sync_activity_status_downloading_health_facilities
                     )
-                    SyncWorker.State.DOWNLOADING_FORM_TEMPLATES -> getString(
+                    SyncAllWorker.State.DOWNLOADING_FORM_TEMPLATES -> getString(
                         R.string.sync_activitiy_status_downloading_form_templates
                     )
                 }
@@ -164,11 +164,11 @@ class SyncActivity : AppCompatActivity() {
 
         val lastSyncTime = BigInteger(
             sharedPreferences.getString(
-                SyncWorker.LAST_PATIENT_SYNC,
-                SyncWorker.LAST_SYNC_DEFAULT.toString()
+                SyncAllWorker.LAST_PATIENT_SYNC,
+                SyncAllWorker.LAST_SYNC_DEFAULT.toString()
             )!!
         )
-        val date = if (lastSyncTime.toString() == SyncWorker.LAST_SYNC_DEFAULT) {
+        val date = if (lastSyncTime.toString() == SyncAllWorker.LAST_SYNC_DEFAULT) {
             getString(R.string.sync_activity_date_never)
         } else {
             DateUtil.getConciseDateString(lastSyncTime, false)
@@ -181,7 +181,7 @@ class SyncActivity : AppCompatActivity() {
 
         workInfo?.let {
             lastSyncResultText.apply {
-                text = SyncWorker.getSyncResultMessage(it)
+                text = SyncAllWorker.getSyncResultMessage(it)
                 visibility = View.VISIBLE
             }
         }

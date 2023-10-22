@@ -55,7 +55,7 @@ import java.math.BigInteger
  * TODO: Use SyncWorker to perform periodic sync. (refer to issue #32)
  */
 @HiltWorker
-class SyncWorker @AssistedInject constructor(
+class SyncAllWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
     private val restApi: RestApi,

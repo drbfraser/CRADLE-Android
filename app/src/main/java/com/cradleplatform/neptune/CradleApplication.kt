@@ -22,7 +22,7 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.networking.connectivity.api24.NetworkMonitoringUtil
-import com.cradleplatform.neptune.sync.workers.SyncWorker
+import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import com.cradleplatform.neptune.view.PinPassActivity
 
 import com.jakewharton.threetenabp.AndroidThreeTen
@@ -225,7 +225,7 @@ class CradleApplication : Application(), Configuration.Provider {
     // Set up a work request that makes the app periodically sync data.
     // This logic is located here instead of in SyncViewModel.kt because it needs to be set up from the get-go, and not linked to a specific Activity.
     private fun startPeriodicSync() {
-        val workRequest = PeriodicWorkRequestBuilder<SyncWorker>(16, TimeUnit.MINUTES)
+        val workRequest = PeriodicWorkRequestBuilder<SyncAllWorker>(16, TimeUnit.MINUTES)
             .addTag(PERIODIC_WORK_TAG)
             .build()
         sharedPref.edit {

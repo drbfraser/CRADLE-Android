@@ -34,7 +34,7 @@ import com.cradleplatform.neptune.ext.hideKeyboard
 import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.networking.connectivity.api24.NetworkStateManager
-import com.cradleplatform.neptune.sync.workers.SyncWorker
+import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.ADVANCED_SETTINGS_KEY
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
 import com.google.android.gms.common.GoogleApiAvailability
@@ -181,7 +181,7 @@ class LoginActivity : AppCompatActivity() {
                             Toast.LENGTH_SHORT
                         ).show()
 
-                        val workRequest = OneTimeWorkRequestBuilder<SyncWorker>()
+                        val workRequest = OneTimeWorkRequestBuilder<SyncAllWorker>()
                             .addTag(WORK_TAG)
                             .build()
                         sharedPreferences.edit {

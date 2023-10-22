@@ -25,7 +25,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
-import com.cradleplatform.neptune.sync.workers.SyncWorker
+import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkHelper
 import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkStatus
@@ -353,8 +353,8 @@ class PatientsActivity : AppCompatActivity() {
     private fun checkLastSyncTimeAndUpdateSyncIcon() {
         val lastSyncTime = BigInteger(
             sharedPreferences.getString(
-                SyncWorker.LAST_PATIENT_SYNC,
-                SyncWorker.LAST_SYNC_DEFAULT.toString()
+                SyncAllWorker.LAST_PATIENT_SYNC,
+                SyncAllWorker.LAST_SYNC_DEFAULT.toString()
             )!!
         )
 

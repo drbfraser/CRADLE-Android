@@ -21,7 +21,7 @@ import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
 import com.cradleplatform.neptune.database.daos.ReferralDao
 import com.cradleplatform.neptune.ext.setValueOnMainThread
-import com.cradleplatform.neptune.sync.workers.SyncWorker
+import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkAvailableLiveData
 import com.cradleplatform.neptune.view.SyncActivity
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -119,7 +119,7 @@ class SyncViewModel @Inject constructor(
 
     @MainThread
     fun startSyncing() {
-        val workRequest = OneTimeWorkRequestBuilder<SyncWorker>()
+        val workRequest = OneTimeWorkRequestBuilder<SyncAllWorker>()
             .addTag(WORK_TAG)
             .build()
         sharedPreferences.edit {
