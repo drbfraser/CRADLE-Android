@@ -9,6 +9,7 @@ import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.model.UserRole
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.sync.PeriodicSyncer
 import com.cradleplatform.neptune.utilities.SharedPreferencesMigration
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -27,6 +28,7 @@ class LoginManager @Inject constructor(
     private val restApi: RestApi, // only for authenticating calls
     private val sharedPreferences: SharedPreferences,
     private val database: CradleDatabase, // only for clearing database on logout
+    private val periodicSyncer: PeriodicSyncer,
     @ApplicationContext private val context: Context
 ) {
 
@@ -110,6 +112,8 @@ class LoginManager @Inject constructor(
 
                     setDefaultRelayPhoneNumber()
                 }
+
+                periodicSyncer.startPeriodicSync()
             } else {
                 return@withContext loginResult.cast()
             }
@@ -139,6 +143,8 @@ class LoginManager @Inject constructor(
         database.run {
             clearAllTables()
         }
+
+        periodicSyncer.endPeriodicSync()
     }
 }
 
