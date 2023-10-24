@@ -110,7 +110,7 @@ class SmsKeyManager @Inject constructor(@ApplicationContext private val context:
     fun getDaysUntilExpiry(smsKey: String): Int {
         val objectMapper = JacksonMapper.mapper
         val smsKeyLoginData: SmsKeyResponse = objectMapper.readValue(smsKey, SmsKeyResponse::class.java)
-        val targetDate = smsKeyLoginData.expiryDate
+        val targetDate = smsKeyLoginData.expiry_date
 
         val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
         val currentDate = Calendar.getInstance().time
