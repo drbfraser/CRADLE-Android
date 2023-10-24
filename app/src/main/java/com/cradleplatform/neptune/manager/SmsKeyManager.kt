@@ -59,9 +59,9 @@ class SmsKeyManager @Inject constructor(@ApplicationContext private val context:
                 retrieveSmsKey(),
                 SmsKeyResponse::class.java
             )
-            smsKeyPreviousData.smsKey = updatedSecretKey.smsKey
-            smsKeyPreviousData.expiryDate = updatedSecretKey.expiryDate
-            smsKeyPreviousData.staleDate = updatedSecretKey.staleDate
+            smsKeyPreviousData.sms_key = updatedSecretKey.sms_key
+            smsKeyPreviousData.expiry_date = updatedSecretKey.expiry_date
+            smsKeyPreviousData.stale_date = updatedSecretKey.stale_date
             smsKeyPreviousData.message = updatedSecretKey.message
             val updatedSmsKeyString = convertToKeyValuePairs(smsKeyPreviousData)
             storeSmsKey(updatedSmsKeyString)
