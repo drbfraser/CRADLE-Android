@@ -55,7 +55,10 @@ class SmsKeyManager @Inject constructor(@ApplicationContext private val context:
         // parse the JSON string using Jackson
         val objectMapper = JacksonMapper.mapper
         return try {
-            val smsKeyPreviousData: SmsKeyResponse = objectMapper.readValue(retrieveSmsKey(), SmsKeyResponse::class.java)
+            val smsKeyPreviousData: SmsKeyResponse = objectMapper.readValue(
+                retrieveSmsKey(),
+                SmsKeyResponse::class.java
+            )
             smsKeyPreviousData.sms_key = updatedSecretKey.sms_key
             smsKeyPreviousData.expiry_date = updatedSecretKey.expiry_date
             smsKeyPreviousData.stale_date = updatedSecretKey.stale_date
