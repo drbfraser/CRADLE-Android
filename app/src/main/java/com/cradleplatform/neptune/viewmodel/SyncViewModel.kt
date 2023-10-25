@@ -58,7 +58,7 @@ class SyncViewModel @Inject constructor(
     )
 
     val syncStatus: LiveData<WorkInfo?>
-        get() = currentWorkUuid.switchMap{ uuid ->
+        get() = currentWorkUuid.switchMap { uuid ->
             uuid?.let { workManager.getWorkInfoByIdLiveData(it) }
         }
 
@@ -108,7 +108,7 @@ class SyncViewModel @Inject constructor(
         _patientsAndReadingsToUploadText.setValueOnMainThread(numberToUploadString)
     }
 
-    val isCurrentlySyncing: LiveData<Boolean> = syncStatus.map{
+    val isCurrentlySyncing: LiveData<Boolean> = syncStatus.map {
         if (it == null) {
             false
         } else {

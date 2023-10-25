@@ -186,7 +186,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_version"
 
-    def okhttp_version = "4.9.1"
+    def okhttp_version = "4.12.0"
     implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
 
     // Time: Backport of Java 8's interfaces for Android
@@ -219,9 +219,9 @@ dependencies {
     //   Note: There is a reason for why Google decided to rewrite org.json: The licensing for
     //   org.json is not considered free (it has the don't-use-for-evil clause).
     testImplementation "org.json:json:20200518"
-    testImplementation "io.mockk:mockk:1.11.0"
-    testImplementation 'org.mockito:mockito-core:2.19.0'
-    testImplementation "org.mockito:mockito-inline:2.8.47"
+    testImplementation 'io.mockk:mockk:1.13.8'
+    testImplementation 'org.mockito:mockito-core:5.6.0'
+    testImplementation 'org.mockito:mockito-inline:5.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     // https://github.com/android/testing-samples/tree/master/ui/espresso/IdlingResourceSample
     implementation 'androidx.test.espresso:espresso-idling-resource:3.3.0'
@@ -235,6 +235,9 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.2'
 }
 
+kotlin {
+    jvmToolchain(17)
+}
 
 kapt {
     correctErrorTypes true

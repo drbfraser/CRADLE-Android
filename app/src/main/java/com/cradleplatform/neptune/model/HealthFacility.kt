@@ -51,5 +51,5 @@ private enum class HealthFacilityField(override val text: String) : Field {
     PHONE_NUMBER("healthFacilityPhoneNumber"),
     NewReferrals("newReferrals"),
     NAME("healthFacilityName"),
-    ID("id");
+    ID("id")
 }
