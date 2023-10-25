@@ -222,6 +222,7 @@ dependencies {
     // https://github.com/android/testing-samples/tree/master/ui/espresso/IdlingResourceSample
     implementation 'androidx.test.espresso:espresso-idling-resource:3.3.0'
     androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.3.0'
+    androidTestImplementation "io.mockk:mockk-android:1.11.0"
     testImplementation "com.squareup.okhttp3:mockwebserver:$okhttp_version"
 
     detekt "io.gitlab.arturbosch.detekt:detekt-formatting:$detekt_version"
