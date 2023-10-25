@@ -527,6 +527,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         dialog.show()
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onActivityResult(
         requestCode: Int,
         resultCode: Int,
@@ -555,6 +556,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupLineChart()
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
 
         var intent = PatientsActivity.makeIntent(this@PatientProfileActivity)

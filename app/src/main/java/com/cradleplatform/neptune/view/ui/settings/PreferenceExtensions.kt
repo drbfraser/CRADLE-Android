@@ -26,7 +26,7 @@ fun PreferenceFragmentCompat.findPreference(id: Int) =
  */
 fun Preference.useDynamicSummary(transform: ((String?) -> String)? = null): Preference {
     summaryProvider = Preference.SummaryProvider<Preference> { _ ->
-        val value = sharedPreferences.getString(key, null)
+        val value = sharedPreferences?.getString(key, null)
         if (transform == null) {
             value
         } else {

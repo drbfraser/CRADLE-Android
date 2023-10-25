@@ -59,7 +59,7 @@ class ReadingManager @Inject constructor(
      * Returns the reading (and its associated patient) with a given [id] from
      * the database. Returns `null` if unable to find such a reading.
      */
-    suspend fun getReadingById(id: String): Reading? = readingDao.getReadingById(id)
+    suspend fun getReadingById(id: String): Reading = readingDao.getReadingById(id)
 
     /**
      * Returns all readings associated with a specific patient [id].

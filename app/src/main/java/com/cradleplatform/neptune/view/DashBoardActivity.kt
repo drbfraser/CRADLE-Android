@@ -208,6 +208,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         const val OPACITY_FULL = 1.0f
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
     }
 }

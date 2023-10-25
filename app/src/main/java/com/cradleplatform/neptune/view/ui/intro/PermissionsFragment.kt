@@ -108,6 +108,7 @@ class PermissionsFragment : IntroBaseFragment() {
         )
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
