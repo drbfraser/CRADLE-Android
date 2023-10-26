@@ -31,22 +31,17 @@ android {
         }
     }
 
-//    dexOptions {
-//        javaMaxHeapSize "4g"
-//    }
-//
-    compileSdkVersion 34
-    buildToolsVersion '33.0.1'
-
     defaultConfig {
         // Update this for new tags / new builds / new releases
         versionCode 49
         versionName "0.6.1-alpha"
 
         applicationId "com.cradleplatform.neptune"
-        // Android 5
+        // Android 7 (2016) min / 14 (2023) support
         minSdkVersion 24
         targetSdkVersion 34
+        compileSdk 34
+        buildToolsVersion = '34.0.0'
         // Set the base name for the compiled APKs.
         project.ext.set("archivesBaseName", "CRADLE");
 
