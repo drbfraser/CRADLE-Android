@@ -43,19 +43,20 @@ jobs:
       - name: Checkout repository into Container
         uses: bfraser/cicd/actions/checkout@v1
         with: 
+          dockerfile: Dockerfile  # Path to your Dockerfile
+          context: . 
           path: ${{ env.CUSTOM_WORKSPACE }}
+          
       - name: Remove current database chema JSON
         run: rm app/schemas/com.cradleplatform.neptune.database.CradleDatabase/*.json
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
       
       - name: Build Docker image
-        with:
-          dockerfile: Dockerfile  # Path to your Dockerfile
-          context: .  # Directory containing Dockerfile
+        run: docker build -t my-jdk17-gradle8.1.2-image .
+      
+      - name: Run Gradle command in Docker container
         run: |
-          docker build -t my-jdk17-gradle8.1.2-image .
           docker run --rm -v $(pwd):/app my-jdk17-gradle8.1.2-image ./gradlew assembleDebug
-        working-directory: ${{ env.CUSTOM_WORKSPACE }}
         
       - name: Get Latest DB Version
         id: get-db-version
