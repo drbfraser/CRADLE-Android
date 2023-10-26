@@ -52,8 +52,8 @@ jobs:
       - name: Assemble Debug APK
         run: |
           cat /etc/os-release
-          sudo apt install openjdk-17-jdk
-          sudo apt install openjdk-17-jre
+          apt install openjdk-17-jdk
+          apt install openjdk-17-jre
           java -version
           ./gradlew assembleDebug
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
