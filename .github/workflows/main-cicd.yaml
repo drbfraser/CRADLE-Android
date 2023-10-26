@@ -12,7 +12,7 @@ env:
   CUSTOM_WORKSPACE: /isolated-build/repo
   SDK_HOME: /usr/lcal
   GRADLE_VERSION: 8.1.2
-  GRADLE_SDK_URL: https://services.gradle.org/distributions/gradle-${{ GRADLE_VERSION }}-bin.zip
+  GRADLE_SDK_URL: https://services.gradle.org/distributions/gradle-8.1.2-bin.zip
 
 jobs:
   display_github_contexts:
