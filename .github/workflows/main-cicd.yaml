@@ -53,7 +53,7 @@ jobs:
         run: rm app/schemas/com.cradleplatform.neptune.database.CradleDatabase/*.json
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
       - name: Assemble Debug APK
-         run: |
+        run: |
           apt-get --quiet update --yes
           apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1
           apt-get --quiet install --yes libqt5widgets5 usbutils
