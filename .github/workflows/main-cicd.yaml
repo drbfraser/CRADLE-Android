@@ -50,7 +50,17 @@ jobs:
         run: rm app/schemas/com.cradleplatform.neptune.database.CradleDatabase/*.json
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
       - name: Assemble Debug APK
-        run: ./gradlew assembleDebug
+        run: |
+          cat /etc/os-release
+          gradle --version
+          apt-get update && \
+          apt-get install -y wget && \
+          wget https://services.gradle.org/distributions/gradle-8.0-bin.zip -P /tmp && \
+          unzip -d /opt/gradle /tmp/gradle-8.0-bin.zip && \
+          rm /tmp/gradle-8.0-bin.zip
+          gradle --version
+          java -version
+          ./gradlew assembleDebug
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
       - name: Get Latest DB Version
         id: get-db-version
