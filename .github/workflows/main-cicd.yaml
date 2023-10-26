@@ -38,7 +38,7 @@ jobs:
     name: Build and Assemble Debug APK
     runs-on: [self-hosted, docker]
     container:
-      image: jdk17
+      image: cangol/android-gradle
     outputs: 
       db_version_artifact: latest_db_version.json
     steps: 
@@ -52,6 +52,13 @@ jobs:
       - name: Assemble Debug APK
         run: |
           cat /etc/os-release
+          gradle --version
+          apt-get update && \
+          apt-get install -y wget && \
+          wget https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip -P /tmp && \
+          unzip -d /opt/gradle /tmp/gradle-${GRADLE_VERSION}-bin.zip && \
+          rm /tmp/gradle-${GRADLE_VERSION}-bin.zip
+          gradle --version
           java -version
           ./gradlew assembleDebug
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
