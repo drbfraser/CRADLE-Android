@@ -38,7 +38,7 @@ jobs:
     name: Build and Assemble Debug APK
     runs-on: [self-hosted, docker]
     container:
-      image: cangol/android-gradle
+      image: jdk17
     outputs: 
       db_version_artifact: latest_db_version.json
     steps: 
