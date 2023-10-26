@@ -43,10 +43,10 @@ jobs:
       - name: Checkout repository into Container
         uses: bfraser/cicd/actions/checkout@v1
         with: 
-          dockerfile: Dockerfile  # Path to your Dockerfile
-          context: . 
+          dockerfile: DockerFile  # Path to your Dockerfile
+          context: ${{ env.CUSTOM_WORKSPACE }}
           path: ${{ env.CUSTOM_WORKSPACE }}
-          
+
       - name: Remove current database chema JSON
         run: rm app/schemas/com.cradleplatform.neptune.database.CradleDatabase/*.json
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
