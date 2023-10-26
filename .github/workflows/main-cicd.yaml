@@ -37,8 +37,6 @@ jobs:
   build:
     name: Build and Assemble Debug APK
     runs-on: [self-hosted, docker]
-    container:
-      image: cangol/android-gradle
     outputs: 
       db_version_artifact: latest_db_version.json
     steps: 
@@ -52,19 +50,16 @@ jobs:
       - name: Remove current database chema JSON
         run: rm app/schemas/com.cradleplatform.neptune.database.CradleDatabase/*.json
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
-      - name: Assemble Debug APK
+      
+      - name: Build Docker image
+        with:
+          dockerfile: Dockerfile  # Path to your Dockerfile
+          context: .  # Directory containing Dockerfile
         run: |
-          cat /etc/os-release
-          gradle --version
-          apt-get update && \
-          apt-get install -y wget && \
-          wget https://services.gradle.org/distributions/gradle-8.0-bin.zip -P /tmp && \
-          unzip -d /opt/gradle /tmp/gradle-8.0-bin.zip && \
-          rm /tmp/gradle-8.0-bin.zip
-          gradle --version
-          java -version
-          ./gradlew assembleDebug
+          docker build -t my-jdk17-gradle8.1.2-image .
+          docker run --rm -v $(pwd):/app my-jdk17-gradle8.1.2-image ./gradlew assembleDebug
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
+        
       - name: Get Latest DB Version
         id: get-db-version
         run: echo "::set-output name=version::$(scripts/get-latest-db-version.sh)"
