@@ -10,9 +10,6 @@ on:
   workflow_dispatch:
 env: 
   CUSTOM_WORKSPACE: /isolated-build/repo
-  SDK_HOME: /usr/lcal
-  GRADLE_VERSION: 8.1.2
-  GRADLE_SDK_URL: https://services.gradle.org/distributions/gradle-8.0-bin.zip
 
 jobs:
   display_github_contexts:
@@ -41,7 +38,7 @@ jobs:
     name: Build and Assemble Debug APK
     runs-on: [self-hosted, docker]
     container:
-      image: adoptopenjdk:17-jre-hotspot
+      image: cangol/android-gradle
     outputs: 
       db_version_artifact: latest_db_version.json
     steps: 
@@ -53,13 +50,7 @@ jobs:
         run: rm app/schemas/com.cradleplatform.neptune.database.CradleDatabase/*.json
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
       - name: Assemble Debug APK
-        run: |
-          apt-get --quiet update --yes
-          apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1
-          apt-get --quiet install --yes libqt5widgets5 usbutils
-          curl -sSL "${{ env.GRADLE_SDK_URL }}" -o gradle-${{ env.GRADLE_VERSION }}-bin.zip  \ && unzip gradle-${{ env.GRADLE_VERSION }}-bin.zip -d ${{ env.SDK_HOME }}  \ && rm -rf gradle-${{ env.GRADLE_VERSION }}-bin.zip
-          gradle --version
-          ./gradlew assembleDebug
+        run: ./gradlew assembleDebug
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
       - name: Get Latest DB Version
         id: get-db-version
