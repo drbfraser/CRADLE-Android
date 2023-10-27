@@ -58,6 +58,7 @@ jobs:
           apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1
           apt-get --quiet install --yes libqt5widgets5 usbutils
           curl -sSL "${{ env.GRADLE_SDK_URL }}" -o gradle-${{ env.GRADLE_VERSION }}-bin.zip  \ && unzip gradle-${{ env.GRADLE_VERSION }}-bin.zip -d ${{ env.SDK_HOME }}  \ && rm -rf gradle-${{ env.GRADLE_VERSION }}-bin.zip
+          gradle --version
           ./gradlew assembleDebug
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
       - name: Get Latest DB Version
