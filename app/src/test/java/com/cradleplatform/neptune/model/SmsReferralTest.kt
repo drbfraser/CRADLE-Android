@@ -28,8 +28,10 @@ internal class SmsReferralTest {
             notAttended = false,
             userId = null
         )
-
-        val smsReferral = SmsReadingWithReferral(patientAndReadings)
+        val patientAndReadingsJSON = JacksonMapper.createWriter<PatientAndReadings>().writeValueAsString(
+            patientAndReadings
+        )
+        val smsReferral = SmsReadingWithReferral("", "", "", "", patientAndReadingsJSON)
 
         val writer = JacksonMapper.createWriter<SmsReadingWithReferral>()
         val json = writer.writeValueAsString(smsReferral)

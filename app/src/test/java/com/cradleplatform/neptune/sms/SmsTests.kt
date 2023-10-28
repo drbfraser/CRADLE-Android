@@ -7,6 +7,8 @@ import com.cradleplatform.neptune.utilities.AESEncryptor
 import com.cradleplatform.neptune.utilities.GzipCompressor
 import com.cradleplatform.neptune.utilities.RelayAction
 import com.cradleplatform.neptune.utilities.SMSFormatter
+import io.mockk.every
+import io.mockk.mockkObject
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions
 
@@ -66,9 +68,12 @@ class SmsTests {
     @Test
     fun `test_sms_packet_formatting_decoding`() {
         val originalMsg = CommonPatientReferralJsons.patientWithStandaloneReferral.first
-        val stringKey = AESEncryptor.generateRandomKey("test@test.com")
-        val secretKey = AESEncryptor.getSecretKeyFromString(stringKey)
         val requestCounter = 0L
+        val secretKey = "{\"sms_key\":\"SGVsbG8sIFdvcmxkIQ==\"}"
+
+        mockkObject(AESEncryptor)
+        val encryptStringReturn = "encryptStringReturn"
+        every { AESEncryptor.encryptString(any(), any()) } returns encryptStringReturn
 
         val encodedMsg = SMSFormatter.encodeMsg(
             originalMsg,
