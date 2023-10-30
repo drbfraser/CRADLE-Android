@@ -69,11 +69,8 @@ class SmsTests {
     fun `test_sms_packet_formatting_decoding`() {
         val originalMsg = CommonPatientReferralJsons.patientWithStandaloneReferral.first
         val requestCounter = 0L
-        val secretKey = "{\"sms_key\":\"SGVsbG8sIFdvcmxkIQ==\"}"
-
-        mockkObject(AESEncryptor)
-        val encryptStringReturn = "encryptStringReturn"
-        every { AESEncryptor.encryptString(any(), any()) } returns encryptStringReturn
+        val secretKey = "{\"sms_key\":\"9f86d081884c7d659a2feaa0c55ad015a3bf4f1" +
+            "b2b0b822cd15d6c15b0f00a08\"}"
 
         val encodedMsg = SMSFormatter.encodeMsg(
             originalMsg,

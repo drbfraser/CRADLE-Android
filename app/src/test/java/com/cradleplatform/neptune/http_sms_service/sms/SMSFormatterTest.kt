@@ -19,6 +19,8 @@ internal class SMSFormatterTest {
     @Test
     fun test_encodeMsg() {
         // Test that encodeMsg() calls encryptString() correctly and returns the right value
+        // This code only tests the functionality of encodeMsg() and not encryptString()
+        // We need to implement a test in order to verify the functionality of encryptString()
         val originalMsg = CommonPatientReferralJsons.patientWithStandaloneReferral.first
         val secretKey = "{\"sms_key\":\"SGVsbG8sIFdvcmxkIQ==\"}"
 
@@ -51,5 +53,5 @@ internal class SMSFormatterTest {
         }
 
     }
-    //TODO: Test encryptString function
+    //TODO: Test encryptString() function
 }
