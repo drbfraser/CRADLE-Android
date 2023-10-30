@@ -14,6 +14,7 @@
     <string name="key_vht_name">setting_vht_name</string>
     <string name="key_role">setting_role</string>
     <string name="key_region">setting_region</string>
+    <string name="key_periodic_sync_enabled">setting_periodic_sync</string>
     <string name="key_health_facilities_settings_button">setting_health_facilities</string>
     <string name="key_advanced_settings_settings_button">settings_advanced</string>
     <string name="key_sign_out">settings_sign_out</string>
