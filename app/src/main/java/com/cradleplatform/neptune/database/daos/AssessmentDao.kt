@@ -63,7 +63,7 @@ interface AssessmentDao {
      * @param assessment The entity to remove.
      */
     @Delete
-    suspend fun delete(assessment: Assessment?)
+    suspend fun delete(assessment: Assessment)
 
     /**
      * Returns the first assessment whose assessment ID is equal to [id].

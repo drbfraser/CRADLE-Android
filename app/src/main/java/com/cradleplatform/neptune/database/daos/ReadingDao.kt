@@ -64,7 +64,7 @@ interface ReadingDao {
      * @param reading The entity to remove.
      */
     @Delete
-    suspend fun delete(reading: Reading?)
+    suspend fun delete(reading: Reading)
 
     /**
      * Returns the first reading whose reading ID is equal to [id].
@@ -72,7 +72,7 @@ interface ReadingDao {
      * @param id The reading id to search for.
      */
     @Query("SELECT * FROM Reading WHERE readingId = :id")
-    suspend fun getReadingById(id: String): Reading?
+    suspend fun getReadingById(id: String): Reading
 
     /**
      * Returns a List of Readings whose readingIds correspond to the given [ids]

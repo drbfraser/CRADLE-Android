@@ -63,7 +63,7 @@ interface ReferralDao {
      * @param referral The entity to remove.
      */
     @Delete
-    suspend fun delete(referral: Referral?)
+    suspend fun delete(referral: Referral)
 
     /**
      * Returns the first referral whose referral ID is equal to [id].
