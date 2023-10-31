@@ -20,6 +20,7 @@ import androidx.lifecycle.lifecycleScope
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.ReferralDialogBinding
+import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.model.PatientAndReadings
 import com.cradleplatform.neptune.model.SmsReadingWithReferral
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
@@ -31,6 +32,7 @@ import com.cradleplatform.neptune.viewmodel.ReferralDialogViewModel
 import com.cradleplatform.neptune.viewmodel.ReferralOption
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * src: https://medium.com/alexander-schaefer/
@@ -51,6 +53,9 @@ class ReferralDialogFragment : DialogFragment() {
     private lateinit var launchReason: ReadingActivity.LaunchReason
 
     lateinit var dataPasser: OnReadingSendWebSnackbarMsgPass
+
+    @Inject
+    lateinit var smsKeyManager: SmsKeyManager
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -110,9 +115,20 @@ class ReferralDialogFragment : DialogFragment() {
             if (referralDialogViewModel.isSelectedHealthFacilityValid() &&
                 referralDialogViewModel.isSending.value != true
             ) {
-                referralDialogViewModel.isSending.value = true
-
-                lifecycleScope.launch { handleSmsReferralSend(view) }
+                // Retrieve and validate the locally stored smsKey - allow user to send SMS if the smsKey is valid
+                val currentSmsKey = smsKeyManager.retrieveSmsKey()
+                val keyStatus: SmsKeyManager.KeyState = smsKeyManager.validateSmsKey(currentSmsKey)
+                if (keyStatus == SmsKeyManager.KeyState.NORMAL || keyStatus == SmsKeyManager.KeyState.WARN) {
+                    // SmsKey is normal or stale ==> Send SMS
+                    referralDialogViewModel.isSending.value = true
+                    lifecycleScope.launch { handleSmsReferralSend(view) }
+                } else {
+                    // SmsKey is invalid or expired ==> cannot send SMS
+                    // Display a TOAST message to inform the user about the invalid or expired SMS key
+                    val toastMessage = "Your SMS key has expired\n" +
+                        "Unable to send SMS. Ensure internet connectivity and refresh your SMS key in the settings."
+                    Toast.makeText(requireContext(), toastMessage, Toast.LENGTH_LONG).show()
+                }
             }
         }
 
@@ -121,7 +137,6 @@ class ReferralDialogFragment : DialogFragment() {
                 referralDialogViewModel.isSending.value != true
             ) {
                 referralDialogViewModel.isSending.value = true
-
                 lifecycleScope.launch { handleWebReferralSend(view) }
             }
         }
@@ -160,12 +175,21 @@ class ReferralDialogFragment : DialogFragment() {
     private fun sendSms(
         patientAndReadings: PatientAndReadings
     ) {
+        // TODO: Add target API endpoint information needed by the backend to json ??
+        // TODO: requestNumber=0 as it is not implemented in the backend yet
+        patientAndReadings
+        val patientAndReadingsJSON = JacksonMapper.createWriter<PatientAndReadings>().writeValueAsString(
+            patientAndReadings
+        )
         val json = JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
             SmsReadingWithReferral(
-                patient = patientAndReadings
+                requestNumber = "0",
+                method = "POST",
+                endpoint = "api/patients",
+                headers = "",
+                body = patientAndReadingsJSON
             )
         )
-
         dataPasser.sendSmsMessage(json)
     }
 
@@ -174,16 +198,15 @@ class ReferralDialogFragment : DialogFragment() {
             val comment = referralDialogViewModel.comments.value ?: ""
             val selectedHealthFacilityName =
                 referralDialogViewModel.healthFacilityToUse.value ?: return
-
-            val smsSendResult = viewModel.saveWithReferral(
+            val webSendResult = viewModel.saveWithReferral(
                 ReferralOption.HTTP,
                 comment,
                 selectedHealthFacilityName
             )
 
-            if (smsSendResult is ReadingFlowSaveResult.SaveSuccessful) {
+            if (webSendResult is ReadingFlowSaveResult.SaveSuccessful) {
                 // Nothing left for us to do.
-                dataPasser.onMsgPass(getToastMessageForStatus(view.context, smsSendResult, ReferralOption.HTTP))
+                dataPasser.onMsgPass(getToastMessageForStatus(view.context, webSendResult, ReferralOption.HTTP))
                 activity?.finish()
             }
         } finally {

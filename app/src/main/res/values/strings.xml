@@ -720,7 +720,7 @@
     <string name="form_submission_failed">Form submission failed</string>
     <string name="form_submission_success">Form submitted successfully</string>
     <string name="form_uncategorized">Uncategorized</string>
-    <string name="form_current_section">Section %d/%d</string>
+    <string name="form_current_section">Section %1$d/%2$d</string>
 
 
     <!-- User Phone Strings -->

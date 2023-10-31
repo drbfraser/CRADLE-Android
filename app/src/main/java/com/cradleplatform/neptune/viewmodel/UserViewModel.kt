@@ -10,9 +10,6 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
-import com.cradleplatform.neptune.manager.LoginManager
-import com.cradleplatform.neptune.manager.LoginManager.Companion.USER_PHONE_NUMBER
-import com.cradleplatform.neptune.manager.LoginManager.Companion.PHONE_NUMBERS
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -31,6 +28,19 @@ class UserViewModel @Inject constructor(
     application: Application,
     private val restApi: RestApi
 ) : AndroidViewModel(application) {
+
+    companion object {
+        const val TOKEN_KEY = "token"
+        const val EMAIL_KEY = "loginEmail"
+        // A list of all phone numbers for the user
+        const val PHONE_NUMBERS = "phoneNumbers"
+        // The current phone number of the user - will be the source of SMS messages
+        const val USER_PHONE_NUMBER = "currentUserPhoneNumbers"
+        // The current relay phone number - default in settings.xml - changeable from the settings
+        const val RELAY_PHONE_NUMBER = "currentRelayPhoneNumbers"
+        const val USER_ID_KEY = "userId"
+        const val SMS_SECRET_KEY = "smsSecretKey"
+    }
 
     // TODO: check whether is should be the source of SMS and handle the edge cases
     //  - e.g.: User selects no when asked to update their phone number.
@@ -83,7 +93,7 @@ class UserViewModel @Inject constructor(
         // Add the user's phone number to the database.
 
         viewModelScope.launch {
-            val userId = sharedPreferences.getInt(LoginManager.USER_ID_KEY, -1)
+            val userId = sharedPreferences.getInt(USER_ID_KEY, -1)
             if (userId != -1) {
                 try {
                     val result = restApi.postUserPhoneNumber(userId, newPhoneNumber)

@@ -3,6 +3,7 @@ package com.cradleplatform.neptune.manager
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.security.crypto.EncryptedSharedPreferences
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.model.UserRole
@@ -53,11 +54,16 @@ internal class LoginManagerTests {
 
     private val fakeSharedPreferences: MutableMap<String, Any?>
     private val mockSharedPrefs: SharedPreferences
+    private val fakeEncrptedSharedPreferences: MutableMap<String, Any?>
+    private val encryptedSharedPreferences: EncryptedSharedPreferences
 
     init {
         val (map, sharedPrefs) = MockDependencyUtils.createMockSharedPreferences()
         fakeSharedPreferences = map
         mockSharedPrefs = sharedPrefs
+        val (map2, encrSharedPrefs) = MockDependencyUtils.createMockEncryptedSharedPreferences()
+        fakeEncrptedSharedPreferences = map2
+        encryptedSharedPreferences = encrSharedPrefs
     }
 
     private val mockRestApi: RestApi
@@ -95,7 +101,8 @@ internal class LoginManagerTests {
                                         userId = TEST_USER_ID,
                                         firstName = TEST_FIRST_NAME,
                                         healthFacilityName = TEST_USER_FACILITY_NAME,
-                                        phoneNumbers = TEST_USER_PHONE_NUMBERS
+                                        phoneNumbers = TEST_USER_PHONE_NUMBERS,
+                                        smsKey = "{\"sms_key\":\"SGVsbG8sIFdvcmxkIQ==\"}"
                                     )
                                 )
                             setResponseCode(200)
@@ -142,10 +149,20 @@ internal class LoginManagerTests {
         fakeSharedPreferences.clear()
         databaseCleared = false
 
+        // Mock the EncryptedSharedPreferences class
+        mockkStatic(EncryptedSharedPreferences::class)
+
+// Define what should be returned when EncryptedSharedPreferences.create is called
+        every { EncryptedSharedPreferences.create(any<String>(), any<String>(), any<Context>(),
+            any<EncryptedSharedPreferences.PrefKeyEncryptionScheme>(),
+            any<EncryptedSharedPreferences.PrefValueEncryptionScheme>())
+        } returns encryptedSharedPreferences
+
         loginManager = LoginManager(
             mockRestApi,
             mockSharedPrefs,
             studDatabase,
+            SmsKeyManager(mockContext),
             mockContext
         )
     }
