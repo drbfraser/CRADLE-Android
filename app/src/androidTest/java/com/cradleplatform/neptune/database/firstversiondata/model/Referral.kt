@@ -3,7 +3,7 @@ package com.cradleplatform.neptune.database.firstversiondata.model
 import android.content.SharedPreferences
 import com.cradleplatform.neptune.ext.Field
 import com.cradleplatform.neptune.ext.getIntOrNull
-import com.cradleplatform.neptune.manager.LoginManager
+import com.cradleplatform.neptune.viewmodel.UserViewModel
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import java.io.Serializable
@@ -55,7 +55,7 @@ internal data class Referral constructor(
         healthFacilityName = healthFacilityName,
         dateReferred = dateReferred,
         id = null,
-        userId = sharedPreferences.getIntOrNull(LoginManager.USER_ID_KEY),
+        userId = sharedPreferences.getIntOrNull(UserViewModel.USER_ID_KEY),
         patientId = patientId,
         readingId = readingId,
         isAssessed = false
