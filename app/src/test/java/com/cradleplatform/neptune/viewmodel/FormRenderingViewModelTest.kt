@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
+import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.model.Answer
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.Question
@@ -22,8 +23,9 @@ class FormRenderingViewModelTest {
     @BeforeAll
     fun initialize() {
         val httpsSmsService = Mockito.mock(HttpSmsService::class.java)
+        val smsKeyManager = Mockito.mock(SmsKeyManager::class.java)
         val sharedPreferences = Mockito.mock(SharedPreferences::class.java)
-        viewModel = FormRenderingViewModel(httpsSmsService, sharedPreferences)
+        viewModel = FormRenderingViewModel(httpsSmsService, sharedPreferences, smsKeyManager)
     }
 
     @Test
