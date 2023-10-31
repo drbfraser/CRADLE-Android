@@ -26,7 +26,6 @@ import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.SmsReferral
-import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.SMSFormatter
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
