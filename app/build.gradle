@@ -20,6 +20,10 @@ if (!rootProject.file(filename).exists()) {
 keystoreProperties.load(new FileInputStream(rootProject.file(filename)))
 
 android {
+    lintOptions {
+        textReport true
+        textOutput 'stdout'
+    }
 
     signingConfigs {
         release {
@@ -93,6 +97,9 @@ android {
                     'proguard-android-optimize.txt'),
                     'proguard-rules.pro'
         }
+    }
+    aaptOptions {
+        noCompress "tflite"
     }
 
     compileOptions {
