@@ -24,6 +24,7 @@ import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import android.content.IntentFilter
 import com.cradleplatform.neptune.viewmodel.UserViewModel
+import com.cradleplatform.neptune.utilities.CustomToast
 
 @AndroidEntryPoint
 open class PatientReferralActivity : AppCompatActivity() {
@@ -120,6 +121,11 @@ open class PatientReferralActivity : AppCompatActivity() {
                 //Passing context to viewModel might not be the best idea,
                 // however, it is required as of now to resolve the strings
                 val unusedResult = viewModel.saveReferral("HTTP", currPatient, applicationContext)
+                CustomToast.shortToast(
+                    applicationContext,
+                    applicationContext.getString(R.string.referral_submitted)
+                )
+                finish()
                 // do something with the result (check success or failure) / do it elsewhere?
             }
         }
@@ -130,6 +136,10 @@ open class PatientReferralActivity : AppCompatActivity() {
                 //Passing context to viewModel might not be the best idea,
                 // however, it is required as of now to resolve the strings
                 val unusedResult = viewModel.saveReferral("SMS", currPatient, applicationContext)
+                CustomToast.shortToast(
+                    applicationContext,
+                    applicationContext.getString(R.string.sms_sender_send)
+                )
             }
         }
     }
@@ -180,7 +190,7 @@ open class PatientReferralActivity : AppCompatActivity() {
         val sendBtn = findViewById<Button>(R.id.send_web_button)
         sendBtn.setOnClickListener {
             lifecycleScope.launch {
-                when (viewModel.saveReferral(ReferralOption.HTML, currPatient)) {
+                when (viewModel.saveReferral(ReferralOption.HTTP, currPatient)) {
                     is ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded -> {
                         Toast.makeText(
                             it.context,

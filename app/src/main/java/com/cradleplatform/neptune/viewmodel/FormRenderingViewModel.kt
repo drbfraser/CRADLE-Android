@@ -94,7 +94,6 @@ class FormRenderingViewModel @Inject constructor(
             val sublist = currentFormTemplate!!.questions?.subList(0, indicesOfCategory[0])
             val uncategorizedPair = Pair(categoryName, sublist)
             categoryList.add(uncategorizedPair)
-            indicesOfCategory.removeAt(0)
         }
         indicesOfCategory.forEachIndexed { i, categoryIndex ->
             val langVersion = currentFormTemplate!!.questions!![categoryIndex].languageVersions

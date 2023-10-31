@@ -195,8 +195,8 @@
     <string name="dialog_missing_information_title">Missing information</string>
     <string name="dialog_missing_information_message">Some required fields from PATIENT or CONFIRM VITALS tabs are missing. Please enter this data before referring patient.</string>
     <string name="referral_dialog_title">Send referral</string>
-    <string name="referral_dialog_button_send_sms">Send SMS</string>
-    <string name="referral_dialog_button_send_web">Send HTML</string>
+    <string name="referral_dialog_button_send_sms">Send via SMS</string>
+    <string name="referral_dialog_button_send_web">Send via DATA</string>
     <string name="no_health_facility_dialog_title">No health facility selected</string>
     <string name="no_health_facility_dialog_message">Please add a health facility in the settings menu</string>
     <string name="not_available_n_slash_a">N/A</string>
@@ -492,6 +492,7 @@
     <string name="patient_referral_activity_save_error_unknown">An unknown error has occurred.</string>
     <string name="sms_sender_send">Sending SMS message in packets. Please do not exit the view until all messages have been sent.</string>
     <string name="sms_packet_sent">Sending packet message.</string>
+    <string name="referral_submitted">Referral submitted successfully</string>
     <string name="sms_all_sent">All packets sent.</string>
     <string name="patient_profile_age_label">Age</string>
     <string name="patient_profile_age_about_n_years_old">About %1$d years old</string>

@@ -189,11 +189,6 @@ class PatientReferralViewModel @Inject constructor(
             )
         )
 
-        CustomToast.shortToast(
-            applicationContext,
-            applicationContext.getString(R.string.sms_sender_send)
-        )
-
         // saves the data in internal db
         handleStoringReferralFromBuilders(referral)
 
@@ -207,13 +202,13 @@ class PatientReferralViewModel @Inject constructor(
         return@withContext ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded
 
         /**
-         * This is the previous implementation, now its upto the sms service to divide html and sms
+         * This is the previous implementation, now its upto the sms service to divide http and sms
          * ViewModels will only be responsible for requesting the service for upload
          */
 
         //Upload using the defined method ( Web or Sms)
         // when (referralOption) {
-        //     ReferralOption.HTML -> {
+        //     ReferralOption.HTTP -> {
         //         val result = referralUploadManager.uploadReferralViaWeb(patient, referral)
         //
         //         if (result is NetworkResult.Success) {
