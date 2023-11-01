@@ -192,6 +192,7 @@ class SyncActivity : AppCompatActivity() {
         workInfo?.let {
             lastSyncResultText.apply {
                 text = SyncAllWorker.getSyncResultMessage(it)
+                text = sharedPreferences.getString(LAST_SYNC_RESULT_MESSAGE, "No previous sync found.")
                 visibility = View.VISIBLE
             }
         }
@@ -204,5 +205,6 @@ class SyncActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "SyncActivity"
+        const val LAST_SYNC_RESULT_MESSAGE = "lastSyncResultMessage"
     }
 }

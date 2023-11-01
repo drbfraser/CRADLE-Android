@@ -120,6 +120,9 @@ class SyncAllWorker @AssistedInject constructor(
         /** Default last sync timestamp. Note that using 0 will result in server rejecting param */
         const val LAST_SYNC_DEFAULT = "1"
 
+        /** Last sync result */
+        const val LAST_SYNC_RESULT_MESSAGE = "lastSyncResultMessage"
+
         /** The key for current syncing state in the [WorkInfo] progress */
         private const val PROGRESS_CURRENT_STATE = "currentState"
         /** The key for total number to download in the [WorkInfo] progress */
@@ -334,18 +337,24 @@ class SyncAllWorker @AssistedInject constructor(
             )
         }
 
+        val syncResult = workDataOf(
+            RESULT_MESSAGE to
+                getResultSuccessMessage(
+                    patientResult,
+                    healthFacilitiesResult,
+                    readingResult,
+                    referralResult,
+                    assessmentResult,
+                    formTemplateResult
+                )
+        )
+
+        sharedPreferences.edit(commit = true) {
+            putString(LAST_SYNC_RESULT_MESSAGE, syncResult.toString())
+        }
+
         return Result.success(
-            workDataOf(
-                RESULT_MESSAGE to
-                    getResultSuccessMessage(
-                        patientResult,
-                        healthFacilitiesResult,
-                        readingResult,
-                        referralResult,
-                        assessmentResult,
-                        formTemplateResult
-                    )
-            )
+            syncResult
         )
     }
 
