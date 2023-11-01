@@ -56,7 +56,9 @@ class SyncActivity : AppCompatActivity() {
             val downloadProgressText = findViewById<TextView>(R.id.download_progress_text_view)
             val lastSyncResultText = findViewById<TextView>(R.id.last_sync_result_text_view)
 
-            if (workInfo == null || workInfo.state.isFinished) {
+            if (workInfo == null
+                || workInfo.state.isFinished
+                || workInfo.state == WorkInfo.State.ENQUEUED) {
                 showLastSyncStatus(workInfo)
             } else {
                 lastSyncResultText.apply {
@@ -98,6 +100,12 @@ class SyncActivity : AppCompatActivity() {
                 }
 
                 val newStateString = when (state) {
+                    SyncAllWorker.State.AFK -> {
+                        getString(
+                            R.string.sync_activity_waiting_to_sync_last_synced__s,
+                            getLastSyncTimeStamp()
+                        )
+                    }
                     SyncAllWorker.State.STARTING -> {
                         getString(R.string.sync_activity_status_beginning_upload)
                     }
@@ -153,15 +161,7 @@ class SyncActivity : AppCompatActivity() {
         }
     }
 
-    private fun showLastSyncStatus(workInfo: WorkInfo?) {
-        val syncProgressBar = findViewById<ProgressBar>(R.id.sync_progress_bar)
-        val downloadProgressText = findViewById<TextView>(R.id.download_progress_text_view)
-        val syncStatusText = findViewById<TextView>(R.id.sync_status_text)
-        val lastSyncResultText = findViewById<TextView>(R.id.last_sync_result_text_view)
-
-        syncProgressBar.visibility = View.INVISIBLE
-        downloadProgressText.visibility = View.INVISIBLE
-
+    private fun getLastSyncTimeStamp(): String {
         val lastSyncTime = BigInteger(
             sharedPreferences.getString(
                 SyncAllWorker.LAST_PATIENT_SYNC,
@@ -173,10 +173,20 @@ class SyncActivity : AppCompatActivity() {
         } else {
             DateUtil.getConciseDateString(lastSyncTime, false)
         }
+        return date
+    }
 
+    private fun showLastSyncStatus(workInfo: WorkInfo?) {
+        val syncProgressBar = findViewById<ProgressBar>(R.id.sync_progress_bar)
+        val downloadProgressText = findViewById<TextView>(R.id.download_progress_text_view)
+        val syncStatusText = findViewById<TextView>(R.id.sync_status_text)
+        val lastSyncResultText = findViewById<TextView>(R.id.last_sync_result_text_view)
+
+        syncProgressBar.visibility = View.INVISIBLE
+        downloadProgressText.visibility = View.INVISIBLE
         syncStatusText.text = getString(
             R.string.sync_activity_waiting_to_sync_last_synced__s,
-            date
+            getLastSyncTimeStamp()
         )
 
         workInfo?.let {

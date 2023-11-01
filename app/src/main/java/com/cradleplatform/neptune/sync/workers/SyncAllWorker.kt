@@ -70,6 +70,7 @@ class SyncAllWorker @AssistedInject constructor(
 ) : CoroutineWorker(context, params) {
 
     enum class State {
+        AFK,
         STARTING,
         /** Checking the server for patients by uploading an empty list */
         CHECKING_SERVER_PATIENTS,
@@ -134,7 +135,7 @@ class SyncAllWorker @AssistedInject constructor(
          */
         fun getState(workInfo: WorkInfo) = workInfo
             .progress
-            .getString(PROGRESS_CURRENT_STATE)?.let { State.valueOf(it) } ?: State.STARTING
+            .getString(PROGRESS_CURRENT_STATE)?.let { State.valueOf(it) } ?: State.AFK
 
         /**
          * Get the progress for the current state in the [workInfo]'s progress.
