@@ -19,7 +19,7 @@ import javax.inject.Singleton
 @Singleton
 class PeriodicSyncer @Inject constructor(
     private val sharedPreferences: SharedPreferences,
-    var workManager: WorkManager,
+    private val workManager: WorkManager,
     @ApplicationContext private val context: Context
 ) {
     /**
@@ -31,7 +31,8 @@ class PeriodicSyncer @Inject constructor(
     fun startPeriodicSync() {
         // For testing: time interval is every 15 minutes (Android's minimum allowable interval)
         // For production: user picks time interval (default 24 hours)
-        val workRequest = PeriodicWorkRequestBuilder<SyncAllWorker>(15, TimeUnit.MINUTES)
+        val workRequest = PeriodicWorkRequestBuilder<SyncAllWorker>(
+            15, TimeUnit.MINUTES)
             .addTag(PERIODIC_WORK_TAG)
             .build()
 
@@ -39,7 +40,8 @@ class PeriodicSyncer @Inject constructor(
             putString(LAST_SYNC_JOB_UUID, workRequest.id.toString())
         }
 
-        workManager.enqueueUniquePeriodicWork(PERIODIC_WORK_NAME, ExistingPeriodicWorkPolicy.KEEP, workRequest)
+        workManager.enqueueUniquePeriodicWork(
+            PERIODIC_WORK_NAME, ExistingPeriodicWorkPolicy.KEEP, workRequest)
         Log.d(TAG, "Unique periodic work ${workRequest.id} enqueued")
     }
 
