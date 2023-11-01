@@ -99,6 +99,8 @@ class CradleApplication : Application(), Configuration.Provider {
         networkMonitor.checkNetworkState();
         networkMonitor.registerNetworkCallbackEvents();
 
+        // Initiate PeriodicSyncer
+        periodicSyncer = PeriodicSyncer(sharedPref, workManager, this)
         if (loginManager.isLoggedIn()) {
             periodicSyncer.startPeriodicSync()
         }
