@@ -44,7 +44,7 @@ jobs:
       db_version_artifact: latest_db_version.json
     steps: 
       - name: Checkout repository into Container
-        uses: bfraser/cicd/actions/checkout@v1
+        uses: actions/checkout@v2
         with: 
           path: ${{ env.CUSTOM_WORKSPACE }}
       - name: Remove current database chema JSON
