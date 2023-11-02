@@ -57,7 +57,7 @@ jobs:
           apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1
           apt-get --quiet install --yes libqt5widgets5 usbutils
           java --version
-          GRADLE_VERSION=8.1.2
+          GRADLE_VERSION=8.0
           if command -v wget &> /dev/null; then
             echo "wget is installed"
           else
