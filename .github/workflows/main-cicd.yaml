@@ -53,6 +53,7 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v2
         with:
+          distribution: 'adopt'
           java-version: 17
       - name: Assemble Debug APK
         run: |
