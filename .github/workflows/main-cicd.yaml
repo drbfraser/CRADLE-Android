@@ -50,22 +50,9 @@ jobs:
       - name: Remove current database chema JSON
         run: rm app/schemas/com.cradleplatform.neptune.database.CradleDatabase/*.json
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
-      - name: Install
-        run: |
-          cat /etc/os-release
-          apt-get --quiet update --yes
-          apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1
-          apt-get --quiet install --yes libqt5widgets5 usbutils
-          java --version
-          GRADLE_VERSION=8.0
-          sudo curl -L -o gradle-$GRADLE_VERSION-bin.zip https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip
-          echo wget successful
-          unzip -q gradle-$GRADLE_VERSION-bin.zip
-          echo unzip finished
-          export PATH=$PATH:$(pwd)/gradle-$GRADLE_VERSION/bin
-          echo env var added
       - name: Assemble Debug APK
         run: |
+          cat /etc/os-release
           java --version
           gradle --version
           ./gradlew assembleDebug
