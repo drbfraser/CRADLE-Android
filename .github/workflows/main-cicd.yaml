@@ -1,6 +1,7 @@
 name: Cradle-Mobile CI/CD Pipeline
 # Main GitHub CI/CD pipeline definition file
 # For syntax, see: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions
+# The dockerfile for image sahilmodak/cradle-mobile is in the root directory for the project
 
 on:
   push:
