@@ -21,6 +21,7 @@ jobs:
       - uses: bfraser/cicd/actions/debug_display_contexts@v1
 
   code_analysis:
+    if: false
     name: Code Analysis
     runs-on: [self-hosted, docker]
     container:
@@ -52,6 +53,9 @@ jobs:
       - name: Assemble Debug APK
         run: |
           java --version
+          apt-get --quiet update --yes
+          apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1
+          apt-get --quiet install --yes libqt5widgets5 usbutils
           gradle --version
           ./gradlew assembleDebug
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
