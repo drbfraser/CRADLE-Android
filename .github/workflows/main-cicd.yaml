@@ -39,12 +39,12 @@ jobs:
     name: Build and Assemble Debug APK
     runs-on: [self-hosted, docker]
     container:
-      image: amazoncorretto:17
+      image: sahilmodak/cradle-mobile
     outputs: 
       db_version_artifact: latest_db_version.json
     steps: 
       - name: Checkout repository into Container
-        uses: actions/checkout@v2
+        uses: bfraser/cicd/actions/checkout@v1
         with: 
           path: ${{ env.CUSTOM_WORKSPACE }}
       - name: Remove current database chema JSON
