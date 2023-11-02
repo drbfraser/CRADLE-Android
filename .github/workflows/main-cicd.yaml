@@ -58,7 +58,7 @@ jobs:
           apt-get --quiet install --yes libqt5widgets5 usbutils
           java --version
           GRADLE_VERSION=8.0
-          curl -L -o gradle-$GRADLE_VERSION-bin.zip https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip
+          sudo curl -L -o gradle-$GRADLE_VERSION-bin.zip https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip
           echo wget successful
           unzip -q gradle-$GRADLE_VERSION-bin.zip
           echo unzip finished
