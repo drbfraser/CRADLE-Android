@@ -58,6 +58,16 @@ jobs:
           apt-get --quiet install --yes libqt5widgets5 usbutils
           java --version
           GRADLE_VERSION=8.1.2
+          if command -v wget &> /dev/null; then
+            echo "wget is installed"
+          else
+            echo "wget is not installed"
+          fi
+          if command -v curl &> /dev/null; then
+            echo "curl is installed"
+          else
+            echo "curl is not installed"
+          fi
           wget -q https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip
           unzip -q gradle-$GRADLE_VERSION-bin.zip
           export PATH=$PATH:$(pwd)/gradle-$GRADLE_VERSION/bin
