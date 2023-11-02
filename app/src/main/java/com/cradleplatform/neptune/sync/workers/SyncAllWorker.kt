@@ -350,7 +350,7 @@ class SyncAllWorker @AssistedInject constructor(
         )
 
         sharedPreferences.edit(commit = true) {
-            putString(LAST_SYNC_RESULT_MESSAGE, syncResult.toString())
+            putString(LAST_SYNC_RESULT_MESSAGE, syncResult.getString(RESULT_MESSAGE))
         }
 
         return Result.success(
