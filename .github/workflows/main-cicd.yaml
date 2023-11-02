@@ -21,7 +21,6 @@ jobs:
       - uses: bfraser/cicd/actions/debug_display_contexts@v1
 
   code_analysis:
-    if: false
     name: Code Analysis
     runs-on: [self-hosted, docker]
     container:
