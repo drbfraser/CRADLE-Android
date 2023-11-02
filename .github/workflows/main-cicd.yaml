@@ -50,7 +50,10 @@ jobs:
         run: rm app/schemas/com.cradleplatform.neptune.database.CradleDatabase/*.json
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
       - name: Assemble Debug APK
-        run: ./gradlew assembleDebug
+        run: |
+          java --version
+          gradle --version
+          ./gradlew assembleDebug
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
       - name: Get Latest DB Version
         id: get-db-version
