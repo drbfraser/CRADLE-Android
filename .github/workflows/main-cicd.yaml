@@ -57,6 +57,7 @@ jobs:
           apt-get --quiet install --yes libqt5widgets5 usbutils
           java --version
           curl -sSL "https://services.gradle.org/distributions/gradle-8.1.2-bin.zip" -o gradle-8.1.2-bin.zip  \ && unzip gradle-8.1.2-bin.zip -d /usr/local  \ && rm -rf gradle-8.1.2-bin.zip
+          java --version
           gradle --version
           ./gradlew assembleDebug
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
