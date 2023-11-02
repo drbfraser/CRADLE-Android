@@ -52,11 +52,13 @@ jobs:
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
       - name: Install
         run: |
-          sudo apt update
-          sudo apt install openjdk-17-jdk
+          cat /etc/os-release
+          apt-get --quiet update --yes
+          apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1
+          apt-get --quiet install --yes libqt5widgets5 usbutils
           java --version
           GRADLE_VERSION=8.1.2
-          curl -L -o gradle-$GRADLE_VERSION-bin.zip https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip
+          wget -q https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip
           unzip -q gradle-$GRADLE_VERSION-bin.zip
           export PATH=$PATH:$(pwd)/gradle-$GRADLE_VERSION/bin
           java --version
