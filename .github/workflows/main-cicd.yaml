@@ -37,8 +37,6 @@ jobs:
   build:
     name: Build and Assemble Debug APK
     runs-on: [self-hosted, docker]
-    with:
-
     outputs: 
       db_version_artifact: latest_db_version.json
     steps: 
