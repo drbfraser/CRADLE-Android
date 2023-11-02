@@ -37,7 +37,9 @@ jobs:
     
   build:
     name: Build and Assemble Debug APK
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, docker]
+    container:
+      image: eguizabal98/android-34-34.0.0-jdk17
     outputs: 
       db_version_artifact: latest_db_version.json
     steps: 
@@ -48,14 +50,13 @@ jobs:
       - name: Remove current database chema JSON
         run: rm app/schemas/com.cradleplatform.neptune.database.CradleDatabase/*.json
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
-      - name: Set up Java
-        uses: actions/setup-java@v2
-        with:
-          java-version: 17  # Use the desired Java version
       - name: Install
         run: |
+          sudo apt update
+          sudo apt install openjdk-17-jdk
+          java --version
           GRADLE_VERSION=8.1.2
-          wget -q https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip
+          curl -L -o gradle-$GRADLE_VERSION-bin.zip https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip
           unzip -q gradle-$GRADLE_VERSION-bin.zip
           export PATH=$PATH:$(pwd)/gradle-$GRADLE_VERSION/bin
           java --version
