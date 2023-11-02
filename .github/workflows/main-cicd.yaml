@@ -37,8 +37,8 @@ jobs:
   build:
     name: Build and Assemble Debug APK
     runs-on: [self-hosted, docker]
-    container:
-      image: cangol/android-gradle
+    with:
+
     outputs: 
       db_version_artifact: latest_db_version.json
     steps: 
@@ -49,6 +49,18 @@ jobs:
       - name: Remove current database chema JSON
         run: rm app/schemas/com.cradleplatform.neptune.database.CradleDatabase/*.json
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Set up Docker
+        uses: actions/setup-docker@v2
+        with:
+          dockerfile: Dockerfile  # Path to your Dockerfile
+          context: .  # Directory containing Dockerfile
+
+      - name: Build Docker image
+        run: docker build -t my-jdk17-gradle8.1.2-image .
+      
+      - name: Run Gradle command in Docker container
+        run: |
+          docker run --rm -v $(pwd):/app my-jdk17-gradle8.1.2-image ./gradlew assembleDebug
       - name: Assemble Debug APK
         run: |
           java --version
