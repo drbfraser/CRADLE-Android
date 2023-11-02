@@ -39,7 +39,7 @@ jobs:
     name: Build and Assemble Debug APK
     runs-on: [self-hosted, docker]
     container:
-      image: cangol/android-gradle
+      image: sahilmodak/cradle-mobile
     outputs: 
       db_version_artifact: latest_db_version.json
     steps: 
@@ -50,6 +50,10 @@ jobs:
       - name: Remove current database chema JSON
         run: rm app/schemas/com.cradleplatform.neptune.database.CradleDatabase/*.json
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Set up Java
+        uses: actions/setup-java@v2
+        with:
+          java-version: 17  # Use the desired Java version
       - name: Assemble Debug APK
         run: |
           cat /etc/os-release
