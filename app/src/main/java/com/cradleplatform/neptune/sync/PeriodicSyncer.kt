@@ -15,6 +15,7 @@ import javax.inject.Singleton
 
 /**
  * Service for periodically syncing with server.
+ * TODO: Add unit test for PeriodicSyncer.
  */
 @Singleton
 class PeriodicSyncer @Inject constructor(
