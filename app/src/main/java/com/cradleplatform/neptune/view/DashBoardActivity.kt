@@ -103,7 +103,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun validateSmsKeyAndPerformActions() {
         // check SMS key validity only when there is internet connection
-        val isNetworkAvailable = NetworkAvailableLiveData(this).value
+        val isNetworkAvailable = networkStateManager.getInternetConnectivityStatus().value
         if ((isNetworkAvailable != null) && isNetworkAvailable) {
             val currentSmsKey = smsKeyManager.retrieveSmsKey()
             val smsKeyStatus = smsKeyManager.validateSmsKey(currentSmsKey)
