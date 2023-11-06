@@ -65,7 +65,7 @@ class LoginActivity : AppCompatActivity() {
 
     private lateinit var isNetworkAvailable: LiveData<Boolean>
     @Inject
-    private lateinit var networkStateManager : NetworkStateManager
+    lateinit var networkStateManager : NetworkStateManager
 
     private var idlingResource: CountingIdlingResource? = null
 

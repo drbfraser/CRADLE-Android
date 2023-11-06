@@ -1,5 +1,6 @@
 package com.cradleplatform.neptune.utilities.connectivity.api24
 
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
@@ -14,7 +15,10 @@ import javax.inject.Inject
  * https://medium.com/geekculture/implementing-an-active-network-state-monitor-in-android-dbbc24cf2bc5
  * Note: Callback is not supported under API 24?
  */
-class NetworkMonitoringUtil(private val context: Context) : ConnectivityManager.NetworkCallback() {
+class NetworkMonitoringUtil @Inject constructor (
+    private val context: Context,
+    private val mNetworkStateManager: NetworkStateManager
+) : ConnectivityManager.NetworkCallback() {
     private val mNetworkRequest = NetworkRequest.Builder()
         .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
         .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
@@ -23,8 +27,7 @@ class NetworkMonitoringUtil(private val context: Context) : ConnectivityManager.
     private val mConnectivityManager: ConnectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
-    @Inject
-    private lateinit var mNetworkStateManager: NetworkStateManager
+    // private val mNetworkStateManager: NetworkStateManager = NetworkStateManager.getInstance()
 
     companion object {
         private const val TAG = "NetworkMonitoringUtil"
