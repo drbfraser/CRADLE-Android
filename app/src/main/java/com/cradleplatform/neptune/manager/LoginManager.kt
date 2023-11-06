@@ -40,6 +40,15 @@ class LoginManager @Inject constructor(
 ) {
     companion object {
         private const val TAG = "LoginManager"
+        const val TOKEN_KEY = "token"
+        const val EMAIL_KEY = "loginEmail"
+        // A list of all phone numbers for the user
+        const val PHONE_NUMBERS = "phoneNumbers"
+        // The current phone number of the user - will be the source of SMS messages
+        const val USER_PHONE_NUMBER = "currentUserPhoneNumbers"
+        // The current relay phone number - default in settings.xml - changeable from the settings
+        const val RELAY_PHONE_NUMBER = "currentRelayPhoneNumbers"
+        const val USER_ID_KEY = "userId"
     }
 
     fun isLoggedIn(): Boolean {

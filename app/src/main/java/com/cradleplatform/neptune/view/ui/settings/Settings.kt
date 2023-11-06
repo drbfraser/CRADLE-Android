@@ -5,12 +5,8 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
-import android.widget.ArrayAdapter
-import android.widget.ListView
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
@@ -18,14 +14,11 @@ import androidx.preference.SwitchPreference
 import androidx.preference.SwitchPreferenceCompat
 import com.cradleplatform.neptune.CradleApplication
 import com.cradleplatform.neptune.R
-import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
-import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.manager.HealthFacilityManager
 import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.manager.LoginManager.Companion.RELAY_PHONE_NUMBER
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
-import com.cradleplatform.neptune.model.RelayPhoneNumberResponse
 import com.cradleplatform.neptune.sync.PeriodicSyncer
 import com.cradleplatform.neptune.utilities.validateHostname
 import com.cradleplatform.neptune.utilities.validatePort
@@ -44,7 +37,6 @@ import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
-import com.cradleplatform.neptune.viewmodel.UserViewModel.Companion.RELAY_PHONE_NUMBER
 import com.cradleplatform.neptune.model.RelayPhoneNumberResponse
 
 @AndroidEntryPoint
