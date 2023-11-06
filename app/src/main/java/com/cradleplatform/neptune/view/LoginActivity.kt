@@ -64,8 +64,8 @@ class LoginActivity : AppCompatActivity() {
     lateinit var workManager: WorkManager
 
     private lateinit var isNetworkAvailable: LiveData<Boolean>
-
-    private lateinit var networkManager : NetworkStateManager
+    @Inject
+    private lateinit var networkStateManager : NetworkStateManager
 
     private var idlingResource: CountingIdlingResource? = null
 
@@ -85,7 +85,6 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         showMessageIfPresent()
-        networkManager = NetworkStateManager.getInstance()
         if (loginManager.isLoggedIn()) {
             // no need to load anything if already logged in.
             startIntroActivity()
@@ -130,7 +129,7 @@ class LoginActivity : AppCompatActivity() {
         val noInternetText = findViewById<TextView>(R.id.internetAvailabilityTextView)
         val loginButton = findViewById<Button>(R.id.loginButton)
 
-        isNetworkAvailable = networkManager.getInternetConnectivityStatus().apply {
+        isNetworkAvailable = networkStateManager.getInternetConnectivityStatus().apply {
             observe(this@LoginActivity) { netAvailable ->
                 netAvailable ?: return@observe
                 loginButton.isEnabled = netAvailable

@@ -33,6 +33,7 @@ import com.cradleplatform.neptune.viewmodel.LocalSearchPatientAdapter
 import com.cradleplatform.neptune.viewmodel.PatientListViewModel
 import com.cradleplatform.neptune.sync.SyncReminderHelper
 import com.cradleplatform.neptune.sync.views.SyncActivity
+import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.google.android.material.badge.BadgeDrawable
 import com.google.android.material.badge.BadgeUtils
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
@@ -46,6 +47,7 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class PatientsActivity : AppCompatActivity() {
+
     private val viewModel: PatientListViewModel by viewModels()
 
     private var searchView: SearchView? = null
@@ -71,6 +73,8 @@ class PatientsActivity : AppCompatActivity() {
 
     @Inject
     lateinit var patientManager: PatientManager
+    @Inject
+    lateinit var networkStateManager: NetworkStateManager
 
     private lateinit var patientRecyclerview: RecyclerView
     private val localSearchPatientAdapter = LocalSearchPatientAdapter()

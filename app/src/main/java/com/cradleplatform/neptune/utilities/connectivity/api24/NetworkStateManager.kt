@@ -5,6 +5,7 @@ import android.os.Looper
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
@@ -16,7 +17,7 @@ import javax.inject.Singleton
  * https://medium.com/geekculture/implementing-an-active-network-state-monitor-in-android-dbbc24cf2bc5
  */
 @Singleton
-class NetworkStateManager private constructor() {
+class NetworkStateManager @Inject constructor() {
     // Defaulting to False
     private val activeWifiStatus = MutableLiveData<Boolean>()
     private val activeCellularDataStatus = MutableLiveData<Boolean>()
@@ -29,14 +30,14 @@ class NetworkStateManager private constructor() {
         private const val DEFAULT_NETWORK_CALLBACK_SUPPORTED_API_LEVEL = 24
         private val isCallbackSupported =
             Build.VERSION.SDK_INT >= DEFAULT_NETWORK_CALLBACK_SUPPORTED_API_LEVEL
-        @Synchronized
-        fun getInstance(): NetworkStateManager {
-            if (INSTANCE == null) {
-                Log.d(TAG, "getInstance() called: Creating new instance")
-                INSTANCE = NetworkStateManager()
-            }
-            return INSTANCE!!
-        }
+        // @Synchronized
+        // fun getInstance(): NetworkStateManager {
+        //     if (INSTANCE == null) {
+        //         Log.d(TAG, "getInstance() called: Creating new instance")
+        //         INSTANCE = NetworkStateManager()
+        //     }
+        //     return INSTANCE!!
+        // }
     }
 
     /**

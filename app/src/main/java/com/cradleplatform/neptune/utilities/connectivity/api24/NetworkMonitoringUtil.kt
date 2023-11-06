@@ -6,6 +6,7 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.util.Log
+import javax.inject.Inject
 
 /**
  * An API 24+ implementation of Network Capability Monitoring.
@@ -22,7 +23,8 @@ class NetworkMonitoringUtil(private val context: Context) : ConnectivityManager.
     private val mConnectivityManager: ConnectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
-    private val mNetworkStateManager: NetworkStateManager = NetworkStateManager.getInstance()
+    @Inject
+    private lateinit var mNetworkStateManager: NetworkStateManager
 
     companion object {
         private const val TAG = "NetworkMonitoringUtil"
