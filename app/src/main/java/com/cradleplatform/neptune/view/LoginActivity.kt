@@ -33,7 +33,7 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.ext.hideKeyboard
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.manager.LoginManager
-import com.cradleplatform.neptune.networking.connectivity.api24.NetworkStateManager
+import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.ADVANCED_SETTINGS_KEY
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.makeSettingsActivityLaunchIntent

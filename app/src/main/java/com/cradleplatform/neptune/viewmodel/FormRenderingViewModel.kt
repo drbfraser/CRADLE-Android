@@ -21,8 +21,8 @@ import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.model.QuestionTypeEnum
 import com.cradleplatform.neptune.utilities.AESEncryptor
-import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkHelper
-import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkStatus
+import com.cradleplatform.neptune.utilities.connectivity.legacy.NetworkHelper
+import com.cradleplatform.neptune.utilities.connectivity.legacy.NetworkStatus
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.encodeMsg
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.formatSMS
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.listToString

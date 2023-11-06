@@ -27,8 +27,8 @@ import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import com.cradleplatform.neptune.utilities.CustomToast
-import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkHelper
-import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkStatus
+import com.cradleplatform.neptune.utilities.connectivity.legacy.NetworkHelper
+import com.cradleplatform.neptune.utilities.connectivity.legacy.NetworkStatus
 import com.cradleplatform.neptune.viewmodel.LocalSearchPatientAdapter
 import com.cradleplatform.neptune.viewmodel.PatientListViewModel
 import com.cradleplatform.neptune.sync.SyncReminderHelper

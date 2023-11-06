@@ -15,7 +15,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.Util
-import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkAvailableLiveData
+import com.cradleplatform.neptune.utilities.connectivity.legacy.NetworkAvailableLiveData
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
 import com.cradleplatform.neptune.sync.SyncReminderHelper
 import com.cradleplatform.neptune.sync.views.SyncActivity

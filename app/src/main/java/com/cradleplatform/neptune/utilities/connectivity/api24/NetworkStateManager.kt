@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.networking.connectivity.api24
+package com.cradleplatform.neptune.utilities.connectivity.api24
 
 import android.os.Build
 import android.os.Looper

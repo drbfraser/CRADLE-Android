@@ -31,8 +31,8 @@ import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import com.cradleplatform.neptune.utilities.BarGraphValueFormatter
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.DateUtil
-import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkHelper
-import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkStatus
+import com.cradleplatform.neptune.utilities.connectivity.legacy.NetworkHelper
+import com.cradleplatform.neptune.utilities.connectivity.legacy.NetworkStatus
 import com.cradleplatform.neptune.viewmodel.StatsViewModel
 import com.cradleplatform.neptune.sync.SyncReminderHelper
 import com.cradleplatform.neptune.sync.views.SyncActivity

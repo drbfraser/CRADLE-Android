@@ -15,7 +15,7 @@ import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import androidx.work.WorkManager
 import com.cradleplatform.neptune.manager.LoginManager
-import com.cradleplatform.neptune.networking.connectivity.api24.NetworkMonitoringUtil
+import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkMonitoringUtil
 import com.cradleplatform.neptune.sync.PeriodicSyncer
 import com.cradleplatform.neptune.view.PinPassActivity
 
