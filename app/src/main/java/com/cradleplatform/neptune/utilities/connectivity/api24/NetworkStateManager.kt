@@ -132,5 +132,4 @@ class NetworkStateManager @Inject constructor() {
     //     Log.d(TAG, "getSmsConnectivityStatus() called")
     //     return activeSmsStatus
     // }
-
 }
