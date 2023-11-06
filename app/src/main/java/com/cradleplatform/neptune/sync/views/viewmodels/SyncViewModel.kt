@@ -116,7 +116,7 @@ class SyncViewModel @Inject constructor(
         }
     }
 
-    val isConnectedToInternet : LiveData<Boolean> =
+    val isConnectedToInternet: LiveData<Boolean> =
         networkStateManager.getInternetConnectivityStatus()
 
     @MainThread

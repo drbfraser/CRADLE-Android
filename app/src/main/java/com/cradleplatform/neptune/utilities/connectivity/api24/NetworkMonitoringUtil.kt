@@ -1,6 +1,5 @@
 package com.cradleplatform.neptune.utilities.connectivity.api24
 
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
@@ -54,21 +53,25 @@ class NetworkMonitoringUtil @Inject constructor (
     }
 
     override fun onCapabilitiesChanged(
-        network: Network, networkCapabilities: NetworkCapabilities) {
+        network: Network,
+        networkCapabilities: NetworkCapabilities
+    ) {
         super.onCapabilitiesChanged(network, networkCapabilities)
-        Log.d(TAG,"onCapabilityChanged() called.")
+        Log.d(TAG, "onCapabilityChanged() called.")
         // Check for specific network capabilities and perform actions accordingly
         // Wi-Fi capabilities changed
         if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) &&
-            networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
-                mNetworkStateManager.setWifiConnectivityStatus(true)
+            networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        ) {
+            mNetworkStateManager.setWifiConnectivityStatus(true)
         } else {
-                mNetworkStateManager.setWifiConnectivityStatus(false)
+            mNetworkStateManager.setWifiConnectivityStatus(false)
         }
         // Cellular data capabilities changed
         if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) &&
-            networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
-                mNetworkStateManager.setCellularDataConnectivityStatus(true)
+            networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        ) {
+            mNetworkStateManager.setCellularDataConnectivityStatus(true)
         } else {
             mNetworkStateManager.setCellularDataConnectivityStatus(false)
         }
@@ -86,7 +89,7 @@ class NetworkMonitoringUtil @Inject constructor (
     /**
      * Unregisters the Network-Request callback
      */
-     fun unregisterNetworkCallbackEvents() {
+    fun unregisterNetworkCallbackEvents() {
         Log.d(TAG, "unregisterNetworkCallbackEvents() called")
         mConnectivityManager.unregisterNetworkCallback(this)
     }

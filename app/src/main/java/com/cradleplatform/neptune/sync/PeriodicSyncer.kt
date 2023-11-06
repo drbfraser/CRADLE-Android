@@ -33,7 +33,8 @@ class PeriodicSyncer @Inject constructor(
         // For testing: time interval is every 15 minutes (Android's minimum allowable interval)
         // For production: user picks time interval (default 24 hours)
         val workRequest = PeriodicWorkRequestBuilder<SyncAllWorker>(
-            15, TimeUnit.MINUTES)
+            15, TimeUnit.MINUTES
+        )
             .addTag(PERIODIC_WORK_TAG)
             .build()
 
@@ -42,7 +43,8 @@ class PeriodicSyncer @Inject constructor(
         }
 
         workManager.enqueueUniquePeriodicWork(
-            PERIODIC_WORK_NAME, ExistingPeriodicWorkPolicy.KEEP, workRequest)
+            PERIODIC_WORK_NAME, ExistingPeriodicWorkPolicy.KEEP, workRequest
+        )
         Log.d(TAG, "Unique periodic work ${workRequest.id} enqueued")
     }
 
@@ -54,7 +56,7 @@ class PeriodicSyncer @Inject constructor(
      */
     fun endPeriodicSync() {
         WorkManager.getInstance(context)
-                .cancelAllWorkByTag(PERIODIC_WORK_TAG)
+            .cancelAllWorkByTag(PERIODIC_WORK_TAG)
         Log.d(TAG, "Unique periodic work cancelled")
     }
 

@@ -63,7 +63,7 @@ class PatientReferralViewModel @Inject constructor(
     val areSendButtonsEnabled: LiveData<Boolean>
         get() = _areSendButtonsEnabled
     val isNetworkAvailable: LiveData<Boolean> =
-            networkStateManager.getInternetConnectivityStatus()
+        networkStateManager.getInternetConnectivityStatus()
     val isSending = MutableLiveData<Boolean>(false)
 
     init {

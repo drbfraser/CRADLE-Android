@@ -51,8 +51,10 @@ class NetworkStateManager @Inject constructor() {
      */
     fun setInternetConnectivityStatus(connectivityStatus: Boolean) {
         Log.d(
-            TAG, "setInternetConnectivityStatus() called with: " +
-            "connectivityStatus = [$connectivityStatus]")
+            TAG,
+            "setInternetConnectivityStatus() called with: " +
+                "connectivityStatus = [$connectivityStatus]"
+        )
         if (Looper.myLooper() == Looper.getMainLooper()) {
             activeInternetStatus.value = connectivityStatus
         } else {
@@ -65,8 +67,10 @@ class NetworkStateManager @Inject constructor() {
      */
     fun setWifiConnectivityStatus(connectivityStatus: Boolean) {
         Log.d(
-            TAG, "setWifiConnectivityStatus() called with: " +
-            "connectivityStatus = [$connectivityStatus]")
+            TAG,
+            "setWifiConnectivityStatus() called with: " +
+                "connectivityStatus = [$connectivityStatus]"
+        )
         if (Looper.myLooper() == Looper.getMainLooper()) {
             activeWifiStatus.value = connectivityStatus
         } else {
@@ -87,8 +91,10 @@ class NetworkStateManager @Inject constructor() {
      */
     fun setCellularDataConnectivityStatus(connectivityStatus: Boolean) {
         Log.d(
-            TAG, "setCellularDataConnectivityStatus() called with: " +
-            "connectivityStatus = [$connectivityStatus]")
+            TAG,
+            "setCellularDataConnectivityStatus() called with: " +
+                "connectivityStatus = [$connectivityStatus]"
+        )
         if (Looper.myLooper() == Looper.getMainLooper()) {
             activeCellularDataStatus.value = connectivityStatus
         } else {
@@ -126,6 +132,5 @@ class NetworkStateManager @Inject constructor() {
     //     Log.d(TAG, "getSmsConnectivityStatus() called")
     //     return activeSmsStatus
     // }
-
 
 }

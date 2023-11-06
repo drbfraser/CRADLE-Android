@@ -36,7 +36,6 @@ import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.http_sms_service.http.SyncException
 import com.cradleplatform.neptune.utilities.RateLimitRunner
 import com.cradleplatform.neptune.utilities.UnixTimestamp
-import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers

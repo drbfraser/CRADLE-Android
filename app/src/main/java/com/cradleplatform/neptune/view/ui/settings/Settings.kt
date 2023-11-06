@@ -10,8 +10,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.SwitchPreference
-import androidx.preference.SwitchPreferenceCompat
 import com.cradleplatform.neptune.CradleApplication
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.HealthFacilityManager

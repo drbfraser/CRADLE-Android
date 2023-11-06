@@ -97,10 +97,10 @@ class CradleApplication : Application(), Configuration.Provider {
         appKilledLockout = sharedPref.getBoolean(lockOutPrefKey, false)
 
         // Start monitoring network connectivity
-        networkMonitor = NetworkMonitoringUtil(this, networkStateManager);
+        networkMonitor = NetworkMonitoringUtil(this, networkStateManager)
         // Check the network state before registering for the 'networkCallbackEvents'
-        networkMonitor.checkNetworkState();
-        networkMonitor.registerNetworkCallbackEvents();
+        networkMonitor.checkNetworkState()
+        networkMonitor.registerNetworkCallbackEvents()
 
         // Initiate PeriodicSyncer
         periodicSyncer = PeriodicSyncer(sharedPref, workManager, this)

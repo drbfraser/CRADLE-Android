@@ -20,7 +20,6 @@ import com.cradleplatform.neptune.http_sms_service.http.Protocol
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.model.QuestionTypeEnum
-import com.cradleplatform.neptune.utilities.AESEncryptor
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.encodeMsg
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.formatSMS
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.listToString
