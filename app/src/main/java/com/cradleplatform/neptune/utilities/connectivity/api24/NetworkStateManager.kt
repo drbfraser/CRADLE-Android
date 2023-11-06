@@ -30,14 +30,14 @@ class NetworkStateManager @Inject constructor() {
         private const val DEFAULT_NETWORK_CALLBACK_SUPPORTED_API_LEVEL = 24
         private val isCallbackSupported =
             Build.VERSION.SDK_INT >= DEFAULT_NETWORK_CALLBACK_SUPPORTED_API_LEVEL
-        // @Synchronized
-        // fun getInstance(): NetworkStateManager {
-        //     if (INSTANCE == null) {
-        //         Log.d(TAG, "getInstance() called: Creating new instance")
-        //         INSTANCE = NetworkStateManager()
-        //     }
-        //     return INSTANCE!!
-        // }
+        @Synchronized
+        fun getInstance(): NetworkStateManager {
+            if (INSTANCE == null) {
+                Log.d(TAG, "getInstance() called: Creating new instance")
+                INSTANCE = NetworkStateManager()
+            }
+            return INSTANCE!!
+        }
     }
 
     /**
