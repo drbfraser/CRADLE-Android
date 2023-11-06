@@ -15,10 +15,10 @@ import androidx.lifecycle.ViewModelProvider
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.Util
-import com.cradleplatform.neptune.utilities.connectivity.legacy.NetworkAvailableLiveData
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
 import com.cradleplatform.neptune.sync.SyncReminderHelper
 import com.cradleplatform.neptune.sync.views.SyncActivity
+import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.viewmodel.UserViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import dagger.hilt.android.AndroidEntryPoint
@@ -28,6 +28,8 @@ import javax.inject.Inject
 class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
     @Inject
     lateinit var sharedPreferences: SharedPreferences
+    @Inject
+    lateinit var networkStateManager: NetworkStateManager
     private lateinit var userViewModel: UserViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,7 +63,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         val statView = findViewById<View>(R.id.statconstraintLayout)
         val statImg = statView.findViewById<ImageButton>(R.id.statImg)
         val statCardview: CardView = statView.findViewById(R.id.statCardView)
-        val isNetworkAvailable = NetworkAvailableLiveData(this)
+        val isNetworkAvailable = networkStateManager.getInternetConnectivityStatus()
 
         isNetworkAvailable.observe(this) {
             when (it) {

@@ -22,7 +22,7 @@ import com.cradleplatform.neptune.model.Verifiable
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.utilities.DateUtil
 import com.cradleplatform.neptune.utilities.LiveDataDynamicModelBuilder
-import com.cradleplatform.neptune.utilities.connectivity.legacy.NetworkAvailableLiveData
+import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -44,6 +44,7 @@ private val DEBUG = BuildConfig.DEBUG
 @HiltViewModel
 class EditPatientViewModel @Inject constructor(
     private val patientManager: PatientManager,
+    private val networkStateManager: NetworkStateManager,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -52,7 +53,8 @@ class EditPatientViewModel @Inject constructor(
     }
 
     private val patientBuilder = LiveDataDynamicModelBuilder()
-    val isNetworkAvailable = NetworkAvailableLiveData(context)
+    val isNetworkAvailable: LiveData<Boolean> =
+        networkStateManager.getInternetConnectivityStatus()
 
     fun initialize(patientId: String) {
         viewModelScope.launch(Dispatchers.Main) {
