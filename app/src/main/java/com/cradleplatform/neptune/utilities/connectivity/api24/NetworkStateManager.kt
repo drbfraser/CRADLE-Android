@@ -11,8 +11,6 @@ import javax.inject.Singleton
 /**
  * Singleton Manager class to maintain current Network-Status throughout the application.
  * Can provide Wifi, Cellular, and general Internet connectivity status
- * TODO: Add support for API < 24 where NetworkCallback is not supported
- * TODO: Refactor usages of NetworkAvailableLiveData & NetworkHelper to this file
  * Modified from:
  * https://medium.com/geekculture/implementing-an-active-network-state-monitor-in-android-dbbc24cf2bc5
  */
