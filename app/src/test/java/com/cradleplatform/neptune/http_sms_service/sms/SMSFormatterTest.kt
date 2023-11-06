@@ -10,26 +10,30 @@ import com.cradleplatform.neptune.utilities.RelayAction
 import com.cradleplatform.neptune.utilities.SMSFormatter
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions
+import io.mockk.every
+import io.mockk.mockkObject
+import io.mockk.verify
 
 internal class SMSFormatterTest {
 
     @Test
     fun test_encodeMsg() {
+        // Test that encodeMsg() calls encryptString() correctly and returns the right value
+        // This code only tests the functionality of encodeMsg() and not encryptString()
+        // We need to implement a test in order to verify the functionality of encryptString()
         val originalMsg = CommonPatientReferralJsons.patientWithStandaloneReferral.first
-        val stringKey = AESEncryptor.generateRandomKey("test@test.com")
-        val key = AESEncryptor.getSecretKeyFromString(stringKey)
+        val secretKey = "{\"sms_key\":\"SGVsbG8sIFdvcmxkIQ==\"}"
 
+        mockkObject(AESEncryptor.Companion)
+        val encryptStringReturn = "encryptStringReturn"
+        every { AESEncryptor.encryptString(any(), any()) } returns encryptStringReturn
         val encodedMsg = SMSFormatter.encodeMsg(
             originalMsg,
-            key
+            secretKey
         )
-        Assertions.assertNotEquals(encodedMsg, originalMsg)
+        Assertions.assertEquals(encodedMsg, encryptStringReturn)
 
-        val decodedMsg = Base64.decode(encodedMsg, 0)
-        val compressedPlaintext = AESEncryptor.decrypt(decodedMsg, key)
-        val plaintext = GzipCompressor.decompress(compressedPlaintext)
-
-        Assertions.assertEquals(originalMsg, plaintext)
+        verify { AESEncryptor.encryptString(GzipCompressor.compress(originalMsg), "SGVsbG8sIFdvcmxkIQ==") }
     }
 
     @Test
@@ -49,5 +53,5 @@ internal class SMSFormatterTest {
         }
 
     }
-
+    //TODO: Test encryptString() function
 }

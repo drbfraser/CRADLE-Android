@@ -21,7 +21,6 @@ import com.cradleplatform.neptune.ext.getEnglishResources
 import com.cradleplatform.neptune.ext.getIntOrNull
 import com.cradleplatform.neptune.ext.setValueOnMainThread
 import com.cradleplatform.neptune.ext.use
-import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.manager.ReferralManager
@@ -831,7 +830,7 @@ class PatientReadingViewModel @Inject constructor(
         // Populate the builder with the current user's userId if there is none present.
         readingBuilder.get(
             Reading::userId,
-            defaultValue = sharedPreferences.getIntOrNull(LoginManager.USER_ID_KEY)
+            defaultValue = sharedPreferences.getIntOrNull(UserViewModel.USER_ID_KEY)
         )
     }
 
@@ -1454,7 +1453,7 @@ class PatientReadingViewModel @Inject constructor(
                         comment = referralComment,
                         referralHealthFacilityName = healthFacilityName,
                         dateReferred = readingFromBuilder.dateTimeTaken,
-                        userId = sharedPreferences.getIntOrNull(LoginManager.USER_ID_KEY),
+                        userId = sharedPreferences.getIntOrNull(UserViewModel.USER_ID_KEY),
                         patientId = readingFromBuilder.patientId,
                         actionTaken = null,
                         cancelReason = null,

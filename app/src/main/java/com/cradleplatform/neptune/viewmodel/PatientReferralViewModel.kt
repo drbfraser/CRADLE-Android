@@ -12,7 +12,6 @@ import androidx.lifecycle.map
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.ext.getIntOrNull
 import com.cradleplatform.neptune.manager.HealthFacilityManager
-import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.manager.ReferralManager
 import com.cradleplatform.neptune.manager.ReferralUploadManager
 import com.cradleplatform.neptune.model.HealthFacility
@@ -23,9 +22,9 @@ import com.cradleplatform.neptune.utilities.UnixTimestamp
 import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
 import com.cradleplatform.neptune.http_sms_service.http.Protocol
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.SmsReferral
-import com.cradleplatform.neptune.utilities.AESEncryptor
 import com.cradleplatform.neptune.utilities.SMSFormatter
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
@@ -43,7 +42,8 @@ class PatientReferralViewModel @Inject constructor(
     private val referralUploadManager: ReferralUploadManager, //for the backend database
     private val networkStateManager: NetworkStateManager,
     private val sharedPreferences: SharedPreferences,
-    private val healthFacilityManager: HealthFacilityManager,
+    healthFacilityManager: HealthFacilityManager,
+    private var smsKeyManager: SmsKeyManager,
     @ApplicationContext private val app: Context
 ) : ViewModel() {
 
@@ -123,7 +123,7 @@ class PatientReferralViewModel @Inject constructor(
                 referralHealthFacilityName = healthFacilityToUse.value
                     ?: error("No health facility selected"),
                 dateReferred = currentTime,
-                userId = sharedPreferences.getIntOrNull(LoginManager.USER_ID_KEY),
+                userId = sharedPreferences.getIntOrNull(UserViewModel.USER_ID_KEY),
                 patientId = patient.id,
                 actionTaken = null,
                 cancelReason = null,
@@ -140,10 +140,13 @@ class PatientReferralViewModel @Inject constructor(
             applicationContext.getString(R.string.sms_relay_request_counter), 0
         )
 
+        // Retrieve the encrypted secret key
+        val smsSecretKey = smsKeyManager.retrieveSmsKey()
+            ?: // TODO: handle the case when the secret key is not available
+            error("Encryption failed - no valid smsSecretKey is available")
+
         // This implementation is commented inside the PatientReferralActivity in the function sendSms(),
         // it has been moved since.
-        val email = sharedPreferences.getString(LoginManager.EMAIL_KEY, null) ?: error("Encrypt failed")
-        val stringKey = AESEncryptor.generateRandomKey(email)
         val msgInPackets = SMSFormatter.listToString(
             SMSFormatter.formatSMS(
                 SMSFormatter.encodeMsg(
@@ -152,7 +155,7 @@ class PatientReferralViewModel @Inject constructor(
                             patient = patientAndReferrals
                         )
                     ),
-                    AESEncryptor.getSecretKeyFromString(stringKey)
+                    smsSecretKey
                 ),
                 smsRelayRequestCounter
             ),

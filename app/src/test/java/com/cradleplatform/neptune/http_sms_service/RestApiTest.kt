@@ -62,7 +62,8 @@ internal class RestApiTest {
                                 "isLoggedIn": true,
                                 "userId": 3,
                                 "token": "test-token",
-                                "refresh": "test-refresh-token"
+                                "refresh": "test-refresh-token",
+                                "smsKey": "{\"sms_key\":\"SGVsbG8sIFdvcmxkIQ==\"}"
                             }
                             """.trimIndent())
                             } else {
@@ -133,7 +134,8 @@ internal class RestApiTest {
             healthFacilityName = "H0000",
             userId = 3,
             token = "test-token",
-            phoneNumbers = listOf<String>("666-666-6666", "777-777-7777", "555-555-5555")
+            phoneNumbers = listOf<String>("666-666-6666", "777-777-7777", "555-555-5555"),
+            smsKey = "{\"sms_key\":\"SGVsbG8sIFdvcmxkIQ==\"}"
         )
 
         assertEquals(expectedLoginResponseForVht, loginResponse)
