@@ -7,6 +7,7 @@ import androidx.core.content.edit
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.concurrent.TimeUnit
@@ -30,10 +31,12 @@ class PeriodicSyncer @Inject constructor(
      * - In LoginManager.kt, when user logs in
      */
     fun startPeriodicSync() {
-        // For testing: time interval is every 15 minutes (Android's minimum allowable interval)
+        // For testing: Android's minimum allowable interval
         // For production: user picks time interval (default 24 hours)
+        val hours = context.resources.getInteger(R.integer.settings_periodic_sync_hours)
+
         val workRequest = PeriodicWorkRequestBuilder<SyncAllWorker>(
-            15, TimeUnit.MINUTES)
+            hours.toLong(), TimeUnit.HOURS)
             .addTag(PERIODIC_WORK_TAG)
             .build()
 
