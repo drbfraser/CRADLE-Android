@@ -7,11 +7,11 @@ import android.telephony.SmsManager
 import com.cradleplatform.neptune.R
 import android.widget.Toast
 import androidx.core.content.edit
-import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.listToString
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.stringToList
 import com.cradleplatform.neptune.view.PatientReferralActivity
 import com.cradleplatform.neptune.view.ReadingActivity
+import com.cradleplatform.neptune.viewmodel.UserViewModel
 
 import java.lang.Exception
 
@@ -23,7 +23,7 @@ class SMSSender(
     fun sendSmsMessage(acknowledged: Boolean) {
         val smsRelayContentKey = context.getString(R.string.sms_relay_list_key)
         val smsRelayContent = sharedPreferences.getString(smsRelayContentKey, null)
-        val relayPhoneNumber = sharedPreferences.getString(LoginManager.RELAY_PHONE_NUMBER, null)
+        val relayPhoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
         val smsManager: SmsManager = SmsManager.getDefault()
 
         if (!smsRelayContent.isNullOrEmpty()) {
@@ -48,14 +48,23 @@ class SMSSender(
             try {
                 val packetMsg = smsRelayMsgList.first()
                 val packetMsgDivided = smsManager.divideMessage(packetMsg)
-                //TODO: Discuss with Dr. Brian about using the sendMultiPartTextMessage method as it is API 30+ only
-                //TODO: change phone number - CHANGE this needs to be the destination phone number
-                smsManager.sendMultipartTextMessage(relayPhoneNumber, null, packetMsgDivided, null, null)
+
+                // TODO: Discuss with Dr. Brian about using the sendMultiPartTextMessage
+                // method as it is API 30+ only
+                // TODO: change phone number - CHANGE this needs to be the destination phone number
+
+                smsManager.sendMultipartTextMessage(
+                    relayPhoneNumber, UserViewModel.USER_PHONE_NUMBER,
+                    packetMsgDivided, null, null
+                )
                 Toast.makeText(
                     context, context.getString(R.string.sms_packet_sent),
                     Toast.LENGTH_LONG
                 ).show()
             } catch (ex: Exception) {
+                // TODO: Fix the error here ==> java.lang.NullPointerException:
+                // Can't toast on a thread that has not called Looper.prepare() when sending
+                // just a referral for a patient
                 Toast.makeText(
                     context, ex.message.toString(),
                     Toast.LENGTH_LONG

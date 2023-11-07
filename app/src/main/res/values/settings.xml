@@ -13,7 +13,7 @@
     <string name="settings_default_ocr_show_debug_info">false</string>
 
     <!-- Sync -->
-    <string name="settings_periodic_sync_enabled">true</string>
+    <string name="settings_periodic_sync_enabled">false</string>
 
     <!-- Notification Channel -->
     <string name="notification_id">iCradle</string>

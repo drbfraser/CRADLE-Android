@@ -3,7 +3,6 @@ package com.cradleplatform.neptune.viewmodel
 import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
 import com.cradleplatform.neptune.manager.HealthFacilityManager
-import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Statistics
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
@@ -68,7 +67,7 @@ class StatsViewModel @Inject constructor(
                     startTime,
                     endTime,
                     sharedPreferences.getInt(
-                        LoginManager.USER_ID_KEY,
+                        UserViewModel.USER_ID_KEY,
                         -1
                     )
                 )

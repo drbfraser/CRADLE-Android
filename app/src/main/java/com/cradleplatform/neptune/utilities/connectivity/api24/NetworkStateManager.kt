@@ -1,22 +1,21 @@
-package com.cradleplatform.neptune.networking.connectivity.api24
+package com.cradleplatform.neptune.utilities.connectivity.api24
 
 import android.os.Build
 import android.os.Looper
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
  * Singleton Manager class to maintain current Network-Status throughout the application.
  * Can provide Wifi, Cellular, and general Internet connectivity status
- * TODO: Add support for API < 24 where NetworkCallback is not supported
- * TODO: Refactor usages of NetworkAvailableLiveData & NetworkHelper to this file
  * Modified from:
  * https://medium.com/geekculture/implementing-an-active-network-state-monitor-in-android-dbbc24cf2bc5
  */
 @Singleton
-class NetworkStateManager private constructor() {
+class NetworkStateManager @Inject constructor() {
     // Defaulting to False
     private val activeWifiStatus = MutableLiveData<Boolean>()
     private val activeCellularDataStatus = MutableLiveData<Boolean>()
@@ -52,8 +51,10 @@ class NetworkStateManager private constructor() {
      */
     fun setInternetConnectivityStatus(connectivityStatus: Boolean) {
         Log.d(
-            TAG, "setInternetConnectivityStatus() called with: " +
-            "connectivityStatus = [$connectivityStatus]")
+            TAG,
+            "setInternetConnectivityStatus() called with: " +
+                "connectivityStatus = [$connectivityStatus]"
+        )
         if (Looper.myLooper() == Looper.getMainLooper()) {
             activeInternetStatus.value = connectivityStatus
         } else {
@@ -66,8 +67,10 @@ class NetworkStateManager private constructor() {
      */
     fun setWifiConnectivityStatus(connectivityStatus: Boolean) {
         Log.d(
-            TAG, "setWifiConnectivityStatus() called with: " +
-            "connectivityStatus = [$connectivityStatus]")
+            TAG,
+            "setWifiConnectivityStatus() called with: " +
+                "connectivityStatus = [$connectivityStatus]"
+        )
         if (Looper.myLooper() == Looper.getMainLooper()) {
             activeWifiStatus.value = connectivityStatus
         } else {
@@ -88,8 +91,10 @@ class NetworkStateManager private constructor() {
      */
     fun setCellularDataConnectivityStatus(connectivityStatus: Boolean) {
         Log.d(
-            TAG, "setCellularDataConnectivityStatus() called with: " +
-            "connectivityStatus = [$connectivityStatus]")
+            TAG,
+            "setCellularDataConnectivityStatus() called with: " +
+                "connectivityStatus = [$connectivityStatus]"
+        )
         if (Looper.myLooper() == Looper.getMainLooper()) {
             activeCellularDataStatus.value = connectivityStatus
         } else {
@@ -127,6 +132,4 @@ class NetworkStateManager private constructor() {
     //     Log.d(TAG, "getSmsConnectivityStatus() called")
     //     return activeSmsStatus
     // }
-
-
 }

@@ -2,6 +2,7 @@ package com.cradleplatform.neptune.testutils
 
 import android.content.SharedPreferences
 import androidx.room.withTransaction
+import androidx.security.crypto.EncryptedSharedPreferences
 import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.database.daos.AssessmentDao
 import com.cradleplatform.neptune.database.daos.AssessmentDao_Impl
@@ -62,6 +63,10 @@ object MockDependencyUtils {
                 }
 
                 every { contains(any()) } answers { sharedPreferencesMap.containsKey(firstArg()) }
+                every { remove(any()) } answers {
+                    sharedPreferencesMap.remove(firstArg())
+                    this@editor
+                }
 
                 every { commit() } returns true
                 every { apply() } returns Unit
@@ -72,6 +77,48 @@ object MockDependencyUtils {
             }
         }
         return sharedPreferencesMap to sharedPreferences
+    }
+
+    /**
+     * Returns a map and a mocked [EncryptedSharedPreferences] using the map as the underlying
+     * data structure for the EncryptedSharedPreferences.
+     */
+    fun createMockEncryptedSharedPreferences(): Pair<MutableMap<String, Any?>, EncryptedSharedPreferences> {
+        val sharedPreferencesMap = mutableMapOf<String, Any?>()
+        val encryptedSharedPreferences = mockk<EncryptedSharedPreferences> {
+            every { edit() } returns mockk editor@{
+                every { putString(any(), any()) } answers {
+                    putInFakeSharedPreference<String?>(sharedPreferencesMap, firstArg(), secondArg())
+                    this@editor
+                }
+
+                every { getString(any(), any()) } answers {
+                    val stringValue = sharedPreferencesMap[firstArg()] as String?
+                    if (stringValue == null && !sharedPreferencesMap.contains(firstArg())) {
+                        secondArg()
+                    } else {
+                        stringValue
+                    }
+                }
+
+                every { contains(any()) } answers { sharedPreferencesMap.containsKey(firstArg()) }
+
+                every { remove(any()) } answers {
+                    sharedPreferencesMap.remove(firstArg())
+                    this@editor
+                }
+
+                every { commit() } returns true
+
+                every { apply() } returns Unit
+
+                every { clear() } answers {
+                    sharedPreferencesMap.clear()
+                    this@editor
+                }
+            }
+        }
+        return sharedPreferencesMap to encryptedSharedPreferences
     }
 
     /**

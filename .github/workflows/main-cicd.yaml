@@ -46,6 +46,9 @@ jobs:
         uses: bfraser/cicd/actions/checkout@v1
         with: 
           path: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Checking java version
+        run: java -version
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
       - name: Remove current database chema JSON
         run: rm app/schemas/com.cradleplatform.neptune.database.CradleDatabase/*.json
         working-directory: ${{ env.CUSTOM_WORKSPACE }}

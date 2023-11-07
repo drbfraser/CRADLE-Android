@@ -7,7 +7,6 @@ import androidx.core.content.edit
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.concurrent.TimeUnit
@@ -31,12 +30,11 @@ class PeriodicSyncer @Inject constructor(
      * - In LoginManager.kt, when user logs in
      */
     fun startPeriodicSync() {
-        // For testing: Android's minimum allowable interval
+        // For testing: time interval is every 15 minutes (Android's minimum allowable interval)
         // For production: user picks time interval (default 24 hours)
-        val hours = context.resources.getInteger(R.integer.settings_periodic_sync_hours)
-
         val workRequest = PeriodicWorkRequestBuilder<SyncAllWorker>(
-            hours.toLong(), TimeUnit.HOURS)
+            15, TimeUnit.MINUTES
+        )
             .addTag(PERIODIC_WORK_TAG)
             .build()
 
@@ -45,7 +43,8 @@ class PeriodicSyncer @Inject constructor(
         }
 
         workManager.enqueueUniquePeriodicWork(
-            PERIODIC_WORK_NAME, ExistingPeriodicWorkPolicy.KEEP, workRequest)
+            PERIODIC_WORK_NAME, ExistingPeriodicWorkPolicy.KEEP, workRequest
+        )
         Log.d(TAG, "Unique periodic work ${workRequest.id} enqueued")
     }
 
@@ -57,7 +56,7 @@ class PeriodicSyncer @Inject constructor(
      */
     fun endPeriodicSync() {
         WorkManager.getInstance(context)
-                .cancelAllWorkByTag(PERIODIC_WORK_TAG)
+            .cancelAllWorkByTag(PERIODIC_WORK_TAG)
         Log.d(TAG, "Unique periodic work cancelled")
     }
 

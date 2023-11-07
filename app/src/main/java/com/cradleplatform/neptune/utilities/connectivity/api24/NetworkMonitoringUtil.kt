@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.networking.connectivity.api24
+package com.cradleplatform.neptune.utilities.connectivity.api24
 
 import android.content.Context
 import android.net.ConnectivityManager
@@ -6,6 +6,7 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.util.Log
+import javax.inject.Inject
 
 /**
  * An API 24+ implementation of Network Capability Monitoring.
@@ -13,7 +14,10 @@ import android.util.Log
  * https://medium.com/geekculture/implementing-an-active-network-state-monitor-in-android-dbbc24cf2bc5
  * Note: Callback is not supported under API 24?
  */
-class NetworkMonitoringUtil(private val context: Context) : ConnectivityManager.NetworkCallback() {
+class NetworkMonitoringUtil @Inject constructor (
+    private val context: Context,
+    private val mNetworkStateManager: NetworkStateManager
+) : ConnectivityManager.NetworkCallback() {
     private val mNetworkRequest = NetworkRequest.Builder()
         .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
         .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
@@ -22,7 +26,7 @@ class NetworkMonitoringUtil(private val context: Context) : ConnectivityManager.
     private val mConnectivityManager: ConnectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
-    private val mNetworkStateManager: NetworkStateManager = NetworkStateManager.getInstance()
+    // private val mNetworkStateManager: NetworkStateManager = NetworkStateManager.getInstance()
 
     companion object {
         private const val TAG = "NetworkMonitoringUtil"
@@ -49,21 +53,25 @@ class NetworkMonitoringUtil(private val context: Context) : ConnectivityManager.
     }
 
     override fun onCapabilitiesChanged(
-        network: Network, networkCapabilities: NetworkCapabilities) {
+        network: Network,
+        networkCapabilities: NetworkCapabilities
+    ) {
         super.onCapabilitiesChanged(network, networkCapabilities)
-        Log.d(TAG,"onCapabilityChanged() called.")
+        Log.d(TAG, "onCapabilityChanged() called.")
         // Check for specific network capabilities and perform actions accordingly
         // Wi-Fi capabilities changed
         if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) &&
-            networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
-                mNetworkStateManager.setWifiConnectivityStatus(true)
+            networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        ) {
+            mNetworkStateManager.setWifiConnectivityStatus(true)
         } else {
-                mNetworkStateManager.setWifiConnectivityStatus(false)
+            mNetworkStateManager.setWifiConnectivityStatus(false)
         }
         // Cellular data capabilities changed
         if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) &&
-            networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
-                mNetworkStateManager.setCellularDataConnectivityStatus(true)
+            networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        ) {
+            mNetworkStateManager.setCellularDataConnectivityStatus(true)
         } else {
             mNetworkStateManager.setCellularDataConnectivityStatus(false)
         }
@@ -81,7 +89,7 @@ class NetworkMonitoringUtil(private val context: Context) : ConnectivityManager.
     /**
      * Unregisters the Network-Request callback
      */
-     fun unregisterNetworkCallbackEvents() {
+    fun unregisterNetworkCallbackEvents() {
         Log.d(TAG, "unregisterNetworkCallbackEvents() called")
         mConnectivityManager.unregisterNetworkCallback(this)
     }

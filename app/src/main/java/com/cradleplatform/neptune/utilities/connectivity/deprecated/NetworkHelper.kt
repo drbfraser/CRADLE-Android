@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.networking.connectivity.legacy
+package com.cradleplatform.neptune.utilities.connectivity.deprecated
 
 import android.content.Context
 import android.net.ConnectivityManager

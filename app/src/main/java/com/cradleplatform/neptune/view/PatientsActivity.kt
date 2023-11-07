@@ -27,12 +27,11 @@ import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import com.cradleplatform.neptune.utilities.CustomToast
-import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkHelper
-import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkStatus
 import com.cradleplatform.neptune.viewmodel.LocalSearchPatientAdapter
 import com.cradleplatform.neptune.viewmodel.PatientListViewModel
 import com.cradleplatform.neptune.sync.SyncReminderHelper
 import com.cradleplatform.neptune.sync.views.SyncActivity
+import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.google.android.material.badge.BadgeDrawable
 import com.google.android.material.badge.BadgeUtils
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
@@ -46,6 +45,7 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class PatientsActivity : AppCompatActivity() {
+
     private val viewModel: PatientListViewModel by viewModels()
 
     private var searchView: SearchView? = null
@@ -71,6 +71,8 @@ class PatientsActivity : AppCompatActivity() {
 
     @Inject
     lateinit var patientManager: PatientManager
+    @Inject
+    lateinit var networkStateManager: NetworkStateManager
 
     private lateinit var patientRecyclerview: RecyclerView
     private val localSearchPatientAdapter = LocalSearchPatientAdapter()
@@ -126,25 +128,26 @@ class PatientsActivity : AppCompatActivity() {
         }
 
         R.id.syncPatients -> {
-            when (NetworkHelper.isConnectedToInternet(this)) {
-                NetworkStatus.CELLULAR -> {
-                    CustomToast.longToast(
-                        this,
-                        "You are connected to CELLULAR network, charges may apply"
-                    )
-                }
-
-                NetworkStatus.NO_NETWORK -> {
-                    CustomToast.shortToast(this, "Make sure you are connected to the internet")
-                }
-
-                else -> {
-                    startActivity(Intent(this, SyncActivity::class.java))
-                }
+            if (networkStateManager.getInternetConnectivityStatus().value == false) {
+                CustomToast.shortToast(
+                    this,
+                    "Make sure you are connected to the internet"
+                )
+            } else if (networkStateManager.getWifiConnectivityStatus().value == true) {
+                CustomToast.longToast(
+                    this,
+                    "You are connected to Wifi network."
+                )
+            } else if (networkStateManager.getCellularDataConnectivityStatus().value == true) {
+                CustomToast.longToast(
+                    this,
+                    "You are connected to CELLULAR network, charges may apply."
+                )
+            } else {
+                startActivity(Intent(this, SyncActivity::class.java))
             }
             true
         }
-
         else -> {
             super.onOptionsItemSelected(item)
         }

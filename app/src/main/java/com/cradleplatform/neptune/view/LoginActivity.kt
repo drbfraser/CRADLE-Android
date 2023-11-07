@@ -33,7 +33,7 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.ext.hideKeyboard
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.manager.LoginManager
-import com.cradleplatform.neptune.networking.connectivity.api24.NetworkStateManager
+import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.ADVANCED_SETTINGS_KEY
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
@@ -64,8 +64,8 @@ class LoginActivity : AppCompatActivity() {
     lateinit var workManager: WorkManager
 
     private lateinit var isNetworkAvailable: LiveData<Boolean>
-
-    private lateinit var networkManager : NetworkStateManager
+    @Inject
+    lateinit var networkStateManager: NetworkStateManager
 
     private var idlingResource: CountingIdlingResource? = null
 
@@ -85,7 +85,6 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         showMessageIfPresent()
-        networkManager = NetworkStateManager.getInstance()
         if (loginManager.isLoggedIn()) {
             // no need to load anything if already logged in.
             startIntroActivity()
@@ -130,7 +129,7 @@ class LoginActivity : AppCompatActivity() {
         val noInternetText = findViewById<TextView>(R.id.internetAvailabilityTextView)
         val loginButton = findViewById<Button>(R.id.loginButton)
 
-        isNetworkAvailable = networkManager.getInternetConnectivityStatus().apply {
+        isNetworkAvailable = networkStateManager.getInternetConnectivityStatus().apply {
             observe(this@LoginActivity) { netAvailable ->
                 netAvailable ?: return@observe
                 loginButton.isEnabled = netAvailable

@@ -58,7 +58,8 @@ class SyncActivity : AppCompatActivity() {
 
             if (workInfo == null
                 || workInfo.state.isFinished
-                || workInfo.state == WorkInfo.State.ENQUEUED) {
+                || workInfo.state == WorkInfo.State.ENQUEUED
+            ) {
                 showLastSyncStatus(workInfo)
             } else {
                 lastSyncResultText.apply {

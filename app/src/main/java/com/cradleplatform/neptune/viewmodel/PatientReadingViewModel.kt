@@ -21,7 +21,6 @@ import com.cradleplatform.neptune.ext.getEnglishResources
 import com.cradleplatform.neptune.ext.getIntOrNull
 import com.cradleplatform.neptune.ext.setValueOnMainThread
 import com.cradleplatform.neptune.ext.use
-import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.manager.ReferralManager
@@ -46,7 +45,7 @@ import com.cradleplatform.neptune.utilities.DateUtil
 import com.cradleplatform.neptune.utilities.LiveDataDynamicModelBuilder
 import com.cradleplatform.neptune.utilities.Months
 import com.cradleplatform.neptune.utilities.Weeks
-import com.cradleplatform.neptune.networking.connectivity.legacy.NetworkAvailableLiveData
+import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.view.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel.LiveDataInitializationManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -108,6 +107,7 @@ class PatientReadingViewModel @Inject constructor(
     private val referralManager: ReferralManager,
     private val patientManager: PatientManager,
     private val referralUploadManager: ReferralUploadManager,
+    private val networkStateManager: NetworkStateManager,
     private val sharedPreferences: SharedPreferences,
     @ApplicationContext @SuppressLint("StaticFieldLeak")
     private val app: Context
@@ -830,7 +830,7 @@ class PatientReadingViewModel @Inject constructor(
         // Populate the builder with the current user's userId if there is none present.
         readingBuilder.get(
             Reading::userId,
-            defaultValue = sharedPreferences.getIntOrNull(LoginManager.USER_ID_KEY)
+            defaultValue = sharedPreferences.getIntOrNull(UserViewModel.USER_ID_KEY)
         )
     }
 
@@ -887,7 +887,8 @@ class PatientReadingViewModel @Inject constructor(
         navigationManager.setInputEnabledState(isEnabled)
     }
 
-    val isNetworkAvailable = NetworkAvailableLiveData(app)
+    val isNetworkAvailable: LiveData<Boolean> =
+        networkStateManager.getInternetConnectivityStatus()
 
     private suspend fun populateDateFields() {
         withContext(Dispatchers.Main) {
@@ -1452,7 +1453,7 @@ class PatientReadingViewModel @Inject constructor(
                         comment = referralComment,
                         referralHealthFacilityName = healthFacilityName,
                         dateReferred = readingFromBuilder.dateTimeTaken,
-                        userId = sharedPreferences.getIntOrNull(LoginManager.USER_ID_KEY),
+                        userId = sharedPreferences.getIntOrNull(UserViewModel.USER_ID_KEY),
                         patientId = readingFromBuilder.patientId,
                         actionTaken = null,
                         cancelReason = null,

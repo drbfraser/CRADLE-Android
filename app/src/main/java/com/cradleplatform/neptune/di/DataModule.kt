@@ -20,6 +20,7 @@ import com.cradleplatform.neptune.manager.UrlManager
 import com.cradleplatform.neptune.model.Settings
 import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.manager.SmsKeyManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -136,4 +137,10 @@ class DataModule {
         sharedPreferences: SharedPreferences,
         @ApplicationContext context: Context
     ) = Settings(sharedPreferences, context)
+
+    @Provides
+    @Singleton
+    fun provideSmsKeyManager(@ApplicationContext context: Context): SmsKeyManager {
+        return SmsKeyManager(context)
+    }
 }

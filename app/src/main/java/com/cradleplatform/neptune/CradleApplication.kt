@@ -15,8 +15,9 @@ import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import androidx.work.WorkManager
 import com.cradleplatform.neptune.manager.LoginManager
-import com.cradleplatform.neptune.networking.connectivity.api24.NetworkMonitoringUtil
+import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkMonitoringUtil
 import com.cradleplatform.neptune.sync.PeriodicSyncer
+import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.view.PinPassActivity
 
 import com.jakewharton.threetenabp.AndroidThreeTen
@@ -70,6 +71,8 @@ class CradleApplication : Application(), Configuration.Provider {
 
     @Inject
     lateinit var periodicSyncer: PeriodicSyncer
+    @Inject
+    lateinit var networkStateManager: NetworkStateManager
 
     lateinit var networkMonitor: NetworkMonitoringUtil
 
@@ -94,10 +97,10 @@ class CradleApplication : Application(), Configuration.Provider {
         appKilledLockout = sharedPref.getBoolean(lockOutPrefKey, false)
 
         // Start monitoring network connectivity
-        networkMonitor = NetworkMonitoringUtil(this);
+        networkMonitor = NetworkMonitoringUtil(this, networkStateManager)
         // Check the network state before registering for the 'networkCallbackEvents'
-        networkMonitor.checkNetworkState();
-        networkMonitor.registerNetworkCallbackEvents();
+        networkMonitor.checkNetworkState()
+        networkMonitor.registerNetworkCallbackEvents()
 
         // Initiate PeriodicSyncer
         periodicSyncer = PeriodicSyncer(sharedPref, workManager, this)
