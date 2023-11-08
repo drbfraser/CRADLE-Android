@@ -23,6 +23,7 @@ import com.cradleplatform.neptune.model.QuestionTypeEnum
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.encodeMsg
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.formatSMS
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.listToString
+import com.cradleplatform.neptune.utilities.connectivity.api24.ConnectivityOptions
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.view.FormRenderingActivity
@@ -166,12 +167,11 @@ class FormRenderingViewModel @Inject constructor(
     }
 
     fun getInternetTypeString(context: Context): String {
-        return if (networkStateManager.getWifiConnectivityStatus().value == true) {
-            "Wifi"
-        } else if (networkStateManager.getCellularDataConnectivityStatus().value == true) {
-            "Cellular"
-        } else {
-            ""
+        when (networkStateManager.getConnectivity()) {
+            ConnectivityOptions.WIFI -> return "Wifi"
+            ConnectivityOptions.CELLULAR_DATA -> return "Cellular"
+            ConnectivityOptions.SMS -> return "Sms"
+            ConnectivityOptions.NONE -> return ""
         }
     }
 
