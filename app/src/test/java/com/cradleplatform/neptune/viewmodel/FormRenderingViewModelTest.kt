@@ -9,6 +9,7 @@ import com.cradleplatform.neptune.model.Answer
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.model.QuestionTypeEnum
+import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import org.junit.jupiter.api.BeforeAll
 import org.mockito.Mockito
 
@@ -25,7 +26,8 @@ class FormRenderingViewModelTest {
         val httpsSmsService = Mockito.mock(HttpSmsService::class.java)
         val smsKeyManager = Mockito.mock(SmsKeyManager::class.java)
         val sharedPreferences = Mockito.mock(SharedPreferences::class.java)
-        viewModel = FormRenderingViewModel(httpsSmsService, sharedPreferences, smsKeyManager)
+        val networkStateManager = Mockito.mock(NetworkStateManager::class.java)
+        viewModel = FormRenderingViewModel(httpsSmsService, sharedPreferences, networkStateManager, smsKeyManager)
     }
 
     @Test

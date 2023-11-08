@@ -33,4 +33,12 @@
             android:key="setting_ocr_debug_enabled"
             android:title="Show OCR debugging info" />
     </PreferenceCategory>
+
+    <PreferenceCategory android:title="Sync">
+        <SwitchPreference
+            android:defaultValue="@string/settings_periodic_sync_enabled"
+            android:enabled="true"
+            android:key="@string/key_periodic_sync_enabled"
+            android:title="Enable periodic sync" />
+    </PreferenceCategory>
 </PreferenceScreen>

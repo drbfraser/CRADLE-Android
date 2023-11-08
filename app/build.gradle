@@ -49,7 +49,7 @@ android {
 
         applicationId "com.cradleplatform.neptune"
         // Android 5
-        minSdkVersion 21
+        minSdkVersion 24
         targetSdkVersion 30
         // Set the base name for the compiled APKs.
         project.ext.set("archivesBaseName", "CRADLE");

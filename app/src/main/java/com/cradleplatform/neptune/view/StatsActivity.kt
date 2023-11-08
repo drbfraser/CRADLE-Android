@@ -27,14 +27,14 @@ import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Statistics
 import com.cradleplatform.neptune.model.UserRole
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
-import com.cradleplatform.neptune.sync.SyncWorker
+import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import com.cradleplatform.neptune.utilities.BarGraphValueFormatter
-import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.DateUtil
-import com.cradleplatform.neptune.utilities.NetworkHelper
-import com.cradleplatform.neptune.utilities.NetworkStatus
 import com.cradleplatform.neptune.viewmodel.StatsViewModel
-import com.cradleplatform.neptune.viewmodel.SyncRemainderHelper
+import com.cradleplatform.neptune.sync.SyncReminderHelper
+import com.cradleplatform.neptune.sync.views.SyncActivity
+import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
+import com.cradleplatform.neptune.utilities.connectivity.api24.displayConnectivityToast
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
@@ -60,6 +60,8 @@ class StatsActivity : AppCompatActivity() {
     lateinit var sharedPreferences: SharedPreferences
     @Inject
     lateinit var healthFacilityManager: HealthFacilityManager
+    @Inject
+    lateinit var networkStateManager: NetworkStateManager
     private val viewModel: StatsViewModel by viewModels()
 
     private lateinit var headerTextPrefix: String
@@ -164,15 +166,15 @@ class StatsActivity : AppCompatActivity() {
     private fun checkLastSyncTimeAndUpdateSyncIcon() {
         val lastSyncTime = BigInteger(
             sharedPreferences.getString(
-                SyncWorker.LAST_PATIENT_SYNC,
-                SyncWorker.LAST_SYNC_DEFAULT.toString()
+                SyncAllWorker.LAST_PATIENT_SYNC,
+                SyncAllWorker.LAST_SYNC_DEFAULT.toString()
             )!!
         )
 
         val menuItem: MenuItem = menu!!.findItem(R.id.syncPatients)
         val badge = BadgeDrawable.create(this)
 
-        if (!SyncRemainderHelper.checkIfOverTime(this, sharedPreferences)) {
+        if (!SyncReminderHelper.checkIfOverTime(this, sharedPreferences)) {
             toolbar?.let {
                 BadgeUtils.detachBadgeDrawable(
                     badge,
@@ -222,21 +224,8 @@ class StatsActivity : AppCompatActivity() {
                 return true
             }
             R.id.syncPatients -> {
-                when (NetworkHelper.isConnectedToInternet(this)) {
-                    NetworkStatus.CELLULAR -> {
-                        CustomToast.longToast(
-                            this,
-                            "You are connected to CELLULAR network, charges may apply"
-                        )
-                    }
-
-                    NetworkStatus.NO_NETWORK -> {
-                        CustomToast.shortToast(this, "Make sure you are connected to the internet")
-                    }
-
-                    else -> {
-                        startActivity(Intent(this, SyncActivity::class.java))
-                    }
+                displayConnectivityToast(this, networkStateManager) {
+                    startActivity(Intent(this, SyncActivity::class.java))
                 }
                 return true
             }

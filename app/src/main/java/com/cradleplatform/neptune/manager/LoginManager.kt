@@ -9,6 +9,7 @@ import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.model.UserRole
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.sync.PeriodicSyncer
 import com.cradleplatform.neptune.utilities.SharedPreferencesMigration
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -33,11 +34,21 @@ class LoginManager @Inject constructor(
     private val restApi: RestApi, // only for authenticating calls
     private val sharedPreferences: SharedPreferences,
     private val database: CradleDatabase, // only for clearing database on logout
+    private val periodicSyncer: PeriodicSyncer,
     private val smsKeyManager: SmsKeyManager,
     @ApplicationContext private val context: Context
 ) {
     companion object {
         private const val TAG = "LoginManager"
+        const val TOKEN_KEY = "token"
+        const val EMAIL_KEY = "loginEmail"
+        // A list of all phone numbers for the user
+        const val PHONE_NUMBERS = "phoneNumbers"
+        // The current phone number of the user - will be the source of SMS messages
+        const val USER_PHONE_NUMBER = "currentUserPhoneNumbers"
+        // The current relay phone number - default in settings.xml - changeable from the settings
+        const val RELAY_PHONE_NUMBER = "currentRelayPhoneNumbers"
+        const val USER_ID_KEY = "userId"
     }
 
     fun isLoggedIn(): Boolean {
@@ -112,6 +123,8 @@ class LoginManager @Inject constructor(
                     smsKeyManager.storeSmsKey(smsKey)
                     // TODO: todo check result
                 }
+
+                periodicSyncer.startPeriodicSync()
             } else {
                 return@withContext loginResult.cast()
             }
@@ -141,6 +154,7 @@ class LoginManager @Inject constructor(
             clearAllTables()
         }
 
+        periodicSyncer.endPeriodicSync()
         // Clear all the user specific information from sharedPreferences
         sharedPreferences.edit().remove(USER_PHONE_NUMBER).apply()
         sharedPreferences.edit().remove(TOKEN_KEY).apply()

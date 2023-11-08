@@ -19,7 +19,6 @@ import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.http_sms_service.http.DatabaseObject
 import com.cradleplatform.neptune.utilities.UnixTimestamp
-import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
 import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
 import com.cradleplatform.neptune.http_sms_service.http.Protocol
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
@@ -27,6 +26,7 @@ import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.SmsReferral
 import com.cradleplatform.neptune.utilities.SMSFormatter
+import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -40,6 +40,7 @@ class PatientReferralViewModel @Inject constructor(
     private val httpSmsService: HttpSmsService,
     private val referralManager: ReferralManager, //for the internal database
     private val referralUploadManager: ReferralUploadManager, //for the backend database
+    private val networkStateManager: NetworkStateManager,
     private val sharedPreferences: SharedPreferences,
     healthFacilityManager: HealthFacilityManager,
     private var smsKeyManager: SmsKeyManager,
@@ -61,9 +62,8 @@ class PatientReferralViewModel @Inject constructor(
     private val _areSendButtonsEnabled = MediatorLiveData<Boolean>()
     val areSendButtonsEnabled: LiveData<Boolean>
         get() = _areSendButtonsEnabled
-
-    val isNetworkAvailable = NetworkAvailableLiveData(app)
-
+    val isNetworkAvailable: LiveData<Boolean> =
+        networkStateManager.getInternetConnectivityStatus()
     val isSending = MutableLiveData<Boolean>(false)
 
     init {

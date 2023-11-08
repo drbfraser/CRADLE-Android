@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.viewmodel
+package com.cradleplatform.neptune.sync.views.viewmodels
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -21,9 +21,9 @@ import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
 import com.cradleplatform.neptune.database.daos.ReferralDao
 import com.cradleplatform.neptune.ext.setValueOnMainThread
-import com.cradleplatform.neptune.sync.SyncWorker
-import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
-import com.cradleplatform.neptune.view.SyncActivity
+import com.cradleplatform.neptune.sync.workers.SyncAllWorker
+import com.cradleplatform.neptune.sync.views.SyncActivity
+import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -42,6 +42,7 @@ class SyncViewModel @Inject constructor(
     private val assessmentDao: AssessmentDao,
     private val sharedPreferences: SharedPreferences,
     private val workManager: WorkManager,
+    private val networkStateManager: NetworkStateManager,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -115,11 +116,12 @@ class SyncViewModel @Inject constructor(
         }
     }
 
-    val isConnectedToInternet = NetworkAvailableLiveData(context)
+    val isConnectedToInternet: LiveData<Boolean> =
+        networkStateManager.getInternetConnectivityStatus()
 
     @MainThread
     fun startSyncing() {
-        val workRequest = OneTimeWorkRequestBuilder<SyncWorker>()
+        val workRequest = OneTimeWorkRequestBuilder<SyncAllWorker>()
             .addTag(WORK_TAG)
             .build()
         sharedPreferences.edit {

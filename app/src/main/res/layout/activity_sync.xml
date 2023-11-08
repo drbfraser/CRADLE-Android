@@ -9,7 +9,7 @@
 
         <variable
             name="viewModel"
-            type="com.cradleplatform.neptune.viewmodel.SyncViewModel" />
+            type="com.cradleplatform.neptune.sync.views.viewmodels.SyncViewModel" />
     </data>
 
     <LinearLayout
