@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.sync
+package com.cradleplatform.neptune.sync.workers
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -52,10 +52,10 @@ import java.math.BigInteger
  *
  * TODO: Make sure that patients or readings can't be edited or created while syncing is in
  *  progress.
- * TODO: Use SyncWorker to perform periodic sync. (refer to issue #32)
+ * TODO: Add unit test for SyncAllWorker.
  */
 @HiltWorker
-class SyncWorker @AssistedInject constructor(
+class SyncAllWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
     private val restApi: RestApi,
@@ -70,6 +70,7 @@ class SyncWorker @AssistedInject constructor(
 ) : CoroutineWorker(context, params) {
 
     enum class State {
+        AFK,
         STARTING,
         /** Checking the server for patients by uploading an empty list */
         CHECKING_SERVER_PATIENTS,
@@ -119,6 +120,9 @@ class SyncWorker @AssistedInject constructor(
         /** Default last sync timestamp. Note that using 0 will result in server rejecting param */
         const val LAST_SYNC_DEFAULT = "1"
 
+        /** Last sync result */
+        const val LAST_SYNC_RESULT_MESSAGE = "lastSyncResultMessage"
+
         /** The key for current syncing state in the [WorkInfo] progress */
         private const val PROGRESS_CURRENT_STATE = "currentState"
         /** The key for total number to download in the [WorkInfo] progress */
@@ -134,7 +138,7 @@ class SyncWorker @AssistedInject constructor(
          */
         fun getState(workInfo: WorkInfo) = workInfo
             .progress
-            .getString(PROGRESS_CURRENT_STATE)?.let { State.valueOf(it) } ?: State.STARTING
+            .getString(PROGRESS_CURRENT_STATE)?.let { State.valueOf(it) } ?: State.AFK
 
         /**
          * Get the progress for the current state in the [workInfo]'s progress.
@@ -333,18 +337,24 @@ class SyncWorker @AssistedInject constructor(
             )
         }
 
+        val syncResult = workDataOf(
+            RESULT_MESSAGE to
+                getResultSuccessMessage(
+                    patientResult,
+                    healthFacilitiesResult,
+                    readingResult,
+                    referralResult,
+                    assessmentResult,
+                    formTemplateResult
+                )
+        )
+
+        sharedPreferences.edit(commit = true) {
+            putString(LAST_SYNC_RESULT_MESSAGE, syncResult.getString(RESULT_MESSAGE))
+        }
+
         return Result.success(
-            workDataOf(
-                RESULT_MESSAGE to
-                    getResultSuccessMessage(
-                        patientResult,
-                        healthFacilitiesResult,
-                        readingResult,
-                        referralResult,
-                        assessmentResult,
-                        formTemplateResult
-                    )
-            )
+            syncResult
         )
     }
 

@@ -9,6 +9,7 @@ import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.model.UserRole
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.sync.PeriodicSyncer
 import com.cradleplatform.neptune.testutils.MockDependencyUtils
 import com.cradleplatform.neptune.testutils.MockWebServerUtils
 import com.cradleplatform.neptune.utilities.SharedPreferencesMigration
@@ -33,6 +34,8 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.Mock
+import org.mockito.MockitoAnnotations
 import java.nio.charset.Charset
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
@@ -134,9 +137,11 @@ internal class LoginManagerTests {
 
     // Variable Storing an instance of the loginManger being tested
     private lateinit var loginManager: LoginManager
-
+    @Mock
+    private lateinit var mockPeriodicSyncer: PeriodicSyncer
     @BeforeEach
     fun setUp() {
+        MockitoAnnotations.initMocks(this) // initiate all @Mock
         mockkStatic(Log::class)
         every { Log.d(any(), any()) } returns 0
         every { Log.i(any(), any()) } returns 0
@@ -162,6 +167,7 @@ internal class LoginManagerTests {
             mockRestApi,
             mockSharedPrefs,
             studDatabase,
+            mockPeriodicSyncer,
             SmsKeyManager(mockContext),
             mockContext
         )

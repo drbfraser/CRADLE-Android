@@ -20,11 +20,11 @@ import com.cradleplatform.neptune.http_sms_service.http.Protocol
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.model.QuestionTypeEnum
-import com.cradleplatform.neptune.utilities.NetworkHelper
-import com.cradleplatform.neptune.utilities.NetworkStatus
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.encodeMsg
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.formatSMS
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.listToString
+import com.cradleplatform.neptune.utilities.connectivity.api24.ConnectivityOptions
+import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.view.FormRenderingActivity
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -35,7 +35,8 @@ class FormRenderingViewModel @Inject constructor(
     //private val mFormManager: FormManager,
     private val httpSmsService: HttpSmsService,
     private val sharedPreferences: SharedPreferences,
-    private var smsKeyManager: SmsKeyManager
+    private val networkStateManager: NetworkStateManager,
+    private var smsKeyManager: SmsKeyManager,
 ) : ViewModel() {
 
     //Raw form template
@@ -166,17 +167,11 @@ class FormRenderingViewModel @Inject constructor(
     }
 
     fun getInternetTypeString(context: Context): String {
-        return when (NetworkHelper.isConnectedToInternet(context)) {
-            NetworkStatus.CELLULAR -> {
-                context.getString(R.string.form_dialog_connected_to_cellular)
-            }
-
-            NetworkStatus.WIFI -> {
-                context.getString(R.string.form_dialog_connected_to_wifi)
-            }
-            else -> {
-                ""
-            }
+        when (networkStateManager.getConnectivity()) {
+            ConnectivityOptions.WIFI -> return "Wifi"
+            ConnectivityOptions.CELLULAR_DATA -> return "Cellular"
+            ConnectivityOptions.SMS -> return "Sms"
+            ConnectivityOptions.NONE -> return ""
         }
     }
 

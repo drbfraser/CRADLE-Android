@@ -22,6 +22,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.test.espresso.IdlingResource
 import androidx.test.espresso.idling.CountingIdlingResource
@@ -30,10 +31,10 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.ext.hideKeyboard
-import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
-import com.cradleplatform.neptune.sync.SyncWorker
-import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
+import com.cradleplatform.neptune.manager.LoginManager
+import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
+import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.ADVANCED_SETTINGS_KEY
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
 import com.google.android.gms.common.GoogleApiAvailability
@@ -62,7 +63,9 @@ class LoginActivity : AppCompatActivity() {
     @Inject
     lateinit var workManager: WorkManager
 
-    private lateinit var isNetworkAvailable: NetworkAvailableLiveData
+    private lateinit var isNetworkAvailable: LiveData<Boolean>
+    @Inject
+    lateinit var networkStateManager: NetworkStateManager
 
     private var idlingResource: CountingIdlingResource? = null
 
@@ -82,7 +85,6 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         showMessageIfPresent()
-
         if (loginManager.isLoggedIn()) {
             // no need to load anything if already logged in.
             startIntroActivity()
@@ -127,7 +129,7 @@ class LoginActivity : AppCompatActivity() {
         val noInternetText = findViewById<TextView>(R.id.internetAvailabilityTextView)
         val loginButton = findViewById<Button>(R.id.loginButton)
 
-        isNetworkAvailable = NetworkAvailableLiveData(this).apply {
+        isNetworkAvailable = networkStateManager.getInternetConnectivityStatus().apply {
             observe(this@LoginActivity) { netAvailable ->
                 netAvailable ?: return@observe
                 loginButton.isEnabled = netAvailable
@@ -156,7 +158,7 @@ class LoginActivity : AppCompatActivity() {
                             Toast.LENGTH_SHORT
                         ).show()
 
-                        val workRequest = OneTimeWorkRequestBuilder<SyncWorker>()
+                        val workRequest = OneTimeWorkRequestBuilder<SyncAllWorker>()
                             .addTag(WORK_TAG)
                             .build()
                         sharedPreferences.edit {

@@ -25,7 +25,7 @@ import com.cradleplatform.neptune.utilities.Months
 import com.cradleplatform.neptune.utilities.Seconds
 import com.cradleplatform.neptune.utilities.Weeks
 import com.cradleplatform.neptune.utilities.WeeksAndDays
-import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
+import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.viewmodel.EditPatientViewModel.SaveResult
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -53,6 +53,7 @@ private const val GEST_AGE_UNIT_MONTHS_INDEX = 1
 @HiltViewModel
 class EditPregnancyViewModel @Inject constructor(
     private val patientManager: PatientManager,
+    private val networkStateManager: NetworkStateManager,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -63,7 +64,8 @@ class EditPregnancyViewModel @Inject constructor(
     }
 
     private val patientBuilder = LiveDataDynamicModelBuilder()
-    val isNetworkAvailable = NetworkAvailableLiveData(context)
+    val isNetworkAvailable: LiveData<Boolean> =
+        networkStateManager.getInternetConnectivityStatus()
 
     private var isAddPregnancy = true
 

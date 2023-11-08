@@ -8,13 +8,14 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.utilities.UnixTimestamp
-import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
+import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.viewmodel.EditPatientViewModel.SaveResult
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
@@ -26,8 +27,9 @@ import javax.inject.Inject
 class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
     @Inject
     lateinit var patientManager: PatientManager
-
-    private lateinit var isNetworkAvailable: NetworkAvailableLiveData
+    @Inject
+    lateinit var networkStateManager: NetworkStateManager
+    private lateinit var isNetworkAvailable: LiveData<Boolean>
 
     companion object {
         private const val EXTRA_PATIENT = "patient"
@@ -55,7 +57,7 @@ class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
 
     private fun setupInternetConnectionCheck() {
         val noInternetText = findViewById<TextView>(R.id.internetAvailabilityTextView)
-        isNetworkAvailable = NetworkAvailableLiveData(this).apply {
+        isNetworkAvailable = networkStateManager.getInternetConnectivityStatus().apply {
             observe(this@PatientUpdateDrugMedicalActivity) { netAvailable ->
                 netAvailable ?: return@observe
                 noInternetText.isVisible = !netAvailable

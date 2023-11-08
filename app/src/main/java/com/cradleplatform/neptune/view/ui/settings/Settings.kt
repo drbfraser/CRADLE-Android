@@ -8,13 +8,16 @@ import android.view.MenuItem
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.cradleplatform.neptune.CradleApplication
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.HealthFacilityManager
 import com.cradleplatform.neptune.manager.LoginManager
+import com.cradleplatform.neptune.manager.LoginManager.Companion.RELAY_PHONE_NUMBER
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
+import com.cradleplatform.neptune.sync.PeriodicSyncer
 import com.cradleplatform.neptune.utilities.validateHostname
 import com.cradleplatform.neptune.utilities.validatePort
 import com.cradleplatform.neptune.view.LoginActivity
@@ -32,7 +35,6 @@ import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
-import com.cradleplatform.neptune.viewmodel.UserViewModel.Companion.RELAY_PHONE_NUMBER
 import com.cradleplatform.neptune.model.RelayPhoneNumberResponse
 
 @AndroidEntryPoint
@@ -313,6 +315,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
 @AndroidEntryPoint
 class AdvancedSettingsFragment : PreferenceFragmentCompat() {
 
+    @Inject
+    lateinit var periodicSyncer: PeriodicSyncer
+
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         Log.v(this::class.simpleName, "Loading advanced settings from resource")
         setPreferencesFromResource(R.xml.advanced_preferences, rootKey)
@@ -330,5 +335,18 @@ class AdvancedSettingsFragment : PreferenceFragmentCompat() {
                 }
             }
             ?.withValidator(::validatePort)
+
+        val myPref = findPreference(R.string.key_periodic_sync_enabled)?.withValidator(::validatePort)
+
+        myPref?.onPreferenceChangeListener =
+            // The callback is triggered whenever the switch preference is changed
+            Preference.OnPreferenceChangeListener { pref, newValue ->
+                if (newValue == true) {
+                    periodicSyncer.startPeriodicSync()
+                } else {
+                    periodicSyncer.endPeriodicSync()
+                }
+                true
+            }
     }
 }

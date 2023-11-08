@@ -20,9 +20,10 @@ import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.model.SmsKeyResponse
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.Util
-import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
 import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
-import com.cradleplatform.neptune.viewmodel.SyncRemainderHelper
+import com.cradleplatform.neptune.sync.SyncReminderHelper
+import com.cradleplatform.neptune.sync.views.SyncActivity
+import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.viewmodel.UserViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import dagger.hilt.android.AndroidEntryPoint
@@ -35,6 +36,8 @@ import javax.inject.Inject
 class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
     @Inject
     lateinit var sharedPreferences: SharedPreferences
+    @Inject
+    lateinit var networkStateManager: NetworkStateManager
     private lateinit var userViewModel: UserViewModel
 
     @Inject
@@ -76,7 +79,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         val statView = findViewById<View>(R.id.statconstraintLayout)
         val statImg = statView.findViewById<ImageButton>(R.id.statImg)
         val statCardview: CardView = statView.findViewById(R.id.statCardView)
-        val isNetworkAvailable = NetworkAvailableLiveData(this)
+        val isNetworkAvailable = networkStateManager.getInternetConnectivityStatus()
 
         isNetworkAvailable.observe(this) {
             when (it) {
@@ -100,7 +103,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun validateSmsKeyAndPerformActions() {
         // check SMS key validity only when there is internet connection
-        val isNetworkAvailable = NetworkAvailableLiveData(this).value
+        val isNetworkAvailable = networkStateManager.getInternetConnectivityStatus().value
         if ((isNetworkAvailable != null) && isNetworkAvailable) {
             val currentSmsKey = smsKeyManager.retrieveSmsKey()
             val smsKeyStatus = smsKeyManager.validateSmsKey(currentSmsKey)
@@ -186,7 +189,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun reminderUserToSync() {
-        if (SyncRemainderHelper.checkIfOverTime(this, sharedPreferences))
+        if (SyncReminderHelper.checkIfOverTime(this, sharedPreferences))
             CustomToast.longToast(
                 this,
                 getString(R.string.remind_user_to_sync)

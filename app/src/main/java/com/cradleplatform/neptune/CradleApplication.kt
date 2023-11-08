@@ -13,7 +13,11 @@ import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import androidx.work.WorkManager
 import com.cradleplatform.neptune.manager.LoginManager
+import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkMonitoringUtil
+import com.cradleplatform.neptune.sync.PeriodicSyncer
+import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.view.PinPassActivity
 
 import com.jakewharton.threetenabp.AndroidThreeTen
@@ -62,6 +66,16 @@ class CradleApplication : Application(), Configuration.Provider {
     @Inject
     lateinit var loginManager: LoginManager
 
+    @Inject
+    lateinit var workManager: WorkManager
+
+    @Inject
+    lateinit var periodicSyncer: PeriodicSyncer
+    @Inject
+    lateinit var networkStateManager: NetworkStateManager
+
+    lateinit var networkMonitor: NetworkMonitoringUtil
+
     override fun getWorkManagerConfiguration(): Configuration = Configuration.Builder()
         .setWorkerFactory(workerFactory)
         .build()
@@ -81,6 +95,18 @@ class CradleApplication : Application(), Configuration.Provider {
         //Initialize Sharedpref
         sharedPref = getSharedPreferences(applicationSharedPrefName, Context.MODE_PRIVATE) ?: return
         appKilledLockout = sharedPref.getBoolean(lockOutPrefKey, false)
+
+        // Start monitoring network connectivity
+        networkMonitor = NetworkMonitoringUtil(this, networkStateManager)
+        // Check the network state before registering for the 'networkCallbackEvents'
+        networkMonitor.checkNetworkState()
+        networkMonitor.registerNetworkCallbackEvents()
+
+        // Initiate PeriodicSyncer
+        periodicSyncer = PeriodicSyncer(sharedPref, workManager, this)
+        if (loginManager.isLoggedIn()) {
+            periodicSyncer.startPeriodicSync()
+        }
 
         // Disable rotation
         // source: https://stackoverflow.com/questions/6745797/how-to-set-entire-application-in-portrait-mode-only/9784269#9784269

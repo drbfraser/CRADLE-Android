@@ -25,13 +25,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
-import com.cradleplatform.neptune.sync.SyncWorker
-import com.cradleplatform.neptune.utilities.CustomToast
-import com.cradleplatform.neptune.utilities.NetworkHelper
-import com.cradleplatform.neptune.utilities.NetworkStatus
+import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import com.cradleplatform.neptune.viewmodel.LocalSearchPatientAdapter
 import com.cradleplatform.neptune.viewmodel.PatientListViewModel
-import com.cradleplatform.neptune.viewmodel.SyncRemainderHelper
+import com.cradleplatform.neptune.sync.SyncReminderHelper
+import com.cradleplatform.neptune.sync.views.SyncActivity
+import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
+import com.cradleplatform.neptune.utilities.connectivity.api24.displayConnectivityToast
 import com.google.android.material.badge.BadgeDrawable
 import com.google.android.material.badge.BadgeUtils
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
@@ -45,6 +45,7 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class PatientsActivity : AppCompatActivity() {
+
     private val viewModel: PatientListViewModel by viewModels()
 
     private var searchView: SearchView? = null
@@ -70,6 +71,8 @@ class PatientsActivity : AppCompatActivity() {
 
     @Inject
     lateinit var patientManager: PatientManager
+    @Inject
+    lateinit var networkStateManager: NetworkStateManager
 
     private lateinit var patientRecyclerview: RecyclerView
     private val localSearchPatientAdapter = LocalSearchPatientAdapter()
@@ -125,25 +128,11 @@ class PatientsActivity : AppCompatActivity() {
         }
 
         R.id.syncPatients -> {
-            when (NetworkHelper.isConnectedToInternet(this)) {
-                NetworkStatus.CELLULAR -> {
-                    CustomToast.longToast(
-                        this,
-                        "You are connected to CELLULAR network, charges may apply"
-                    )
-                }
-
-                NetworkStatus.NO_NETWORK -> {
-                    CustomToast.shortToast(this, "Make sure you are connected to the internet")
-                }
-
-                else -> {
-                    startActivity(Intent(this, SyncActivity::class.java))
-                }
+            displayConnectivityToast(this, networkStateManager) {
+                startActivity(Intent(this, SyncActivity::class.java))
             }
             true
         }
-
         else -> {
             super.onOptionsItemSelected(item)
         }
@@ -353,8 +342,8 @@ class PatientsActivity : AppCompatActivity() {
     private fun checkLastSyncTimeAndUpdateSyncIcon() {
         val lastSyncTime = BigInteger(
             sharedPreferences.getString(
-                SyncWorker.LAST_PATIENT_SYNC,
-                SyncWorker.LAST_SYNC_DEFAULT.toString()
+                SyncAllWorker.LAST_PATIENT_SYNC,
+                SyncAllWorker.LAST_SYNC_DEFAULT.toString()
             )!!
         )
 
@@ -363,7 +352,7 @@ class PatientsActivity : AppCompatActivity() {
 
         val test = resources.getInteger(R.integer.settings_default_sync_period_hours)
 
-        if (!SyncRemainderHelper.checkIfOverTime(this, sharedPreferences)) {
+        if (!SyncReminderHelper.checkIfOverTime(this, sharedPreferences)) {
             toolbar?.let {
                 BadgeUtils.detachBadgeDrawable(
                     badge,

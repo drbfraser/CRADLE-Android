@@ -45,7 +45,7 @@ import com.cradleplatform.neptune.utilities.DateUtil
 import com.cradleplatform.neptune.utilities.LiveDataDynamicModelBuilder
 import com.cradleplatform.neptune.utilities.Months
 import com.cradleplatform.neptune.utilities.Weeks
-import com.cradleplatform.neptune.utilities.livedata.NetworkAvailableLiveData
+import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.view.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel.LiveDataInitializationManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -107,6 +107,7 @@ class PatientReadingViewModel @Inject constructor(
     private val referralManager: ReferralManager,
     private val patientManager: PatientManager,
     private val referralUploadManager: ReferralUploadManager,
+    private val networkStateManager: NetworkStateManager,
     private val sharedPreferences: SharedPreferences,
     @ApplicationContext @SuppressLint("StaticFieldLeak")
     private val app: Context
@@ -886,7 +887,8 @@ class PatientReadingViewModel @Inject constructor(
         navigationManager.setInputEnabledState(isEnabled)
     }
 
-    val isNetworkAvailable = NetworkAvailableLiveData(app)
+    val isNetworkAvailable: LiveData<Boolean> =
+        networkStateManager.getInternetConnectivityStatus()
 
     private suspend fun populateDateFields() {
         withContext(Dispatchers.Main) {
