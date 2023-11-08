@@ -29,12 +29,12 @@ import com.cradleplatform.neptune.model.UserRole
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import com.cradleplatform.neptune.utilities.BarGraphValueFormatter
-import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.DateUtil
 import com.cradleplatform.neptune.viewmodel.StatsViewModel
 import com.cradleplatform.neptune.sync.SyncReminderHelper
 import com.cradleplatform.neptune.sync.views.SyncActivity
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
+import com.cradleplatform.neptune.utilities.connectivity.api24.displayConnectivityToast
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
@@ -224,22 +224,7 @@ class StatsActivity : AppCompatActivity() {
                 return true
             }
             R.id.syncPatients -> {
-                if (networkStateManager.getInternetConnectivityStatus().value == false) {
-                    CustomToast.shortToast(
-                        this,
-                        "Make sure you are connected to the internet"
-                    )
-                } else if (networkStateManager.getWifiConnectivityStatus().value == true) {
-                    CustomToast.longToast(
-                        this,
-                        "You are connected to Wifi network."
-                    )
-                } else if (networkStateManager.getCellularDataConnectivityStatus().value == true) {
-                    CustomToast.longToast(
-                        this,
-                        "You are connected to CELLULAR network, charges may apply."
-                    )
-                } else {
+                displayConnectivityToast(this, networkStateManager) {
                     startActivity(Intent(this, SyncActivity::class.java))
                 }
                 return true

@@ -14,6 +14,14 @@ import javax.inject.Singleton
  * Modified from:
  * https://medium.com/geekculture/implementing-an-active-network-state-monitor-in-android-dbbc24cf2bc5
  */
+
+// Note: We want WIFI > CELLULAR_DATA, SMS, NONE
+enum class ConnectivityOptions {
+    NONE,
+    SMS,
+    CELLULAR_DATA,
+    WIFI,
+}
 @Singleton
 class NetworkStateManager @Inject constructor() {
     // Defaulting to False
@@ -36,6 +44,21 @@ class NetworkStateManager @Inject constructor() {
             }
             return INSTANCE!!
         }
+    }
+
+    fun getConnectivity(): ConnectivityOptions {
+        if (activeInternetStatus.value == true) {
+            if (activeWifiStatus.value == true) {
+                return ConnectivityOptions.WIFI
+            } else if (activeCellularDataStatus.value == true) {
+                return ConnectivityOptions.CELLULAR_DATA
+            }
+            // TODO: To be finished after implementing TelephonyManager in NetworkMonitoringUtil or
+            //  another class
+            // } else if (activeSmsStatus.value == true) {
+            //         return ConnectivityOptions.SMS
+        }
+        return ConnectivityOptions.NONE
     }
 
     /**
