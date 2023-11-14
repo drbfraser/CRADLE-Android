@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import java.nio.charset.Charset
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 @ExperimentalCoroutinesApi
@@ -184,7 +184,7 @@ internal class LoginManagerTests {
     fun `login with right credentials and logout`() {
         runBlocking {
 
-            val result = withTimeout(Duration.seconds(10)) {
+            val result = withTimeout((10).seconds) {
                 loginManager.login(TEST_USER_EMAIL, TEST_USER_PASSWORD)
             }
             assert(result is NetworkResult.Success) {

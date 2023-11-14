@@ -8,8 +8,9 @@ import androidx.core.content.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
+import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
@@ -58,7 +59,7 @@ class SyncViewModel @Inject constructor(
     )
 
     val syncStatus: LiveData<WorkInfo?>
-        get() = Transformations.switchMap(currentWorkUuid) { uuid ->
+        get() = currentWorkUuid.switchMap { uuid ->
             uuid?.let { workManager.getWorkInfoByIdLiveData(it) }
         }
 
@@ -108,7 +109,7 @@ class SyncViewModel @Inject constructor(
         _patientsAndReadingsToUploadText.setValueOnMainThread(numberToUploadString)
     }
 
-    val isCurrentlySyncing: LiveData<Boolean> = Transformations.map(syncStatus) {
+    val isCurrentlySyncing: LiveData<Boolean> = syncStatus.map {
         if (it == null) {
             false
         } else {

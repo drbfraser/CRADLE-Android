@@ -14,7 +14,7 @@ import javax.inject.Inject
  * https://medium.com/geekculture/implementing-an-active-network-state-monitor-in-android-dbbc24cf2bc5
  * Note: Callback is not supported under API 24?
  */
-class NetworkMonitoringUtil @Inject constructor (
+class NetworkMonitoringUtil @Inject constructor(
     private val context: Context,
     private val mNetworkStateManager: NetworkStateManager
 ) : ConnectivityManager.NetworkCallback() {

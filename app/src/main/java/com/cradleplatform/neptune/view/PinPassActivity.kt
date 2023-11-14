@@ -132,6 +132,7 @@ class PinPassActivity : AppCompatActivity() {
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         //Do not allow user to leave this screen until password is entered or app exited
     }

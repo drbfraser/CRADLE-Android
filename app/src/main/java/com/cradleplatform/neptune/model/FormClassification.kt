@@ -51,7 +51,7 @@ class FormClassification(
 
             json!!.asJsonObject.let { rootObject ->
                 rootObject!!.getAsJsonObject("classification").let {
-                    classification ->
+                        classification ->
                     className = classification.get("name").asString
                     classId = classification.get("id").asString
                 }

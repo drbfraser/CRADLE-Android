@@ -398,6 +398,7 @@ class PatientsActivity : AppCompatActivity() {
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
 
         val intent = Intent(this, DashBoardActivity::class.java)
