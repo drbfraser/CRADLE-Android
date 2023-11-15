@@ -33,14 +33,6 @@ class SMSSender(
             if (acknowledged) {
                 smsRelayMsgList.removeAt(0)
                 if (smsRelayMsgList.isEmpty()) {
-                    val finishedMsg = context.getString(R.string.sms_all_sent)
-                    Toast.makeText(
-                        context, finishedMsg,
-                        Toast.LENGTH_LONG
-                    ).show()
-                    if (context is ReadingActivity || context is PatientReferralActivity) {
-                        (context as Activity).finish()
-                    }
                     return
                 }
             }
@@ -77,7 +69,7 @@ class SMSSender(
         }
     }
 
-    fun sendAckMessage(requestIdentifier: String, ackNumber: Int) {
+    fun sendAckMessage(requestIdentifier: String, ackNumber: Int, numFragments: Int) {
         var ackMessage = """
         01
         CRADLE
@@ -102,6 +94,16 @@ class SMSSender(
                 context, ex.message.toString(),
                 Toast.LENGTH_LONG
             ).show()
+        }
+        if (ackNumber == numFragments - 1){
+            val finishedMsg = context.getString(R.string.sms_all_sent)
+            Toast.makeText(
+                context, finishedMsg,
+                Toast.LENGTH_LONG
+            ).show()
+            if (context is ReadingActivity || context is PatientReferralActivity) {
+                (context as Activity).finish()
+            }
         }
     }
 }

@@ -21,11 +21,11 @@ class SMSReceiver(private val smsSender: SMSSender, private val relayPhoneNumber
 
     override fun onReceive(context: Context?, intent: Intent?) {
         val data = intent?.extras
-        val messages = data?.get("pdus") as Array<*>
+        val pdus = data?.get("pdus") as Array<*>
 
-        for (message in messages) {
+        for (element in pdus) {
             // if smsMessage is null, we continue to the next one
-            val smsMessage = SmsMessage.createFromPdu(message as ByteArray?) ?: continue
+            val smsMessage = SmsMessage.createFromPdu(element as ByteArray?) ?: continue
             val isMessageFromRelayPhone = smsMessage.originatingAddress.equals(relayPhoneNumber)
             val messageBody = smsMessage.messageBody
             if (isMessageFromRelayPhone && messageBody.matches(ackRegexPattern)
@@ -39,7 +39,7 @@ class SMSReceiver(private val smsSender: SMSSender, private val relayPhoneNumber
                 totalMessages = getTotalNumMessages(messageBody)
                 encryptedMessage = getFirstMessageString(messageBody)
                 numberReceivedMessages = 1
-                smsSender.sendAckMessage(requestIdentifier, numberReceivedMessages)
+                smsSender.sendAckMessage(requestIdentifier, numberReceivedMessages, totalMessages)
             }
             else if (isMessageFromRelayPhone && messageBody.matches(restRegexPattern)){
 
@@ -47,8 +47,8 @@ class SMSReceiver(private val smsSender: SMSSender, private val relayPhoneNumber
                     numberReceivedMessages < totalMessages){
 
                     numberReceivedMessages += 1
-                    encryptedMessage += getFirstMessageString(messageBody)
-                    smsSender.sendAckMessage(requestIdentifier, numberReceivedMessages)
+                    encryptedMessage += getRestMessageString(messageBody)
+                    smsSender.sendAckMessage(requestIdentifier, numberReceivedMessages, totalMessages)
                 }
 
                 // resetting vars if process finished
