@@ -39,7 +39,7 @@ class SMSReceiver(private val smsSender: SMSSender, private val relayPhoneNumber
                 totalMessages = getTotalNumMessages(messageBody)
                 encryptedMessage = getFirstMessageString(messageBody)
                 numberReceivedMessages = 1
-                smsSender.sendAckMessage(requestIdentifier, numberReceivedMessages, totalMessages)
+                smsSender.sendAckMessage(requestIdentifier, numberReceivedMessages - 1, totalMessages)
             }
             else if (isMessageFromRelayPhone && messageBody.matches(restRegexPattern)){
 
@@ -48,7 +48,7 @@ class SMSReceiver(private val smsSender: SMSSender, private val relayPhoneNumber
 
                     numberReceivedMessages += 1
                     encryptedMessage += getRestMessageString(messageBody)
-                    smsSender.sendAckMessage(requestIdentifier, numberReceivedMessages, totalMessages)
+                    smsSender.sendAckMessage(requestIdentifier, numberReceivedMessages - 1, totalMessages)
                 }
 
                 // resetting vars if process finished
