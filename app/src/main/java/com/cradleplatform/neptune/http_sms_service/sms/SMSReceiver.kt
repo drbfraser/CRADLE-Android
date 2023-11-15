@@ -10,12 +10,14 @@ private val ackRegexPattern = Regex("^01-CRADLE-\\d{6}-\\d{3}-ACK$")
 private val firstRegexPattern = Regex("^01-CRADLE-(\\d{6})-(\\d{3})-(.+)")
 private val restRegexPattern = Regex("^(\\d{3})-(.+)")
 
-class SMSReceiver(private val smsSender: SMSSender, private val relayPhoneNumber: String) : BroadcastReceiver() {
+// TODO: Use shared prefs or other methods instead of these and decrypt data in an activity
+// Note that this data is not being read anywhere and is only being stored here
+private var requestIdentifier = ""
+private var encryptedMessage = ""
+private var numberReceivedMessages = 0
+private var totalMessages = 0
 
-    private lateinit var requestIdentifier: String
-    private lateinit var encryptedMessage: String
-    private var numberReceivedMessages = 0
-    private var totalMessages = 0
+class SMSReceiver(private val smsSender: SMSSender, private val relayPhoneNumber: String) : BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
         val data = intent?.extras
@@ -30,6 +32,8 @@ class SMSReceiver(private val smsSender: SMSSender, private val relayPhoneNumber
             ) {
                 smsSender.sendSmsMessage(true)
             }
+
+            // ack message logic assumes
             else if (isMessageFromRelayPhone && messageBody.matches(firstRegexPattern)){
                 requestIdentifier = getRequestIdentifier(messageBody)
                 totalMessages = getTotalNumMessages(messageBody)
@@ -39,8 +43,21 @@ class SMSReceiver(private val smsSender: SMSSender, private val relayPhoneNumber
             }
             else if (isMessageFromRelayPhone && messageBody.matches(restRegexPattern)){
 
+                if (getMessageNumber(messageBody) < totalMessages + 1 &&
+                    numberReceivedMessages < totalMessages){
 
+                    numberReceivedMessages += 1
+                    encryptedMessage += getFirstMessageString(messageBody)
+                    smsSender.sendAckMessage(requestIdentifier, numberReceivedMessages)
+                }
 
+                // resetting vars if process finished
+                if(numberReceivedMessages == totalMessages){
+                    requestIdentifier = ""
+                    totalMessages = 0
+                    numberReceivedMessages = 0
+                    encryptedMessage = ""
+                }
             }
         }
     }
@@ -59,6 +76,10 @@ class SMSReceiver(private val smsSender: SMSSender, private val relayPhoneNumber
 
     private fun getMessageNumber(smsMessage: String): Int{
         return restRegexPattern.find(smsMessage)?.groupValues!![1].toInt()
+    }
+
+    private fun getRestMessageString(smsMessage: String): String{
+        return restRegexPattern.find(smsMessage)?.groupValues!![1]
     }
 
 }
