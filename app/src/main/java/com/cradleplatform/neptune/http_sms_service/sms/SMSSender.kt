@@ -29,18 +29,18 @@ class SMSSender(
         // TODO: Add target API endpoint information needed by the backend to json ??
         // TODO: requestNumber=0 as it is not implemented in the backend yet
         val referralJSON = JacksonMapper.createWriter<Referral>().writeValueAsString(
-                referral
+            referral
         )
 
         val json = JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
-                SmsReadingWithReferral(
-                        requestNumber = "0",
-                        method = "POST",
-                        // TODO: Remove the hardcoded API endpoint
-                        endpoint = "api/referrals",
-                        headers = "",
-                        body = referralJSON
-                )
+            SmsReadingWithReferral(
+                requestNumber = "0",
+                method = "POST",
+                // TODO: Remove the hardcoded API endpoint
+                endpoint = "api/referrals",
+                headers = "",
+                body = referralJSON
+            )
         )
         sendSmsMessageWithJson(json)
     }
@@ -48,15 +48,15 @@ class SMSSender(
         // Retrieve the encrypted secret key for the current user
         val smsKeyManager = SmsKeyManager(context)
         val smsSecretKey = smsKeyManager.retrieveSmsKey()
-                ?: // TODO: handle the case when the secret key is not available
-                error("Encryption failed - no valid smsSecretKey is available")
+            ?: // TODO: handle the case when the secret key is not available
+            error("Encryption failed - no valid smsSecretKey is available")
 
         val encodedMsg = SMSFormatter.encodeMsg(data, smsSecretKey)
 
         val smsRelayRequestCounter = sharedPreferences.getLong(context.getString(R.string.sms_relay_request_counter), 0)
 
         val msgInPackets =
-                SMSFormatter.listToString(SMSFormatter.formatSMS(encodedMsg, smsRelayRequestCounter))
+            SMSFormatter.listToString(SMSFormatter.formatSMS(encodedMsg, smsRelayRequestCounter))
         sharedPreferences.edit(commit = true) {
             putString(context.getString(R.string.sms_relay_list_key), msgInPackets)
             putLong(context.getString(R.string.sms_relay_request_counter), smsRelayRequestCounter + 1)
@@ -69,14 +69,12 @@ class SMSSender(
         if (Looper.myLooper() == null) {
             Looper.prepare()
             Toast.makeText(context, context.getString(R.string.sms_sender_send),
-                    Toast.LENGTH_LONG).show()
-            Looper.loop();
-        }
-        else{
+                Toast.LENGTH_LONG).show()
+            Looper.loop()
+        } else {
             Toast.makeText(context, context.getString(R.string.sms_sender_send),
-                    Toast.LENGTH_LONG).show()
+                Toast.LENGTH_LONG).show()
         }
-
     }
 
     fun sendSmsMessage(acknowledged: Boolean) {
@@ -109,7 +107,7 @@ class SMSSender(
                     if (context is ReadingActivity || context is PatientReferralActivity) {
                         (context as Activity).finish()
                     }
-                    if(looperPrepared){
+                    if (looperPrepared) {
                         Looper.loop()
                     }
                     return
@@ -145,7 +143,7 @@ class SMSSender(
             sharedPreferences.edit(commit = true) {
                 putString(smsRelayContentKey, listToString(smsRelayMsgList))
             }
-            if(looperPrepared){
+            if (looperPrepared) {
                 Looper.loop()
             }
         }
