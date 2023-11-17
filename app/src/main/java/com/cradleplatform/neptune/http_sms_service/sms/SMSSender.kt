@@ -95,7 +95,7 @@ class SMSSender(
                 Toast.LENGTH_LONG
             ).show()
         }
-        if (ackNumber == numFragments - 1){
+        if (ackNumber == numFragments - 1) {
             val finishedMsg = context.getString(R.string.sms_all_sent)
             Toast.makeText(
                 context, finishedMsg,

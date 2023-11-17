@@ -28,6 +28,10 @@ class SMSFormatter {
         const val FRAGMENT_HEADER_LENGTH = 3
         private const val REQUEST_NUMBER_LENGTH = 6
 
+        val ackRegexPattern = Regex("^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-(\\d{6})-(\\d{3})-ACK$")
+        val firstRegexPattern = Regex("^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-(\\d{6})-(\\d{3})-(.+)")
+        val restRegexPattern = Regex("^(\\d{3})-(.+)")
+
         // TODO: CHANGE TEST
         fun encodeMsg(msg: String, secretKey: String): String {
 
@@ -127,5 +131,36 @@ class SMSFormatter {
         fun listToString(list: MutableList<String>): String {
             return Gson().toJson(list).toString()
         }
+    }
+
+    fun getRequestIdentifier(smsMessage: String): String {
+        return firstRegexPattern.find(smsMessage)?.groupValues!![1]
+    }
+    fun getTotalNumMessages(smsMessage: String): Int {
+        return firstRegexPattern.find(smsMessage)?.groupValues!![2].toInt()
+    }
+
+    fun getFirstMessageString(smsMessage: String): String {
+        return firstRegexPattern.find(smsMessage)?.groupValues!![3]
+    }
+
+    fun getMessageNumber(smsMessage: String): Int {
+        return restRegexPattern.find(smsMessage)?.groupValues!![1].toInt()
+    }
+
+    fun getRestMessageString(smsMessage: String): String {
+        return restRegexPattern.find(smsMessage)?.groupValues!![2]
+    }
+
+    fun isFirstMessage(message: String): Boolean {
+        return firstRegexPattern.matches(message)
+    }
+
+    fun isAckMessage(message: String): Boolean {
+        return ackRegexPattern.matches(message)
+    }
+
+    fun isRestMessage(message: String): Boolean {
+        return restRegexPattern.matches(message)
     }
 }

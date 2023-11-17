@@ -4,11 +4,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.telephony.SmsMessage
-
-// Might want to encode the acknowledgment in the future
-private val ackRegexPattern = Regex("^01-CRADLE-\\d{6}-\\d{3}-ACK$")
-private val firstRegexPattern = Regex("^01-CRADLE-(\\d{6})-(\\d{3})-(.+)")
-private val restRegexPattern = Regex("^(\\d{3})-(.+)")
+import android.util.Log
+import com.cradleplatform.neptune.utilities.SMSFormatter
 
 // TODO: Use shared prefs or other methods instead of these and decrypt data in an activity
 // Note that this data is not being read anywhere and is only being stored here
@@ -19,6 +16,8 @@ private var totalMessages = 0
 
 class SMSReceiver(private val smsSender: SMSSender, private val relayPhoneNumber: String) : BroadcastReceiver() {
 
+    private var smsFormatter: SMSFormatter = SMSFormatter()
+
     override fun onReceive(context: Context?, intent: Intent?) {
         val data = intent?.extras
         val pdus = data?.get("pdus") as Array<*>
@@ -28,31 +27,31 @@ class SMSReceiver(private val smsSender: SMSSender, private val relayPhoneNumber
             val smsMessage = SmsMessage.createFromPdu(element as ByteArray?) ?: continue
             val isMessageFromRelayPhone = smsMessage.originatingAddress.equals(relayPhoneNumber)
             val messageBody = smsMessage.messageBody
-            if (isMessageFromRelayPhone && messageBody.matches(ackRegexPattern)
+            if (isMessageFromRelayPhone && smsFormatter.isAckMessage(messageBody)
             ) {
                 smsSender.sendSmsMessage(true)
-            }
-
-            // ack message logic assumes
-            else if (isMessageFromRelayPhone && messageBody.matches(firstRegexPattern)){
-                requestIdentifier = getRequestIdentifier(messageBody)
-                totalMessages = getTotalNumMessages(messageBody)
-                encryptedMessage = getFirstMessageString(messageBody)
+            } else if (isMessageFromRelayPhone && smsFormatter.isFirstMessage(messageBody)) {
+                requestIdentifier = smsFormatter.getRequestIdentifier(messageBody)
+                totalMessages = smsFormatter.getTotalNumMessages(messageBody)
+                encryptedMessage = smsFormatter.getFirstMessageString(messageBody)
                 numberReceivedMessages = 1
                 smsSender.sendAckMessage(requestIdentifier, numberReceivedMessages - 1, totalMessages)
-            }
-            else if (isMessageFromRelayPhone && messageBody.matches(restRegexPattern)){
+            } else if (isMessageFromRelayPhone && smsFormatter.isRestMessage(messageBody)) {
 
-                if (getMessageNumber(messageBody) < totalMessages + 1 &&
-                    numberReceivedMessages < totalMessages){
+                if (smsFormatter.getMessageNumber(messageBody) <= totalMessages &&
+                    numberReceivedMessages < totalMessages) {
 
                     numberReceivedMessages += 1
-                    encryptedMessage += getRestMessageString(messageBody)
+                    encryptedMessage += smsFormatter.getRestMessageString(messageBody)
                     smsSender.sendAckMessage(requestIdentifier, numberReceivedMessages - 1, totalMessages)
                 }
 
+                // this happens at the end of exchange
                 // resetting vars if process finished
-                if(numberReceivedMessages == totalMessages){
+                if (numberReceivedMessages == totalMessages) {
+
+                    Log.d("Search: Encrypted Message", encryptedMessage)
+                    Log.d("Search: Total Messages received", numberReceivedMessages.toString())
                     requestIdentifier = ""
                     totalMessages = 0
                     numberReceivedMessages = 0
@@ -61,25 +60,4 @@ class SMSReceiver(private val smsSender: SMSSender, private val relayPhoneNumber
             }
         }
     }
-
-    private fun getRequestIdentifier(smsMessage: String): String {
-        return firstRegexPattern.find(smsMessage)?.groupValues!![1]
-
-    }
-    private fun getTotalNumMessages(smsMessage: String): Int {
-        return firstRegexPattern.find(smsMessage)?.groupValues!![2].toInt()
-    }
-
-    private fun getFirstMessageString(smsMessage: String): String{
-        return firstRegexPattern.find(smsMessage)?.groupValues!![3]
-    }
-
-    private fun getMessageNumber(smsMessage: String): Int{
-        return restRegexPattern.find(smsMessage)?.groupValues!![1].toInt()
-    }
-
-    private fun getRestMessageString(smsMessage: String): String{
-        return restRegexPattern.find(smsMessage)?.groupValues!![1]
-    }
-
 }
