@@ -152,19 +152,23 @@ class ReferralDialogFragment : DialogFragment() {
             val selectedHealthFacilityName =
                 referralDialogViewModel.healthFacilityToUse.value ?: return
 
-            val smsSendResult = viewModel.saveWithReferral(
+            // Different from handleWebReferralSend(), the ViewModel does not send.
+            // Instead, a local save happens and then a ReadingFlowSaveResult indicates
+            // that an SMS send should follow
+            val roomDbSaveResult = viewModel.saveWithReferral(
                 ReferralOption.SMS,
                 comment,
                 selectedHealthFacilityName
             )
 
-            when (smsSendResult) {
+            when (roomDbSaveResult) {
                 is ReadingFlowSaveResult.SaveSuccessful.ReferralSmsNeeded -> {
-                    showStatusToast(view.context, smsSendResult, ReferralOption.SMS)
-                    sendSms(smsSendResult.patientInfoForReferral)
+                    showStatusToast(view.context, roomDbSaveResult, ReferralOption.SMS)
+                    // Here is where SMS is actually sent
+                    sendSms(roomDbSaveResult.patientInfoForReferral)
                 }
                 else -> {
-                    showStatusToast(view.context, smsSendResult, ReferralOption.SMS)
+                    showStatusToast(view.context, roomDbSaveResult, ReferralOption.SMS)
                 }
             }
         } finally {
