@@ -29,8 +29,8 @@ class SMSFormatter {
         private const val REQUEST_NUMBER_LENGTH = 6
 
         val ackRegexPattern = Regex("^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-(\\d{6})-(\\d{3})-ACK$")
-        val firstRegexPattern = Regex("^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-(\\d{6})-(\\d{3})-(.+)")
-        val restRegexPattern = Regex("^(\\d{3})-(.+)")
+        val firstRegexPattern = Regex("^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-(\\d{6})-(\\d{3})-(.+)$")
+        val restRegexPattern = Regex("^(\\d{3})-(.+)$")
 
         // TODO: CHANGE TEST
         fun encodeMsg(msg: String, secretKey: String): String {

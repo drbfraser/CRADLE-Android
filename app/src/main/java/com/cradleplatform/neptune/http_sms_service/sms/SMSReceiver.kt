@@ -26,17 +26,35 @@ class SMSReceiver(private val smsSender: SMSSender, private val relayPhoneNumber
             // if smsMessage is null, we continue to the next one
             val smsMessage = SmsMessage.createFromPdu(element as ByteArray?) ?: continue
             val isMessageFromRelayPhone = smsMessage.originatingAddress.equals(relayPhoneNumber)
+
+            // is message is not from relay phone continue to next one
+            if (!isMessageFromRelayPhone) {
+                continue
+            }
+
             val messageBody = smsMessage.messageBody
-            if (isMessageFromRelayPhone && smsFormatter.isAckMessage(messageBody)
+
+            // send next part of the message when ACK is received
+            if (smsFormatter.isAckMessage(messageBody)
             ) {
                 smsSender.sendSmsMessage(true)
-            } else if (isMessageFromRelayPhone && smsFormatter.isFirstMessage(messageBody)) {
+            }
+            // start storing message data and send ACK message
+            else if (smsFormatter.isFirstMessage(messageBody)) {
+
                 requestIdentifier = smsFormatter.getRequestIdentifier(messageBody)
                 totalMessages = smsFormatter.getTotalNumMessages(messageBody)
                 encryptedMessage = smsFormatter.getFirstMessageString(messageBody)
                 numberReceivedMessages = 1
-                smsSender.sendAckMessage(requestIdentifier, numberReceivedMessages - 1, totalMessages)
-            } else if (isMessageFromRelayPhone && smsFormatter.isRestMessage(messageBody)) {
+                smsSender.sendAckMessage(
+                    requestIdentifier,
+                    numberReceivedMessages - 1,
+                    totalMessages
+
+                )
+            }
+            // continue storing message data and send ACK message
+            else if (smsFormatter.isRestMessage(messageBody)) {
 
                 if (smsFormatter.getMessageNumber(messageBody) <= totalMessages &&
                     numberReceivedMessages < totalMessages) {
