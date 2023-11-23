@@ -29,10 +29,12 @@ class SMSSender(
         if (!smsRelayContent.isNullOrEmpty()) {
             val smsRelayMsgList = stringToList(smsRelayContent)
 
-            // if acknowledgement received, remove window block and proceed to next
+            // if acknowledgement received, proceed to next
             if (acknowledged) {
                 smsRelayMsgList.removeAt(0)
                 if (smsRelayMsgList.isEmpty()) {
+                    // TODO: Determine if it's better to exit Activity here or when receiving the
+                    // final Ack (see Line 101 if (ackNumber == numFragments - 1) )
                     return
                 }
             }
@@ -96,6 +98,8 @@ class SMSSender(
             ).show()
         }
         if (ackNumber == numFragments - 1) {
+            // TODO: Determine if it's better to exit Activity here or when nothing is left
+            // in the relay list (see if (smsRelayMsgList.isEmpty()))
             val finishedMsg = context.getString(R.string.sms_all_sent)
             Toast.makeText(
                 context, finishedMsg,
