@@ -53,11 +53,6 @@ class SMSSender @Inject constructor(
                         appContext, finishedMsg,
                         Toast.LENGTH_LONG
                     ).show()
-                    // TODO: Remove this after State reporting is implemented. Move logic to Activity instead.
-                    if (activityContext is ReadingActivity || activityContext is PatientReferralActivity) {
-                        (activityContext as Activity).finish()
-                        activityContext = null
-                    }
                     return
                 }
             }
@@ -112,20 +107,22 @@ class SMSSender @Inject constructor(
             // Can't toast on a thread that has not called Looper.prepare() when sending
             // just a referral for a patient
             Toast.makeText(
-                context, ex.message.toString(),
+                appContext, ex.message.toString(),
                 Toast.LENGTH_LONG
             ).show()
         }
         if (ackNumber == numFragments - 1) {
             // TODO: Determine if it's better to exit Activity here or when nothing is left
             // in the relay list (see if (smsRelayMsgList.isEmpty()))
-            val finishedMsg = context.getString(R.string.sms_all_sent)
+            val finishedMsg = appContext.getString(R.string.sms_all_sent)
             Toast.makeText(
-                context, finishedMsg,
+                appContext, finishedMsg,
                 Toast.LENGTH_LONG
             ).show()
-            if (context is ReadingActivity || context is PatientReferralActivity) {
-                (context as Activity).finish()
+            // TODO: Remove this after State reporting is implemented. Move logic to Activity instead.
+            if (activityContext is ReadingActivity || activityContext is PatientReferralActivity) {
+                (activityContext as Activity).finish()
+                activityContext = null
             }
         }
     }
