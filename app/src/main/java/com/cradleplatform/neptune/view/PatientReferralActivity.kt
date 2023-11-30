@@ -2,6 +2,7 @@ package com.cradleplatform.neptune.view
 
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.Button
@@ -13,18 +14,17 @@ import androidx.lifecycle.lifecycleScope
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.ActivityReferralBinding
-import com.cradleplatform.neptune.manager.PatientManager
-import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.manager.PatientManager
+import com.cradleplatform.neptune.model.Patient
+import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.viewmodel.PatientReferralViewModel
+import com.cradleplatform.neptune.viewmodel.UserViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
-import android.content.IntentFilter
-import com.cradleplatform.neptune.viewmodel.UserViewModel
-import com.cradleplatform.neptune.utilities.CustomToast
 
 @AndroidEntryPoint
 open class PatientReferralActivity : AppCompatActivity() {
@@ -155,120 +155,4 @@ open class PatientReferralActivity : AppCompatActivity() {
         smsReceiver = SMSReceiver(smsSender, phoneNumber)
         registerReceiver(smsReceiver, intentFilter)
     }
-
-/* Moved to View Model
-    private fun sendSms(
-        patientAndReferrals: PatientAndReferrals
-    ) {
-        val json = JacksonMapper.createWriter<SmsReferral>().writeValueAsString(
-            SmsReferral(
-                patient = patientAndReferrals
-            )
-        )
-
-        val encodedMsg = encodeMsg(
-            json,
-            RelayAction.REFERRAL,
-            getSecretKeyFromString(getString(R.string.aes_secret_key))
-        )
-        val msgInPackets = listToString(formatSMS(encodedMsg))
-
-        sharedPreferences.edit(commit = true) {
-            putString(getString(R.string.sms_relay_list_key), msgInPackets)
-        }
-        smsSender.sendSmsMessage(false)
-
-        Toast.makeText(
-            this, getString(R.string.sms_sender_send),
-            Toast.LENGTH_LONG
-        ).show()
-    }
-
- */
-
-    /*
-    private fun setupSendWebBtn() {
-        val sendBtn = findViewById<Button>(R.id.send_web_button)
-        sendBtn.setOnClickListener {
-            lifecycleScope.launch {
-                when (viewModel.saveReferral(ReferralOption.HTTP, currPatient)) {
-                    is ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded -> {
-                        Toast.makeText(
-                            it.context,
-                            getString(R.string.patient_referral_activity_save_success_nosms),
-                            Toast.LENGTH_LONG
-                        ).show()
-                        finish()
-                    }
-                    is ReferralFlowSaveResult.ErrorConstructing -> {
-                        Toast.makeText(
-                            it.context,
-                            getString(R.string.patient_referral_activity_save_error_construction),
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-                    is ReferralFlowSaveResult.ErrorUploadingReferral -> {
-                        Toast.makeText(
-                            it.context,
-                            getString(R.string.patient_referral_activity_save_error_upload),
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-                    else -> {
-                        Toast.makeText(
-                            it.context,
-                            getString(R.string.patient_referral_activity_save_error_unknown),
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-                }
-            }
-        }
-    }
-
-    private fun setupSendSMSBtn() {
-        val sendBtn = findViewById<Button>(R.id.send_sms_button)
-        sendBtn.setOnClickListener {
-            if (viewModel.isSelectedHealthFacilityValid() &&
-                viewModel.isSending.value != true
-            ) {
-                viewModel.isSending.value = true
-
-                lifecycleScope.launch {
-                    when (val smsSendResult = viewModel.saveReferral(ReferralOption.SMS, currPatient)) {
-                        is ReferralFlowSaveResult.SaveSuccessful.ReferralSmsNeeded -> {
-                            Toast.makeText(
-                                it.context,
-                                getString(R.string.patient_referral_activity_save_success_smsneeded),
-                                Toast.LENGTH_LONG
-                            ).show()
-                            sendSms(smsSendResult.patientInfoForReferral)
-                        }
-                        is ReferralFlowSaveResult.ErrorConstructing -> {
-                            Toast.makeText(
-                                it.context,
-                                getString(R.string.patient_referral_activity_save_error_construction),
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
-                        is ReferralFlowSaveResult.ErrorUploadingReferral -> {
-                            Toast.makeText(
-                                it.context,
-                                getString(R.string.patient_referral_activity_save_error_upload),
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
-                        else -> {
-                            Toast.makeText(
-                                it.context,
-                                getString(R.string.patient_referral_activity_save_error_unknown),
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
-                    }
-                }
-            }
-        }
-    }
-    */
 }

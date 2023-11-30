@@ -23,7 +23,8 @@ class SmsModules {
     @Provides
     @Singleton
     fun provideSmsSender(
+        smsKeyManager: SmsKeyManager,
         sharedPreferences: SharedPreferences,
         @ApplicationContext context: Context
-    ) = SMSSender(sharedPreferences, context)
+    ) = SMSSender(smsKeyManager, sharedPreferences, context)
 }
