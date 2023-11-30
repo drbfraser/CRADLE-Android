@@ -89,4 +89,44 @@ class SMSSender @Inject constructor(
             }
         }
     }
+
+    fun sendAckMessage(requestIdentifier: String, ackNumber: Int, numFragments: Int) {
+        var ackMessage = """
+        01
+        CRADLE
+        $requestIdentifier
+        ${String.format("%03d", ackNumber)}
+        ACK
+        """.trimIndent().replace("\n", "-")
+
+        val smsManager: SmsManager = SmsManager.getDefault()
+        val relayPhoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
+
+        try {
+            smsManager.sendMultipartTextMessage(
+                relayPhoneNumber, UserViewModel.USER_PHONE_NUMBER,
+                smsManager.divideMessage(ackMessage), null, null
+            )
+        } catch (ex: Exception) {
+            // TODO: Fix the error here ==> java.lang.NullPointerException:
+            // Can't toast on a thread that has not called Looper.prepare() when sending
+            // just a referral for a patient
+            Toast.makeText(
+                context, ex.message.toString(),
+                Toast.LENGTH_LONG
+            ).show()
+        }
+        if (ackNumber == numFragments - 1) {
+            // TODO: Determine if it's better to exit Activity here or when nothing is left
+            // in the relay list (see if (smsRelayMsgList.isEmpty()))
+            val finishedMsg = context.getString(R.string.sms_all_sent)
+            Toast.makeText(
+                context, finishedMsg,
+                Toast.LENGTH_LONG
+            ).show()
+            if (context is ReadingActivity || context is PatientReferralActivity) {
+                (context as Activity).finish()
+            }
+        }
+    }
 }
