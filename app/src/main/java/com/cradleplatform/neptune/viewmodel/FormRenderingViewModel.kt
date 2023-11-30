@@ -37,6 +37,7 @@ class FormRenderingViewModel @Inject constructor(
     private val sharedPreferences: SharedPreferences,
     private val networkStateManager: NetworkStateManager,
     private var smsKeyManager: SmsKeyManager,
+    private val smsSender: SMSSender,
 ) : ViewModel() {
 
     //Raw form template
@@ -214,8 +215,6 @@ class FormRenderingViewModel @Inject constructor(
                     smsRelayRequestCounter + 1
                 )
             }
-
-            val smsSender = SMSSender(sharedPreferences, applicationContext)
 
             httpSmsService.upload(
                 DatabaseObject.FormResponseWrapper(

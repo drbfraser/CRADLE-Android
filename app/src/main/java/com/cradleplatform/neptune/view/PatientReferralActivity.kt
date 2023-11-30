@@ -34,7 +34,8 @@ open class PatientReferralActivity : AppCompatActivity() {
     @Inject
     lateinit var patientManager: PatientManager
 
-    private lateinit var smsSender: SMSSender
+    @Inject
+    lateinit var smsSender: SMSSender
 
     private lateinit var currPatient: Patient
 
@@ -71,7 +72,7 @@ open class PatientReferralActivity : AppCompatActivity() {
             executePendingBindings()
         }
 
-        smsSender = SMSSender(sharedPreferences, this)
+        smsSender.setActivityContext(this)
 
         populateCurrentPatient()
 

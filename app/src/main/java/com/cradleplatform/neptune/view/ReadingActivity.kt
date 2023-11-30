@@ -66,7 +66,8 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
     @Inject
     lateinit var smsKeyManager: SmsKeyManager
 
-    private lateinit var smsSender: SMSSender
+    @Inject
+    lateinit var smsSender: SMSSender
 
     private lateinit var smsReceiver: SMSReceiver
 
@@ -105,7 +106,7 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
             executePendingBindings()
         }
 
-        smsSender = SMSSender(sharedPreferences, this)
+        smsSender.setActivityContext(this)
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar3)
         setSupportActionBar(toolbar)

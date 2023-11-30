@@ -44,6 +44,7 @@ class PatientReferralViewModel @Inject constructor(
     private val sharedPreferences: SharedPreferences,
     healthFacilityManager: HealthFacilityManager,
     private var smsKeyManager: SmsKeyManager,
+    private val smsSender: SMSSender,
     @ApplicationContext private val app: Context
 ) : ViewModel() {
 
@@ -169,15 +170,6 @@ class PatientReferralViewModel @Inject constructor(
                 smsRelayRequestCounter + 1
             )
         }
-
-        /**
-         * Sending an sms sender is also to the service is also not ideal
-         * instead change the approach so that SMS sender becomes an injectable class
-         * then inject and pass the sms content and let the class handle the sending inside a coroutine
-         * this implementation exists in many places, changing all of them is not possible with the time available
-         * so to not break the build an sms sender object is being sent to the service, REFER to issue
-         */
-        val smsSender = SMSSender(sharedPreferences, applicationContext)
 
         httpSmsService.upload(
             DatabaseObject.ReferralWrapper(

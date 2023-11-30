@@ -4,11 +4,17 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.telephony.SmsMessage
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 // Might want to encode the acknowledgment in the future
 private val ackRegexPattern = Regex("^01-CRADLE-\\d{6}-\\d{3}-ACK$")
 
-class SMSReceiver(private val smsSender: SMSSender, private val relayPhoneNumber: String) : BroadcastReceiver() {
+@AndroidEntryPoint
+class SMSReceiver @Inject constructor(
+    private val smsSender: SMSSender,
+    private val relayPhoneNumber: String,
+) : BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
         val data = intent?.extras
