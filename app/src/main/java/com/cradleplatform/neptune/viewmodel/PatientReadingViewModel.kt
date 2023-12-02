@@ -55,6 +55,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -1303,6 +1304,23 @@ class PatientReadingViewModel @Inject constructor(
 
     private fun shouldSavePatient() =
         reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW
+
+    /**
+     * Checks if a patient has been synced to the server.
+     */
+    fun isPatientSynced(): Boolean{
+        val lastServerUpdate = runBlocking { patientManager.getPatientById(
+            patientId.value.toString())?.lastServerUpdate }
+        return  lastServerUpdate != null
+    }
+
+    /**
+     * Updates a patient information (specifically used for updating lastServerUpdate)
+     * after it has been sent to the server via SMS.
+     */
+    suspend fun patientSentViaSMS(patient: Patient){
+        patientManager.add(patient)
+    }
 
     /** Save manager fields */
 
