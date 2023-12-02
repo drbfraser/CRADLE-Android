@@ -3,29 +3,25 @@ package com.cradleplatform.neptune.viewmodel
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.annotation.MainThread
-import androidx.core.content.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
-import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.ext.getIntOrNull
+import com.cradleplatform.neptune.http_sms_service.http.DatabaseObject
+import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
+import com.cradleplatform.neptune.http_sms_service.http.Protocol
+import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.manager.HealthFacilityManager
 import com.cradleplatform.neptune.manager.ReferralManager
 import com.cradleplatform.neptune.manager.ReferralUploadManager
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
-import com.cradleplatform.neptune.model.Referral
-import com.cradleplatform.neptune.http_sms_service.http.DatabaseObject
-import com.cradleplatform.neptune.utilities.UnixTimestamp
-import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
-import com.cradleplatform.neptune.http_sms_service.http.Protocol
-import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
-import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.model.PatientAndReferrals
+import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.SmsReferral
-import com.cradleplatform.neptune.utilities.SMSFormatter
+import com.cradleplatform.neptune.utilities.UnixTimestamp
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -43,7 +39,7 @@ class PatientReferralViewModel @Inject constructor(
     private val networkStateManager: NetworkStateManager,
     private val sharedPreferences: SharedPreferences,
     healthFacilityManager: HealthFacilityManager,
-    private var smsKeyManager: SmsKeyManager,
+    private val smsSender: SMSSender,
     @ApplicationContext private val app: Context
 ) : ViewModel() {
 
@@ -136,57 +132,24 @@ class PatientReferralViewModel @Inject constructor(
 
         /** we are redirected all transactions to the sms service **/
         var patientAndReferrals = PatientAndReferrals(patient, listOf(referral))
-        val smsRelayRequestCounter = sharedPreferences.getLong(
-            applicationContext.getString(R.string.sms_relay_request_counter), 0
-        )
-
-        // Retrieve the encrypted secret key
-        val smsSecretKey = smsKeyManager.retrieveSmsKey()
-            ?: // TODO: handle the case when the secret key is not available
-            error("Encryption failed - no valid smsSecretKey is available")
-
-        // This implementation is commented inside the PatientReferralActivity in the function sendSms(),
-        // it has been moved since.
-        val msgInPackets = SMSFormatter.listToString(
-            SMSFormatter.formatSMS(
-                SMSFormatter.encodeMsg(
-                    JacksonMapper.createWriter<SmsReferral>().writeValueAsString(
-                        SmsReferral(
-                            patient = patientAndReferrals
-                        )
-                    ),
-                    smsSecretKey
-                ),
-                smsRelayRequestCounter
-            ),
-        )
-        // No point in saving to shared prefs perhaps? I do not know why they used it before, the message could be sent
-        // as an argument
-        sharedPreferences.edit(commit = true) {
-            putString(applicationContext.getString(R.string.sms_relay_list_key), msgInPackets)
-            putLong(
-                applicationContext.getString(R.string.sms_relay_request_counter),
-                smsRelayRequestCounter + 1
-            )
+        smsSender.queueRelayContent(
+            JacksonMapper
+                .createWriter<SmsReferral>()
+                .writeValueAsString(SmsReferral(patient = patientAndReferrals))
+        ).let { enqueueSuccessful ->
+            if (enqueueSuccessful) {
+                httpSmsService.upload(
+                    DatabaseObject.ReferralWrapper(
+                        patient,
+                        referral,
+                        smsSender,
+                        Protocol.valueOf(submissionMode)
+                    )
+                )
+            } else {
+                error("SMSSender queueRelayContent() Failed")
+            }
         }
-
-        /**
-         * Sending an sms sender is also to the service is also not ideal
-         * instead change the approach so that SMS sender becomes an injectable class
-         * then inject and pass the sms content and let the class handle the sending inside a coroutine
-         * this implementation exists in many places, changing all of them is not possible with the time available
-         * so to not break the build an sms sender object is being sent to the service, REFER to issue
-         */
-        val smsSender = SMSSender(sharedPreferences, applicationContext)
-
-        httpSmsService.upload(
-            DatabaseObject.ReferralWrapper(
-                patient,
-                referral,
-                smsSender,
-                Protocol.valueOf(submissionMode)
-            )
-        )
 
         // saves the data in internal db
         handleStoringReferralFromBuilders(referral)

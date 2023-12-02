@@ -4,6 +4,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.telephony.SmsMessage
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import android.util.Log
 import com.cradleplatform.neptune.utilities.SMSFormatter
 
@@ -14,7 +16,11 @@ private var encryptedMessage = ""
 private var numberReceivedMessages = 0
 private var totalMessages = 0
 
-class SMSReceiver(private val smsSender: SMSSender, private val relayPhoneNumber: String) : BroadcastReceiver() {
+@AndroidEntryPoint
+class SMSReceiver @Inject constructor(
+    private val smsSender: SMSSender,
+    private val relayPhoneNumber: String,
+) : BroadcastReceiver() {
 
     private var smsFormatter: SMSFormatter = SMSFormatter()
 
