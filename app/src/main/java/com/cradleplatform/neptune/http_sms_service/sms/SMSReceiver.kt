@@ -4,10 +4,11 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.telephony.SmsMessage
+import android.util.Log
+import com.cradleplatform.neptune.http_sms_service.sms.ui.SmsTransmissionDialogViewModel
+import com.cradleplatform.neptune.utilities.SMSFormatter
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import android.util.Log
-import com.cradleplatform.neptune.utilities.SMSFormatter
 
 // TODO: Use shared prefs or other methods instead of these and decrypt data in an activity
 // Note that this data is not being read anywhere and is only being stored here
@@ -20,6 +21,7 @@ private var totalMessages = 0
 class SMSReceiver @Inject constructor(
     private val smsSender: SMSSender,
     private val relayPhoneNumber: String,
+    private val viewModel: SmsTransmissionDialogViewModel?,
 ) : BroadcastReceiver() {
 
     private var smsFormatter: SMSFormatter = SMSFormatter()
@@ -44,19 +46,24 @@ class SMSReceiver @Inject constructor(
             if (smsFormatter.isAckMessage(messageBody)
             ) {
                 smsSender.sendSmsMessage(true)
+                viewModel?.incrementCount()
             }
             // start storing message data and send ACK message
             else if (smsFormatter.isFirstMessage(messageBody)) {
 
                 requestIdentifier = smsFormatter.getRequestIdentifier(messageBody)
                 totalMessages = smsFormatter.getTotalNumMessages(messageBody)
+                viewModel?.setTotalMessageCount(totalMessages)
                 encryptedMessage = smsFormatter.getFirstMessageString(messageBody)
                 numberReceivedMessages = 1
+                viewModel?.resetCount()
+                    .let {
+                    viewModel?.incrementCount()
+                }
                 smsSender.sendAckMessage(
                     requestIdentifier,
                     numberReceivedMessages - 1,
                     totalMessages
-
                 )
             }
             // continue storing message data and send ACK message
@@ -64,8 +71,8 @@ class SMSReceiver @Inject constructor(
 
                 if (smsFormatter.getMessageNumber(messageBody) <= totalMessages &&
                     numberReceivedMessages < totalMessages) {
-
                     numberReceivedMessages += 1
+                    viewModel?.incrementCount()
                     encryptedMessage += smsFormatter.getRestMessageString(messageBody)
                     smsSender.sendAckMessage(requestIdentifier, numberReceivedMessages - 1, totalMessages)
                 }
