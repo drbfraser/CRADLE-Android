@@ -40,8 +40,6 @@ class SMSSender @Inject constructor(
     // TODO: Remove this once State LiveData reporting is added
     // Activities based on a "Finished" State instead of from here.
     private var activityContext: Context? = null
-//    @Inject
-//    lateinit var urlManager: UrlManager
     fun setActivityContext(activity: Context) {
         activityContext = activity
     }
@@ -53,8 +51,6 @@ class SMSSender @Inject constructor(
             val patientAndReadingsJSON = JacksonMapper.createWriter<PatientAndReadings>().writeValueAsString(
                 patientAndReadings
             )
-//            val endpoint = urlManager.postPatient.substringAfterLast("/",
-//                "api/")
             val json = JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
                 SmsReadingWithReferral(
                     requestNumber = "0",
@@ -66,8 +62,6 @@ class SMSSender @Inject constructor(
             )
             sendSmsMessageWithJson(json)
         } else {
-//            val endpoint = urlManager.postReading.substringAfterLast("/",
-//                "api/")
             for (reading in patientAndReadings.readings) {
                 val readingsJSON = JacksonMapper.createWriter<Reading>().writeValueAsString(
                     reading)
@@ -87,8 +81,6 @@ class SMSSender @Inject constructor(
     fun sendPatientAndReferral(patientAndReferrals: PatientAndReferrals) {
         val patientAndReferralsJSON = JacksonMapper.createWriter<PatientAndReferrals>()
             .writeValueAsString(patientAndReferrals)
-//        val endpoint = urlManager.postPatient.substringAfterLast("/",
-//            "api/")
         val json = JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
             SmsReadingWithReferral(
                 requestNumber = "0",
@@ -107,8 +99,6 @@ class SMSSender @Inject constructor(
         val referralJSON = JacksonMapper.createWriter<Referral>().writeValueAsString(
             referral
         )
-//        val endpoint = urlManager.postReferral.substringAfterLast("/",
-//            "api/")
         val json = JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
             SmsReadingWithReferral(
                 requestNumber = "0",
