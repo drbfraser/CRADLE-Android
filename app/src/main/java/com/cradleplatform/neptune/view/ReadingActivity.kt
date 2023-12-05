@@ -18,7 +18,6 @@ import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.edit
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
@@ -31,7 +30,6 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.databinding.ActivityReadingBinding
 import com.cradleplatform.neptune.ext.hideKeyboard
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
-import com.cradleplatform.neptune.utilities.SMSFormatter
 import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.manager.SmsKeyManager
@@ -66,7 +64,8 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
     @Inject
     lateinit var smsKeyManager: SmsKeyManager
 
-    private lateinit var smsSender: SMSSender
+    @Inject
+    lateinit var smsSender: SMSSender
 
     private lateinit var smsReceiver: SMSReceiver
 
@@ -105,7 +104,7 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
             executePendingBindings()
         }
 
-        smsSender = SMSSender(sharedPreferences, this)
+        smsSender.setActivityContext(this)
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar3)
         setSupportActionBar(toolbar)
@@ -486,28 +485,22 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
         setResult(RESULT_OK, intent)
     }
 
+    // This overrides the DataParser interface in ReferralDialogFragment.kt
     override fun sendSmsMessage(data: String) {
-        // Retrieve the encrypted secret key for the current user
-        val smsSecretKey = smsKeyManager.retrieveSmsKey()
-            ?: // TODO: handle the case when the secret key is not available
-            error("Encryption failed - no valid smsSecretKey is available")
-
-        val encodedMsg = SMSFormatter.encodeMsg(data, smsSecretKey)
-
-        val smsRelayRequestCounter = sharedPreferences.getLong(getString(R.string.sms_relay_request_counter), 0)
-
-        val msgInPackets =
-            SMSFormatter.listToString(SMSFormatter.formatSMS(encodedMsg, smsRelayRequestCounter))
-        sharedPreferences.edit(commit = true) {
-            putString(getString(R.string.sms_relay_list_key), msgInPackets)
-            putLong(getString(R.string.sms_relay_request_counter), smsRelayRequestCounter + 1)
-        }
-
-        smsSender.sendSmsMessage(false)
-
-        Toast.makeText(
-            this, getString(R.string.sms_sender_send),
-            Toast.LENGTH_LONG
-        ).show()
+        smsSender.queueRelayContent(data)
+            .let { enqueuSuccessful ->
+                if (enqueuSuccessful) {
+                    Toast.makeText(
+                        this, getString(R.string.sms_sender_send),
+                        Toast.LENGTH_LONG
+                    ).show()
+                    smsSender.sendSmsMessage(false)
+                } else {
+                    Toast.makeText(
+                        this, "SMSSender Enqueue failed",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
     }
 }

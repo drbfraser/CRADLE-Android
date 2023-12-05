@@ -5,9 +5,9 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Looper
 import android.telephony.SmsManager
-import com.cradleplatform.neptune.R
 import android.widget.Toast
 import androidx.core.content.edit
+import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.model.PatientAndReadings
 import com.cradleplatform.neptune.model.PatientAndReferrals
@@ -15,19 +15,33 @@ import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.SmsReadingWithReferral
 import com.cradleplatform.neptune.utilities.SMSFormatter
-import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.listToString
-import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.stringToList
+import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.encodeMsg
+import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.formatSMS
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.view.PatientReferralActivity
 import com.cradleplatform.neptune.view.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.UserViewModel
+import javax.inject.Inject
+import javax.inject.Singleton
 
-import java.lang.Exception
-
-class SMSSender(
+@Singleton
+class SMSSender @Inject constructor(
+    private val smsKeyManager: SmsKeyManager,
     private val sharedPreferences: SharedPreferences,
-    private val context: Context
+    private val appContext: Context,
 ) {
+    private var relayRequestCount: Long = 0
+    private var smsRelayQueue = ArrayDeque<String>()
+    private var smsSecretKey = smsKeyManager.retrieveSmsKey()
+        ?: // TODO: handle the case when the secret key is not available
+        error("Encryption failed - no valid smsSecretKey is available")
+    // TODO: Remove this once State LiveData reporting is added
+    // Activities based on a "Finished" State instead of from here.
+    private var activityContext: Context? = null
+    fun setActivityContext(activity: Context) {
+        activityContext = activity
+    }
+
     fun sendPatientAndReadings(patientAndReadings: PatientAndReadings) {
         // TODO: Add target API endpoint information needed by the backend to json ??
         // TODO: requestNumber=0 as it is not implemented in the backend yet
@@ -130,6 +144,12 @@ class SMSSender(
         }
     }
 
+    fun queueRelayContent(unencryptedData: String): Boolean {
+        val encryptedData = encodeMsg(unencryptedData, smsSecretKey)
+        val smsPacketList = formatSMS(encryptedData, relayRequestCount)
+        return smsRelayQueue.addAll(smsPacketList)
+    }
+
     fun sendSmsMessage(acknowledged: Boolean) {
         val smsRelayContentKey = context.getString(R.string.sms_relay_list_key)
         val smsRelayContent = sharedPreferences.getString(smsRelayContentKey, null)
@@ -144,22 +164,16 @@ class SMSSender(
             Looper.prepare()
             looperPrepared = true
         }
-
-        if (!smsRelayContent.isNullOrEmpty()) {
-            val smsRelayMsgList = stringToList(smsRelayContent)
-
+        if (!smsRelayQueue.isNullOrEmpty()) {
             // if acknowledgement received, remove window block and proceed to next
             if (acknowledged) {
-                smsRelayMsgList.removeAt(0)
-                if (smsRelayMsgList.isEmpty()) {
-                    val finishedMsg = context.getString(R.string.sms_all_sent)
+                smsRelayQueue.removeFirst()
+                if (smsRelayQueue.isEmpty()) {
+                    val finishedMsg = appContext.getString(R.string.sms_all_sent)
                     Toast.makeText(
-                        context, finishedMsg,
+                        appContext, finishedMsg,
                         Toast.LENGTH_LONG
                     ).show()
-                    if (context is ReadingActivity || context is PatientReferralActivity) {
-                        (context as Activity).finish()
-                    }
                     if (looperPrepared) {
                         Looper.loop()
                     }
@@ -168,7 +182,7 @@ class SMSSender(
             }
 
             try {
-                val packetMsg = smsRelayMsgList.first()
+                val packetMsg = smsRelayQueue.first()
                 val packetMsgDivided = smsManager.divideMessage(packetMsg)
 
                 // TODO: Discuss with Dr. Brian about using the sendMultiPartTextMessage
@@ -180,7 +194,7 @@ class SMSSender(
                     packetMsgDivided, null, null
                 )
                 Toast.makeText(
-                    context, context.getString(R.string.sms_packet_sent),
+                    appContext, appContext.getString(R.string.sms_packet_sent),
                     Toast.LENGTH_LONG
                 ).show()
             } catch (ex: Exception) {
@@ -188,17 +202,68 @@ class SMSSender(
                 // Can't toast on a thread that has not called Looper.prepare() when sending
                 // just a referral for a patient
                 Toast.makeText(
-                    context, ex.message.toString(),
+                    appContext, ex.message.toString(),
                     Toast.LENGTH_LONG
                 ).show()
             }
+        }
 
-            sharedPreferences.edit(commit = true) {
-                putString(smsRelayContentKey, listToString(smsRelayMsgList))
+        if (looperPrepared) {
+            Looper.loop()
+        }
+    }
+
+    fun sendAckMessage(requestIdentifier: String, ackNumber: Int, numFragments: Int) {
+        var ackMessage = """
+        01
+        CRADLE
+        $requestIdentifier
+        ${String.format("%03d", ackNumber)}
+        ACK
+        """.trimIndent().replace("\n", "-")
+
+        val smsManager: SmsManager = SmsManager.getDefault()
+        val relayPhoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
+        // Variable checks if we prepared a looper for the current thread or if it already existed
+        var looperPrepared = false
+
+        // Since this function is being called by both the main and other threads, we need to
+        // prepare looper for the other threads in order to show toasts
+        if (Looper.myLooper() == null) {
+            Looper.prepare()
+            looperPrepared = true
+        }
+
+        try {
+            smsManager.sendMultipartTextMessage(
+                relayPhoneNumber, UserViewModel.USER_PHONE_NUMBER,
+                smsManager.divideMessage(ackMessage), null, null
+            )
+        } catch (ex: Exception) {
+            // TODO: Fix the error here ==> java.lang.NullPointerException:
+            // Can't toast on a thread that has not called Looper.prepare() when sending
+            // just a referral for a patient
+            Toast.makeText(
+                appContext, ex.message.toString(),
+                Toast.LENGTH_LONG
+            ).show()
+        }
+        if (ackNumber == numFragments - 1) {
+            // TODO: Determine if it's better to exit Activity here or when nothing is left
+            // in the relay list (see if (smsRelayMsgList.isEmpty()))
+            val finishedMsg = appContext.getString(R.string.sms_all_sent)
+            Toast.makeText(
+                appContext, finishedMsg,
+                Toast.LENGTH_LONG
+            ).show()
+            // TODO: Remove this after State reporting is implemented. Move logic to Activity instead.
+            if (activityContext is ReadingActivity || activityContext is PatientReferralActivity) {
+                (activityContext as Activity).finish()
+                activityContext = null
             }
-            if (looperPrepared) {
-                Looper.loop()
-            }
+        }
+        if (looperPrepared) {
+            Looper.loop()
         }
     }
 }

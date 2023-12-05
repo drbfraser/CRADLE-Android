@@ -5,24 +5,19 @@ import android.content.SharedPreferences
 import android.graphics.drawable.Drawable
 import android.widget.Toast
 import androidx.core.content.ContextCompat.getDrawable
-import androidx.core.content.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.http_sms_service.http.DatabaseObject
+import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
+import com.cradleplatform.neptune.http_sms_service.http.Protocol
+import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.model.Answer
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.Question
-import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
-import com.cradleplatform.neptune.http_sms_service.http.Protocol
-import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
-import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.model.QuestionTypeEnum
-import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.encodeMsg
-import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.formatSMS
-import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.listToString
 import com.cradleplatform.neptune.utilities.connectivity.api24.ConnectivityOptions
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
@@ -36,7 +31,7 @@ class FormRenderingViewModel @Inject constructor(
     private val httpSmsService: HttpSmsService,
     private val sharedPreferences: SharedPreferences,
     private val networkStateManager: NetworkStateManager,
-    private var smsKeyManager: SmsKeyManager,
+    private val smsSender: SMSSender,
 ) : ViewModel() {
 
     //Raw form template
@@ -191,40 +186,21 @@ class FormRenderingViewModel @Inject constructor(
             val json = JacksonMapper.createWriter<FormResponse>().writeValueAsString(
                 formResponse
             )
-
-            // Retrieve the encrypted secret key
-            val smsSecretKey = smsKeyManager.retrieveSmsKey()
-                ?: // TODO: handle the case when the secret key is not available
-                error("Encryption failed - no valid smsSecretKey is available")
-            val encodedMsg = encodeMsg(json, smsSecretKey)
-
-            val smsRelayRequestCounter = sharedPreferences.getLong(
-                applicationContext.getString(R.string.sms_relay_request_counter), 0
-            )
-
-            val msgInPackets = listToString(
-                formatSMS(encodedMsg, smsRelayRequestCounter)
-            )
-
-            /*This is something that needs to reworked, refer to issue #114*/
-            sharedPreferences.edit(commit = true) {
-                putString(applicationContext.getString(R.string.sms_relay_list_key), msgInPackets)
-                putLong(
-                    applicationContext.getString(R.string.sms_relay_request_counter),
-                    smsRelayRequestCounter + 1
-                )
-            }
-
-            val smsSender = SMSSender(sharedPreferences, applicationContext)
-
-            httpSmsService.upload(
-                DatabaseObject.FormResponseWrapper(
-                    formResponse,
-                    smsSender,
-                    Protocol.valueOf(submissionMode),
-                    applicationContext
-                )
-            )
+            smsSender.queueRelayContent(json)
+                .let { enqueueSuccessful ->
+                    if (enqueueSuccessful) {
+                        httpSmsService.upload(
+                            DatabaseObject.FormResponseWrapper(
+                                formResponse,
+                                smsSender,
+                                Protocol.valueOf(submissionMode),
+                                applicationContext
+                            )
+                        )
+                    } else {
+                        error("SMSSender Enqueue Failed")
+                    }
+                }
         } else {
             error("FormTemplate does not exist: Current displaying FormTemplate is null")
         }
