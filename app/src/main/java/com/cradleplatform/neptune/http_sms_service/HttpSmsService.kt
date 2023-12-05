@@ -106,10 +106,11 @@ class HttpSmsService @Inject constructor(private val restApi: RestApi) {
             }
             Protocol.SMS -> {
                 // Check if the patient has been synced to the server yet
-                if (referralWrapper.patient.lastServerUpdate == null){
-                    referralWrapper.smsSender.sendPatientAndReferral(PatientAndReferrals(referralWrapper.patient, listOf(referralWrapper.referral)))
-                }
-                else{
+                if (referralWrapper.patient.lastServerUpdate == null) {
+                    referralWrapper.smsSender.sendPatientAndReferral(
+                        PatientAndReferrals(referralWrapper.patient,
+                            listOf(referralWrapper.referral)))
+                } else {
                     referralWrapper.smsSender.sendReferral(referralWrapper.referral)
                 }
             }
