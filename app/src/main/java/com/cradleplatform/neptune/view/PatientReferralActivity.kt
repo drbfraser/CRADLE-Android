@@ -23,6 +23,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import android.content.IntentFilter
+import android.view.View
+import android.widget.TextView
 import com.cradleplatform.neptune.viewmodel.UserViewModel
 import com.cradleplatform.neptune.utilities.CustomToast
 
@@ -115,6 +117,15 @@ open class PatientReferralActivity : AppCompatActivity() {
     }
 
     private fun setupSendButtons() {
+        // Create warning if the patient is going to be sent with the referral as well
+        if (currPatient.lastServerUpdate == null) {
+            findViewById<TextView>(R.id.textView6).visibility = View.VISIBLE
+        }
+
+        // TODO: In both of the following buttons, the result is not being used.
+        // Furthermore, the saveReferralFunction is not even returning back to this block.
+        // Which is why the toast never appears, and we cannot do anything with the output.
+        // We need to return and verify the output
         val sendViaHTTP = findViewById<Button>(R.id.send_web_button)
         sendViaHTTP.setOnClickListener {
             lifecycleScope.launch {
@@ -136,6 +147,10 @@ open class PatientReferralActivity : AppCompatActivity() {
                 //Passing context to viewModel might not be the best idea,
                 // however, it is required as of now to resolve the strings
                 val unusedResult = viewModel.saveReferral("SMS", currPatient, applicationContext)
+                // TODO: Verify that the referral was successful
+                // This code is never executed, as mentioned in the comment on line 125.
+                currPatient.lastServerUpdate = currPatient.lastEdited
+                patientManager.add(currPatient)
                 CustomToast.shortToast(
                     applicationContext,
                     applicationContext.getString(R.string.sms_sender_send)

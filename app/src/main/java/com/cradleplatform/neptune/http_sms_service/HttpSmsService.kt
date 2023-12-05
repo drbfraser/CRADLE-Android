@@ -105,7 +105,13 @@ class HttpSmsService @Inject constructor(private val restApi: RestApi) {
                 }
             }
             Protocol.SMS -> {
-                referralWrapper.smsSender.sendReferral(referralWrapper.referral)
+                // Check if the patient has been synced to the server yet
+                if (referralWrapper.patient.lastServerUpdate == null){
+                    referralWrapper.smsSender.sendPatientAndReferral(PatientAndReferrals(referralWrapper.patient, listOf(referralWrapper.referral)))
+                }
+                else{
+                    referralWrapper.smsSender.sendReferral(referralWrapper.referral)
+                }
             }
         }
         //TODO: Placeholder return statement, return errors more gracefully, remove the dependency for JacksonMapper

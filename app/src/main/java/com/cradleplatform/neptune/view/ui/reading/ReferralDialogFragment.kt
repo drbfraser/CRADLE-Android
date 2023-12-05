@@ -149,8 +149,8 @@ class ReferralDialogFragment : DialogFragment() {
         if (viewModel.isInitialized.value != true) {
             dismiss()
         }
-        if(!viewModel.isPatientSynced() &&
-            launchReason != ReadingActivity.LaunchReason.LAUNCH_REASON_NEW){
+        if (!viewModel.isPatientSynced() &&
+            launchReason != ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
             view.findViewById<TextView>(R.id.textView6).visibility = View.VISIBLE
         }
     }

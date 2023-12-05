@@ -1308,17 +1308,17 @@ class PatientReadingViewModel @Inject constructor(
     /**
      * Checks if a patient has been synced to the server.
      */
-    fun isPatientSynced(): Boolean{
+    fun isPatientSynced(): Boolean {
         val lastServerUpdate = runBlocking { patientManager.getPatientById(
             patientId.value.toString())?.lastServerUpdate }
-        return  lastServerUpdate != null
+        return lastServerUpdate != null
     }
 
     /**
      * Updates a patient information (specifically used for updating lastServerUpdate)
      * after it has been sent to the server via SMS.
      */
-    suspend fun patientSentViaSMS(patient: Patient){
+    suspend fun patientSentViaSMS(patient: Patient) {
         patientManager.add(patient)
     }
 

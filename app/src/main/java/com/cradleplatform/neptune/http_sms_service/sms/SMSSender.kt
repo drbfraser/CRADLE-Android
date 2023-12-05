@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.core.content.edit
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.model.PatientAndReadings
+import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.SmsReadingWithReferral
@@ -30,7 +31,7 @@ class SMSSender(
     fun sendPatientAndReadings(patientAndReadings: PatientAndReadings) {
         // TODO: Add target API endpoint information needed by the backend to json ??
         // TODO: requestNumber=0 as it is not implemented in the backend yet
-        if(patientAndReadings.patient.lastServerUpdate == null) {
+        if (patientAndReadings.patient.lastServerUpdate == null) {
             val patientAndReadingsJSON = JacksonMapper.createWriter<PatientAndReadings>().writeValueAsString(
                 patientAndReadings
             )
@@ -44,8 +45,7 @@ class SMSSender(
                 )
             )
             sendSmsMessageWithJson(json)
-        }
-        else{
+        } else {
             for (reading in patientAndReadings.readings) {
                 val readingsJSON = JacksonMapper.createWriter<Reading>().writeValueAsString(
                     reading)
@@ -61,6 +61,22 @@ class SMSSender(
                 sendSmsMessageWithJson(json)
             }
         }
+    }
+    fun sendPatientAndReferral(patientAndReferrals: PatientAndReferrals) {
+        val patientAndReferralsJSON = JacksonMapper.createWriter<PatientAndReferrals>()
+            .writeValueAsString(patientAndReferrals)
+
+        val json = JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
+            SmsReadingWithReferral(
+                requestNumber = "0",
+                method = "POST",
+                // TODO: Remove the hardcoded API endpoint
+                endpoint = "api/patients",
+                headers = "",
+                body = patientAndReferralsJSON
+            )
+        )
+        sendSmsMessageWithJson(json)
     }
     fun sendReferral(referral: Referral) {
         // TODO: Add target API endpoint information needed by the backend to json ??
