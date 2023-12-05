@@ -6,9 +6,11 @@ import android.content.SharedPreferences
 import android.os.Looper
 import android.telephony.SmsManager
 import android.widget.Toast
+import androidx.core.content.ContextCompat.getString
 import androidx.core.content.edit
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.SmsKeyManager
+import com.cradleplatform.neptune.manager.UrlManager
 import com.cradleplatform.neptune.model.PatientAndReadings
 import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.Reading
@@ -38,6 +40,8 @@ class SMSSender @Inject constructor(
     // TODO: Remove this once State LiveData reporting is added
     // Activities based on a "Finished" State instead of from here.
     private var activityContext: Context? = null
+//    @Inject
+//    lateinit var urlManager: UrlManager
     fun setActivityContext(activity: Context) {
         activityContext = activity
     }
@@ -49,6 +53,8 @@ class SMSSender @Inject constructor(
             val patientAndReadingsJSON = JacksonMapper.createWriter<PatientAndReadings>().writeValueAsString(
                 patientAndReadings
             )
+//            val endpoint = urlManager.postPatient.substringAfterLast("/",
+//                "api/")
             val json = JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
                 SmsReadingWithReferral(
                     requestNumber = "0",
@@ -60,6 +66,8 @@ class SMSSender @Inject constructor(
             )
             sendSmsMessageWithJson(json)
         } else {
+//            val endpoint = urlManager.postReading.substringAfterLast("/",
+//                "api/")
             for (reading in patientAndReadings.readings) {
                 val readingsJSON = JacksonMapper.createWriter<Reading>().writeValueAsString(
                     reading)
@@ -79,7 +87,8 @@ class SMSSender @Inject constructor(
     fun sendPatientAndReferral(patientAndReferrals: PatientAndReferrals) {
         val patientAndReferralsJSON = JacksonMapper.createWriter<PatientAndReferrals>()
             .writeValueAsString(patientAndReferrals)
-
+//        val endpoint = urlManager.postPatient.substringAfterLast("/",
+//            "api/")
         val json = JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
             SmsReadingWithReferral(
                 requestNumber = "0",
@@ -98,7 +107,8 @@ class SMSSender @Inject constructor(
         val referralJSON = JacksonMapper.createWriter<Referral>().writeValueAsString(
             referral
         )
-
+//        val endpoint = urlManager.postReferral.substringAfterLast("/",
+//            "api/")
         val json = JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
             SmsReadingWithReferral(
                 requestNumber = "0",
@@ -112,35 +122,31 @@ class SMSSender @Inject constructor(
         sendSmsMessageWithJson(json)
     }
     private fun sendSmsMessageWithJson(data: String) {
-        // Retrieve the encrypted secret key for the current user
-        val smsKeyManager = SmsKeyManager(context)
-        val smsSecretKey = smsKeyManager.retrieveSmsKey()
-            ?: // TODO: handle the case when the secret key is not available
-            error("Encryption failed - no valid smsSecretKey is available")
+        // Variable checks if we prepared a looper for the current thread or if it already existed
+        var looperPrepared = false
 
-        val encodedMsg = SMSFormatter.encodeMsg(data, smsSecretKey)
-
-        val smsRelayRequestCounter = sharedPreferences.getLong(context.getString(R.string.sms_relay_request_counter), 0)
-
-        val msgInPackets =
-            SMSFormatter.listToString(SMSFormatter.formatSMS(encodedMsg, smsRelayRequestCounter))
-        sharedPreferences.edit(commit = true) {
-            putString(context.getString(R.string.sms_relay_list_key), msgInPackets)
-            putLong(context.getString(R.string.sms_relay_request_counter), smsRelayRequestCounter + 1)
-        }
-
-        sendSmsMessage(false)
-
-        // Since this function is being called by threads other than the main thread, we need to
-        // prepare looper to show toasts
+        // Since this function is being called by both the main and other threads, we need to
+        // prepare looper for the other threads in order to show toasts
         if (Looper.myLooper() == null) {
             Looper.prepare()
-            Toast.makeText(context, context.getString(R.string.sms_sender_send),
-                Toast.LENGTH_LONG).show()
+            looperPrepared = true
+        }
+        queueRelayContent(data).let { enqueuSuccessful ->
+                if (enqueuSuccessful) {
+                    Toast.makeText(
+                        appContext, getString(appContext, R.string.sms_sender_send),
+                        Toast.LENGTH_LONG
+                    ).show()
+                    sendSmsMessage(false)
+                } else {
+                    Toast.makeText(
+                        appContext, "SMSSender Enqueue failed",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        if (looperPrepared) {
             Looper.loop()
-        } else {
-            Toast.makeText(context, context.getString(R.string.sms_sender_send),
-                Toast.LENGTH_LONG).show()
         }
     }
 
@@ -151,8 +157,6 @@ class SMSSender @Inject constructor(
     }
 
     fun sendSmsMessage(acknowledged: Boolean) {
-        val smsRelayContentKey = context.getString(R.string.sms_relay_list_key)
-        val smsRelayContent = sharedPreferences.getString(smsRelayContentKey, null)
         val relayPhoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
         val smsManager: SmsManager = SmsManager.getDefault()
         // Variable checks if we prepared a looper for the current thread or if it already existed

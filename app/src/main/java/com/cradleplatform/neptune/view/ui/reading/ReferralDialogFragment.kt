@@ -62,6 +62,9 @@ class ReferralDialogFragment : DialogFragment() {
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
+
+    @Inject
+    lateinit var smsSender: SMSSender
     override fun onAttach(context: Context) {
         super.onAttach(context)
         check(context is ReadingActivity)
@@ -169,7 +172,7 @@ class ReferralDialogFragment : DialogFragment() {
             when (smsSendResult) {
                 is ReadingFlowSaveResult.SaveSuccessful.ReferralSmsNeeded -> {
                     showStatusToast(view.context, smsSendResult, ReferralOption.SMS)
-                    val smsSender = SMSSender(sharedPreferences, view.context)
+                    smsSender.setActivityContext(view.context)
                     smsSender.sendPatientAndReadings(smsSendResult.patientInfoForReferral)
                     // TODO: Verify that the patient was sent to the server successfully
                     smsSendResult.patientInfoForReferral.patient.lastServerUpdate =
