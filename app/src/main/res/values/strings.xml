@@ -173,6 +173,7 @@
     <string name="login_error">Invalid email or password.</string>
     <string name="login_activity_no_internet">No internet available</string>
     <string name="activity_patients_no_patients_message">You don\'t have any patients right now.\n Go to the dashboard to create a new patient.</string>
+    <string name="activity_saved_forms_no_saved_forms_message">This patient doesn\'t have any saved forms right now.\n Go to the patient\'s profile to create a new form.</string>
     <string name="pregnant_question">Pregnant?</string>
     <string name="create_new_reading">Create New Reading</string>
     <string name="create_new_referral">Create New Referral</string>
@@ -516,6 +517,7 @@
     <string name="activity_patients_search_view_title">Search by name or ID</string>
     <string name="activity_patients_error_loading_patients">Error occurred when loading patients</string>
     <string name="activity_patients_retry_button">Retry</string>
+    <string name="activity_saved_forms_retry_button">Retry</string>
     <string name="list_item_patient_referral_assessed">Referral assessed</string>
     <string name="list_item_patient_referral_pending">Referral pending</string>
     <string name="status_none">No traffic light</string>
@@ -658,6 +660,7 @@
     <string name="warn_no_form_template_selected">Please Select a form</string>
     <string name="war_no_form_language_selected">Please Select a Language</string>
     <string name="create_new_form">Create New Form</string>
+    <string name="see_saved_forms">See Saved Forms</string>
     <string name="form_selection_hint">Form*</string>
     <string name="form_language_hint">Language*</string>
     <string name="fetch_form_button_text">Fetch Form</string>

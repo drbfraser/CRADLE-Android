@@ -121,6 +121,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupCreatePatientReadingButton()
         setupCreatePatientReferralButton()
         setupCreateAndFillFormButton()
+        setupSeeSavedFormsButton()
         setupUpdateRecord()
         setupLineChart()
         setupToolBar()
@@ -446,6 +447,19 @@ open class PatientProfileActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupSeeSavedFormsButton() {
+        val createFormButton = findViewById<Button>(R.id.seeSavedFormsButton)
+
+        createFormButton.visibility = View.VISIBLE
+        createFormButton.setOnClickListener {
+            val intent = SavedFormsActivity.makeIntentForPatientId(
+                this@PatientProfileActivity,
+                currPatient.id,
+            )
+            startActivity(intent)
+        }
+    }
+
     private fun onUpdateButtonClicked(isDrugRecord: Boolean) {
         val intent = PatientUpdateDrugMedicalActivity.makeIntent(this, isDrugRecord, currPatient)
         startActivity(intent)
@@ -558,6 +572,7 @@ open class PatientProfileActivity : AppCompatActivity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
+        super.onBackPressed()
 
         var intent = PatientsActivity.makeIntent(this@PatientProfileActivity)
         startActivity(intent)

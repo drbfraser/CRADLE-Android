@@ -54,7 +54,8 @@ constructor(
 
     var archived: Boolean
     var formClassificationId: String
-    var dateCreated: Int
+    var formClassificationName: String
+    var dateCreated: Long
     @SerializedName("lang")
     var language: String = language
     @SerializedName("questions")
@@ -70,6 +71,7 @@ constructor(
 
         this@FormResponse.archived = formTemplate.archived!!
         this@FormResponse.formClassificationId = formTemplate.formClassId!!
+        this@FormResponse.formClassificationName = formTemplate.formClassName!!
         this@FormResponse.dateCreated = formTemplate.dateCreated!!
         this@FormResponse.questionResponses = createQuestionResponses(
             formTemplate.questions!!,
@@ -131,6 +133,17 @@ constructor(
         }
 
         return responseList
+    }
+
+    public override operator fun equals(
+        other: Any?
+    ): Boolean {
+        return when (other) {
+            is FormResponse -> {
+                this.formResponseId == other.formResponseId
+            }
+            else -> false
+        }
     }
 
     companion object {

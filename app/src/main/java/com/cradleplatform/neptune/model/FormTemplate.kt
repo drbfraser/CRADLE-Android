@@ -22,9 +22,10 @@ data class FormTemplate(
     @SerializedName("version") val version: String?,
     @SerializedName("archived") val archived: Boolean?,
     // timestamp (filled by server when created)
-    @SerializedName("dateCreated") val dateCreated: Int?,
+    @SerializedName("dateCreated") val dateCreated: Long?,
     @SerializedName("id") val id: String?,
     @SerializedName("formClassificationId") val formClassId: String?,
+    @SerializedName("formClassificationName") val formClassName: String?,
     @SerializedName("questions") val questions: List<Question>?,
 
 ) : Serializable {
@@ -87,6 +88,10 @@ data class FormTemplate(
         this@FormTemplate.formClassId ?: let {
             nullCheckResult = false
             Log.e(TAG, "[formClassId] was null")
+        }
+        this@FormTemplate.formClassName ?: let {
+            nullCheckResult = false
+            Log.e(TAG, "[formClassName] was null")
         }
         this@FormTemplate.questions?.forEach { it.verifyIntegrity() }
             ?: let {

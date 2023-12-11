@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="formResponse"
+            type="com.cradleplatform.neptune.model.FormResponse" />
+
+        <import type="com.cradleplatform.neptune.utilities.DateUtil" />
+        <import type="com.cradleplatform.neptune.utilities.Util" />
+        <import type="android.view.View" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/list_item_saved_form_constraint_layout"
+        android:layout_width="match_parent"
+        android:layout_height="154dp"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="16dp"
+        tools:visibility="visible">
+
+        <TextView
+            android:id="@+id/list_item_saved_form_name_text_view"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:maxLines="2"
+            android:minLines="2"
+            android:text="@{formResponse.formClassificationName}"
+            android:textAppearance="@style/TextAppearance.Cradle.Body1"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/patient_info_guideline"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Hubert Blaine Wolfe­schlegel­stein­hausen­berger­dorff Sr." />
+
+        <TextView
+            android:id="@+id/list_item_saved_form_version_text_view"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:maxLines="2"
+            android:minLines="2"
+            android:text="@{formResponse.formTemplate.version}"
+            android:textAppearance="@style/TextAppearance.Cradle.Body1"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/patient_info_guideline"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Hubert Blaine Wolfe­schlegel­stein­hausen­berger­dorff Sr." />
+
+        <TextView
+            android:id="@+id/list_item_saved_form_id_label_text_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/list_item_patient_id_label"
+            android:textAppearance="@style/TextAppearance.Cradle.Body1"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@+id/date_created_text_view"
+            app:layout_constraintStart_toStartOf="@+id/list_item_saved_form_name_text_view" />
+
+        <TextView
+            android:id="@+id/list_item_patient_id_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:maxLines="1"
+            android:text="@{formResponse.formResponseId}"
+            android:textAppearance="@style/TextAppearance.Cradle.Body1"
+            app:layout_constraintBaseline_toBaselineOf="@+id/list_item_saved_form_id_label_text_view"
+            app:layout_constraintEnd_toStartOf="@+id/patient_info_guideline"
+            app:layout_constraintStart_toEndOf="@+id/list_item_saved_form_id_label_text_view"
+            tools:text="12345678901234" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/patient_info_guideline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_begin="220dp" />
+
+        <TextView
+            android:id="@+id/date_created_on_text_view"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:text="@string/patient_list_item_last_reading_from"
+            android:textAlignment="center"
+            android:textAppearance="@style/TextAppearance.Cradle.Body1"
+            android:textStyle="bold"
+            app:layout_constraintBaseline_toBaselineOf="@+id/list_item_saved_form_id_label_text_view"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/patient_info_guideline" />
+
+        <TextView
+            android:id="@+id/date_created_text_view"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:text="@{DateUtil.getConciseDateString(formResponse.dateCreated, true)}"
+            android:textAlignment="center"
+            android:textAppearance="@style/TextAppearance.Cradle.Body1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/patient_info_guideline"
+            app:layout_constraintTop_toBottomOf="@+id/date_created_on_text_view"
+            tools:text="Sep 20 @ 10 PM
+"       />
+
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            android:visibility="@{formResponse == null ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

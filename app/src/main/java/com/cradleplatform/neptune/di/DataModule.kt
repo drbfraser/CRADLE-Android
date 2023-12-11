@@ -112,6 +112,10 @@ class DataModule {
         database.formClassificationDao()
 
     @Provides
+    fun provideFormResponseDao(database: CradleDatabase): FormResponseDao =
+        database.formResponseDao()
+
+    @Provides
     @Singleton
     fun provideHealthCentreService(database: CradleDatabase): HealthFacilityManager {
         return HealthFacilityManager(database)
