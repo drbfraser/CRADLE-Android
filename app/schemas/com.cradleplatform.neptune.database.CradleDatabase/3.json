@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 3,
-    "identityHash": "5afa759569ea2c4686b2e6bd9369f724",
+    "identityHash": "ad2b91ca61211d5545df11eb0190426e",
     "entities": [
       {
         "tableName": "Reading",
@@ -94,10 +94,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "readingId"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [
           {
@@ -106,6 +106,7 @@
             "columnNames": [
               "readingId"
             ],
+            "orders": [],
             "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_Reading_readingId` ON `${TABLE_NAME}` (`readingId`)"
           },
           {
@@ -114,6 +115,7 @@
             "columnNames": [
               "patientId"
             ],
+            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_Reading_patientId` ON `${TABLE_NAME}` (`patientId`)"
           }
         ],
@@ -263,10 +265,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "id"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [
           {
@@ -275,6 +277,7 @@
             "columnNames": [
               "id"
             ],
+            "orders": [],
             "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_Patient_id` ON `${TABLE_NAME}` (`id`)"
           }
         ],
@@ -328,10 +331,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "name"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [],
         "foreignKeys": []
@@ -432,10 +435,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "id"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [
           {
@@ -444,6 +447,7 @@
             "columnNames": [
               "id"
             ],
+            "orders": [],
             "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_Referral_id` ON `${TABLE_NAME}` (`id`)"
           },
           {
@@ -452,6 +456,7 @@
             "columnNames": [
               "patientId"
             ],
+            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_Referral_patientId` ON `${TABLE_NAME}` (`patientId`)"
           },
           {
@@ -460,6 +465,7 @@
             "columnNames": [
               "referralHealthFacilityName"
             ],
+            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_Referral_referralHealthFacilityName` ON `${TABLE_NAME}` (`referralHealthFacilityName`)"
           }
         ],
@@ -572,10 +578,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "id"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [
           {
@@ -584,6 +590,7 @@
             "columnNames": [
               "id"
             ],
+            "orders": [],
             "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_Assessment_id` ON `${TABLE_NAME}` (`id`)"
           },
           {
@@ -592,6 +599,7 @@
             "columnNames": [
               "patientId"
             ],
+            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_Assessment_patientId` ON `${TABLE_NAME}` (`patientId`)"
           }
         ],
@@ -633,13 +641,112 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "formClassId"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [],
         "foreignKeys": []
+      },
+      {
+        "tableName": "FormResponse",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`formResponseId` TEXT NOT NULL, `formTemplate` TEXT NOT NULL, `answers` TEXT NOT NULL, `archived` INTEGER NOT NULL, `formClassificationId` TEXT NOT NULL, `dateCreated` INTEGER NOT NULL, `language` TEXT NOT NULL, `questionResponses` TEXT NOT NULL, `patientId` TEXT NOT NULL, PRIMARY KEY(`formResponseId`), FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "formResponseId",
+            "columnName": "formResponseId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "formTemplate",
+            "columnName": "formTemplate",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "answers",
+            "columnName": "answers",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "archived",
+            "columnName": "archived",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "formClassificationId",
+            "columnName": "formClassificationId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateCreated",
+            "columnName": "dateCreated",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "questionResponses",
+            "columnName": "questionResponses",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "patientId",
+            "columnName": "patientId",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "formResponseId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_FormResponse_formResponseId",
+            "unique": true,
+            "columnNames": [
+              "formResponseId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_FormResponse_formResponseId` ON `${TABLE_NAME}` (`formResponseId`)"
+          },
+          {
+            "name": "index_FormResponse_patientId",
+            "unique": false,
+            "columnNames": [
+              "patientId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_FormResponse_patientId` ON `${TABLE_NAME}` (`patientId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "Patient",
+            "onDelete": "CASCADE",
+            "onUpdate": "CASCADE",
+            "columns": [
+              "patientId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
       }
     ],
     "views": [
@@ -650,7 +757,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5afa759569ea2c4686b2e6bd9369f724')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ad2b91ca61211d5545df11eb0190426e')"
     ]
   }
 }

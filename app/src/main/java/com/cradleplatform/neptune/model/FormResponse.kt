@@ -1,6 +1,10 @@
 package com.cradleplatform.neptune.model
 
 import android.util.Log
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
+import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 import kotlin.IllegalArgumentException
@@ -22,23 +26,40 @@ import kotlin.IllegalArgumentException
  *   2) The [language] was not found in [FormTemplate]
  *   3) A Required [Question] (isRequired == true) has no response passed
  */
+@Entity(
+    indices = [
+        Index(value = ["formResponseId"], unique = true),
+        Index(value = ["patientId"])
+    ],
+    foreignKeys = [
+        ForeignKey(
+            entity = Patient::class,
+            parentColumns = arrayOf("id"),
+            childColumns = arrayOf("patientId"),
+            onUpdate = ForeignKey.CASCADE,
+            onDelete = ForeignKey.CASCADE
+        ),
+    ],
+)
 class FormResponse
 @Throws(IllegalArgumentException::class)
 constructor(
+    @PrimaryKey
+    var formResponseId: String = "",
     patientId: String,
-    formTemplate: FormTemplate,
+    var formTemplate: FormTemplate,
     language: String,
-    answers: Map<String, Answer>,
+    var answers: Map<String, Answer>,
 ) {
 
-    private val archived: Boolean
-    private val formClassificationId: String
-    private val dateCreated: Int
+    var archived: Boolean
+    var formClassificationId: String
+    var dateCreated: Int
     @SerializedName("lang")
-    private val language: String = language
+    var language: String = language
     @SerializedName("questions")
-    private val questionResponses: List<QuestionResponse>
-    private val patientId = patientId
+    var questionResponses: List<QuestionResponse>
+    var patientId = patientId
 
     init {
 

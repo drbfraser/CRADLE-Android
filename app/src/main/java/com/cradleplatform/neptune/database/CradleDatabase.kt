@@ -9,6 +9,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.cradleplatform.neptune.database.daos.AssessmentDao
 import com.cradleplatform.neptune.database.daos.FormClassificationDao
+import com.cradleplatform.neptune.database.daos.FormResponseDao
 import com.cradleplatform.neptune.database.daos.HealthFacilityDao
 import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
@@ -16,12 +17,13 @@ import com.cradleplatform.neptune.database.daos.ReferralDao
 import com.cradleplatform.neptune.database.views.LocalSearchPatient
 import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.FormClassification
+import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 
-const val CURRENT_DATABASE_VERSION = 3
+const val CURRENT_DATABASE_VERSION = 4
 
 /**
  * An interface for the local CRADLE database.
@@ -38,7 +40,8 @@ const val CURRENT_DATABASE_VERSION = 3
         HealthFacility::class,
         Referral::class,
         Assessment::class,
-        FormClassification::class
+        FormClassification::class,
+        FormResponse::class
     ],
     views = [LocalSearchPatient::class],
     version = CURRENT_DATABASE_VERSION,
@@ -52,6 +55,7 @@ abstract class CradleDatabase : RoomDatabase() {
     abstract fun referralDao(): ReferralDao
     abstract fun assessmentDao(): AssessmentDao
     abstract fun formClassificationDao(): FormClassificationDao
+    abstract fun formResponseDao(): FormResponseDao
 
     companion object {
         private const val DATABASE_NAME = "room-readingDB"
@@ -89,7 +93,7 @@ abstract class CradleDatabase : RoomDatabase() {
 @Suppress("MagicNumber", "NestedBlockDepth", "ObjectPropertyNaming")
 internal object Migrations {
     val ALL_MIGRATIONS: Array<Migration> by lazy {
-        arrayOf(MIGRATION_1_2, MIGRATION_2_3)
+        arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
     }
     /**
      * Version 2:
@@ -177,6 +181,32 @@ internal object Migrations {
                     )
                 """.trimIndent()
             )
+        }
+    }
+
+    /**
+     * Version 3: add FormResponse
+     */
+    private val MIGRATION_3_4 = object : Migration(3, 4) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.apply {
+                execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS FormResponse (
+                        `formResponseId` TEXT NOT NULL,
+                        `patientId` TEXT NOT NULL,
+                        `formTemplate` TEXT NOT NULL,
+                        `language` TEXT NOT NULL,
+                        `answers` TEXT NOT NULL,
+                        PRIMARY KEY(`formResponseId`),
+                        FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) 
+                            ON UPDATE CASCADE ON DELETE CASCADE
+                    )
+                    """.trimIndent()
+                )
+                execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_FormResponse_formResponseId` ON `FormResponse` (`formResponseId`)")
+                execSQL("CREATE INDEX IF NOT EXISTS `index_FormResponse_patientId` ON `FormResponse` (`patientId`)")
+            }
         }
     }
 }

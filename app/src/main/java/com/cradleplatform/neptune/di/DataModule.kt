@@ -6,6 +6,7 @@ import androidx.preference.PreferenceManager
 import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.database.daos.AssessmentDao
 import com.cradleplatform.neptune.database.daos.FormClassificationDao
+import com.cradleplatform.neptune.database.daos.FormResponseDao
 import com.cradleplatform.neptune.database.daos.HealthFacilityDao
 import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
@@ -14,6 +15,7 @@ import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.manager.AssessmentManager
 import com.cradleplatform.neptune.manager.FormManager
+import com.cradleplatform.neptune.manager.FormResponseManager
 import com.cradleplatform.neptune.manager.HealthFacilityManager
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
@@ -73,6 +75,13 @@ class DataModule {
         restApi: RestApi,
         formClassificationDao: FormClassificationDao
     ) = FormManager(restApi, formClassificationDao)
+
+    @Provides
+    @Singleton
+    fun provideFormResponseManager(
+        restApi: RestApi,
+        formResponseDao: FormResponseDao
+    ) = FormResponseManager(restApi, formResponseDao)
 
     @Provides
     @Singleton
