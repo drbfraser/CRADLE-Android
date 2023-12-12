@@ -29,18 +29,12 @@ class SavedFormAdapter (private val formList: List<FormResponse>, private val pa
 
             init {
                 itemView.setOnClickListener {
-                    Log.d("SavedFormAdapter", "clicked itemview")
-                    Log.d("SavedFormAdapter", "binding is "+binding.toString())
-                    Log.d("SavedFormAdapter", "formresponse is "+binding.formResponse)
                     binding.formResponse?.let { formResponse ->
-                        val intent = FormRenderingActivity.makeIntentWithFormTemplate(
+                        val intent = FormRenderingActivity.makeIntentWithFormResponse(
                             itemView.context,
-                            formResponse.formTemplate,
-                            formResponse.language,
-                            formResponse.patientId,
+                            formResponse,
                             patient
                         )
-                        Log.d("SavedFormAdapter", "intent is"+ intent.toString())
                         itemView.context.startActivity(intent)
                     }
                 }

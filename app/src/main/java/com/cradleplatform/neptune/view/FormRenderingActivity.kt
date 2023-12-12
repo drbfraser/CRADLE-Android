@@ -23,6 +23,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.model.Answer
+import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Question
@@ -32,6 +34,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.io.Serializable
 
 @Suppress("LargeClass")
 @AndroidEntryPoint
@@ -59,12 +62,7 @@ class FormRenderingActivity : AppCompatActivity() {
         builder.setMessage(R.string.discard_form_dialog)
 
         builder.setPositiveButton(R.string.yes) { _, _ ->
-            val intent = FormSelectionActivity.makeIntentForPatientId(
-                this@FormRenderingActivity,
-                patientId!!,
-                patient!!
-            )
-            startActivity(intent)
+            returnToPatientProfile()
         }
 
         builder.setNegativeButton(R.string.no) { _, _ ->
@@ -88,6 +86,10 @@ class FormRenderingActivity : AppCompatActivity() {
         //Clear previous answers in view-model
         viewModel.clearAnswers()
         viewModel.changeCategory(FIRST_CATEGORY_POSITION)
+
+        var answers = intent.getSerializableExtra(EXTRA_ANSWERS) as Map<String, Answer>?
+        Log.d("FormRenderingActiv", answers.toString())
+        answers?.forEach { (s, answer) -> viewModel.addAnswer(s, answer) }
 
         setUpBottomSheet(intent.getStringExtra(EXTRA_LANGUAGE_SELECTED))
 
@@ -155,23 +157,28 @@ class FormRenderingActivity : AppCompatActivity() {
         } else {
             builder.setPositiveButton(internetString) { _, _ ->
                 formSubmission(languageSelected, "HTTP")
-                finish()
+                returnToPatientProfile()
             }
         }
 
         builder.setNeutralButton("SAVE AND SEND LATER") { _, _ ->
             var result = saveForm(languageSelected)
             Toast.makeText(applicationContext, R.string.saved_form_success_dialog, Toast.LENGTH_SHORT).show()
-            intent = PatientProfileActivity.makeIntentForPatientId(applicationContext, patientId!!)
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent)
+            returnToPatientProfile()
         }
 
         builder.setNegativeButton(R.string.SMS) { _, _ ->
             formSubmission(languageSelected, "SMS")
-            finish()
+            returnToPatientProfile()
         }
         builder.show()
+    }
+
+    private fun returnToPatientProfile() {
+        intent = PatientProfileActivity.makeIntentForPatientId(applicationContext, patientId!!)
+        // Clear the stack above PatientProfileActivity
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent)
     }
 
     private fun formSubmission(languageSelected: String, submissionMode: String) {
@@ -331,6 +338,7 @@ class FormRenderingActivity : AppCompatActivity() {
         private const val EXTRA_PATIENT_ID = "Patient id that the form is created for"
         private const val EXTRA_LANGUAGE_SELECTED = "String of language selected for a FormTemplate"
         private const val EXTRA_PATIENT_OBJECT = "The Patient object used to start patient profile"
+        private const val EXTRA_ANSWERS = "The answers in the saved form"
         const val FIRST_CATEGORY_POSITION = 1
 
         @JvmStatic
@@ -348,6 +356,24 @@ class FormRenderingActivity : AppCompatActivity() {
             return Intent(context, FormRenderingActivity::class.java).apply {
                 this.putExtra(EXTRA_PATIENT_ID, patientId)
                 this.putExtra(EXTRA_LANGUAGE_SELECTED, formLanguage)
+                this.putExtras(bundle)
+            }
+        }
+
+        @JvmStatic
+        fun makeIntentWithFormResponse(
+            context: Context,
+            formResponse: FormResponse,
+            patient: Patient?
+        ): Intent {
+            val bundle = Bundle()
+            bundle.putSerializable(EXTRA_FORM_TEMPLATE, formResponse.formTemplate)
+            bundle.putSerializable(EXTRA_PATIENT_OBJECT, patient)
+            bundle.putSerializable(EXTRA_ANSWERS, formResponse.answers as Serializable)
+
+            return Intent(context, FormRenderingActivity::class.java).apply {
+                this.putExtra(EXTRA_PATIENT_ID, formResponse.patientId)
+                this.putExtra(EXTRA_LANGUAGE_SELECTED, formResponse.language)
                 this.putExtras(bundle)
             }
         }

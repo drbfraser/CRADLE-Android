@@ -30,9 +30,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FormRenderingViewModel @Inject constructor(
-    //private val mFormManager: FormManager,
     private val httpSmsService: HttpSmsService,
-    private val sharedPreferences: SharedPreferences,
     private val networkStateManager: NetworkStateManager,
     private val smsSender: SMSSender,
     private val formResponseManager: FormResponseManager,
