@@ -98,4 +98,10 @@ interface FormResponseDao {
      */
     @Query("SELECT * FROM FormResponse")
     fun getAllFormResponsesLiveData(): LiveData<List<FormResponse>>
+
+    /**
+     * Returns a list of formResponses
+     */
+    @Query("SELECT * FROM FormResponse")
+    fun getAllFormResponses(): List<FormResponse>
 }

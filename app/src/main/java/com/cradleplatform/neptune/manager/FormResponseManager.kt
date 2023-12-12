@@ -4,6 +4,9 @@ import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.database.daos.FormClassificationDao
 import com.cradleplatform.neptune.database.daos.FormResponseDao
 import com.cradleplatform.neptune.model.FormResponse
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -43,13 +46,15 @@ class FormResponseManager @Inject constructor(
      */
     suspend fun purgeOutdatedFormResponses(): Int {
         var purgeCount = 0
-        var formResponses = formResponseDao.getAllFormResponsesLiveData().value
-        formResponses?.forEach { formResponse ->
-            val upToDateFormTemplate = formClassificationDao.getFormTemplateById(formResponse.formTemplate.formClassId!!)
-            val outdated = formResponse.formTemplate.version != upToDateFormTemplate.version
-            if (outdated) {
-                formResponseDao.deleteById(formResponse.formResponseId)
-                purgeCount += 1
+        CoroutineScope(Dispatchers.IO).launch {
+            val formResponses = formResponseDao.getAllFormResponses()
+            formResponses.forEach { formResponse ->
+                val upToDateFormTemplate = formClassificationDao.getFormTemplateById(formResponse.formTemplate.formClassId!!)
+                val outdated = formResponse.formTemplate.version != upToDateFormTemplate.version
+                if (outdated) {
+                    formResponseDao.deleteById(formResponse.formResponseId)
+                    purgeCount += 1
+                }
             }
         }
         return purgeCount
