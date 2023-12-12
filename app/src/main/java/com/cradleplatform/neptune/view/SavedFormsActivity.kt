@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormTemplate
+import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.model.QuestionLangVersion
 import com.cradleplatform.neptune.model.QuestionTypeEnum
@@ -28,12 +29,16 @@ import org.checkerframework.checker.signedness.SignednessUtil.toUnsignedInt
 class SavedFormsActivity : AppCompatActivity() {
 
     private val viewModel: SavedFormsViewModel by viewModels()
+    private var patient: Patient? = null
+    private var patientId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_saved_forms)
 
-
+        //Getting the patient from the intent (ID and Patient Object)
+        patientId = intent.getStringExtra(EXTRA_PATIENT_ID)!!
+        patient = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT)!! as Patient
 
         lifecycleScope.launch {
             val questions = mutableListOf<Question>()
@@ -111,7 +116,7 @@ class SavedFormsActivity : AppCompatActivity() {
                     answers = emptyMap(),
                 )
             )
-            val formList = viewModel.searchForFormResponsesByPatientId("000")
+            val formList = viewModel.searchForFormResponsesByPatientId(patientId!!)
             Log.d("SavedFormsActivity", questions.toString())
             Log.d("SavedFormsActivity", formList.toString())
 
@@ -122,11 +127,17 @@ class SavedFormsActivity : AppCompatActivity() {
     }
 
     companion object {
+        private const val EXTRA_PATIENT_ID = "Patient ID that the forms are saved for"
+        private const val EXTRA_PATIENT_OBJECT = "The Patient object that the forms are saved for"
         @JvmStatic
-        fun makeIntent(context: Context): Intent =
+        fun makeIntent(
+            context: Context,
+            patientId: String,
+            patient: Patient
+        ): Intent =
             Intent(context, SavedFormsActivity::class.java).apply {
-//                putExtra(EXTRA_PATIENT_ID, patientId)
-//                putExtra(FORM_SELECTION_EXTRA_PATIENT, patient)
+                putExtra(EXTRA_PATIENT_ID, patientId)
+                putExtra(EXTRA_PATIENT_OBJECT, patient)
             }
     }
 
