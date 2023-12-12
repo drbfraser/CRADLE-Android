@@ -334,7 +334,7 @@ class FormRenderingActivity : AppCompatActivity() {
             formTemplate: FormTemplate,
             formLanguage: String,
             patientId: String,
-            patient: Patient
+            patient: Patient?
         ): Intent {
             val bundle = Bundle()
             bundle.putSerializable(EXTRA_FORM_TEMPLATE, formTemplate)
