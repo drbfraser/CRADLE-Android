@@ -16,10 +16,12 @@ import androidx.annotation.Nullable
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.AssessmentManager
+import com.cradleplatform.neptune.manager.FormResponseManager
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.manager.ReferralManager
@@ -41,6 +43,7 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.text.ParseException
 import java.util.ArrayList
@@ -92,6 +95,9 @@ open class PatientProfileActivity : AppCompatActivity() {
     @Inject
     lateinit var assessmentManager: AssessmentManager
 
+    @Inject
+    lateinit var formResponseManager: FormResponseManager
+
     companion object {
         private const val EXTRA_PATIENT = "patient"
         private const val EXTRA_PATIENT_ID = "patientId"
@@ -121,7 +127,9 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupCreatePatientReadingButton()
         setupCreatePatientReferralButton()
         setupCreateAndFillFormButton()
-        setupSeeSavedFormsButton()
+        lifecycleScope.launch {
+            setupSeeSavedFormsButton()
+        }
         setupUpdateRecord()
         setupLineChart()
         setupToolBar()
@@ -447,10 +455,10 @@ open class PatientProfileActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupSeeSavedFormsButton() {
+    private suspend fun setupSeeSavedFormsButton() {
         val createFormButton = findViewById<Button>(R.id.seeSavedFormsButton)
-
-        createFormButton.visibility = View.VISIBLE
+        val responsesForPatient = formResponseManager.searchForFormResponseByPatientId(currPatient.id)
+        createFormButton.visibility = if (!responsesForPatient.isNullOrEmpty()) View.VISIBLE else View.GONE
         createFormButton.setOnClickListener {
             val intent = SavedFormsActivity.makeIntent(
                 this@PatientProfileActivity,
