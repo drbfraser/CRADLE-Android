@@ -520,7 +520,6 @@
     <string name="activity_patients_search_view_title">Search by name or ID</string>
     <string name="activity_patients_error_loading_patients">Error occurred when loading patients</string>
     <string name="activity_patients_retry_button">Retry</string>
-    <string name="activity_saved_forms_retry_button">Retry</string>
     <string name="list_item_patient_referral_assessed">Referral assessed</string>
     <string name="list_item_patient_referral_pending">Referral pending</string>
     <string name="status_none">No traffic light</string>

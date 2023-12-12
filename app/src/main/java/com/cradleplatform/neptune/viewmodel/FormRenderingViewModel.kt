@@ -1,14 +1,13 @@
 package com.cradleplatform.neptune.viewmodel
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.graphics.drawable.Drawable
-import android.util.Log
 import android.widget.Toast
 import androidx.core.content.ContextCompat.getDrawable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.http_sms_service.http.DatabaseObject
 import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
@@ -26,6 +25,7 @@ import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManag
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.view.FormRenderingActivity
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -121,7 +121,7 @@ class FormRenderingViewModel @Inject constructor(
     }
 
     fun fullQuestionList(): MutableList<Question> {
-        var listOfQuestions: MutableList<Question> = mutableListOf()
+        val listOfQuestions: MutableList<Question> = mutableListOf()
         currentFormTemplate?.questions?.forEach() { Q ->
             listOfQuestions.add(Q)
         }
@@ -177,8 +177,15 @@ class FormRenderingViewModel @Inject constructor(
         patientId: String,
         selectedLanguage: String,
         submissionMode: String,
-        applicationContext: Context
+        applicationContext: Context,
+        formResponseId: Long?
     ) {
+        formResponseId?.let {
+            viewModelScope.launch {
+                removeFormResponseFromDatabaseById(it)
+            }
+        }
+
         return if (currentFormTemplate != null) {
             val formResponse = FormResponse(
                 patientId = patientId,
@@ -299,7 +306,7 @@ class FormRenderingViewModel @Inject constructor(
         }
     }
 
-    suspend fun removeFormResponseFromDatabaseById(formResponseId: Long) =
+    private suspend fun removeFormResponseFromDatabaseById(formResponseId: Long) =
         formResponseManager.deleteFormResponseById(formResponseId)
 
     suspend fun saveFormResponseToDatabase(
@@ -315,7 +322,9 @@ class FormRenderingViewModel @Inject constructor(
                 )
             }
 
-            val formResponse = when (formResponseId != null && formResponseManager.searchForFormResponseById(formResponseId!!) != null) {
+            val formResponse = when (formResponseId != null && formResponseManager.searchForFormResponseById(
+                formResponseId
+            ) != null) {
                 true -> FormResponse(
                     formResponseId = formResponseId,
                     patientId = patientId,

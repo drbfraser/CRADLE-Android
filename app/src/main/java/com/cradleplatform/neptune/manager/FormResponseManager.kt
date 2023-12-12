@@ -1,11 +1,9 @@
 package com.cradleplatform.neptune.manager
 
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
-import androidx.lifecycle.LiveData
 import com.cradleplatform.neptune.database.daos.FormClassificationDao
 import com.cradleplatform.neptune.database.daos.FormResponseDao
 import com.cradleplatform.neptune.model.FormResponse
-import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -37,7 +35,4 @@ class FormResponseManager @Inject constructor(
 
     suspend fun deleteFormResponseById(formResponseId: Long) =
         formResponseDao.deleteById(formResponseId)
-
-    fun getFormResponsesLiveData(): LiveData<List<FormResponse>> =
-        formResponseDao.getAllFormResponsesLiveData()
 }

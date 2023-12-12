@@ -6,7 +6,6 @@ import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
@@ -88,7 +87,7 @@ class FormRenderingActivity : AppCompatActivity() {
         viewModel.clearAnswers()
         viewModel.changeCategory(FIRST_CATEGORY_POSITION)
 
-        var answers = intent.getSerializableExtra(EXTRA_ANSWERS) as Map<String, Answer>?
+        val answers = intent.getSerializableExtra(EXTRA_ANSWERS) as Map<String, Answer>?
         answers?.forEach { (s, answer) -> viewModel.addAnswer(s, answer) }
         
         // If the form was rendered from a saved form response, grab the form response ID
@@ -167,7 +166,7 @@ class FormRenderingActivity : AppCompatActivity() {
         }
 
         builder.setNeutralButton("SAVE AND SEND LATER") { _, _ ->
-            var result = saveForm(languageSelected)
+            saveForm(languageSelected)
             Toast.makeText(applicationContext, R.string.saved_form_success_dialog, Toast.LENGTH_SHORT).show()
             returnToPatientProfile()
         }
@@ -182,16 +181,13 @@ class FormRenderingActivity : AppCompatActivity() {
     private fun returnToPatientProfile() {
         intent = PatientProfileActivity.makeIntentForPatientId(applicationContext, patientId!!)
         // Clear the stack above PatientProfileActivity
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(intent)
     }
 
     private fun formSubmission(languageSelected: String, submissionMode: String) {
         lifecycleScope.launch(Dispatchers.IO) {
-            viewModel.submitForm(patientId!!, languageSelected, submissionMode, applicationContext)
-            formResponseId?.let {
-                viewModel.removeFormResponseFromDatabaseById(it)
-            }
+            viewModel.submitForm(patientId!!, languageSelected, submissionMode, applicationContext, formResponseId)
         }
     }
 
