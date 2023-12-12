@@ -86,7 +86,7 @@ class SavedFormsActivity : AppCompatActivity() {
             Log.d("SavedFormsActivity", "adding form response to viewmodel")
             viewModel.addFormResponse(
                 FormResponse(
-                    "1",
+                    1,
                     "000",
                     FormTemplate(
                         "1",
@@ -102,7 +102,7 @@ class SavedFormsActivity : AppCompatActivity() {
             )
             viewModel.addFormResponse(
                 FormResponse(
-                    "2",
+                    2,
                     "000",
                     FormTemplate(
                         "1",
@@ -117,13 +117,24 @@ class SavedFormsActivity : AppCompatActivity() {
                 )
             )
             val formList = viewModel.searchForFormResponsesByPatientId(patientId!!)
+            Log.d("SavedFormsActivity patientid", patientId.toString())
             Log.d("SavedFormsActivity", questions.toString())
             Log.d("SavedFormsActivity", formList.toString())
 
             val recyclerView: RecyclerView = findViewById(R.id.recycler_view)
             recyclerView.adapter = formList?.let { SavedFormAdapter(it) }
         }
+        setUpActionBar()
+    }
 
+    private fun setUpActionBar() {
+        supportActionBar?.title = getString(R.string.see_saved_forms)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return true
     }
 
     companion object {

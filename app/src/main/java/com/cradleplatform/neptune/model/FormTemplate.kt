@@ -89,10 +89,6 @@ data class FormTemplate(
             nullCheckResult = false
             Log.e(TAG, "[formClassId] was null")
         }
-        this@FormTemplate.formClassName ?: let {
-            nullCheckResult = false
-            Log.e(TAG, "[formClassName] was null")
-        }
         this@FormTemplate.questions?.forEach { it.verifyIntegrity() }
             ?: let {
                 nullCheckResult = false
@@ -127,7 +123,7 @@ data class Question(
     @SerializedName("questionIndex") val questionIndex: Int?,
     @SerializedName("numMin") val numMin: Double?, // Backend-Nullable
     @SerializedName("numMax") val numMax: Double?, // Backend-Nullable
-    @SerializedName("stringMaxLength") val stringMaxLength: Integer?, // Backend-Nullable
+    @SerializedName("stringMaxLength") val stringMaxLength: Int?, // Backend-Nullable
     @SerializedName("questionId") var questionId: String?,
     @SerializedName("questionType") val questionType: QuestionTypeEnum?,
     @SerializedName("hasCommentAttached") val hasCommentAttached: Boolean?,
@@ -165,11 +161,6 @@ data class Question(
         this@Question.isBlank ?: let {
             nullCheckResult = false
             Log.w(TAG, "[isBlank] was null")
-        }
-
-        this@Question.formTemplateId ?: let {
-            nullCheckResult = false
-            Log.w(TAG, "[formTemplateId] was null")
         }
 
         this@Question.questionIndex ?: let {

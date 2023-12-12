@@ -3,6 +3,7 @@ package com.cradleplatform.neptune.viewmodel
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.drawable.Drawable
+import android.util.Log
 import android.widget.Toast
 import androidx.core.content.ContextCompat.getDrawable
 import androidx.lifecycle.LiveData
@@ -13,6 +14,7 @@ import com.cradleplatform.neptune.http_sms_service.http.DatabaseObject
 import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
 import com.cradleplatform.neptune.http_sms_service.http.Protocol
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.manager.FormResponseManager
 import com.cradleplatform.neptune.model.Answer
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormTemplate
@@ -32,6 +34,7 @@ class FormRenderingViewModel @Inject constructor(
     private val sharedPreferences: SharedPreferences,
     private val networkStateManager: NetworkStateManager,
     private val smsSender: SMSSender,
+    private val formResponseManager: FormResponseManager
 ) : ViewModel() {
 
     //Raw form template
@@ -293,6 +296,25 @@ class FormRenderingViewModel @Inject constructor(
     fun goPrevCategory() {
         if (currentCategory().value != 1) {
             changeCategory(_currentCategory.value?.minus(1) ?: 1)
+        }
+    }
+
+    suspend fun saveFormResponseToDatabase(
+        patientId: String,
+        selectedLanguage: String
+    ) {
+        return if (currentFormTemplate != null) {
+            Log.d("FormRenderingViewModel currentFormTemplate is ", currentFormTemplate.toString())
+            val formResponse = FormResponse(
+                patientId = patientId,
+                formTemplate = currentFormTemplate!!,
+                language = selectedLanguage,
+                answers = currentAnswers
+            )
+            Log.d("FormRenderingViewModel", "inserting form response in FormRenderingViewModel")
+            formResponseManager.updateOrInsertIfNotExistsFormResponse(formResponse)
+        } else {
+            error("FormTemplate does not exist: Current displaying FormTemplate is null")
         }
     }
 

@@ -193,7 +193,7 @@ internal object Migrations {
                 execSQL(
                     """
                     CREATE TABLE IF NOT EXISTS FormResponse (
-                        `formResponseId` TEXT NOT NULL,
+                        `formResponseId` LONG NOT NULL,
                         `patientId` TEXT NOT NULL,
                         `formTemplate` TEXT NOT NULL,
                         `language` TEXT NOT NULL,

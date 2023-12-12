@@ -44,8 +44,8 @@ import kotlin.IllegalArgumentException
 class FormResponse
 @Throws(IllegalArgumentException::class)
 constructor(
-    @PrimaryKey
-    var formResponseId: String = "",
+    @PrimaryKey(autoGenerate = true)
+    var formResponseId: Long = 0,
     patientId: String,
     var formTemplate: FormTemplate,
     language: String,

@@ -6,6 +6,7 @@ import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
@@ -157,6 +158,12 @@ class FormRenderingActivity : AppCompatActivity() {
             }
         }
 
+        builder.setNeutralButton("SAVE AND SEND LATER") { _, _ ->
+            var result = saveForm(languageSelected)
+            Log.d("formRenderingActivity", "saved form result = " + result)
+            finish()
+        }
+
         builder.setNegativeButton(R.string.SMS) { _, _ ->
             formSubmission(languageSelected, "SMS")
             finish()
@@ -167,6 +174,12 @@ class FormRenderingActivity : AppCompatActivity() {
     private fun formSubmission(languageSelected: String, submissionMode: String) {
         lifecycleScope.launch(Dispatchers.IO) {
             viewModel.submitForm(patientId!!, languageSelected, submissionMode, applicationContext)
+        }
+    }
+
+    private fun saveForm(languageSelected: String) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            viewModel.saveFormResponseToDatabase(patientId!!, languageSelected)
         }
     }
 
