@@ -2,6 +2,7 @@ package com.cradleplatform.neptune.manager
 
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import androidx.lifecycle.LiveData
+import com.cradleplatform.neptune.database.daos.FormClassificationDao
 import com.cradleplatform.neptune.database.daos.FormResponseDao
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
@@ -18,7 +19,8 @@ import javax.inject.Singleton
 @Singleton
 class FormResponseManager @Inject constructor(
     private val mRestApi: RestApi,
-    private val formResponseDao: FormResponseDao
+    private val formResponseDao: FormResponseDao,
+    private val formClassificationDao: FormClassificationDao
 ) {
     suspend fun submitFormToWebAsResponse(formResponse: FormResponse): NetworkResult<Unit> {
         return mRestApi.postFormResponse(formResponse)
@@ -30,8 +32,12 @@ class FormResponseManager @Inject constructor(
     suspend fun searchForFormResponseByPatientId(id: String): List<FormResponse>? =
         formResponseDao.getAllFormResponseByPatientId(id)
 
-    suspend fun updateOrInsertIfNotExistsFormResponse(formResponse: FormResponse) =
+    suspend fun updateOrInsertIfNotExistsFormResponse(formResponse: FormResponse) {
+        if (formResponse.formTemplate.formClassName == null) {
+            formResponse.formTemplate.formClassName = formClassificationDao.getFormClassNameById(formResponse.formClassificationId)
+        }
         formResponseDao.updateOrInsertIfNotExists(formResponse)
+    }
 
     fun getFormResponsesLiveData(): LiveData<List<FormResponse>> =
         formResponseDao.getAllFormResponsesLiveData()

@@ -50,6 +50,7 @@ constructor(
     var formTemplate: FormTemplate,
     language: String,
     var answers: Map<String, Answer>,
+    var saveResponseToSendLater: Boolean = false
 ) {
 
     var archived: Boolean
@@ -65,7 +66,7 @@ constructor(
     init {
 
         // FormTemplate should not have any null values if parsed correctly
-        if (!formTemplate.verifyIntegrity()) {
+        if (!saveResponseToSendLater && !formTemplate.verifyIntegrity()) {
             throw IllegalArgumentException("FormTemplate passed for FormResponse creation has null parameter")
         }
 

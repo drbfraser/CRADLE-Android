@@ -14,6 +14,7 @@ import com.cradleplatform.neptune.http_sms_service.http.DatabaseObject
 import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
 import com.cradleplatform.neptune.http_sms_service.http.Protocol
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.manager.FormManager
 import com.cradleplatform.neptune.manager.FormResponseManager
 import com.cradleplatform.neptune.model.Answer
 import com.cradleplatform.neptune.model.FormResponse
@@ -34,7 +35,8 @@ class FormRenderingViewModel @Inject constructor(
     private val sharedPreferences: SharedPreferences,
     private val networkStateManager: NetworkStateManager,
     private val smsSender: SMSSender,
-    private val formResponseManager: FormResponseManager
+    private val formResponseManager: FormResponseManager,
+    private val formManager: FormManager
 ) : ViewModel() {
 
     //Raw form template
@@ -305,11 +307,18 @@ class FormRenderingViewModel @Inject constructor(
     ) {
         return if (currentFormTemplate != null) {
             Log.d("FormRenderingViewModel currentFormTemplate is ", currentFormTemplate.toString())
+            currentFormTemplate?.formClassName = currentFormTemplate?.formClassName ?: currentFormTemplate?.formClassId?.let {
+                formManager.searchForFormClassNameWithFormClassId(
+                    it
+                )
+            }
+
             val formResponse = FormResponse(
                 patientId = patientId,
                 formTemplate = currentFormTemplate!!,
                 language = selectedLanguage,
-                answers = currentAnswers
+                answers = currentAnswers,
+                saveResponseToSendLater = true
             )
             Log.d("FormRenderingViewModel", "inserting form response in FormRenderingViewModel")
             formResponseManager.updateOrInsertIfNotExistsFormResponse(formResponse)

@@ -9,6 +9,7 @@ import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.reflect.jvm.internal.impl.name.ClassId
 
 /**
  * Manager for FormTemplate and FormClassifications and
@@ -28,6 +29,9 @@ class FormManager @Inject constructor(
 
     suspend fun searchForFormTemplateWithName(formClassName: String): List<FormTemplate> =
         formClassDao.getFormTemplateByName(formClassName)
+
+    suspend fun searchForFormClassNameWithFormClassId(formClassId: String): String =
+        formClassDao.getFormClassNameById(formClassId)
 
     suspend fun addFormByClassification(formClass: FormClassification) =
         formClassDao.addOrUpdateFormClassification(formClass)
