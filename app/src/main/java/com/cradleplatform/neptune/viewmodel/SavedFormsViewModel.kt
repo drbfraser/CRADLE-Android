@@ -12,8 +12,12 @@ class SavedFormsViewModel @Inject constructor(
     private val formResponseManager: FormResponseManager
 ) : ViewModel() {
 
-    private suspend fun searchForFormResponsesByPatientId(id: String): List<FormResponse>? {
+    suspend fun searchForFormResponsesByPatientId(id: String): List<FormResponse>? {
         return formResponseManager.searchForFormResponseByPatientId(id)
+    }
+
+    suspend fun addFormResponse(formResponse: FormResponse) {
+        formResponseManager.updateOrInsertIfNotExistsFormResponse(formResponse)
     }
 
     private suspend fun getFormTemplatesByPatientId(id: String): List<FormTemplate>? {

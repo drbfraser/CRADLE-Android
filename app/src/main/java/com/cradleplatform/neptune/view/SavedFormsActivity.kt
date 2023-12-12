@@ -1,173 +1,133 @@
 package com.cradleplatform.neptune.view
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.widget.AutoCompleteTextView
-import android.widget.Button
-import android.widget.Toast
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.widget.doOnTextChanged
-import androidx.databinding.DataBindingUtil
-import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
-import com.cradleplatform.neptune.binding.MaterialSpinnerArrayAdapter
-import com.cradleplatform.neptune.databinding.ActivityFormSelectionBinding
-import com.cradleplatform.neptune.databinding.ActivitySavedFormsBinding
-import com.cradleplatform.neptune.model.Patient
-import com.cradleplatform.neptune.viewmodel.FormSelectionViewModel
+import com.cradleplatform.neptune.model.FormResponse
+import com.cradleplatform.neptune.model.FormTemplate
+import com.cradleplatform.neptune.model.Question
+import com.cradleplatform.neptune.model.QuestionLangVersion
+import com.cradleplatform.neptune.model.QuestionTypeEnum
+import com.cradleplatform.neptune.model.VisibleCondition
 import com.cradleplatform.neptune.viewmodel.LocalSearchPatientAdapter
 import com.cradleplatform.neptune.viewmodel.SavedFormAdapter
 import com.cradleplatform.neptune.viewmodel.SavedFormsViewModel
 import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import org.checkerframework.checker.signedness.SignednessUtil.toDouble
+import org.checkerframework.checker.signedness.SignednessUtil.toUnsignedInt
 
 @AndroidEntryPoint
 class SavedFormsActivity : AppCompatActivity() {
 
-    private var binding: ActivitySavedFormsBinding? = null
-
     private val viewModel: SavedFormsViewModel by viewModels()
-
-    private var currentID: String? = null
-
-    private var currentPatient: Patient? = null
-
-    private lateinit var savedFormsListRecyclerview: RecyclerView
-    private val savedFormAdapter = SavedFormAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        setContentView(R.layout.activity_saved_forms)
+        setContentView(R.layout.activity_saved_forms)
 
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_saved_forms)
-        binding?.apply {
-            viewModel = this@SavedFormsActivity.viewModel
-            lifecycleOwner = this@SavedFormsActivity
-//            executePendingBindings()
-        }
 
-//        currentID = intent.getStringExtra(EXTRA_PATIENT_ID)!!
-//        currentPatient = intent.getSerializableExtra(FORM_SELECTION_EXTRA_PATIENT) as Patient?
 
-//        setUpFetchFormButton()
-//        setUpFormVersionOnChange()
-//        setUpActionBar()
-
-        setUpPatientRecyclerView()
-    }
-
-    private fun setUpPatientRecyclerView() {
-        savedFormsListRecyclerview = findViewById(R.id.savedFormsListRecyclerview)
-        savedFormsListRecyclerview.apply {
-            addItemDecoration(
-                DividerItemDecoration(this@SavedFormsActivity, DividerItemDecoration.VERTICAL)
+        lifecycleScope.launch {
+            val questions = mutableListOf<Question>()
+            val visibleCondition = listOf(VisibleCondition(null, null, null));
+            // Create 10 categories and questions to test
+            // Note that the 10th category has no questions so it must not appear
+            for (i in 1..10) {
+                val stringQuestion = Question(
+                    id = "Q$i",
+                    visibleCondition = visibleCondition,
+                    isBlank = true,
+                    formTemplateId = "1",
+                    questionIndex = 0,
+                    numMin = toDouble(1) ,
+                    numMax = toDouble(10),
+                    stringMaxLength = 20,
+                    questionId = "Q$i",
+                    questionType = QuestionTypeEnum.STRING,
+                    hasCommentAttached = false,
+                    required = false,
+                    languageVersions = listOf(QuestionLangVersion("test-language",
+                        "test-parent","Test $i",i, emptyList()
+                    ))
+                )
+                val categoryQuestion = Question(
+                    id = "C$i",
+                    visibleCondition = visibleCondition,
+                    isBlank = true,
+                    formTemplateId = "1",
+                    questionIndex = 0,
+                    numMin = toDouble(1) ,
+                    numMax = toDouble(10) ,
+                    stringMaxLength = 20,
+                    questionId = "C$i",
+                    questionType = QuestionTypeEnum.CATEGORY,
+                    hasCommentAttached = false,
+                    required = false,
+                    languageVersions = listOf(QuestionLangVersion("test-language",
+                        "test-parent","Category #$i",i, emptyList()
+                    ))
+                )
+                questions.add(stringQuestion)
+                questions.add(categoryQuestion)
+            }
+            Log.d("SavedFormsActivity", "adding form response to viewmodel")
+            viewModel.addFormResponse(
+                FormResponse(
+                    "1",
+                    "000",
+                    FormTemplate(
+                        "1",
+                        false,
+                        1,
+                        "1",
+                        "1",
+                        "classname",
+                        questions),
+                    "test-language",
+                    answers = emptyMap(),
+                )
             )
-            this.adapter = savedFormAdapter
-        }
-    }
+            viewModel.addFormResponse(
+                FormResponse(
+                    "2",
+                    "000",
+                    FormTemplate(
+                        "1",
+                        false,
+                        1,
+                        "1",
+                        "1",
+                        "classname2",
+                        questions),
+                    "test-language",
+                    answers = emptyMap(),
+                )
+            )
+            val formList = viewModel.searchForFormResponsesByPatientId("000")
+            Log.d("SavedFormsActivity", questions.toString())
+            Log.d("SavedFormsActivity", formList.toString())
 
-//    private fun setUpFormVersionOnChange() {
-//        val formSelectionInput = findViewById<TextInputLayout>(R.id.form_selection_text_input)
-//        val formLanguageInput = findViewById<TextInputLayout>(R.id.form_language_text_input)
-//        val formAutoComplete = findViewById<AutoCompleteTextView>(R.id.form_selection_auto_complete_text)
-//
-//        formSelectionInput.editText!!.doOnTextChanged { text, _, _, _ ->
-//            if (viewModel.isValidFormTemplate(text.toString())) {
-//                viewModel.formTemplateChanged(text.toString())
-//                formLanguageInput.editText!!.text.clear()
-//            } else {
-//                val filteredList = viewModel.getFilteredList(text.toString())
-//                if (filteredList != null) {
-//                    val adapter = MaterialSpinnerArrayAdapter(
-//                        this,
-//                        R.layout.list_dropdown_menu_item,
-//                        filteredList,
-//                    )
-//                    formAutoComplete.setAdapter(adapter)
-//                }
-//            }
-//        }
-//    }
-//
-//    private fun setUpFetchFormButton() {
-//        val fetchFormButton = findViewById<Button>(R.id.fetchFormButton)
-//        val formSelectionInput = findViewById<TextInputLayout>(R.id.form_selection_text_input)
-//        val formLanguageInput = findViewById<TextInputLayout>(R.id.form_language_text_input)
-//
-//        check(intent.hasExtra(EXTRA_PATIENT_ID))
-//
-//        fetchFormButton.setOnClickListener {
-//
-//            // editTexts should not be null in normal circumstances
-//            val formTemplateName = formSelectionInput.editText!!.text.toString()
-//            val formLanguage = formLanguageInput.editText!!.text.toString()
-//
-//            if (formTemplateName.isEmpty()) {
-//                Toast.makeText(
-//                    this@SavedFormsActivity,
-//                    getString(R.string.warn_no_form_template_selected),
-//                    Toast.LENGTH_SHORT
-//                ).show()
-//            } else if (formLanguage.isEmpty()) {
-//                Toast.makeText(
-//                    this@SavedFormsActivity,
-//                    getString(R.string.war_no_form_language_selected),
-//                    Toast.LENGTH_SHORT
-//                ).show()
-//            } else {
-//                val formTemplate = viewModel.getFormTemplateFromName(formTemplateName)
-//
-//                val intent = FormRenderingActivity.makeIntentWithFormTemplate(
-//                    this@SavedFormsActivity,
-//                    formTemplate,
-//                    formLanguage,
-//                    intent.getStringExtra(EXTRA_PATIENT_ID)!!,
-//                    intent.getSerializableExtra(FORM_SELECTION_EXTRA_PATIENT) as Patient
-//                )
-//
-//                startActivity(intent)
-//            }
-//        }
-//    }
-//
-//    private fun setUpActionBar() {
-//        supportActionBar?.title = getString(R.string.create_new_form)
-//        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-//    }
-//
-//    override fun onSupportNavigateUp(): Boolean {
-//        onBackPressed()
-//        return true
-//    }
+            val recyclerView: RecyclerView = findViewById(R.id.recycler_view)
+            recyclerView.adapter = formList?.let { SavedFormAdapter(it) }
+        }
+
+    }
 
     companion object {
-        private const val EXTRA_PATIENT_ID = "PatientID that a new form will be created for"
-        private const val FORM_SELECTION_EXTRA_PATIENT = "Patient"
-
         @JvmStatic
-        fun makeIntentForPatientId(context: Context, patientId: String): Intent =
+        fun makeIntent(context: Context): Intent =
             Intent(context, SavedFormsActivity::class.java).apply {
-                putExtra(EXTRA_PATIENT_ID, patientId)
+//                putExtra(EXTRA_PATIENT_ID, patientId)
+//                putExtra(FORM_SELECTION_EXTRA_PATIENT, patient)
             }
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
-        super.onBackPressed()
-
-        val intent = currentID?.let {
-            PatientProfileActivity.makeIntentForPatientId(
-                this@SavedFormsActivity,
-                it
-            )
-        }
-
-        if (intent != null) {
-            startActivity(intent)
-        }
-    }
 }

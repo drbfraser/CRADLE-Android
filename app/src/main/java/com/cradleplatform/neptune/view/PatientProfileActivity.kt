@@ -452,9 +452,8 @@ open class PatientProfileActivity : AppCompatActivity() {
 
         createFormButton.visibility = View.VISIBLE
         createFormButton.setOnClickListener {
-            val intent = SavedFormsActivity.makeIntentForPatientId(
-                this@PatientProfileActivity,
-                currPatient.id,
+            val intent = SavedFormsActivity.makeIntent(
+                this@PatientProfileActivity
             )
             startActivity(intent)
         }
