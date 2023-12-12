@@ -1,6 +1,5 @@
 package com.cradleplatform.neptune.viewmodel
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -48,7 +47,7 @@ class SavedFormAdapter (private val formList: List<FormResponse>, private val pa
             fun bind(formResponse: FormResponse) {
                 binding.formResponse = formResponse
                 binding.executePendingBindings()
-                formClassNameTextView.text = formResponse.formClassificationName
+                formClassNameTextView.text = formResponse.formResponseId.toString()
                 versionTextView.text = formResponse.formTemplate.version
                 dateCreatedTextView.text =  Date(formResponse.dateCreated).toString()
             }
