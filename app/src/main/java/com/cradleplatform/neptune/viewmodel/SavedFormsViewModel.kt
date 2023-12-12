@@ -15,6 +15,9 @@ class SavedFormsViewModel @Inject constructor(
     private val patientManager: PatientManager
 ) : ViewModel() {
 
+    suspend fun purgeOutdatedFormResponses(): Int =
+        formResponseManager.purgeOutdatedFormResponses()
+
     suspend fun searchForFormResponsesByPatientId(id: String): List<FormResponse>? {
         return formResponseManager.searchForFormResponseByPatientId(id)
     }

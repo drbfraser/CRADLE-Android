@@ -9,7 +9,6 @@ import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.reflect.jvm.internal.impl.name.ClassId
 
 /**
  * Manager for FormTemplate and FormClassifications and

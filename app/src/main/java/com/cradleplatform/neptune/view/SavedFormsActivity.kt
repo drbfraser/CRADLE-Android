@@ -30,6 +30,8 @@ class SavedFormsActivity : AppCompatActivity() {
         patient = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT) as Patient
 
         lifecycleScope.launch {
+            viewModel.purgeOutdatedFormResponses()
+
             if (patient == null) {
                 patient = viewModel.getPatientByPatientId(patientId!!)
             }

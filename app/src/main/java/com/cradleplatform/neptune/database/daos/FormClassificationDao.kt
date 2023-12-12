@@ -46,4 +46,12 @@ interface FormClassificationDao {
      */
     @Query("SELECT formClassName FROM FormClassification WHERE formClassId = :formClassId")
     suspend fun getFormClassNameById(formClassId: String): String
+
+    /**
+     * Search for a [FormTemplate] by id(Classification) = [id]
+     *
+     * @param id the id of classification to search for
+     */
+    @Query("SELECT formTemplate FROM FormClassification WHERE formClassId = :formClassId")
+    suspend fun getFormTemplateById(formClassId: String): FormTemplate
 }

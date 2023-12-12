@@ -35,4 +35,23 @@ class FormResponseManager @Inject constructor(
 
     suspend fun deleteFormResponseById(formResponseId: Long) =
         formResponseDao.deleteById(formResponseId)
+
+    /**
+     * Returns the number of form responses that are outdated, and removes them from the database.
+     *
+     * @return The number of outdated form responses
+     */
+    suspend fun purgeOutdatedFormResponses(): Int {
+        var purgeCount = 0
+        var formResponses = formResponseDao.getAllFormResponsesLiveData().value
+        formResponses?.forEach { formResponse ->
+            val upToDateFormTemplate = formClassificationDao.getFormTemplateById(formResponse.formTemplate.formClassId!!)
+            val outdated = formResponse.formTemplate.version != upToDateFormTemplate.version
+            if (outdated) {
+                formResponseDao.deleteById(formResponse.formResponseId)
+                purgeCount += 1
+            }
+        }
+        return purgeCount
+    }
 }
