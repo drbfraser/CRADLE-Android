@@ -10,21 +10,21 @@ import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
-import com.cradleplatform.neptune.databinding.ContentSavedFormsBinding
-import com.cradleplatform.neptune.databinding.ListItemPatientBinding
 import com.cradleplatform.neptune.databinding.ListItemSavedFormBinding
 import com.cradleplatform.neptune.model.FormResponse
+import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.view.FormRenderingActivity
 import java.util.Date
 
 /**
  * Based off of official Android sample at https://github.com/android/views-widgets-samples/tree/main/RecyclerViewKotlin/
  */
-class SavedFormAdapter (private val formList: List<FormResponse>) :
+class SavedFormAdapter (private val formList: List<FormResponse>, private val patient: Patient) :
     RecyclerView.Adapter<SavedFormAdapter.SavedFormViewHolder>() {
         class SavedFormViewHolder(
             itemView: View,
-            private val binding: ListItemSavedFormBinding
+            private val binding: ListItemSavedFormBinding,
+            patient: Patient
         ) : RecyclerView.ViewHolder(itemView) {
 
             init {
@@ -38,7 +38,7 @@ class SavedFormAdapter (private val formList: List<FormResponse>) :
                             formResponse.formTemplate,
                             formResponse.language,
                             formResponse.patientId,
-                            null
+                            patient
                         )
                         Log.d("SavedFormAdapter", "intent is"+ intent.toString())
                         itemView.context.startActivity(intent)
@@ -73,7 +73,7 @@ class SavedFormAdapter (private val formList: List<FormResponse>) :
                 dataBindingComponent
             )
 
-            return SavedFormViewHolder(view, binding)
+            return SavedFormViewHolder(view, binding, patient)
         }
 
         override fun getItemCount(): Int {

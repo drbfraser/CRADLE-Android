@@ -27,12 +27,15 @@ class SavedFormsActivity : AppCompatActivity() {
 
         //Getting the patient from the intent (ID and Patient Object)
         patientId = intent.getStringExtra(EXTRA_PATIENT_ID)!!
-        patient = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT)!! as Patient
+        patient = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT) as Patient
 
         lifecycleScope.launch {
+            if (patient == null) {
+                patient = viewModel.getPatientByPatientId(patientId!!)
+            }
             val formList = viewModel.searchForFormResponsesByPatientId(patientId!!)
             val recyclerView: RecyclerView = findViewById(R.id.recycler_view)
-            recyclerView.adapter = formList?.let { SavedFormAdapter(it) }
+            recyclerView.adapter = formList?.let { patient?.let { it1 -> SavedFormAdapter(it, it1) } }
         }
         setUpActionBar()
     }
