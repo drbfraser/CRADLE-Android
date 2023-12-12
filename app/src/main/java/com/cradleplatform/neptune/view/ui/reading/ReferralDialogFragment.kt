@@ -23,6 +23,7 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.ReferralDialogBinding
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.model.PatientAndReadings
 import com.cradleplatform.neptune.model.SmsReadingWithReferral
@@ -65,6 +66,9 @@ class ReferralDialogFragment : DialogFragment() {
 
     @Inject
     lateinit var smsSender: SMSSender
+
+    @Inject
+    lateinit var smsDataProcessor: SMSDataProcessor
     override fun onAttach(context: Context) {
         super.onAttach(context)
         check(context is ReadingActivity)
@@ -173,8 +177,13 @@ class ReferralDialogFragment : DialogFragment() {
                 is ReadingFlowSaveResult.SaveSuccessful.ReferralSmsNeeded -> {
                     showStatusToast(view.context, smsSendResult, ReferralOption.SMS)
                     smsSender.setActivityContext(view.context)
-                    smsSender.sendPatientAndReadings(smsSendResult.patientInfoForReferral)
-                    // TODO: Verify that the patient was sent to the server successfully
+                    val json = smsDataProcessor.processPatientAndReadingsToJSON(
+                                smsSendResult.patientInfoForReferral)
+                    smsSender.queueRelayContent(json).let { enqueuSuccessful ->
+                        if (enqueuSuccessful) {
+                            smsSender.sendSmsMessage(false)
+                        }
+                    }
                     smsSendResult.patientInfoForReferral.patient.lastServerUpdate =
                         smsSendResult.patientInfoForReferral.patient.lastEdited
                     viewModel.patientSentViaSMS(smsSendResult.patientInfoForReferral.patient)

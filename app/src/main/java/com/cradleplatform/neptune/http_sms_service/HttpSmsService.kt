@@ -7,6 +7,7 @@ import android.util.Log
 import android.widget.Toast
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.PatientAndReferrals
@@ -52,7 +53,8 @@ sealed class DatabaseObject {
         val referral: Referral,
         //val smsDataIfNeeded : String,
         val smsSender: SMSSender,
-        val submissionMode: Protocol
+        val submissionMode: Protocol,
+        val smsDataProcessor: SMSDataProcessor
     ) : DatabaseObject()
     data class ReadingWrapper(val reading: Reading, val submissionMode: Protocol) : DatabaseObject()
     data class FormResponseWrapper(
@@ -106,12 +108,17 @@ class HttpSmsService @Inject constructor(private val restApi: RestApi) {
             }
             Protocol.SMS -> {
                 // Check if the patient has been synced to the server yet
-                if (referralWrapper.patient.lastServerUpdate == null) {
-                    referralWrapper.smsSender.sendPatientAndReferral(
+                val json = if (referralWrapper.patient.lastServerUpdate == null) {
+                    referralWrapper.smsDataProcessor.processPatientAndReferralToJSON(
                         PatientAndReferrals(referralWrapper.patient,
                             listOf(referralWrapper.referral)))
                 } else {
-                    referralWrapper.smsSender.sendReferral(referralWrapper.referral)
+                    referralWrapper.smsDataProcessor.processReferralToJSON(referralWrapper.referral)
+                }
+                referralWrapper.smsSender.queueRelayContent(json).let { enqueuSuccessful ->
+                    if (enqueuSuccessful) {
+                        referralWrapper.smsSender.sendSmsMessage(false)
+                    }
                 }
             }
         }
