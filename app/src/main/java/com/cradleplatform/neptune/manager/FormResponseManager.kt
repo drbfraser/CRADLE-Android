@@ -18,15 +18,10 @@ import javax.inject.Singleton
  */
 @Singleton
 class FormResponseManager @Inject constructor(
-    private val mRestApi: RestApi,
     private val formResponseDao: FormResponseDao,
     private val formClassificationDao: FormClassificationDao
 ) {
-    suspend fun submitFormToWebAsResponse(formResponse: FormResponse): NetworkResult<Unit> {
-        return mRestApi.postFormResponse(formResponse)
-    }
-
-    suspend fun searchForFormResponseById(id: Int): FormResponse? =
+    suspend fun searchForFormResponseById(id: Long): FormResponse? =
         formResponseDao.getFormResponseById(id)
 
     suspend fun searchForFormResponseByPatientId(id: String): List<FormResponse>? =
@@ -36,8 +31,12 @@ class FormResponseManager @Inject constructor(
         if (formResponse.formTemplate.formClassName == null) {
             formResponse.formTemplate.formClassName = formClassificationDao.getFormClassNameById(formResponse.formClassificationId)
         }
+        formResponseDao.deleteById(formResponse.formResponseId)
         formResponseDao.updateOrInsertIfNotExists(formResponse)
     }
+
+    suspend fun deleteFormResponseById(formResponseId: Long) =
+        formResponseDao.deleteById(formResponseId)
 
     fun getFormResponsesLiveData(): LiveData<List<FormResponse>> =
         formResponseDao.getAllFormResponsesLiveData()

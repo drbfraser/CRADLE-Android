@@ -20,7 +20,11 @@ import com.cradleplatform.neptune.model.FormResponse
 interface FormResponseDao {
     @Transaction
     suspend fun updateOrInsertIfNotExists(formResponse: FormResponse) {
-        if (update(formResponse) <= 0) {
+        val existingFormResponse = getFormResponseById(formResponse.formResponseId)
+        if (existingFormResponse != null) {
+            delete(existingFormResponse)
+            insert(formResponse)
+        } else {
             insert(formResponse)
         }
     }
@@ -66,12 +70,20 @@ interface FormResponseDao {
     suspend fun delete(formResponse: FormResponse)
 
     /**
+     * Deletes a [FormResponse] with the [formResponseId].
+     * @return The number of rows affected  in the database(i.e., 1 if a [FormResponse] with the given
+     * [formResponseId] was found and deleted, 0 if not found).
+     */
+    @Query("DELETE FROM FormResponse WHERE formResponseId = :formResponseId")
+    suspend fun deleteById(formResponseId: Long): Int
+
+    /**
      * Returns the first formResponse whose formResponse ID is equal to [id].
      *
      * @param id The formResponse id to search for.
      */
     @Query("SELECT * FROM FormResponse WHERE formResponseId = :id")
-    suspend fun getFormResponseById(id: Int): FormResponse?
+    suspend fun getFormResponseById(id: Long): FormResponse?
 
     /**
      * Returns all of the formResponses associated with a specified patient.

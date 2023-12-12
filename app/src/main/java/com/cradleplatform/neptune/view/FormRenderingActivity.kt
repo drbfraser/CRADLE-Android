@@ -45,6 +45,7 @@ class FormRenderingActivity : AppCompatActivity() {
     private var patientId: String? = null
     private var languageSelected: String? = null
     private var categoryViewList: MutableList<View> = mutableListOf()
+    private var formResponseId: Long? = null
     private lateinit var recyclerView: RecyclerView
     private lateinit var bottomSheetCurrentSection: TextView
     private lateinit var bottomSheetCategoryContainer: LinearLayout
@@ -88,8 +89,12 @@ class FormRenderingActivity : AppCompatActivity() {
         viewModel.changeCategory(FIRST_CATEGORY_POSITION)
 
         var answers = intent.getSerializableExtra(EXTRA_ANSWERS) as Map<String, Answer>?
-        Log.d("FormRenderingActiv", answers.toString())
         answers?.forEach { (s, answer) -> viewModel.addAnswer(s, answer) }
+        
+        // If the form was rendered from a saved form response, grab the form response ID
+        if (intent.getBooleanExtra(EXTRA_IS_FROM_SAVED_FORM_RESPONSE, false)) {
+            formResponseId = intent.getLongExtra(EXTRA_FORM_RESPONSE_ID, 0)
+        }
 
         setUpBottomSheet(intent.getStringExtra(EXTRA_LANGUAGE_SELECTED))
 
@@ -184,12 +189,15 @@ class FormRenderingActivity : AppCompatActivity() {
     private fun formSubmission(languageSelected: String, submissionMode: String) {
         lifecycleScope.launch(Dispatchers.IO) {
             viewModel.submitForm(patientId!!, languageSelected, submissionMode, applicationContext)
+            formResponseId?.let {
+                viewModel.removeFormResponseFromDatabaseById(it)
+            }
         }
     }
 
     private fun saveForm(languageSelected: String) {
         lifecycleScope.launch(Dispatchers.IO) {
-            viewModel.saveFormResponseToDatabase(patientId!!, languageSelected)
+            viewModel.saveFormResponseToDatabase(patientId!!, languageSelected, formResponseId)
         }
     }
 
@@ -338,7 +346,9 @@ class FormRenderingActivity : AppCompatActivity() {
         private const val EXTRA_PATIENT_ID = "Patient id that the form is created for"
         private const val EXTRA_LANGUAGE_SELECTED = "String of language selected for a FormTemplate"
         private const val EXTRA_PATIENT_OBJECT = "The Patient object used to start patient profile"
-        private const val EXTRA_ANSWERS = "The answers in the saved form"
+        private const val EXTRA_ANSWERS = "The answers in the saved form response"
+        private const val EXTRA_FORM_RESPONSE_ID = "The ID of the saved form response"
+        private const val EXTRA_IS_FROM_SAVED_FORM_RESPONSE = "Whether the form that is being generated is a saved form"
         const val FIRST_CATEGORY_POSITION = 1
 
         @JvmStatic
@@ -374,6 +384,8 @@ class FormRenderingActivity : AppCompatActivity() {
             return Intent(context, FormRenderingActivity::class.java).apply {
                 this.putExtra(EXTRA_PATIENT_ID, formResponse.patientId)
                 this.putExtra(EXTRA_LANGUAGE_SELECTED, formResponse.language)
+                this.putExtra(EXTRA_FORM_RESPONSE_ID, formResponse.formResponseId)
+                this.putExtra(EXTRA_IS_FROM_SAVED_FORM_RESPONSE, true)
                 this.putExtras(bundle)
             }
         }

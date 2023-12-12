@@ -299,26 +299,39 @@ class FormRenderingViewModel @Inject constructor(
         }
     }
 
+    suspend fun removeFormResponseFromDatabaseById(formResponseId: Long) =
+        formResponseManager.deleteFormResponseById(formResponseId)
+
     suspend fun saveFormResponseToDatabase(
         patientId: String,
-        selectedLanguage: String
+        selectedLanguage: String,
+        formResponseId: Long?,
     ) {
         return if (currentFormTemplate != null) {
-            Log.d("FormRenderingViewModel currentFormTemplate is ", currentFormTemplate.toString())
+            // If the FormTemplate's formClassName field is empty, grab it using formClass Id
             currentFormTemplate?.formClassName = currentFormTemplate?.formClassName ?: currentFormTemplate?.formClassId?.let {
                 formManager.searchForFormClassNameWithFormClassId(
                     it
                 )
             }
 
-            val formResponse = FormResponse(
-                patientId = patientId,
-                formTemplate = currentFormTemplate!!,
-                language = selectedLanguage,
-                answers = currentAnswers,
-                saveResponseToSendLater = true
-            )
-            Log.d("FormRenderingViewModel", "inserting form response in FormRenderingViewModel")
+            val formResponse = when (formResponseId != null && formResponseManager.searchForFormResponseById(formResponseId!!) != null) {
+                true -> FormResponse(
+                    formResponseId = formResponseId,
+                    patientId = patientId,
+                    formTemplate = currentFormTemplate!!,
+                    language = selectedLanguage,
+                    answers = currentAnswers,
+                    saveResponseToSendLater = true
+                )
+                false -> FormResponse(
+                    patientId = patientId,
+                    formTemplate = currentFormTemplate!!,
+                    language = selectedLanguage,
+                    answers = currentAnswers,
+                    saveResponseToSendLater = true
+                )
+            }
             formResponseManager.updateOrInsertIfNotExistsFormResponse(formResponse)
         } else {
             error("FormTemplate does not exist: Current displaying FormTemplate is null")
