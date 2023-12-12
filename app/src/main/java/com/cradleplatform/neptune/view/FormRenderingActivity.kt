@@ -6,7 +6,6 @@ import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
@@ -160,7 +159,6 @@ class FormRenderingActivity : AppCompatActivity() {
 
         builder.setNeutralButton("SAVE AND SEND LATER") { _, _ ->
             var result = saveForm(languageSelected)
-            Log.d("formRenderingActivity", "saved form result = " + result)
             finish()
         }
 

@@ -3,27 +3,16 @@ package com.cradleplatform.neptune.view
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
-import com.cradleplatform.neptune.model.FormResponse
-import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.Patient
-import com.cradleplatform.neptune.model.Question
-import com.cradleplatform.neptune.model.QuestionLangVersion
-import com.cradleplatform.neptune.model.QuestionTypeEnum
-import com.cradleplatform.neptune.model.VisibleCondition
-import com.cradleplatform.neptune.viewmodel.LocalSearchPatientAdapter
 import com.cradleplatform.neptune.viewmodel.SavedFormAdapter
 import com.cradleplatform.neptune.viewmodel.SavedFormsViewModel
-import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import org.checkerframework.checker.signedness.SignednessUtil.toDouble
-import org.checkerframework.checker.signedness.SignednessUtil.toUnsignedInt
 
 @AndroidEntryPoint
 class SavedFormsActivity : AppCompatActivity() {

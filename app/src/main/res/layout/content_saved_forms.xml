@@ -15,9 +15,9 @@
         android:padding="16dp"
         tools:visibility="visible">
 
-    <!-- Add in TextView to display flower name   -->
+    <!-- Add in TextView to display form class name   -->
     <TextView
-        android:id="@+id/flower_text"
+        android:id="@+id/form_class_name_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:maxLines="2"
@@ -32,46 +32,54 @@
         />
 
     <TextView
+        android:id="@+id/list_item_saved_form_version_label_text_view"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:text="Form template version"
+        android:textStyle="bold"
+        android:textAppearance="@style/TextAppearance.Cradle.Body1"
+        app:layout_constraintEnd_toStartOf="@+id/saved_form_info_guideline"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/form_class_name_text"
+        tools:text="Hubert Blaine Wolfe­schlegel­stein­hausen­berger­dorff Sr." />
+
+    <TextView
         android:id="@+id/list_item_saved_form_version_text_view"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:maxLines="2"
-        android:minLines="2"
+        android:maxLines="1"
         android:textAppearance="@style/TextAppearance.Cradle.Body1"
         android:text="TextView"
-        android:textSize="16dp"
         app:layout_constraintEnd_toStartOf="@+id/saved_form_info_guideline"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/flower_text"
+        app:layout_constraintTop_toBottomOf="@+id/list_item_saved_form_version_label_text_view"
         />
 
     <TextView
         android:id="@+id/list_item_saved_form_date_created_label_text_view"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:maxLines="2"
-        android:minLines="2"
+        android:maxLines="1"
         android:text="Date created"
+        android:textStyle="bold"
         android:textAppearance="@style/TextAppearance.Cradle.Body1"
-        android:textSize="20sp"
         app:layout_constraintStart_toEndOf="@+id/saved_form_info_guideline"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/flower_text"
+        app:layout_constraintTop_toBottomOf="@id/form_class_name_text"
         tools:text="Hubert Blaine Wolfe­schlegel­stein­hausen­berger­dorff Sr." />
 
-        <TextView
-            android:id="@+id/list_item_saved_form_date_created_text_view"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:maxLines="2"
-            android:minLines="2"
-            android:text="TextView"
-            android:textAppearance="@style/TextAppearance.Cradle.Body1"
-            android:textSize="20sp"
-            app:layout_constraintStart_toEndOf="@+id/saved_form_info_guideline"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/list_item_saved_form_date_created_label_text_view"
-            tools:text="Hubert Blaine Wolfe­schlegel­stein­hausen­berger­dorff Sr." />
+    <TextView
+        android:id="@+id/list_item_saved_form_date_created_text_view"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:text="TextView"
+        android:textAppearance="@style/TextAppearance.Cradle.Body1"
+        app:layout_constraintStart_toEndOf="@+id/saved_form_info_guideline"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/list_item_saved_form_date_created_label_text_view"
+        tools:text="Hubert Blaine Wolfe­schlegel­stein­hausen­berger­dorff Sr." />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/saved_form_info_guideline"
