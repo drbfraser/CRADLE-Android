@@ -6,6 +6,7 @@ import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
@@ -15,6 +16,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -159,7 +161,10 @@ class FormRenderingActivity : AppCompatActivity() {
 
         builder.setNeutralButton("SAVE AND SEND LATER") { _, _ ->
             var result = saveForm(languageSelected)
-            finish()
+            Toast.makeText(applicationContext, R.string.saved_form_success_dialog, Toast.LENGTH_SHORT).show()
+            intent = PatientProfileActivity.makeIntentForPatientId(applicationContext, patientId!!)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent)
         }
 
         builder.setNegativeButton(R.string.SMS) { _, _ ->
