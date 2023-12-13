@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.annotation.UiThread
+import androidx.databinding.DataBindingComponent
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
@@ -29,6 +30,8 @@ class SavedFormAdapter (private val formList: List<FormResponse>, private val pa
             init {
                 itemView.setOnClickListener {
                     binding.formResponse?.let { formResponse ->
+                        // When the user clicks on a saved form, open the FormRenderingActivity
+                        // using the saved form's questions and answers
                         val intent = FormRenderingActivity.makeIntentWithFormResponse(
                             itemView.context,
                             formResponse,
@@ -39,15 +42,18 @@ class SavedFormAdapter (private val formList: List<FormResponse>, private val pa
                 }
             }
 
+            // Grab the individual views from list_item_saved_form.xml
             private val formClassNameTextView: TextView = itemView.findViewById(R.id.form_class_name_text)
             private val versionTextView: TextView = itemView.findViewById(R.id.list_item_saved_form_version_text_view)
             private val dateCreatedTextView: TextView = itemView.findViewById(R.id.list_item_saved_form_date_created_text_view)
 
             @UiThread
             fun bind(formResponse: FormResponse) {
+                // Grab the FormResponse associated with the list item being bound
                 binding.formResponse = formResponse
                 binding.executePendingBindings()
-                formClassNameTextView.text = formResponse.formResponseId.toString()
+                // Insert custom text into each individual view
+                formClassNameTextView.text = formResponse.formClassificationName
                 versionTextView.text = formResponse.formTemplate.version
                 dateCreatedTextView.text =  Date(formResponse.dateCreated).toString()
             }
@@ -78,6 +84,6 @@ class SavedFormAdapter (private val formList: List<FormResponse>, private val pa
         }
 
         companion object {
-            private val dataBindingComponent = FragmentDataBindingComponent()
+            private val dataBindingComponent: DataBindingComponent? = FragmentDataBindingComponent()
         }
     }

@@ -18,6 +18,12 @@ import com.cradleplatform.neptune.model.FormResponse
  */
 @Dao
 interface FormResponseDao {
+
+    /**
+     * Updates or inserts a new [FormResponse]. Checking is done through form response's id.
+     *
+     * @param formResponse [FormResponse] The form response that should be updated or inserted
+     */
     @Transaction
     suspend fun updateOrInsertIfNotExists(formResponse: FormResponse) {
         val existingFormResponse = getFormResponseById(formResponse.formResponseId)
@@ -71,6 +77,8 @@ interface FormResponseDao {
 
     /**
      * Deletes a [FormResponse] with the [formResponseId].
+     *
+     * @param formResponseId [Long] The id of the form response that should be deleted
      * @return The number of rows affected  in the database(i.e., 1 if a [FormResponse] with the given
      * [formResponseId] was found and deleted, 0 if not found).
      */

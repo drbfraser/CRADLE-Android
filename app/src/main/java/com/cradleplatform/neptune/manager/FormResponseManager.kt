@@ -28,14 +28,28 @@ class FormResponseManager @Inject constructor(
     suspend fun searchForFormResponseByPatientId(id: String): List<FormResponse>? =
         formResponseDao.getAllFormResponseByPatientId(id)
 
+    /**
+     * Updates or inserts a new [FormResponse]. Checking is done through form response's id.
+     *
+     * @param formResponse [FormResponse] The form response that should be updated or inserted
+     */
     suspend fun updateOrInsertIfNotExistsFormResponse(formResponse: FormResponse) {
+        // If the formResponse has no form classification name, retrieve the name by grabbing the
+        // form class itself.
         if (formResponse.formTemplate.formClassName == null) {
             formResponse.formTemplate.formClassName = formClassificationDao.getFormClassNameById(formResponse.formClassificationId)
         }
-        formResponseDao.deleteById(formResponse.formResponseId)
+        // Insert the new formResponse.
         formResponseDao.updateOrInsertIfNotExists(formResponse)
     }
 
+    /**
+     * Deletes a [FormResponse] with the [formResponseId].
+     *
+     * @param formResponseId [Long] The id of the form response that should be deleted
+     * @return The number of rows affected  in the database(i.e., 1 if a [FormResponse] with the given
+     * [formResponseId] was found and deleted, 0 if not found).
+     */
     suspend fun deleteFormResponseById(formResponseId: Long) =
         formResponseDao.deleteById(formResponseId)
 
