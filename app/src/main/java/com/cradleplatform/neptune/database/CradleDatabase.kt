@@ -95,6 +95,7 @@ internal object Migrations {
     val ALL_MIGRATIONS: Array<Migration> by lazy {
         arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
     }
+
     /**
      * Version 2:
      * Create Referral and Assessment table
@@ -205,8 +206,14 @@ internal object Migrations {
                     )
                     """.trimIndent()
                 )
-                execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_FormResponse_formResponseId` ON `FormResponse` (`formResponseId`)")
-                execSQL("CREATE INDEX IF NOT EXISTS `index_FormResponse_patientId` ON `FormResponse` (`patientId`)")
+                execSQL(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS `index_FormResponse_formResponseId`"
+                        + " ON `FormResponse` (`formResponseId`)"
+                )
+                execSQL(
+                    "CREATE INDEX IF NOT EXISTS `index_FormResponse_patientId` "
+                        + "ON `FormResponse` (`patientId`)"
+                )
             }
         }
     }

@@ -138,7 +138,7 @@ constructor(
         return responseList
     }
 
-    public override operator fun equals(
+    override operator fun equals(
         other: Any?
     ): Boolean {
         return when (other) {
@@ -147,6 +147,10 @@ constructor(
             }
             else -> false
         }
+    }
+
+    override fun hashCode(): Int {
+        return super.hashCode()
     }
 
     companion object {

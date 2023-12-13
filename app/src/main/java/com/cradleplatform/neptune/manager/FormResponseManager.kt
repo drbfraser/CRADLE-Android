@@ -37,7 +37,8 @@ class FormResponseManager @Inject constructor(
         // If the formResponse has no form classification name, retrieve the name by grabbing the
         // form class itself.
         if (formResponse.formTemplate.formClassName == null) {
-            formResponse.formTemplate.formClassName = formClassificationDao.getFormClassNameById(formResponse.formClassificationId)
+            formResponse.formTemplate.formClassName =
+                formClassificationDao.getFormClassNameById(formResponse.formClassificationId)
         }
         // Insert the new formResponse.
         formResponseDao.updateOrInsertIfNotExists(formResponse)
@@ -63,7 +64,8 @@ class FormResponseManager @Inject constructor(
         CoroutineScope(Dispatchers.IO).launch {
             val formResponses = formResponseDao.getAllFormResponses()
             formResponses.forEach { formResponse ->
-                val upToDateFormTemplate = formClassificationDao.getFormTemplateById(formResponse.formTemplate.formClassId!!)
+                val upToDateFormTemplate =
+                    formClassificationDao.getFormTemplateById(formResponse.formTemplate.formClassId!!)
                 val outdated = formResponse.formTemplate.version != upToDateFormTemplate.version
                 if (outdated) {
                     formResponseDao.deleteById(formResponse.formResponseId)

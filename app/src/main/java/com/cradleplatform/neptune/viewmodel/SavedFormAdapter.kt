@@ -43,9 +43,12 @@ class SavedFormAdapter(private val formList: List<FormResponse>, private val pat
         }
 
         // Grab the individual views from list_item_saved_form.xml
-        private val formClassNameTextView: TextView = itemView.findViewById(R.id.form_class_name_text)
-        private val idTextView: TextView = itemView.findViewById(R.id.list_item_saved_form_id_text_view)
-        private val dateLastEditedTextView: TextView = itemView.findViewById(R.id.list_item_saved_form_date_created_text_view)
+        private val formClassNameTextView: TextView =
+            itemView.findViewById(R.id.form_class_name_text)
+        private val idTextView: TextView =
+            itemView.findViewById(R.id.list_item_saved_form_id_text_view)
+        private val dateLastEditedTextView: TextView =
+            itemView.findViewById(R.id.list_item_saved_form_date_created_text_view)
 
         @UiThread
         fun bind(formResponse: FormResponse) {

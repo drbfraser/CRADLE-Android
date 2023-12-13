@@ -40,7 +40,8 @@ class FormRenderingViewModel @Inject constructor(
     //Raw form template
     var currentFormTemplate: FormTemplate? = null
     private val _currentCategory: MutableLiveData<Int> = MutableLiveData(1)
-    private val _currentAnswers: MutableLiveData<Map<String, Answer>?> = MutableLiveData(mutableMapOf())
+    private val _currentAnswers: MutableLiveData<Map<String, Answer>?> =
+        MutableLiveData(mutableMapOf())
 
     var categoryList: List<Pair<String, List<Question>?>>? = null
 
@@ -108,7 +109,8 @@ class FormRenderingViewModel @Inject constructor(
                 } else {
                     indicesOfCategory[i + 1]
                 }
-                val sublist = currentFormTemplate!!.questions?.subList(categoryIndex + 1, indexOfNextCategory)
+                val sublist =
+                    currentFormTemplate!!.questions?.subList(categoryIndex + 1, indexOfNextCategory)
                 val categoryPair = Pair(categoryName, sublist)
 
                 if (!sublist.isNullOrEmpty()) {
@@ -248,7 +250,10 @@ class FormRenderingViewModel @Inject constructor(
     /**
      * Returns pair that contains required fields text and required fields icon
      */
-    fun getRequiredFieldsTextAndIcon(questions: List<Question>?, context: Context): Pair<String, Drawable?> {
+    fun getRequiredFieldsTextAndIcon(
+        questions: List<Question>?,
+        context: Context
+    ): Pair<String, Drawable?> {
         var total = 0
         var totalAnswered = 0
         questions?.forEach {
@@ -316,31 +321,34 @@ class FormRenderingViewModel @Inject constructor(
     ) {
         return if (currentFormTemplate != null) {
             // If the FormTemplate's formClassName field is empty, grab it using formClass Id
-            currentFormTemplate?.formClassName = currentFormTemplate?.formClassName ?: currentFormTemplate?.formClassId?.let {
-                formManager.searchForFormClassNameWithFormClassId(
-                    it
-                )
-            }
+            currentFormTemplate?.formClassName =
+                currentFormTemplate?.formClassName ?: currentFormTemplate?.formClassId?.let {
+                    formManager.searchForFormClassNameWithFormClassId(
+                        it
+                    )
+                }
 
-            val formResponse = when (formResponseId != null && formResponseManager.searchForFormResponseById(
-                formResponseId
-            ) != null) {
-                true -> FormResponse(
-                    formResponseId = formResponseId,
-                    patientId = patientId,
-                    formTemplate = currentFormTemplate!!,
-                    language = selectedLanguage,
-                    answers = currentAnswers,
-                    saveResponseToSendLater = true
-                )
-                false -> FormResponse(
-                    patientId = patientId,
-                    formTemplate = currentFormTemplate!!,
-                    language = selectedLanguage,
-                    answers = currentAnswers,
-                    saveResponseToSendLater = true
-                )
-            }
+            val formResponse =
+                when (formResponseId != null && formResponseManager.searchForFormResponseById(
+                    formResponseId
+                ) != null) {
+                    true -> FormResponse(
+                        formResponseId = formResponseId,
+                        patientId = patientId,
+                        formTemplate = currentFormTemplate!!,
+                        language = selectedLanguage,
+                        answers = currentAnswers,
+                        saveResponseToSendLater = true
+                    )
+
+                    false -> FormResponse(
+                        patientId = patientId,
+                        formTemplate = currentFormTemplate!!,
+                        language = selectedLanguage,
+                        answers = currentAnswers,
+                        saveResponseToSendLater = true
+                    )
+                }
             formResponseManager.updateOrInsertIfNotExistsFormResponse(formResponse)
         } else {
             error("FormTemplate does not exist: Current displaying FormTemplate is null")
