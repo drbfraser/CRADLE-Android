@@ -10,6 +10,7 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.encodeMsg
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.formatSMS
+import com.cradleplatform.neptune.view.FormRenderingActivity
 import com.cradleplatform.neptune.view.PatientReferralActivity
 import com.cradleplatform.neptune.view.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.UserViewModel
@@ -145,7 +146,8 @@ class SMSSender @Inject constructor(
                 Toast.LENGTH_LONG
             ).show()
             // TODO: Remove this after State reporting is implemented. Move logic to Activity instead.
-            if (activityContext is ReadingActivity || activityContext is PatientReferralActivity) {
+            if (activityContext is ReadingActivity || activityContext is PatientReferralActivity
+                || activityContext is FormRenderingActivity ) {
                 (activityContext as Activity).finish()
                 activityContext = null
             }

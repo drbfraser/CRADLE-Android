@@ -12,6 +12,7 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.http_sms_service.http.DatabaseObject
 import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
 import com.cradleplatform.neptune.http_sms_service.http.Protocol
+import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.model.Answer
@@ -170,6 +171,12 @@ class FormRenderingViewModel @Inject constructor(
             ConnectivityOptions.SMS -> return "Sms"
             ConnectivityOptions.NONE -> return ""
         }
+    }
+
+    fun getSMSReceiver(): SMSReceiver {
+        val phoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
+            ?: error("invalid phone number")
+        return SMSReceiver(smsSender, phoneNumber)
     }
 
     suspend fun submitForm(
