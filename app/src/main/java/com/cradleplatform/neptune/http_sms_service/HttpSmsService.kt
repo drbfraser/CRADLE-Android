@@ -61,7 +61,8 @@ sealed class DatabaseObject {
         val formResponse: FormResponse,
         val smsSender: SMSSender,
         val submissionMode: Protocol,
-        val context: Context
+        val context: Context,
+        val smsDataProcessor: SMSDataProcessor
     ) : DatabaseObject()
 }
 
@@ -163,7 +164,17 @@ class HttpSmsService @Inject constructor(private val restApi: RestApi) {
 
             Protocol.SMS -> {
                 //TODO Add toast for if sms form message was sent successfully or not
-                formResponseWrapper.smsSender.sendSmsMessage(false)
+                val json = formResponseWrapper.smsDataProcessor.processFormToJSON(
+                    formResponseWrapper.formResponse
+                )
+                formResponseWrapper.smsSender.queueRelayContent(json)
+                    .let { enqueueSuccessful ->
+                        if (enqueueSuccessful) {
+                            formResponseWrapper.smsSender.sendSmsMessage(false)
+                        } else {
+                            error("SMSSender Enqueue Failed")
+                        }
+                    }
             }
         }
     }

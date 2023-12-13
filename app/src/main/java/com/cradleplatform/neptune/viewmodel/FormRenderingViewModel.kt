@@ -13,6 +13,7 @@ import com.cradleplatform.neptune.http_sms_service.http.DatabaseObject
 import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
 import com.cradleplatform.neptune.http_sms_service.http.Protocol
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.model.Answer
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormTemplate
@@ -28,7 +29,7 @@ import javax.inject.Inject
 @HiltViewModel
 class FormRenderingViewModel @Inject constructor(
     //private val mFormManager: FormManager,
-    private val httpSmsService: HttpSmsService,
+    private val  httpSmsService: HttpSmsService,
     private val sharedPreferences: SharedPreferences,
     private val networkStateManager: NetworkStateManager,
     private val smsSender: SMSSender,
@@ -39,6 +40,8 @@ class FormRenderingViewModel @Inject constructor(
     private val _currentCategory: MutableLiveData<Int> = MutableLiveData(1)
     private val _currentAnswers: MutableLiveData<Map<String, Answer>?> = MutableLiveData(mutableMapOf())
 
+    @Inject
+    lateinit var smsDataProcessor: SMSDataProcessor
     var categoryList: List<Pair<String, List<Question>?>>? = null
 
     fun currentCategory(): LiveData<Int> {
@@ -183,24 +186,15 @@ class FormRenderingViewModel @Inject constructor(
                 language = selectedLanguage,
                 answers = currentAnswers
             )
-            val json = JacksonMapper.createWriter<FormResponse>().writeValueAsString(
-                formResponse
+            httpSmsService.upload(
+                DatabaseObject.FormResponseWrapper(
+                    formResponse,
+                    smsSender,
+                    Protocol.valueOf(submissionMode),
+                    applicationContext,
+                    smsDataProcessor
+                )
             )
-            smsSender.queueRelayContent(json)
-                .let { enqueueSuccessful ->
-                    if (enqueueSuccessful) {
-                        httpSmsService.upload(
-                            DatabaseObject.FormResponseWrapper(
-                                formResponse,
-                                smsSender,
-                                Protocol.valueOf(submissionMode),
-                                applicationContext
-                            )
-                        )
-                    } else {
-                        error("SMSSender Enqueue Failed")
-                    }
-                }
         } else {
             error("FormTemplate does not exist: Current displaying FormTemplate is null")
         }
