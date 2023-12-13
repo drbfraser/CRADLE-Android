@@ -84,7 +84,7 @@ class DatabaseTypeConverters {
         string?.let { Gson().fromJson(string, object : TypeToken<Map<String, Answer>>() {}.type) }
     @TypeConverter
     fun fromQuestionResponseList(list: List<QuestionResponse>?): String? =
-    list?.let { Gson().toJson(list) }
+        list?.let { Gson().toJson(list) }
 
     @TypeConverter
     fun toQuestionResponseList(string: String?): List<QuestionResponse>? =

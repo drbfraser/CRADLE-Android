@@ -33,17 +33,17 @@ class SavedFormsActivity : AppCompatActivity() {
         setUpSavedFormsRecyclerView()
         setUpActionBar()
     }
-    
+
     private fun setUpSavedFormsRecyclerView() {
         lifecycleScope.launch {
             // Remove any saved forms from database whose versions are out-of-date
             viewModel.purgeOutdatedFormResponses()
-            
+
             // Grab patient object
             if (patient == null) {
                 patient = viewModel.getPatientByPatientId(patientId!!)
             }
-            
+
             // Find the list of saved forms for that patient, if any
             val formList = viewModel.searchForFormResponsesByPatientId(patientId!!)
 
@@ -84,5 +84,4 @@ class SavedFormsActivity : AppCompatActivity() {
                 putExtra(EXTRA_PATIENT_OBJECT, patient)
             }
     }
-
 }

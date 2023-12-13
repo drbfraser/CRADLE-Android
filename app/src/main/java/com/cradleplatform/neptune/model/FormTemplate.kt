@@ -28,7 +28,7 @@ data class FormTemplate(
     @SerializedName("formClassificationName") var formClassName: String?,
     @SerializedName("questions") val questions: List<Question>?,
 
-    ) : Serializable {
+) : Serializable {
 
     fun languageVersions(): List<String> {
         val languageVersions = mutableListOf<String>()

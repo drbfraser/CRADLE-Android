@@ -89,7 +89,7 @@ class FormRenderingActivity : AppCompatActivity() {
 
         val answers = intent.getSerializableExtra(EXTRA_ANSWERS) as Map<String, Answer>?
         answers?.forEach { (s, answer) -> viewModel.addAnswer(s, answer) }
-        
+
         // If the form was rendered from a saved form response, grab the form response ID
         if (intent.getBooleanExtra(EXTRA_IS_FROM_SAVED_FORM_RESPONSE, false)) {
             formResponseId = intent.getLongExtra(EXTRA_FORM_RESPONSE_ID, 0)
