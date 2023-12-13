@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 4,
-    "identityHash": "b547800c6dc64684169df5c7815a8392",
+    "identityHash": "6cf3d0abbb6828565196c901f8a6057e",
     "entities": [
       {
         "tableName": "Reading",
@@ -651,7 +651,7 @@
       },
       {
         "tableName": "FormResponse",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`formResponseId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `formTemplate` TEXT NOT NULL, `answers` TEXT NOT NULL, `saveResponseToSendLater` INTEGER NOT NULL, `archived` INTEGER NOT NULL, `formClassificationId` TEXT NOT NULL, `formClassificationName` TEXT NOT NULL, `dateCreated` INTEGER NOT NULL, `language` TEXT NOT NULL, `questionResponses` TEXT NOT NULL, `patientId` TEXT NOT NULL, FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`formResponseId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `formTemplate` TEXT NOT NULL, `answers` TEXT NOT NULL, `saveResponseToSendLater` INTEGER NOT NULL, `archived` INTEGER NOT NULL, `formClassificationId` TEXT NOT NULL, `formClassificationName` TEXT NOT NULL, `templateDateCreated` INTEGER NOT NULL, `language` TEXT NOT NULL, `questionResponses` TEXT NOT NULL, `patientId` TEXT NOT NULL, `dateEdited` INTEGER NOT NULL, FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "formResponseId",
@@ -696,8 +696,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "dateCreated",
-            "columnName": "dateCreated",
+            "fieldPath": "templateDateCreated",
+            "columnName": "templateDateCreated",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -717,6 +717,12 @@
             "fieldPath": "patientId",
             "columnName": "patientId",
             "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateEdited",
+            "columnName": "dateEdited",
+            "affinity": "INTEGER",
             "notNull": true
           }
         ],
@@ -769,7 +775,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b547800c6dc64684169df5c7815a8392')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6cf3d0abbb6828565196c901f8a6057e')"
     ]
   }
 }

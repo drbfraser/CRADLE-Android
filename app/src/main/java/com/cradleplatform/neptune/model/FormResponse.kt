@@ -7,7 +7,6 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
-import kotlin.IllegalArgumentException
 
 /**
  *  A filled FormTemplate with a selected [language] containing [questionResponses] (answers) to questions.
@@ -56,12 +55,13 @@ constructor(
     var archived: Boolean
     var formClassificationId: String
     var formClassificationName: String
-    var dateCreated: Long
+    var templateDateCreated: Long
     @SerializedName("lang")
     var language: String = language
     @SerializedName("questions")
     var questionResponses: List<QuestionResponse>
     var patientId = patientId
+    var dateEdited: Long
 
     init {
 
@@ -73,12 +73,14 @@ constructor(
         this@FormResponse.archived = formTemplate.archived!!
         this@FormResponse.formClassificationId = formTemplate.formClassId!!
         this@FormResponse.formClassificationName = formTemplate.formClassName!!
-        this@FormResponse.dateCreated = formTemplate.dateCreated!!
+        this@FormResponse.templateDateCreated = formTemplate.dateCreated!!
         this@FormResponse.questionResponses = createQuestionResponses(
             formTemplate.questions!!,
             language,
             answers
         )
+
+        this@FormResponse.dateEdited = System.currentTimeMillis()
     }
 
     @Suppress("ThrowsCount")

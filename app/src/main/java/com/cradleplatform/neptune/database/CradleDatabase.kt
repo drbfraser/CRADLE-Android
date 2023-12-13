@@ -198,6 +198,7 @@ internal object Migrations {
                         `formTemplate` TEXT NOT NULL,
                         `language` TEXT NOT NULL,
                         `answers` TEXT NOT NULL,
+                        `saveResponseToSendLater`, BIT NOT NULL,
                         PRIMARY KEY(`formResponseId`),
                         FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) 
                             ON UPDATE CASCADE ON DELETE CASCADE
