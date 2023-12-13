@@ -51,11 +51,11 @@ class SavedFormAdapter (private val formList: List<FormResponse>, private val pa
             fun bind(formResponse: FormResponse) {
                 // Grab the FormResponse associated with the list item being bound
                 binding.formResponse = formResponse
-                binding.executePendingBindings()
                 // Insert custom text into each individual view
                 formClassNameTextView.text = formResponse.formClassificationName
                 versionTextView.text = formResponse.formTemplate.version
                 dateCreatedTextView.text =  Date(formResponse.dateCreated).toString()
+                binding.executePendingBindings()
             }
 
         }
