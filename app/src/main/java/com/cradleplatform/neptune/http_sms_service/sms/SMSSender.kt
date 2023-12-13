@@ -147,7 +147,7 @@ class SMSSender @Inject constructor(
             ).show()
             // TODO: Remove this after State reporting is implemented. Move logic to Activity instead.
             if (activityContext is ReadingActivity || activityContext is PatientReferralActivity
-                || activityContext is FormRenderingActivity ) {
+                || activityContext is FormRenderingActivity) {
                 (activityContext as Activity).finish()
                 activityContext = null
             }
