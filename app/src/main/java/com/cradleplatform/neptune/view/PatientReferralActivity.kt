@@ -150,6 +150,9 @@ open class PatientReferralActivity : AppCompatActivity() {
                 val unusedResult = viewModel.saveReferral("SMS", currPatient, applicationContext)
                 // TODO: Verify that the referral was successful
                 // This code is never executed, as mentioned in the comment on line 125.
+                // TODO: Remove the following code from the UI and move to a more appropriate place
+                // This should not be in the UI and should be moved to a place where the server
+                // response is being parsed
                 currPatient.lastServerUpdate = currPatient.lastEdited
                 patientManager.add(currPatient)
                 CustomToast.shortToast(

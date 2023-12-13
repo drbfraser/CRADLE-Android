@@ -181,6 +181,9 @@ class ReferralDialogFragment : DialogFragment() {
                             smsSender.sendSmsMessage(false)
                         }
                     }
+                    // TODO: Remove the following code from the UI and move to a more appropriate place
+                    // This should not be in the UI and should be moved to a place where the server
+                    // response is being parsed
                     smsSendResult.patientInfoForReferral.patient.lastServerUpdate =
                         smsSendResult.patientInfoForReferral.patient.lastEdited
                     viewModel.patientSentViaSMS(smsSendResult.patientInfoForReferral.patient)
