@@ -21,7 +21,6 @@ import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.model.QuestionTypeEnum
 import com.cradleplatform.neptune.utilities.connectivity.api24.ConnectivityOptions
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
-import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.view.FormRenderingActivity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -29,7 +28,7 @@ import javax.inject.Inject
 @HiltViewModel
 class FormRenderingViewModel @Inject constructor(
     //private val mFormManager: FormManager,
-    private val  httpSmsService: HttpSmsService,
+    private val httpSmsService: HttpSmsService,
     private val sharedPreferences: SharedPreferences,
     private val networkStateManager: NetworkStateManager,
     private val smsSender: SMSSender,

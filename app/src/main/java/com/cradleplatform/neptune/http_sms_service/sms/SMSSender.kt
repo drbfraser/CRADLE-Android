@@ -6,20 +6,10 @@ import android.content.SharedPreferences
 import android.os.Looper
 import android.telephony.SmsManager
 import android.widget.Toast
-import androidx.core.content.ContextCompat.getString
-import androidx.core.content.edit
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.SmsKeyManager
-import com.cradleplatform.neptune.manager.UrlManager
-import com.cradleplatform.neptune.model.PatientAndReadings
-import com.cradleplatform.neptune.model.PatientAndReferrals
-import com.cradleplatform.neptune.model.Reading
-import com.cradleplatform.neptune.model.Referral
-import com.cradleplatform.neptune.model.SmsReadingWithReferral
-import com.cradleplatform.neptune.utilities.SMSFormatter
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.encodeMsg
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.formatSMS
-import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.view.PatientReferralActivity
 import com.cradleplatform.neptune.view.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.UserViewModel
@@ -42,102 +32,6 @@ class SMSSender @Inject constructor(
     private var activityContext: Context? = null
     fun setActivityContext(activity: Context) {
         activityContext = activity
-    }
-
-    fun sendPatientAndReadings(patientAndReadings: PatientAndReadings) {
-        // TODO: Add target API endpoint information needed by the backend to json ??
-        // TODO: requestNumber=0 as it is not implemented in the backend yet
-        if (patientAndReadings.patient.lastServerUpdate == null) {
-            val patientAndReadingsJSON = JacksonMapper.createWriter<PatientAndReadings>().writeValueAsString(
-                patientAndReadings
-            )
-            val json = JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
-                SmsReadingWithReferral(
-                    requestNumber = "0",
-                    method = "POST",
-                    endpoint = "api/patients",
-                    headers = "",
-                    body = patientAndReadingsJSON
-                )
-            )
-            sendSmsMessageWithJson(json)
-        } else {
-            for (reading in patientAndReadings.readings) {
-                val readingsJSON = JacksonMapper.createWriter<Reading>().writeValueAsString(
-                    reading)
-                val json = JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
-                    SmsReadingWithReferral(
-                        requestNumber = "0",
-                        method = "POST",
-                        endpoint = "api/readings",
-                        headers = "",
-                        body = readingsJSON
-                    )
-                )
-                sendSmsMessageWithJson(json)
-            }
-        }
-    }
-    fun sendPatientAndReferral(patientAndReferrals: PatientAndReferrals) {
-        val patientAndReferralsJSON = JacksonMapper.createWriter<PatientAndReferrals>()
-            .writeValueAsString(patientAndReferrals)
-        val json = JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
-            SmsReadingWithReferral(
-                requestNumber = "0",
-                method = "POST",
-                // TODO: Remove the hardcoded API endpoint
-                endpoint = "api/patients",
-                headers = "",
-                body = patientAndReferralsJSON
-            )
-        )
-        sendSmsMessageWithJson(json)
-    }
-    fun sendReferral(referral: Referral) {
-        // TODO: Add target API endpoint information needed by the backend to json ??
-        // TODO: requestNumber=0 as it is not implemented in the backend yet
-        val referralJSON = JacksonMapper.createWriter<Referral>().writeValueAsString(
-            referral
-        )
-        val json = JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
-            SmsReadingWithReferral(
-                requestNumber = "0",
-                method = "POST",
-                // TODO: Remove the hardcoded API endpoint
-                endpoint = "api/referrals",
-                headers = "",
-                body = referralJSON
-            )
-        )
-        sendSmsMessageWithJson(json)
-    }
-    private fun sendSmsMessageWithJson(data: String) {
-        // Variable checks if we prepared a looper for the current thread or if it already existed
-        var looperPrepared = false
-
-        // Since this function is being called by both the main and other threads, we need to
-        // prepare looper for the other threads in order to show toasts
-        if (Looper.myLooper() == null) {
-            Looper.prepare()
-            looperPrepared = true
-        }
-        queueRelayContent(data).let { enqueuSuccessful ->
-                if (enqueuSuccessful) {
-                    Toast.makeText(
-                        appContext, getString(appContext, R.string.sms_sender_send),
-                        Toast.LENGTH_LONG
-                    ).show()
-                    sendSmsMessage(false)
-                } else {
-                    Toast.makeText(
-                        appContext, "SMSSender Enqueue failed",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-            }
-        if (looperPrepared) {
-            Looper.loop()
-        }
     }
 
     fun queueRelayContent(unencryptedData: String): Boolean {

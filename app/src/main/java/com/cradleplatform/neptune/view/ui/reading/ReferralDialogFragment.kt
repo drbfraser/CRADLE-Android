@@ -25,9 +25,6 @@ import com.cradleplatform.neptune.databinding.ReferralDialogBinding
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.manager.SmsKeyManager
-import com.cradleplatform.neptune.model.PatientAndReadings
-import com.cradleplatform.neptune.model.SmsReadingWithReferral
-import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.view.ReadingActivity
 import com.cradleplatform.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity
 import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel
@@ -178,7 +175,7 @@ class ReferralDialogFragment : DialogFragment() {
                     showStatusToast(view.context, smsSendResult, ReferralOption.SMS)
                     smsSender.setActivityContext(view.context)
                     val json = smsDataProcessor.processPatientAndReadingsToJSON(
-                                smsSendResult.patientInfoForReferral)
+                        smsSendResult.patientInfoForReferral)
                     smsSender.queueRelayContent(json).let { enqueuSuccessful ->
                         if (enqueuSuccessful) {
                             smsSender.sendSmsMessage(false)
