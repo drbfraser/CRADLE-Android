@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.model.Patient
@@ -48,7 +49,14 @@ class SavedFormsActivity : AppCompatActivity() {
 
             // Populate the recyclerView with the list of saved forms, using SavedFormAdapter
             val recyclerView: RecyclerView = findViewById(R.id.recycler_view)
-            recyclerView.adapter = formList?.let { patient?.let { it1 -> SavedFormAdapter(it, it1) } }
+
+            // Add horizontal line between list items
+            recyclerView.apply {
+                addItemDecoration(
+                    DividerItemDecoration(this@SavedFormsActivity, DividerItemDecoration.VERTICAL)
+                )
+                this.adapter = formList?.let { patient?.let { it1 -> SavedFormAdapter(it, it1) } }
+            }
         }
     }
 
