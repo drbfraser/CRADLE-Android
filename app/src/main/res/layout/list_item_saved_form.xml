@@ -37,11 +37,11 @@
             />
 
         <TextView
-            android:id="@+id/list_item_saved_form_version_label_text_view"
+            android:id="@+id/list_item_saved_form_id_label_text_view"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:maxLines="1"
-            android:text="@string/list_item_saved_form_template_version_label"
+            android:text="@string/list_item_saved_form_id_label"
             android:textStyle="bold"
             android:textAppearance="@style/TextAppearance.Cradle.Body1"
             app:layout_constraintEnd_toStartOf="@+id/saved_form_info_guideline"
@@ -50,7 +50,7 @@
             tools:text="Hubert Blaine Wolfe­schlegel­stein­hausen­berger­dorff Sr." />
 
         <TextView
-            android:id="@+id/list_item_saved_form_version_text_view"
+            android:id="@+id/list_item_saved_form_id_text_view"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:maxLines="1"
@@ -58,7 +58,7 @@
             android:text="@string/default_text_view"
             app:layout_constraintEnd_toStartOf="@+id/saved_form_info_guideline"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/list_item_saved_form_version_label_text_view"
+            app:layout_constraintTop_toBottomOf="@+id/list_item_saved_form_id_label_text_view"
             />
 
         <TextView

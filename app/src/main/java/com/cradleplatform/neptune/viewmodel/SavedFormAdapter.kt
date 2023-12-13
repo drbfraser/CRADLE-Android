@@ -44,7 +44,7 @@ class SavedFormAdapter (private val formList: List<FormResponse>, private val pa
 
             // Grab the individual views from list_item_saved_form.xml
             private val formClassNameTextView: TextView = itemView.findViewById(R.id.form_class_name_text)
-            private val versionTextView: TextView = itemView.findViewById(R.id.list_item_saved_form_version_text_view)
+            private val idTextView: TextView = itemView.findViewById(R.id.list_item_saved_form_id_text_view)
             private val dateLastEditedTextView: TextView = itemView.findViewById(R.id.list_item_saved_form_date_created_text_view)
 
             @UiThread
@@ -53,7 +53,7 @@ class SavedFormAdapter (private val formList: List<FormResponse>, private val pa
                 binding.formResponse = formResponse
                 // Insert custom text into each individual view
                 formClassNameTextView.text = formResponse.formClassificationName
-                versionTextView.text = formResponse.formTemplate.version
+                idTextView.text = formResponse.formResponseId.toString()
                 dateLastEditedTextView.text =  Date(formResponse.dateEdited).toString()
                 binding.executePendingBindings()
             }
@@ -84,6 +84,6 @@ class SavedFormAdapter (private val formList: List<FormResponse>, private val pa
         }
 
         companion object {
-            private val dataBindingComponent: DataBindingComponent? = FragmentDataBindingComponent()
+            private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent()
         }
     }

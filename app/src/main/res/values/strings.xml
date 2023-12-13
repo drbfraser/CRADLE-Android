@@ -511,7 +511,7 @@
     <string name="activity_patients_title">My patients</string>
     <string name="patient_list_item_last_reading_from">Last reading</string>
     <string name="list_item_patient_id_label">ID</string>
-    <string name="list_item_saved_form_template_version_label">Form template version</string>
+    <string name="list_item_saved_form_id_label">Saved form ID</string>
     <string name="list_item_saved_form_date_last_edited_label">Last edited</string>
     <string name="saved_form_success_dialog">Successfully saved form.</string>
     <string name="list_item_patient_village_number_label">Village</string>
