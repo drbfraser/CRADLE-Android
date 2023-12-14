@@ -14,6 +14,7 @@ import android.os.Bundle
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import androidx.work.WorkManager
+import com.cradleplatform.neptune.http_sms_service.sms.RelayRequestCounter
 import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkMonitoringUtil
 import com.cradleplatform.neptune.sync.PeriodicSyncer
@@ -22,6 +23,7 @@ import com.cradleplatform.neptune.view.PinPassActivity
 
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.hilt.android.HiltAndroidApp
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -107,6 +109,9 @@ class CradleApplication : Application(), Configuration.Provider {
         if (loginManager.isLoggedIn()) {
             periodicSyncer.startPeriodicSync()
         }
+
+        // Initiate SMS Relay Request Counter object
+        RelayRequestCounter.init(this)
 
         // Disable rotation
         // source: https://stackoverflow.com/questions/6745797/how-to-set-entire-application-in-portrait-mode-only/9784269#9784269

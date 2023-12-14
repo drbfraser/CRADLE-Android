@@ -23,7 +23,6 @@ class SMSSender @Inject constructor(
     private val sharedPreferences: SharedPreferences,
     private val appContext: Context,
 ) {
-    private var relayRequestCount: Long = 0
     private var smsRelayQueue = ArrayDeque<String>()
     private var smsSecretKey = smsKeyManager.retrieveSmsKey()
         ?: // TODO: handle the case when the secret key is not available
@@ -37,7 +36,8 @@ class SMSSender @Inject constructor(
 
     fun queueRelayContent(unencryptedData: String): Boolean {
         val encryptedData = encodeMsg(unencryptedData, smsSecretKey)
-        val smsPacketList = formatSMS(encryptedData, relayRequestCount)
+        val smsPacketList = formatSMS(encryptedData, RelayRequestCounter.getCount())
+        RelayRequestCounter.incrementCount(appContext)
         return smsRelayQueue.addAll(smsPacketList)
     }
 
