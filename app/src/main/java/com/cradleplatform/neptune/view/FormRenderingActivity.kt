@@ -128,8 +128,10 @@ class FormRenderingActivity : AppCompatActivity() {
 
         recyclerView.adapter = adapter
 
-        val smsReceiver = viewModel.getSMSReceiver()
+        smsReceiver = viewModel.getSMSReceiver()
         setupSMSReceiver(smsReceiver)
+
+        viewModel.setSMSSenderContext(this)
     }
 
     private fun setupSMSReceiver(smsReceiver: SMSReceiver) {

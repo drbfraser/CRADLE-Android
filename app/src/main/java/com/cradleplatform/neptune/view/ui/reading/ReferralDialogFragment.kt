@@ -173,7 +173,6 @@ class ReferralDialogFragment : DialogFragment() {
             when (smsSendResult) {
                 is ReadingFlowSaveResult.SaveSuccessful.ReferralSmsNeeded -> {
                     showStatusToast(view.context, smsSendResult, ReferralOption.SMS)
-                    smsSender.setActivityContext(view.context)
                     val json = smsDataProcessor.processPatientAndReadingsToJSON(
                         smsSendResult.patientInfoForReferral)
                     smsSender.queueRelayContent(json).let { enqueuSuccessful ->

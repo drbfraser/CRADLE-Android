@@ -167,7 +167,6 @@ class HttpSmsService @Inject constructor(private val restApi: RestApi) {
                 val json = formResponseWrapper.smsDataProcessor.processFormToJSON(
                     formResponseWrapper.formResponse
                 )
-                formResponseWrapper.smsSender.setActivityContext(formResponseWrapper.context)
                 formResponseWrapper.smsSender.queueRelayContent(json)
                     .let { enqueueSuccessful ->
                         if (enqueueSuccessful) {

@@ -1,5 +1,6 @@
 package com.cradleplatform.neptune.viewmodel
 
+import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.drawable.Drawable
@@ -294,6 +295,10 @@ class FormRenderingViewModel @Inject constructor(
         if (currentCategory().value != 1) {
             changeCategory(_currentCategory.value?.minus(1) ?: 1)
         }
+    }
+
+    fun setSMSSenderContext(activity: Activity) {
+        smsSender.setActivityContext(activity)
     }
 
     private companion object {
