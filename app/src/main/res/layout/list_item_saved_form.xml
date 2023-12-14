@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="formResponse"
+            type="com.cradleplatform.neptune.model.FormResponse" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/list_item_saved_form_constraint_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="16dp"
+        tools:visibility="visible">
+
+        <!-- Add in TextView to display form class name   -->
+        <TextView
+            android:id="@+id/form_class_name_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:maxLines="2"
+            android:minLines="2"
+            android:textAppearance="@style/TextAppearance.Cradle.Body1"
+            android:text="@string/default_text_view"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/saved_form_info_guideline"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+
+        <TextView
+            android:id="@+id/list_item_saved_form_id_label_text_view"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:text="@string/list_item_saved_form_id_label"
+            android:textStyle="bold"
+            android:textAppearance="@style/TextAppearance.Cradle.Body1"
+            app:layout_constraintEnd_toStartOf="@+id/saved_form_info_guideline"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/form_class_name_text"
+            tools:text="Hubert Blaine Wolfe­schlegel­stein­hausen­berger­dorff Sr." />
+
+        <TextView
+            android:id="@+id/list_item_saved_form_id_text_view"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:textAppearance="@style/TextAppearance.Cradle.Body1"
+            android:text="@string/default_text_view"
+            app:layout_constraintEnd_toStartOf="@+id/saved_form_info_guideline"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/list_item_saved_form_id_label_text_view"
+            />
+
+        <TextView
+            android:id="@+id/list_item_saved_form_date_created_label_text_view"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:text="@string/list_item_saved_form_date_last_edited_label"
+            android:textStyle="bold"
+            android:textAppearance="@style/TextAppearance.Cradle.Body1"
+            app:layout_constraintStart_toEndOf="@+id/saved_form_info_guideline"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/form_class_name_text"
+            tools:text="Hubert Blaine Wolfe­schlegel­stein­hausen­berger­dorff Sr." />
+
+        <TextView
+            android:id="@+id/list_item_saved_form_date_created_text_view"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:text="@string/default_text_view"
+            android:textAppearance="@style/TextAppearance.Cradle.Body1"
+            app:layout_constraintStart_toEndOf="@+id/saved_form_info_guideline"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/list_item_saved_form_date_created_label_text_view"
+            tools:text="Hubert Blaine Wolfe­schlegel­stein­hausen­berger­dorff Sr." />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/saved_form_info_guideline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_begin="220dp" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

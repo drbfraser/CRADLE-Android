@@ -1,18 +1,20 @@
 package com.cradleplatform.neptune.viewmodel
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.graphics.drawable.Drawable
 import android.widget.Toast
 import androidx.core.content.ContextCompat.getDrawable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.http_sms_service.http.DatabaseObject
 import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
 import com.cradleplatform.neptune.http_sms_service.http.Protocol
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.manager.FormManager
+import com.cradleplatform.neptune.manager.FormResponseManager
 import com.cradleplatform.neptune.model.Answer
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormTemplate
@@ -23,21 +25,23 @@ import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManag
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.view.FormRenderingActivity
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class FormRenderingViewModel @Inject constructor(
-    //private val mFormManager: FormManager,
     private val httpSmsService: HttpSmsService,
-    private val sharedPreferences: SharedPreferences,
     private val networkStateManager: NetworkStateManager,
     private val smsSender: SMSSender,
+    private val formResponseManager: FormResponseManager,
+    private val formManager: FormManager
 ) : ViewModel() {
 
     //Raw form template
     var currentFormTemplate: FormTemplate? = null
     private val _currentCategory: MutableLiveData<Int> = MutableLiveData(1)
-    private val _currentAnswers: MutableLiveData<Map<String, Answer>?> = MutableLiveData(mutableMapOf())
+    private val _currentAnswers: MutableLiveData<Map<String, Answer>?> =
+        MutableLiveData(mutableMapOf())
 
     var categoryList: List<Pair<String, List<Question>?>>? = null
 
@@ -105,7 +109,8 @@ class FormRenderingViewModel @Inject constructor(
                 } else {
                     indicesOfCategory[i + 1]
                 }
-                val sublist = currentFormTemplate!!.questions?.subList(categoryIndex + 1, indexOfNextCategory)
+                val sublist =
+                    currentFormTemplate!!.questions?.subList(categoryIndex + 1, indexOfNextCategory)
                 val categoryPair = Pair(categoryName, sublist)
 
                 if (!sublist.isNullOrEmpty()) {
@@ -118,7 +123,7 @@ class FormRenderingViewModel @Inject constructor(
     }
 
     fun fullQuestionList(): MutableList<Question> {
-        var listOfQuestions: MutableList<Question> = mutableListOf()
+        val listOfQuestions: MutableList<Question> = mutableListOf()
         currentFormTemplate?.questions?.forEach() { Q ->
             listOfQuestions.add(Q)
         }
@@ -174,8 +179,15 @@ class FormRenderingViewModel @Inject constructor(
         patientId: String,
         selectedLanguage: String,
         submissionMode: String,
-        applicationContext: Context
+        applicationContext: Context,
+        formResponseId: Long?
     ) {
+        formResponseId?.let {
+            viewModelScope.launch {
+                removeFormResponseFromDatabaseById(it)
+            }
+        }
+
         return if (currentFormTemplate != null) {
             val formResponse = FormResponse(
                 patientId = patientId,
@@ -238,7 +250,10 @@ class FormRenderingViewModel @Inject constructor(
     /**
      * Returns pair that contains required fields text and required fields icon
      */
-    fun getRequiredFieldsTextAndIcon(questions: List<Question>?, context: Context): Pair<String, Drawable?> {
+    fun getRequiredFieldsTextAndIcon(
+        questions: List<Question>?,
+        context: Context
+    ): Pair<String, Drawable?> {
         var total = 0
         var totalAnswered = 0
         questions?.forEach {
@@ -293,6 +308,50 @@ class FormRenderingViewModel @Inject constructor(
     fun goPrevCategory() {
         if (currentCategory().value != 1) {
             changeCategory(_currentCategory.value?.minus(1) ?: 1)
+        }
+    }
+
+    private suspend fun removeFormResponseFromDatabaseById(formResponseId: Long) =
+        formResponseManager.deleteFormResponseById(formResponseId)
+
+    suspend fun saveFormResponseToDatabase(
+        patientId: String,
+        selectedLanguage: String,
+        formResponseId: Long?,
+    ) {
+        return if (currentFormTemplate != null) {
+            // If the FormTemplate's formClassName field is empty, grab it using formClass Id
+            currentFormTemplate?.formClassName =
+                currentFormTemplate?.formClassName ?: currentFormTemplate?.formClassId?.let {
+                    formManager.searchForFormClassNameWithFormClassId(
+                        it
+                    )
+                }
+
+            val formResponse =
+                when (formResponseId != null && formResponseManager.searchForFormResponseById(
+                    formResponseId
+                ) != null) {
+                    true -> FormResponse(
+                        formResponseId = formResponseId,
+                        patientId = patientId,
+                        formTemplate = currentFormTemplate!!,
+                        language = selectedLanguage,
+                        answers = currentAnswers,
+                        saveResponseToSendLater = true
+                    )
+
+                    false -> FormResponse(
+                        patientId = patientId,
+                        formTemplate = currentFormTemplate!!,
+                        language = selectedLanguage,
+                        answers = currentAnswers,
+                        saveResponseToSendLater = true
+                    )
+                }
+            formResponseManager.updateOrInsertIfNotExistsFormResponse(formResponse)
+        } else {
+            error("FormTemplate does not exist: Current displaying FormTemplate is null")
         }
     }
 

@@ -1,9 +1,12 @@
 package com.cradleplatform.neptune.model
 
 import android.util.Log
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
+import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
-import kotlin.IllegalArgumentException
 
 /**
  *  A filled FormTemplate with a selected [language] containing [questionResponses] (answers) to questions.
@@ -22,39 +25,62 @@ import kotlin.IllegalArgumentException
  *   2) The [language] was not found in [FormTemplate]
  *   3) A Required [Question] (isRequired == true) has no response passed
  */
+@Entity(
+    indices = [
+        Index(value = ["formResponseId"], unique = true),
+        Index(value = ["patientId"])
+    ],
+    foreignKeys = [
+        ForeignKey(
+            entity = Patient::class,
+            parentColumns = arrayOf("id"),
+            childColumns = arrayOf("patientId"),
+            onUpdate = ForeignKey.CASCADE,
+            onDelete = ForeignKey.CASCADE
+        ),
+    ],
+)
 class FormResponse
 @Throws(IllegalArgumentException::class)
 constructor(
+    @PrimaryKey(autoGenerate = true)
+    var formResponseId: Long = 0,
     patientId: String,
-    formTemplate: FormTemplate,
+    var formTemplate: FormTemplate,
     language: String,
-    answers: Map<String, Answer>,
+    var answers: Map<String, Answer>,
+    var saveResponseToSendLater: Boolean = false
 ) {
 
-    private val archived: Boolean
-    private val formClassificationId: String
-    private val dateCreated: Int
+    var archived: Boolean
+    var formClassificationId: String
+    var formClassificationName: String
+    var templateDateCreated: Long
     @SerializedName("lang")
-    private val language: String = language
+    var language: String = language
     @SerializedName("questions")
-    private val questionResponses: List<QuestionResponse>
-    private val patientId = patientId
+    var questionResponses: List<QuestionResponse>
+    var patientId = patientId
+    var dateEdited: Long
 
     init {
 
         // FormTemplate should not have any null values if parsed correctly
-        if (!formTemplate.verifyIntegrity()) {
+        if (!saveResponseToSendLater && !formTemplate.verifyIntegrity()) {
             throw IllegalArgumentException("FormTemplate passed for FormResponse creation has null parameter")
         }
 
         this@FormResponse.archived = formTemplate.archived!!
         this@FormResponse.formClassificationId = formTemplate.formClassId!!
-        this@FormResponse.dateCreated = formTemplate.dateCreated!!
+        this@FormResponse.formClassificationName = formTemplate.formClassName!!
+        this@FormResponse.templateDateCreated = formTemplate.dateCreated!!
         this@FormResponse.questionResponses = createQuestionResponses(
             formTemplate.questions!!,
             language,
             answers
         )
+
+        this@FormResponse.dateEdited = System.currentTimeMillis()
     }
 
     @Suppress("ThrowsCount")
@@ -110,6 +136,21 @@ constructor(
         }
 
         return responseList
+    }
+
+    override operator fun equals(
+        other: Any?
+    ): Boolean {
+        return when (other) {
+            is FormResponse -> {
+                this.formResponseId == other.formResponseId
+            }
+            else -> false
+        }
+    }
+
+    override fun hashCode(): Int {
+        return super.hashCode()
     }
 
     companion object {

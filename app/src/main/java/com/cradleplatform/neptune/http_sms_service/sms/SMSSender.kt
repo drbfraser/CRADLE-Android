@@ -3,6 +3,8 @@ package com.cradleplatform.neptune.http_sms_service.sms
 import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.Handler
+import android.os.Looper
 import android.telephony.SmsManager
 import android.widget.Toast
 import com.cradleplatform.neptune.R
@@ -49,10 +51,12 @@ class SMSSender @Inject constructor(
                 smsRelayQueue.removeFirst()
                 if (smsRelayQueue.isEmpty()) {
                     val finishedMsg = appContext.getString(R.string.sms_all_sent)
-                    Toast.makeText(
-                        appContext, finishedMsg,
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Handler(Looper.getMainLooper()).post {
+                        Toast.makeText(
+                            appContext, finishedMsg,
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                     return
                 }
             }
@@ -69,18 +73,19 @@ class SMSSender @Inject constructor(
                     relayPhoneNumber, UserViewModel.USER_PHONE_NUMBER,
                     packetMsgDivided, null, null
                 )
-                Toast.makeText(
-                    appContext, appContext.getString(R.string.sms_packet_sent),
-                    Toast.LENGTH_LONG
-                ).show()
+                Handler(Looper.getMainLooper()).post {
+                    Toast.makeText(
+                        appContext, appContext.getString(R.string.sms_packet_sent),
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
             } catch (ex: Exception) {
-                // TODO: Fix the error here ==> java.lang.NullPointerException:
-                // Can't toast on a thread that has not called Looper.prepare() when sending
-                // just a referral for a patient
-                Toast.makeText(
-                    appContext, ex.message.toString(),
-                    Toast.LENGTH_LONG
-                ).show()
+                Handler(Looper.getMainLooper()).post {
+                    Toast.makeText(
+                        appContext, ex.message.toString(),
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
             }
         }
     }
@@ -103,22 +108,23 @@ class SMSSender @Inject constructor(
                 smsManager.divideMessage(ackMessage), null, null
             )
         } catch (ex: Exception) {
-            // TODO: Fix the error here ==> java.lang.NullPointerException:
-            // Can't toast on a thread that has not called Looper.prepare() when sending
-            // just a referral for a patient
-            Toast.makeText(
-                appContext, ex.message.toString(),
-                Toast.LENGTH_LONG
-            ).show()
+            Handler(Looper.getMainLooper()).post {
+                Toast.makeText(
+                    appContext, ex.message.toString(),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
         }
         if (ackNumber == numFragments - 1) {
             // TODO: Determine if it's better to exit Activity here or when nothing is left
             // in the relay list (see if (smsRelayMsgList.isEmpty()))
             val finishedMsg = appContext.getString(R.string.sms_all_sent)
-            Toast.makeText(
-                appContext, finishedMsg,
-                Toast.LENGTH_LONG
-            ).show()
+            Handler(Looper.getMainLooper()).post {
+                Toast.makeText(
+                    appContext, finishedMsg,
+                    Toast.LENGTH_LONG
+                ).show()
+            }
             // TODO: Remove this after State reporting is implemented. Move logic to Activity instead.
             if (activityContext is ReadingActivity || activityContext is PatientReferralActivity) {
                 (activityContext as Activity).finish()
