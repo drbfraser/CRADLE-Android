@@ -13,7 +13,7 @@ import android.content.Context
  */
 object RelayRequestCounter {
     // TODO: It only uses 6 digits. What happens to Relay App UI when it overflows back to 0?
-    private var count : Long = 0
+    private var count: Long = 0
         set(value) {
             field = if (value > 999999) 0 else value
         }
