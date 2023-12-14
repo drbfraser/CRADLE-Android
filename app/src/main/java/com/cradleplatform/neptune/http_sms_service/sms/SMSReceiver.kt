@@ -59,6 +59,7 @@ class SMSReceiver @Inject constructor(
                     numberReceivedMessages - 1,
                     totalMessages
                 )
+               check()
             }
             // continue storing message data and send ACK message
             else if (smsFormatter.isRestMessage(messageBody)) {
@@ -70,20 +71,24 @@ class SMSReceiver @Inject constructor(
                     relayData += smsFormatter.getRestMessageString(messageBody)
                     smsSender.sendAckMessage(requestIdentifier, numberReceivedMessages - 1, totalMessages)
                 }
-
-                // this happens at the end of exchange
-                // resetting vars if process finished
-                if (numberReceivedMessages == totalMessages) {
-
-                    Log.d("Search: Encrypted Message/Error", "$isError  $relayData")
-                    Log.d("Search: Total Messages received", numberReceivedMessages.toString())
-                    requestIdentifier = ""
-                    totalMessages = 0
-                    numberReceivedMessages = 0
-                    relayData = ""
-                    isError = null
-                }
+                check()
             }
+        }
+    }
+
+    //TODO remove this function when data is being read in an activity
+    private fun check(){
+        // this happens at the end of exchange
+        // resetting vars if process finished
+        if (numberReceivedMessages == totalMessages) {
+
+            Log.d("Search: Encrypted Message/Error", "$isError  $relayData")
+            Log.d("Search: Total Messages received", numberReceivedMessages.toString())
+            requestIdentifier = ""
+            totalMessages = 0
+            numberReceivedMessages = 0
+            relayData = ""
+            isError = null
         }
     }
 }
