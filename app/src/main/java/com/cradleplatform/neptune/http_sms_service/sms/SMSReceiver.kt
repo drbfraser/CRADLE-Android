@@ -12,7 +12,8 @@ import com.cradleplatform.neptune.utilities.SMSFormatter
 // TODO: Use shared prefs or other methods instead of these and decrypt data in an activity
 // Note that this data is not being read anywhere and is only being stored here
 private var requestIdentifier = ""
-private var encryptedMessage = ""
+private var relayData = ""
+private var isError: Boolean? = null
 private var numberReceivedMessages = 0
 private var totalMessages = 0
 
@@ -46,17 +47,17 @@ class SMSReceiver @Inject constructor(
                 smsSender.sendSmsMessage(true)
             }
             // start storing message data and send ACK message
-            else if (smsFormatter.isFirstMessage(messageBody)) {
+            else if (smsFormatter.isFirstReplyMessage(messageBody)) {
 
+                isError = smsFormatter.isFirstReplyError(messageBody)
                 requestIdentifier = smsFormatter.getRequestIdentifier(messageBody)
                 totalMessages = smsFormatter.getTotalNumMessages(messageBody)
-                encryptedMessage = smsFormatter.getFirstMessageString(messageBody)
+                relayData = smsFormatter.getFirstMessageString(messageBody)
                 numberReceivedMessages = 1
                 smsSender.sendAckMessage(
                     requestIdentifier,
                     numberReceivedMessages - 1,
                     totalMessages
-
                 )
             }
             // continue storing message data and send ACK message
@@ -66,7 +67,7 @@ class SMSReceiver @Inject constructor(
                     numberReceivedMessages < totalMessages) {
 
                     numberReceivedMessages += 1
-                    encryptedMessage += smsFormatter.getRestMessageString(messageBody)
+                    relayData += smsFormatter.getRestMessageString(messageBody)
                     smsSender.sendAckMessage(requestIdentifier, numberReceivedMessages - 1, totalMessages)
                 }
 
@@ -74,12 +75,13 @@ class SMSReceiver @Inject constructor(
                 // resetting vars if process finished
                 if (numberReceivedMessages == totalMessages) {
 
-                    Log.d("Search: Encrypted Message", encryptedMessage)
+                    Log.d("Search: Encrypted Message/Error", "$isError  $relayData")
                     Log.d("Search: Total Messages received", numberReceivedMessages.toString())
                     requestIdentifier = ""
                     totalMessages = 0
                     numberReceivedMessages = 0
-                    encryptedMessage = ""
+                    relayData = ""
+                    isError = null
                 }
             }
         }

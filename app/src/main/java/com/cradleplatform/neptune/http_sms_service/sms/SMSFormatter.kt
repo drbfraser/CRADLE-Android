@@ -27,10 +27,14 @@ class SMSFormatter {
         const val MAGIC_STRING = "CRADLE"
         const val FRAGMENT_HEADER_LENGTH = 3
         private const val REQUEST_NUMBER_LENGTH = 6
+        private const val REPLY_SUCCESS = "REPLY"
+        private const val REPLY_ERROR = "REPLY_ERROR"
 
         val ackRegexPattern = Regex("^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-(\\d{6})-(\\d{3})-ACK$")
         val firstRegexPattern = Regex("^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-(\\d{6})-(\\d{3})-(.+)$")
         val restRegexPattern = Regex("^(\\d{3})-(.+)$")
+        val firstErrorReplyPattern = Regex("^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-(\\d{6})-$REPLY_ERROR-(\\d{3})-(.+)$")
+        val firstSuccessReplyPattern = Regex("^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-(\\d{6})-$REPLY_SUCCESS-(\\d{3})-(.+)$")
 
         // TODO: CHANGE TEST
         fun encodeMsg(msg: String, secretKey: String): String {
@@ -134,14 +138,17 @@ class SMSFormatter {
     }
 
     fun getRequestIdentifier(smsMessage: String): String {
-        return firstRegexPattern.find(smsMessage)?.groupValues!![1]
+        val group = if (isFirstReplyError(smsMessage)) firstErrorReplyPattern.find(smsMessage)?.groupValues else firstSuccessReplyPattern.find(smsMessage)?.groupValues
+        return group!![1]
     }
     fun getTotalNumMessages(smsMessage: String): Int {
-        return firstRegexPattern.find(smsMessage)?.groupValues!![2].toInt()
+        val group = if (isFirstReplyError(smsMessage)) firstErrorReplyPattern.find(smsMessage)?.groupValues else firstSuccessReplyPattern.find(smsMessage)?.groupValues
+        return group!![2].toInt()
     }
 
     fun getFirstMessageString(smsMessage: String): String {
-        return firstRegexPattern.find(smsMessage)?.groupValues!![3]
+        val group = if (isFirstReplyError(smsMessage)) firstErrorReplyPattern.find(smsMessage)?.groupValues else firstSuccessReplyPattern.find(smsMessage)?.groupValues
+        return group!![3]
     }
 
     fun getMessageNumber(smsMessage: String): Int {
@@ -152,15 +159,19 @@ class SMSFormatter {
         return restRegexPattern.find(smsMessage)?.groupValues!![2]
     }
 
-    fun isFirstMessage(message: String): Boolean {
-        return firstRegexPattern.matches(message)
-    }
-
     fun isAckMessage(message: String): Boolean {
         return ackRegexPattern.matches(message)
     }
 
     fun isRestMessage(message: String): Boolean {
         return restRegexPattern.matches(message)
+    }
+
+    fun isFirstReplyMessage(message: String): Boolean{
+        return firstSuccessReplyPattern.matches(message) || firstErrorReplyPattern.matches(message)
+    }
+
+    fun isFirstReplyError(message: String): Boolean {
+        return firstErrorReplyPattern.matches(message)
     }
 }
