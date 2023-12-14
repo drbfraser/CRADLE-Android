@@ -117,7 +117,6 @@ class SMSDataProcessor @Inject constructor(private val urlManager: UrlManager) {
         }
     }
 
-
     /**
      * Transforms a Referral into a Cradle Server SMS API compatible JSON String.
      * @param referral
