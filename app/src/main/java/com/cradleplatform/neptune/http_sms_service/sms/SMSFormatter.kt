@@ -27,13 +27,15 @@ class SMSFormatter {
         const val MAGIC_STRING = "CRADLE"
         const val FRAGMENT_HEADER_LENGTH = 3
         private const val REQUEST_NUMBER_LENGTH = 6
+        private const val REPLY_ERROR_CODE_PREFIX = "ERR"
+        private const val REPLY_ERROR_CODE_LENGTH = 3
         private const val REPLY_SUCCESS = "REPLY"
         private const val REPLY_ERROR = "REPLY_ERROR"
 
         val ackRegexPattern = Regex("^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-(\\d{6})-(\\d{3})-ACK$")
         val firstRegexPattern = Regex("^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-(\\d{6})-(\\d{3})-(.+)$")
         val restRegexPattern = Regex("^(\\d{3})-(.+)$")
-        val firstErrorReplyPattern = Regex("^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-(\\d{6})-$REPLY_ERROR-(\\d{3})-(.+)$")
+        val firstErrorReplyPattern = Regex("^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-(\\d{6})-$REPLY_ERROR-(\\d{3})-$REPLY_ERROR_CODE_PREFIX(\\d{3})-(.+)$")
         val firstSuccessReplyPattern = Regex("^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-(\\d{6})-$REPLY_SUCCESS-(\\d{3})-(.+)$")
 
         // TODO: CHANGE TEST
@@ -147,8 +149,11 @@ class SMSFormatter {
     }
 
     fun getFirstMessageString(smsMessage: String): String {
-        val group = if (isFirstReplyError(smsMessage)) firstErrorReplyPattern.find(smsMessage)?.groupValues else firstSuccessReplyPattern.find(smsMessage)?.groupValues
-        return group!![3]
+        return if (isFirstReplyError(smsMessage))
+            firstErrorReplyPattern.find(smsMessage)?.groupValues!![4]
+        else
+            firstSuccessReplyPattern.find(smsMessage)?.groupValues!![3]
+
     }
 
     fun getMessageNumber(smsMessage: String): Int {
