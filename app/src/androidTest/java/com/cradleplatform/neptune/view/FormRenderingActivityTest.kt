@@ -39,8 +39,15 @@ class FormRenderingActivityTest{
         activityScenarioRule.scenario.onActivity { activity ->
             val intent = FormRenderingActivity.makeIntentWithFormTemplate(
                 activity,
-                FormTemplate("test-version",null,null,
-                         "test-template","",questions),
+                FormTemplate(
+                    "test-version",
+                    null,
+                    null,
+                    "test-template",
+                    "",
+                    null,
+                    questions
+                ),
                 "test-language",
                 "test-id",
                 Patient("test-patient")

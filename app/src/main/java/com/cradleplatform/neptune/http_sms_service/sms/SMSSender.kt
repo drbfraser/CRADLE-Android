@@ -3,14 +3,15 @@ package com.cradleplatform.neptune.http_sms_service.sms
 import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
-import android.os.Handler
 import android.os.Looper
+import android.os.Handler
 import android.telephony.SmsManager
 import android.widget.Toast
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.encodeMsg
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.formatSMS
+import com.cradleplatform.neptune.view.FormRenderingActivity
 import com.cradleplatform.neptune.view.PatientReferralActivity
 import com.cradleplatform.neptune.view.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.UserViewModel
@@ -23,7 +24,6 @@ class SMSSender @Inject constructor(
     private val sharedPreferences: SharedPreferences,
     private val appContext: Context,
 ) {
-    private var relayRequestCount: Long = 0
     private var smsRelayQueue = ArrayDeque<String>()
     private var smsSecretKey = smsKeyManager.retrieveSmsKey()
         ?: // TODO: handle the case when the secret key is not available
@@ -37,7 +37,8 @@ class SMSSender @Inject constructor(
 
     fun queueRelayContent(unencryptedData: String): Boolean {
         val encryptedData = encodeMsg(unencryptedData, smsSecretKey)
-        val smsPacketList = formatSMS(encryptedData, relayRequestCount)
+        val smsPacketList = formatSMS(encryptedData, RelayRequestCounter.getCount())
+        RelayRequestCounter.incrementCount(appContext)
         return smsRelayQueue.addAll(smsPacketList)
     }
 
@@ -126,7 +127,8 @@ class SMSSender @Inject constructor(
                 ).show()
             }
             // TODO: Remove this after State reporting is implemented. Move logic to Activity instead.
-            if (activityContext is ReadingActivity || activityContext is PatientReferralActivity) {
+            if (activityContext is ReadingActivity || activityContext is PatientReferralActivity
+                || activityContext is FormRenderingActivity) {
                 (activityContext as Activity).finish()
                 activityContext = null
             }

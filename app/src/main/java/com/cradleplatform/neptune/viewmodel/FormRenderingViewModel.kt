@@ -1,6 +1,8 @@
 package com.cradleplatform.neptune.viewmodel
 
+import android.app.Activity
 import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.drawable.Drawable
 import android.widget.Toast
 import androidx.core.content.ContextCompat.getDrawable
@@ -12,9 +14,11 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.http_sms_service.http.DatabaseObject
 import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
 import com.cradleplatform.neptune.http_sms_service.http.Protocol
+import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.manager.FormManager
 import com.cradleplatform.neptune.manager.FormResponseManager
+import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.model.Answer
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormTemplate
@@ -22,7 +26,6 @@ import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.model.QuestionTypeEnum
 import com.cradleplatform.neptune.utilities.connectivity.api24.ConnectivityOptions
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
-import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.view.FormRenderingActivity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -43,6 +46,11 @@ class FormRenderingViewModel @Inject constructor(
     private val _currentAnswers: MutableLiveData<Map<String, Answer>?> =
         MutableLiveData(mutableMapOf())
 
+    @Inject
+    lateinit var smsDataProcessor: SMSDataProcessor
+
+    @Inject
+    lateinit var sharedPreferences: SharedPreferences
     var categoryList: List<Pair<String, List<Question>?>>? = null
 
     fun currentCategory(): LiveData<Int> {
@@ -175,6 +183,12 @@ class FormRenderingViewModel @Inject constructor(
         }
     }
 
+    fun getSMSReceiver(): SMSReceiver {
+        val phoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
+            ?: error("invalid phone number")
+        return SMSReceiver(smsSender, phoneNumber)
+    }
+
     suspend fun submitForm(
         patientId: String,
         selectedLanguage: String,
@@ -195,24 +209,15 @@ class FormRenderingViewModel @Inject constructor(
                 language = selectedLanguage,
                 answers = currentAnswers
             )
-            val json = JacksonMapper.createWriter<FormResponse>().writeValueAsString(
-                formResponse
+            httpSmsService.upload(
+                DatabaseObject.FormResponseWrapper(
+                    formResponse,
+                    smsSender,
+                    Protocol.valueOf(submissionMode),
+                    applicationContext,
+                    smsDataProcessor
+                )
             )
-            smsSender.queueRelayContent(json)
-                .let { enqueueSuccessful ->
-                    if (enqueueSuccessful) {
-                        httpSmsService.upload(
-                            DatabaseObject.FormResponseWrapper(
-                                formResponse,
-                                smsSender,
-                                Protocol.valueOf(submissionMode),
-                                applicationContext
-                            )
-                        )
-                    } else {
-                        error("SMSSender Enqueue Failed")
-                    }
-                }
         } else {
             error("FormTemplate does not exist: Current displaying FormTemplate is null")
         }
@@ -309,6 +314,10 @@ class FormRenderingViewModel @Inject constructor(
         if (currentCategory().value != 1) {
             changeCategory(_currentCategory.value?.minus(1) ?: 1)
         }
+    }
+
+    fun setSMSSenderContext(activity: Activity) {
+        smsSender.setActivityContext(activity)
     }
 
     private suspend fun removeFormResponseFromDatabaseById(formResponseId: Long) =

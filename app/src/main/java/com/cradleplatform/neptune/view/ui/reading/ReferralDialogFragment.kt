@@ -3,12 +3,14 @@ package com.cradleplatform.neptune.view.ui.reading
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.databinding.DataBindingComponent
@@ -20,10 +22,9 @@ import androidx.lifecycle.lifecycleScope
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.ReferralDialogBinding
+import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.manager.SmsKeyManager
-import com.cradleplatform.neptune.model.PatientAndReadings
-import com.cradleplatform.neptune.model.SmsReadingWithReferral
-import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.view.ReadingActivity
 import com.cradleplatform.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity
 import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel
@@ -57,6 +58,14 @@ class ReferralDialogFragment : DialogFragment() {
     @Inject
     lateinit var smsKeyManager: SmsKeyManager
 
+    @Inject
+    lateinit var sharedPreferences: SharedPreferences
+
+    @Inject
+    lateinit var smsSender: SMSSender
+
+    @Inject
+    lateinit var smsDataProcessor: SMSDataProcessor
     override fun onAttach(context: Context) {
         super.onAttach(context)
         check(context is ReadingActivity)
@@ -144,6 +153,10 @@ class ReferralDialogFragment : DialogFragment() {
         if (viewModel.isInitialized.value != true) {
             dismiss()
         }
+        if (!viewModel.isPatientSynced() &&
+            launchReason != ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
+            view.findViewById<TextView>(R.id.textView6).visibility = View.VISIBLE
+        }
     }
 
     private suspend fun handleSmsReferralSend(view: View) {
@@ -157,11 +170,22 @@ class ReferralDialogFragment : DialogFragment() {
                 comment,
                 selectedHealthFacilityName
             )
-
             when (smsSendResult) {
                 is ReadingFlowSaveResult.SaveSuccessful.ReferralSmsNeeded -> {
                     showStatusToast(view.context, smsSendResult, ReferralOption.SMS)
-                    sendSms(smsSendResult.patientInfoForReferral)
+                    val json = smsDataProcessor.processPatientAndReadingsToJSON(
+                        smsSendResult.patientInfoForReferral)
+                    smsSender.queueRelayContent(json).let { enqueuSuccessful ->
+                        if (enqueuSuccessful) {
+                            smsSender.sendSmsMessage(false)
+                        }
+                    }
+                    // TODO: Remove the following code from the UI and move to a more appropriate place
+                    // This should not be in the UI and should be moved to a place where the server
+                    // response is being parsed
+                    smsSendResult.patientInfoForReferral.patient.lastServerUpdate =
+                        smsSendResult.patientInfoForReferral.patient.lastEdited
+                    viewModel.patientSentViaSMS(smsSendResult.patientInfoForReferral.patient)
                 }
                 else -> {
                     showStatusToast(view.context, smsSendResult, ReferralOption.SMS)
@@ -170,27 +194,6 @@ class ReferralDialogFragment : DialogFragment() {
         } finally {
             referralDialogViewModel.isSending.value = false
         }
-    }
-
-    private fun sendSms(
-        patientAndReadings: PatientAndReadings
-    ) {
-        // TODO: Add target API endpoint information needed by the backend to json ??
-        // TODO: requestNumber=0 as it is not implemented in the backend yet
-        patientAndReadings
-        val patientAndReadingsJSON = JacksonMapper.createWriter<PatientAndReadings>().writeValueAsString(
-            patientAndReadings
-        )
-        val json = JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
-            SmsReadingWithReferral(
-                requestNumber = "0",
-                method = "POST",
-                endpoint = "api/patients",
-                headers = "",
-                body = patientAndReadingsJSON
-            )
-        )
-        dataPasser.sendSmsMessage(json)
     }
 
     private suspend fun handleWebReferralSend(view: View) {

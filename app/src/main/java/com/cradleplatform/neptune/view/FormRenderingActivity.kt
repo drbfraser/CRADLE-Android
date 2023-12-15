@@ -3,6 +3,7 @@ package com.cradleplatform.neptune.view
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Rect
 import android.os.Bundle
 import android.provider.Settings
@@ -29,6 +30,7 @@ import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.view.adapters.FormViewAdapter
 import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
+import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -53,6 +55,7 @@ class FormRenderingActivity : AppCompatActivity() {
     private lateinit var formStateBtn: ImageButton
     private lateinit var formNextBtn: ImageButton
     private lateinit var formPrevBtn: ImageButton
+    private lateinit var smsReceiver: SMSReceiver
     val viewModel: FormRenderingViewModel by viewModels()
 
     override fun onSupportNavigateUp(): Boolean {
@@ -132,6 +135,26 @@ class FormRenderingActivity : AppCompatActivity() {
         adapter = FormViewAdapter(viewModel, languageSelected!!, patient)
 
         recyclerView.adapter = adapter
+
+        smsReceiver = viewModel.getSMSReceiver()
+        setupSMSReceiver(smsReceiver)
+
+        viewModel.setSMSSenderContext(this)
+    }
+
+    private fun setupSMSReceiver(smsReceiver: SMSReceiver) {
+        val intentFilter = IntentFilter()
+        intentFilter.addAction("android.provider.Telephony.SMS_RECEIVED")
+        intentFilter.priority = Int.MAX_VALUE
+
+        registerReceiver(smsReceiver, intentFilter)
+    }
+
+    override fun onStop() {
+        if (smsReceiver != null) {
+            unregisterReceiver(smsReceiver)
+        }
+        super.onStop()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
