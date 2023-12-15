@@ -59,7 +59,7 @@ class SMSReceiver @Inject constructor(
                     numberReceivedMessages - 1,
                     totalMessages
                 )
-               check()
+                check()
             }
             // continue storing message data and send ACK message
             else if (smsFormatter.isRestMessage(messageBody)) {
@@ -77,7 +77,7 @@ class SMSReceiver @Inject constructor(
     }
 
     //TODO remove this function when data is being read in an activity
-    private fun check(){
+    private fun check() {
         // this happens at the end of exchange
         // resetting vars if process finished
         if (numberReceivedMessages == totalMessages) {

@@ -1,7 +1,6 @@
 package com.cradleplatform.neptune.utilities
 
 import com.google.firebase.crashlytics.internal.model.ImmutableList
-import com.google.gson.Gson
 import org.json.JSONObject
 import kotlin.math.min
 
@@ -45,7 +44,7 @@ class SMSFormatter {
         private const val POS_FIRST_MSG_DATA = 3
         private const val POS_REST_MSG_DATA = 2
         private const val POS_REPLY_SUCCESS_DATA = 3
-        private const val POS_REPLY_ERROR_DATA= 4
+        private const val POS_REPLY_ERROR_DATA = 4
 
         //positions for total fragments in transaction
         private const val POS_FIRST_NUM_FRAGMENTS = 2
@@ -57,35 +56,35 @@ class SMSFormatter {
         private const val POS_REST_CURR_FRAGMENT = 1
 
         private val ackRegexPattern =
-                Regex(
-            "^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-" +
+            Regex(
+                "^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-" +
                     "(\\d{$REQUEST_NUMBER_LENGTH})-(\\d{$FRAGMENT_HEADER_LENGTH})-$SMS_ACK_SUFFIX$"
-                )
+            )
 
         private val firstRegexPattern =
-                Regex(
-            "^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-" +
+            Regex(
+                "^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-" +
                     "(\\d{$REQUEST_NUMBER_LENGTH})-(\\d{$FRAGMENT_HEADER_LENGTH})-(.+)"
-                )
+            )
 
         private val restRegexPattern =
-                Regex(
-            "^(\\d{$FRAGMENT_HEADER_LENGTH})-(.+)"
-                )
+            Regex(
+                "^(\\d{$FRAGMENT_HEADER_LENGTH})-(.+)"
+            )
 
         private val firstErrorReplyPattern =
-                Regex(
-            "^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-" +
+            Regex(
+                "^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-" +
                     "(\\d{$REQUEST_NUMBER_LENGTH})-$REPLY_ERROR-(\\d{$FRAGMENT_HEADER_LENGTH})-" +
                     "$REPLY_ERROR_CODE_PREFIX(\\d{$REPLY_ERROR_CODE_LENGTH})-(.+)$"
-                )
+            )
 
         private val firstSuccessReplyPattern =
-                Regex(
-            "^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-" +
+            Regex(
+                "^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-" +
                     "(\\d{$REQUEST_NUMBER_LENGTH})-$REPLY_SUCCESS-" +
                     "(\\d{$FRAGMENT_HEADER_LENGTH})-(.+)"
-                )
+            )
 
         // TODO: CHANGE TEST
         fun encodeMsg(msg: String, secretKey: String): String {
@@ -182,19 +181,19 @@ class SMSFormatter {
     fun getRequestIdentifier(smsMessage: String): String {
         return if (isFirstReplyError(smsMessage))
             firstErrorReplyPattern.find(smsMessage)?.
-            groupValues!![POS_REPLY_ERROR_REQUEST_COUNTER]
+                groupValues!![POS_REPLY_ERROR_REQUEST_COUNTER]
         else
             firstSuccessReplyPattern.find(smsMessage)?.
-            groupValues!![POS_REPLY_SUCCESS_REQUEST_COUNTER]
+                groupValues!![POS_REPLY_SUCCESS_REQUEST_COUNTER]
     }
 
     fun getTotalNumMessages(smsMessage: String): Int {
         return if (isFirstReplyError(smsMessage))
             firstErrorReplyPattern.find(smsMessage)?.
-            groupValues!![POS_REPLY_ERROR_NUM_FRAGMENTS].toInt()
+                groupValues!![POS_REPLY_ERROR_NUM_FRAGMENTS].toInt()
         else
             firstSuccessReplyPattern.find(smsMessage)?.
-            groupValues!![POS_REPLY_SUCCESS_NUM_FRAGMENTS].toInt()
+                groupValues!![POS_REPLY_SUCCESS_NUM_FRAGMENTS].toInt()
     }
 
     fun getFirstMessageString(smsMessage: String): String {
@@ -202,7 +201,6 @@ class SMSFormatter {
             firstErrorReplyPattern.find(smsMessage)?.groupValues!![POS_REPLY_ERROR_DATA]
         else
             firstSuccessReplyPattern.find(smsMessage)?.groupValues!![POS_REPLY_SUCCESS_DATA]
-
     }
 
     fun getMessageNumber(smsMessage: String): Int {
@@ -221,7 +219,7 @@ class SMSFormatter {
         return restRegexPattern.matches(message)
     }
 
-    fun isFirstReplyMessage(message: String): Boolean{
+    fun isFirstReplyMessage(message: String): Boolean {
         return firstSuccessReplyPattern.matches(message) || firstErrorReplyPattern.matches(message)
     }
 
