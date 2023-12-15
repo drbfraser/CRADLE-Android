@@ -21,7 +21,7 @@ private var totalMessages = 0
 class SMSReceiver @Inject constructor(
     private val smsSender: SMSSender,
     private val relayPhoneNumber: String,
-    private val viewModel: SmsTransmissionDialogViewModel?,
+    private val smsStateReporter: SmsStateReporter,
 ) : BroadcastReceiver() {
 
     private var smsFormatter: SMSFormatter = SMSFormatter()
@@ -46,25 +46,23 @@ class SMSReceiver @Inject constructor(
             if (smsFormatter.isAckMessage(messageBody)
             ) {
                 smsSender.sendSmsMessage(true)
-                viewModel?.incrementCount()
+                smsStateReporter.incrementSent()
             }
             // start storing message data and send ACK message
             else if (smsFormatter.isFirstMessage(messageBody)) {
 
                 requestIdentifier = smsFormatter.getRequestIdentifier(messageBody)
                 totalMessages = smsFormatter.getTotalNumMessages(messageBody)
-                viewModel?.setTotalMessageCount(totalMessages)
+                smsStateReporter.initReceiving(totalMessages)
                 encryptedMessage = smsFormatter.getFirstMessageString(messageBody)
                 numberReceivedMessages = 1
-                viewModel?.resetCount()
-                    .let {
-                    viewModel?.incrementCount()
-                }
+                smsStateReporter.incrementReceived()
                 smsSender.sendAckMessage(
                     requestIdentifier,
                     numberReceivedMessages - 1,
                     totalMessages
                 )
+
             }
             // continue storing message data and send ACK message
             else if (smsFormatter.isRestMessage(messageBody)) {
@@ -72,7 +70,7 @@ class SMSReceiver @Inject constructor(
                 if (smsFormatter.getMessageNumber(messageBody) <= totalMessages &&
                     numberReceivedMessages < totalMessages) {
                     numberReceivedMessages += 1
-                    viewModel?.incrementCount()
+                    smsStateReporter.incrementReceived()
                     encryptedMessage += smsFormatter.getRestMessageString(messageBody)
                     smsSender.sendAckMessage(requestIdentifier, numberReceivedMessages - 1, totalMessages)
                 }

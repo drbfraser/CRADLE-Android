@@ -16,6 +16,7 @@ import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.ActivityReferralBinding
 import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.utilities.CustomToast
@@ -36,6 +37,9 @@ open class PatientReferralActivity : AppCompatActivity() {
 
     @Inject
     lateinit var smsSender: SMSSender
+
+    @Inject
+    lateinit var smsStateReporter: SmsStateReporter
 
     private lateinit var currPatient: Patient
 
@@ -152,7 +156,7 @@ open class PatientReferralActivity : AppCompatActivity() {
 
         val phoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
             ?: error("invalid phone number")
-        smsReceiver = SMSReceiver(smsSender, phoneNumber)
+        smsReceiver = SMSReceiver(smsSender, phoneNumber, smsStateReporter)
         registerReceiver(smsReceiver, intentFilter)
     }
 }

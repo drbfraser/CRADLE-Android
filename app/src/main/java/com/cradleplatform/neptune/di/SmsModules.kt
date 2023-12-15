@@ -3,6 +3,7 @@ package com.cradleplatform.neptune.di
 import android.content.Context
 import android.content.SharedPreferences
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import dagger.Module
 import dagger.Provides
@@ -22,9 +23,17 @@ class SmsModules {
 
     @Provides
     @Singleton
+    fun provideSmsStateReporter(): SmsStateReporter {
+        return SmsStateReporter()
+    }
+
+    @Provides
+    @Singleton
     fun provideSmsSender(
         smsKeyManager: SmsKeyManager,
         sharedPreferences: SharedPreferences,
-        @ApplicationContext context: Context
-    ) = SMSSender(smsKeyManager, sharedPreferences, context)
+        @ApplicationContext context: Context,
+        smsStateReporter: SmsStateReporter,
+    ) = SMSSender(smsKeyManager, sharedPreferences, context, smsStateReporter)
+
 }

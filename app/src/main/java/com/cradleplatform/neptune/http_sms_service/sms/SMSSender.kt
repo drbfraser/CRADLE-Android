@@ -6,8 +6,6 @@ import android.content.SharedPreferences
 import android.telephony.SmsManager
 import android.widget.Toast
 import com.cradleplatform.neptune.R
-import com.cradleplatform.neptune.http_sms_service.sms.ui.SmsTransmissionDialogViewModel
-import com.cradleplatform.neptune.http_sms_service.sms.ui.SmsTransmissionStates
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.encodeMsg
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.formatSMS
@@ -22,7 +20,7 @@ class SMSSender @Inject constructor(
     private val smsKeyManager: SmsKeyManager,
     private val sharedPreferences: SharedPreferences,
     private val appContext: Context,
-    private val viewModel: SmsTransmissionDialogViewModel?,
+    private val smsStateReporter: SmsStateReporter,
 ) {
     private var relayRequestCount: Long = 0
     private var smsRelayQueue = ArrayDeque<String>()
@@ -39,22 +37,22 @@ class SMSSender @Inject constructor(
     fun queueRelayContent(unencryptedData: String): Boolean {
         val encryptedData = encodeMsg(unencryptedData, smsSecretKey)
         val smsPacketList = formatSMS(encryptedData, relayRequestCount)
-        setVMTotalMessagesNumber(smsPacketList.size)
+        smsStateReporter.initSending(smsPacketList.size)
         return smsRelayQueue.addAll(smsPacketList)
     }
 
     fun sendSmsMessage(acknowledged: Boolean) {
         val relayPhoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
         val smsManager: SmsManager = SmsManager.getDefault()
-        viewModel?.state!!.value = SmsTransmissionStates.SENDING_TO_RELAY_SERVER
+        smsStateReporter.state.postValue(SmsTransmissionStates.SENDING_TO_RELAY_SERVER)
         if (!smsRelayQueue.isNullOrEmpty()) {
             // if acknowledgement received, remove window block and proceed to next
             if (acknowledged) {
                 smsRelayQueue.removeFirst()
                 if (smsRelayQueue.isEmpty()) {
                     val finishedMsg = appContext.getString(R.string.sms_all_sent)
-                    viewModel?.state!!.value = SmsTransmissionStates.WAITING_FOR_SERVER_RESPONSE
-                    viewModel?.resetCount()
+                    smsStateReporter.state.postValue(
+                        SmsTransmissionStates.WAITING_FOR_SERVER_RESPONSE)
                     Toast.makeText(
                         appContext, finishedMsg,
                         Toast.LENGTH_LONG
@@ -102,7 +100,7 @@ class SMSSender @Inject constructor(
 
         val smsManager: SmsManager = SmsManager.getDefault()
         val relayPhoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
-        viewModel?.state!!.value = SmsTransmissionStates.RECEIVING_SERVER_RESPONSE
+        smsStateReporter.state.postValue(SmsTransmissionStates.RECEIVING_SERVER_RESPONSE)
         try {
             smsManager.sendMultipartTextMessage(
                 relayPhoneNumber, UserViewModel.USER_PHONE_NUMBER,
@@ -121,7 +119,7 @@ class SMSSender @Inject constructor(
             // TODO: Determine if it's better to exit Activity here or when nothing is left
             // in the relay list (see if (smsRelayMsgList.isEmpty()))
             val finishedMsg = appContext.getString(R.string.sms_all_sent)
-            viewModel?.state!!.value = SmsTransmissionStates.DONE
+            smsStateReporter.state.postValue(SmsTransmissionStates.DONE)
             Toast.makeText(
                 appContext, finishedMsg,
                 Toast.LENGTH_LONG
@@ -131,14 +129,6 @@ class SMSSender @Inject constructor(
                 (activityContext as Activity).finish()
                 activityContext = null
             }
-        }
-    }
-
-    private fun setVMTotalMessagesNumber(count: Int) {
-        if (!viewModel?.isNewInstance()!!) {
-            error("Not new Transmission ViewModel")
-        } else {
-            viewModel?.setTotalMessageCount(count)
         }
     }
 }
