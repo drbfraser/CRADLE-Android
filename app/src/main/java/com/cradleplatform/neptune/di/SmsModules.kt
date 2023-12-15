@@ -3,7 +3,9 @@ package com.cradleplatform.neptune.di
 import android.content.Context
 import android.content.SharedPreferences
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.manager.SmsKeyManager
+import com.cradleplatform.neptune.manager.UrlManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -27,4 +29,10 @@ class SmsModules {
         sharedPreferences: SharedPreferences,
         @ApplicationContext context: Context
     ) = SMSSender(smsKeyManager, sharedPreferences, context)
+
+    @Provides
+    @Singleton
+    fun provideSMSDataProcessor(
+        urlManager: UrlManager,
+    ) = SMSDataProcessor(urlManager)
 }

@@ -139,7 +139,7 @@
                     android:layout_marginBottom="8dp"
                     android:enabled="@{viewModel.areSendButtonsEnabled &amp;&amp; !viewModel.isSending &amp;&amp; readingViewModel.isNetworkAvailable}"
                     android:text="@string/referral_dialog_button_send_web"
-                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textView6"
                     app:layout_constraintEnd_toEndOf="parent" />
 
                 <Button
@@ -161,6 +161,18 @@
                     android:textAppearance="@style/TextAppearance.Cradle.Body1"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textView4" />
+
+                <TextView
+                    android:id="@+id/textView6"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:text="@string/patient_not_synced"
+                    android:textAppearance="@style/TextAppearance.Cradle.Body1"
+                    android:textColor="#FFA500"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/comments_input_layout"
+                    android:visibility="gone"/>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
