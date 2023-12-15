@@ -526,8 +526,19 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/rounded_button"
                 android:text="@string/create_new_form"
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/seeSavedFormsButton"
                 app:layout_constraintTop_toBottomOf="@+id/newPatientReferralButton"
+                android:visibility="gone"
+                android:layout_marginTop="@dimen/reading_flow_previous_reading_item_margin"/>
+
+            <Button
+                android:id="@+id/seeSavedFormsButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rounded_button"
+                android:text="@string/see_saved_forms"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/newFormButton"
                 android:visibility="gone"
                 android:layout_marginTop="@dimen/reading_flow_previous_reading_item_margin"/>
 

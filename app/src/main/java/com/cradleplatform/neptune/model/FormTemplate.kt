@@ -22,9 +22,10 @@ data class FormTemplate(
     @SerializedName("version") val version: String?,
     @SerializedName("archived") val archived: Boolean?,
     // timestamp (filled by server when created)
-    @SerializedName("dateCreated") val dateCreated: Int?,
+    @SerializedName("dateCreated") val dateCreated: Long?,
     @SerializedName("id") val id: String?,
     @SerializedName("formClassificationId") val formClassId: String?,
+    @SerializedName("formClassificationName") var formClassName: String?,
     @SerializedName("questions") val questions: List<Question>?,
 
 ) : Serializable {
@@ -122,7 +123,7 @@ data class Question(
     @SerializedName("questionIndex") val questionIndex: Int?,
     @SerializedName("numMin") val numMin: Double?, // Backend-Nullable
     @SerializedName("numMax") val numMax: Double?, // Backend-Nullable
-    @SerializedName("stringMaxLength") val stringMaxLength: Integer?, // Backend-Nullable
+    @SerializedName("stringMaxLength") val stringMaxLength: Int?, // Backend-Nullable
     @SerializedName("questionId") var questionId: String?,
     @SerializedName("questionType") val questionType: QuestionTypeEnum?,
     @SerializedName("hasCommentAttached") val hasCommentAttached: Boolean?,
@@ -160,11 +161,6 @@ data class Question(
         this@Question.isBlank ?: let {
             nullCheckResult = false
             Log.w(TAG, "[isBlank] was null")
-        }
-
-        this@Question.formTemplateId ?: let {
-            nullCheckResult = false
-            Log.w(TAG, "[formTemplateId] was null")
         }
 
         this@Question.questionIndex ?: let {

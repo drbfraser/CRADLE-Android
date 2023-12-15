@@ -1,10 +1,11 @@
 package com.cradleplatform.neptune.viewmodel
 
 import android.content.Context
-import android.content.SharedPreferences
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.manager.FormManager
+import com.cradleplatform.neptune.manager.FormResponseManager
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.model.QuestionTypeEnum
@@ -22,19 +23,23 @@ class FormRenderingViewModelTest {
     @BeforeAll
     fun initialize() {
         val httpsSmsService = Mockito.mock(HttpSmsService::class.java)
-        val sharedPreferences = Mockito.mock(SharedPreferences::class.java)
         val networkStateManager = Mockito.mock(NetworkStateManager::class.java)
         val smsSender = Mockito.mock(SMSSender::class.java)
+        val formResponseManager = Mockito.mock(FormResponseManager::class.java)
+        val formManager = Mockito.mock(FormManager::class.java)
         viewModel = FormRenderingViewModel(
-            httpsSmsService, sharedPreferences, networkStateManager,
-            smsSender
+            httpsSmsService,
+            networkStateManager,
+            smsSender,
+            formResponseManager,
+            formManager
         )
     }
 
     @Test
     fun `fullQuestionsList size 2`() {
         val questions = listOf(question(false, id = "id1"), question(false))
-        val formTemplate = FormTemplate(null, null, null, null, null, questions)
+        val formTemplate = FormTemplate(null, null, null, null, null, null, questions)
         viewModel.currentFormTemplate = formTemplate
 
         Assertions.assertEquals(viewModel.fullQuestionList().size, 2)
@@ -42,7 +47,7 @@ class FormRenderingViewModelTest {
 
     @Test
     fun `fullQuestionsList empty`() {
-        val formTemplate = FormTemplate(null, null, null, null, null, listOf())
+        val formTemplate = FormTemplate(null, null, null, null, null, null, listOf())
         viewModel.currentFormTemplate = formTemplate
         assert(viewModel.fullQuestionList().isEmpty())
     }
@@ -50,7 +55,7 @@ class FormRenderingViewModelTest {
     @Test
     fun `isRequiredFieldsFilled, no required fields`() {
         val questions = listOf(question(false, id = "id1"), question(false), question(false))
-        val formTemplate = FormTemplate(null, null, null, null, null, questions)
+        val formTemplate = FormTemplate(null, null, null, null, null, null, questions)
         viewModel.currentFormTemplate = formTemplate
 
         val context = Mockito.mock(Context::class.java)
@@ -64,7 +69,7 @@ class FormRenderingViewModelTest {
     @Test
     fun `populateEmptyIds, none empty`() {
         val questions = listOf(question(true, id = "id1"), question(true, id = "id2"))
-        val formTemplate = FormTemplate(null, null, null, null, null, questions)
+        val formTemplate = FormTemplate(null, null, null, null, null, null, questions)
         viewModel.currentFormTemplate = formTemplate
 
         val context = Mockito.mock(Context::class.java)
@@ -78,7 +83,7 @@ class FormRenderingViewModelTest {
     @Test
     fun `populateEmptyIds, one id null`() {
         val questions = listOf(question(true, id = ""), question(true, id = "id2"))
-        val formTemplate = FormTemplate(null, null, null, null, null, questions)
+        val formTemplate = FormTemplate(null, null, null, null, null, null, questions)
         viewModel.currentFormTemplate = formTemplate
 
         val context = Mockito.mock(Context::class.java)

@@ -29,6 +29,9 @@ class FormManager @Inject constructor(
     suspend fun searchForFormTemplateWithName(formClassName: String): List<FormTemplate> =
         formClassDao.getFormTemplateByName(formClassName)
 
+    suspend fun searchForFormClassNameWithFormClassId(formClassId: String): String =
+        formClassDao.getFormClassNameById(formClassId)
+
     suspend fun addFormByClassification(formClass: FormClassification) =
         formClassDao.addOrUpdateFormClassification(formClass)
 
