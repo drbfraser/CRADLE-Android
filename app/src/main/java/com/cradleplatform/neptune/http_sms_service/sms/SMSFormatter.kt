@@ -18,20 +18,20 @@ class SMSFormatter {
          * Since the message is greater than 160 chars, only 153 can be used for contents.
          * First 7 are reserved for header.
          */
-        private const val PACKET_SIZE = 153 * 2
+        const val PACKET_SIZE = 153 * 2
         // private const val MAX_PACKET_NUMBER = 99
 
         //Fixed strings, prefixes, suffixes involved in the SMS Protocol
-        private const val SMS_TUNNEL_PROTOCOL_VERSION = "01"
+        const val SMS_TUNNEL_PROTOCOL_VERSION = "01"
         private const val SMS_ACK_SUFFIX = "ACK"
-        private const val MAGIC_STRING = "CRADLE"
+        const val MAGIC_STRING = "CRADLE"
         private const val REPLY_SUCCESS = "REPLY"
         private const val REPLY_ERROR = "REPLY_ERROR"
         private const val REPLY_ERROR_CODE_PREFIX = "ERR"
 
         //Lengths for different parts of the SMS Protocol
         private const val REPLY_ERROR_CODE_LENGTH = 3
-        private const val FRAGMENT_HEADER_LENGTH = 3
+        const val FRAGMENT_HEADER_LENGTH = 3
         private const val REQUEST_NUMBER_LENGTH = 6
 
         //positions of request identifiers inside different messages of the SMS protocol
@@ -55,31 +55,31 @@ class SMSFormatter {
         private const val POS_ACK_CURR_FRAGMENT = 2
         private const val POS_REST_CURR_FRAGMENT = 1
 
-        private val ackRegexPattern =
+        val ackRegexPattern =
             Regex(
                 "^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-" +
                     "(\\d{$REQUEST_NUMBER_LENGTH})-(\\d{$FRAGMENT_HEADER_LENGTH})-$SMS_ACK_SUFFIX$"
             )
 
-        private val firstRegexPattern =
+        val firstRegexPattern =
             Regex(
                 "^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-" +
                     "(\\d{$REQUEST_NUMBER_LENGTH})-(\\d{$FRAGMENT_HEADER_LENGTH})-(.+)"
             )
 
-        private val restRegexPattern =
+        val restRegexPattern =
             Regex(
                 "^(\\d{$FRAGMENT_HEADER_LENGTH})-(.+)"
             )
 
-        private val firstErrorReplyPattern =
+        val firstErrorReplyPattern =
             Regex(
                 "^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-" +
                     "(\\d{$REQUEST_NUMBER_LENGTH})-$REPLY_ERROR-(\\d{$FRAGMENT_HEADER_LENGTH})-" +
                     "$REPLY_ERROR_CODE_PREFIX(\\d{$REPLY_ERROR_CODE_LENGTH})-(.+)$"
             )
 
-        private val firstSuccessReplyPattern =
+        val firstSuccessReplyPattern =
             Regex(
                 "^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-" +
                     "(\\d{$REQUEST_NUMBER_LENGTH})-$REPLY_SUCCESS-" +
