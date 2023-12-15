@@ -56,11 +56,36 @@ class SMSFormatter {
         private const val POS_ACK_CURR_FRAGMENT = 2
         private const val POS_REST_CURR_FRAGMENT = 1
 
-        private val ackRegexPattern = Regex("^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-(\\d{$REQUEST_NUMBER_LENGTH})-(\\d{$FRAGMENT_HEADER_LENGTH})-$SMS_ACK_SUFFIX$")
-        private val firstRegexPattern = Regex("^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-(\\d{$REQUEST_NUMBER_LENGTH})-(\\d{$FRAGMENT_HEADER_LENGTH})-(.+)")
-        private val restRegexPattern = Regex("^(\\d{$FRAGMENT_HEADER_LENGTH})-(.+)")
-        private val firstErrorReplyPattern = Regex("^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-(\\d{$REQUEST_NUMBER_LENGTH})-$REPLY_ERROR-(\\d{$FRAGMENT_HEADER_LENGTH})-$REPLY_ERROR_CODE_PREFIX(\\d{$REPLY_ERROR_CODE_LENGTH})-(.+)$")
-        private val firstSuccessReplyPattern = Regex("^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-(\\d{$REQUEST_NUMBER_LENGTH})-$REPLY_SUCCESS-(\\d{$FRAGMENT_HEADER_LENGTH})-(.+)$")
+        private val ackRegexPattern =
+                Regex(
+            "^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-" +
+                    "(\\d{$REQUEST_NUMBER_LENGTH})-(\\d{$FRAGMENT_HEADER_LENGTH})-$SMS_ACK_SUFFIX$"
+                )
+
+        private val firstRegexPattern =
+                Regex(
+            "^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-" +
+                    "(\\d{$REQUEST_NUMBER_LENGTH})-(\\d{$FRAGMENT_HEADER_LENGTH})-(.+)"
+                )
+
+        private val restRegexPattern =
+                Regex(
+            "^(\\d{$FRAGMENT_HEADER_LENGTH})-(.+)"
+                )
+
+        private val firstErrorReplyPattern =
+                Regex(
+            "^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-" +
+                    "(\\d{$REQUEST_NUMBER_LENGTH})-$REPLY_ERROR-(\\d{$FRAGMENT_HEADER_LENGTH})-" +
+                    "$REPLY_ERROR_CODE_PREFIX(\\d{$REPLY_ERROR_CODE_LENGTH})-(.+)$"
+                )
+
+        private val firstSuccessReplyPattern =
+                Regex(
+            "^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-" +
+                    "(\\d{$REQUEST_NUMBER_LENGTH})-$REPLY_SUCCESS-" +
+                    "(\\d{$FRAGMENT_HEADER_LENGTH})-(.+)"
+                )
 
         // TODO: CHANGE TEST
         fun encodeMsg(msg: String, secretKey: String): String {
