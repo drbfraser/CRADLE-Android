@@ -2,6 +2,7 @@ package com.cradleplatform.neptune.viewmodel
 
 import android.app.Activity
 import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.drawable.Drawable
 import android.widget.Toast
 import androidx.core.content.ContextCompat.getDrawable
@@ -47,6 +48,9 @@ class FormRenderingViewModel @Inject constructor(
 
     @Inject
     lateinit var smsDataProcessor: SMSDataProcessor
+
+    @Inject
+    lateinit var sharedPreferences: SharedPreferences
     var categoryList: List<Pair<String, List<Question>?>>? = null
 
     fun currentCategory(): LiveData<Int> {
