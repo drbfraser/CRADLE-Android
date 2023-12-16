@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.utilities.SMSFormatter
+import org.json.JSONObject
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -48,6 +49,7 @@ class SmsStateReporter @Inject constructor(
 
     fun postException(code: Int) {
         errorCode.postValue(code)
+        state.postValue(SmsTransmissionStates.EXCEPTION)
     }
 
     fun decryptMessage(encryptedMessage: String) {
@@ -55,9 +57,12 @@ class SmsStateReporter @Inject constructor(
         SMSFormatter.decodeMsg(encryptedMessage, secretKey)
             .let {
                 decryptedMsg = it
-                Log.d("PETER_FAN", "Decrypted Message: $it")
+                val mappedJson = JSONObject(decryptedMsg)
+                // TODO: Do something with the JSON object sent back. As for now, it is the same
+                //  data that was sent out. Compare and make sure everything was correct?
+                Log.d("SmsStateReporter", "Decrypted Message: $it")
                 // if failed, post exception instead of
-                // else
+                // else it's DONE
                 state.postValue(SmsTransmissionStates.DONE)
             }
     }

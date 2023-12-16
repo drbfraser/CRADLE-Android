@@ -29,12 +29,12 @@ class SmsTransmissionDialogViewModel @Inject constructor(
     val sendProgress: LiveData<String> = smsStateReporter.totalSent.map {
         val numerator = it.toString()
         val denominator = smsStateReporter.totalToBeSent.toString()
-        "$numerator/$denominator"
+        "Sending $numerator/$denominator"
     }
     val receiveProgress: LiveData<String> = smsStateReporter.totalReceived.map {
         val numerator = it.toString()
         val denominator = smsStateReporter.totalToBeReceived.toString()
-        "$numerator/$denominator"
+        "Receiving $numerator/$denominator"
     }
     val errorString: LiveData<String> = smsStateReporter.errorCode.map {
         when (it) {

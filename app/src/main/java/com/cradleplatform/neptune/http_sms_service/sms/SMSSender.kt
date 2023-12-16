@@ -8,6 +8,8 @@ import android.os.Looper
 import android.telephony.SmsManager
 import android.widget.Toast
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.http_sms_service.sms.ui.SmsTransmissionDialogFragment
+import com.cradleplatform.neptune.http_sms_service.sms.ui.SmsTransmissionDialogViewModel
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.encodeMsg
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.formatSMS
@@ -15,6 +17,8 @@ import com.cradleplatform.neptune.view.FormRenderingActivity
 import com.cradleplatform.neptune.view.PatientReferralActivity
 import com.cradleplatform.neptune.view.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.UserViewModel
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -45,6 +49,13 @@ class SMSSender @Inject constructor(
     }
 
     fun sendSmsMessage(acknowledged: Boolean) {
+        if (!acknowledged) {
+            if (activityContext != null) {
+                activityContext!!.showDialog()
+            } else {
+                appContext.showDialog()
+            }
+        }
         val relayPhoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
         val smsManager: SmsManager = SmsManager.getDefault()
         smsStateReporter.state.postValue(SmsTransmissionStates.SENDING_TO_RELAY_SERVER)
@@ -138,4 +149,17 @@ class SMSSender @Inject constructor(
             }
         }
     }
+
+    private fun Context.showDialog() {
+        val fragmentManager = when (this) {
+            is Fragment -> childFragmentManager
+            is androidx.fragment.app.FragmentActivity -> supportFragmentManager
+            else -> null
+        }
+        fragmentManager?.let {
+            val dialog = SmsTransmissionDialogFragment(smsStateReporter)
+            dialog.show(it, "sms transmission dialog")
+        }
+    }
+
 }
