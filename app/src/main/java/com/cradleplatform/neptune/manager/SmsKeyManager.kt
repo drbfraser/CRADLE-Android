@@ -72,7 +72,7 @@ class SmsKeyManager @Inject constructor(@ApplicationContext private val context:
     }
 
     fun retrieveSmsKey(): String {
-        return encryptedSharedPreferences.getString(SMS_SECRET_KEY, null)?: "NOTFOUND"
+        return encryptedSharedPreferences.getString(SMS_SECRET_KEY, null) ?: "NOTFOUND"
     }
 
     // Used for when the user logs out

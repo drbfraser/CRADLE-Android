@@ -14,7 +14,7 @@ import javax.inject.Singleton
 @Singleton
 class SmsStateReporter @Inject constructor(
     private val smsKeyManager: SmsKeyManager,
-){
+) {
     val state = MutableLiveData<SmsTransmissionStates>(SmsTransmissionStates.GETTING_READY_TO_SEND)
 
     val totalSent = MutableLiveData<Int>(0)
@@ -39,11 +39,11 @@ class SmsStateReporter @Inject constructor(
     }
 
     fun incrementSent() {
-        totalSent.postValue((totalSent.value?: 0)+1)
+        totalSent.postValue((totalSent.value ?: 0) + 1)
     }
 
     fun incrementReceived() {
-        totalReceived.postValue((totalReceived.value?: 0)+1)
+        totalReceived.postValue((totalReceived.value ?: 0) + 1)
     }
 
     fun postException(code: Int) {
@@ -54,11 +54,11 @@ class SmsStateReporter @Inject constructor(
         val secretKey = smsKeyManager.retrieveSmsKey()
         SMSFormatter.decodeMsg(encryptedMessage, secretKey)
             .let {
-            decryptedMsg = it
-            Log.d("PETER_FAN", "Decrypted Message: $it")
-            // if failed, post exception instead of
-            // else
-            state.postValue(SmsTransmissionStates.DONE)
-        }
+                decryptedMsg = it
+                Log.d("PETER_FAN", "Decrypted Message: $it")
+                // if failed, post exception instead of
+                // else
+                state.postValue(SmsTransmissionStates.DONE)
+            }
     }
 }

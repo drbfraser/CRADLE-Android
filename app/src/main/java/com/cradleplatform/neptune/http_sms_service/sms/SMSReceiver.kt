@@ -9,7 +9,6 @@ import com.cradleplatform.neptune.utilities.SMSFormatter
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
-
 @AndroidEntryPoint
 class SMSReceiver @Inject constructor(
     private val smsSender: SMSSender,
@@ -62,7 +61,6 @@ class SMSReceiver @Inject constructor(
                     numberReceivedMessages - 1,
                     totalMessages
                 )
-
             }
             // continue storing message data and send ACK message
             else if (smsFormatter.isRestMessage(messageBody)) {

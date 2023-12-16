@@ -37,5 +37,4 @@ class SmsModules {
         @ApplicationContext context: Context,
         smsStateReporter: SmsStateReporter,
     ) = SMSSender(smsKeyManager, sharedPreferences, context, smsStateReporter)
-
 }

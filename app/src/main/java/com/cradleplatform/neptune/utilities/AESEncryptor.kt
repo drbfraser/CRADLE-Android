@@ -3,7 +3,6 @@ package com.cradleplatform.neptune.utilities
 import android.util.Base64
 import android.util.Log
 import okio.utf8Size
-import java.lang.IllegalArgumentException
 import java.security.SecureRandom
 import java.security.MessageDigest
 import javax.crypto.Cipher
@@ -37,21 +36,21 @@ class AESEncryptor {
          */
         fun decryptString(ciphertext: String, secretKeyHex: String): ByteArray {
             val keyByteArray = secretKeyHex.decodeHex()
-            val iv = ciphertext.substring(0, ivSize*2).decodeHex()
+            val iv = ciphertext.substring(0, ivSize * 2).decodeHex()
             if (iv != null) {
                 assert(iv.size == ivSize)
             }
-            val cipherTextSubstring = ciphertext.substring(startIndex = ivSize*2)
+            val cipherTextSubstring = ciphertext.substring(startIndex = ivSize * 2)
             Log.d(TAG, "cipherTextSubString = $cipherTextSubstring " +
-                    "\ncipherTextSubstring Length = ${cipherTextSubstring.utf8Size()}")
-            val ciphertextByteArray = ciphertext.substring(ivSize*2).decodeHex()
+                "\ncipherTextSubstring Length = ${cipherTextSubstring.utf8Size()}")
+            val ciphertextByteArray = ciphertext.substring(ivSize * 2).decodeHex()
             return if (keyByteArray != null && iv != null && ciphertextByteArray != null) {
                 val keySpec = SecretKeySpec(keyByteArray, "AES")
                 decryptMsg(ciphertextByteArray, iv, keySpec)
             } else {
-                Log.e(TAG, "Something is null: keyByteArray ${keyByteArray.toString()}, " +
-                        "iv: ${iv.toString()}, " +
-                        "ciphertextByteArray: ${ciphertextByteArray.toString()}")
+                Log.e(TAG, "Something is null: keyByteArray $keyByteArray, " +
+                    "iv: $iv, " +
+                    "ciphertextByteArray: $ciphertextByteArray")
                 return ByteArray(0)
             }
         }

@@ -54,7 +54,7 @@ class SMSFormatter {
             if (key.isNotEmpty()) {
                 GzipCompressor.decompress(
                     AESEncryptor.decryptString(msg, key)
-                ).let{
+                ).let {
                     Log.d("SMS_Formatter", it)
                     return it
                 }

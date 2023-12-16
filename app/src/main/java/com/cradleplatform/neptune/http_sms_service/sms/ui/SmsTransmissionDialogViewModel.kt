@@ -1,16 +1,12 @@
 package com.cradleplatform.neptune.http_sms_service.sms.ui
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
-import androidx.lifecycle.switchMap
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.http_sms_service.sms.SmsTransmissionStates
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-
 
 /**
  * Generate formatted String based on SmsStateReporter
@@ -18,8 +14,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SmsTransmissionDialogViewModel @Inject constructor(
     private val smsStateReporter: SmsStateReporter,
-): ViewModel() {
-    val stateString : LiveData<String> = smsStateReporter.state.map {
+) : ViewModel() {
+    val stateString: LiveData<String> = smsStateReporter.state.map {
         when (it) {
             SmsTransmissionStates.GETTING_READY_TO_SEND -> "Queuing SMS to be sent..."
             SmsTransmissionStates.SENDING_TO_RELAY_SERVER -> "Sending..."
@@ -30,17 +26,17 @@ class SmsTransmissionDialogViewModel @Inject constructor(
             else -> "Unknown state"
         }
     }
-    val sendProgress: LiveData<String> = smsStateReporter.totalSent.map{
+    val sendProgress: LiveData<String> = smsStateReporter.totalSent.map {
         val numerator = it.toString()
         val denominator = smsStateReporter.totalToBeSent.toString()
         "$numerator/$denominator"
     }
-    val receiveProgress : LiveData<String> = smsStateReporter.totalReceived.map{
+    val receiveProgress: LiveData<String> = smsStateReporter.totalReceived.map {
         val numerator = it.toString()
         val denominator = smsStateReporter.totalToBeReceived.toString()
         "$numerator/$denominator"
     }
-    val errorString : LiveData<String> = smsStateReporter.errorCode.map {
+    val errorString: LiveData<String> = smsStateReporter.errorCode.map {
         when (it) {
             // TODO: finish this
             404 -> "Failed"
