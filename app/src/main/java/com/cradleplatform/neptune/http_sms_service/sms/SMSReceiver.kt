@@ -55,7 +55,6 @@ class SMSReceiver @Inject constructor(
                 smsStateReporter.initReceiving(totalMessages)
                 encryptedMessage = smsFormatter.getFirstMessageString(messageBody)
                 numberReceivedMessages = 1
-                smsStateReporter.incrementReceived()
                 smsSender.sendAckMessage(
                     requestIdentifier,
                     numberReceivedMessages - 1,

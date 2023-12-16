@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.utilities.SMSFormatter
-import org.json.JSONObject
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -35,7 +34,7 @@ class SmsStateReporter @Inject constructor(
 
     fun initReceiving(numberOfSmsToReceive: Int) {
         state.postValue((SmsTransmissionStates.RECEIVING_SERVER_RESPONSE))
-        totalReceived.postValue(0)
+        totalReceived.postValue(1)
         totalToBeReceived = numberOfSmsToReceive
     }
 
@@ -57,7 +56,7 @@ class SmsStateReporter @Inject constructor(
         SMSFormatter.decodeMsg(encryptedMessage, secretKey)
             .let {
                 decryptedMsg = it
-                val mappedJson = JSONObject(decryptedMsg)
+//                val mappedJson = JSONObject(decryptedMsg)
                 // TODO: Do something with the JSON object sent back. As for now, it is the same
                 //  data that was sent out. Compare and make sure everything was correct?
                 Log.d("SmsStateReporter", "Decrypted Message: $it")
