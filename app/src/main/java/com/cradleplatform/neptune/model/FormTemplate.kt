@@ -1,6 +1,7 @@
 package com.cradleplatform.neptune.model
 
 import android.util.Log
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
@@ -246,8 +247,8 @@ data class QuestionLangVersion(
 }
 
 data class McOption(
-    @SerializedName("mcid") val mcid: Int?,
-    @SerializedName("opt") val opt: String?
+    @Expose @SerializedName("mcid") val mcid: Int?,
+    @Expose @SerializedName("opt") val opt: String?
 ) : Serializable {
 
     fun verifyIntegrity(): Boolean {
@@ -271,9 +272,9 @@ data class McOption(
 }
 
 data class VisibleCondition(
-    @SerializedName("qidx") val qidx: Int?,
-    @SerializedName("relation") val relation: String?,
-    @SerializedName("answers") var answerCondition: Answer?
+    @Expose @SerializedName("qidx") val qidx: Int?,
+    @Expose @SerializedName("relation") val relation: String?,
+    @Expose @SerializedName("answers") var answerCondition: Answer?
 ) : Serializable {
 
     fun verifyIntegrity(): Boolean {
