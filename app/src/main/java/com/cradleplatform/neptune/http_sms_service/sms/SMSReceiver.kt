@@ -51,8 +51,11 @@ class SMSReceiver @Inject constructor(
             else if (smsFormatter.isFirstMessage(messageBody)) {
 
                 requestIdentifier = smsFormatter.getRequestIdentifier(messageBody)
-                totalMessages = smsFormatter.getTotalNumMessages(messageBody)
-                smsStateReporter.initReceiving(totalMessages)
+                smsFormatter.getTotalNumMessages(messageBody)
+                    .let { it ->
+                        totalMessages = it
+                        smsStateReporter.initReceiving(it)
+                    }
                 encryptedMessage = smsFormatter.getFirstMessageString(messageBody)
                 numberReceivedMessages = 1
                 smsSender.sendAckMessage(

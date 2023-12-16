@@ -24,12 +24,18 @@ class SmsStateReporter @Inject constructor(
     var totalToBeSent = 0
     var totalToBeReceived = 0
 
+    private var sent = 0
+    private var received = 0
     private var decryptedMsg = ""
 
     fun initSending(numberOfSmsToSend: Int) {
         state.postValue((SmsTransmissionStates.GETTING_READY_TO_SEND))
+        sent = 0
         totalSent.postValue(0)
         totalToBeSent = numberOfSmsToSend
+        received = 0
+        totalReceived.postValue(0)
+        totalToBeReceived = 0
     }
 
     fun initReceiving(numberOfSmsToReceive: Int) {
@@ -39,11 +45,11 @@ class SmsStateReporter @Inject constructor(
     }
 
     fun incrementSent() {
-        totalSent.postValue((totalSent.value ?: 0) + 1)
+        totalSent.postValue(++sent)
     }
 
     fun incrementReceived() {
-        totalReceived.postValue((totalReceived.value ?: 0) + 1)
+        totalReceived.postValue(++received)
     }
 
     fun postException(code: Int) {
