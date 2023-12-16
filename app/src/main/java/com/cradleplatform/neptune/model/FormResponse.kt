@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
@@ -51,15 +52,23 @@ constructor(
     var answers: Map<String, Answer>,
     var saveResponseToSendLater: Boolean = false
 ) {
-
+    // Fields that should be exposed to GSON serialization (aka fields that are necessary for the
+    // form when being sent through Wifi) should be marked with @Expose.
+    // Fields that are only relevant locally (e.g. "formTemplate") should NOT be marked @Expose.
+    @Expose
     var archived: Boolean
+    @Expose
     var formClassificationId: String
     var formClassificationName: String?
-    var templateDateCreated: Long
+    @Expose
+    var dateCreated: Long
+    @Expose
     @SerializedName("lang")
     var language: String = language
+    @Expose
     @SerializedName("questions")
     var questionResponses: List<QuestionResponse>
+    @Expose
     var patientId = patientId
     var dateEdited: Long
 
@@ -73,7 +82,7 @@ constructor(
         this@FormResponse.archived = formTemplate.archived!!
         this@FormResponse.formClassificationId = formTemplate.formClassId!!
         this@FormResponse.formClassificationName = formTemplate.formClassName
-        this@FormResponse.templateDateCreated = formTemplate.dateCreated!!
+        this@FormResponse.dateCreated = formTemplate.dateCreated!!
         this@FormResponse.questionResponses = createQuestionResponses(
             formTemplate.questions!!,
             language,
