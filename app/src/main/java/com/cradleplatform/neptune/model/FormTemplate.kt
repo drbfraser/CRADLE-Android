@@ -168,11 +168,6 @@ data class Question(
             Log.w(TAG, "[questionIndex] was null")
         }
 
-        this@Question.questionId ?: let {
-            nullCheckResult = false
-            Log.w(TAG, "[questionId] was null")
-        }
-
         this@Question.questionType ?: let {
             nullCheckResult = false
             Log.w(TAG, "[questionType] was null")
@@ -242,11 +237,6 @@ data class QuestionLangVersion(
             nullCheckResult = false
             Log.w(TAG, "[language] was null")
         }
-        this@QuestionLangVersion.mcOptions?.forEach { it.verifyIntegrity() }
-            ?: let {
-                nullCheckResult = false
-                Log.w(TAG, "[mcOptions] was null")
-            }
 
         return nullCheckResult
     }

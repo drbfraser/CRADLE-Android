@@ -54,7 +54,7 @@ constructor(
 
     var archived: Boolean
     var formClassificationId: String
-    var formClassificationName: String
+    var formClassificationName: String?
     var templateDateCreated: Long
     @SerializedName("lang")
     var language: String = language
@@ -72,7 +72,7 @@ constructor(
 
         this@FormResponse.archived = formTemplate.archived!!
         this@FormResponse.formClassificationId = formTemplate.formClassId!!
-        this@FormResponse.formClassificationName = formTemplate.formClassName!!
+        this@FormResponse.formClassificationName = formTemplate.formClassName
         this@FormResponse.templateDateCreated = formTemplate.dateCreated!!
         this@FormResponse.questionResponses = createQuestionResponses(
             formTemplate.questions!!,
