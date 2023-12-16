@@ -9,7 +9,6 @@ import android.telephony.SmsManager
 import android.widget.Toast
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.http_sms_service.sms.ui.SmsTransmissionDialogFragment
-import com.cradleplatform.neptune.http_sms_service.sms.ui.SmsTransmissionDialogViewModel
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.encodeMsg
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.formatSMS
@@ -18,7 +17,6 @@ import com.cradleplatform.neptune.view.PatientReferralActivity
 import com.cradleplatform.neptune.view.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.UserViewModel
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -161,5 +159,4 @@ class SMSSender @Inject constructor(
             dialog.show(it, "sms transmission dialog")
         }
     }
-
 }

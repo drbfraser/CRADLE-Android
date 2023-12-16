@@ -1,12 +1,9 @@
 package com.cradleplatform.neptune.http_sms_service.sms.ui
 
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.Window
 import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
@@ -19,7 +16,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class SmsTransmissionDialogFragment @Inject constructor(
     private val smsStateReporter: SmsStateReporter,
-): DialogFragment() {
+) : DialogFragment() {
 
     private val viewModel = SmsTransmissionDialogViewModel(smsStateReporter)
 
@@ -88,7 +85,4 @@ class SmsTransmissionDialogFragment @Inject constructor(
             dismiss()
         }
     }
-
-
-
 }
