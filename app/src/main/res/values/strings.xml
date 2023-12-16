@@ -730,5 +730,6 @@
     <string name="form_dialog_connected_to_cellular">Cellular</string>
     <string name="form_dialog_not_connected_internet">Connect To Internet</string>
     <string name="default_text_view">TextView</string>
+    <string name="patient_not_synced">Caution: Patient info not synced with the server yet—this referral will be sent with patient details and may incur extra SMS charges.</string>
 
 </resources>

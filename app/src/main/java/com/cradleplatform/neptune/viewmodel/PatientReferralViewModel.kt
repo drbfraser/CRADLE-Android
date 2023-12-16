@@ -13,6 +13,7 @@ import com.cradleplatform.neptune.http_sms_service.http.DatabaseObject
 import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
 import com.cradleplatform.neptune.http_sms_service.http.Protocol
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.manager.HealthFacilityManager
 import com.cradleplatform.neptune.manager.ReferralManager
 import com.cradleplatform.neptune.manager.ReferralUploadManager
@@ -43,6 +44,8 @@ class PatientReferralViewModel @Inject constructor(
     @ApplicationContext private val app: Context
 ) : ViewModel() {
 
+    @Inject
+    lateinit var smsDataProcessor: SMSDataProcessor
     val healthFacilityToUse = MediatorLiveData<String>()
     val comments = MutableLiveData("")
 
@@ -143,7 +146,8 @@ class PatientReferralViewModel @Inject constructor(
                         patient,
                         referral,
                         smsSender,
-                        Protocol.valueOf(submissionMode)
+                        Protocol.valueOf(submissionMode),
+                        smsDataProcessor
                     )
                 )
             } else {

@@ -11,6 +11,7 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.encodeMsg
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.formatSMS
+import com.cradleplatform.neptune.view.FormRenderingActivity
 import com.cradleplatform.neptune.view.PatientReferralActivity
 import com.cradleplatform.neptune.view.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.UserViewModel
@@ -24,7 +25,6 @@ class SMSSender @Inject constructor(
     private val appContext: Context,
     private val smsStateReporter: SmsStateReporter,
 ) {
-    private var relayRequestCount: Long = 0
     private var smsRelayQueue = ArrayDeque<String>()
     private var smsSecretKey = smsKeyManager.retrieveSmsKey()
         ?: // TODO: handle the case when the secret key is not available
@@ -38,7 +38,8 @@ class SMSSender @Inject constructor(
 
     fun queueRelayContent(unencryptedData: String): Boolean {
         val encryptedData = encodeMsg(unencryptedData, smsSecretKey)
-        val smsPacketList = formatSMS(encryptedData, relayRequestCount)
+        val smsPacketList = formatSMS(encryptedData, RelayRequestCounter.getCount())
+        RelayRequestCounter.incrementCount(appContext)
         smsStateReporter.initSending(smsPacketList.size)
         return smsRelayQueue.addAll(smsPacketList)
     }
@@ -130,7 +131,8 @@ class SMSSender @Inject constructor(
                 ).show()
             }
             // TODO: Remove this after State reporting is implemented. Move logic to Activity instead.
-            if (activityContext is ReadingActivity || activityContext is PatientReferralActivity) {
+            if (activityContext is ReadingActivity || activityContext is PatientReferralActivity
+                || activityContext is FormRenderingActivity) {
                 (activityContext as Activity).finish()
                 activityContext = null
             }

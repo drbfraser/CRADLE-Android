@@ -7,6 +7,7 @@ import android.util.Log
 import android.widget.Toast
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.PatientAndReferrals
@@ -52,14 +53,16 @@ sealed class DatabaseObject {
         val referral: Referral,
         //val smsDataIfNeeded : String,
         val smsSender: SMSSender,
-        val submissionMode: Protocol
+        val submissionMode: Protocol,
+        val smsDataProcessor: SMSDataProcessor
     ) : DatabaseObject()
     data class ReadingWrapper(val reading: Reading, val submissionMode: Protocol) : DatabaseObject()
     data class FormResponseWrapper(
         val formResponse: FormResponse,
         val smsSender: SMSSender,
         val submissionMode: Protocol,
-        val context: Context
+        val context: Context,
+        val smsDataProcessor: SMSDataProcessor
     ) : DatabaseObject()
 }
 
@@ -105,7 +108,19 @@ class HttpSmsService @Inject constructor(private val restApi: RestApi) {
                 }
             }
             Protocol.SMS -> {
-                referralWrapper.smsSender.sendSmsMessage(false)
+                // Check if the patient has been synced to the server yet
+                val json = if (referralWrapper.patient.lastServerUpdate == null) {
+                    referralWrapper.smsDataProcessor.processPatientAndReferralToJSON(
+                        PatientAndReferrals(referralWrapper.patient,
+                            listOf(referralWrapper.referral)))
+                } else {
+                    referralWrapper.smsDataProcessor.processReferralToJSON(referralWrapper.referral)
+                }
+                referralWrapper.smsSender.queueRelayContent(json).let { enqueuSuccessful ->
+                    if (enqueuSuccessful) {
+                        referralWrapper.smsSender.sendSmsMessage(false)
+                    }
+                }
             }
         }
         //TODO: Placeholder return statement, return errors more gracefully, remove the dependency for JacksonMapper
@@ -149,7 +164,17 @@ class HttpSmsService @Inject constructor(private val restApi: RestApi) {
 
             Protocol.SMS -> {
                 //TODO Add toast for if sms form message was sent successfully or not
-                formResponseWrapper.smsSender.sendSmsMessage(false)
+                val json = formResponseWrapper.smsDataProcessor.processFormToJSON(
+                    formResponseWrapper.formResponse
+                )
+                formResponseWrapper.smsSender.queueRelayContent(json)
+                    .let { enqueueSuccessful ->
+                        if (enqueueSuccessful) {
+                            formResponseWrapper.smsSender.sendSmsMessage(false)
+                        } else {
+                            error("SMSSender Enqueue Failed")
+                        }
+                    }
             }
         }
     }

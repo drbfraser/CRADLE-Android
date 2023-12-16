@@ -21,6 +21,7 @@ import com.cradleplatform.neptune.ext.getEnglishResources
 import com.cradleplatform.neptune.ext.getIntOrNull
 import com.cradleplatform.neptune.ext.setValueOnMainThread
 import com.cradleplatform.neptune.ext.use
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.manager.ReferralManager
@@ -40,7 +41,6 @@ import com.cradleplatform.neptune.model.Sex
 import com.cradleplatform.neptune.model.SymptomsState
 import com.cradleplatform.neptune.model.UrineTest
 import com.cradleplatform.neptune.model.Verifiable
-import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.utilities.DateUtil
 import com.cradleplatform.neptune.utilities.LiveDataDynamicModelBuilder
 import com.cradleplatform.neptune.utilities.Months
@@ -55,6 +55,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -1303,6 +1304,23 @@ class PatientReadingViewModel @Inject constructor(
 
     private fun shouldSavePatient() =
         reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW
+
+    /**
+     * Checks if a patient has been synced to the server.
+     */
+    fun isPatientSynced(): Boolean {
+        val lastServerUpdate = runBlocking { patientManager.getPatientById(
+            patientId.value.toString())?.lastServerUpdate }
+        return lastServerUpdate != null
+    }
+
+    /**
+     * Updates a patient information (specifically used for updating lastServerUpdate)
+     * after it has been sent to the server via SMS.
+     */
+    suspend fun patientSentViaSMS(patient: Patient) {
+        patientManager.add(patient)
+    }
 
     /** Save manager fields */
 
