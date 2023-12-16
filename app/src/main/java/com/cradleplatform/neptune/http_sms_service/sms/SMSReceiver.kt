@@ -5,17 +5,10 @@ import android.content.Context
 import android.content.Intent
 import android.telephony.SmsMessage
 import android.util.Log
-import com.cradleplatform.neptune.http_sms_service.sms.ui.SmsTransmissionDialogViewModel
 import com.cradleplatform.neptune.utilities.SMSFormatter
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
-// TODO: Use shared prefs or other methods instead of these and decrypt data in an activity
-// Note that this data is not being read anywhere and is only being stored here
-private var requestIdentifier = ""
-private var encryptedMessage = ""
-private var numberReceivedMessages = 0
-private var totalMessages = 0
 
 @AndroidEntryPoint
 class SMSReceiver @Inject constructor(
@@ -25,6 +18,13 @@ class SMSReceiver @Inject constructor(
 ) : BroadcastReceiver() {
 
     private var smsFormatter: SMSFormatter = SMSFormatter()
+
+    // TODO: Use shared prefs or other methods instead of these and decrypt data in an activity
+    // Note that this data is not being read anywhere and is only being stored here
+    private var requestIdentifier = ""
+    private var encryptedMessage = ""
+    private var numberReceivedMessages = 0
+    private var totalMessages = 0
 
     override fun onReceive(context: Context?, intent: Intent?) {
         val data = intent?.extras
@@ -71,16 +71,17 @@ class SMSReceiver @Inject constructor(
                     numberReceivedMessages < totalMessages) {
                     numberReceivedMessages += 1
                     smsStateReporter.incrementReceived()
-                    encryptedMessage += smsFormatter.getRestMessageString(messageBody)
+                    val newPart = smsFormatter.getRestMessageString(messageBody)
+                    encryptedMessage += newPart
                     smsSender.sendAckMessage(requestIdentifier, numberReceivedMessages - 1, totalMessages)
                 }
 
                 // this happens at the end of exchange
                 // resetting vars if process finished
                 if (numberReceivedMessages == totalMessages) {
-
                     Log.d("Search: Encrypted Message", encryptedMessage)
                     Log.d("Search: Total Messages received", numberReceivedMessages.toString())
+                    smsStateReporter.decryptMessage(encryptedMessage)
                     requestIdentifier = ""
                     totalMessages = 0
                     numberReceivedMessages = 0

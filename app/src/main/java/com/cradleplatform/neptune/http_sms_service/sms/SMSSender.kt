@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.os.Handler
 import android.os.Looper
 import android.telephony.SmsManager
+import android.util.Log
 import android.widget.Toast
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.SmsKeyManager
@@ -123,7 +124,6 @@ class SMSSender @Inject constructor(
             // TODO: Determine if it's better to exit Activity here or when nothing is left
             // in the relay list (see if (smsRelayMsgList.isEmpty()))
             val finishedMsg = appContext.getString(R.string.sms_all_sent)
-            smsStateReporter.state.postValue(SmsTransmissionStates.DONE)
             Handler(Looper.getMainLooper()).post {
                 Toast.makeText(
                     appContext, finishedMsg,

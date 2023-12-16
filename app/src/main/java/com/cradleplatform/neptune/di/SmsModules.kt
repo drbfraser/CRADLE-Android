@@ -23,8 +23,10 @@ class SmsModules {
 
     @Provides
     @Singleton
-    fun provideSmsStateReporter(): SmsStateReporter {
-        return SmsStateReporter()
+    fun provideSmsStateReporter(
+        smsKeyManager: SmsKeyManager,
+    ): SmsStateReporter {
+        return SmsStateReporter(smsKeyManager)
     }
 
     @Provides

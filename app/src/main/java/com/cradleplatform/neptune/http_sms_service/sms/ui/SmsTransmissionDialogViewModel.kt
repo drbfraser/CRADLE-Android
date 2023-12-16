@@ -13,7 +13,7 @@ import javax.inject.Inject
 
 
 /**
- * Generate formated String based on SmsStateReporter
+ * Generate formatted String based on SmsStateReporter
  */
 @HiltViewModel
 class SmsTransmissionDialogViewModel @Inject constructor(
@@ -26,6 +26,7 @@ class SmsTransmissionDialogViewModel @Inject constructor(
             SmsTransmissionStates.WAITING_FOR_SERVER_RESPONSE -> "Waiting for confirmation..."
             SmsTransmissionStates.RECEIVING_SERVER_RESPONSE -> "Receiving confirmation..."
             SmsTransmissionStates.DONE -> "Finished."
+            SmsTransmissionStates.EXCEPTION -> "Something went wrong."
             else -> "Unknown state"
         }
     }
@@ -38,5 +39,12 @@ class SmsTransmissionDialogViewModel @Inject constructor(
         val numerator = it.toString()
         val denominator = smsStateReporter.totalToBeReceived.toString()
         "$numerator/$denominator"
+    }
+    val errorString : LiveData<String> = smsStateReporter.errorCode.map {
+        when (it) {
+            // TODO: finish this
+            404 -> "Failed"
+            else -> ""
+        }
     }
 }
