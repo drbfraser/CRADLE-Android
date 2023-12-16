@@ -16,9 +16,10 @@ import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
 import com.cradleplatform.neptune.http_sms_service.http.Protocol
 import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
+import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.manager.FormManager
 import com.cradleplatform.neptune.manager.FormResponseManager
-import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.model.Answer
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormTemplate
@@ -48,6 +49,9 @@ class FormRenderingViewModel @Inject constructor(
 
     @Inject
     lateinit var smsDataProcessor: SMSDataProcessor
+
+    @Inject
+    lateinit var smsStateReporter: SmsStateReporter
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
@@ -186,7 +190,7 @@ class FormRenderingViewModel @Inject constructor(
     fun getSMSReceiver(): SMSReceiver {
         val phoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
             ?: error("invalid phone number")
-        return SMSReceiver(smsSender, phoneNumber)
+        return SMSReceiver(smsSender, phoneNumber, smsStateReporter)
     }
 
     suspend fun submitForm(

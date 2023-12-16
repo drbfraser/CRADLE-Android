@@ -21,6 +21,7 @@ import com.cradleplatform.neptune.ext.getEnglishResources
 import com.cradleplatform.neptune.ext.getIntOrNull
 import com.cradleplatform.neptune.ext.setValueOnMainThread
 import com.cradleplatform.neptune.ext.use
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.manager.ReferralManager
@@ -40,7 +41,6 @@ import com.cradleplatform.neptune.model.Sex
 import com.cradleplatform.neptune.model.SymptomsState
 import com.cradleplatform.neptune.model.UrineTest
 import com.cradleplatform.neptune.model.Verifiable
-import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.utilities.DateUtil
 import com.cradleplatform.neptune.utilities.LiveDataDynamicModelBuilder
 import com.cradleplatform.neptune.utilities.Months

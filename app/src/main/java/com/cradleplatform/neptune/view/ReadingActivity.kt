@@ -32,6 +32,7 @@ import com.cradleplatform.neptune.ext.hideKeyboard
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.view.ui.reading.PatientIdConflictDialogFragment
 import com.cradleplatform.neptune.view.ui.reading.ReferralDialogFragment
@@ -66,6 +67,9 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
 
     @Inject
     lateinit var smsSender: SMSSender
+
+    @Inject
+    lateinit var smsStateReporter: SmsStateReporter
 
     private lateinit var smsReceiver: SMSReceiver
 
@@ -427,7 +431,7 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
 
         val phoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
             ?: error("invalid phone number")
-        smsReceiver = SMSReceiver(smsSender, phoneNumber)
+        smsReceiver = SMSReceiver(smsSender, phoneNumber, smsStateReporter)
         registerReceiver(smsReceiver, intentFilter)
     }
 
