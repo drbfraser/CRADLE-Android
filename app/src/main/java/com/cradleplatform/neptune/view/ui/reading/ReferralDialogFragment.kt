@@ -165,16 +165,19 @@ class ReferralDialogFragment : DialogFragment() {
             val selectedHealthFacilityName =
                 referralDialogViewModel.healthFacilityToUse.value ?: return
 
-            val smsSendResult = viewModel.saveWithReferral(
+            // Different from handleWebReferralSend(), the ViewModel does not send.
+            // Instead, a local save happens and then a ReadingFlowSaveResult indicates
+            // that an SMS send should follow
+            val roomDbSaveResult = viewModel.saveWithReferral(
                 ReferralOption.SMS,
                 comment,
                 selectedHealthFacilityName
             )
-            when (smsSendResult) {
+            when (roomDbSaveResult) {
                 is ReadingFlowSaveResult.SaveSuccessful.ReferralSmsNeeded -> {
-                    showStatusToast(view.context, smsSendResult, ReferralOption.SMS)
+                    showStatusToast(view.context, roomDbSaveResult, ReferralOption.SMS)
                     val json = smsDataProcessor.processPatientAndReadingsToJSON(
-                        smsSendResult.patientInfoForReferral)
+                        roomDbSaveResult.patientInfoForReferral)
                     smsSender.queueRelayContent(json).let { enqueuSuccessful ->
                         if (enqueuSuccessful) {
                             smsSender.sendSmsMessage(false)
@@ -183,12 +186,12 @@ class ReferralDialogFragment : DialogFragment() {
                     // TODO: Remove the following code from the UI and move to a more appropriate place
                     // This should not be in the UI and should be moved to a place where the server
                     // response is being parsed
-                    smsSendResult.patientInfoForReferral.patient.lastServerUpdate =
-                        smsSendResult.patientInfoForReferral.patient.lastEdited
-                    viewModel.patientSentViaSMS(smsSendResult.patientInfoForReferral.patient)
+                    roomDbSaveResult.patientInfoForReferral.patient.lastServerUpdate =
+                        roomDbSaveResult.patientInfoForReferral.patient.lastEdited
+                    viewModel.patientSentViaSMS(roomDbSaveResult.patientInfoForReferral.patient)
                 }
                 else -> {
-                    showStatusToast(view.context, smsSendResult, ReferralOption.SMS)
+                    showStatusToast(view.context, roomDbSaveResult, ReferralOption.SMS)
                 }
             }
         } finally {

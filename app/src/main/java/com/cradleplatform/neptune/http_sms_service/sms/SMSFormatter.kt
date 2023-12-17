@@ -1,5 +1,6 @@
 package com.cradleplatform.neptune.utilities
 
+import android.util.Log
 import com.google.firebase.crashlytics.internal.model.ImmutableList
 import org.json.JSONObject
 import kotlin.math.min
@@ -99,6 +100,21 @@ class SMSFormatter {
                 )
             }
             return ""
+        }
+
+        fun decodeMsg(msg: String, secretKey: String): String {
+            // Extracts actual Key from secretKey, which is a JSON String
+            val key = JSONObject(secretKey).optString("sms_key")
+            if (key.isNotEmpty()) {
+                GzipCompressor.decompress(
+                    AESEncryptor.decryptString(msg, key)
+                ).let {
+                    Log.d("SMS_Formatter", it)
+                    return it
+                }
+            } else {
+                return "ERROR: key is empty"
+            }
         }
 
         private fun computeRequestHeaderLength(): Int {

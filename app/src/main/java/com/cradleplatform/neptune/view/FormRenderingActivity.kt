@@ -23,6 +23,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.cradleplatform.neptune.model.Answer
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormTemplate
@@ -30,7 +31,6 @@ import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.view.adapters.FormViewAdapter
 import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
-import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
