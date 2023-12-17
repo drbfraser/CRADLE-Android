@@ -19,7 +19,7 @@ class SMSFormatter {
          * Since the message is greater than 160 chars, only 153 can be used for contents.
          * First 7 are reserved for header.
          */
-        const val PACKET_SIZE = 153 * 2
+        const val PACKET_SIZE = 153
         // private const val MAX_PACKET_NUMBER = 99
 
         //Fixed strings, prefixes, suffixes involved in the SMS Protocol
@@ -65,12 +65,12 @@ class SMSFormatter {
         val firstRegexPattern =
             Regex(
                 "^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-" +
-                    "(\\d{$REQUEST_NUMBER_LENGTH})-(\\d{$FRAGMENT_HEADER_LENGTH})-(.+)"
+                    "(\\d{$REQUEST_NUMBER_LENGTH})-(\\d{$FRAGMENT_HEADER_LENGTH})-(.+$)"
             )
 
         val restRegexPattern =
             Regex(
-                "^(\\d{$FRAGMENT_HEADER_LENGTH})-(.+)"
+                "^(\\d{$FRAGMENT_HEADER_LENGTH})-(.+$)"
             )
 
         val firstErrorReplyPattern =
@@ -84,7 +84,7 @@ class SMSFormatter {
             Regex(
                 "^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-" +
                     "(\\d{$REQUEST_NUMBER_LENGTH})-$REPLY_SUCCESS-" +
-                    "(\\d{$FRAGMENT_HEADER_LENGTH})-(.+)"
+                    "(\\d{$FRAGMENT_HEADER_LENGTH})-(.+$)"
             )
 
         // TODO: CHANGE TEST

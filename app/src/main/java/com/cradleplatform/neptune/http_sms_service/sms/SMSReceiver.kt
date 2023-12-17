@@ -11,11 +11,6 @@ import javax.inject.Inject
 
 // TODO: Use shared prefs or other methods instead of these and decrypt data in an activity
 // Note that this data is not being read anywhere and is only being stored here
-private var requestIdentifier = ""
-private var relayData = ""
-private var isError: Boolean? = null
-private var numberReceivedMessages = 0
-private var totalMessages = 0
 
 @AndroidEntryPoint
 class SMSReceiver @Inject constructor(
@@ -23,6 +18,12 @@ class SMSReceiver @Inject constructor(
     private val relayPhoneNumber: String,
     private val smsStateReporter: SmsStateReporter,
 ) : BroadcastReceiver() {
+
+    private var requestIdentifier = ""
+    private var relayData = ""
+    private var isError: Boolean? = null
+    private var numberReceivedMessages = 0
+    private var totalMessages = 0
 
     private var smsFormatter: SMSFormatter = SMSFormatter()
 
