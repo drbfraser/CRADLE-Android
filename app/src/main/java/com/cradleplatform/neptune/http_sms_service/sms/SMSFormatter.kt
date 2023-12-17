@@ -47,6 +47,9 @@ class SMSFormatter {
         private const val POS_REPLY_SUCCESS_DATA = 3
         private const val POS_REPLY_ERROR_DATA = 4
 
+        //position of error code in error message
+        private const val POS_REPLY_ERROR_CODE = 3
+
         //positions for total fragments in transaction
         private const val POS_FIRST_NUM_FRAGMENTS = 2
         private const val POS_REPLY_SUCCESS_NUM_FRAGMENTS = 2
@@ -77,7 +80,7 @@ class SMSFormatter {
             Regex(
                 "^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-" +
                     "(\\d{$REQUEST_NUMBER_LENGTH})-$REPLY_ERROR-(\\d{$FRAGMENT_HEADER_LENGTH})-" +
-                    "$REPLY_ERROR_CODE_PREFIX(\\d{$REPLY_ERROR_CODE_LENGTH})-(.+)$"
+                    "$REPLY_ERROR_CODE_PREFIX(\\d{$REPLY_ERROR_CODE_LENGTH})-(.+$)"
             )
 
         val firstSuccessReplyPattern =
@@ -241,5 +244,9 @@ class SMSFormatter {
 
     fun isFirstReplyError(message: String): Boolean {
         return firstErrorReplyPattern.matches(message)
+    }
+
+    fun getErrorCode(message: String): Int{
+        return firstErrorReplyPattern.find(message)?.groupValues!![POS_REPLY_ERROR_CODE].toInt()
     }
 }
