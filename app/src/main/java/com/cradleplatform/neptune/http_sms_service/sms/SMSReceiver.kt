@@ -9,6 +9,9 @@ import com.cradleplatform.neptune.utilities.SMSFormatter
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+// TODO: Use shared prefs or other methods instead of these and decrypt data in an activity
+// Note that this data is not being read anywhere and is only being stored here
+
 @AndroidEntryPoint
 class SMSReceiver @Inject constructor(
     private val smsSender: SMSSender,
@@ -16,14 +19,14 @@ class SMSReceiver @Inject constructor(
     private val smsStateReporter: SmsStateReporter,
 ) : BroadcastReceiver() {
 
-    private var smsFormatter: SMSFormatter = SMSFormatter()
-
-    // TODO: Use shared prefs or other methods instead of these and decrypt data in an activity
-    // Note that this data is not being read anywhere and is only being stored here
     private var requestIdentifier = ""
-    private var encryptedMessage = ""
+    private var relayData = ""
+    private var isError: Boolean? = null
     private var numberReceivedMessages = 0
     private var totalMessages = 0
+    private var errorCode: Int? = null
+
+    private var smsFormatter: SMSFormatter = SMSFormatter()
 
     override fun onReceive(context: Context?, intent: Intent?) {
         val data = intent?.extras
@@ -48,21 +51,24 @@ class SMSReceiver @Inject constructor(
                 smsStateReporter.incrementSent()
             }
             // start storing message data and send ACK message
-            else if (smsFormatter.isFirstMessage(messageBody)) {
+            else if (smsFormatter.isFirstReplyMessage(messageBody)) {
 
+                isError = smsFormatter.isFirstReplyError(messageBody)
                 requestIdentifier = smsFormatter.getRequestIdentifier(messageBody)
                 smsFormatter.getTotalNumMessages(messageBody)
-                    .let { it ->
+                    .let {
                         totalMessages = it
                         smsStateReporter.initReceiving(it)
                     }
-                encryptedMessage = smsFormatter.getFirstMessageString(messageBody)
+                relayData = smsFormatter.getFirstMessageString(messageBody)
                 numberReceivedMessages = 1
                 smsSender.sendAckMessage(
                     requestIdentifier,
                     numberReceivedMessages - 1,
                     totalMessages
                 )
+                errorCode = smsFormatter.getErrorCode(messageBody)
+                check()
             }
             // continue storing message data and send ACK message
             else if (smsFormatter.isRestMessage(messageBody)) {
@@ -71,23 +77,28 @@ class SMSReceiver @Inject constructor(
                     numberReceivedMessages < totalMessages) {
                     numberReceivedMessages += 1
                     smsStateReporter.incrementReceived()
-                    val newPart = smsFormatter.getRestMessageString(messageBody)
-                    encryptedMessage += newPart
+                    relayData += smsFormatter.getRestMessageString(messageBody)
                     smsSender.sendAckMessage(requestIdentifier, numberReceivedMessages - 1, totalMessages)
                 }
-
-                // this happens at the end of exchange
-                // resetting vars if process finished
-                if (numberReceivedMessages == totalMessages) {
-                    Log.d("Search: Encrypted Message", encryptedMessage)
-                    Log.d("Search: Total Messages received", numberReceivedMessages.toString())
-                    smsStateReporter.decryptMessage(encryptedMessage)
-                    requestIdentifier = ""
-                    totalMessages = 0
-                    numberReceivedMessages = 0
-                    encryptedMessage = ""
-                }
+                check()
             }
+        }
+    }
+
+    //TODO remove this function when data is being read in an activity
+    private fun check() {
+        // this happens at the end of exchange
+        // resetting vars if process finished
+        if (numberReceivedMessages == totalMessages) {
+            smsStateReporter.handleResponse(relayData, errorCode)
+            Log.d("Search: Encrypted Message/Error", "$isError  $relayData")
+            Log.d("Search: Total Messages received", numberReceivedMessages.toString())
+            requestIdentifier = ""
+            totalMessages = 0
+            numberReceivedMessages = 0
+            relayData = ""
+            isError = null
+            errorCode = null
         }
     }
 }
