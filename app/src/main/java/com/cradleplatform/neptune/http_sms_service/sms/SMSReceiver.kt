@@ -62,12 +62,14 @@ class SMSReceiver @Inject constructor(
                     }
                 relayData = smsFormatter.getFirstMessageString(messageBody)
                 numberReceivedMessages = 1
+                if (isError == true) {
+                    errorCode = smsFormatter.getErrorCode(messageBody)
+                }
                 smsSender.sendAckMessage(
                     requestIdentifier,
                     numberReceivedMessages - 1,
                     totalMessages
                 )
-                errorCode = smsFormatter.getErrorCode(messageBody)
                 check()
             }
             // continue storing message data and send ACK message
