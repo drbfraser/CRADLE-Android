@@ -135,25 +135,15 @@ class PatientReferralViewModel @Inject constructor(
 
         /** we are redirected all transactions to the sms service **/
         var patientAndReferrals = PatientAndReferrals(patient, listOf(referral))
-        smsSender.queueRelayContent(
-            JacksonMapper
-                .createWriter<SmsReferral>()
-                .writeValueAsString(SmsReferral(patient = patientAndReferrals))
-        ).let { enqueueSuccessful ->
-            if (enqueueSuccessful) {
-                httpSmsService.upload(
-                    DatabaseObject.ReferralWrapper(
-                        patient,
-                        referral,
-                        smsSender,
-                        Protocol.valueOf(submissionMode),
-                        smsDataProcessor
-                    )
-                )
-            } else {
-                error("SMSSender queueRelayContent() Failed")
-            }
-        }
+        httpSmsService.upload(
+            DatabaseObject.ReferralWrapper(
+                patient,
+                referral,
+                smsSender,
+                Protocol.valueOf(submissionMode),
+                smsDataProcessor
+            )
+        )
 
         // saves the data in internal db
         handleStoringReferralFromBuilders(referral)
