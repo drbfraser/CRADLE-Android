@@ -10,7 +10,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageButton
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.databinding.DataBindingComponent
@@ -152,10 +151,6 @@ class ReferralDialogFragment : DialogFragment() {
 
         if (viewModel.isInitialized.value != true) {
             dismiss()
-        }
-        if (!viewModel.isPatientSynced() &&
-            launchReason != ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
-            view.findViewById<TextView>(R.id.textView6).visibility = View.VISIBLE
         }
     }
 
