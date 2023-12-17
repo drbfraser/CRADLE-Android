@@ -90,10 +90,17 @@ class AESEncryptor {
             iv: ByteArray,
             keySpec: SecretKeySpec
         ): ByteArray {
-            val cipher = Cipher.getInstance(TRANSFORMATION)
-            val ivSpec = IvParameterSpec(iv)
-            cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec)
-            return cipher.doFinal(ciphertext)
+            try {
+                val cipher = Cipher.getInstance(TRANSFORMATION)
+                val ivSpec = IvParameterSpec(iv)
+                cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec)
+                return cipher.doFinal(ciphertext)
+            } catch (e: Exception) {
+                Error(e.message, e.cause)
+                return e.message?.let {
+                    it.toByteArray(Charsets.UTF_8)
+                } ?: ByteArray(0)
+            }
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////

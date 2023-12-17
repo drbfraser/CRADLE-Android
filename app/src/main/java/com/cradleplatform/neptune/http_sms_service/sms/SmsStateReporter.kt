@@ -15,11 +15,14 @@ import javax.inject.Singleton
 class SmsStateReporter @Inject constructor(
     private val smsKeyManager: SmsKeyManager,
 ) {
+    private var smsFormatter: SMSFormatter = SMSFormatter()
+
     val state = MutableLiveData<SmsTransmissionStates>(SmsTransmissionStates.GETTING_READY_TO_SEND)
 
     val totalSent = MutableLiveData<Int>(0)
     val totalReceived = MutableLiveData<Int>(0)
     val errorCode = MutableLiveData<Int>(0)
+    val errorMsg = MutableLiveData<String>("")
 
     var totalToBeSent = 0
     var totalToBeReceived = 0
@@ -57,18 +60,24 @@ class SmsStateReporter @Inject constructor(
         state.postValue(SmsTransmissionStates.EXCEPTION)
     }
 
-    fun decryptMessage(encryptedMessage: String) {
-        val secretKey = smsKeyManager.retrieveSmsKey()
-        SMSFormatter.decodeMsg(encryptedMessage, secretKey)
-            .let {
-                decryptedMsg = it
+    fun handleResponse(msg: String, errCode: Int?) {
+        if (errCode != null) {
+            errorCode.postValue(errCode)
+            errorMsg.postValue(msg)
+            Log.d("SmsStateReporter", "Error Code: $errCode Error Msg: $msg")
+        } else {
+            val secretKey = smsKeyManager.retrieveSmsKey()
+            SMSFormatter.decodeMsg(msg, secretKey)
+                .let {
+                    decryptedMsg = it
 //                val mappedJson = JSONObject(decryptedMsg)
-                // TODO: Do something with the JSON object sent back. As for now, it is the same
-                //  data that was sent out. Compare and make sure everything was correct?
-                Log.d("SmsStateReporter", "Decrypted Message: $it")
-                // if failed, post exception instead of
-                // else it's DONE
-                state.postValue(SmsTransmissionStates.DONE)
-            }
+                    // TODO: Do something with the JSON object sent back. As for now, it is the same
+                    //  data that was sent out. Compare and make sure everything was correct?
+                    Log.d("SmsStateReporter", "Decrypted Message: $it")
+                    // if failed, post exception instead of
+                    // else it's DONE
+                    state.postValue(SmsTransmissionStates.DONE)
+                }
+        }
     }
 }
