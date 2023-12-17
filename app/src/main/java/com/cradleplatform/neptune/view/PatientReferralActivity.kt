@@ -122,11 +122,6 @@ open class PatientReferralActivity : AppCompatActivity() {
     }
 
     private fun setupSendButtons() {
-        // Create warning if the patient is going to be sent with the referral as well
-        if (currPatient.lastServerUpdate == null) {
-            findViewById<TextView>(R.id.textView6).visibility = View.VISIBLE
-        }
-
         // TODO: In both of the following buttons, the result is not being used.
         // Furthermore, the saveReferralFunction is not even returning back to this block.
         // Which is why the toast never appears, and we cannot do anything with the output.
