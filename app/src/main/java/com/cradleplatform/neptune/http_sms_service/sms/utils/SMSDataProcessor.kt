@@ -9,7 +9,7 @@ import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.SmsReadingWithReferral
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
-import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,7 +30,8 @@ class SMSDataProcessor @Inject constructor(private val urlManager: UrlManager) {
      */
     fun processFormToJSON(formResponse: FormResponse): String {
         try {
-            val formResponseJSON = Gson().toJson(formResponse)
+            val gson = GsonBuilder().excludeFieldsWithoutExposeAnnotation().create()
+            val formResponseJSON = gson.toJson(formResponse)
             val url = Uri.parse(urlManager.uploadFormResponse)
             val endpoint = url.path ?: throw Exception("URL path is null")
             return JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(

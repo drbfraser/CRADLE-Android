@@ -32,7 +32,6 @@ import com.cradleplatform.neptune.utilities.jackson.JacksonMapper.createWriter
 import com.cradleplatform.neptune.viewmodel.UserViewModel
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
@@ -475,7 +474,8 @@ class RestApi constructor(
      */
     suspend fun postFormResponse(mFormResponse: FormResponse): NetworkResult<Unit> =
         withContext(IO) {
-            val body = Gson().toJson(mFormResponse).toByteArray()
+            val gson = GsonBuilder().excludeFieldsWithoutExposeAnnotation().create()
+            val body = gson.toJson(mFormResponse).toByteArray()
             http.makeRequest(
                 method = Http.Method.POST,
                 url = urlManager.uploadFormResponse,
@@ -484,7 +484,6 @@ class RestApi constructor(
                 inputStreamReader = {},
             )
         }
-
     /**
      * Uploads a patient's demographic information with the intent of modifying
      * an existing patient already on the server. To upload a new patient

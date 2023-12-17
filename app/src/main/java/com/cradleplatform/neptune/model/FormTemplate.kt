@@ -1,6 +1,7 @@
 package com.cradleplatform.neptune.model
 
 import android.util.Log
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
@@ -168,11 +169,6 @@ data class Question(
             Log.w(TAG, "[questionIndex] was null")
         }
 
-        this@Question.questionId ?: let {
-            nullCheckResult = false
-            Log.w(TAG, "[questionId] was null")
-        }
-
         this@Question.questionType ?: let {
             nullCheckResult = false
             Log.w(TAG, "[questionType] was null")
@@ -242,11 +238,6 @@ data class QuestionLangVersion(
             nullCheckResult = false
             Log.w(TAG, "[language] was null")
         }
-        this@QuestionLangVersion.mcOptions?.forEach { it.verifyIntegrity() }
-            ?: let {
-                nullCheckResult = false
-                Log.w(TAG, "[mcOptions] was null")
-            }
 
         return nullCheckResult
     }
@@ -256,8 +247,8 @@ data class QuestionLangVersion(
 }
 
 data class McOption(
-    @SerializedName("mcid") val mcid: Int?,
-    @SerializedName("opt") val opt: String?
+    @Expose @SerializedName("mcid") val mcid: Int?,
+    @Expose @SerializedName("opt") val opt: String?
 ) : Serializable {
 
     fun verifyIntegrity(): Boolean {
@@ -281,9 +272,9 @@ data class McOption(
 }
 
 data class VisibleCondition(
-    @SerializedName("qidx") val qidx: Int?,
-    @SerializedName("relation") val relation: String?,
-    @SerializedName("answers") var answerCondition: Answer?
+    @Expose @SerializedName("qidx") val qidx: Int?,
+    @Expose @SerializedName("relation") val relation: String?,
+    @Expose @SerializedName("answers") var answerCondition: Answer?
 ) : Serializable {
 
     fun verifyIntegrity(): Boolean {
@@ -328,10 +319,10 @@ data class VisibleCondition(
  *
  */
 data class Answer private constructor(
-    @SerializedName("number") val numericAnswer: Number?,
-    @SerializedName("text") val textAnswer: String?,
-    @SerializedName("mcidArray") val mcidArrayAnswer: List<Int>?,
-    @SerializedName("comment") val comment: String?,
+    @Expose @SerializedName("number") val numericAnswer: Number?,
+    @Expose @SerializedName("text") val textAnswer: String?,
+    @Expose @SerializedName("mcidArray") val mcidArrayAnswer: List<Int>?,
+    @Expose @SerializedName("comment") val comment: String?,
 ) : Serializable {
 
     fun isValidAnswer(): Boolean {
