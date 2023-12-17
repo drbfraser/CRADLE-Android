@@ -5,7 +5,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
+import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingComponent
@@ -16,6 +18,7 @@ import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.ActivityReferralBinding
 import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.utilities.CustomToast
@@ -25,8 +28,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
-import android.view.View
-import android.widget.TextView
 
 @AndroidEntryPoint
 open class PatientReferralActivity : AppCompatActivity() {
@@ -38,6 +39,9 @@ open class PatientReferralActivity : AppCompatActivity() {
 
     @Inject
     lateinit var smsSender: SMSSender
+
+    @Inject
+    lateinit var smsStateReporter: SmsStateReporter
 
     private lateinit var currPatient: Patient
 
@@ -170,7 +174,7 @@ open class PatientReferralActivity : AppCompatActivity() {
 
         val phoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
             ?: error("invalid phone number")
-        smsReceiver = SMSReceiver(smsSender, phoneNumber)
+        smsReceiver = SMSReceiver(smsSender, phoneNumber, smsStateReporter)
         registerReceiver(smsReceiver, intentFilter)
     }
 }

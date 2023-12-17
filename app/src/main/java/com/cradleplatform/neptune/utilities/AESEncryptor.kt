@@ -1,6 +1,8 @@
 package com.cradleplatform.neptune.utilities
 
 import android.util.Base64
+import android.util.Log
+import okio.utf8Size
 import java.security.SecureRandom
 import java.security.MessageDigest
 import javax.crypto.Cipher
@@ -9,6 +11,7 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 class AESEncryptor {
     companion object {
+        private const val TAG = "AESEncryptor"
         private const val TRANSFORMATION = "AES/CBC/PKCS5Padding"
         private const val ivSize = 16
 
@@ -25,6 +28,30 @@ class AESEncryptor {
                 byteArrayToHexString(ivAndCipherText)
             } else {
                 ""
+            }
+        }
+
+        /**
+         * Decrypt the body of encrypted SMS content into decrypted ByteArray for decompression.
+         */
+        fun decryptString(ciphertext: String, secretKeyHex: String): ByteArray {
+            val keyByteArray = secretKeyHex.decodeHex()
+            val iv = ciphertext.substring(0, ivSize * 2).decodeHex()
+            if (iv != null) {
+                assert(iv.size == ivSize)
+            }
+            val cipherTextSubstring = ciphertext.substring(startIndex = ivSize * 2)
+            Log.d(TAG, "cipherTextSubString = $cipherTextSubstring " +
+                "\ncipherTextSubstring Length = ${cipherTextSubstring.utf8Size()}")
+            val ciphertextByteArray = ciphertext.substring(ivSize * 2).decodeHex()
+            return if (keyByteArray != null && iv != null && ciphertextByteArray != null) {
+                val keySpec = SecretKeySpec(keyByteArray, "AES")
+                decryptMsg(ciphertextByteArray, iv, keySpec)
+            } else {
+                Log.e(TAG, "Something is null: keyByteArray $keyByteArray, " +
+                    "iv: $iv, " +
+                    "ciphertextByteArray: $ciphertextByteArray")
+                return ByteArray(0)
             }
         }
 
@@ -56,6 +83,17 @@ class AESEncryptor {
 
             val cipherText = cipher.doFinal(plaintext)
             return Pair(cipherText, randomIV)
+        }
+
+        private fun decryptMsg(
+            ciphertext: ByteArray,
+            iv: ByteArray,
+            keySpec: SecretKeySpec
+        ): ByteArray {
+            val cipher = Cipher.getInstance(TRANSFORMATION)
+            val ivSpec = IvParameterSpec(iv)
+            cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec)
+            return cipher.doFinal(ciphertext)
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
