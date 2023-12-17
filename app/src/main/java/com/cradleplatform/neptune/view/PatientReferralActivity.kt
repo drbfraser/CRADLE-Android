@@ -5,9 +5,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.view.View
 import android.widget.Button
-import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingComponent
@@ -122,11 +120,6 @@ open class PatientReferralActivity : AppCompatActivity() {
     }
 
     private fun setupSendButtons() {
-        // Create warning if the patient is going to be sent with the referral as well
-        if (currPatient.lastServerUpdate == null) {
-            findViewById<TextView>(R.id.textView6).visibility = View.VISIBLE
-        }
-
         // TODO: In both of the following buttons, the result is not being used.
         // Furthermore, the saveReferralFunction is not even returning back to this block.
         // Which is why the toast never appears, and we cannot do anything with the output.

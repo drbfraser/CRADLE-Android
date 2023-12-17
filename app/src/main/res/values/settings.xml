@@ -33,6 +33,6 @@
     <string name="key_pin_default_pin">aaaa</string>
 
     <!-- Default Relay Phone Number -->
-    <string name="settings_default_relay_phone_number">+15555215554</string>
+    <string name="settings_default_relay_phone_number">+15555215556</string>
 
 </resources>
