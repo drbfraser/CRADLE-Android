@@ -86,6 +86,16 @@ class SMSReceiver @Inject constructor(
             }
         }
     }
+    
+    fun reset() {
+        smsSender.reset()
+        requestIdentifier = ""
+        totalMessages = 0
+        numberReceivedMessages = 0
+        relayData = ""
+        isError = null
+        errorCode = null
+    }
 
     //TODO remove this function when data is being read in an activity
     private fun check() {
@@ -95,12 +105,7 @@ class SMSReceiver @Inject constructor(
             smsStateReporter.handleResponse(relayData, errorCode)
             Log.d("Search: Encrypted Message/Error", "$isError  $relayData")
             Log.d("Search: Total Messages received", numberReceivedMessages.toString())
-            requestIdentifier = ""
-            totalMessages = 0
-            numberReceivedMessages = 0
-            relayData = ""
-            isError = null
-            errorCode = null
+            reset()
         }
     }
 }

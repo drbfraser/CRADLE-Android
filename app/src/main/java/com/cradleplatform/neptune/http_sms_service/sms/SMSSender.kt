@@ -7,6 +7,7 @@ import android.os.Handler
 import android.os.Looper
 import android.telephony.SmsManager
 import android.widget.Toast
+import androidx.fragment.app.Fragment
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.http_sms_service.sms.ui.SmsTransmissionDialogFragment
 import com.cradleplatform.neptune.manager.SmsKeyManager
@@ -16,7 +17,6 @@ import com.cradleplatform.neptune.view.FormRenderingActivity
 import com.cradleplatform.neptune.view.PatientReferralActivity
 import com.cradleplatform.neptune.view.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.UserViewModel
-import androidx.fragment.app.Fragment
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -31,8 +31,7 @@ class SMSSender @Inject constructor(
     private var smsSecretKey = smsKeyManager.retrieveSmsKey()
         ?: // TODO: handle the case when the secret key is not available
         error("Encryption failed - no valid smsSecretKey is available")
-    // TODO: Remove this once State LiveData reporting is added
-    // Activities based on a "Finished" State instead of from here.
+    // TODO: Remove activityContext once UI is exiting depending on SmsStateReporter LiveData
     private var activityContext: Context? = null
     fun setActivityContext(activity: Context) {
         activityContext = activity
@@ -64,7 +63,8 @@ class SMSSender @Inject constructor(
                 if (smsRelayQueue.isEmpty()) {
                     val finishedMsg = appContext.getString(R.string.sms_all_sent)
                     smsStateReporter.state.postValue(
-                        SmsTransmissionStates.WAITING_FOR_SERVER_RESPONSE)
+                        SmsTransmissionStates.WAITING_FOR_SERVER_RESPONSE
+                    )
                     Handler(Looper.getMainLooper()).post {
                         Toast.makeText(
                             appContext, finishedMsg,
@@ -141,11 +141,20 @@ class SMSSender @Inject constructor(
             }
             // TODO: Remove this after State reporting is implemented. Move logic to Activity instead.
             if (activityContext is ReadingActivity || activityContext is PatientReferralActivity
-                || activityContext is FormRenderingActivity) {
+                || activityContext is FormRenderingActivity
+            ) {
                 (activityContext as Activity).finish()
-                activityContext = null
             }
+            this.reset()
         }
+    }
+
+    /**
+     * Resets SMSSender in case manually dismissed or failed send.
+     */
+    fun reset() {
+        smsRelayQueue.clear()
+        activityContext = null
     }
 
     private fun Context.showDialog() {
