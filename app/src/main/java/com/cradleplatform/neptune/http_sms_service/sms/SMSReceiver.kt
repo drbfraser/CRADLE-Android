@@ -46,7 +46,7 @@ class SMSReceiver @Inject constructor(
                 continue
             }
             // SMS Transmission is interrupted
-            if (smsSender.isInterrupted) {
+            if (smsSender.getIsInterrupted()) {
                 resetSmsReceiver()
                 continue
             }
@@ -112,7 +112,7 @@ class SMSReceiver @Inject constructor(
         if (numberReceivedMessages == totalMessages) {
             smsStateReporter.handleResponse(relayData, errorCode)
             Log.d(TAG, "Search: Encrypted Message/Error: $isError  $relayData")
-            Log.d(TAG, "Search: Total Messages received: ${numberReceivedMessages.toString()}")
+            Log.d(TAG, "Search: Total Messages received: $numberReceivedMessages")
             resetSmsReceiver()
         }
     }

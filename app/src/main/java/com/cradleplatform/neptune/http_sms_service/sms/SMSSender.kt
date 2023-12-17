@@ -27,7 +27,7 @@ class SMSSender @Inject constructor(
     private val appContext: Context,
     private val smsStateReporter: SmsStateReporter,
 ) {
-    var isInterrupted = false
+    private var isInterrupted = false
 
     private var smsRelayQueue = ArrayDeque<String>()
     private var smsSecretKey = smsKeyManager.retrieveSmsKey()
@@ -162,6 +162,16 @@ class SMSSender @Inject constructor(
     fun resetSmsSender() {
         smsRelayQueue.clear()
         activityContext = null
+    }
+
+    fun interruptSending() {
+        isInterrupted = true
+        // Must increment to make sure Relay App gets a different SMS id
+        RelayRequestCounter.incrementCount(appContext)
+    }
+
+    fun getIsInterrupted(): Boolean {
+        return isInterrupted
     }
 
     private fun Context.showDialog() {

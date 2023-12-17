@@ -8,7 +8,6 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import com.cradleplatform.neptune.R
-import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.http_sms_service.sms.SmsTransmissionStates
@@ -88,7 +87,7 @@ class SmsTransmissionDialogFragment @Inject constructor(
         negativeButton.setOnClickListener {
             // TODO: kill/interrupt transmission, reverse DB modifications
             // TODO: Maybe send a text to Relay app telling
-            smsSender.isInterrupted = true // also clears Queue in SMSSender
+            smsSender.interruptSending() // also clears Queue in SMSSender
             dismiss()
         }
     }
