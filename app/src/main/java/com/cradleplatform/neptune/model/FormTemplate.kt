@@ -319,10 +319,10 @@ data class VisibleCondition(
  *
  */
 data class Answer private constructor(
-    @SerializedName("number") val numericAnswer: Number?,
-    @SerializedName("text") val textAnswer: String?,
-    @SerializedName("mcidArray") val mcidArrayAnswer: List<Int>?,
-    @SerializedName("comment") val comment: String?,
+    @Expose @SerializedName("number") val numericAnswer: Number?,
+    @Expose @SerializedName("text") val textAnswer: String?,
+    @Expose @SerializedName("mcidArray") val mcidArrayAnswer: List<Int>?,
+    @Expose @SerializedName("comment") val comment: String?,
 ) : Serializable {
 
     fun isValidAnswer(): Boolean {
