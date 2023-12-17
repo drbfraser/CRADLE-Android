@@ -246,7 +246,7 @@ class SMSFormatter {
         return firstErrorReplyPattern.matches(message)
     }
 
-    fun getErrorCode(message: String): Int{
+    fun getErrorCode(message: String): Int {
         return firstErrorReplyPattern.find(message)?.groupValues!![POS_REPLY_ERROR_CODE].toInt()
     }
 }

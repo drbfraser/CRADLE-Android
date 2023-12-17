@@ -61,12 +61,11 @@ class SmsStateReporter @Inject constructor(
     }
 
     fun handleResponse(msg: String, errCode: Int?) {
-        if(errCode != null){
+        if (errCode != null) {
             errorCode.postValue(errCode)
             errorMsg.postValue(msg)
             Log.d("SmsStateReporter", "Error Code: $errCode Error Msg: $msg")
-        }
-        else{
+        } else {
             val secretKey = smsKeyManager.retrieveSmsKey()
             SMSFormatter.decodeMsg(msg, secretKey)
                 .let {
