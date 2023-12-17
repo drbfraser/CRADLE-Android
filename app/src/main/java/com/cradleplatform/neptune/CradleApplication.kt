@@ -192,7 +192,6 @@ class CradleApplication : Application(), Configuration.Provider {
                             }
                         }
                     }
-                    networkMonitor.unregisterNetworkCallbackEvents()
                 }
             }
         )
