@@ -27,6 +27,8 @@ class SMSSender @Inject constructor(
     private val appContext: Context,
     private val smsStateReporter: SmsStateReporter,
 ) {
+    var isInterrupted = false
+
     private var smsRelayQueue = ArrayDeque<String>()
     private var smsSecretKey = smsKeyManager.retrieveSmsKey()
         ?: // TODO: handle the case when the secret key is not available
@@ -47,11 +49,16 @@ class SMSSender @Inject constructor(
 
     fun sendSmsMessage(acknowledged: Boolean) {
         if (!acknowledged) {
+            isInterrupted = false
             if (activityContext != null) {
                 activityContext!!.showDialog()
             } else {
                 appContext.showDialog()
             }
+        }
+        if (isInterrupted) {
+            resetSmsSender()
+            return
         }
         val relayPhoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
         val smsManager: SmsManager = SmsManager.getDefault()
@@ -145,14 +152,14 @@ class SMSSender @Inject constructor(
             ) {
                 (activityContext as Activity).finish()
             }
-            this.reset()
+            resetSmsSender()
         }
     }
 
     /**
      * Resets SMSSender in case manually dismissed or failed send.
      */
-    fun reset() {
+    fun resetSmsSender() {
         smsRelayQueue.clear()
         activityContext = null
     }

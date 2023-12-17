@@ -19,6 +19,10 @@ class SMSReceiver @Inject constructor(
     private val smsStateReporter: SmsStateReporter,
 ) : BroadcastReceiver() {
 
+    companion object {
+        val TAG = "SMSReicever"
+    }
+
     private var requestIdentifier = ""
     private var relayData = ""
     private var isError: Boolean? = null
@@ -39,6 +43,11 @@ class SMSReceiver @Inject constructor(
 
             // is message is not from relay phone continue to next one
             if (!isMessageFromRelayPhone) {
+                continue
+            }
+            // SMS Transmission is interrupted
+            if (smsSender.isInterrupted) {
+                resetSmsReceiver()
                 continue
             }
 
@@ -86,9 +95,8 @@ class SMSReceiver @Inject constructor(
             }
         }
     }
-    
-    fun reset() {
-        smsSender.reset()
+
+    fun resetSmsReceiver() {
         requestIdentifier = ""
         totalMessages = 0
         numberReceivedMessages = 0
@@ -103,9 +111,9 @@ class SMSReceiver @Inject constructor(
         // resetting vars if process finished
         if (numberReceivedMessages == totalMessages) {
             smsStateReporter.handleResponse(relayData, errorCode)
-            Log.d("Search: Encrypted Message/Error", "$isError  $relayData")
-            Log.d("Search: Total Messages received", numberReceivedMessages.toString())
-            reset()
+            Log.d(TAG, "Search: Encrypted Message/Error: $isError  $relayData")
+            Log.d(TAG, "Search: Total Messages received: ${numberReceivedMessages.toString()}")
+            resetSmsReceiver()
         }
     }
 }

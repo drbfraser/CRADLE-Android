@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
+import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.http_sms_service.sms.SmsTransmissionStates
 import dagger.hilt.android.AndroidEntryPoint
@@ -20,8 +21,9 @@ class SmsTransmissionDialogFragment @Inject constructor(
 ) : DialogFragment() {
 
     private val viewModel = SmsTransmissionDialogViewModel(smsStateReporter)
+
     @Inject
-    lateinit var smsReceiver: SMSReceiver
+    lateinit var smsSender: SMSSender
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -85,7 +87,8 @@ class SmsTransmissionDialogFragment @Inject constructor(
         }
         negativeButton.setOnClickListener {
             // TODO: kill/interrupt transmission, reverse DB modifications
-            smsReceiver.reset()
+            // TODO: Maybe send a text to Relay app telling
+            smsSender.isInterrupted = true // also clears Queue in SMSSender
             dismiss()
         }
     }
