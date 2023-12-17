@@ -74,7 +74,7 @@ class CradleApplication : Application(), Configuration.Provider {
     lateinit var periodicSyncer: PeriodicSyncer
     @Inject
     lateinit var networkStateManager: NetworkStateManager
-
+    @Inject
     lateinit var networkMonitor: NetworkMonitoringUtil
 
     override fun getWorkManagerConfiguration(): Configuration = Configuration.Builder()
@@ -97,8 +97,6 @@ class CradleApplication : Application(), Configuration.Provider {
         sharedPref = getSharedPreferences(applicationSharedPrefName, Context.MODE_PRIVATE) ?: return
         appKilledLockout = sharedPref.getBoolean(lockOutPrefKey, false)
 
-        // Start monitoring network connectivity
-        networkMonitor = NetworkMonitoringUtil(this, networkStateManager)
         // Check the network state before registering for the 'networkCallbackEvents'
         networkMonitor.checkNetworkState()
         networkMonitor.registerNetworkCallbackEvents()
@@ -194,6 +192,7 @@ class CradleApplication : Application(), Configuration.Provider {
                             }
                         }
                     }
+                    networkMonitor.unregisterNetworkCallbackEvents()
                 }
             }
         )
