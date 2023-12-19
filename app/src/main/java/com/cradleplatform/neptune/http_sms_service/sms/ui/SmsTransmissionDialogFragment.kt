@@ -52,26 +52,17 @@ class SmsTransmissionDialogFragment @Inject constructor(
         viewModel.receiveProgress.observe(viewLifecycleOwner) {
             receiveProgressMessage.text = it
         }
+        viewModel.errorString.observe(viewLifecycleOwner) {
+            if (it == "") {
+                successFailMessage.visibility = View.GONE
+            } else {
+                successFailMessage.visibility = View.VISIBLE
+                successFailMessage.text = it
+            }
+        }
         smsStateReporter.state.observe(viewLifecycleOwner) { state ->
             if (state == SmsTransmissionStates.EXCEPTION || state == SmsTransmissionStates.DONE) {
                 positiveButton.isEnabled = true
-            }
-        }
-        smsStateReporter.errorCode.observe(viewLifecycleOwner) {
-            // Display response code from server
-            when (it) {
-                // TODO: Currently no error code is in SMS received
-                400 -> {
-                    successFailMessage.visibility = View.VISIBLE
-                    successFailMessage.text = "Failed: 400"
-                }
-                200 -> {
-                    successFailMessage.visibility = View.VISIBLE
-                    successFailMessage.text = "Success: 200"
-                }
-                else -> {
-                    successFailMessage.visibility = View.GONE
-                }
             }
         }
 

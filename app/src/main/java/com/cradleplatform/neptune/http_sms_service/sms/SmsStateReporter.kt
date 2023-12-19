@@ -39,6 +39,8 @@ class SmsStateReporter @Inject constructor(
         received = 0
         totalReceived.postValue(0)
         totalToBeReceived = 0
+        errorCode.postValue(0)
+        errorMsg.postValue("")
     }
 
     fun initReceiving(numberOfSmsToReceive: Int) {

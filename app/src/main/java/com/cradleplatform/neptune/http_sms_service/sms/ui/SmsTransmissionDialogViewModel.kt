@@ -37,10 +37,10 @@ class SmsTransmissionDialogViewModel @Inject constructor(
         "Receiving $numerator/$denominator"
     }
     val errorString: LiveData<String> = smsStateReporter.errorCode.map {
-        when (it) {
-            // TODO: finish this
-            404 -> "Failed"
-            else -> ""
+        if (it != 0) {
+            "${smsStateReporter.errorCode.value} ${smsStateReporter.errorMsg.value}"
+        } else {
+            ""
         }
     }
 }
