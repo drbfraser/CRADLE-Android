@@ -364,7 +364,7 @@ data class Answer private constructor(
             )
         }
 
-        fun createEmptyAnswer(comment: String = ""):Answer{
+        fun createEmptyAnswer(comment: String = ""): Answer {
             return Answer(
                 null,
                 null,
