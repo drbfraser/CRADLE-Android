@@ -25,7 +25,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Collections
 
 
 @AndroidEntryPoint
@@ -146,37 +145,20 @@ class SavedFormsActivity : AppCompatActivity() {
             .setMessage("Are you sure you want to delete this form?")
             .setPositiveButton("Delete") { _, _ ->
                 // Delete the item from the list and database
-//                swipedFormResponse?.formResponseId?.let { formResponseId ->
-//                    CoroutineScope(Dispatchers.IO).launch {
-//                        this@SavedFormsActivity.viewModel.formResponseManager.deleteFormResponseById(formResponseId)
-//                    }
-//                }
-//                //formList?.removeAt(swipedPosition)
-//                adapter?.deleteItem(swipedPosition)
-//                adapter?.notifyItemRemoved(swipedPosition)
-
                 swipedFormResponse?.formResponseId?.let { formResponseId ->
                     CoroutineScope(Dispatchers.IO).launch {
                         this@SavedFormsActivity.viewModel.formResponseManager.deleteFormResponseById(formResponseId)
-                        withContext(Dispatchers.Main) {
-                            // Execute UI update on the main thread
-                            adapter?.deleteItem(swipedPosition)
-                            adapter?.notifyItemRemoved(swipedPosition)
-                            //adapter?.notifyItemRangeChanged(swipedPosition, adapter!!.itemCount)
-                            //adapter?.notifyDataSetChanged()
-                            //adapter?.notifyItemRangeRemoved(swipedPosition,adapter!!.itemCount)
-                        }
                     }
                 }
-
+                //formList?.removeAt(swipedPosition)
+                adapter?.deleteItem(swipedPosition)
+                adapter?.notifyItemRemoved(swipedPosition)
 
                 Toast.makeText(this@SavedFormsActivity, "Form deleted", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("Cancel") { dialog, _ ->
                 // Cancel the swipe and restore the item
                 adapter?.notifyItemChanged(swipedPosition)
-                //adapter?.notifyDataSetChanged();
-
                 dialog.dismiss()
             }
             .setOnCancelListener {
