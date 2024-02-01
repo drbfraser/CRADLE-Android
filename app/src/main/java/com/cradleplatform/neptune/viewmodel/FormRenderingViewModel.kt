@@ -194,7 +194,7 @@ class FormRenderingViewModel @Inject constructor(
     }
 
     fun addBlankQuestions(formTemplate: FormTemplate) {
-        for (i in 1..formTemplate!!.questions!!.size - 1){
+        for (i in 1..formTemplate!!.questions!!.size - 1) {
             if (!currentAnswers.containsKey(formTemplate!!.questions?.get(i)!!.questionId.toString())) {
                 currentAnswers[formTemplate!!.questions?.get(i)!!.questionId.toString()] = Answer.createEmptyAnswer()
             }
