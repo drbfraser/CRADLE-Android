@@ -19,14 +19,16 @@ import java.util.Date
 /**
  * Based off of official Android sample at https://github.com/android/views-widgets-samples/tree/main/RecyclerViewKotlin/
  */
-class SavedFormAdapter(private val formList: List<FormResponse>, private val patient: Patient) :
+class SavedFormAdapter(private val formList: MutableList<FormResponse>, private val patient: Patient) :
     RecyclerView.Adapter<SavedFormAdapter.SavedFormViewHolder>() {
+
+
+
     class SavedFormViewHolder(
         itemView: View,
         private val binding: ListItemSavedFormBinding,
         patient: Patient
     ) : RecyclerView.ViewHolder(itemView) {
-
         init {
             itemView.setOnClickListener {
                 binding.formResponse?.let { formResponse ->
@@ -40,6 +42,8 @@ class SavedFormAdapter(private val formList: List<FormResponse>, private val pat
                     itemView.context.startActivity(intent)
                 }
             }
+
+
         }
 
         // Grab the individual views from list_item_saved_form.xml
@@ -60,6 +64,7 @@ class SavedFormAdapter(private val formList: List<FormResponse>, private val pat
             dateLastEditedTextView.text = Date(formResponse.dateEdited).toString()
             binding.executePendingBindings()
         }
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SavedFormViewHolder {
@@ -85,7 +90,20 @@ class SavedFormAdapter(private val formList: List<FormResponse>, private val pat
         holder.bind(formList[position])
     }
 
+    fun deleteItam(adapterPosition:Int) {
+        formList.removeAt(adapterPosition)
+        notifyItemRemoved(adapterPosition)
+    }
+
+    fun deleteItem(swipedPosition: Int) {
+        formList.removeAt(swipedPosition)
+        notifyItemRemoved(swipedPosition)
+    }
+
     companion object {
         private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent()
+
     }
+
+
 }

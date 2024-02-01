@@ -661,7 +661,7 @@
     <string name="warn_no_form_template_selected">Please Select a form</string>
     <string name="war_no_form_language_selected">Please Select a Language</string>
     <string name="create_new_form">Create New Form</string>
-    <string name="see_saved_forms">See Saved Forms</string>
+    <string name="see_saved_forms">See Form Drafts</string>
     <string name="form_selection_hint">Form*</string>
     <string name="form_language_hint">Language*</string>
     <string name="fetch_form_button_text">Fetch Form</string>

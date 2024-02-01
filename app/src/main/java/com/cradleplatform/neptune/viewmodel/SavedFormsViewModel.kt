@@ -11,14 +11,14 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SavedFormsViewModel @Inject constructor(
-    private val formResponseManager: FormResponseManager,
+    val formResponseManager: FormResponseManager,
     private val patientManager: PatientManager
 ) : ViewModel() {
 
     suspend fun purgeOutdatedFormResponses(): Int =
         formResponseManager.purgeOutdatedFormResponses()
 
-    suspend fun searchForFormResponsesByPatientId(id: String): List<FormResponse>? {
+    suspend fun searchForFormResponsesByPatientId(id: String): MutableList<FormResponse>? {
         return formResponseManager.searchForFormResponseByPatientId(id)
     }
 
