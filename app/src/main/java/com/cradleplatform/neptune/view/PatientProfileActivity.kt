@@ -466,7 +466,9 @@ open class PatientProfileActivity : AppCompatActivity() {
                 currPatient
             )
             startActivity(intent)
+            createFormButton.visibility = if (!responsesForPatient.isNullOrEmpty()) View.VISIBLE else View.GONE
         }
+        createFormButton.visibility = if (!responsesForPatient.isNullOrEmpty()) View.VISIBLE else View.GONE
     }
 
     private fun onUpdateButtonClicked(isDrugRecord: Boolean) {
