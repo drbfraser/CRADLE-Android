@@ -455,6 +455,20 @@ open class PatientProfileActivity : AppCompatActivity() {
         }
     }
 
+    private suspend fun setupSeeSubmittedFormsButton() {
+        val createFormButton = findViewById<Button>(R.id.seeSubmittedFormsButton)
+        val responsesForPatient = formResponseManager.searchForFormResponseByPatientId(currPatient.id)
+        createFormButton.visibility = if (!responsesForPatient.isNullOrEmpty()) View.VISIBLE else View.GONE
+        createFormButton.setOnClickListener {
+            val intent = SavedFormsActivity.makeIntent(
+                this@PatientProfileActivity,
+                currPatient.id,
+                currPatient
+            )
+            startActivity(intent)
+        }
+    }
+
     private suspend fun setupSeeSavedFormsButton() {
         val createFormButton = findViewById<Button>(R.id.seeSavedFormsButton)
         val responsesForPatient = formResponseManager.searchForFormResponseByPatientId(currPatient.id)
