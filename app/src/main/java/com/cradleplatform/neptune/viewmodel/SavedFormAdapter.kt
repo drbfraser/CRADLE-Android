@@ -90,11 +90,6 @@ class SavedFormAdapter(private val formList: MutableList<FormResponse>, private 
         holder.bind(formList[position])
     }
 
-    fun deleteItam(adapterPosition:Int) {
-        formList.removeAt(adapterPosition)
-        notifyItemRemoved(adapterPosition)
-    }
-
     fun deleteItem(swipedPosition: Int) {
         formList.removeAt(swipedPosition)
         notifyItemRemoved(swipedPosition)

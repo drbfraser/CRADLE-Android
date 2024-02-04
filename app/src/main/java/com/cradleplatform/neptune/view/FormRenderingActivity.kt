@@ -159,6 +159,14 @@ class FormRenderingActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_forms, menu)
+
+        // Retrieve the saved form status from your logic, e.g., checking if formResponseId is not null
+        val isFormSaved = formResponseId != null
+
+        // Find the delete menu item and set its visibility based on the form saved status
+        val deleteMenuItem = menu?.findItem(R.id.formDelete)
+        deleteMenuItem?.isVisible = isFormSaved
+
         return true
     }
 
@@ -167,6 +175,41 @@ class FormRenderingActivity : AppCompatActivity() {
         if (viewModel.isRequiredFieldsFilled(languageSelected!!, applicationContext)) {
             showFormSubmissionModeDialog(languageSelected!!)
         }
+    }
+
+    fun onDeleteFormAction(menuItem: MenuItem) {
+        if (formResponseId != null) {
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("delete")
+            builder.setMessage("do you wanna delte this?")
+
+            builder.setPositiveButton(R.string.yes) { _, _ ->
+                deleteFormAndNavigateBack()
+            }
+
+            builder.setNegativeButton(R.string.no) { _, _ ->
+                // Do nothing...
+            }
+            builder.show()
+        }
+    }
+
+    private fun deleteFormAndNavigateBack() {
+        //Todo: delete functionality
+//        // Notify the adapter that the form has been deleted
+//        (recyclerView.adapter as? SavedFormAdapter)?.deleteItem(adapterPosition)
+
+        // Navigate back to SavedFormsActivity
+        val intent = patientId?.let {
+            patient?.let { it1 ->
+                SavedFormsActivity.makeIntent(
+                    this@FormRenderingActivity,
+                    it,
+                    it1
+                )
+            }
+        }
+        startActivity(intent)
     }
 
     private fun showFormSubmissionModeDialog(languageSelected: String) {
