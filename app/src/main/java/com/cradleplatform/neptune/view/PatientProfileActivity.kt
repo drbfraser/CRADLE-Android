@@ -128,6 +128,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupCreatePatientReferralButton()
         setupCreateAndFillFormButton()
         lifecycleScope.launch {
+            setupSeeSubmittedFormsButton()
             setupSeeSavedFormsButton()
         }
         setupUpdateRecord()

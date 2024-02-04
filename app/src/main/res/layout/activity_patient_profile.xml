@@ -517,7 +517,8 @@
                 android:background="@drawable/rounded_button"
                 android:text="@string/create_new_referral"
                 android:visibility="visible"
-                app:layout_constraintTop_toBottomOf="@+id/newPatientReadingButton" />
+                app:layout_constraintTop_toBottomOf="@+id/newPatientReadingButton"
+                app:layout_constraintBottom_toTopOf="@+id/newFormButton"/>
 
             <Button
                 android:id="@+id/newFormButton"
@@ -539,16 +540,17 @@
                 android:text="@string/see_submitted_forms"
                 android:visibility="visible"
                 app:layout_constraintBottom_toTopOf="@+id/seeSavedFormsButton"
-                app:layout_constraintBottom_toBottomOf="@+id/newFormButton" />
+                app:layout_constraintTop_toBottomOf="@+id/newFormButton" />
 
             <Button
                 android:id="@+id/seeSavedFormsButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/reading_flow_previous_reading_item_margin"
                 android:background="@drawable/rounded_button"
                 android:text="@string/see_saved_forms"
                 android:visibility="visible"
-                app:layout_constraintBottom_toBottomOf="parent" />
+                app:layout_constraintTop_toBottomOf="@+id/seeSubmittedFormsButton" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>
