@@ -461,7 +461,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         val responsesForPatient = formResponseManager.searchForFormResponseByPatientId(currPatient.id)
         createFormButton.visibility = if (!responsesForPatient.isNullOrEmpty()) View.VISIBLE else View.GONE
         createFormButton.setOnClickListener {
-            val intent = SavedFormsActivity.makeIntent(
+            val intent = SubmittedFormsActivity.makeIntent(
                 this@PatientProfileActivity,
                 currPatient.id,
                 currPatient
