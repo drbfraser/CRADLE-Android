@@ -1,4 +1,5 @@
 package com.cradleplatform.neptune.view
+
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
@@ -43,7 +44,6 @@ class SavedFormsActivity : AppCompatActivity() {
         setUpSavedFormsRecyclerView()
         setUpActionBar()
     }
-
 
     private fun setUpSavedFormsRecyclerView() {
         lifecycleScope.launch {
