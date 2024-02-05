@@ -489,58 +489,60 @@
 
             <Button
                 android:id="@+id/addToMyPatientButton"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="@string/patient_profile_add_to_my_patients_list_button"
-                android:visibility="gone"
                 android:background="@drawable/rounded_button"
+                android:text="@string/patient_profile_add_to_my_patients_list_button"
+                android:visibility="visible"
                 app:backgroundTint="@color/colorPrimaryLight"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/newPatientReadingButton"/>
 
             <Button
                 android:id="@+id/newPatientReadingButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:background="@drawable/rounded_button"
                 android:text="@string/create_new_reading"
-                android:visibility="gone"
+                android:visibility="visible"
                 app:layout_constraintBottom_toTopOf="@+id/newPatientReferralButton"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toBottomOf="@+id/addToMyPatientButton"
+                tools:layout_editor_absoluteX="0dp" />
 
             <Button
                 android:id="@+id/newPatientReferralButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/reading_flow_previous_reading_item_margin"
                 android:background="@drawable/rounded_button"
                 android:text="@string/create_new_referral"
+                android:visibility="visible"
                 app:layout_constraintBottom_toTopOf="@+id/newFormButton"
-                app:layout_constraintTop_toBottomOf="@+id/newPatientReadingButton"
-                android:visibility="gone"
-                android:layout_marginTop="@dimen/reading_flow_previous_reading_item_margin"/>
+                app:layout_constraintTop_toBottomOf="@+id/newPatientReadingButton" />
 
             <Button
                 android:id="@+id/newFormButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/reading_flow_previous_reading_item_margin"
                 android:background="@drawable/rounded_button"
                 android:text="@string/create_new_form"
+                android:visibility="visible"
                 app:layout_constraintBottom_toTopOf="@+id/seeSavedFormsButton"
-                app:layout_constraintTop_toBottomOf="@+id/newPatientReferralButton"
-                android:visibility="gone"
-                android:layout_marginTop="@dimen/reading_flow_previous_reading_item_margin"/>
+                app:layout_constraintTop_toBottomOf="@+id/newPatientReferralButton" />
 
             <Button
                 android:id="@+id/seeSavedFormsButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/reading_flow_previous_reading_item_margin"
                 android:background="@drawable/rounded_button"
                 android:text="@string/see_saved_forms"
+                android:visibility="visible"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/newFormButton"
-                android:visibility="gone"
-                android:layout_marginTop="@dimen/reading_flow_previous_reading_item_margin"/>
+                app:layout_constraintTop_toBottomOf="@+id/newFormButton" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>
