@@ -159,6 +159,14 @@ class FormRenderingActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_forms, menu)
+
+        // Retrieve the saved form status from your logic, e.g., checking if formResponseId is not null
+        val isFormSaved = formResponseId != null
+
+        // Find the delete menu item and set its visibility based on the form saved status
+        val deleteMenuItem = menu?.findItem(R.id.formDelete)
+        deleteMenuItem?.isVisible = isFormSaved
+
         return true
     }
 
@@ -166,6 +174,35 @@ class FormRenderingActivity : AppCompatActivity() {
         //A toast is displayed to user if require field is not filled
         if (viewModel.isRequiredFieldsFilled(languageSelected!!, applicationContext)) {
             showFormSubmissionModeDialog(languageSelected!!)
+        }
+    }
+    fun onDeleteFormAction(menuItem: MenuItem) {
+        if (formResponseId != null) {
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("Delete Form")
+            builder.setMessage("Are you sure you want to delete this form? This action cannot be undone.")
+
+            builder.setPositiveButton(R.string.yes) { _, _ ->
+                lifecycleScope.launch {
+                    deleteFormAndNavigateBack()
+                }
+            }
+            builder.setNegativeButton(R.string.no) { _, _ ->
+                // Do nothing...
+            }
+            builder.show()
+        }
+    }
+    private suspend fun deleteFormAndNavigateBack() {
+        if (formResponseId != null) {
+
+            viewModel.removeFormResponseFromDatabaseById(formResponseId!!)
+
+            // Notify the adapter that the form has been deleted
+            adapter?.notifyDataSetChanged()
+
+            // Finish the current activity and go back to the previous one
+            finish()
         }
     }
 

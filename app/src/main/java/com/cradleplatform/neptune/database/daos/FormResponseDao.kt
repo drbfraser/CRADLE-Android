@@ -99,7 +99,7 @@ interface FormResponseDao {
      * @param id The id of the patient to find formResponses for.
      */
     @Query("SELECT * FROM FormResponse WHERE patientId = :id")
-    suspend fun getAllFormResponseByPatientId(id: String): List<FormResponse>?
+    suspend fun getAllFormResponseByPatientId(id: String): MutableList<FormResponse>?
 
     /**
      * Returns a live list of formResponses

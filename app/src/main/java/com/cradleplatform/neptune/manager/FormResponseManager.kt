@@ -25,7 +25,7 @@ class FormResponseManager @Inject constructor(
     suspend fun searchForFormResponseById(id: Long): FormResponse? =
         formResponseDao.getFormResponseById(id)
 
-    suspend fun searchForFormResponseByPatientId(id: String): List<FormResponse>? =
+    suspend fun searchForFormResponseByPatientId(id: String): MutableList<FormResponse>? =
         formResponseDao.getAllFormResponseByPatientId(id)
 
     /**
@@ -51,6 +51,16 @@ class FormResponseManager @Inject constructor(
      * @return The number of rows affected  in the database(i.e., 1 if a [FormResponse] with the given
      * [formResponseId] was found and deleted, 0 if not found).
      */
+
+    /**
+     * Deletes a [FormResponse].
+     *
+     * @param formResponse The form response to be deleted
+     */
+    suspend fun deleteFormResponse(formResponse: FormResponse) {
+        formResponseDao.delete(formResponse)
+    }
+
     suspend fun deleteFormResponseById(formResponseId: Long) =
         formResponseDao.deleteById(formResponseId)
 

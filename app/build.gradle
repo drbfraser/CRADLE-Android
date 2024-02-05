@@ -229,6 +229,8 @@ dependencies {
     detekt "io.gitlab.arturbosch.detekt:detekt-cli:$detekt_version"
     // Gson library, used in model: FormTemplate.
     implementation 'com.google.code.gson:gson:2.8.2'
+    implementation 'it.xabaras.android:recyclerview-swipedecorator:1.4'
+
 }
 
 kotlin {
