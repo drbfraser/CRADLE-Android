@@ -31,8 +31,6 @@ import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.view.adapters.FormViewAdapter
 import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
-import com.cradleplatform.neptune.viewmodel.SavedFormAdapter
-import com.cradleplatform.neptune.viewmodel.SavedFormsViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -178,7 +176,6 @@ class FormRenderingActivity : AppCompatActivity() {
             showFormSubmissionModeDialog(languageSelected!!)
         }
     }
-
     fun onDeleteFormAction(menuItem: MenuItem) {
         if (formResponseId != null) {
             val builder = AlertDialog.Builder(this)
@@ -190,14 +187,12 @@ class FormRenderingActivity : AppCompatActivity() {
                     deleteFormAndNavigateBack()
                 }
             }
-
             builder.setNegativeButton(R.string.no) { _, _ ->
                 // Do nothing...
             }
             builder.show()
         }
     }
-
     private suspend fun deleteFormAndNavigateBack() {
         if (formResponseId != null) {
 

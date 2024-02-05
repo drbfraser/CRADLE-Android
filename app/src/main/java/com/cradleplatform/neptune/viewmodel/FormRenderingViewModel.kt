@@ -158,26 +158,21 @@ class FormRenderingViewModel @Inject constructor(
         currentAnswers.remove(questionId)
         _currentAnswers.value = currentAnswers
     }
-
     fun getTextAnswer(questionId: String?): String? {
         if (questionId == null) return null
         return currentAnswers[questionId]?.textAnswer
     }
-
     fun getNumericAnswer(questionId: String?): Number? {
         if (questionId == null) return null
         return currentAnswers[questionId]?.numericAnswer
     }
-
     fun getMCAnswer(questionId: String?): List<Int>? {
         if (questionId == null) return null
         return currentAnswers[questionId]?.mcidArrayAnswer
     }
-
     fun clearAnswers() {
         currentAnswers.clear()
     }
-
     fun getInternetTypeString(context: Context): String {
         when (networkStateManager.getConnectivity()) {
             ConnectivityOptions.WIFI -> return "Wifi"
@@ -186,13 +181,11 @@ class FormRenderingViewModel @Inject constructor(
             ConnectivityOptions.NONE -> return ""
         }
     }
-
     fun getSMSReceiver(): SMSReceiver {
         val phoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
             ?: error("invalid phone number")
         return SMSReceiver(smsSender, phoneNumber, smsStateReporter)
     }
-
     suspend fun submitForm(
         patientId: String,
         selectedLanguage: String,
@@ -226,7 +219,6 @@ class FormRenderingViewModel @Inject constructor(
             error("FormTemplate does not exist: Current displaying FormTemplate is null")
         }
     }
-
     /**
      * Returns true if all required fields filled
      * Else returns false and shows user a toast of which field needs to be filled in

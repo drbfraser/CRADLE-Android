@@ -21,9 +21,6 @@ import java.util.Date
  */
 class SavedFormAdapter(private val formList: MutableList<FormResponse>, private val patient: Patient) :
     RecyclerView.Adapter<SavedFormAdapter.SavedFormViewHolder>() {
-
-
-
     class SavedFormViewHolder(
         itemView: View,
         private val binding: ListItemSavedFormBinding,
@@ -42,10 +39,7 @@ class SavedFormAdapter(private val formList: MutableList<FormResponse>, private 
                     itemView.context.startActivity(intent)
                 }
             }
-
-
         }
-
         // Grab the individual views from list_item_saved_form.xml
         private val formClassNameTextView: TextView =
             itemView.findViewById(R.id.form_class_name_text)
@@ -53,7 +47,6 @@ class SavedFormAdapter(private val formList: MutableList<FormResponse>, private 
             itemView.findViewById(R.id.list_item_saved_form_id_text_view)
         private val dateLastEditedTextView: TextView =
             itemView.findViewById(R.id.list_item_saved_form_date_created_text_view)
-
         @UiThread
         fun bind(formResponse: FormResponse) {
             // Grab the FormResponse associated with the list item being bound
@@ -64,9 +57,7 @@ class SavedFormAdapter(private val formList: MutableList<FormResponse>, private 
             dateLastEditedTextView.text = Date(formResponse.dateEdited).toString()
             binding.executePendingBindings()
         }
-
     }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SavedFormViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.list_item_saved_form, parent, false)
@@ -78,27 +69,19 @@ class SavedFormAdapter(private val formList: MutableList<FormResponse>, private 
             false,
             dataBindingComponent
         )
-
         return SavedFormViewHolder(view, binding, patient)
     }
-
     override fun getItemCount(): Int {
         return formList.size
     }
-
     override fun onBindViewHolder(holder: SavedFormViewHolder, position: Int) {
         holder.bind(formList[position])
     }
-
     fun deleteItem(swipedPosition: Int) {
         formList.removeAt(swipedPosition)
         notifyItemRemoved(swipedPosition)
     }
-
     companion object {
         private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent()
-
     }
-
-
 }
