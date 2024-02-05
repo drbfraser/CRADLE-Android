@@ -458,7 +458,7 @@ open class PatientProfileActivity : AppCompatActivity() {
 
     private suspend fun setupSeeSubmittedFormsButton() {
         val createFormButton = findViewById<Button>(R.id.seeSubmittedFormsButton)
-        val responsesForPatient = formResponseManager.searchForFormResponseByPatientId(currPatient.id)
+        val responsesForPatient = formResponseManager.searchForSubmittedFormResponseByPatientId(currPatient.id)
         createFormButton.visibility = if (!responsesForPatient.isNullOrEmpty()) View.VISIBLE else View.GONE
         createFormButton.setOnClickListener {
             val intent = SubmittedFormsActivity.makeIntent(
@@ -472,7 +472,7 @@ open class PatientProfileActivity : AppCompatActivity() {
 
     private suspend fun setupSeeSavedFormsButton() {
         val createFormButton = findViewById<Button>(R.id.seeSavedFormsButton)
-        val responsesForPatient = formResponseManager.searchForFormResponseByPatientId(currPatient.id)
+        val responsesForPatient = formResponseManager.searchForSavedFormResponseByPatientId(currPatient.id)
         createFormButton.visibility = if (!responsesForPatient.isNullOrEmpty()) View.VISIBLE else View.GONE
         createFormButton.setOnClickListener {
             val intent = SavedFormsActivity.makeIntent(

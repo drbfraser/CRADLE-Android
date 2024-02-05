@@ -367,7 +367,7 @@ class FormRenderingViewModel @Inject constructor(
                         formTemplate = currentFormTemplate!!,
                         language = selectedLanguage,
                         answers = currentAnswers,
-                        saveResponseToSendLater = true
+                        saveResponseToSendLater = false
                     )
                 }
             formResponseManager.updateOrInsertIfNotExistsFormResponse(formResponse)

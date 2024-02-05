@@ -22,6 +22,14 @@ class SavedFormsViewModel @Inject constructor(
         return formResponseManager.searchForFormResponseByPatientId(id)
     }
 
+    suspend fun searchForSubmittedFormResponsesByPatientId(id: String): List<FormResponse>? {
+        return formResponseManager.searchForSubmittedFormResponseByPatientId(id)
+    }
+
+    suspend fun searchForSavedFormResponsesByPatientId(id: String): List<FormResponse>? {
+        return formResponseManager.searchForSavedFormResponseByPatientId(id)
+    }
+
     suspend fun addFormResponse(formResponse: FormResponse) {
         formResponseManager.updateOrInsertIfNotExistsFormResponse(formResponse)
     }

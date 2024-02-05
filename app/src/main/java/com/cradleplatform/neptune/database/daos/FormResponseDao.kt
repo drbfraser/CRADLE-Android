@@ -102,6 +102,22 @@ interface FormResponseDao {
     suspend fun getAllFormResponseByPatientId(id: String): List<FormResponse>?
 
     /**
+     * Returns all of the formResponses associated with a specified patient.
+     *
+     * @param id The id of the patient to find formResponses for.
+     */
+    @Query("SELECT * FROM FormResponse WHERE patientId = :id AND saveResponseToSendLater = TRUE")
+    suspend fun getAllSavedFormResponseByPatientId(id: String): List<FormResponse>?
+
+    /**
+     * Returns all of the formResponses associated with a specified patient.
+     *
+     * @param id The id of the patient to find formResponses for.
+     */
+    @Query("SELECT * FROM FormResponse WHERE patientId = :id AND saveResponseToSendLater = FALSE")
+    suspend fun getAllSubmittedFormResponseByPatientId(id: String): List<FormResponse>?
+
+    /**
      * Returns a live list of formResponses
      */
     @Query("SELECT * FROM FormResponse")

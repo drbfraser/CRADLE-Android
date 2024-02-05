@@ -28,6 +28,11 @@ class FormResponseManager @Inject constructor(
     suspend fun searchForFormResponseByPatientId(id: String): List<FormResponse>? =
         formResponseDao.getAllFormResponseByPatientId(id)
 
+    suspend fun searchForSavedFormResponseByPatientId(id: String): List<FormResponse>? =
+        formResponseDao.getAllSavedFormResponseByPatientId(id)
+
+    suspend fun searchForSubmittedFormResponseByPatientId(id: String): List<FormResponse>? =
+        formResponseDao.getAllSubmittedFormResponseByPatientId(id)
     /**
      * Updates or inserts a new [FormResponse]. Checking is done through form response's id.
      *

@@ -184,6 +184,7 @@ class FormRenderingActivity : AppCompatActivity() {
         } else {
             builder.setPositiveButton(internetString) { _, _ ->
                 formSubmission(languageSelected, "HTTP")
+                saveForm(languageSelected)
                 returnToPatientProfile()
             }
         }

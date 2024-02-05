@@ -45,7 +45,7 @@ class SubmittedFormsActivity : AppCompatActivity() {
             }
 
             // Find the list of saved forms for that patient, if any
-            val formList = viewModel.searchForFormResponsesByPatientId(patientId!!)
+            val formList = viewModel.searchForSubmittedFormResponsesByPatientId(patientId!!)
 
             // Populate the recyclerView with the list of saved forms, using SavedFormAdapter
             val recyclerView: RecyclerView = findViewById(R.id.recycler_view)
