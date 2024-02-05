@@ -332,7 +332,6 @@ class FormRenderingViewModel @Inject constructor(
                         it
                     )
                 }
-
             val formResponse =
                 when (formResponseId != null && formResponseManager.searchForFormResponseById(
                     formResponseId

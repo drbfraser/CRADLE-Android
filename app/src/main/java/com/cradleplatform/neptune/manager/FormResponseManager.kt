@@ -57,7 +57,7 @@ class FormResponseManager @Inject constructor(
      *
      * @param formResponse The form response to be deleted
      */
-     suspend fun deleteFormResponse(formResponse: FormResponse) {
+    suspend fun deleteFormResponse(formResponse: FormResponse) {
         formResponseDao.delete(formResponse)
     }
 
@@ -85,6 +85,4 @@ class FormResponseManager @Inject constructor(
         }
         return purgeCount
     }
-
-
 }

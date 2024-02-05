@@ -59,10 +59,8 @@ class SavedFormsActivity : AppCompatActivity() {
             if (patient == null) {
                 patient = viewModel.getPatientByPatientId(patientId!!)
             }
-
             // Find the list of saved forms for that patient, if any
              formList = viewModel.searchForFormResponsesByPatientId(patientId!!)
-
              adapter = formList?.let { patient?.let { it1 -> SavedFormAdapter(it, it1) } }
             val itemTouchHelper =  ItemTouchHelper(object: ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
                 override fun onMove(
@@ -73,15 +71,11 @@ class SavedFormsActivity : AppCompatActivity() {
                     return false
                 }
                 override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-
                     val swipedPosition = viewHolder.absoluteAdapterPosition
                     val swipedFormResponse = formList?.get(swipedPosition)
-
                     // Show confirmation dialog before deletion
                     showDeleteConfirmationDialog(swipedFormResponse, swipedPosition)
-
                 }
-
                 override fun onChildDraw(
                     c: Canvas,
                     recyclerView: RecyclerView,
@@ -120,14 +114,10 @@ class SavedFormsActivity : AppCompatActivity() {
                         isCurrentlyActive
                     )
                 }
-
             })
-
             // Populate the recyclerView with the list of saved forms, using SavedFormAdapter
             val recyclerView: RecyclerView = findViewById(R.id.recycler_view)
-
             itemTouchHelper.attachToRecyclerView(recyclerView)
-
             // Add horizontal line between list items
             recyclerView.apply {
                 addItemDecoration(
@@ -137,8 +127,6 @@ class SavedFormsActivity : AppCompatActivity() {
             }
         }
     }
-
-
     private fun showDeleteConfirmationDialog(swipedFormResponse: FormResponse?, swipedPosition: Int) {
         AlertDialog.Builder(this@SavedFormsActivity)
             .setTitle("Confirm Delete")
@@ -153,7 +141,6 @@ class SavedFormsActivity : AppCompatActivity() {
                 //formList?.removeAt(swipedPosition)
                 adapter?.deleteItem(swipedPosition)
                 adapter?.notifyItemRemoved(swipedPosition)
-
                 Toast.makeText(this@SavedFormsActivity, "Form deleted", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("Cancel") { dialog, _ ->
@@ -167,18 +154,14 @@ class SavedFormsActivity : AppCompatActivity() {
             }
             .show()
     }
-
     private fun setUpActionBar() {
         supportActionBar?.title = getString(R.string.see_saved_forms)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
-
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return true
     }
-
-
     companion object {
         private const val EXTRA_PATIENT_ID = "Patient ID that the forms are saved for"
         private const val EXTRA_PATIENT_OBJECT = "The Patient object that the forms are saved for"
@@ -194,4 +177,3 @@ class SavedFormsActivity : AppCompatActivity() {
             }
     }
 }
-
