@@ -1,6 +1,4 @@
 package com.cradleplatform.neptune.view
-
-
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
@@ -24,9 +22,6 @@ import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-
-
 @AndroidEntryPoint
 class SavedFormsActivity : AppCompatActivity() {
 
@@ -60,9 +55,9 @@ class SavedFormsActivity : AppCompatActivity() {
                 patient = viewModel.getPatientByPatientId(patientId!!)
             }
             // Find the list of saved forms for that patient, if any
-             formList = viewModel.searchForFormResponsesByPatientId(patientId!!)
-             adapter = formList?.let { patient?.let { it1 -> SavedFormAdapter(it, it1) } }
-            val itemTouchHelper =  ItemTouchHelper(object: ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            formList = viewModel.searchForFormResponsesByPatientId(patientId!!)
+            adapter = formList?.let { patient?.let { it1 -> SavedFormAdapter(it, it1) } }
+            val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
                 override fun onMove(
                     recyclerView: RecyclerView,
                     source: RecyclerView.ViewHolder,

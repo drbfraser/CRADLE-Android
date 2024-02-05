@@ -316,7 +316,7 @@ class FormRenderingViewModel @Inject constructor(
         smsSender.setActivityContext(activity)
     }
 
-     suspend fun removeFormResponseFromDatabaseById(formResponseId: Long) =
+    suspend fun removeFormResponseFromDatabaseById(formResponseId: Long) =
         formResponseManager.deleteFormResponseById(formResponseId)
 
     suspend fun saveFormResponseToDatabase(

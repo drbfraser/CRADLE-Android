@@ -60,7 +60,7 @@ class SavedFormAdapter(private val formList: MutableList<FormResponse>, private 
     }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SavedFormViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.list_item_saved_form, parent,false)
+            .inflate(R.layout.list_item_saved_form, parent, false)
         val binding = DataBindingUtil.inflate<ListItemSavedFormBinding>(
             LayoutInflater.from(parent.context),
             R.layout.list_item_saved_form,
