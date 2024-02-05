@@ -186,6 +186,14 @@ class FormRenderingViewModel @Inject constructor(
             ?: error("invalid phone number")
         return SMSReceiver(smsSender, phoneNumber, smsStateReporter)
     }
+
+    fun addBlankQuestions(formTemplate: FormTemplate) {
+        for (i in 1..formTemplate!!.questions!!.size - 1) {
+            if (!currentAnswers.containsKey(formTemplate!!.questions?.get(i)!!.questionId.toString())) {
+                currentAnswers[formTemplate!!.questions?.get(i)!!.questionId.toString()] = Answer.createEmptyAnswer()
+            }
+        }
+    }
     suspend fun submitForm(
         patientId: String,
         selectedLanguage: String,
@@ -200,6 +208,7 @@ class FormRenderingViewModel @Inject constructor(
         }
 
         return if (currentFormTemplate != null) {
+            addBlankQuestions(currentFormTemplate!!)
             val formResponse = FormResponse(
                 patientId = patientId,
                 formTemplate = currentFormTemplate!!,

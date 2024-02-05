@@ -363,5 +363,14 @@ data class Answer private constructor(
                 comment
             )
         }
+
+        fun createEmptyAnswer(comment: String = ""): Answer {
+            return Answer(
+                null,
+                null,
+                mcidArrayAnswer = null,
+                comment
+            )
+        }
     }
 }

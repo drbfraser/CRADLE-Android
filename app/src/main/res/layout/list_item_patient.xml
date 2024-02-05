@@ -175,8 +175,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@+id/patient_info_guideline"
             app:layout_constraintTop_toBottomOf="@+id/last_reading_on_text_view"
-            tools:text="Sep 20 @ 10 PM
-" />
+            tools:text="Sep 20 @ 10 PM" />
 
         <ProgressBar
             android:id="@+id/progress_bar"
@@ -197,12 +196,13 @@
             android:text="@string/need_vital_recheck_now"
             android:textAppearance="@style/TextAppearance.Cradle.Body1"
             android:textColor="#E91E63"
-            android:textSize="12sp"
+            android:textSize="15sp"
             android:textStyle="bold"
             android:visibility='@{Util.isRecheckNeededNow(localSearchPatient.dateRecheckVitalsNeeded) == true ? View.VISIBLE : View.GONE}'
             app:layout_constraintBottom_toTopOf="@+id/last_reading_on_text_view"
             app:layout_constraintEnd_toEndOf="@+id/last_reading_on_text_view"
-            app:layout_constraintStart_toEndOf="@+id/list_item_patient_id_text" />
+            app:layout_constraintStart_toEndOf="@+id/list_item_patient_id_text"
+            app:layout_constraintHorizontal_bias="1.05" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
