@@ -31,6 +31,8 @@ import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.view.adapters.FormViewAdapter
 import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
+import com.cradleplatform.neptune.viewmodel.SavedFormAdapter
+import com.cradleplatform.neptune.viewmodel.SavedFormsViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -180,11 +182,13 @@ class FormRenderingActivity : AppCompatActivity() {
     fun onDeleteFormAction(menuItem: MenuItem) {
         if (formResponseId != null) {
             val builder = AlertDialog.Builder(this)
-            builder.setTitle("delete")
-            builder.setMessage("do you wanna delte this?")
+            builder.setTitle("Delete Form")
+            builder.setMessage("Are you sure you want to delete this form? This action cannot be undone.")
 
             builder.setPositiveButton(R.string.yes) { _, _ ->
-                deleteFormAndNavigateBack()
+                lifecycleScope.launch {
+                    deleteFormAndNavigateBack()
+                }
             }
 
             builder.setNegativeButton(R.string.no) { _, _ ->
@@ -194,22 +198,17 @@ class FormRenderingActivity : AppCompatActivity() {
         }
     }
 
-    private fun deleteFormAndNavigateBack() {
-        //Todo: delete functionality
-//        // Notify the adapter that the form has been deleted
-//        (recyclerView.adapter as? SavedFormAdapter)?.deleteItem(adapterPosition)
+    private suspend fun deleteFormAndNavigateBack() {
+        if (formResponseId != null) {
 
-        // Navigate back to SavedFormsActivity
-        val intent = patientId?.let {
-            patient?.let { it1 ->
-                SavedFormsActivity.makeIntent(
-                    this@FormRenderingActivity,
-                    it,
-                    it1
-                )
-            }
+            viewModel.removeFormResponseFromDatabaseById(formResponseId!!)
+
+            // Notify the adapter that the form has been deleted
+            adapter?.notifyDataSetChanged()
+
+            // Finish the current activity and go back to the previous one
+            finish()
         }
-        startActivity(intent)
     }
 
     private fun showFormSubmissionModeDialog(languageSelected: String) {
