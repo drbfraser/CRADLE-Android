@@ -128,6 +128,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupCreatePatientReferralButton()
         setupCreateAndFillFormButton()
         lifecycleScope.launch {
+            setupSeeSubmittedFormsButton()
             setupSeeSavedFormsButton()
         }
         setupUpdateRecord()
@@ -447,6 +448,20 @@ open class PatientProfileActivity : AppCompatActivity() {
         createFormButton.visibility = View.VISIBLE
         createFormButton.setOnClickListener {
             val intent = FormSelectionActivity.makeIntentForPatientId(
+                this@PatientProfileActivity,
+                currPatient.id,
+                currPatient
+            )
+            startActivity(intent)
+        }
+    }
+
+    private suspend fun setupSeeSubmittedFormsButton() {
+        val createFormButton = findViewById<Button>(R.id.seeSubmittedFormsButton)
+        val responsesForPatient = formResponseManager.searchForFormResponseByPatientId(currPatient.id)
+        createFormButton.visibility = if (!responsesForPatient.isNullOrEmpty()) View.VISIBLE else View.GONE
+        createFormButton.setOnClickListener {
+            val intent = SubmittedFormsActivity.makeIntent(
                 this@PatientProfileActivity,
                 currPatient.id,
                 currPatient
