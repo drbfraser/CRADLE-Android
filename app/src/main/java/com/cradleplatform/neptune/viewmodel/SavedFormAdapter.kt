@@ -24,7 +24,7 @@ class SavedFormAdapter(private val formList: MutableList<FormResponse>, private 
     class SavedFormViewHolder(
         itemView: View,
         private val binding: ListItemSavedFormBinding,
-        patient: Patient
+        private val patient: Patient
     ) : RecyclerView.ViewHolder(itemView) {
         init {
             itemView.setOnClickListener {
@@ -43,6 +43,8 @@ class SavedFormAdapter(private val formList: MutableList<FormResponse>, private 
         // Grab the individual views from list_item_saved_form.xml
         private val formClassNameTextView: TextView =
             itemView.findViewById(R.id.form_class_name_text)
+        private val patientNameTextView: TextView =
+            itemView.findViewById(R.id.patient_name_text)
         private val idTextView: TextView =
             itemView.findViewById(R.id.list_item_saved_form_id_text_view)
         private val dateLastEditedTextView: TextView =
@@ -53,6 +55,7 @@ class SavedFormAdapter(private val formList: MutableList<FormResponse>, private 
             binding.formResponse = formResponse
             // Insert custom text into each individual view
             formClassNameTextView.text = formResponse.formClassificationName
+            patientNameTextView.text = patient.name
             idTextView.text = formResponse.formResponseId.toString()
             dateLastEditedTextView.text = Date(formResponse.dateEdited).toString()
             binding.executePendingBindings()
