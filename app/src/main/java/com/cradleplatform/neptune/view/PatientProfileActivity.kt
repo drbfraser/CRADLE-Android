@@ -8,12 +8,14 @@ import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RadioGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.Nullable
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
@@ -127,7 +129,6 @@ open class PatientProfileActivity : AppCompatActivity() {
         }
         setupReadingsRecyclerView()
         setupCreatePatientReadingButton()
-        setupCreatePatientReferralButton()
         setupCreateAndFillFormButton()
         lifecycleScope.launch {
             setupSeeSavedFormsButton()
@@ -142,6 +143,31 @@ open class PatientProfileActivity : AppCompatActivity() {
         return super.onCreateOptionsMenu(menu)
     }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.create_reading -> {
+                Toast.makeText(this, "Item 1 selected", Toast.LENGTH_SHORT).show()
+                return true
+            }
+            R.id.create_referral -> {
+                Toast.makeText(this, "Creating a new Referral", Toast.LENGTH_SHORT).show()
+                val intent = PatientReferralActivity.makeIntentForPatient(
+                    this@PatientProfileActivity,
+                    currPatient
+                )
+                startActivity(intent)
+                return true
+            }
+            R.id.create_form -> {
+                Toast.makeText(this, "Item 3 selected", Toast.LENGTH_SHORT).show()
+                return true
+            }
+            else -> {
+                return super.onOptionsItemSelected(item)
+            }
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         if (!getLocalPatient()) {
@@ -154,7 +180,6 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupEditPatient(currPatient)
         setupBtnPregnancy(currPatient)
         setupCreatePatientReadingButton()
-        setupCreatePatientReferralButton()
     }
 
     private fun changeAddReadingButtonColorIfNeeded() {
@@ -431,21 +456,6 @@ open class PatientProfileActivity : AppCompatActivity() {
         }
 
         changeAddReadingButtonColorIfNeeded()
-    }
-
-    private fun setupCreatePatientReferralButton() {
-        val createButton =
-            findViewById<Button>(R.id.newPatientReferralButton)
-
-        createButton.visibility = View.VISIBLE
-
-        createButton.setOnClickListener { _: View? ->
-            val intent = PatientReferralActivity.makeIntentForPatient(
-                this@PatientProfileActivity,
-                currPatient
-            )
-            startActivity(intent)
-        }
     }
 
     private fun setupCreateAndFillFormButton() {
