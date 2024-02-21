@@ -128,7 +128,6 @@ open class PatientProfileActivity : AppCompatActivity() {
             return
         }
         setupReadingsRecyclerView()
-        setupCreateAndFillFormButton()
         lifecycleScope.launch {
             setupSeeSavedFormsButton()
         }
@@ -145,7 +144,7 @@ open class PatientProfileActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.create_reading -> {
-                Toast.makeText(this, "Item 1 selected", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Creating a new Reading", Toast.LENGTH_SHORT).show()
                 createNewPatientReading()
                 return true
             }
@@ -155,7 +154,8 @@ open class PatientProfileActivity : AppCompatActivity() {
                 return true
             }
             R.id.create_form -> {
-                Toast.makeText(this, "Item 3 selected", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Creating a new Form", Toast.LENGTH_SHORT).show()
+                createNewPatientForm()
                 return true
             }
             else -> {
@@ -457,18 +457,13 @@ open class PatientProfileActivity : AppCompatActivity() {
         changeAddReadingButtonColorIfNeeded()
     }
 
-    private fun setupCreateAndFillFormButton() {
-        val createFormButton = findViewById<Button>(R.id.newFormButton)
-
-        createFormButton.visibility = View.VISIBLE
-        createFormButton.setOnClickListener {
-            val intent = FormSelectionActivity.makeIntentForPatientId(
-                this@PatientProfileActivity,
-                currPatient.id,
-                currPatient
-            )
-            startActivity(intent)
-        }
+    private fun createNewPatientForm(){
+        val intent = FormSelectionActivity.makeIntentForPatientId(
+            this@PatientProfileActivity,
+            currPatient.id,
+            currPatient
+        )
+        startActivity(intent)
     }
 
     private suspend fun setupSeeSavedFormsButton() {
