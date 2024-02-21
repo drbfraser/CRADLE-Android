@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item android:id= "@+id/add_patient"
+        android:icon="@drawable/baseline_add_24"
+        android:title="@string/patient_profile_add_to_my_patients_list_button"
+        app:showAsAction="never"/>
+
+    <item android:id= "@+id/create_new"
+        android:icon="@drawable/baseline_add_24"
+        android:title="@string/create_new_item"
+        app:showAsAction="never">
+
+        <menu>
+            <item android:id= "@+id/create_reading"
+                android:title="@string/create_new_reading"/>
+
+            <item android:id= "@+id/create_referral"
+                android:title="@string/create_new_referral"/>
+
+            <item android:id= "@+id/create_form"
+                android:title="@string/create_new_form"/>
+        </menu>
+
+    </item>
+
+</menu>

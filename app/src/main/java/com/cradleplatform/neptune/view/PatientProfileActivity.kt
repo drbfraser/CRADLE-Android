@@ -6,6 +6,8 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuInflater
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
@@ -133,6 +135,11 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupUpdateRecord()
         setupLineChart()
         setupToolBar()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_patient_activity, menu)
+        return super.onCreateOptionsMenu(menu)
     }
 
     override fun onResume() {
