@@ -151,11 +151,7 @@ open class PatientProfileActivity : AppCompatActivity() {
             }
             R.id.create_referral -> {
                 Toast.makeText(this, "Creating a new Referral", Toast.LENGTH_SHORT).show()
-                val intent = PatientReferralActivity.makeIntentForPatient(
-                    this@PatientProfileActivity,
-                    currPatient
-                )
-                startActivity(intent)
+                createNewReferral()
                 return true
             }
             R.id.create_form -> {
@@ -415,6 +411,14 @@ open class PatientProfileActivity : AppCompatActivity() {
             runBlocking { readingManager.getReadingsByPatientId(currPatient.id) }
         val comparator: Comparator<Reading> = Reading.DescendingDateComparator
         return readings.sortedWith(comparator)
+    }
+
+    private fun createNewReferral(){
+        val intent = PatientReferralActivity.makeIntentForPatient(
+            this@PatientProfileActivity,
+            currPatient
+        )
+        startActivity(intent)
     }
 
     private fun getThisPatientsReferrals(): List<Referral>? {
