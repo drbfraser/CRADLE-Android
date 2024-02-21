@@ -177,6 +177,8 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupBtnPregnancy(currPatient)
     }
 
+    /*
+    todo: add notification that warns user to create a new reading instead
     private fun changeAddReadingButtonColorIfNeeded() {
         val button: Button = findViewById(R.id.newPatientReadingButton)
         if (patientReadings.isNotEmpty() && Util.isRecheckNeededNow(patientReadings[0].dateRecheckVitalsNeeded)) {
@@ -188,6 +190,7 @@ open class PatientProfileActivity : AppCompatActivity() {
             button.text = getString(R.string.create_new_reading)
         }
     }
+     */
 
     fun setupToolBar() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -454,7 +457,7 @@ open class PatientProfileActivity : AppCompatActivity() {
             )
             startActivityForResult(intent, READING_ACTIVITY_DONE)
         }
-        changeAddReadingButtonColorIfNeeded()
+       //todo: changeAddReadingButtonColorIfNeeded()
     }
 
     private fun createNewPatientForm(){
