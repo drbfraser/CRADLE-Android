@@ -497,19 +497,7 @@
                 android:visibility="visible"
                 app:backgroundTint="@color/colorPrimaryLight"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toTopOf="@+id/newPatientReadingButton"/>
-
-            <Button
-                android:id="@+id/newPatientReadingButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/rounded_button"
-                android:text="@string/create_new_reading"
-                android:visibility="visible"
-                app:layout_constraintBottom_toTopOf="@+id/newFormButton"
-                app:layout_constraintTop_toBottomOf="@+id/addToMyPatientButton"
-                tools:layout_editor_absoluteX="0dp" />
+                app:layout_constraintBottom_toTopOf="@+id/newFormButton"/>
 
             <Button
                 android:id="@+id/newFormButton"
@@ -520,7 +508,7 @@
                 android:text="@string/create_new_form"
                 android:visibility="visible"
                 app:layout_constraintBottom_toTopOf="@+id/seeSavedFormsButton"
-                app:layout_constraintTop_toBottomOf="@+id/newPatientReadingButton" />
+                app:layout_constraintTop_toBottomOf="@+id/addToMyPatientButton" />
 
             <Button
                 android:id="@+id/seeSavedFormsButton"

@@ -128,7 +128,6 @@ open class PatientProfileActivity : AppCompatActivity() {
             return
         }
         setupReadingsRecyclerView()
-        setupCreatePatientReadingButton()
         setupCreateAndFillFormButton()
         lifecycleScope.launch {
             setupSeeSavedFormsButton()
@@ -147,11 +146,12 @@ open class PatientProfileActivity : AppCompatActivity() {
         when (item.itemId) {
             R.id.create_reading -> {
                 Toast.makeText(this, "Item 1 selected", Toast.LENGTH_SHORT).show()
+                createNewPatientReading()
                 return true
             }
             R.id.create_referral -> {
                 Toast.makeText(this, "Creating a new Referral", Toast.LENGTH_SHORT).show()
-                createNewReferral()
+                createNewPatientReferral()
                 return true
             }
             R.id.create_form -> {
@@ -175,7 +175,6 @@ open class PatientProfileActivity : AppCompatActivity() {
 
         setupEditPatient(currPatient)
         setupBtnPregnancy(currPatient)
-        setupCreatePatientReadingButton()
     }
 
     private fun changeAddReadingButtonColorIfNeeded() {
@@ -413,7 +412,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         return readings.sortedWith(comparator)
     }
 
-    private fun createNewReferral(){
+    private fun createNewPatientReferral(){
         val intent = PatientReferralActivity.makeIntentForPatient(
             this@PatientProfileActivity,
             currPatient
@@ -435,30 +434,26 @@ open class PatientProfileActivity : AppCompatActivity() {
         return assessments?.sortedWith(comparator)
     }
 
-    private fun setupCreatePatientReadingButton() {
+    private fun createNewPatientReading(){
         // TODO: this function has unclear dependency on setupReadingsRecyclerView,
         //  patientsReadings won't be loaded until it's called (refer to issue #50)
-        val createButton =
-            findViewById<Button>(R.id.newPatientReadingButton)
-        createButton.visibility = View.VISIBLE
+        // this is from old function
 
         if (patientReadings.isNotEmpty() && Util.isRecheckNeededNow(patientReadings[0].dateRecheckVitalsNeeded)) {
-            createButton.setOnClickListener { _: View? ->
-                val readingId = patientReadings[0].id
-                val intent =
-                    makeIntentForRecheck(this@PatientProfileActivity, readingId)
-                startActivityForResult(intent, READING_ACTIVITY_DONE)
-            }
-        } else {
-            createButton.setOnClickListener { _: View? ->
-                val intent = makeIntentForNewReadingExistingPatient(
-                    this@PatientProfileActivity,
-                    currPatient.id
-                )
-                startActivityForResult(intent, READING_ACTIVITY_DONE)
-            }
-        }
+            val readingId = patientReadings[0].id
+            val intent = makeIntentForRecheck(
+                this@PatientProfileActivity,
+                readingId
+            )
+            startActivityForResult(intent, READING_ACTIVITY_DONE)
 
+        } else {
+            val intent = makeIntentForNewReadingExistingPatient(
+                this@PatientProfileActivity,
+                currPatient.id
+            )
+            startActivityForResult(intent, READING_ACTIVITY_DONE)
+        }
         changeAddReadingButtonColorIfNeeded()
     }
 
