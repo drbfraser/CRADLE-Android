@@ -35,7 +35,7 @@
             android:layout_marginBottom="6dp"
             android:backgroundTint="@color/black"
             android:imeOptions="actionSend"
-            android:inputType="text"
+            android:inputType="textMultiLine"
             android:paddingBottom="20dp"
             android:textColor="@color/black"
             android:visibility="gone" />

@@ -82,7 +82,7 @@ class FormRenderingViewModel @Inject constructor(
     }
 
     private fun getCategorizedQuestions(languageSelected: String, context: Context):
-        List<Pair<String, List<Question>?>> {
+            List<Pair<String, List<Question>?>> {
         if (currentFormTemplate?.questions.isNullOrEmpty()) {
             return listOf()
         }
@@ -136,7 +136,7 @@ class FormRenderingViewModel @Inject constructor(
 
     fun fullQuestionList(): MutableList<Question> {
         val listOfQuestions: MutableList<Question> = mutableListOf()
-        currentFormTemplate?.questions?.forEach() { Q ->
+        currentFormTemplate?.questions?.forEach { Q ->
             listOfQuestions.add(Q)
         }
         return listOfQuestions
@@ -229,15 +229,42 @@ class FormRenderingViewModel @Inject constructor(
         }
     }
     /**
-     * Returns true if all required fields filled
-     * Else returns false and shows user a toast of which field needs to be filled in
+     * Returns true if conditions of all field inputs are validated successfully
      */
-    fun isRequiredFieldsFilled(languageSelected: String, context: Context): Boolean {
+    fun isAllFieldsFilledCorrectly(languageSelected: String, context: Context): Boolean {
         fullQuestionList().forEach {
+            val answer = currentAnswers[it.questionId]
+
+            /**
+             * Checks of if all required fields are filled
+             * Else returns false and shows user a toast of which field needs to be filled in
+             */
             if (it.required == true) {
                 val answer = currentAnswers[it.questionId]
                 if (answer?.isValidAnswer() != true) {
-                    createToast(it, languageSelected, context)
+                    createInvalidInputToast(
+                        InvalidInputTypeEnum.REQUIRED_FIELD,
+                        it,
+                        languageSelected,
+                        context
+                    )
+                    return false
+                }
+            }
+
+            /**
+             * Checks if all required fields meet stringMaxlines restriction
+             * Else returns false and shows user a toast of which field does not meet restriction
+             */
+            if (it.questionType == QuestionTypeEnum.STRING && it.stringMaxLines != null) {
+                val lines = answer?.textAnswer?.lines()?.size
+                if (lines != null && lines > it.stringMaxLines) {
+                    createInvalidInputToast(
+                        InvalidInputTypeEnum.STRING_MAX_LINES,
+                        it,
+                        languageSelected,
+                        context
+                    )
                     return false
                 }
             }
@@ -245,15 +272,39 @@ class FormRenderingViewModel @Inject constructor(
         return true
     }
 
-    private fun createToast(question: Question, languageSelected: String, context: Context) {
+    private fun createInvalidInputToast(
+        errorType: InvalidInputTypeEnum,
+        question: Question,
+        languageSelected: String,
+        context: Context
+    ) {
         val questionText = question.languageVersions?.find { lang ->
             lang.language == languageSelected
         }?.questionText
-        val toastText = if (questionText.isNullOrEmpty()) {
-            context.getString(R.string.form_generic_is_required)
-        } else {
-            String.format(context.getString(R.string.form_question_is_required), questionText)
+        val toastText = when (errorType) {
+            InvalidInputTypeEnum.REQUIRED_FIELD -> {
+                if (questionText.isNullOrEmpty()) {
+                    context.getString(R.string.form_generic_is_required)
+                } else {
+                    String.format(
+                        context.getString(R.string.form_question_is_required),
+                        questionText
+                    )
+                }
+            }
+
+            InvalidInputTypeEnum.STRING_MAX_LINES -> {
+                if (questionText.isNullOrEmpty()) {
+                    context.getString(R.string.form_generic_field_exceeds_line_limit)
+                } else {
+                    String.format(
+                        context.getString(R.string.form_field_exceeds_line_limit),
+                        questionText
+                    )
+                }
+            }
         }
+
         Toast.makeText(context, toastText, Toast.LENGTH_LONG).show()
     }
 
@@ -266,16 +317,24 @@ class FormRenderingViewModel @Inject constructor(
     ): Pair<String, Drawable?> {
         var total = 0
         var totalAnswered = 0
+        var hasErrors = false
         questions?.forEach {
+            val currAnswer = currentAnswers[it.questionId]
             if (it.required == true) {
-                if (currentAnswers[it.questionId] != null) {
+                if (currAnswer != null) {
                     totalAnswered++
                 }
                 total++
             }
+            if (it.questionType == QuestionTypeEnum.STRING && it.stringMaxLines != null) {
+                val lines = currAnswer?.textAnswer?.split("\n")?.size
+                if (lines != null && lines > it.stringMaxLines) {
+                    hasErrors = true
+                }
+            }
         }
         var drawable = getDrawable(context, R.drawable.ic_baseline_warning_24)
-        if (totalAnswered == total) {
+        if (!hasErrors && totalAnswered == total) {
             drawable = getDrawable(context, R.drawable.ic_baseline_check_circle_24)
         }
         return Pair("Required $totalAnswered/$total", drawable)
@@ -371,4 +430,9 @@ class FormRenderingViewModel @Inject constructor(
     private companion object {
         private val currentAnswers = mutableMapOf<String, Answer>()
     }
+}
+
+enum class InvalidInputTypeEnum {
+    REQUIRED_FIELD,
+    STRING_MAX_LINES
 }

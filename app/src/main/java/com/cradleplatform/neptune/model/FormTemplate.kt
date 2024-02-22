@@ -29,7 +29,7 @@ data class FormTemplate(
     @SerializedName("formClassificationName") var formClassName: String?,
     @SerializedName("questions") val questions: List<Question>?,
 
-) : Serializable {
+    ) : Serializable {
 
     fun languageVersions(): List<String> {
         val languageVersions = mutableListOf<String>()
@@ -125,6 +125,7 @@ data class Question(
     @SerializedName("numMin") val numMin: Double?, // Backend-Nullable
     @SerializedName("numMax") val numMax: Double?, // Backend-Nullable
     @SerializedName("stringMaxLength") val stringMaxLength: Int?, // Backend-Nullable
+    @SerializedName("stringMaxLines") val stringMaxLines: Int?, // Backend-Nullable
     @SerializedName("questionId") var questionId: String?,
     @SerializedName("questionType") val questionType: QuestionTypeEnum?,
     @SerializedName("hasCommentAttached") val hasCommentAttached: Boolean?,
@@ -134,23 +135,24 @@ data class Question(
 
     override fun toString(): String {
         return "Question(id=$id, " +
-            "visibleCondition=$visibleCondition, " +
-            "isBlank=$isBlank, " +
-            "formTemplateId=$formTemplateId," +
-            "questionIndex=$questionIndex, " +
-            "numMin=$numMin, " +
-            "numMax=$numMax, " +
-            "stringMaxLength=$stringMaxLength, " +
-            "questionId=$questionId, " +
-            "questionType=$questionType, " +
-            "hasCommentAttached=$hasCommentAttached, " +
-            "required=$required, " +
-            "languageVersions=$languageVersions)"
+                "visibleCondition=$visibleCondition, " +
+                "isBlank=$isBlank, " +
+                "formTemplateId=$formTemplateId," +
+                "questionIndex=$questionIndex, " +
+                "numMin=$numMin, " +
+                "numMax=$numMax, " +
+                "stringMaxLength=$stringMaxLength, " +
+                "stringMaxLines=$stringMaxLines, " +
+                "questionId=$questionId, " +
+                "questionType=$questionType, " +
+                "hasCommentAttached=$hasCommentAttached, " +
+                "required=$required, " +
+                "languageVersions=$languageVersions)"
     }
 
     /**
      * Checks if fields has been parsed successfully, where fields should not be null except:
-     * backend-nullable fields like formTemplateId, numMin, numMax, stringMaxLength
+     * backend-nullable fields like formTemplateId, numMin, numMax, stringMaxLength, stringMaxLines
      */
     fun verifyIntegrity(): Boolean {
         var nullCheckResult = true
@@ -214,11 +216,12 @@ data class QuestionLangVersion(
 
     override fun toString(): String {
         return "QuestionLangVersionsss(language=$language, " +
-            "parentId=$parentId, " +
-            "questionText=$questionText, " +
-            "questionTextId=$questionTextId, " +
-            "mcOptions=$mcOptions)"
+                "parentId=$parentId, " +
+                "questionText=$questionText, " +
+                "questionTextId=$questionTextId, " +
+                "mcOptions=$mcOptions)"
     }
+
     fun verifyIntegrity(): Boolean {
         var nullCheckResult = true
 
@@ -241,6 +244,7 @@ data class QuestionLangVersion(
 
         return nullCheckResult
     }
+
     companion object {
         const val TAG = "FormQuestionLangVersion"
     }
@@ -328,8 +332,7 @@ data class Answer private constructor(
     fun isValidAnswer(): Boolean {
         if (numericAnswer != null) return true
         if (mcidArrayAnswer != null && mcidArrayAnswer.isNotEmpty()) return true
-        if (textAnswer?.isNotEmpty() == true) return true
-        return false
+        return textAnswer?.isNotEmpty() == true
     }
 
     fun hasComment(): Boolean = !(comment?.isEmpty() ?: true)

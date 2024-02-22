@@ -63,7 +63,7 @@ class FormRenderingViewModelTest {
         Mockito.`when`(context.getString(R.string.form_question_is_required))
             .thenReturn("Please fill required field: %s")
 
-        assert(viewModel.isRequiredFieldsFilled("English", context ))
+        assert(viewModel.isAllFieldsFilledCorrectly("English", context ))
     }
 
     @Test
@@ -106,6 +106,7 @@ class FormRenderingViewModelTest {
                 numMin = null,
                 numMax = null,
                 stringMaxLength = null,
+                stringMaxLines = null,
                 questionId = id,
                 questionType = QuestionTypeEnum.INTEGER,
                 hasCommentAttached = false,

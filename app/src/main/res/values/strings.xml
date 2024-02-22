@@ -720,6 +720,9 @@
     <string name="form_submission_success">Form submitted successfully</string>
     <string name="form_uncategorized">Uncategorized</string>
     <string name="form_current_section">Section %1$d/%2$d</string>
+    <string name="form_maximum_lines_allowed">Maximum %1$s lines allowed</string>
+    <string name="form_generic_field_exceeds_line_limit">Some fields exceed line limit</string>
+    <string name="form_field_exceeds_line_limit">%s exceeds line limit</string>
 
 
     <!-- User Phone Strings -->
