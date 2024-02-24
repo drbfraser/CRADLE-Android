@@ -69,7 +69,7 @@ class FormViewAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
         //Setting the question text
-        var langVersion = mList[position].languageVersions
+        val langVersion = mList[position].languageVersions
 
         var questionText = langVersion?.find {
             it.language == languageSelected
@@ -93,7 +93,7 @@ class FormViewAdapter(
         //Depending on question type, we are setting one of the four possible types of inputs to visible.
         holder.binding.tvQuestion.textSize = 18f
 
-        var questionID = mList[position].questionId!!
+        val questionID = mList[position].questionId!!
 
         //Using Enum caused problems
         when (mList[position].questionType.toString()) {
@@ -114,13 +114,13 @@ class FormViewAdapter(
             }
 
             "STRING" -> {
-                holder.binding.etAnswer.visibility = View.VISIBLE
-                setHint(holder.binding.etAnswer, mList[position], context)
+                val textView = holder.binding.etAnswer as TextView
+                textView.visibility = View.VISIBLE
+                setHint(textView, mList[position], context)
 
                 //If question has answer repopulate it
                 val answer = viewModel.getTextAnswer(mList[position].questionId)
                 if (answer?.isNotEmpty() == true) {
-                    val textView = holder.binding.etAnswer as TextView
                     textView.text = answer
                 }
             }
@@ -172,7 +172,10 @@ class FormViewAdapter(
                     it.language == languageSelected
                 }?.mcOptions ?: listOf(
                     //Error Language Not Found
-                    McOption(-1, context.resources.getString(R.string.mc_unsupported, languageSelected))
+                    McOption(
+                        -1,
+                        context.resources.getString(R.string.mc_unsupported, languageSelected)
+                    )
                 )
 
                 //Keep track of radio button id to select
@@ -246,7 +249,8 @@ class FormViewAdapter(
                         holder.binding.checkboxContainer.addView(checkBox)
 
                         checkBox.setOnCheckedChangeListener { _, isChecked ->
-                            val currMCAnswers: ArrayList<Int> = ArrayList(viewModel.getMCAnswer(questionID) ?: listOf())
+                            val currMCAnswers: ArrayList<Int> =
+                                ArrayList(viewModel.getMCAnswer(questionID) ?: listOf())
 
                             if (isChecked) {
                                 it.mcid?.let { id -> currMCAnswers.add(id) }
@@ -268,11 +272,22 @@ class FormViewAdapter(
     }
 
     private fun setEditTextListeners(position: Int, holder: ViewHolder) {
-        var questionID = mList[position].questionId!!
+        val question = mList[position]
+        val questionID = question.questionId!!
+        val maxLines = question.stringMaxLines
 
         //String Answers Listener
-        holder.binding.etAnswer.doOnTextChanged { text, _, _, _ ->
+        val etAnswer = holder.binding.etAnswer
+        etAnswer.doOnTextChanged { text, _, _, _ ->
             if (text.toString().isNotEmpty()) {
+                val lines = etAnswer.lineCount
+                if (maxLines != null && lines > maxLines) {
+                    etAnswer.error =
+                        context.getString(R.string.form_maximum_lines_allowed, maxLines.toString())
+                } else {
+                    etAnswer.error = null
+                }
+
                 viewModel.addAnswer(questionID, Answer.createTextAnswer(text.toString()))
             } else {
                 viewModel.deleteAnswer(questionID)
@@ -292,8 +307,8 @@ class FormViewAdapter(
 
         //Multiple Choice Answers Listener
         holder.binding.rgMultipleChoice.setOnCheckedChangeListener { radioGroup, i ->
-            var selectedID = radioGroup.checkedRadioButtonId
-            var mcidArray = listOf(selectedID)
+            val selectedID = radioGroup.checkedRadioButtonId
+            val mcidArray = listOf(selectedID)
 
             viewModel.addAnswer(questionID, Answer.createMcAnswer(mcidArray))
         }
@@ -326,6 +341,7 @@ class FormViewAdapter(
         dpd.datePicker.maxDate = System.currentTimeMillis()
         dpd.show()
     }
+
     @SuppressLint("SetTextI18n")
     private fun showDateTimePicker(
         context: Context,
@@ -378,6 +394,7 @@ class FormViewAdapter(
             Answer.createTextAnswer(textAnswer)
         )
     }
+
     private fun saveAnswerForDateTime(holder: FormViewAdapter.ViewHolder, questionId: String?) {
         val textAnswer = holder.binding.btnDateTimePicker.text.toString()
         viewModel.addAnswer(
@@ -423,6 +440,7 @@ class FormViewAdapter(
                     viewModel.addAnswer(questionID, Answer.createTextAnswer(patient!!.name))
                 }
             }
+
             context.getString(R.string.form_patient_age) -> {
                 val age = DateUtil.getAgeFromDOB(patient?.dob)
                 if (age.isNotEmpty()) {
@@ -430,16 +448,21 @@ class FormViewAdapter(
                     viewModel.addAnswer(questionID, Answer.createNumericAnswer(age.toInt()))
                 }
             }
+
             context.getString(R.string.form_patient_allergies) -> {
                 if (!patient?.allergy.isNullOrEmpty()) {
                     textView.text = patient!!.allergy
                     viewModel.addAnswer(questionID, Answer.createTextAnswer(patient!!.allergy))
                 }
             }
+
             context.getString(R.string.form_patient_medical_history) -> {
                 if (!patient?.medicalHistory.isNullOrEmpty()) {
                     textView.text = patient!!.medicalHistory
-                    viewModel.addAnswer(questionID, Answer.createTextAnswer(patient!!.medicalHistory))
+                    viewModel.addAnswer(
+                        questionID,
+                        Answer.createTextAnswer(patient!!.medicalHistory)
+                    )
                 }
             }
         }

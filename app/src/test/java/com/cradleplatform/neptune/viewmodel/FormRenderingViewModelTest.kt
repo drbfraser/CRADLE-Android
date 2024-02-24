@@ -6,16 +6,20 @@ import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.manager.FormManager
 import com.cradleplatform.neptune.manager.FormResponseManager
+import com.cradleplatform.neptune.model.Answer
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.model.QuestionTypeEnum
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
+import com.cradleplatform.neptune.utilities.extensions.InstantExecutorExtension
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mockito
 
+@ExtendWith(InstantExecutorExtension::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FormRenderingViewModelTest {
     lateinit var viewModel: FormRenderingViewModel
@@ -54,16 +58,50 @@ class FormRenderingViewModelTest {
 
     @Test
     fun `isRequiredFieldsFilled, no required fields`() {
+        // Arrange
+        val context = Mockito.mock(Context::class.java)
+
         val questions = listOf(question(false, id = "id1"), question(false), question(false))
         val formTemplate = FormTemplate(null, null, null, null, null, null, questions)
         viewModel.currentFormTemplate = formTemplate
 
+        // Act
+        val (allFieldsFilledCorrectly, toastText) = viewModel.areAllFieldsFilledCorrectly(
+            "English",
+            context
+        )
+
+        // Assert
+        assert(allFieldsFilledCorrectly)
+        Assertions.assertNull(toastText)
+    }
+
+    @Test
+    fun `isAllFieldsFilledCorrectly, field exceeds line limit`() {
+        // Arrange
         val context = Mockito.mock(Context::class.java)
 
-        Mockito.`when`(context.getString(R.string.form_question_is_required))
-            .thenReturn("Please fill required field: %s")
+        val questions = listOf(
+            question(false, "id1", 1, QuestionTypeEnum.STRING),
+            question(false),
+            question(false)
+        )
+        val formTemplate = FormTemplate(null, null, null, null, null, null, questions)
+        viewModel.currentFormTemplate = formTemplate
+        viewModel.addAnswer(questions[0].questionId!!, Answer.createTextAnswer("\n \n \n"))
 
-        assert(viewModel.isRequiredFieldsFilled("English", context ))
+        Mockito.`when`(context.getString(R.string.form_generic_field_exceeds_line_limit))
+            .thenReturn("Some fields exceed line limit")
+
+        // Act
+        val (allFieldsFilledCorrectly, toastText) = viewModel.areAllFieldsFilledCorrectly(
+            "English",
+            context
+        )
+
+        // Assert
+        assert(!allFieldsFilledCorrectly)
+        Assertions.assertEquals("Some fields exceed line limit", toastText)
     }
 
     @Test
@@ -96,22 +134,27 @@ class FormRenderingViewModelTest {
         }
     }
 
-    private fun question(required: Boolean, id: String? = "generic_id"): Question {
+    private fun question(
+        required: Boolean,
+        id: String? = "generic_id",
+        stringMaxLines: Int? = null,
+        questionTypeEnum: QuestionTypeEnum = QuestionTypeEnum.INTEGER
+    ): Question {
         return Question(
-                id = id,
-                visibleCondition = null,
-                isBlank = false,
-                formTemplateId = null,
-                questionIndex = 1,
-                numMin = null,
-                numMax = null,
-                stringMaxLength = null,
-                questionId = id,
-                questionType = QuestionTypeEnum.INTEGER,
-                hasCommentAttached = false,
-                required = required,
-                languageVersions = null
+            id = id,
+            visibleCondition = null,
+            isBlank = false,
+            formTemplateId = null,
+            questionIndex = 1,
+            numMin = null,
+            numMax = null,
+            stringMaxLength = null,
+            stringMaxLines = stringMaxLines,
+            questionId = id,
+            questionType = questionTypeEnum,
+            hasCommentAttached = false,
+            required = required,
+            languageVersions = null
         )
     }
-
 }

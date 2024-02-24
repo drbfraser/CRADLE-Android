@@ -35,10 +35,11 @@
             android:layout_marginBottom="6dp"
             android:backgroundTint="@color/black"
             android:imeOptions="actionSend"
-            android:inputType="text"
+            android:inputType="textMultiLine"
             android:paddingBottom="20dp"
             android:textColor="@color/black"
-            android:visibility="gone" />
+            android:visibility="gone"
+            android:importantForAutofill="no" />
 
         <EditText
             android:id="@+id/et_num_answer"
@@ -49,7 +50,8 @@
             android:imeOptions="actionSend"
             android:inputType="number"
             android:textColor="@color/black"
-            android:visibility="gone" />
+            android:visibility="gone"
+            android:importantForAutofill="no" />
 
         <Button
             android:id="@+id/btn_date_picker"

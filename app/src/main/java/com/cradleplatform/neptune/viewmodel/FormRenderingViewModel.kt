@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.drawable.Drawable
-import android.widget.Toast
 import androidx.core.content.ContextCompat.getDrawable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -81,8 +80,10 @@ class FormRenderingViewModel @Inject constructor(
         categoryList = getCategorizedQuestions(languageSelected, context)
     }
 
-    private fun getCategorizedQuestions(languageSelected: String, context: Context):
-        List<Pair<String, List<Question>?>> {
+    private fun getCategorizedQuestions(
+        languageSelected: String,
+        context: Context
+    ): List<Pair<String, List<Question>?>> {
         if (currentFormTemplate?.questions.isNullOrEmpty()) {
             return listOf()
         }
@@ -136,7 +137,7 @@ class FormRenderingViewModel @Inject constructor(
 
     fun fullQuestionList(): MutableList<Question> {
         val listOfQuestions: MutableList<Question> = mutableListOf()
-        currentFormTemplate?.questions?.forEach() { Q ->
+        currentFormTemplate?.questions?.forEach { Q ->
             listOfQuestions.add(Q)
         }
         return listOfQuestions
@@ -158,29 +159,35 @@ class FormRenderingViewModel @Inject constructor(
         currentAnswers.remove(questionId)
         _currentAnswers.value = currentAnswers
     }
+
     fun getTextAnswer(questionId: String?): String? {
         if (questionId == null) return null
         return currentAnswers[questionId]?.textAnswer
     }
+
     fun getNumericAnswer(questionId: String?): Number? {
         if (questionId == null) return null
         return currentAnswers[questionId]?.numericAnswer
     }
+
     fun getMCAnswer(questionId: String?): List<Int>? {
         if (questionId == null) return null
         return currentAnswers[questionId]?.mcidArrayAnswer
     }
+
     fun clearAnswers() {
         currentAnswers.clear()
     }
+
     fun getInternetTypeString(context: Context): String {
-        when (networkStateManager.getConnectivity()) {
-            ConnectivityOptions.WIFI -> return "Wifi"
-            ConnectivityOptions.CELLULAR_DATA -> return "Cellular"
-            ConnectivityOptions.SMS -> return "Sms"
-            ConnectivityOptions.NONE -> return ""
+        return when (networkStateManager.getConnectivity()) {
+            ConnectivityOptions.WIFI -> "Wifi"
+            ConnectivityOptions.CELLULAR_DATA -> "Cellular"
+            ConnectivityOptions.SMS -> "Sms"
+            ConnectivityOptions.NONE -> ""
         }
     }
+
     fun getSMSReceiver(): SMSReceiver {
         val phoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
             ?: error("invalid phone number")
@@ -188,12 +195,14 @@ class FormRenderingViewModel @Inject constructor(
     }
 
     fun addBlankQuestions(formTemplate: FormTemplate) {
-        for (i in 1..formTemplate!!.questions!!.size - 1) {
-            if (!currentAnswers.containsKey(formTemplate!!.questions?.get(i)!!.questionId.toString())) {
-                currentAnswers[formTemplate!!.questions?.get(i)!!.questionId.toString()] = Answer.createEmptyAnswer()
+        for (i in 1 until formTemplate.questions!!.size) {
+            if (!currentAnswers.containsKey(formTemplate.questions[i].questionId.toString())) {
+                currentAnswers[formTemplate.questions[i].questionId.toString()] =
+                    Answer.createEmptyAnswer()
             }
         }
     }
+
     suspend fun submitForm(
         patientId: String,
         selectedLanguage: String,
@@ -228,33 +237,86 @@ class FormRenderingViewModel @Inject constructor(
             error("FormTemplate does not exist: Current displaying FormTemplate is null")
         }
     }
+
     /**
-     * Returns true if all required fields filled
-     * Else returns false and shows user a toast of which field needs to be filled in
+     * Returns true if conditions of all field inputs are validated successfully
      */
-    fun isRequiredFieldsFilled(languageSelected: String, context: Context): Boolean {
+    fun areAllFieldsFilledCorrectly(
+        languageSelected: String,
+        context: Context
+    ): Pair<Boolean, String?> {
         fullQuestionList().forEach {
+            val answer = currentAnswers[it.questionId]
+
+            /**
+             * Checks of if all required fields are filled
+             * Else returns false and shows user a toast of which field needs to be filled in
+             */
             if (it.required == true) {
-                val answer = currentAnswers[it.questionId]
                 if (answer?.isValidAnswer() != true) {
-                    createToast(it, languageSelected, context)
-                    return false
+                    val toastText = createInvalidInputToast(
+                        InvalidInputTypeEnum.REQUIRED_FIELD,
+                        it,
+                        languageSelected,
+                        context
+                    )
+                    return Pair(false, toastText)
+                }
+            }
+
+            /**
+             * Checks if all required fields meet stringMaxlines restriction
+             * Else returns false and shows user a toast of which field does not meet restriction
+             */
+            if (it.questionType == QuestionTypeEnum.STRING && it.stringMaxLines != null) {
+                val lines = answer?.textAnswer?.lines()?.size
+                if (lines != null && lines > it.stringMaxLines) {
+                    val toastText = createInvalidInputToast(
+                        InvalidInputTypeEnum.STRING_MAX_LINES,
+                        it,
+                        languageSelected,
+                        context
+                    )
+                    return Pair(false, toastText)
                 }
             }
         }
-        return true
+        return Pair(true, null)
     }
 
-    private fun createToast(question: Question, languageSelected: String, context: Context) {
+    private fun createInvalidInputToast(
+        errorType: InvalidInputTypeEnum,
+        question: Question,
+        languageSelected: String,
+        context: Context
+    ): String {
         val questionText = question.languageVersions?.find { lang ->
             lang.language == languageSelected
         }?.questionText
-        val toastText = if (questionText.isNullOrEmpty()) {
-            context.getString(R.string.form_generic_is_required)
-        } else {
-            String.format(context.getString(R.string.form_question_is_required), questionText)
+        val toastText = when (errorType) {
+            InvalidInputTypeEnum.REQUIRED_FIELD -> {
+                if (questionText.isNullOrEmpty()) {
+                    context.getString(R.string.form_generic_is_required)
+                } else {
+                    String.format(
+                        context.getString(R.string.form_question_is_required),
+                        questionText
+                    )
+                }
+            }
+
+            InvalidInputTypeEnum.STRING_MAX_LINES -> {
+                if (questionText.isNullOrEmpty()) {
+                    context.getString(R.string.form_generic_field_exceeds_line_limit)
+                } else {
+                    String.format(
+                        context.getString(R.string.form_field_exceeds_line_limit),
+                        questionText
+                    )
+                }
+            }
         }
-        Toast.makeText(context, toastText, Toast.LENGTH_LONG).show()
+        return toastText
     }
 
     /**
@@ -266,16 +328,24 @@ class FormRenderingViewModel @Inject constructor(
     ): Pair<String, Drawable?> {
         var total = 0
         var totalAnswered = 0
+        var hasErrors = false
         questions?.forEach {
+            val currAnswer = currentAnswers[it.questionId]
             if (it.required == true) {
-                if (currentAnswers[it.questionId] != null) {
+                if (currAnswer != null) {
                     totalAnswered++
                 }
                 total++
             }
+            if (it.questionType == QuestionTypeEnum.STRING && it.stringMaxLines != null) {
+                val lines = currAnswer?.textAnswer?.split("\n")?.size
+                if (lines != null && lines > it.stringMaxLines) {
+                    hasErrors = true
+                }
+            }
         }
         var drawable = getDrawable(context, R.drawable.ic_baseline_warning_24)
-        if (totalAnswered == total) {
+        if (!hasErrors && totalAnswered == total) {
             drawable = getDrawable(context, R.drawable.ic_baseline_check_circle_24)
         }
         return Pair("Required $totalAnswered/$total", drawable)
@@ -371,4 +441,9 @@ class FormRenderingViewModel @Inject constructor(
     private companion object {
         private val currentAnswers = mutableMapOf<String, Answer>()
     }
+}
+
+enum class InvalidInputTypeEnum {
+    REQUIRED_FIELD,
+    STRING_MAX_LINES
 }

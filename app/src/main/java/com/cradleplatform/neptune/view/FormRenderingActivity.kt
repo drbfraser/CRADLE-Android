@@ -171,11 +171,18 @@ class FormRenderingActivity : AppCompatActivity() {
     }
 
     fun onSubmitFormAction(menuItem: MenuItem) {
-        //A toast is displayed to user if require field is not filled
-        if (viewModel.isRequiredFieldsFilled(languageSelected!!, applicationContext)) {
+        //A toast is displayed to user if fields are not input correctly
+        val (allFieldsFilledCorrectly, toastText) = viewModel.areAllFieldsFilledCorrectly(
+            languageSelected!!,
+            applicationContext
+        )
+        if (allFieldsFilledCorrectly) {
             showFormSubmissionModeDialog(languageSelected!!)
+        } else {
+            Toast.makeText(this, toastText, Toast.LENGTH_LONG).show()
         }
     }
+
     fun onDeleteFormAction(menuItem: MenuItem) {
         if (formResponseId != null) {
             val builder = AlertDialog.Builder(this)
@@ -193,6 +200,7 @@ class FormRenderingActivity : AppCompatActivity() {
             builder.show()
         }
     }
+
     private suspend fun deleteFormAndNavigateBack() {
         if (formResponseId != null) {
 
@@ -227,7 +235,11 @@ class FormRenderingActivity : AppCompatActivity() {
 
         builder.setNeutralButton("SAVE AND SEND LATER") { _, _ ->
             saveForm(languageSelected)
-            Toast.makeText(applicationContext, R.string.saved_form_success_dialog, Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                applicationContext,
+                R.string.saved_form_success_dialog,
+                Toast.LENGTH_SHORT
+            ).show()
             returnToPatientProfile()
         }
 
@@ -247,7 +259,13 @@ class FormRenderingActivity : AppCompatActivity() {
 
     private fun formSubmission(languageSelected: String, submissionMode: String) {
         lifecycleScope.launch(Dispatchers.IO) {
-            viewModel.submitForm(patientId!!, languageSelected, submissionMode, applicationContext, formResponseId)
+            viewModel.submitForm(
+                patientId!!,
+                languageSelected,
+                submissionMode,
+                applicationContext,
+                formResponseId
+            )
         }
     }
 
@@ -278,7 +296,8 @@ class FormRenderingActivity : AppCompatActivity() {
                 button.background = getDrawable(R.drawable.rounded_button_grey)
             }
         }
-        val button: Button? = categoryViewList.getOrNull(currCategory - 1)?.findViewById(R.id.category_row_btn)
+        val button: Button? =
+            categoryViewList.getOrNull(currCategory - 1)?.findViewById(R.id.category_row_btn)
         button?.background = getDrawable(R.drawable.rounded_button_teal)
     }
 
@@ -286,10 +305,14 @@ class FormRenderingActivity : AppCompatActivity() {
         viewModel.categoryList?.forEachIndexed { index, pair ->
             val categoryView = categoryViewList.getOrNull(index)
             if (categoryView != null) {
-                val requiredTextView: TextView = categoryView.findViewById(R.id.category_row_required_tv)
-                val requiredIcon: ImageView = categoryView.findViewById(R.id.category_row_indicator_icon)
-                val optionalTextView: TextView = categoryView.findViewById(R.id.category_row_optional_tv)
-                val requiredTextIconPair = viewModel.getRequiredFieldsTextAndIcon(pair.second, applicationContext)
+                val requiredTextView: TextView =
+                    categoryView.findViewById(R.id.category_row_required_tv)
+                val requiredIcon: ImageView =
+                    categoryView.findViewById(R.id.category_row_indicator_icon)
+                val optionalTextView: TextView =
+                    categoryView.findViewById(R.id.category_row_optional_tv)
+                val requiredTextIconPair =
+                    viewModel.getRequiredFieldsTextAndIcon(pair.second, applicationContext)
 
                 requiredTextView.text = requiredTextIconPair.first
                 optionalTextView.text = viewModel.getOptionalFieldsText(pair.second)
@@ -314,6 +337,7 @@ class FormRenderingActivity : AppCompatActivity() {
                 BottomSheetBehavior.STATE_EXPANDED -> {
                     hideBottomSheet()
                 }
+
                 else -> {
                     showBottomSheet()
                 }
@@ -341,14 +365,18 @@ class FormRenderingActivity : AppCompatActivity() {
         }
     }
 
-    private fun getCategoryRow(categoryPair: Pair<String, List<Question>?>, categoryNumber: Int): View {
+    private fun getCategoryRow(
+        categoryPair: Pair<String, List<Question>?>,
+        categoryNumber: Int
+    ): View {
         val category = this.layoutInflater.inflate(R.layout.category_row_item, null)
         val requiredTextView: TextView = category.findViewById(R.id.category_row_required_tv)
         val optionalTextView: TextView = category.findViewById(R.id.category_row_optional_tv)
         val button: Button = category.findViewById(R.id.category_row_btn)
         val requiredIcon: ImageView = category.findViewById(R.id.category_row_indicator_icon)
 
-        val requiredTextIconPair = viewModel.getRequiredFieldsTextAndIcon(categoryPair.second, applicationContext)
+        val requiredTextIconPair =
+            viewModel.getRequiredFieldsTextAndIcon(categoryPair.second, applicationContext)
 
         button.text = categoryPair.first
         if (categoryNumber == FIRST_CATEGORY_POSITION) {
@@ -404,7 +432,8 @@ class FormRenderingActivity : AppCompatActivity() {
         private const val EXTRA_PATIENT_OBJECT = "The Patient object used to start patient profile"
         private const val EXTRA_ANSWERS = "The answers in the saved form response"
         private const val EXTRA_FORM_RESPONSE_ID = "The ID of the saved form response"
-        private const val EXTRA_IS_FROM_SAVED_FORM_RESPONSE = "Whether the form that is being generated is a saved form"
+        private const val EXTRA_IS_FROM_SAVED_FORM_RESPONSE =
+            "Whether the form that is being generated is a saved form"
         const val FIRST_CATEGORY_POSITION = 1
 
         @JvmStatic
