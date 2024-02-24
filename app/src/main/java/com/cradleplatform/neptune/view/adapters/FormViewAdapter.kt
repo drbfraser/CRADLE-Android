@@ -423,7 +423,7 @@ class FormViewAdapter(
             if (hint.text.isEmpty()) {
                 if (isRequired) {
                     hint.hint = context.getString(R.string.is_required) + ": " +
-                    context.getString(R.string.data_range) + "($numMin, $numMax)"
+                        context.getString(R.string.data_range) + "($numMin, $numMax)"
                 } else {
                     hint.hint = context.getString(R.string.is_optional)
                 }
