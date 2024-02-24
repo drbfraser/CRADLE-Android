@@ -178,11 +178,11 @@ class FormRenderingViewModel @Inject constructor(
     }
 
     fun getInternetTypeString(context: Context): String {
-        when (networkStateManager.getConnectivity()) {
-            ConnectivityOptions.WIFI -> return "Wifi"
-            ConnectivityOptions.CELLULAR_DATA -> return "Cellular"
-            ConnectivityOptions.SMS -> return "Sms"
-            ConnectivityOptions.NONE -> return ""
+        return when (networkStateManager.getConnectivity()) {
+            ConnectivityOptions.WIFI -> "Wifi"
+            ConnectivityOptions.CELLULAR_DATA -> "Cellular"
+            ConnectivityOptions.SMS -> "Sms"
+            ConnectivityOptions.NONE -> ""
         }
     }
 
@@ -193,9 +193,9 @@ class FormRenderingViewModel @Inject constructor(
     }
 
     fun addBlankQuestions(formTemplate: FormTemplate) {
-        for (i in 1..formTemplate.questions!!.size - 1) {
-            if (!currentAnswers.containsKey(formTemplate.questions?.get(i)!!.questionId.toString())) {
-                currentAnswers[formTemplate.questions?.get(i)!!.questionId.toString()] =
+        for (i in 1 until formTemplate.questions!!.size) {
+            if (!currentAnswers.containsKey(formTemplate.questions[i].questionId.toString())) {
+                currentAnswers[formTemplate.questions[i].questionId.toString()] =
                     Answer.createEmptyAnswer()
             }
         }

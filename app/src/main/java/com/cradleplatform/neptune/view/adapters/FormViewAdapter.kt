@@ -69,7 +69,7 @@ class FormViewAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
         //Setting the question text
-        var langVersion = mList[position].languageVersions
+        val langVersion = mList[position].languageVersions
 
         var questionText = langVersion?.find {
             it.language == languageSelected
@@ -93,7 +93,7 @@ class FormViewAdapter(
         //Depending on question type, we are setting one of the four possible types of inputs to visible.
         holder.binding.tvQuestion.textSize = 18f
 
-        var questionID = mList[position].questionId!!
+        val questionID = mList[position].questionId!!
 
         //Using Enum caused problems
         when (mList[position].questionType.toString()) {
@@ -307,8 +307,8 @@ class FormViewAdapter(
 
         //Multiple Choice Answers Listener
         holder.binding.rgMultipleChoice.setOnCheckedChangeListener { radioGroup, i ->
-            var selectedID = radioGroup.checkedRadioButtonId
-            var mcidArray = listOf(selectedID)
+            val selectedID = radioGroup.checkedRadioButtonId
+            val mcidArray = listOf(selectedID)
 
             viewModel.addAnswer(questionID, Answer.createMcAnswer(mcidArray))
         }
