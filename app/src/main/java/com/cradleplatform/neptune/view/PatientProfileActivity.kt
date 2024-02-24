@@ -129,7 +129,6 @@ open class PatientProfileActivity : AppCompatActivity() {
         }
         setupReadingsRecyclerView()
         setupCreatePatientReadingButton()
-        setupCreateAndFillFormButton()
         lifecycleScope.launch {
             setupSeeSavedFormsButton()
         }
@@ -145,17 +144,14 @@ open class PatientProfileActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.create_reading -> {
-                Toast.makeText(this, "Item 1 selected", Toast.LENGTH_SHORT).show()
-                return true
-            }
             R.id.create_referral -> {
                 Toast.makeText(this, "Creating a new Referral", Toast.LENGTH_SHORT).show()
                 createNewReferral()
                 return true
             }
             R.id.create_form -> {
-                Toast.makeText(this, "Item 3 selected", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Creating a new Form", Toast.LENGTH_SHORT).show()
+                createNewForm()
                 return true
             }
             else -> {
@@ -421,6 +417,15 @@ open class PatientProfileActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
+    private fun createNewForm(){
+        val intent = FormSelectionActivity.makeIntentForPatientId(
+            this@PatientProfileActivity,
+            currPatient.id,
+            currPatient
+        )
+        startActivity(intent)
+    }
+
     private fun getThisPatientsReferrals(): List<Referral>? {
         val referrals: List<Referral>? =
             runBlocking { referralManager.getReferralByPatientId(currPatient.id) }
@@ -460,20 +465,6 @@ open class PatientProfileActivity : AppCompatActivity() {
         }
 
         changeAddReadingButtonColorIfNeeded()
-    }
-
-    private fun setupCreateAndFillFormButton() {
-        val createFormButton = findViewById<Button>(R.id.newFormButton)
-
-        createFormButton.visibility = View.VISIBLE
-        createFormButton.setOnClickListener {
-            val intent = FormSelectionActivity.makeIntentForPatientId(
-                this@PatientProfileActivity,
-                currPatient.id,
-                currPatient
-            )
-            startActivity(intent)
-        }
     }
 
     private suspend fun setupSeeSavedFormsButton() {
