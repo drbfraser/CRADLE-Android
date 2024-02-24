@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.drawable.Drawable
-import android.widget.Toast
 import androidx.core.content.ContextCompat.getDrawable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -158,21 +157,26 @@ class FormRenderingViewModel @Inject constructor(
         currentAnswers.remove(questionId)
         _currentAnswers.value = currentAnswers
     }
+
     fun getTextAnswer(questionId: String?): String? {
         if (questionId == null) return null
         return currentAnswers[questionId]?.textAnswer
     }
+
     fun getNumericAnswer(questionId: String?): Number? {
         if (questionId == null) return null
         return currentAnswers[questionId]?.numericAnswer
     }
+
     fun getMCAnswer(questionId: String?): List<Int>? {
         if (questionId == null) return null
         return currentAnswers[questionId]?.mcidArrayAnswer
     }
+
     fun clearAnswers() {
         currentAnswers.clear()
     }
+
     fun getInternetTypeString(context: Context): String {
         when (networkStateManager.getConnectivity()) {
             ConnectivityOptions.WIFI -> return "Wifi"
@@ -181,6 +185,7 @@ class FormRenderingViewModel @Inject constructor(
             ConnectivityOptions.NONE -> return ""
         }
     }
+
     fun getSMSReceiver(): SMSReceiver {
         val phoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
             ?: error("invalid phone number")
@@ -188,12 +193,14 @@ class FormRenderingViewModel @Inject constructor(
     }
 
     fun addBlankQuestions(formTemplate: FormTemplate) {
-        for (i in 1..formTemplate!!.questions!!.size - 1) {
-            if (!currentAnswers.containsKey(formTemplate!!.questions?.get(i)!!.questionId.toString())) {
-                currentAnswers[formTemplate!!.questions?.get(i)!!.questionId.toString()] = Answer.createEmptyAnswer()
+        for (i in 1..formTemplate.questions!!.size - 1) {
+            if (!currentAnswers.containsKey(formTemplate.questions?.get(i)!!.questionId.toString())) {
+                currentAnswers[formTemplate.questions?.get(i)!!.questionId.toString()] =
+                    Answer.createEmptyAnswer()
             }
         }
     }
+
     suspend fun submitForm(
         patientId: String,
         selectedLanguage: String,
@@ -228,10 +235,14 @@ class FormRenderingViewModel @Inject constructor(
             error("FormTemplate does not exist: Current displaying FormTemplate is null")
         }
     }
+
     /**
      * Returns true if conditions of all field inputs are validated successfully
      */
-    fun isAllFieldsFilledCorrectly(languageSelected: String, context: Context): Boolean {
+    fun areAllFieldsFilledCorrectly(
+        languageSelected: String,
+        context: Context
+    ): Pair<Boolean, String?> {
         fullQuestionList().forEach {
             val answer = currentAnswers[it.questionId]
 
@@ -240,15 +251,14 @@ class FormRenderingViewModel @Inject constructor(
              * Else returns false and shows user a toast of which field needs to be filled in
              */
             if (it.required == true) {
-                val answer = currentAnswers[it.questionId]
                 if (answer?.isValidAnswer() != true) {
-                    createInvalidInputToast(
+                    val toastText = createInvalidInputToast(
                         InvalidInputTypeEnum.REQUIRED_FIELD,
                         it,
                         languageSelected,
                         context
                     )
-                    return false
+                    return Pair(false, toastText)
                 }
             }
 
@@ -259,17 +269,17 @@ class FormRenderingViewModel @Inject constructor(
             if (it.questionType == QuestionTypeEnum.STRING && it.stringMaxLines != null) {
                 val lines = answer?.textAnswer?.lines()?.size
                 if (lines != null && lines > it.stringMaxLines) {
-                    createInvalidInputToast(
+                    val toastText = createInvalidInputToast(
                         InvalidInputTypeEnum.STRING_MAX_LINES,
                         it,
                         languageSelected,
                         context
                     )
-                    return false
+                    return Pair(false, toastText)
                 }
             }
         }
-        return true
+        return Pair(true, null)
     }
 
     private fun createInvalidInputToast(
@@ -277,7 +287,7 @@ class FormRenderingViewModel @Inject constructor(
         question: Question,
         languageSelected: String,
         context: Context
-    ) {
+    ): String {
         val questionText = question.languageVersions?.find { lang ->
             lang.language == languageSelected
         }?.questionText
@@ -304,8 +314,7 @@ class FormRenderingViewModel @Inject constructor(
                 }
             }
         }
-
-        Toast.makeText(context, toastText, Toast.LENGTH_LONG).show()
+        return toastText
     }
 
     /**

@@ -171,15 +171,18 @@ class FormRenderingActivity : AppCompatActivity() {
     }
 
     fun onSubmitFormAction(menuItem: MenuItem) {
-        //A toast is displayed to user if require field is not filled
-        if (viewModel.isAllFieldsFilledCorrectly(
-                languageSelected!!,
-                applicationContext
-            ) && viewModel.isAllFieldsFilledCorrectly(languageSelected!!, applicationContext)
-        ) {
+        //A toast is displayed to user if fields are not input correctly
+        val (allFieldsFilledCorrectly, toastText) = viewModel.areAllFieldsFilledCorrectly(
+            languageSelected!!,
+            applicationContext
+        )
+        if (allFieldsFilledCorrectly) {
             showFormSubmissionModeDialog(languageSelected!!)
+        } else {
+            Toast.makeText(this, toastText, Toast.LENGTH_LONG).show()
         }
     }
+
     fun onDeleteFormAction(menuItem: MenuItem) {
         if (formResponseId != null) {
             val builder = AlertDialog.Builder(this)
@@ -197,6 +200,7 @@ class FormRenderingActivity : AppCompatActivity() {
             builder.show()
         }
     }
+
     private suspend fun deleteFormAndNavigateBack() {
         if (formResponseId != null) {
 
