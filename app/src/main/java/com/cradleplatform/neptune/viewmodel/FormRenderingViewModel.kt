@@ -80,7 +80,10 @@ class FormRenderingViewModel @Inject constructor(
         categoryList = getCategorizedQuestions(languageSelected, context)
     }
 
-    private fun getCategorizedQuestions(languageSelected: String, context: Context): List<Pair<String, List<Question>?>> {
+    private fun getCategorizedQuestions(
+        languageSelected: String,
+        context: Context
+    ): List<Pair<String, List<Question>?>> {
         if (currentFormTemplate?.questions.isNullOrEmpty()) {
             return listOf()
         }
