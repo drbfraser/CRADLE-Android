@@ -29,7 +29,7 @@ data class FormTemplate(
     @SerializedName("formClassificationName") var formClassName: String?,
     @SerializedName("questions") val questions: List<Question>?,
 
-    ) : Serializable {
+) : Serializable {
 
     fun languageVersions(): List<String> {
         val languageVersions = mutableListOf<String>()
@@ -135,19 +135,19 @@ data class Question(
 
     override fun toString(): String {
         return "Question(id=$id, " +
-                "visibleCondition=$visibleCondition, " +
-                "isBlank=$isBlank, " +
-                "formTemplateId=$formTemplateId," +
-                "questionIndex=$questionIndex, " +
-                "numMin=$numMin, " +
-                "numMax=$numMax, " +
-                "stringMaxLength=$stringMaxLength, " +
-                "stringMaxLines=$stringMaxLines, " +
-                "questionId=$questionId, " +
-                "questionType=$questionType, " +
-                "hasCommentAttached=$hasCommentAttached, " +
-                "required=$required, " +
-                "languageVersions=$languageVersions)"
+            "visibleCondition=$visibleCondition, " +
+            "isBlank=$isBlank, " +
+            "formTemplateId=$formTemplateId," +
+            "questionIndex=$questionIndex, " +
+            "numMin=$numMin, " +
+            "numMax=$numMax, " +
+            "stringMaxLength=$stringMaxLength, " +
+            "stringMaxLines=$stringMaxLines, " +
+            "questionId=$questionId, " +
+            "questionType=$questionType, " +
+            "hasCommentAttached=$hasCommentAttached, " +
+            "required=$required, " +
+            "languageVersions=$languageVersions)"
     }
 
     /**
@@ -216,10 +216,10 @@ data class QuestionLangVersion(
 
     override fun toString(): String {
         return "QuestionLangVersionsss(language=$language, " +
-                "parentId=$parentId, " +
-                "questionText=$questionText, " +
-                "questionTextId=$questionTextId, " +
-                "mcOptions=$mcOptions)"
+            "parentId=$parentId, " +
+            "questionText=$questionText, " +
+            "questionTextId=$questionTextId, " +
+            "mcOptions=$mcOptions)"
     }
 
     fun verifyIntegrity(): Boolean {
