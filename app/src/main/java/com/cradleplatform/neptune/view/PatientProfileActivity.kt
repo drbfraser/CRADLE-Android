@@ -402,7 +402,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         return readings.sortedWith(comparator)
     }
 
-    private fun createNewReferral(){
+    private fun createNewReferral() {
         val intent = PatientReferralActivity.makeIntentForPatient(
             this@PatientProfileActivity,
             currPatient
@@ -410,7 +410,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private fun createNewForm(){
+    private fun createNewForm() {
         val intent = FormSelectionActivity.makeIntentForPatientId(
             this@PatientProfileActivity,
             currPatient.id,
