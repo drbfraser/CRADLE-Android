@@ -176,6 +176,7 @@
     <string name="pregnant_question">Pregnant?</string>
     <string name="create_new_reading">Create New Reading</string>
     <string name="create_new_referral">Create New Referral</string>
+    <string name="create_new_item">Create New</string>
     <string name="global_search">Search all patients</string>
     <string name="sign_out_question">Sign out?</string>
     <string name="settings_title">Settings</string>

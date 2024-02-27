@@ -6,13 +6,15 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RadioGroup
 import android.widget.TextView
-import androidx.annotation.Nullable
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
@@ -46,8 +48,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.text.ParseException
-import java.util.ArrayList
-import java.util.Comparator
 import javax.inject.Inject
 
 /**
@@ -58,6 +58,7 @@ import javax.inject.Inject
  * The usage of runBlocking is not ideal for performance.
  */
 
+@Suppress("DEPRECATION")
 @AndroidEntryPoint
 open class PatientProfileActivity : AppCompatActivity() {
 
@@ -102,12 +103,6 @@ open class PatientProfileActivity : AppCompatActivity() {
         private const val EXTRA_PATIENT = "patient"
         private const val EXTRA_PATIENT_ID = "patientId"
 
-        fun makeIntentForPatient(context: Context, patient: Patient): Intent {
-            val intent = Intent(context, PatientProfileActivity::class.java)
-            intent.putExtra(EXTRA_PATIENT, patient)
-            return intent
-        }
-
         fun makeIntentForPatientId(context: Context, patientId: String): Intent {
             val intent = Intent(context, PatientProfileActivity::class.java)
             intent.putExtra(EXTRA_PATIENT_ID, patientId)
@@ -125,14 +120,37 @@ open class PatientProfileActivity : AppCompatActivity() {
         }
         setupReadingsRecyclerView()
         setupCreatePatientReadingButton()
-        setupCreatePatientReferralButton()
-        setupCreateAndFillFormButton()
         lifecycleScope.launch {
             setupSeeSavedFormsButton()
         }
         setupUpdateRecord()
         setupLineChart()
         setupToolBar()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_patient_activity, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.create_referral -> {
+                Toast.makeText(this, "Creating a new Referral", Toast.LENGTH_SHORT).show()
+                createNewReferral()
+                true
+            }
+
+            R.id.create_form -> {
+                Toast.makeText(this, "Creating a new Form", Toast.LENGTH_SHORT).show()
+                createNewForm()
+                true
+            }
+
+            else -> {
+                super.onOptionsItemSelected(item)
+            }
+        }
     }
 
     override fun onResume() {
@@ -147,7 +165,6 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupEditPatient(currPatient)
         setupBtnPregnancy(currPatient)
         setupCreatePatientReadingButton()
-        setupCreatePatientReferralButton()
     }
 
     private fun changeAddReadingButtonColorIfNeeded() {
@@ -262,7 +279,7 @@ open class PatientProfileActivity : AppCompatActivity() {
     }
 
     private fun setupBtnPregnancy(patient: Patient) {
-        btnPregnancy.setOnClickListener() {
+        btnPregnancy.setOnClickListener {
 
             // Don't allow users to end a pregnancy when they haven't synced the start date
             if (patient.pregnancyId == null && patient.gestationalAge != null) {
@@ -283,7 +300,7 @@ open class PatientProfileActivity : AppCompatActivity() {
 
     private fun setupEditPatient(patient: Patient) {
         val editIcon = findViewById<ImageView>(R.id.im_edit_personal_info)
-        editIcon.setOnClickListener() {
+        editIcon.setOnClickListener {
             val intent = EditPatientInfoActivity.makeIntentWithPatientId(this, patient.id)
             startActivity(intent)
         }
@@ -295,7 +312,7 @@ open class PatientProfileActivity : AppCompatActivity() {
      *
      * @param patient current patient
      */
-    fun setupGestationalInfo(patient: Patient) {
+    private fun setupGestationalInfo(patient: Patient) {
         val radioGroup = findViewById<RadioGroup>(R.id.gestationradioGroup)
         radioGroup.setOnCheckedChangeListener { _: RadioGroup?, index: Int ->
             val ageVal: Double? = if (index == R.id.monthradiobutton) {
@@ -385,6 +402,23 @@ open class PatientProfileActivity : AppCompatActivity() {
         return readings.sortedWith(comparator)
     }
 
+    private fun createNewReferral() {
+        val intent = PatientReferralActivity.makeIntentForPatient(
+            this@PatientProfileActivity,
+            currPatient
+        )
+        startActivity(intent)
+    }
+
+    private fun createNewForm() {
+        val intent = FormSelectionActivity.makeIntentForPatientId(
+            this@PatientProfileActivity,
+            currPatient.id,
+            currPatient
+        )
+        startActivity(intent)
+    }
+
     private fun getThisPatientsReferrals(): List<Referral>? {
         val referrals: List<Referral>? =
             runBlocking { referralManager.getReferralByPatientId(currPatient.id) }
@@ -424,35 +458,6 @@ open class PatientProfileActivity : AppCompatActivity() {
         }
 
         changeAddReadingButtonColorIfNeeded()
-    }
-
-    private fun setupCreatePatientReferralButton() {
-        val createButton =
-            findViewById<Button>(R.id.newPatientReferralButton)
-
-        createButton.visibility = View.VISIBLE
-
-        createButton.setOnClickListener { _: View? ->
-            val intent = PatientReferralActivity.makeIntentForPatient(
-                this@PatientProfileActivity,
-                currPatient
-            )
-            startActivity(intent)
-        }
-    }
-
-    private fun setupCreateAndFillFormButton() {
-        val createFormButton = findViewById<Button>(R.id.newFormButton)
-
-        createFormButton.visibility = View.VISIBLE
-        createFormButton.setOnClickListener {
-            val intent = FormSelectionActivity.makeIntentForPatientId(
-                this@PatientProfileActivity,
-                currPatient.id,
-                currPatient
-            )
-            startActivity(intent)
-        }
     }
 
     private suspend fun setupSeeSavedFormsButton() {
@@ -554,7 +559,7 @@ open class PatientProfileActivity : AppCompatActivity() {
     override fun onActivityResult(
         requestCode: Int,
         resultCode: Int,
-        @Nullable data: Intent?
+        data: Intent?
     ) {
         if (requestCode == READING_ACTIVITY_DONE) {
             updateUi()
@@ -583,7 +588,7 @@ open class PatientProfileActivity : AppCompatActivity() {
     override fun onBackPressed() {
         super.onBackPressed()
 
-        var intent = PatientsActivity.makeIntent(this@PatientProfileActivity)
+        val intent = PatientsActivity.makeIntent(this@PatientProfileActivity)
         startActivity(intent)
     }
 }
