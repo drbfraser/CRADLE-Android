@@ -88,9 +88,8 @@ class SmsStateReporter @Inject constructor(
     fun timeoutFunction(seconds: Long) {
         Thread {
             Thread.sleep(seconds * 1000)
-            if (state.value == SmsTransmissionStates.SENDING_TO_RELAY_SERVER && sent == 0) {
+            if (state.value == SmsTransmissionStates.SENDING_TO_RELAY_SERVER || received != totalToBeReceived) {
                 state.postValue(SmsTransmissionStates.TIME_OUT)
-                Thread.sleep(5000)
             }
         }.start()
     }

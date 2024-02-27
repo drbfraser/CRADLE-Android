@@ -19,8 +19,10 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class SmsTransmissionDialogFragment @Inject constructor(
     private val smsStateReporter: SmsStateReporter,
+    private val smsSender: SMSSender,
 ) : DialogFragment() {
     private val viewModel = SmsTransmissionDialogViewModel(smsStateReporter)
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -85,10 +87,12 @@ class SmsTransmissionDialogFragment @Inject constructor(
         // Set click listeners
         positiveButton.setOnClickListener {
             dismiss()
+
             // TODO: We want manually exit Acitivty/Fragments so user can review the result
         }
         negativeButton.setOnClickListener {
             // TODO: kill/interrupt transmission, reverse DB modifications
+            smsSender.reset()
             dismiss()
         }
     }
