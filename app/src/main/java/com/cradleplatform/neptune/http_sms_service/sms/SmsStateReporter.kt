@@ -1,5 +1,7 @@
 package com.cradleplatform.neptune.http_sms_service.sms
 
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.cradleplatform.neptune.manager.SmsKeyManager
@@ -30,6 +32,7 @@ class SmsStateReporter @Inject constructor(
     private var sent = 0
     private var received = 0
     private var decryptedMsg = ""
+    private var timeout: Long = 60
 
     fun initSending(numberOfSmsToSend: Int) {
         state.postValue((SmsTransmissionStates.GETTING_READY_TO_SEND))
@@ -39,6 +42,7 @@ class SmsStateReporter @Inject constructor(
         received = 0
         totalReceived.postValue(0)
         totalToBeReceived = 0
+        timeoutFunction(timeout)
     }
 
     fun initReceiving(numberOfSmsToReceive: Int) {
@@ -79,5 +83,15 @@ class SmsStateReporter @Inject constructor(
                     state.postValue(SmsTransmissionStates.DONE)
                 }
         }
+    }
+
+    fun timeoutFunction(seconds: Long) {
+        Thread {
+            Thread.sleep(seconds * 1000)
+            if (state.value == SmsTransmissionStates.SENDING_TO_RELAY_SERVER && sent == 0) {
+                state.postValue(SmsTransmissionStates.TIME_OUT)
+                Thread.sleep(5000)
+            }
+        }.start()
     }
 }
