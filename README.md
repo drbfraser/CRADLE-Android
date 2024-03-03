@@ -18,6 +18,27 @@ The app mostly uses Kotlin with some Java code leftover.
 Install [Android Studio](https://developer.android.com/studio/) and import the project by cloning
 the Git repository.
 
+You will need to set up Platform in order to set up Mobile!
+https://github.sfu.ca/bfraser/415-Cradle-Platform/blob/main/docs/development.md
+
+Useful Documentation:
+- Cradle Mobile Onboarding
+    https://docs.google.com/document/d/1okJHo1OMfRZbkep-37rOIpApkXmZgxp1Uwmf_Evaguo/edit
+
+- Mobile Testing with Local CradlePlatform
+    https://docs.google.com/document/d/1ohbJqzYMEzDeSj_EVndMZvnp9ShB1A1q682QIcr-hNE/edit
+
+Spring 2024 Set Up:
+   - Android Gradle Plugin Version: 8.2.1
+   - Gradle Version: 8.2
+   - Java Version 17
+   
+Before you log in you must open app settings and change the following:
+    - Make sure the "Use HTTP" switch is OFF
+    - Hostname: 10.0.2.2
+    - Port: 5000
+    
+
 # Architecture
 
 We use various components from [Android Jetpack](https://developer.android.com/jetpack) and other
