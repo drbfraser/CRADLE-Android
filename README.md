@@ -36,7 +36,7 @@ Spring 2024 Set Up:
         - Gradle JDK: JetBrains Runtime version 17
         - If it's not one of the options, click on "Download JDK" and select the version mentioned above
    
-Before you log in you must open app settings and change the following:
+Before you log in you must open app settings and change the following
     - Make sure the "Use HTTP" switch is OFF
     - Hostname: 10.0.2.2
     - Port: 5000
