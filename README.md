@@ -29,9 +29,12 @@ Useful Documentation:
     https://docs.google.com/document/d/1ohbJqzYMEzDeSj_EVndMZvnp9ShB1A1q682QIcr-hNE/edit
 
 Spring 2024 Set Up:
-   - Android Gradle Plugin Version: 8.2.1
-   - Gradle Version: 8.2
-   - Java Version 17
+   - File -> Project Structure -> Project
+        - Android Gradle Plugin Version: 8.2.1
+        - Gradle Version: 8.2
+   - File -> Settings -> Build, Execution, Deployment -> Build Tools -> Gradle
+        - Gradle JDK: JetBrains Runtime version 17
+        - If it's not one of the options, click on "Download JDK" and select the version mentioned above
    
 Before you log in you must open app settings and change the following:
     - Make sure the "Use HTTP" switch is OFF
