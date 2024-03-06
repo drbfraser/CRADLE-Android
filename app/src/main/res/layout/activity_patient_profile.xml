@@ -496,8 +496,9 @@
                 android:text="@string/patient_profile_add_to_my_patients_list_button"
                 android:visibility="visible"
                 app:backgroundTint="@color/colorPrimaryLight"
+                app:layout_constraintBottom_toTopOf="@+id/newPatientReadingButton"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toTopOf="@+id/newPatientReadingButton"/>
+                tools:layout_editor_absoluteX="125dp" />
 
             <Button
                 android:id="@+id/newPatientReadingButton"

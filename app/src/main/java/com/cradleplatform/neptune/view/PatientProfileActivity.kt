@@ -141,6 +141,12 @@ open class PatientProfileActivity : AppCompatActivity() {
                 true
             }
 
+            R.id.create_reading -> {
+                Toast.makeText(this, "Creating a new Reading", Toast.LENGTH_SHORT).show()
+                createNewReading()
+                true
+            }
+
             R.id.create_form -> {
                 Toast.makeText(this, "Creating a new Form", Toast.LENGTH_SHORT).show()
                 createNewForm()
@@ -161,7 +167,6 @@ open class PatientProfileActivity : AppCompatActivity() {
         }
         setupLineChart()
         setupReadingsRecyclerView()
-
         setupEditPatient(currPatient)
         setupBtnPregnancy(currPatient)
         setupCreatePatientReadingButton()
@@ -409,6 +414,13 @@ open class PatientProfileActivity : AppCompatActivity() {
         )
         startActivity(intent)
     }
+    private fun createNewReading() {
+        val intent = makeIntentForNewReadingExistingPatient(
+            this@PatientProfileActivity,
+            currPatient.id
+        )
+        startActivityForResult(intent, READING_ACTIVITY_DONE)
+    }
 
     private fun createNewForm() {
         val intent = FormSelectionActivity.makeIntentForPatientId(
@@ -438,26 +450,17 @@ open class PatientProfileActivity : AppCompatActivity() {
         //  patientsReadings won't be loaded until it's called (refer to issue #50)
         val createButton =
             findViewById<Button>(R.id.newPatientReadingButton)
-        createButton.visibility = View.VISIBLE
 
         if (patientReadings.isNotEmpty() && Util.isRecheckNeededNow(patientReadings[0].dateRecheckVitalsNeeded)) {
+            createButton.visibility = View.VISIBLE
+            changeAddReadingButtonColorIfNeeded()
             createButton.setOnClickListener { _: View? ->
                 val readingId = patientReadings[0].id
                 val intent =
                     makeIntentForRecheck(this@PatientProfileActivity, readingId)
                 startActivityForResult(intent, READING_ACTIVITY_DONE)
             }
-        } else {
-            createButton.setOnClickListener { _: View? ->
-                val intent = makeIntentForNewReadingExistingPatient(
-                    this@PatientProfileActivity,
-                    currPatient.id
-                )
-                startActivityForResult(intent, READING_ACTIVITY_DONE)
-            }
         }
-
-        changeAddReadingButtonColorIfNeeded()
     }
 
     private suspend fun setupSeeSavedFormsButton() {
