@@ -101,6 +101,8 @@ class SMSReceiver @Inject constructor(
             relayData = ""
             isError = null
             errorCode = null
+            smsSender.reset()
+            smsStateReporter.resetStateReporter()
         }
     }
 }
