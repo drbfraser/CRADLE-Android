@@ -68,6 +68,15 @@
                 android:text="Continue"
                 android:enabled="true"
                 android:layout_gravity="center"/>
+            <Button
+                android:id="@+id/retry_fail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_margin="10dp"
+                android:text="retry"
+                android:enabled="true"
+                android:layout_gravity="center"/>
 
         </LinearLayout>
 

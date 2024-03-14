@@ -39,22 +39,28 @@ class SMSSender @Inject constructor(
         activityContext = activity
     }
 
+    var showDialog = true;
+    var data = ""
     fun queueRelayContent(unencryptedData: String): Boolean {
+        data = String(unencryptedData.toCharArray())
+        Log.d("wallahi", (data == unencryptedData).toString())
         val encryptedData = encodeMsg(unencryptedData, smsSecretKey)
         val smsPacketList = formatSMS(encryptedData, RelayRequestCounter.getCount())
         RelayRequestCounter.incrementCount(appContext)
+        smsStateReporter.setSmsSender(this)
         smsStateReporter.initSending(smsPacketList.size)
         return smsRelayQueue.addAll(smsPacketList)
     }
 
     fun sendSmsMessage(acknowledged: Boolean) {
-        if (!acknowledged) {
+        if (!acknowledged && showDialog) {
             if (activityContext != null) {
                 activityContext!!.showDialog()
             } else {
                 appContext.showDialog()
             }
         }
+        Log.d("walla", smsRelayQueue.size.toString())
         val relayPhoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
         val smsManager: SmsManager = SmsManager.getDefault()
         smsStateReporter.state.postValue(SmsTransmissionStates.SENDING_TO_RELAY_SERVER)
@@ -161,7 +167,11 @@ class SMSSender @Inject constructor(
         }
     }
 
+    fun changeShowDialog(bool: Boolean) {
+        showDialog = bool
+    }
     fun reset() {
-        this.smsRelayQueue.clear()
+        smsRelayQueue.clear()
+        showDialog = true
     }
 }

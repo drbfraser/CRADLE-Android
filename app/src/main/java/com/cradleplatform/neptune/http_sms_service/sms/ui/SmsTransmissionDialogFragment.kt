@@ -45,8 +45,10 @@ class SmsTransmissionDialogFragment @Inject constructor(
         val successFailMessage = view.findViewById<TextView>(R.id.successErrorMessage)
         val positiveButton = view.findViewById<Button>(R.id.btnPositive)
         val negativeButton = view.findViewById<Button>(R.id.btnNegative)
+        val retryButton = view.findViewById<Button>(R.id.retry_fail)
         // Set initial values or customize views
         positiveButton.isEnabled = false
+        retryButton.isVisible = false
         viewModel.stateString.observe(viewLifecycleOwner) {
             stateMessage.text = it
         }
@@ -62,6 +64,7 @@ class SmsTransmissionDialogFragment @Inject constructor(
             }
             else if (state == SmsTransmissionStates.TIME_OUT) {
                 positiveButton.isVisible = false
+                retryButton.isVisible = true
                 sendProgressMessage.text = "No response from SMS server"
                 receiveProgressMessage.isVisible = false
             }
@@ -94,6 +97,12 @@ class SmsTransmissionDialogFragment @Inject constructor(
             // TODO: kill/interrupt transmission, reverse DB modifications
             smsSender.reset()
             dismiss()
+        }
+        retryButton.setOnClickListener {
+            smsSender.reset()
+            smsStateReporter.resetStateReporter()
+            smsSender.queueRelayContent(smsSender.data)
+            receiveProgressMessage.isVisible = true
         }
     }
 }
