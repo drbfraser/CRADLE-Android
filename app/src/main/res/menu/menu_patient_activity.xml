@@ -6,6 +6,11 @@
         android:title="@string/create_new_referral"
         app:showAsAction="never"/>
 
+    <item android:id= "@+id/create_reading"
+        android:title="@string/create_new_reading"
+        app:showAsAction="never"/>
+
+
     <item android:id= "@+id/create_form"
         android:title="@string/create_new_form"
         app:showAsAction="never"/>
