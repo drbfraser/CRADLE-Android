@@ -39,7 +39,7 @@ class SMSSender @Inject constructor(
         activityContext = activity
     }
 
-    var showDialog = true;
+    var showDialog = true
     var data = ""
     fun queueRelayContent(unencryptedData: String): Boolean {
         data = String(unencryptedData.toCharArray())

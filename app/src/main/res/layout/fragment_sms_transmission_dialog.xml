@@ -46,6 +46,16 @@
             android:gravity="center"
             android:layout_marginBottom="16dp"/>
 
+        <TextView
+            android:id="@+id/retryTimer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Your message goes here"
+            android:textSize="15sp"
+            android:gravity="center"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone" />
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -1,7 +1,5 @@
 package com.cradleplatform.neptune.http_sms_service.sms
 
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.cradleplatform.neptune.manager.SmsKeyManager
@@ -33,8 +31,8 @@ class SmsStateReporter @Inject constructor(
     private var received = 0
     private var decryptedMsg = ""
     private var timeout: Long = 3
-    private var retriesAttempted = 0;
-    private var maxAttempts = 5;
+    private var retriesAttempted = 0
+    private var maxAttempts = 5
 
     fun initSending(numberOfSmsToSend: Int) {
         state.postValue((SmsTransmissionStates.GETTING_READY_TO_SEND))
@@ -44,7 +42,7 @@ class SmsStateReporter @Inject constructor(
         received = 0
         totalReceived.postValue(0)
         totalToBeReceived = 0
-        retriesAttempted = 0;
+        retriesAttempted = 0
         smsSender.changeShowDialog(true)
         timeoutFunction(timeout, 0)
     }
@@ -95,11 +93,11 @@ class SmsStateReporter @Inject constructor(
 
     private var lastSent = 0
     private fun retrySMSMessage() {
-        retriesAttempted += 1;
+        retriesAttempted += 1
         if (retriesAttempted > 0) {
-            smsSender.changeShowDialog(false);
+            smsSender.changeShowDialog(false)
         }
-        if(lastSent == sent) {
+        if (lastSent == sent) {
             smsSender.sendSmsMessage(false)
         }
         lastSent = sent
@@ -120,17 +118,15 @@ class SmsStateReporter @Inject constructor(
         timeoutThread?.interrupt()
     }
 
-
     private fun timeoutFunction(seconds: Long, attemptNumber: Int) {
         timeoutThread?.interrupt()
         timeoutThread = Thread {
             try {
                 Thread.sleep(seconds * 1000 * (attemptNumber + 1))
                 if (state.value == SmsTransmissionStates.SENDING_TO_RELAY_SERVER || sent != totalToBeSent) {
-                    if (attemptNumber < maxAttempts-1) {
+                    if (attemptNumber < maxAttempts - 1) {
                         retrySMSMessage()
-                    }
-                    else {
+                    } else {
                         state.postValue(SmsTransmissionStates.TIME_OUT)
                     }
                 }
