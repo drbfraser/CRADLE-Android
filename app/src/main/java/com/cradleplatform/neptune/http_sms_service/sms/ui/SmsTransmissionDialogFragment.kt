@@ -6,8 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.http_sms_service.sms.SmsTransmissionStates
 import dagger.hilt.android.AndroidEntryPoint
@@ -16,8 +18,8 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class SmsTransmissionDialogFragment @Inject constructor(
     private val smsStateReporter: SmsStateReporter,
+    private val smsSender: SMSSender,
 ) : DialogFragment() {
-
     private val viewModel = SmsTransmissionDialogViewModel(smsStateReporter)
 
     override fun onCreateView(
@@ -41,8 +43,11 @@ class SmsTransmissionDialogFragment @Inject constructor(
         val successFailMessage = view.findViewById<TextView>(R.id.successErrorMessage)
         val positiveButton = view.findViewById<Button>(R.id.btnPositive)
         val negativeButton = view.findViewById<Button>(R.id.btnNegative)
+        val retryButton = view.findViewById<Button>(R.id.retry_fail)
+        val retryTimer = view.findViewById<TextView>(R.id.retryTimer)
         // Set initial values or customize views
         positiveButton.isEnabled = false
+        retryButton.isVisible = false
         viewModel.stateString.observe(viewLifecycleOwner) {
             stateMessage.text = it
         }
@@ -55,6 +60,11 @@ class SmsTransmissionDialogFragment @Inject constructor(
         smsStateReporter.state.observe(viewLifecycleOwner) { state ->
             if (state == SmsTransmissionStates.EXCEPTION || state == SmsTransmissionStates.DONE) {
                 positiveButton.isEnabled = true
+            } else if (state == SmsTransmissionStates.TIME_OUT) {
+                positiveButton.isVisible = false
+                retryButton.isVisible = true
+                sendProgressMessage.text = "No response from SMS server"
+                receiveProgressMessage.isVisible = false
             }
         }
         smsStateReporter.errorCode.observe(viewLifecycleOwner) {
@@ -78,11 +88,19 @@ class SmsTransmissionDialogFragment @Inject constructor(
         // Set click listeners
         positiveButton.setOnClickListener {
             dismiss()
+
             // TODO: We want manually exit Acitivty/Fragments so user can review the result
         }
         negativeButton.setOnClickListener {
             // TODO: kill/interrupt transmission, reverse DB modifications
+            smsSender.reset()
             dismiss()
+        }
+        retryButton.setOnClickListener {
+            smsSender.reset()
+            smsStateReporter.resetStateReporter()
+            smsSender.queueRelayContent(smsSender.data)
+            receiveProgressMessage.isVisible = true
         }
     }
 }

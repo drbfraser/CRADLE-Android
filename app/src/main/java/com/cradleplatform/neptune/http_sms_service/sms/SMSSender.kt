@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.os.Handler
 import android.os.Looper
 import android.telephony.SmsManager
+import android.util.Log
 import android.widget.Toast
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.http_sms_service.sms.ui.SmsTransmissionDialogFragment
@@ -38,22 +39,28 @@ class SMSSender @Inject constructor(
         activityContext = activity
     }
 
+    var showDialog = true
+    var data = ""
     fun queueRelayContent(unencryptedData: String): Boolean {
+        data = String(unencryptedData.toCharArray())
+        Log.d("wallahi", (data == unencryptedData).toString())
         val encryptedData = encodeMsg(unencryptedData, smsSecretKey)
         val smsPacketList = formatSMS(encryptedData, RelayRequestCounter.getCount())
         RelayRequestCounter.incrementCount(appContext)
+        smsStateReporter.setSmsSender(this)
         smsStateReporter.initSending(smsPacketList.size)
         return smsRelayQueue.addAll(smsPacketList)
     }
 
     fun sendSmsMessage(acknowledged: Boolean) {
-        if (!acknowledged) {
+        if (!acknowledged && showDialog) {
             if (activityContext != null) {
                 activityContext!!.showDialog()
             } else {
                 appContext.showDialog()
             }
         }
+        Log.d("walla", smsRelayQueue.size.toString())
         val relayPhoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
         val smsManager: SmsManager = SmsManager.getDefault()
         smsStateReporter.state.postValue(SmsTransmissionStates.SENDING_TO_RELAY_SERVER)
@@ -155,8 +162,16 @@ class SMSSender @Inject constructor(
             else -> null
         }
         fragmentManager?.let {
-            val dialog = SmsTransmissionDialogFragment(smsStateReporter)
+            val dialog = SmsTransmissionDialogFragment(smsStateReporter, this@SMSSender)
             dialog.show(it, "sms transmission dialog")
         }
+    }
+
+    fun changeShowDialog(bool: Boolean) {
+        showDialog = bool
+    }
+    fun reset() {
+        smsRelayQueue.clear()
+        showDialog = true
     }
 }
