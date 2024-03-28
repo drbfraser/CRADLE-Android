@@ -29,6 +29,7 @@ class SavedFormsActivity : AppCompatActivity() {
     private val viewModel: SavedFormsViewModel by viewModels()
     private var patient: Patient? = null
     private var patientId: String? = null
+    private var savedAsDraft: Boolean? = null
 
     private var adapter: SavedFormAdapter? = null
     private var formList: MutableList<FormResponse>? = null
@@ -40,6 +41,7 @@ class SavedFormsActivity : AppCompatActivity() {
         //Getting the patient from the intent (ID and Patient Object)
         patientId = intent.getStringExtra(EXTRA_PATIENT_ID)!!
         patient = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT) as Patient
+        savedAsDraft = intent.getBooleanExtra(EXTRA_SAVED_FORM, false)
 
         setUpSavedFormsRecyclerView()
         setUpActionBar()
@@ -55,7 +57,12 @@ class SavedFormsActivity : AppCompatActivity() {
                 patient = viewModel.getPatientByPatientId(patientId!!)
             }
             // Find the list of saved forms for that patient, if any
-            formList = viewModel.searchForFormResponsesByPatientId(patientId!!)
+            if (savedAsDraft == true) {
+                formList = viewModel.searchForDraftFormsByPatientId(patientId!!)
+            } else {
+                formList = viewModel.searchForSubmittedFormsByPatientId(patientId!!)
+            }
+
             adapter = formList?.let { patient?.let { it1 -> SavedFormAdapter(it, it1) } }
             val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
                 override fun onMove(
@@ -160,15 +167,18 @@ class SavedFormsActivity : AppCompatActivity() {
     companion object {
         private const val EXTRA_PATIENT_ID = "Patient ID that the forms are saved for"
         private const val EXTRA_PATIENT_OBJECT = "The Patient object that the forms are saved for"
+        private const val EXTRA_SAVED_FORM = "Boolean value indicating whether the forms are saved"
         @JvmStatic
         fun makeIntent(
             context: Context,
             patientId: String,
-            patient: Patient
+            patient: Patient,
+            savedForm: Boolean
         ): Intent =
             Intent(context, SavedFormsActivity::class.java).apply {
                 putExtra(EXTRA_PATIENT_ID, patientId)
                 putExtra(EXTRA_PATIENT_OBJECT, patient)
+                putExtra(EXTRA_SAVED_FORM, savedForm)
             }
     }
 }

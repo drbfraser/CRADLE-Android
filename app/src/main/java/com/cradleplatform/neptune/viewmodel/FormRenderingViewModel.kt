@@ -210,11 +210,11 @@ class FormRenderingViewModel @Inject constructor(
         applicationContext: Context,
         formResponseId: Long?
     ) {
-        formResponseId?.let {
-            viewModelScope.launch {
-                removeFormResponseFromDatabaseById(it)
-            }
-        }
+//        formResponseId?.let {
+//            viewModelScope.launch {
+//                removeFormResponseFromDatabaseById(it)
+//            }
+//        }
 
         return if (currentFormTemplate != null) {
             addBlankQuestions(currentFormTemplate!!)
@@ -402,6 +402,7 @@ class FormRenderingViewModel @Inject constructor(
         patientId: String,
         selectedLanguage: String,
         formResponseId: Long?,
+        saveDraft: Boolean
     ) {
         return if (currentFormTemplate != null) {
             // If the FormTemplate's formClassName field is empty, grab it using formClass Id
@@ -421,7 +422,7 @@ class FormRenderingViewModel @Inject constructor(
                         formTemplate = currentFormTemplate!!,
                         language = selectedLanguage,
                         answers = currentAnswers,
-                        saveResponseToSendLater = true
+                        saveResponseToSendLater = saveDraft
                     )
 
                     false -> FormResponse(
@@ -429,7 +430,7 @@ class FormRenderingViewModel @Inject constructor(
                         formTemplate = currentFormTemplate!!,
                         language = selectedLanguage,
                         answers = currentAnswers,
-                        saveResponseToSendLater = true
+                        saveResponseToSendLater = saveDraft
                     )
                 }
             formResponseManager.updateOrInsertIfNotExistsFormResponse(formResponse)

@@ -122,6 +122,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupCreatePatientReadingButton()
         lifecycleScope.launch {
             setupSeeSavedFormsButton()
+            setupSeeSubmittedFormsButton()
         }
         setupUpdateRecord()
         setupLineChart()
@@ -465,13 +466,29 @@ open class PatientProfileActivity : AppCompatActivity() {
 
     private suspend fun setupSeeSavedFormsButton() {
         val createFormButton = findViewById<Button>(R.id.seeSavedFormsButton)
-        val responsesForPatient = formResponseManager.searchForFormResponseByPatientId(currPatient.id)
+        val responsesForPatient = formResponseManager.searchForDraftFormsByPatientId(currPatient.id)
         createFormButton.visibility = if (!responsesForPatient.isNullOrEmpty()) View.VISIBLE else View.GONE
         createFormButton.setOnClickListener {
             val intent = SavedFormsActivity.makeIntent(
                 this@PatientProfileActivity,
                 currPatient.id,
-                currPatient
+                currPatient,
+                true
+            )
+            startActivity(intent)
+        }
+    }
+
+    private suspend fun setupSeeSubmittedFormsButton() {
+        val createFormButton = findViewById<Button>(R.id.seeSubmittedFormsButton)
+        val responsesForPatient = formResponseManager.searchForSubmittedFormsByPatientId(currPatient.id)
+        createFormButton.visibility = if (!responsesForPatient.isNullOrEmpty()) View.VISIBLE else View.GONE
+        createFormButton.setOnClickListener {
+            val intent = SavedFormsActivity.makeIntent(
+                this@PatientProfileActivity,
+                currPatient.id,
+                currPatient,
+                false
             )
             startActivity(intent)
         }

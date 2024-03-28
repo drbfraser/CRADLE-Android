@@ -32,4 +32,10 @@ class SavedFormsViewModel @Inject constructor(
 
     suspend fun getPatientByPatientId(patientId: String): Patient? =
         patientManager.getPatientById(patientId)
+
+    suspend fun searchForSubmittedFormsByPatientId(id: String): MutableList<FormResponse>? =
+        formResponseManager.searchForSubmittedFormsByPatientId(id)
+
+    suspend fun searchForDraftFormsByPatientId(id: String): MutableList<FormResponse>? =
+        formResponseManager.searchForDraftFormsByPatientId(id)
 }
