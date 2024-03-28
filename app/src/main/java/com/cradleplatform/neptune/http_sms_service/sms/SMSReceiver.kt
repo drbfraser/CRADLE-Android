@@ -79,6 +79,7 @@ class SMSReceiver @Inject constructor(
                     numberReceivedMessages < totalMessages) {
                     numberReceivedMessages += 1
                     smsStateReporter.incrementReceived()
+                    smsStateReporter.retry.postValue(false)
                     relayData += smsFormatter.getRestMessageString(messageBody)
                     smsSender.sendAckMessage(requestIdentifier, numberReceivedMessages - 1, totalMessages)
                 }

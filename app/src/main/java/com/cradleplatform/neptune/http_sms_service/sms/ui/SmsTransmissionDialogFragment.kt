@@ -1,6 +1,8 @@
 package com.cradleplatform.neptune.http_sms_service.sms.ui
 
 import android.os.Bundle
+import android.os.CountDownTimer
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,7 +23,7 @@ class SmsTransmissionDialogFragment @Inject constructor(
     private val smsSender: SMSSender,
 ) : DialogFragment() {
     private val viewModel = SmsTransmissionDialogViewModel(smsStateReporter)
-
+    private lateinit var timer: CountDownTimer
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -35,6 +37,7 @@ class SmsTransmissionDialogFragment @Inject constructor(
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
 
         // Access views from the layout
         val stateMessage = view.findViewById<TextView>(R.id.stateMessage)
@@ -56,6 +59,35 @@ class SmsTransmissionDialogFragment @Inject constructor(
         }
         viewModel.receiveProgress.observe(viewLifecycleOwner) {
             receiveProgressMessage.text = it
+        }
+        smsStateReporter.retry.observe(viewLifecycleOwner) {
+            Log.d("are we in retry", it.toString())
+            if (it) {
+                if (::timer.isInitialized) {
+                    timer.cancel()
+                }
+                retryTimer.isVisible = true
+                timer = object : CountDownTimer(smsStateReporter.timeout * 1000 * (smsStateReporter.retriesAttempted + 1), 1000) {
+                    override fun onTick(timeRemaining: Long) {
+                        val seconds = timeRemaining / 1000
+                        retryTimer.text = "Retrying number: ${smsStateReporter.retriesAttempted}, retrying in " + seconds.toString()
+                    }
+
+                    override fun onFinish() {
+                        retryTimer.text = "Waiting for server..."
+                    }
+
+                }.start()
+            }
+            else {
+                if (::timer.isInitialized) {
+                    Log.d("please???", it.toString())
+                    timer.cancel()
+                    retryTimer.text = "why still going?"
+                }
+
+            }
+
         }
         smsStateReporter.state.observe(viewLifecycleOwner) { state ->
             if (state == SmsTransmissionStates.EXCEPTION || state == SmsTransmissionStates.DONE) {

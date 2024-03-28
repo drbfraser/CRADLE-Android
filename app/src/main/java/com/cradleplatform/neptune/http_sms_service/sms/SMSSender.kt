@@ -43,7 +43,6 @@ class SMSSender @Inject constructor(
     var data = ""
     fun queueRelayContent(unencryptedData: String): Boolean {
         data = String(unencryptedData.toCharArray())
-        Log.d("wallahi", (data == unencryptedData).toString())
         val encryptedData = encodeMsg(unencryptedData, smsSecretKey)
         val smsPacketList = formatSMS(encryptedData, RelayRequestCounter.getCount())
         RelayRequestCounter.incrementCount(appContext)
