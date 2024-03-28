@@ -468,8 +468,6 @@ open class PatientProfileActivity : AppCompatActivity() {
             } else {
                 createButton.isVisible = false
             }
-
-
         }
     }
 

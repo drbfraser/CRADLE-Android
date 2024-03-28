@@ -8,7 +8,6 @@ import androidx.core.content.ContextCompat.getDrawable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.http_sms_service.http.DatabaseObject
 import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
@@ -28,7 +27,6 @@ import com.cradleplatform.neptune.utilities.connectivity.api24.ConnectivityOptio
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.view.FormRenderingActivity
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
