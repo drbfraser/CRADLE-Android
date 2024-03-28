@@ -18,6 +18,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -173,15 +174,17 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupCreatePatientReadingButton()
     }
 
-    private fun changeAddReadingButtonColorIfNeeded() {
+    private fun changeAddReadingButtonColorIfNeeded(): Boolean {
         val button: Button = findViewById(R.id.newPatientReadingButton)
         if (patientReadings.isNotEmpty() && Util.isRecheckNeededNow(patientReadings[0].dateRecheckVitalsNeeded)) {
             button.backgroundTintList = ContextCompat.getColorStateList(this, R.color.redDown)
             button.text = getString(R.string.new_reading_is_required_now)
+            return true
         } else {
             button.backgroundTintList =
                 ContextCompat.getColorStateList(this, R.color.colorPrimaryLight)
             button.text = getString(R.string.create_new_reading)
+            return false
         }
     }
 
@@ -451,10 +454,14 @@ open class PatientProfileActivity : AppCompatActivity() {
         //  patientsReadings won't be loaded until it's called (refer to issue #50)
         val createButton =
             findViewById<Button>(R.id.newPatientReadingButton)
-
         if (patientReadings.isNotEmpty() && Util.isRecheckNeededNow(patientReadings[0].dateRecheckVitalsNeeded)) {
-            createButton.visibility = View.VISIBLE
-            changeAddReadingButtonColorIfNeeded()
+
+            if (changeAddReadingButtonColorIfNeeded()) {
+                createButton.visibility = View.VISIBLE
+            } else {
+                createButton.isVisible = false
+            }
+
             createButton.setOnClickListener { _: View? ->
                 val readingId = patientReadings[0].id
                 val intent =
