@@ -507,7 +507,7 @@
                 android:layout_marginTop="8dp"
                 android:background="@drawable/rounded_button"
                 android:text="@string/create_new_reading"
-                android:visibility="visible"
+                android:visibility="gone"
                 app:layout_constraintBottom_toTopOf="@+id/seeSavedFormsButton"
                 app:layout_constraintTop_toBottomOf="@+id/addToMyPatientButton"
                 tools:layout_editor_absoluteX="0dp" />

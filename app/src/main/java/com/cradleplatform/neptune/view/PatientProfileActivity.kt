@@ -452,22 +452,24 @@ open class PatientProfileActivity : AppCompatActivity() {
     private fun setupCreatePatientReadingButton() {
         // TODO: this function has unclear dependency on setupReadingsRecyclerView,
         //  patientsReadings won't be loaded until it's called (refer to issue #50)
-        val createButton =
-            findViewById<Button>(R.id.newPatientReadingButton)
-        if (patientReadings.isNotEmpty() && Util.isRecheckNeededNow(patientReadings[0].dateRecheckVitalsNeeded)) {
 
+        if (patientReadings.isNotEmpty() && Util.isRecheckNeededNow(patientReadings[0].dateRecheckVitalsNeeded)) {
+            val createButton =
+                findViewById<Button>(R.id.newPatientReadingButton)
+            createButton.isVisible = false
             if (changeAddReadingButtonColorIfNeeded()) {
                 createButton.visibility = View.VISIBLE
+                createButton.setOnClickListener { _: View? ->
+                    val readingId = patientReadings[0].id
+                    val intent =
+                        makeIntentForRecheck(this@PatientProfileActivity, readingId)
+                    startActivityForResult(intent, READING_ACTIVITY_DONE)
+                }
             } else {
                 createButton.isVisible = false
             }
 
-            createButton.setOnClickListener { _: View? ->
-                val readingId = patientReadings[0].id
-                val intent =
-                    makeIntentForRecheck(this@PatientProfileActivity, readingId)
-                startActivityForResult(intent, READING_ACTIVITY_DONE)
-            }
+
         }
     }
 
