@@ -1,6 +1,7 @@
 package com.cradleplatform.neptune.view
 
 import android.app.Activity
+import android.content.Context
 import androidx.core.content.ContextCompat
 import androidx.test.espresso.Espresso.closeSoftKeyboard
 import androidx.test.espresso.Espresso.onView
@@ -17,6 +18,7 @@ import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
 import androidx.test.runner.lifecycle.Stage
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Question
@@ -52,12 +54,18 @@ class FormRenderingActivityTest{
                 Patient("test-patient")
             )
             ContextCompat.startActivity(activity, intent, null)
+            val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE) ?: return@onActivity
+            with (sharedPref.edit()) {
+                putString(LoginManager.RELAY_PHONE_NUMBER, "+15555215556")
+                apply()
+            }
+
         }
     }
     @Test
     fun test_Categories(){
         val questions = mutableListOf<Question>()
-        val visibleCondition = listOf(VisibleCondition(null, null, null));
+        val visibleCondition = listOf(VisibleCondition(null, null, null))
         // Create 10 categories and questions to test
         // Note that the 10th category has no questions so it must not appear
         for (i in 1..10) {
@@ -70,6 +78,7 @@ class FormRenderingActivityTest{
                 numMin = null,
                 numMax = null,
                 stringMaxLength = null,
+                stringMaxLines = null,
                 questionId = "Q$i",
                 questionType = QuestionTypeEnum.STRING,
                 hasCommentAttached = false,
@@ -86,6 +95,7 @@ class FormRenderingActivityTest{
                 numMin = null,
                 numMax = null,
                 stringMaxLength = null,
+                stringMaxLines = null,
                 questionId = "C$i",
                 questionType = QuestionTypeEnum.CATEGORY,
                 hasCommentAttached = false,
