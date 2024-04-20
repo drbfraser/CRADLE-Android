@@ -61,7 +61,6 @@ class SmsTransmissionDialogFragment @Inject constructor(
             receiveProgressMessage.text = it
         }
         smsStateReporter.retry.observe(viewLifecycleOwner) {
-            Log.d("are we in retry", it.toString())
             if (it) {
                 if (::timer.isInitialized) {
                     timer.cancel()
@@ -81,7 +80,6 @@ class SmsTransmissionDialogFragment @Inject constructor(
             }
             else {
                 if (::timer.isInitialized) {
-                    Log.d("please???", it.toString())
                     timer.cancel()
                     retryTimer.text = "why still going?"
                 }
