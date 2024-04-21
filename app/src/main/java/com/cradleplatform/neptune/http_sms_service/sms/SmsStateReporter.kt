@@ -23,7 +23,7 @@ class SmsStateReporter @Inject constructor(
     val totalReceived = MutableLiveData<Int>(0)
     val errorCode = MutableLiveData<Int>(0)
     val errorMsg = MutableLiveData<String>("")
-    val MILLISECONDS = 1000
+    val milliseconds = 1000
     var totalToBeSent = 0
     var totalToBeReceived = 0
 
@@ -36,7 +36,7 @@ class SmsStateReporter @Inject constructor(
     var retriesAttempted = 0
     var maxAttempts = 3
 
-    val retry = MutableLiveData<Boolean>(false);
+    val retry = MutableLiveData<Boolean>(false)
 
     fun initSending(numberOfSmsToSend: Int) {
         state.postValue((SmsTransmissionStates.GETTING_READY_TO_SEND))
@@ -133,7 +133,7 @@ class SmsStateReporter @Inject constructor(
         timeoutThread = Thread {
             try {
                 retry.postValue(true)
-                Thread.sleep(seconds * MILLISECONDS * (attemptNumber + 1))
+                Thread.sleep(seconds * milliseconds * (attemptNumber + 1))
                 if (state.value == SmsTransmissionStates.SENDING_TO_RELAY_SERVER || sent != totalToBeSent) {
                     if (attemptNumber < maxAttempts - 1) {
                         retrySMSMessage()

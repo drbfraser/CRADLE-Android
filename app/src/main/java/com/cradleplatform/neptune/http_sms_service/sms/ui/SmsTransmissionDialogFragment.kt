@@ -66,7 +66,7 @@ class SmsTransmissionDialogFragment @Inject constructor(
                 retryTimer.isVisible = true
                 timer = object :
                     CountDownTimer(smsStateReporter.timeout * 1000 * (smsStateReporter.retriesAttempted + 1),
-                        countDownIntervalMilli){
+                        countDownIntervalMilli) {
                     override fun onTick(timeRemaining: Long) {
                         val seconds = timeRemaining / 1000
                         retryTimer.text =
@@ -109,7 +109,6 @@ class SmsTransmissionDialogFragment @Inject constructor(
                 }
             }
         }
-
         // Set click listeners
         positiveButton.setOnClickListener {
             dismiss()
