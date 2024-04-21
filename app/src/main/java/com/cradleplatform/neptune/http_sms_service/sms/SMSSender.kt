@@ -59,7 +59,6 @@ class SMSSender @Inject constructor(
                 appContext.showDialog()
             }
         }
-        Log.d("walla", smsRelayQueue.size.toString())
         val relayPhoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
         val smsManager: SmsManager = SmsManager.getDefault()
         smsStateReporter.state.postValue(SmsTransmissionStates.SENDING_TO_RELAY_SERVER)

@@ -2,7 +2,6 @@ package com.cradleplatform.neptune.http_sms_service.sms.ui
 
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,7 +14,6 @@ import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.http_sms_service.sms.SmsTransmissionStates
 import dagger.hilt.android.AndroidEntryPoint
-import okio.Timeout
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -38,8 +36,6 @@ class SmsTransmissionDialogFragment @Inject constructor(
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-
         // Access views from the layout
         val stateMessage = view.findViewById<TextView>(R.id.stateMessage)
         val sendProgressMessage = view.findViewById<TextView>(R.id.sendProgressMessage)
@@ -49,6 +45,7 @@ class SmsTransmissionDialogFragment @Inject constructor(
         val negativeButton = view.findViewById<Button>(R.id.btnNegative)
         val retryButton = view.findViewById<Button>(R.id.retry_fail)
         val retryTimer = view.findViewById<TextView>(R.id.retryTimer)
+        val countDownIntervalMilli: Long = 1000
         // Set initial values or customize views
         positiveButton.isEnabled = false
         retryButton.isVisible = false
@@ -67,25 +64,23 @@ class SmsTransmissionDialogFragment @Inject constructor(
                     timer.cancel()
                 }
                 retryTimer.isVisible = true
-                timer = object : CountDownTimer(smsStateReporter.timeout * 1000 * (smsStateReporter.retriesAttempted + 1), 1000) {
+                timer = object :
+                    CountDownTimer(smsStateReporter.timeout * 1000 * (smsStateReporter.retriesAttempted + 1),
+                        countDownIntervalMilli){
                     override fun onTick(timeRemaining: Long) {
                         val seconds = timeRemaining / 1000
-                        retryTimer.text = "Retry attempt: ${smsStateReporter.retriesAttempted}, retrying in " + seconds.toString()
+                        retryTimer.text =
+                            "Retry attempt: ${smsStateReporter.retriesAttempted}, retrying in " + seconds.toString()
                     }
-
                     override fun onFinish() {
                         retryTimer.isVisible = false
                     }
-
                 }.start()
-            }
-            else {
+            } else {
                 if (::timer.isInitialized) {
                     timer.cancel()
                 }
-
             }
-
         }
         smsStateReporter.state.observe(viewLifecycleOwner) { state ->
             if (state == SmsTransmissionStates.EXCEPTION || state == SmsTransmissionStates.DONE) {
