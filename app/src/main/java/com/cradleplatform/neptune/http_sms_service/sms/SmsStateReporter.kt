@@ -111,10 +111,7 @@ class SmsStateReporter @Inject constructor(
             }
             timeoutFunction(timeout, retriesAttempted)
         }
-
         lastSent = sent
-
-
     }
 
     fun resetStateReporter() {
