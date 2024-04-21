@@ -15,6 +15,7 @@ import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.http_sms_service.sms.SmsTransmissionStates
 import dagger.hilt.android.AndroidEntryPoint
+import okio.Timeout
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -69,11 +70,11 @@ class SmsTransmissionDialogFragment @Inject constructor(
                 timer = object : CountDownTimer(smsStateReporter.timeout * 1000 * (smsStateReporter.retriesAttempted + 1), 1000) {
                     override fun onTick(timeRemaining: Long) {
                         val seconds = timeRemaining / 1000
-                        retryTimer.text = "Retrying number: ${smsStateReporter.retriesAttempted}, retrying in " + seconds.toString()
+                        retryTimer.text = "Retry attempt: ${smsStateReporter.retriesAttempted}, retrying in " + seconds.toString()
                     }
 
                     override fun onFinish() {
-                        retryTimer.text = "Waiting for server..."
+                        retryTimer.isVisible = false
                     }
 
                 }.start()
@@ -81,7 +82,6 @@ class SmsTransmissionDialogFragment @Inject constructor(
             else {
                 if (::timer.isInitialized) {
                     timer.cancel()
-                    retryTimer.text = "why still going?"
                 }
 
             }
