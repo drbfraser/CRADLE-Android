@@ -28,6 +28,11 @@ class FormResponseManager @Inject constructor(
     suspend fun searchForFormResponseByPatientId(id: String): MutableList<FormResponse>? =
         formResponseDao.getAllFormResponseByPatientId(id)
 
+    suspend fun searchForSubmittedFormsByPatientId(id: String): MutableList<FormResponse>? =
+        formResponseDao.getSubmittedForms(id)
+
+    suspend fun searchForDraftFormsByPatientId(id: String): MutableList<FormResponse>? =
+        formResponseDao.getDraftForms(id)
     /**
      * Updates or inserts a new [FormResponse]. Checking is done through form response's id.
      *
