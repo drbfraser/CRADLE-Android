@@ -5,7 +5,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -53,7 +52,7 @@ open class PatientReferralActivity : AppCompatActivity() {
 
     private lateinit var smsReceiver: SMSReceiver
 
-    private var tried_sending_via_sms = false
+    private var triedSendingViaSms = false
 
     companion object {
         private const val EXTRA_PATIENT = "patient"
@@ -99,15 +98,13 @@ open class PatientReferralActivity : AppCompatActivity() {
         if (smsReceiver != null) {
             unregisterReceiver(smsReceiver)
         }
-        if (tried_sending_via_sms) {
+        if (triedSendingViaSms) {
             CustomToast.shortToast(
                 applicationContext,
                 applicationContext.getString(R.string.save_locally_toast)
             )
         }
-
         super.onStop()
-
     }
 
     private fun populateCurrentPatient() {
@@ -154,7 +151,7 @@ open class PatientReferralActivity : AppCompatActivity() {
         val sendViaSMS = findViewById<Button>(R.id.send_sms_button)
         sendViaSMS.setOnClickListener {
             lifecycleScope.launch {
-                tried_sending_via_sms = true
+                triedSendingViaSms = true
                 //Passing context to viewModel might not be the best idea,
                 // however, it is required as of now to resolve the strings
                 val unusedResult = viewModel.saveReferral("SMS", currPatient, applicationContext)
@@ -188,6 +185,4 @@ open class PatientReferralActivity : AppCompatActivity() {
         smsReceiver = SMSReceiver(smsSender, phoneNumber, smsStateReporter)
         registerReceiver(smsReceiver, intentFilter)
     }
-
-
 }
