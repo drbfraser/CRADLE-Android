@@ -5,7 +5,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingComponent
@@ -51,6 +53,8 @@ open class PatientReferralActivity : AppCompatActivity() {
 
     private lateinit var smsReceiver: SMSReceiver
 
+    private var tried_sending_via_sms = false
+
     companion object {
         private const val EXTRA_PATIENT = "patient"
         private const val EXTRA_PATIENT_ID = "patient_id"
@@ -95,7 +99,15 @@ open class PatientReferralActivity : AppCompatActivity() {
         if (smsReceiver != null) {
             unregisterReceiver(smsReceiver)
         }
+        if (tried_sending_via_sms) {
+            CustomToast.shortToast(
+                applicationContext,
+                applicationContext.getString(R.string.save_locally_toast)
+            )
+        }
+
         super.onStop()
+
     }
 
     private fun populateCurrentPatient() {
@@ -142,6 +154,7 @@ open class PatientReferralActivity : AppCompatActivity() {
         val sendViaSMS = findViewById<Button>(R.id.send_sms_button)
         sendViaSMS.setOnClickListener {
             lifecycleScope.launch {
+                tried_sending_via_sms = true
                 //Passing context to viewModel might not be the best idea,
                 // however, it is required as of now to resolve the strings
                 val unusedResult = viewModel.saveReferral("SMS", currPatient, applicationContext)
@@ -150,6 +163,11 @@ open class PatientReferralActivity : AppCompatActivity() {
                 // TODO: Remove the following code from the UI and move to a more appropriate place
                 // This should not be in the UI and should be moved to a place where the server
                 // response is being parsed
+                Toast.makeText(
+                    applicationContext,
+                    applicationContext.getString(R.string.sms_sender_send),
+                    Toast.LENGTH_SHORT
+                ).show()
                 currPatient.lastServerUpdate = currPatient.lastEdited
                 patientManager.add(currPatient)
                 CustomToast.shortToast(
@@ -170,4 +188,6 @@ open class PatientReferralActivity : AppCompatActivity() {
         smsReceiver = SMSReceiver(smsSender, phoneNumber, smsStateReporter)
         registerReceiver(smsReceiver, intentFilter)
     }
+
+
 }

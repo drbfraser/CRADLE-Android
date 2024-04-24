@@ -352,10 +352,10 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
 
     private fun launchDiscardChangesDialogIfNeeded() {
         MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.discard_dialog_title)
+            .setTitle(R.string.save_locally_title)
             .setMessage(getDiscardDialogMessageId())
             .setNegativeButton(android.R.string.cancel, null)
-            .setPositiveButton(R.string.discard_dialog_discard) { _, _ ->
+            .setPositiveButton(R.string.save_locally_positive_button) { _, _ ->
                 findNavController(R.id.reading_nav_host).popBackStack(R.id.loadingFragment, true)
                 finish()
             }
@@ -381,7 +381,7 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
             if (currentDest == R.id.patientInfoFragment) {
                 R.string.discard_dialog_new_patient
             } else {
-                R.string.discard_dialog_new_patient_and_reading
+                R.string.save_patient_locally
             }
         }
         LaunchReason.LAUNCH_REASON_EXISTINGNEW -> R.string.discard_dialog_new_reading
