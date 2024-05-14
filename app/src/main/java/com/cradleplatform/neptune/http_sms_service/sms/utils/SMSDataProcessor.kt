@@ -2,7 +2,9 @@ package com.cradleplatform.neptune.http_sms_service.sms.utils
 
 import android.net.Uri
 import com.cradleplatform.neptune.manager.UrlManager
+import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.FormResponse
+import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.PatientAndReadings
 import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.Reading
@@ -22,6 +24,56 @@ import javax.inject.Singleton
 class SMSDataProcessor @Inject constructor(private val urlManager: UrlManager) {
     // TODO: Add target API endpoint information needed by the backend to json ??
     // TODO: requestNumber=0 as it is not implemented in the backend yet
+
+    /**
+     * Transforms a Patient into a Cradle Server SMS API compatible JSON String.
+     * @param patient
+     * @return A JSON formatted String, else empty String if an Exception is caught.
+     */
+    fun processPatientToJSON(patient: Patient): String {
+        try {
+            val patientJSON = JacksonMapper.createWriter<Patient>().writeValueAsString(patient)
+            val url = Uri.parse(urlManager.postPatient)
+            val endpoint = url.path ?: throw Exception("URL path is null")
+            return JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
+                SmsReadingWithReferral(
+                    requestNumber = "0",
+                    method = "POST",
+                    endpoint = endpoint,
+                    headers = "",
+                    body = patientJSON
+                )
+            )
+        } catch (e: Exception) {
+            Error(e.message, e.cause)
+            return ""
+        }
+    }
+
+    /**
+     * Transforms a Assessment into a Cradle Server SMS API compatible JSON String.
+     * @param assessment
+     * @return A JSON formatted String, else empty String if an Exception is caught.
+     */
+    fun processAssessmentToJSON(assessment: Assessment): String {
+        try {
+            val assessmentJSON = JacksonMapper.createWriter<Patient>().writeValueAsString(assessment)
+            val url = Uri.parse(urlManager.postAssessment)
+            val endpoint = url.path ?: throw Exception("URL path is null")
+            return JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
+                SmsReadingWithReferral(
+                    requestNumber = "0",
+                    method = "POST",
+                    endpoint = endpoint,
+                    headers = "",
+                    body = assessmentJSON
+                )
+            )
+        } catch (e: Exception) {
+            Error(e.message, e.cause)
+            return ""
+        }
+    }
 
     /**
      * Transforms a FormResponse into a Cradle Server SMS API compatible JSON String.
