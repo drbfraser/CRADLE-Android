@@ -57,7 +57,8 @@ class SMSDataProcessor @Inject constructor(private val urlManager: UrlManager) {
      */
     fun processAssessmentToJSON(assessment: Assessment): String {
         try {
-            val assessmentJSON = JacksonMapper.createWriter<Patient>().writeValueAsString(assessment)
+            val assessmentJSON =
+                JacksonMapper.createWriter<Assessment>().writeValueAsString(assessment)
             val url = Uri.parse(urlManager.postAssessment)
             val endpoint = url.path ?: throw Exception("URL path is null")
             return JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
@@ -109,9 +110,10 @@ class SMSDataProcessor @Inject constructor(private val urlManager: UrlManager) {
     fun processPatientAndReadingsToJSON(patientAndReadings: PatientAndReadings): String {
         try {
             if (patientAndReadings.patient.lastServerUpdate == null) {
-                val patientAndReadingsJSON = JacksonMapper.createWriter<PatientAndReadings>().writeValueAsString(
-                    patientAndReadings
-                )
+                val patientAndReadingsJSON =
+                    JacksonMapper.createWriter<PatientAndReadings>().writeValueAsString(
+                        patientAndReadings
+                    )
                 val url = Uri.parse(urlManager.postPatient)
                 val endpoint = url.path ?: throw Exception("URL path is null")
                 return JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
@@ -125,7 +127,8 @@ class SMSDataProcessor @Inject constructor(private val urlManager: UrlManager) {
                 )
             } else {
                 val readingJSON = JacksonMapper.createWriter<Reading>().writeValueAsString(
-                    patientAndReadings.readings[0])
+                    patientAndReadings.readings[0]
+                )
                 val url = Uri.parse(urlManager.postReading)
                 val endpoint = url.path ?: throw Exception("URL path is null")
                 return JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
