@@ -4,6 +4,8 @@ import android.net.Uri
 import com.cradleplatform.neptune.manager.UrlManager
 import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.FormResponse
+import com.cradleplatform.neptune.model.FormTemplate
+import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.PatientAndReadings
 import com.cradleplatform.neptune.model.PatientAndReferrals
@@ -42,6 +44,32 @@ class SMSDataProcessor @Inject constructor(private val urlManager: UrlManager) {
                     endpoint = endpoint,
                     headers = "",
                     body = patientJSON
+                )
+            )
+        } catch (e: Exception) {
+            Error(e.message, e.cause)
+            return ""
+        }
+    }
+
+    /**
+     * Transforms a Reading into a Cradle Server SMS API compatible JSON String.
+     * @param reading
+     * @return A JSON formatted String, else empty String if an Exception is caught.
+     */
+    fun processReadingToJSON(reading: Reading): String {
+        try {
+            val readingJSON =
+                JacksonMapper.createWriter<Assessment>().writeValueAsString(reading)
+            val url = Uri.parse(urlManager.postReading)
+            val endpoint = url.path ?: throw Exception("URL path is null")
+            return JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
+                SmsReadingWithReferral(
+                    requestNumber = "0",
+                    method = "POST",
+                    endpoint = endpoint,
+                    headers = "",
+                    body = readingJSON
                 )
             )
         } catch (e: Exception) {
@@ -192,6 +220,62 @@ class SMSDataProcessor @Inject constructor(private val urlManager: UrlManager) {
                     endpoint = endpoint,
                     headers = "",
                     body = referralJSON
+                )
+            )
+        } catch (e: Exception) {
+            Error(e.message, e.cause)
+            return ""
+        }
+    }
+
+    /**
+     * Transforms a HealthFacility into a Cradle Server SMS API compatible JSON String.
+     * @param healthFacility
+     * @return A JSON formatted String, else empty String if an Exception is caught.
+     */
+    fun processHealthFacilityToJSON(healthFacility: HealthFacility): String {
+        try {
+            val healthFacilityJSON =
+                JacksonMapper.createWriter<HealthFacility>().writeValueAsString(
+                    healthFacility
+                )
+            val url = Uri.parse(urlManager.healthFacilities)
+            val endpoint = url.path ?: throw Exception("URL path is null")
+            return JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
+                SmsReadingWithReferral(
+                    requestNumber = "0",
+                    method = "GET",
+                    endpoint = endpoint,
+                    headers = "",
+                    body = healthFacilityJSON
+                )
+            )
+        } catch (e: Exception) {
+            Error(e.message, e.cause)
+            return ""
+        }
+    }
+
+    /**
+     * Transforms a FormTemplate into a Cradle Server SMS API compatible JSON String.
+     * @param formTemplate
+     * @return A JSON formatted String, else empty String if an Exception is caught.
+     */
+    fun processFormTemplatesToJSON(formTemplate: FormTemplate): String {
+        try {
+            val formTemplateJSON =
+                JacksonMapper.createWriter<FormTemplate>().writeValueAsString(
+                    formTemplate
+                )
+            val url = Uri.parse(urlManager.getAllFormsAsSummary)
+            val endpoint = url.path ?: throw Exception("URL path is null")
+            return JacksonMapper.createWriter<SmsReadingWithReferral>().writeValueAsString(
+                SmsReadingWithReferral(
+                    requestNumber = "0",
+                    method = "GET",
+                    endpoint = endpoint,
+                    headers = "",
+                    body = formTemplateJSON
                 )
             )
         } catch (e: Exception) {
