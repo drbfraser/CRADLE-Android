@@ -18,6 +18,7 @@ import com.cradleplatform.neptune.sync.views.viewmodels.SyncViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigInteger
 import javax.inject.Inject
+import android.widget.Toast
 
 @AndroidEntryPoint
 class SyncActivity : AppCompatActivity() {
@@ -47,6 +48,23 @@ class SyncActivity : AppCompatActivity() {
         syncButton.setOnClickListener {
             syncButton.isEnabled = false
             viewModel.startSyncing()
+        }
+
+        // Only if network is restored, notify user
+        viewModel.isConnectedToInternet.observe(this) { isConnected ->
+            if (isConnected) {
+                Toast.makeText(
+                    this,
+                    "Internet connection is restored and content is available to sync.",
+                    Toast.LENGTH_LONG
+                ).show()
+            } else {
+                Toast.makeText(
+                    this,
+                    "No internet connection.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
         }
 
         showLastSyncStatus(null)
