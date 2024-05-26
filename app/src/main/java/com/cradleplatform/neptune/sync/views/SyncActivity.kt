@@ -1,5 +1,6 @@
 package com.cradleplatform.neptune.sync.views
 
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
@@ -19,6 +20,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigInteger
 import javax.inject.Inject
 import android.widget.Toast
+import com.cradleplatform.neptune.utilities.notification.NotificationManagerCustom
 
 @AndroidEntryPoint
 class SyncActivity : AppCompatActivity() {
@@ -28,6 +30,7 @@ class SyncActivity : AppCompatActivity() {
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
+    lateinit var notificationManager: NotificationManagerCustom
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,6 +47,9 @@ class SyncActivity : AppCompatActivity() {
             title = getString(R.string.sync_activity_title)
         }
 
+        // Initialize the notification channel
+        NotificationManagerCustom.createNotificationChannel(this)
+
         val syncButton = findViewById<Button>(R.id.sync_button)
         syncButton.setOnClickListener {
             syncButton.isEnabled = false
@@ -58,6 +64,18 @@ class SyncActivity : AppCompatActivity() {
                     "Internet connection is restored and content is available to sync.",
                     Toast.LENGTH_LONG
                 ).show()
+
+                // Show notification when the internet is restored
+                val intent = Intent(this, SyncActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                }
+                NotificationManagerCustom.pushNotification(
+                    this,
+                    "Network Restored",
+                    "Internet connection is restored and content is available to sync.",
+                    1001,
+                    intent
+                )
             } else {
                 Toast.makeText(
                     this,
