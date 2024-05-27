@@ -64,18 +64,6 @@ class SyncActivity : AppCompatActivity() {
                     "Internet connection is restored and content is available to sync.",
                     Toast.LENGTH_LONG
                 ).show()
-
-                // Show notification when the internet is restored
-                val intent = Intent(this, SyncActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                }
-                NotificationManagerCustom.pushNotification(
-                    this,
-                    "Network Restored",
-                    "Internet connection is restored and content is available to sync.",
-                    1001,
-                    intent
-                )
             } else {
                 Toast.makeText(
                     this,
