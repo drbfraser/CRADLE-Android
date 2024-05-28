@@ -369,12 +369,15 @@ open class PatientProfileActivity : AppCompatActivity() {
         )
 
         sBPDataSet.color = R.color.purple
+        sBPDataSet.valueTextSize = 9.0f
         sBPDataSet.setCircleColor(R.color.purple)
 
         dBPDataSet.color = R.color.colorAccent
+        dBPDataSet.valueTextSize = 9.0f
         dBPDataSet.setCircleColor(R.color.colorAccent)
 
         bPMDataSet.color = R.color.orange
+        bPMDataSet.valueTextSize = 9.0f
         bPMDataSet.setCircleColor(R.color.orange)
 
         bPMDataSet.mode = LineDataSet.Mode.CUBIC_BEZIER
