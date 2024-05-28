@@ -18,7 +18,9 @@ import com.cradleplatform.neptune.http_sms_service.sms.RelayRequestCounter
 import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkMonitoringUtil
 import com.cradleplatform.neptune.sync.PeriodicSyncer
+import com.cradleplatform.neptune.sync.views.SyncActivity
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
+import com.cradleplatform.neptune.utilities.notification.NotificationManagerGlobal
 import com.cradleplatform.neptune.view.PinPassActivity
 
 import com.jakewharton.threetenabp.AndroidThreeTen
@@ -76,6 +78,10 @@ class CradleApplication : Application(), Configuration.Provider {
     lateinit var networkStateManager: NetworkStateManager
     @Inject
     lateinit var networkMonitor: NetworkMonitoringUtil
+    @Inject
+    lateinit var notificationManager: NotificationManagerGlobal
+
+    private var hasNetworkBeenDisconnected: Boolean = false
 
     override fun getWorkManagerConfiguration(): Configuration = Configuration.Builder()
         .setWorkerFactory(workerFactory)
@@ -195,6 +201,28 @@ class CradleApplication : Application(), Configuration.Provider {
                 }
             }
         )
+
+        // Initialize the notification channel
+        notificationManager.createNotificationChannel()
+
+        // Observe network state changes
+        networkStateManager.getInternetConnectivityStatus().observeForever { isConnected ->
+            if (isConnected == true && hasNetworkBeenDisconnected) {
+                // Trigger a notification when network is restored
+                notificationManager.pushNotification(
+                    "Network Restored",
+                    "Internet connection is restored and content is available to sync.",
+                    1001, // Unique notification ID
+                    Intent(this, SyncActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    }
+                )
+            }
+            // Update the flag based on the current connectivity status
+            if (isConnected == false) {
+                hasNetworkBeenDisconnected = true
+            }
+        }
     }
 
     fun pinPassActivityFinished() {
