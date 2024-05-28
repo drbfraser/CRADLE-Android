@@ -1,26 +1,25 @@
 package com.cradleplatform.neptune.sync.views
 
-import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.work.WorkInfo
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.databinding.ActivitySyncBinding
+import com.cradleplatform.neptune.sync.views.viewmodels.SyncViewModel
 import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import com.cradleplatform.neptune.utilities.DateUtil
-import com.cradleplatform.neptune.sync.views.viewmodels.SyncViewModel
+import com.cradleplatform.neptune.utilities.notification.NotificationManagerCustom
 import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigInteger
 import javax.inject.Inject
-import android.widget.Toast
-import com.cradleplatform.neptune.utilities.notification.NotificationManagerCustom
 
 @AndroidEntryPoint
 class SyncActivity : AppCompatActivity() {
