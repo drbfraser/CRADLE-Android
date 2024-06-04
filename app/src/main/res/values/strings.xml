@@ -249,6 +249,7 @@
     <string name="dashboard_sync">Sync</string>
     <string name="dashboard_education">Education</string>
     <string name="dashboard_statistics">Statistics</string>
+    <string name="dashboard_forms">Forms</string>
     <string name="education_activity_community_poster">Community poster</string>
     <string name="education_activity_watch_training_video">Watch training video</string>
     <string name="education_activity_clinic_poster">Clinic poster</string>

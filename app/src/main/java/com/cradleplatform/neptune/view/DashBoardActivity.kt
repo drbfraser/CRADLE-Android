@@ -76,7 +76,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
     private fun networkCheck() {
         // Disable entering StatsActivity without network connectivity.
 
-        val statView = findViewById<View>(R.id.statconstraintLayout)
+        val statView = findViewById<View>(R.id.statConstraintLayout)
         val statImg = statView.findViewById<ImageButton>(R.id.statImg)
         val statCardview: CardView = statView.findViewById(R.id.statCardView)
         val isNetworkAvailable = networkStateManager.getInternetConnectivityStatus()
@@ -201,7 +201,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
             findViewById<View>(R.id.patientConstraintLayout)
         val patientCardView: CardView = patientView.findViewById(R.id.patientCardview)
         val patientImg = patientView.findViewById<ImageButton>(R.id.patientImg)
-        val statView = findViewById<View>(R.id.statconstraintLayout)
+        val statView = findViewById<View>(R.id.statConstraintLayout)
         val statCardview: CardView = statView.findViewById(R.id.statCardView)
         val statImg = statView.findViewById<ImageButton>(R.id.statImg)
         val uploadCard =
