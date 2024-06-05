@@ -9,9 +9,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import com.cradleplatform.neptune.ext.getIntOrNull
-import com.cradleplatform.neptune.http_sms_service.http.DatabaseObject
-import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
-import com.cradleplatform.neptune.http_sms_service.http.Protocol
+import com.cradleplatform.neptune.http_sms_service.DatabaseObject
+import com.cradleplatform.neptune.http_sms_service.HttpSmsService
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.manager.HealthFacilityManager
@@ -21,6 +20,7 @@ import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.Referral
+import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.UnixTimestamp
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel

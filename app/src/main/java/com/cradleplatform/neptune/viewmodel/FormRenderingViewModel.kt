@@ -10,9 +10,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cradleplatform.neptune.R
-import com.cradleplatform.neptune.http_sms_service.http.DatabaseObject
-import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
-import com.cradleplatform.neptune.http_sms_service.http.Protocol
+import com.cradleplatform.neptune.http_sms_service.DatabaseObject
+import com.cradleplatform.neptune.http_sms_service.HttpSmsService
 import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
@@ -24,6 +23,7 @@ import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.model.QuestionTypeEnum
+import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.connectivity.api24.ConnectivityOptions
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.view.FormRenderingActivity

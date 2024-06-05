@@ -2,7 +2,7 @@ package com.cradleplatform.neptune.viewmodel
 
 import android.content.Context
 import com.cradleplatform.neptune.R
-import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
+import com.cradleplatform.neptune.http_sms_service.HttpSmsService
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.manager.FormManager
 import com.cradleplatform.neptune.manager.FormResponseManager

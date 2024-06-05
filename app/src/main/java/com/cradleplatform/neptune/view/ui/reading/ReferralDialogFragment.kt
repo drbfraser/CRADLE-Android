@@ -124,6 +124,8 @@ class ReferralDialogFragment : DialogFragment() {
                 referralDialogViewModel.isSending.value != true
             ) {
                 // Retrieve and validate the locally stored smsKey - allow user to send SMS if the smsKey is valid
+                // TODO: Investigate and document why smsKeyManager is used here but not used
+                //  anywhere else where SMS functionality is enabled
                 val currentSmsKey = smsKeyManager.retrieveSmsKey()
                 val keyStatus: SmsKeyManager.KeyState = smsKeyManager.validateSmsKey(currentSmsKey)
                 if (keyStatus == SmsKeyManager.KeyState.NORMAL || keyStatus == SmsKeyManager.KeyState.WARN) {
@@ -173,8 +175,8 @@ class ReferralDialogFragment : DialogFragment() {
                     showStatusToast(view.context, roomDbSaveResult, ReferralOption.SMS)
                     val json = smsDataProcessor.processPatientAndReadingsToJSON(
                         roomDbSaveResult.patientInfoForReferral)
-                    smsSender.queueRelayContent(json).let { enqueuSuccessful ->
-                        if (enqueuSuccessful) {
+                    smsSender.queueRelayContent(json).let { enqueueSuccessful ->
+                        if (enqueueSuccessful) {
                             smsSender.sendSmsMessage(false)
                         }
                     }

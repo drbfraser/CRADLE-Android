@@ -492,8 +492,8 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
     // This overrides the DataParser interface in ReferralDialogFragment.kt
     override fun sendSmsMessage(data: String) {
         smsSender.queueRelayContent(data)
-            .let { enqueuSuccessful ->
-                if (enqueuSuccessful) {
+            .let { enqueueSuccessful ->
+                if (enqueueSuccessful) {
                     Toast.makeText(
                         this, getString(R.string.sms_sender_send),
                         Toast.LENGTH_LONG

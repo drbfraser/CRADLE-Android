@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.http_sms_service.http
+package com.cradleplatform.neptune.http_sms_service
 
 import android.content.Context
 import android.os.Handler
@@ -6,6 +6,9 @@ import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.http_sms_service.http.map
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.model.FormResponse
@@ -13,6 +16,7 @@ import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
+import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import java.net.HttpURLConnection
 import javax.inject.Inject
@@ -41,11 +45,6 @@ import javax.inject.Inject
  * .
  */
 
-enum class Protocol {
-    HTTP,
-    SMS
-}
-
 sealed class DatabaseObject {
     data class PatientWrapper(val patient: Patient) : DatabaseObject()
     data class ReferralWrapper(
@@ -56,6 +55,7 @@ sealed class DatabaseObject {
         val submissionMode: Protocol,
         val smsDataProcessor: SMSDataProcessor
     ) : DatabaseObject()
+
     data class ReadingWrapper(val reading: Reading, val submissionMode: Protocol) : DatabaseObject()
     data class FormResponseWrapper(
         val formResponse: FormResponse,
@@ -80,22 +80,24 @@ class HttpSmsService @Inject constructor(private val restApi: RestApi) {
     }
 
     private suspend fun uploadReferral(referralWrapper: DatabaseObject.ReferralWrapper):
-        NetworkResult<PatientAndReferrals> {
+            NetworkResult<PatientAndReferrals> {
         when (referralWrapper.submissionMode) {
             Protocol.HTTP -> {
                 // A copy of this code is in ReferralUploadManager.kt (the second function),
                 // but we need to modularize the code
                 // so everything must be refactored in here.
-                val patientExists = when (val result = restApi.getPatientInfo(referralWrapper.patient.id)) {
-                    is NetworkResult.Failure ->
-                        if (result.statusCode == HttpURLConnection.HTTP_NOT_FOUND) {
-                            false
-                        } else {
-                            return result.cast()
-                        }
-                    is NetworkResult.Success -> true
-                    is NetworkResult.NetworkException -> return result.cast()
-                }
+                val patientExists =
+                    when (val result = restApi.getPatientInfo(referralWrapper.patient.id)) {
+                        is NetworkResult.Failure ->
+                            if (result.statusCode == HttpURLConnection.HTTP_NOT_FOUND) {
+                                false
+                            } else {
+                                return result.cast()
+                            }
+
+                        is NetworkResult.Success -> true
+                        is NetworkResult.NetworkException -> return result.cast()
+                    }
 
                 // If the patient exists we only need to upload the reading, if not
                 // then we need to upload the whole patient as well.
@@ -104,20 +106,29 @@ class HttpSmsService @Inject constructor(private val restApi: RestApi) {
                         PatientAndReferrals(referralWrapper.patient, listOf(it))
                     }
                 } else {
-                    restApi.postPatient(PatientAndReferrals(referralWrapper.patient, listOf(referralWrapper.referral)))
+                    restApi.postPatient(
+                        PatientAndReferrals(
+                            referralWrapper.patient,
+                            listOf(referralWrapper.referral)
+                        )
+                    )
                 }
             }
+
             Protocol.SMS -> {
                 // Check if the patient has been synced to the server yet
                 val json = if (referralWrapper.patient.lastServerUpdate == null) {
                     referralWrapper.smsDataProcessor.processPatientAndReferralToJSON(
-                        PatientAndReferrals(referralWrapper.patient,
-                            listOf(referralWrapper.referral)))
+                        PatientAndReferrals(
+                            referralWrapper.patient,
+                            listOf(referralWrapper.referral)
+                        )
+                    )
                 } else {
                     referralWrapper.smsDataProcessor.processReferralToJSON(referralWrapper.referral)
                 }
-                referralWrapper.smsSender.queueRelayContent(json).let { enqueuSuccessful ->
-                    if (enqueuSuccessful) {
+                referralWrapper.smsSender.queueRelayContent(json).let { enqueueSuccessful ->
+                    if (enqueueSuccessful) {
                         referralWrapper.smsSender.sendSmsMessage(false)
                     }
                 }
