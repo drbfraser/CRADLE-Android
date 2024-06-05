@@ -71,6 +71,6 @@ class GlobalPatientAdapter(private val patientList: List<GlobalPatient>) :
         var id: TextView = itemView.findViewById(R.id.patientID)
         var village: TextView = itemView.findViewById(R.id.patientVillage)
         var addToMyPatientButton: ImageButton = itemView.findViewById(R.id.addToMyPatientFab)
-        var cardview = itemView.findViewById<CardView>(R.id.patientCardview)
+        var cardview = itemView.findViewById<CardView>(R.id.patientCardView)
     }
 }

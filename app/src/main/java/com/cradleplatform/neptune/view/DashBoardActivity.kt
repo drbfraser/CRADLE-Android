@@ -199,7 +199,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
     private fun setupOnClickListner() {
         val patientView =
             findViewById<View>(R.id.patientConstraintLayout)
-        val patientCardView: CardView = patientView.findViewById(R.id.patientCardview)
+        val patientCardView: CardView = patientView.findViewById(R.id.patientCardView)
         val patientImg = patientView.findViewById<ImageButton>(R.id.patientImg)
         val statView = findViewById<View>(R.id.statConstraintLayout)
         val statCardview: CardView = statView.findViewById(R.id.statCardView)
@@ -269,7 +269,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
                 val intent = ReadingActivity.makeIntentForNewReading(this@DashBoardActivity)
                 startActivityForResult(intent, READING_ACTIVITY_DONE)
             }
-            R.id.patientCardview, R.id.patientImg -> startActivity(PatientsActivity.makeIntent(this))
+            R.id.patientCardView, R.id.patientImg -> startActivity(PatientsActivity.makeIntent(this))
             R.id.syncCardView, R.id.syncImg -> startActivity(Intent(this, SyncActivity::class.java))
             R.id.fabEducationDashboard -> startActivity(Intent(this, EducationActivity::class.java))
             R.id.statCardView, R.id.statImg -> startActivity(

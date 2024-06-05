@@ -73,6 +73,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:clickable="true"
+                android:contentDescription="@string/activity_patients_title"
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="@color/colorOffWhite"
@@ -86,7 +87,8 @@
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    app:srcCompat="@drawable/card_36" />
+                    app:srcCompat="@drawable/card_36"
+                    android:contentDescription="@string/dashboard_new_patient" />
             </androidx.cardview.widget.CardView>
 
             <ImageButton
@@ -95,6 +97,7 @@
                 android:layout_height="95dp"
                 android:adjustViewBounds="true"
                 android:background="@drawable/round_background"
+                android:contentDescription="@string/dashboard_new_patient"
                 android:cropToPadding="true"
                 android:elevation="4dp"
                 android:scaleType="fitXY"
@@ -129,11 +132,12 @@
             app:layout_constraintTop_toTopOf="@+id/readingConstraintLayout">
 
             <androidx.cardview.widget.CardView
-                android:id="@+id/patientCardview"
+                android:id="@+id/patientCardView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:clickable="true"
+                android:contentDescription="@string/activity_patients_title"
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="@color/colorOffWhite"
@@ -147,6 +151,7 @@
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:contentDescription="@string/activity_patients_title"
                     app:srcCompat="@drawable/card_36" />
             </androidx.cardview.widget.CardView>
 
@@ -156,11 +161,12 @@
                 android:layout_height="95dp"
                 android:adjustViewBounds="true"
                 android:background="@drawable/round_background"
+                android:contentDescription="@string/activity_patients_title"
                 android:cropToPadding="true"
                 android:elevation="4dp"
                 android:scaleType="fitXY"
-                app:layout_constraintEnd_toEndOf="@+id/patientCardview"
-                app:layout_constraintStart_toStartOf="@+id/patientCardview"
+                app:layout_constraintEnd_toEndOf="@+id/patientCardView"
+                app:layout_constraintStart_toStartOf="@+id/patientCardView"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/ic_patients" />
 
@@ -168,9 +174,9 @@
                 style="@style/DashboardCardText"
                 android:layout_marginBottom="8dp"
                 android:text="@string/patients"
-                app:layout_constraintBottom_toBottomOf="@+id/patientCardview"
-                app:layout_constraintEnd_toEndOf="@+id/patientCardview"
-                app:layout_constraintStart_toStartOf="@+id/patientCardview"
+                app:layout_constraintBottom_toBottomOf="@+id/patientCardView"
+                app:layout_constraintEnd_toEndOf="@+id/patientCardView"
+                app:layout_constraintStart_toStartOf="@+id/patientCardView"
                 app:layout_constraintTop_toBottomOf="@+id/patientImg" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -195,6 +201,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:clickable="true"
+                android:contentDescription="@string/dashboard_statistics"
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="@color/colorOffWhite"
@@ -208,6 +215,7 @@
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:contentDescription="@string/dashboard_statistics"
                     app:srcCompat="@drawable/card_36" />
             </androidx.cardview.widget.CardView>
 
@@ -217,6 +225,7 @@
                 android:layout_height="95dp"
                 android:adjustViewBounds="true"
                 android:background="@drawable/round_background"
+                android:contentDescription="@string/dashboard_statistics"
                 android:cropToPadding="true"
                 android:elevation="4dp"
                 android:scaleType="fitXY"
@@ -249,12 +258,12 @@
             app:layout_constraintTop_toTopOf="@+id/statConstraintLayout">
 
             <androidx.cardview.widget.CardView
-
                 android:id="@+id/syncCardView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:clickable="true"
+                android:contentDescription="@string/dashboard_sync"
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="@color/colorOffWhite"
@@ -268,6 +277,7 @@
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
+                    android:contentDescription="@string/dashboard_sync"
                     app:srcCompat="@drawable/card_36" />
             </androidx.cardview.widget.CardView>
 
@@ -277,6 +287,7 @@
                 android:layout_height="95dp"
                 android:adjustViewBounds="true"
                 android:background="@drawable/round_background"
+                android:contentDescription="@string/dashboard_sync"
                 android:cropToPadding="true"
                 android:elevation="4dp"
                 android:scaleType="fitXY"
@@ -316,6 +327,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:clickable="true"
+                android:contentDescription="@string/dashboard_forms"
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="@color/colorOffWhite"
@@ -329,6 +341,7 @@
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:contentDescription="@string/dashboard_forms"
                     app:srcCompat="@drawable/card_36" />
             </androidx.cardview.widget.CardView>
 
@@ -338,6 +351,7 @@
                 android:layout_height="95dp"
                 android:adjustViewBounds="true"
                 android:background="@drawable/round_background"
+                android:contentDescription="@string/dashboard_forms"
                 android:cropToPadding="true"
                 android:elevation="4dp"
                 android:scaleType="fitXY"
@@ -376,6 +390,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:clickable="true"
+                android:contentDescription="@string/dashboard_education"
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="@color/colorOffWhite"
@@ -389,6 +404,7 @@
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:contentDescription="@string/dashboard_education"
                     app:srcCompat="@drawable/card_36" />
             </androidx.cardview.widget.CardView>
 
@@ -398,6 +414,7 @@
                 android:layout_height="95dp"
                 android:adjustViewBounds="true"
                 android:background="@drawable/round_background"
+                android:contentDescription="@string/dashboard_education"
                 android:cropToPadding="true"
                 android:elevation="4dp"
                 android:scaleType="fitXY"
