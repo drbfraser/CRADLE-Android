@@ -25,7 +25,6 @@ import com.cradleplatform.neptune.sync.SyncReminderHelper
 import com.cradleplatform.neptune.sync.views.SyncActivity
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.viewmodel.UserViewModel
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -51,7 +50,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dash_board)
         checkPinIfPinSet()
-        setupOnClickListner()
+        setupOnClickListener()
 
         val actionBar = supportActionBar
         if (actionBar != null) {
@@ -196,33 +195,40 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
             )
     }
 
-    private fun setupOnClickListner() {
+    private fun setupOnClickListener() {
         val patientView =
             findViewById<View>(R.id.patientConstraintLayout)
         val patientCardView: CardView = patientView.findViewById(R.id.patientCardView)
         val patientImg = patientView.findViewById<ImageButton>(R.id.patientImg)
+        patientCardView.setOnClickListener(this)
+        patientImg.setOnClickListener(this)
+
         val statView = findViewById<View>(R.id.statConstraintLayout)
         val statCardview: CardView = statView.findViewById(R.id.statCardView)
         val statImg = statView.findViewById<ImageButton>(R.id.statImg)
-        val uploadCard =
+        statCardview.setOnClickListener(this)
+        statImg.setOnClickListener(this)
+
+        val syncView =
             findViewById<View>(R.id.syncConstraintlayout)
-        val syncCardview: CardView = uploadCard.findViewById(R.id.syncCardView)
-        val syncImg = uploadCard.findViewById<ImageButton>(R.id.syncImg)
+        val syncCardview: CardView = syncView.findViewById(R.id.syncCardView)
+        val syncImg = syncView.findViewById<ImageButton>(R.id.syncImg)
+        syncCardview.setOnClickListener(this)
+        syncImg.setOnClickListener(this)
+
         val readingLayout =
             findViewById<View>(R.id.readingConstraintLayout)
         val readingCardView: CardView = readingLayout.findViewById(R.id.readingCardView)
         val readImg = readingLayout.findViewById<ImageButton>(R.id.readingImg)
-        val helpButton =
-            findViewById<View>(R.id.educationConstraintLayout)
         readingCardView.setOnClickListener(this)
         readImg.setOnClickListener(this)
-        syncCardview.setOnClickListener(this)
-        syncImg.setOnClickListener(this)
-        patientCardView.setOnClickListener(this)
-        patientImg.setOnClickListener(this)
-        statCardview.setOnClickListener(this)
-        statImg.setOnClickListener(this)
-        helpButton.setOnClickListener(this)
+
+        val helpLayout =
+            findViewById<View>(R.id.educationConstraintLayout)
+        val helpCardView: CardView = helpLayout.findViewById(R.id.educationCardView)
+        val helpImg = helpLayout.findViewById<ImageButton>(R.id.educationImg)
+        helpCardView.setOnClickListener(this)
+        helpImg.setOnClickListener(this)
     }
 
     private fun checkPinIfPinSet() {
