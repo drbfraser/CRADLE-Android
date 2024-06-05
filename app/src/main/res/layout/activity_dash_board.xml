@@ -372,25 +372,24 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/fabEducationDashboard"
+            android:id="@+id/educationConstraintLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:padding="0dp"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
-            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="@+id/syncConstraintlayout"
-            app:layout_constraintTop_toBottomOf="@+id/syncConstraintlayout">
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintTop_toBottomOf="@+id/statConstraintLayout">
 
             <androidx.cardview.widget.CardView
-
                 android:id="@+id/educationCardView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:clickable="true"
-                android:contentDescription="@string/dashboard_education"
+                android:contentDescription="@string/dashboard_forms"
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="@color/colorOffWhite"
@@ -425,7 +424,7 @@
 
             <TextView
                 style="@style/DashboardCardText"
-                android:layout_marginBottom="4dp"
+                android:layout_marginBottom="8dp"
                 android:text="@string/dashboard_education"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -437,9 +436,10 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="wrap_content"
             android:layout_height="0dp"
+            android:layout_marginTop="64dp"
             android:layout_marginEnd="16dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
 
             <TextView
                 android:id="@+id/versionTextView"
