@@ -289,5 +289,6 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
+        super.onBackPressed()
     }
 }
