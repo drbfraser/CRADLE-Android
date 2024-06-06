@@ -229,6 +229,13 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         val helpImg = helpLayout.findViewById<ImageButton>(R.id.educationImg)
         helpCardView.setOnClickListener(this)
         helpImg.setOnClickListener(this)
+
+        val formsLayout =
+            findViewById<View>(R.id.formsConstraintLayout)
+        val formsCardView: CardView = formsLayout.findViewById(R.id.formsCardView)
+        val formsImg = formsLayout.findViewById<ImageButton>(R.id.formsImg)
+        formsCardView.setOnClickListener(this)
+        formsImg.setOnClickListener(this)
     }
 
     private fun checkPinIfPinSet() {
@@ -271,19 +278,14 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
 
     override fun onClick(v: View) {
         when (v.id) {
-            R.id.readingCardView, R.id.readingImg -> {
-                val intent = ReadingActivity.makeIntentForNewReading(this@DashBoardActivity)
+            R.id.readingCardView, R.id.readingImg -> { val intent = ReadingActivity.makeIntentForNewReading(this@DashBoardActivity)
                 startActivityForResult(intent, READING_ACTIVITY_DONE)
             }
             R.id.patientCardView, R.id.patientImg -> startActivity(PatientsActivity.makeIntent(this))
             R.id.syncCardView, R.id.syncImg -> startActivity(Intent(this, SyncActivity::class.java))
             R.id.educationCardView, R.id.educationImg -> startActivity(Intent(this, EducationActivity::class.java))
-            R.id.statCardView, R.id.statImg -> startActivity(
-                Intent(
-                    this,
-                    StatsActivity::class.java
-                )
-            )
+            R.id.statCardView, R.id.statImg -> startActivity(Intent(this, StatsActivity::class.java))
+            R.id.formsCardView, R.id.formsImg -> startActivity(Intent(this, FormsActivity::class.java))
         }
     }
 
