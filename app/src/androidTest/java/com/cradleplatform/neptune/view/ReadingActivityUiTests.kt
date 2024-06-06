@@ -229,7 +229,7 @@ class ReadingActivityUiTests {
             clickIfEnabled(R.id.save_reading_button)
         }
 
-        onView(withId(R.id.patientCardview)).perform(scrollTo(), click())
+        onView(withId(R.id.patientCardView)).perform(scrollTo(), click())
 
         onView(withId(R.id.patientListRecyclerview))
             .perform(
