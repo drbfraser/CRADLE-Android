@@ -12,21 +12,22 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class FormsActivity : AppCompatActivity(){
-    private val viewModel: SavedFormsViewModel by viewModels()
-    private var formList: MutableList<FormResponse>? = null
-    private var adapter: SavedFormAdapter? = null
+    //private val viewModel: SavedFormsViewModel by viewModels()
+    //private var formList: MutableList<FormResponse>? = null
+    //private var adapter: SavedFormAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_saved_forms)
 
-        setUpSavedFormsRecyclerView()
+       // setUpSavedFormsRecyclerView()
         setUpActionBar()
     }
 
+    /*
     private fun setUpSavedFormsRecyclerView() {
 
-    }
+    }*/
 
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
