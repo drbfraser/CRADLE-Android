@@ -6,15 +6,17 @@ import android.view.View
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.work.WorkInfo
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.databinding.ActivitySyncBinding
+import com.cradleplatform.neptune.sync.views.viewmodels.SyncViewModel
 import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import com.cradleplatform.neptune.utilities.DateUtil
-import com.cradleplatform.neptune.sync.views.viewmodels.SyncViewModel
+import com.cradleplatform.neptune.utilities.notification.NotificationManagerCustom
 import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigInteger
 import javax.inject.Inject
@@ -27,6 +29,7 @@ class SyncActivity : AppCompatActivity() {
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
+    lateinit var notificationManager: NotificationManagerCustom
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,10 +46,30 @@ class SyncActivity : AppCompatActivity() {
             title = getString(R.string.sync_activity_title)
         }
 
+        // Initialize the notification channel
+        NotificationManagerCustom.createNotificationChannel(this)
+
         val syncButton = findViewById<Button>(R.id.sync_button)
         syncButton.setOnClickListener {
             syncButton.isEnabled = false
             viewModel.startSyncing()
+        }
+
+        // Only if network is restored, notify user
+        viewModel.isConnectedToInternet.observe(this) { isConnected ->
+            if (isConnected) {
+                Toast.makeText(
+                    this,
+                    "Internet connection is restored and content is available to sync.",
+                    Toast.LENGTH_LONG
+                ).show()
+            } else {
+                Toast.makeText(
+                    this,
+                    "No internet connection.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
         }
 
         showLastSyncStatus(null)
