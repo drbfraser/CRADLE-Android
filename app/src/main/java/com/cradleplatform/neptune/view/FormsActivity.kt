@@ -1,12 +1,8 @@
 package com.cradleplatform.neptune.view
 
 import android.os.Bundle
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.cradleplatform.neptune.R
-import com.cradleplatform.neptune.model.FormResponse
-import com.cradleplatform.neptune.viewmodel.SavedFormAdapter
-import com.cradleplatform.neptune.viewmodel.SavedFormsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 
