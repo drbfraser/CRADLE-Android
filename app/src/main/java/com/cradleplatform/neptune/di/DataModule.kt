@@ -13,6 +13,10 @@ import com.cradleplatform.neptune.database.daos.ReadingDao
 import com.cradleplatform.neptune.database.daos.ReferralDao
 import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
+import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
+import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.manager.AssessmentManager
 import com.cradleplatform.neptune.manager.FormManager
 import com.cradleplatform.neptune.manager.FormResponseManager
@@ -20,6 +24,7 @@ import com.cradleplatform.neptune.manager.HealthFacilityManager
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.manager.ReferralManager
+import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.manager.UrlManager
 import com.cradleplatform.neptune.model.Settings
 import dagger.Module
@@ -134,10 +139,22 @@ class DataModule {
     @Provides
     @Singleton
     fun provideRestApi(
+        @ApplicationContext context: Context,
         sharedPreferences: SharedPreferences,
         urlManager: UrlManager,
-        http: Http
-    ) = RestApi(sharedPreferences, urlManager, http)
+        http: Http,
+        smsStateReporter: SmsStateReporter,
+        smsSender: SMSSender,
+        smsDataProcessor: SMSDataProcessor,
+    ) = RestApi(
+        context,
+        sharedPreferences,
+        urlManager,
+        http,
+        smsStateReporter,
+        smsSender,
+        smsDataProcessor
+    )
 
     @Provides
     @Singleton

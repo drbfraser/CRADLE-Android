@@ -1,10 +1,18 @@
 package com.cradleplatform.neptune.http_sms_service.http
 
+import android.content.Context
+import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.lifecycle.asFlow
 import com.cradleplatform.neptune.ext.jackson.forEachJackson
 import com.cradleplatform.neptune.ext.jackson.parseObject
 import com.cradleplatform.neptune.ext.jackson.parseObjectArray
+import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
+import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
+import com.cradleplatform.neptune.http_sms_service.sms.SmsTransmissionStates
+import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.manager.LoginResponse
 import com.cradleplatform.neptune.manager.UrlManager
 import com.cradleplatform.neptune.model.Assessment
@@ -27,6 +35,7 @@ import com.cradleplatform.neptune.sync.workers.PatientSyncField
 import com.cradleplatform.neptune.sync.workers.ReadingSyncField
 import com.cradleplatform.neptune.sync.workers.ReferralSyncField
 import com.cradleplatform.neptune.sync.workers.SyncAllWorker
+import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper.createWriter
 import com.cradleplatform.neptune.viewmodel.UserViewModel
@@ -35,6 +44,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -43,6 +53,7 @@ import org.json.JSONObject
 import java.io.IOException
 import java.io.InputStream
 import java.math.BigInteger
+import java.net.HttpURLConnection
 import javax.inject.Singleton
 
 /**
@@ -61,14 +72,106 @@ import javax.inject.Singleton
  */
 @Singleton
 class RestApi constructor(
+    private val context: Context,
     private val sharedPreferences: SharedPreferences,
     private val urlManager: UrlManager,
-    private val http: Http
+    private val http: Http,
+    private val smsStateReporter: SmsStateReporter,
+    private val smsSender: SMSSender,
+    private val smsDataProcessor: SMSDataProcessor
 ) {
+    private val smsReceiver: SMSReceiver
+
+    init {
+        val phoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
+            ?: error("Invalid phone number")
+        smsReceiver = SMSReceiver(smsSender, phoneNumber, smsStateReporter)
+    }
+
     companion object {
         private const val TAG = "RestApi"
         private const val UNIT_VALUE_WEEKS = "WEEKS"
         private const val UNIT_VALUE_MONTHS = "MONTHS"
+    }
+
+    private fun setupSmsReceiver() {
+        val intentFilter = IntentFilter()
+        intentFilter.addAction("android.provider.Telephony.SMS_RECEIVED")
+        intentFilter.priority = Int.MAX_VALUE
+
+        context.registerReceiver(smsReceiver, intentFilter)
+    }
+
+    private fun teardownSmsReceiver() {
+        context.unregisterReceiver(smsReceiver)
+    }
+
+    // TODO: This only handles the case for endpoints that return status code 200 when successful.
+    //       Additional logic is necessary for if an endpoint has multiple successful status codes
+    //       (e.g. 200 and 201)
+    private suspend inline fun <reified T> handleSmsRequest(
+        method: Http.Method,
+        url: String,
+        body: ByteArray
+    ): NetworkResult<T> {
+        val channel = Channel<NetworkResult<T>>()
+        setupSmsReceiver()
+
+        try {
+            val json = smsDataProcessor.processRequestDataToJSON(
+                method,
+                url,
+                body
+            )
+            smsSender.queueRelayContent(json).let { enqueueSuccessful ->
+                if (enqueueSuccessful) {
+                    smsSender.sendSmsMessage(false)
+                }
+            }
+
+            smsStateReporter.state.asFlow().collect { state ->
+                when (state) {
+                    SmsTransmissionStates.DONE -> {
+                        val response = JacksonMapper.createReader<T>()
+                            .readValue<T>(smsStateReporter.decryptedMsgLiveData.value)
+
+                        channel.send(
+                            NetworkResult.Success(
+                                response,
+                                HttpURLConnection.HTTP_OK
+                            )
+                        )
+                    }
+
+                    SmsTransmissionStates.EXCEPTION -> {
+                        channel.send(
+                            NetworkResult.Failure(
+                                smsStateReporter.errorMsg.value!!.toByteArray(),
+                                smsStateReporter.errorCode.value!!
+                            )
+                        )
+                    }
+
+                    SmsTransmissionStates.TIME_OUT -> {
+                        channel.send(
+                            NetworkResult.NetworkException(
+                                SMSTimeoutException(
+                                    "SMS has timed out"
+                                )
+                            )
+                        )
+                    }
+
+                    else -> {}
+                }
+            }
+            return channel.receive()
+        } catch (e: IOException) {
+            return NetworkResult.NetworkException(e)
+        } finally {
+            channel.close()
+            teardownSmsReceiver()
+        }
     }
 
     /**
@@ -79,7 +182,11 @@ class RestApi constructor(
      * @return if successful, the [LoginResponse] that was returned by the server
      *  which contains a bearer token to authenticate the user
      */
-    suspend fun authenticate(email: String, password: String): NetworkResult<LoginResponse> =
+    suspend fun authenticate(
+        email: String,
+        password: String,
+        protocol: Protocol
+    ): NetworkResult<LoginResponse> =
         withContext(IO) {
             val body = JSONObject()
                 .put("email", email)
@@ -88,13 +195,27 @@ class RestApi constructor(
                 .encodeToByteArray()
             val requestBody = buildJsonRequestBody(body)
 
-            return@withContext http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.authentication,
-                headers = mapOf(),
-                requestBody = requestBody,
-                inputStreamReader = { JacksonMapper.createReader<LoginResponse>().readValue(it) }
-            )
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = Http.Method.POST,
+                        url = urlManager.authentication,
+                        headers = mapOf(),
+                        requestBody = requestBody,
+                        inputStreamReader = {
+                            JacksonMapper.createReader<LoginResponse>().readValue(it)
+                        }
+                    )
+                }
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest(
+                        Http.Method.POST,
+                        urlManager.authentication,
+                        body
+                    )
+                }
+            }
         }
 
     /**
@@ -484,6 +605,7 @@ class RestApi constructor(
                 inputStreamReader = {},
             )
         }
+
     /**
      * Uploads a patient's demographic information with the intent of modifying
      * an existing patient already on the server. To upload a new patient
@@ -823,6 +945,7 @@ class RestApi constructor(
                                     }
                                     patientChannel.close()
                                 }
+
                                 PatientSyncField.ERRORS.text -> {
                                     // TODO: Parse array of objects (refer to issue #62)
                                     nextToken()
@@ -1006,6 +1129,7 @@ class RestApi constructor(
                                     }
                                     referralChannel.close()
                                 }
+
                                 ReferralSyncField.ERRORS.text -> {
                                     // TODO: Parse array of objects (refer to issue #62)
                                     nextToken()
@@ -1094,6 +1218,7 @@ class RestApi constructor(
                                     }
                                     assessmentChannel.close()
                                 }
+
                                 AssessmentSyncField.ERRORS.text -> {
                                     // TODO: Parse array of objects (refer to issue #62)
                                     nextToken()
@@ -1274,3 +1399,5 @@ class RestApi constructor(
 }
 
 class SyncException(message: String) : IOException(message)
+
+class SMSTimeoutException(message: String) : IOException(message)
