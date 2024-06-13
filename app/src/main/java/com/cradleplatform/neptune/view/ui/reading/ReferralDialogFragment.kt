@@ -114,11 +114,6 @@ class ReferralDialogFragment : DialogFragment() {
             title = getString(R.string.referral_dialog_title)
         }
 
-        view.findViewById<ImageButton>(R.id.open_health_facility_settings_button)
-            .setOnClickListener {
-                activity?.apply { startActivity(HealthFacilitiesActivity.makeIntent(this)) }
-            }
-
         view.findViewById<Button>(R.id.send_sms_button).setOnClickListener {
             if (referralDialogViewModel.isSelectedHealthFacilityValid() &&
                 referralDialogViewModel.isSending.value != true
