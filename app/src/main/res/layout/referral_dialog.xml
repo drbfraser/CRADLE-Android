@@ -65,12 +65,11 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/health_facility_input_layout"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="4dp"
                     android:hint="@string/health_facility_label"
                     android:labelFor="@id/health_facility_auto_complete_text"
-                    app:layout_constraintEnd_toStartOf="@+id/open_health_facility_settings_button"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textView5">
 
@@ -82,18 +81,6 @@
                         android:text="@={viewModel.healthFacilityToUse}"
                         setMaterialSpinnerItemsWithArray="@{viewModel.selectedHealthFacilitiesAsStrings}" />
                 </com.google.android.material.textfield.TextInputLayout>
-
-                <ImageButton
-                    android:id="@+id/open_health_facility_settings_button"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/referral_dialog_open_health_facility_settings_button_content_description"
-                    android:scaleType="fitCenter"
-                    app:layout_constraintBottom_toBottomOf="@+id/health_facility_input_layout"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@+id/health_facility_input_layout"
-                    srcCompat="@drawable/ic_baseline_settings_24" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/comments_input_layout"
