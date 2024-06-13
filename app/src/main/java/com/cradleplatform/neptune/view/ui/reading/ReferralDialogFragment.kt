@@ -9,7 +9,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.databinding.DataBindingComponent
@@ -25,7 +24,6 @@ import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.view.ReadingActivity
-import com.cradleplatform.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity
 import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel
 import com.cradleplatform.neptune.viewmodel.ReadingFlowSaveResult
 import com.cradleplatform.neptune.viewmodel.ReferralDialogViewModel
@@ -73,7 +71,7 @@ class ReferralDialogFragment : DialogFragment() {
             arguments?.getSerializable(ARG_LAUNCH_REASON) as? ReadingActivity.LaunchReason != null
         )
 
-        dataPasser = context as OnReadingSendWebSnackbarMsgPass
+        dataPasser = context
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -294,7 +292,6 @@ class ReferralDialogFragment : DialogFragment() {
     }
 
     companion object {
-        private const val TAG = "ReferralDialogFragment"
         private const val ARG_LAUNCH_REASON = "LAUNCH_REASON"
 
         fun makeInstance(launchReason: ReadingActivity.LaunchReason) =
