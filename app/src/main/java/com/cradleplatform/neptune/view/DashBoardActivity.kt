@@ -282,11 +282,20 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
                 val intent = ReadingActivity.makeIntentForNewReading(this@DashBoardActivity)
                 startActivityForResult(intent, READING_ACTIVITY_DONE)
             }
+
             R.id.patientCardView, R.id.patientImg -> startActivity(PatientsActivity.makeIntent(this))
+
             R.id.syncCardView, R.id.syncImg -> startActivity(Intent(this, SyncActivity::class.java))
+
             R.id.educationCardView, R.id.educationImg -> startActivity(Intent(this, EducationActivity::class.java))
+
             R.id.statCardView, R.id.statImg -> startActivity(Intent(this, StatsActivity::class.java))
-            //todo: R.id.formsCardView, R.id.formsImg -> startActivity(Intent(this, FormsActivity::class.java))
+
+            R.id.formsCardView, R.id.formsImg -> {
+                val intent = Intent(this, SavedFormsActivity::class.java)
+                intent.putExtra("Boolean value indicating whether the forms are saved",true)
+                startActivity(intent)
+            }
         }
     }
 
