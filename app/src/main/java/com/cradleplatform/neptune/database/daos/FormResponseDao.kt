@@ -118,4 +118,7 @@ interface FormResponseDao {
 
     @Query("SELECT * FROM FormResponse WHERE patientId = :patientId AND saveResponseToSendLater = true")
     suspend fun getDraftForms(patientId: String): MutableList<FormResponse>
+
+    @Query("SELECT * FROM FormResponse WHERE saveResponseToSendLater = true")
+    suspend fun getAllDraftForms(): MutableList<FormResponse>
 }
