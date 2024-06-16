@@ -1,5 +1,6 @@
 package com.cradleplatform.neptune.viewmodel
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,26 +20,27 @@ import java.util.Date
 /**
  * Based off of official Android sample at https://github.com/android/views-widgets-samples/tree/main/RecyclerViewKotlin/
  */
-class SavedFormAdapter(private val formList: MutableList<FormResponse>, private val patient: Patient) :
+class SavedFormAdapter(private val formList: MutableList<FormResponse>, private val patient: Patient?) :
     RecyclerView.Adapter<SavedFormAdapter.SavedFormViewHolder>() {
     class SavedFormViewHolder(
         itemView: View,
         private val binding: ListItemSavedFormBinding,
-        private val patient: Patient
+//        private val patient: Patient?
     ) : RecyclerView.ViewHolder(itemView) {
         init {
             itemView.setOnClickListener {
                 binding.formResponse?.let { formResponse ->
                     // When the user clicks on a saved form, open the FormRenderingActivity
                     // using the saved form's questions and answers
-                    val intent = FormRenderingActivity.makeIntentWithFormResponse(
-                        itemView.context,
-                        formResponse,
-                        patient
-                    )
-                    itemView.context.startActivity(intent)
+//                    val intent = FormRenderingActivity.makeIntentWithFormResponse(
+//                        itemView.context,
+//                        formResponse,
+//                        patient
+//                    )
+//                    itemView.context.startActivity(intent)
                 }
             }
+            Log.d("look","building in the adapter")
         }
         // Grab the individual views from list_item_saved_form.xml
         private val formClassNameTextView: TextView =
@@ -49,13 +51,15 @@ class SavedFormAdapter(private val formList: MutableList<FormResponse>, private 
             itemView.findViewById(R.id.list_item_saved_form_id_text_view)
         private val dateLastEditedTextView: TextView =
             itemView.findViewById(R.id.list_item_saved_form_date_created_text_view)
+
         @UiThread
         fun bind(formResponse: FormResponse) {
             // Grab the FormResponse associated with the list item being bound
+            Log.d("look","binding $formResponse")
             binding.formResponse = formResponse
             // Insert custom text into each individual view
             formClassNameTextView.text = formResponse.formClassificationName
-            patientNameTextView.text = patient.name
+//            patientNameTextView.text = patient?.name
             idTextView.text = formResponse.formResponseId.toString()
             dateLastEditedTextView.text = Date(formResponse.dateEdited).toString()
             binding.executePendingBindings()
@@ -71,7 +75,10 @@ class SavedFormAdapter(private val formList: MutableList<FormResponse>, private 
             false,
             dataBindingComponent
         )
-        return SavedFormViewHolder(view, binding, patient)
+        Log.d("look","creating view hoolder")
+//        return SavedFormViewHolder(view, binding, patient)
+        return SavedFormViewHolder(view, binding)
+
     }
     override fun getItemCount(): Int {
         return formList.size
