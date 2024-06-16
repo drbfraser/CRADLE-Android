@@ -20,7 +20,7 @@ import java.util.Date
 /**
  * Based off of official Android sample at https://github.com/android/views-widgets-samples/tree/main/RecyclerViewKotlin/
  */
-class SavedFormAdapter(private val formList: MutableList<FormResponse>, private val patient: Patient?) :
+class SavedFormAdapter(private val formList: MutableMap<Patient, MutableList<FormResponse>>) :
     RecyclerView.Adapter<SavedFormAdapter.SavedFormViewHolder>() {
     class SavedFormViewHolder(
         itemView: View,
@@ -32,12 +32,11 @@ class SavedFormAdapter(private val formList: MutableList<FormResponse>, private 
                 binding.formResponse?.let { formResponse ->
                     // When the user clicks on a saved form, open the FormRenderingActivity
                     // using the saved form's questions and answers
-//                    val intent = FormRenderingActivity.makeIntentWithFormResponse(
-//                        itemView.context,
-//                        formResponse,
-//                        patient
-//                    )
-//                    itemView.context.startActivity(intent)
+                    val intent = FormRenderingActivity.makeIntentWithFormResponse(
+                        itemView.context,
+                        formResponse
+                    )
+                    itemView.context.startActivity(intent)
                 }
             }
             Log.d("look","building in the adapter")
@@ -59,7 +58,7 @@ class SavedFormAdapter(private val formList: MutableList<FormResponse>, private 
             binding.formResponse = formResponse
             // Insert custom text into each individual view
             formClassNameTextView.text = formResponse.formClassificationName
-//            patientNameTextView.text = patient?.name
+            patientNameTextView.text = patient?.name
             idTextView.text = formResponse.formResponseId.toString()
             dateLastEditedTextView.text = Date(formResponse.dateEdited).toString()
             binding.executePendingBindings()

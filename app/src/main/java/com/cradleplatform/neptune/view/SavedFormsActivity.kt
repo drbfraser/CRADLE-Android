@@ -11,7 +11,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
@@ -34,13 +33,15 @@ class SavedFormsActivity : AppCompatActivity() {
 
     private var adapter: SavedFormAdapter? = null
     private var formList: MutableList<FormResponse>? = null
+    private var formMap: MutableMap<Patient,MutableList<FormResponse>>? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_saved_forms)
 
         //Getting the patient from the intent (ID and Patient Object)
-//        patientId = intent.getStringExtra(EXTRA_PATIENT_ID)
+        patientId = intent.getStringExtra(EXTRA_PATIENT_ID)
 //        patient = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT) as Patient
         savedAsDraft = intent.getBooleanExtra("Boolean value indicating whether the forms are saved", false)
         //patientId = intent.getStringExtra(EXTRA_PATIENT_ID)!!
@@ -62,10 +63,33 @@ class SavedFormsActivity : AppCompatActivity() {
 //            }
             // Find the list of saved forms for that patient, if any
             if (savedAsDraft == true) {
-                formList = if (patientId != null) {
-                    viewModel.searchForDraftFormsByPatientId(patientId!!)
+                 if (patientId != null) {
+                    Log.d("look","patient id is not null")
+                     formList = viewModel.searchForDraftFormsByPatientId(patientId!!)
+                     patient = viewModel.getPatientByPatientId(patientId!!)
+                     patient?.let { formList?.let { it1 -> formMap?.put(it, it1) }}
+//                    patient = viewModel.getPatientByPatientId(patientId!!)
+
                 } else {
-                    viewModel.searchForDraftForms()
+                     formList = viewModel.searchForDraftForms()
+                     formList?.forEach {formResponse->
+                         patient = viewModel.getPatientByPatientId(formResponse.patientId)
+                         if(formMap?.containsKey(patient) == true){
+                             val prevList: MutableList<FormResponse>? = formMap!![patient]
+                             prevList?.add(formResponse)
+                             patient?.let {
+                                 if (prevList != null) {
+                                     formMap!![it] = prevList
+                                 }
+                             }
+                             Log.d("look","contains ket new list ${formMap!![patient]}")
+                         }
+                         else {
+                             patient?.let { formMap?.put(it, mutableListOf(formResponse)) }
+                             Log.d("look","doesnt contain key new list ${formMap!![patient]}")
+
+                         }
+                     }
                 }
             }
 
@@ -74,7 +98,8 @@ class SavedFormsActivity : AppCompatActivity() {
                 "this is formList ${formList?.get(0)?.patientId} ${formList?.get(0)?.answers} $patient"
             )
 
-            adapter = formList?.let { SavedFormAdapter(it, patient) }
+//            adapter = formList?.let { SavedFormAdapter(it) }
+            adapter = formMap?.let { SavedFormAdapter(it) }
             Log.d("look","this is adpter $adapter also attaching view")
             recyclerView.adapter = adapter
 
