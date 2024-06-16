@@ -33,7 +33,7 @@ class SavedFormsActivity : AppCompatActivity() {
 
     private var adapter: SavedFormAdapter? = null
     private var formList: MutableList<FormResponse>? = null
-    private var formMap: MutableMap<Patient,MutableList<FormResponse>>? = null
+    private var formMap: MutableMap<Patient,MutableList<FormResponse>>  =  mutableMapOf()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,6 +67,9 @@ class SavedFormsActivity : AppCompatActivity() {
                     Log.d("look","patient id is not null")
                      formList = viewModel.searchForDraftFormsByPatientId(patientId!!)
                      patient = viewModel.getPatientByPatientId(patientId!!)
+//                     if(formList != null && patient != null){
+//                         formMap = mutableMapOf(patient!! to formList!!)
+//                     }
                      patient?.let { formList?.let { it1 -> formMap?.put(it, it1) }}
 //                    patient = viewModel.getPatientByPatientId(patientId!!)
 

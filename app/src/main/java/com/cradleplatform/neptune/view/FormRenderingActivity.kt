@@ -457,11 +457,13 @@ class FormRenderingActivity : AppCompatActivity() {
         @JvmStatic
         fun makeIntentWithFormResponse(
             context: Context,
-            formResponse: FormResponse
+            formResponse: FormResponse,
+            patient: Patient
         ): Intent {
             val bundle = Bundle()
             bundle.putSerializable(EXTRA_FORM_TEMPLATE, formResponse.formTemplate)
             bundle.putSerializable(EXTRA_ANSWERS, formResponse.answers as Serializable)
+            bundle.putSerializable(EXTRA_PATIENT_OBJECT, patient)
 
             return Intent(context, FormRenderingActivity::class.java).apply {
                 this.putExtra(EXTRA_PATIENT_ID, formResponse.patientId)
