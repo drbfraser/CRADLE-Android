@@ -5,8 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Canvas
 import android.os.Bundle
-import android.widget.Toast
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -43,6 +43,8 @@ class SavedFormsActivity : AppCompatActivity() {
 //        patientId = intent.getStringExtra(EXTRA_PATIENT_ID)
 //        patient = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT) as Patient
         savedAsDraft = intent.getBooleanExtra("Boolean value indicating whether the forms are saved", false)
+        //patientId = intent.getStringExtra(EXTRA_PATIENT_ID)!!
+        //patient = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT) as Patient
 
         setUpSavedFormsRecyclerView()
         setUpActionBar()
@@ -66,6 +68,7 @@ class SavedFormsActivity : AppCompatActivity() {
                     viewModel.searchForDraftForms()
                 }
             }
+
             Log.d(
                 "look",
                 "this is formList ${formList?.get(0)?.patientId} ${formList?.get(0)?.answers} $patient"
