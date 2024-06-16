@@ -295,6 +295,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
                 intent.putExtra("Patient ID that the forms are saved for","")
                 intent.putExtra("The Patient object that the forms are saved for","")
                 intent.putExtra("Boolean value indicating whether the forms are saved",true)
+                intent.putExtra("The previous page the backspace leads to",true)
                 startActivity(intent)}
         }
     }
