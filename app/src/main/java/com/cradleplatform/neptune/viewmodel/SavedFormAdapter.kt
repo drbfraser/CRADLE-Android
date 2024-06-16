@@ -25,19 +25,19 @@ class SavedFormAdapter(private val formList: MutableList<FormResponse>, private 
     class SavedFormViewHolder(
         itemView: View,
         private val binding: ListItemSavedFormBinding,
-//        private val patient: Patient?
+        private val patient: Patient?
     ) : RecyclerView.ViewHolder(itemView) {
         init {
             itemView.setOnClickListener {
                 binding.formResponse?.let { formResponse ->
                     // When the user clicks on a saved form, open the FormRenderingActivity
                     // using the saved form's questions and answers
-//                    val intent = FormRenderingActivity.makeIntentWithFormResponse(
-//                        itemView.context,
-//                        formResponse,
-//                        patient
-//                    )
-//                    itemView.context.startActivity(intent)
+                    val intent = FormRenderingActivity.makeIntentWithFormResponse(
+                        itemView.context,
+                        formResponse,
+                        patient
+                   )
+                    itemView.context.startActivity(intent)
                 }
             }
             Log.d("look","building in the adapter")
@@ -76,8 +76,8 @@ class SavedFormAdapter(private val formList: MutableList<FormResponse>, private 
             dataBindingComponent
         )
         Log.d("look","creating view hoolder")
-//        return SavedFormViewHolder(view, binding, patient)
-        return SavedFormViewHolder(view, binding)
+        return SavedFormViewHolder(view, binding, patient)
+        //return SavedFormViewHolder(view, binding)
 
     }
     override fun getItemCount(): Int {

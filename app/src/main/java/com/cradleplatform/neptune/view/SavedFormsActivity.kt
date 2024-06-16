@@ -40,11 +40,8 @@ class SavedFormsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_saved_forms)
 
         //Getting the patient from the intent (ID and Patient Object)
-//        patientId = intent.getStringExtra(EXTRA_PATIENT_ID)
-//        patient = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT) as Patient
+        patientId = intent.getStringExtra(EXTRA_PATIENT_ID)
         savedAsDraft = intent.getBooleanExtra("Boolean value indicating whether the forms are saved", false)
-        //patientId = intent.getStringExtra(EXTRA_PATIENT_ID)!!
-        //patient = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT) as Patient
 
         setUpSavedFormsRecyclerView()
         setUpActionBar()
@@ -57,16 +54,17 @@ class SavedFormsActivity : AppCompatActivity() {
             viewModel.purgeOutdatedFormResponses()
 
             // Grab patient object
-//            if (patient == null) {
-//                patient = viewModel.getPatientByPatientId(patientId!!)
-//            }
-            // Find the list of saved forms for that patient, if any
-            if (savedAsDraft == true) {
-                formList = if (patientId != null) {
-                    viewModel.searchForDraftFormsByPatientId(patientId!!)
+            if (patientId != "") {
+                patient = viewModel.getPatientByPatientId(patientId!!)
+                if (savedAsDraft == true){
+                    formList = viewModel.searchForDraftFormsByPatientId(patientId!!)
                 } else {
-                    viewModel.searchForDraftForms()
+                    formList = viewModel.searchForSubmittedFormsByPatientId(patientId!!)
                 }
+            } else {
+                patient = null
+                patientId = null
+                formList = viewModel.searchForDraftForms()
             }
 
             Log.d(

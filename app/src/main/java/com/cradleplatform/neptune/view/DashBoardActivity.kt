@@ -292,6 +292,8 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
             R.id.statCardView, R.id.statImg -> startActivity(Intent(this, StatsActivity::class.java))
             R.id.formsCardView, R.id.formsImg ->
             {   val intent = Intent(this, SavedFormsActivity::class.java)
+                intent.putExtra("Patient ID that the forms are saved for","")
+                intent.putExtra("The Patient object that the forms are saved for","")
                 intent.putExtra("Boolean value indicating whether the forms are saved",true)
                 startActivity(intent)}
         }
