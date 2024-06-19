@@ -41,6 +41,7 @@ import com.cradleplatform.neptune.utilities.jackson.JacksonMapper.createWriter
 import com.cradleplatform.neptune.viewmodel.UserViewModel
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
@@ -112,7 +113,8 @@ class RestApi constructor(
     private suspend inline fun <reified T> handleSmsRequest(
         method: Http.Method,
         url: String,
-        body: ByteArray
+        headers: Map<String, String>,
+        body: ByteArray = Gson().toJson(JsonObject()).toByteArray(),
     ): NetworkResult<T> {
         val channel = Channel<NetworkResult<T>>()
         setupSmsReceiver()
@@ -121,6 +123,7 @@ class RestApi constructor(
             val json = smsDataProcessor.processRequestDataToJSON(
                 method,
                 url,
+                Gson().toJson(headers),
                 body
             )
             smsSender.queueRelayContent(json).let { enqueueSuccessful ->
@@ -179,6 +182,7 @@ class RestApi constructor(
      *
      * @param email the user's email
      * @param password the user's password
+     * @param protocol the protocol being used for transmission over the network
      * @return if successful, the [LoginResponse] that was returned by the server
      *  which contains a bearer token to authenticate the user
      */
@@ -195,12 +199,16 @@ class RestApi constructor(
                 .encodeToByteArray()
             val requestBody = buildJsonRequestBody(body)
 
+            val method = Http.Method.POST
+            val url = urlManager.authentication
+            val headers = mapOf<String, String>()
+
             when (protocol) {
                 Protocol.HTTP -> {
                     return@withContext http.makeRequest(
-                        method = Http.Method.POST,
-                        url = urlManager.authentication,
-                        headers = mapOf(),
+                        method = method,
+                        url = url,
+                        headers = headers,
                         requestBody = requestBody,
                         inputStreamReader = {
                             JacksonMapper.createReader<LoginResponse>().readValue(it)
@@ -210,8 +218,9 @@ class RestApi constructor(
 
                 Protocol.SMS -> {
                     return@withContext handleSmsRequest(
-                        Http.Method.POST,
-                        urlManager.authentication,
+                        method,
+                        url,
+                        headers,
                         body
                     )
                 }
@@ -377,16 +386,32 @@ class RestApi constructor(
      * with a given [id].
      *
      * @param id patient id to get information for
+     * @param protocol the protocol being used for transmission over the network
      * @return a patient and its associated readings
      */
-    suspend fun getPatient(id: String): NetworkResult<PatientAndReadings> =
+    suspend fun getPatient(id: String, protocol: Protocol): NetworkResult<PatientAndReadings> =
         withContext(IO) {
-            http.makeRequest(
-                method = Http.Method.GET,
-                url = urlManager.getPatient(id),
-                headers = headers,
-                inputStreamReader = { JacksonMapper.readerForPatientAndReadings.readValue(it) }
-            )
+            val method = Http.Method.GET
+            val url = urlManager.getPatient(id)
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        inputStreamReader = { JacksonMapper.readerForPatientAndReadings.readValue(it) }
+                    )
+                }
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest<PatientAndReadings>(
+                        method,
+                        url,
+                        headers
+                    )
+                }
+            }
         }
 
     /**
@@ -395,16 +420,32 @@ class RestApi constructor(
      * would return.
      *
      * @param id patient id to get information for
+     * @param protocol the protocol being used for transmission over the network
      * @return just the demographic information for a patient
      */
-    suspend fun getPatientInfo(id: String): NetworkResult<Patient> =
+    suspend fun getPatientInfo(id: String, protocol: Protocol): NetworkResult<Patient> =
         withContext(IO) {
-            http.makeRequest(
-                method = Http.Method.GET,
-                url = urlManager.getPatientInfo(id),
-                headers = headers,
-                inputStreamReader = { JacksonMapper.readerForPatient.readValue(it) }
-            )
+            val method = Http.Method.GET
+            val url = urlManager.getPatientInfo(id)
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = Http.Method.GET,
+                        url = urlManager.getPatientInfo(id),
+                        headers = headers,
+                        inputStreamReader = { JacksonMapper.readerForPatient.readValue(it) }
+                    )
+                }
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest<Patient>(
+                        method,
+                        url,
+                        headers
+                    )
+                }
+            }
         }
 
     /**
@@ -413,50 +454,103 @@ class RestApi constructor(
      *
      * @param searchString a case-insensitive partial patient name or id to used
      *  as a query
+     * @param protocol the protocol being used for transmission over the network
      * @return a list of patients which match the query
      */
-    suspend fun searchForPatient(searchString: String): NetworkResult<List<GlobalPatient>> =
+    suspend fun searchForPatient(
+        searchString: String,
+        protocol: Protocol
+    ): NetworkResult<List<GlobalPatient>> =
         withContext(IO) {
-            http.makeRequest(
-                method = Http.Method.GET,
-                url = urlManager.getGlobalPatientSearch(searchString),
-                headers = headers,
-                inputStreamReader = {
-                    JacksonMapper.createGlobalPatientsListReader().readValue(it)
+            val method = Http.Method.GET
+            val url = urlManager.getGlobalPatientSearch(searchString)
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        inputStreamReader = {
+                            JacksonMapper.createGlobalPatientsListReader().readValue(it)
+                        }
+                    )
                 }
-            )
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest<List<GlobalPatient>>(
+                        method,
+                        url,
+                        headers
+                    )
+                }
+            }
         }
 
     /**
      * Requests a specific reading with a given [id] from the server.
      *
      * @param id id of the reading to request
+     * @param protocol the protocol being used for transmission over the network
      * @return the requested reading
      */
-    suspend fun getReading(id: String): NetworkResult<Reading> =
+    suspend fun getReading(id: String, protocol: Protocol): NetworkResult<Reading> =
         withContext(IO) {
-            http.makeRequest(
-                method = Http.Method.GET,
-                url = urlManager.getReading(id),
-                headers = headers,
-                inputStreamReader = { JacksonMapper.readerForReading.readValue(it) }
-            )
+            val method = Http.Method.GET
+            val url = urlManager.getReading(id)
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = Http.Method.GET,
+                        url = urlManager.getReading(id),
+                        headers = headers,
+                        inputStreamReader = { JacksonMapper.readerForReading.readValue(it) }
+                    )
+                }
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest<Reading>(
+                        method,
+                        url,
+                        headers
+                    )
+                }
+            }
         }
 
     /**
      * Requests a specific assessment (aka. followup) from the server.
      *
      * @param id id of the assessment to request
+     * @param protocol the protocol being used for transmission over the network
      * @return the requested assessment
      */
-    suspend fun getAssessment(id: String): NetworkResult<Assessment> =
+    suspend fun getAssessment(id: String, protocol: Protocol): NetworkResult<Assessment> =
         withContext(IO) {
-            http.makeRequest(
-                method = Http.Method.GET,
-                url = urlManager.getAssessmentById(id),
-                headers = headers,
-                inputStreamReader = { JacksonMapper.createReader<Assessment>().readValue(it) }
-            )
+            val method = Http.Method.GET
+            val url = urlManager.getAssessmentById(id)
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        inputStreamReader = {
+                            JacksonMapper.createReader<Assessment>().readValue(it)
+                        }
+                    )
+                }
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest<Assessment>(
+                        method,
+                        url,
+                        headers
+                    )
+                }
+            }
         }
 
     /**
@@ -465,21 +559,37 @@ class RestApi constructor(
      * @param date1 UNIX timestamp of the beginning cutoff
      * @param date2 UNIX timestamp of the end cutoff
      * @param filterFacility input health facility to get statistics for
+     * @param protocol the protocol being used for transmission over the network
      * @return Statistics object for the requested dates
      */
-
     suspend fun getStatisticsForFacilityBetween(
         date1: BigInteger,
         date2: BigInteger,
-        filterFacility: HealthFacility
+        filterFacility: HealthFacility,
+        protocol: Protocol
     ): NetworkResult<Statistics> =
         withContext(IO) {
-            http.makeRequest(
-                method = Http.Method.GET,
-                url = urlManager.getStatisticsForFacilityBetween(date1, date2, filterFacility.name),
-                headers = headers,
-                inputStreamReader = { JacksonMapper.mapper.readValue(it) }
-            )
+            val method = Http.Method.GET
+            val url = urlManager.getStatisticsForFacilityBetween(date1, date2, filterFacility.name)
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        inputStreamReader = { JacksonMapper.mapper.readValue(it) }
+                    )
+                }
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest<Statistics>(
+                        method,
+                        url,
+                        headers
+                    )
+                }
+            }
         }
 
     /**
@@ -488,21 +598,37 @@ class RestApi constructor(
      * @param date1 UNIX timestamp of the beginning cutoff
      * @param date2 UNIX timestamp of the end cutoff
      * @param userID the integer representation of user to get statistics for
+     * @param protocol the protocol being used for transmission over the network
      * @return Statistics object for the requested dates
      */
-
     suspend fun getStatisticsForUserBetween(
         date1: BigInteger,
         date2: BigInteger,
-        userID: Int
+        userID: Int,
+        protocol: Protocol
     ): NetworkResult<Statistics> =
         withContext(IO) {
-            http.makeRequest(
-                method = Http.Method.GET,
-                url = urlManager.getStatisticsForUserBetween(date1, date2, userID),
-                headers = headers,
-                inputStreamReader = { JacksonMapper.mapper.readValue(it) }
-            )
+            val method = Http.Method.GET
+            val url = urlManager.getStatisticsForUserBetween(date1, date2, userID)
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        inputStreamReader = { JacksonMapper.mapper.readValue(it) }
+                    )
+                }
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest<Statistics>(
+                        method,
+                        url,
+                        headers
+                    )
+                }
+            }
         }
 
     /**
@@ -510,20 +636,38 @@ class RestApi constructor(
      *
      * @param date1 UNIX timestamp of the beginning cutoff
      * @param date2 UNIX timestamp of the end cutoff
+     * @param protocol the protocol being used for transmission over the network
      * @return Statistics object for the requested dates
      */
 
     suspend fun getAllStatisticsBetween(
         date1: BigInteger,
-        date2: BigInteger
+        date2: BigInteger,
+        protocol: Protocol
     ): NetworkResult<Statistics> =
         withContext(IO) {
-            http.makeRequest(
-                method = Http.Method.GET,
-                url = urlManager.getAllStatisticsBetween(date1, date2),
-                headers = headers,
-                inputStreamReader = { JacksonMapper.mapper.readValue(it) }
-            )
+            val method = Http.Method.GET
+            val url = urlManager.getAllStatisticsBetween(date1, date2)
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        inputStreamReader = { JacksonMapper.mapper.readValue(it) }
+                    )
+                }
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest<Statistics>(
+                        method,
+                        url,
+                        headers,
+                    )
+                }
+            }
+
         }
 
     /**
