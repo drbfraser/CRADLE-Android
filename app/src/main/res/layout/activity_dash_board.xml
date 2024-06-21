@@ -420,7 +420,7 @@
                 app:layout_constraintEnd_toEndOf="@+id/educationCardView"
                 app:layout_constraintStart_toStartOf="@+id/educationCardView"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_education" />
+                app:srcCompat="@drawable/ic_education_reformat" />
 
             <TextView
                 style="@style/DashboardCardText"
