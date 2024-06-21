@@ -103,8 +103,7 @@ class FormSelectionActivity : AppCompatActivity() {
                     this@FormSelectionActivity,
                     formTemplate,
                     formLanguage,
-                    intent.getStringExtra(EXTRA_PATIENT_ID)!!,
-                    intent.getSerializableExtra(FORM_SELECTION_EXTRA_PATIENT) as Patient
+                    intent.getStringExtra(EXTRA_PATIENT_ID)!!
                 )
 
                 startActivity(intent)

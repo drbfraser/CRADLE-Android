@@ -443,12 +443,10 @@ class FormRenderingActivity : AppCompatActivity() {
             context: Context,
             formTemplate: FormTemplate,
             formLanguage: String,
-            patientId: String,
-            patient: Patient?
+            patientId: String
         ): Intent {
             val bundle = Bundle()
             bundle.putSerializable(EXTRA_FORM_TEMPLATE, formTemplate)
-            bundle.putSerializable(EXTRA_PATIENT_OBJECT, patient)
 
             return Intent(context, FormRenderingActivity::class.java).apply {
                 this.putExtra(EXTRA_PATIENT_ID, patientId)
@@ -461,12 +459,12 @@ class FormRenderingActivity : AppCompatActivity() {
         fun makeIntentWithFormResponse(
             context: Context,
             formResponse: FormResponse,
-            patient: Patient?
+            patient: Patient
         ): Intent {
             val bundle = Bundle()
             bundle.putSerializable(EXTRA_FORM_TEMPLATE, formResponse.formTemplate)
-            bundle.putSerializable(EXTRA_PATIENT_OBJECT, patient)
             bundle.putSerializable(EXTRA_ANSWERS, formResponse.answers as Serializable)
+            bundle.putSerializable(EXTRA_PATIENT_OBJECT, patient)
 
             return Intent(context, FormRenderingActivity::class.java).apply {
                 this.putExtra(EXTRA_PATIENT_ID, formResponse.patientId)

@@ -8,6 +8,9 @@
         <variable
             name="formResponse"
             type="com.cradleplatform.neptune.model.FormResponse" />
+        <variable
+            name="patient"
+            type="com.cradleplatform.neptune.model.Patient" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -28,7 +31,7 @@
             android:maxLines="2"
             android:minLines="2"
             android:textAppearance="@style/TextAppearance.Cradle.Body1"
-            android:text="@string/default_text_view"
+            android:text="@{formResponse.formClassificationName}"
             android:textSize="20sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@+id/saved_form_info_guideline"
@@ -42,7 +45,7 @@
             android:maxLines="2"
             android:minLines="2"
             android:textAppearance="@style/TextAppearance.Cradle.Body1"
-            android:text="@string/default_text_view"
+            android:text="@{patient.name}"
             android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@+id/saved_form_info_guideline"
@@ -69,7 +72,7 @@
             android:layout_height="wrap_content"
             android:maxLines="1"
             android:textAppearance="@style/TextAppearance.Cradle.Body1"
-            android:text="@string/default_text_view"
+            android:text="@{formResponse.patientId}"
             app:layout_constraintEnd_toStartOf="@+id/saved_form_info_guideline"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/list_item_saved_form_id_label_text_view"

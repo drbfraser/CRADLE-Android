@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Canvas
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -29,10 +30,11 @@ class SavedFormsActivity : AppCompatActivity() {
     private var patient: Patient? = null
     private var patientId: String? = null
     private var savedAsDraft: Boolean? = null
-    private var previousPage: Boolean? = null
 
     private var adapter: SavedFormAdapter? = null
     private var formList: MutableList<FormResponse>? = null
+    private var formMap: MutableMap<Patient,MutableList<FormResponse>>  =  mutableMapOf()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,8 +42,10 @@ class SavedFormsActivity : AppCompatActivity() {
 
         //Getting the patient from the intent (ID and Patient Object)
         patientId = intent.getStringExtra(EXTRA_PATIENT_ID)
-        savedAsDraft = intent.getBooleanExtra(EXTRA_SAVED_FORM, false)
-        previousPage = intent.getBooleanExtra(EXTRA_PREVIOUS_PAGE, true)
+//        patient = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT) as Patient
+        savedAsDraft = intent.getBooleanExtra("Boolean value indicating whether the forms are saved", false)
+        //patientId = intent.getStringExtra(EXTRA_PATIENT_ID)!!
+        //patient = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT) as Patient
 
         setUpSavedFormsRecyclerView()
         setUpActionBar()
@@ -54,25 +58,56 @@ class SavedFormsActivity : AppCompatActivity() {
             viewModel.purgeOutdatedFormResponses()
 
             // Grab patient object
-            if (patientId != "") {
-                patient = viewModel.getPatientByPatientId(patientId!!)
-                formList = if (savedAsDraft == true) {
-                    viewModel.searchForDraftFormsByPatientId(patientId!!)
+//            if (patient == null) {
+//                patient = viewModel.getPatientByPatientId(patientId!!)
+//            }
+            // Find the list of saved forms for that patient, if any
+            if (savedAsDraft == true) {
+                 if (patientId != null) {
+                    Log.d("look","patient id is not null")
+                     formList = viewModel.searchForDraftFormsByPatientId(patientId!!)
+                     patient = viewModel.getPatientByPatientId(patientId!!)
+//                     if(formList != null && patient != null){
+//                         formMap = mutableMapOf(patient!! to formList!!)
+//                     }
+                     patient?.let { formList?.let { it1 -> formMap?.put(it, it1) }}
+//                    patient = viewModel.getPatientByPatientId(patientId!!)
+
                 } else {
-                    viewModel.searchForSubmittedFormsByPatientId(patientId!!)
+                     formList = viewModel.searchForDraftForms()
+                     formList?.forEach {formResponse->
+                         patient = viewModel.getPatientByPatientId(formResponse.patientId)
+                         if(formMap?.containsKey(patient) == true){
+                             val prevList: MutableList<FormResponse>? = formMap!![patient]
+                             prevList?.add(formResponse)
+                             patient?.let {
+                                 if (prevList != null) {
+                                     formMap!![it] = prevList
+                                 }
+                             }
+                             Log.d("look","contains ket new list ${formMap!![patient]}")
+                         }
+                         else {
+                             patient?.let { formMap?.put(it, mutableListOf(formResponse)) }
+                             Log.d("look","doesnt contain key new list ${formMap!![patient]}")
+
+                         }
+                     }
                 }
-            } else {
-                patient = null
-                patientId = null
-                formList = viewModel.searchForDraftForms()
             }
 
-            adapter = formList?.let { SavedFormAdapter(it, patient) }
+            Log.d(
+                "look",
+                "this is formList ${formList?.get(0)?.patientId} ${formList?.get(0)?.answers} $patient"
+            )
 
+//            adapter = formList?.let { SavedFormAdapter(it) }
+            adapter = formMap?.let { SavedFormAdapter(it) }
+            Log.d("look","this is adpter $adapter also attaching view")
             recyclerView.adapter = adapter
+
         }
-        val itemTouchHelper =
-            ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
                 override fun onMove(
                     recyclerView: RecyclerView,
                     source: RecyclerView.ViewHolder,
@@ -80,14 +115,12 @@ class SavedFormsActivity : AppCompatActivity() {
                 ): Boolean {
                     return false
                 }
-
                 override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                     val swipedPosition = viewHolder.absoluteAdapterPosition
                     val swipedFormResponse = formList?.get(swipedPosition)
                     // Show confirmation dialog before deletion
                     showDeleteConfirmationDialog(swipedFormResponse, swipedPosition)
                 }
-
                 override fun onChildDraw(
                     c: Canvas,
                     recyclerView: RecyclerView,
@@ -127,10 +160,17 @@ class SavedFormsActivity : AppCompatActivity() {
                     )
                 }
             })
-        // Populate the recyclerView with the list of saved forms, using SavedFormAdapter
+            // Populate the recyclerView with the list of saved forms, using SavedFormAdapter
 
-        itemTouchHelper.attachToRecyclerView(recyclerView)
-    }
+            itemTouchHelper.attachToRecyclerView(recyclerView)
+            // Add horizontal line between list items
+//            recyclerView.apply {
+//                addItemDecoration(
+//                    DividerItemDecoration(this@SavedFormsActivity, DividerItemDecoration.VERTICAL)
+//                )
+//                this.adapter = formList?.let { patient?.let { it1 -> SavedFormAdapter(it, it1) } }
+//            }
+        }
 
     private fun showDeleteConfirmationDialog(swipedFormResponse: FormResponse?, swipedPosition: Int) {
         AlertDialog.Builder(this@SavedFormsActivity)
@@ -164,30 +204,24 @@ class SavedFormsActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
     override fun onSupportNavigateUp(): Boolean {
-        onBackPressedDispatcher.onBackPressed()
+        onBackPressed()
         return true
     }
     companion object {
-            private const val EXTRA_PATIENT_ID = "Patient ID that the forms are saved for"
-            private const val EXTRA_PATIENT_OBJECT =
-                "The Patient object that the forms are saved for"
-            private const val EXTRA_SAVED_FORM =
-                "Boolean value indicating whether the forms are saved"
-            private const val EXTRA_PREVIOUS_PAGE = "The previous page the backspace leads to"
-
-            @JvmStatic
-            fun makeIntent(
-                context: Context,
-                patientId: String,
-                patient: Patient,
-                savedForm: Boolean,
-                previousPage: Boolean
-            ): Intent =
-                Intent(context, SavedFormsActivity::class.java).apply {
-                    putExtra(EXTRA_PATIENT_ID, patientId)
-                    putExtra(EXTRA_PATIENT_OBJECT, patient)
-                    putExtra(EXTRA_SAVED_FORM, savedForm)
-                    putExtra(EXTRA_PREVIOUS_PAGE, previousPage)
-                }
+        private const val EXTRA_PATIENT_ID = "Patient ID that the forms are saved for"
+        private const val EXTRA_PATIENT_OBJECT = "The Patient object that the forms are saved for"
+        private const val EXTRA_SAVED_FORM = "Boolean value indicating whether the forms are saved"
+        @JvmStatic
+        fun makeIntent(
+            context: Context,
+            patientId: String,
+            patient: Patient,
+            savedForm: Boolean
+        ): Intent =
+            Intent(context, SavedFormsActivity::class.java).apply {
+                putExtra(EXTRA_PATIENT_ID, patientId)
+                putExtra(EXTRA_PATIENT_OBJECT, patient)
+                putExtra(EXTRA_SAVED_FORM, savedForm)
+            }
     }
 }
