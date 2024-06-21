@@ -484,7 +484,6 @@ open class PatientProfileActivity : AppCompatActivity() {
                 currPatient.id,
                 currPatient,
                 true,
-                false
             )
             startActivity(intent)
         }
@@ -500,7 +499,6 @@ open class PatientProfileActivity : AppCompatActivity() {
                 currPatient.id,
                 currPatient,
                 false,
-                false
             )
             startActivity(intent)
         }

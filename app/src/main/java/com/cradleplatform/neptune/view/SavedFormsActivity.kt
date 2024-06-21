@@ -40,12 +40,8 @@ class SavedFormsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_saved_forms)
 
-        //Getting the patient from the intent (ID and Patient Object)
         patientId = intent.getStringExtra(EXTRA_PATIENT_ID)
-//        patient = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT) as Patient
         savedAsDraft = intent.getBooleanExtra("Boolean value indicating whether the forms are saved", false)
-        //patientId = intent.getStringExtra(EXTRA_PATIENT_ID)!!
-        //patient = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT) as Patient
 
         setUpSavedFormsRecyclerView()
         setUpActionBar()
@@ -54,46 +50,41 @@ class SavedFormsActivity : AppCompatActivity() {
     private fun setUpSavedFormsRecyclerView() {
         val recyclerView: RecyclerView = findViewById(R.id.recycler_view)
         lifecycleScope.launch {
-            // Remove any saved forms from database whose versions are out-of-date
             viewModel.purgeOutdatedFormResponses()
 
-            // Grab patient object
-//            if (patient == null) {
-//                patient = viewModel.getPatientByPatientId(patientId!!)
-//            }
             // Find the list of saved forms for that patient, if any
             if (savedAsDraft == true) {
-                 if (patientId != null) {
-                    Log.d("look","patient id is not null")
-                     formList = viewModel.searchForDraftFormsByPatientId(patientId!!)
-                     patient = viewModel.getPatientByPatientId(patientId!!)
-//                     if(formList != null && patient != null){
-//                         formMap = mutableMapOf(patient!! to formList!!)
-//                     }
-                     patient?.let { formList?.let { it1 -> formMap?.put(it, it1) }}
-//                    patient = viewModel.getPatientByPatientId(patientId!!)
+                if (patientId != "") {
+                    Log.d("look", "patient id is not null")
+                    formList = viewModel.searchForDraftFormsByPatientId(patientId!!)
+                    patient = viewModel.getPatientByPatientId(patientId!!)
+                    patient?.let { formList?.let { it1 -> formMap?.put(it, it1) } }
 
                 } else {
-                     formList = viewModel.searchForDraftForms()
-                     formList?.forEach {formResponse->
-                         patient = viewModel.getPatientByPatientId(formResponse.patientId)
-                         if(formMap?.containsKey(patient) == true){
-                             val prevList: MutableList<FormResponse>? = formMap!![patient]
-                             prevList?.add(formResponse)
-                             patient?.let {
-                                 if (prevList != null) {
-                                     formMap!![it] = prevList
-                                 }
-                             }
-                             Log.d("look","contains ket new list ${formMap!![patient]}")
-                         }
-                         else {
-                             patient?.let { formMap?.put(it, mutableListOf(formResponse)) }
-                             Log.d("look","doesnt contain key new list ${formMap!![patient]}")
+                    formList = viewModel.searchForDraftForms()
+                    formList?.forEach { formResponse ->
+                        patient = viewModel.getPatientByPatientId(formResponse.patientId)
+                        if (formMap?.containsKey(patient) == true) {
+                            val prevList: MutableList<FormResponse>? = formMap!![patient]
+                            prevList?.add(formResponse)
+                            patient?.let {
+                                if (prevList != null) {
+                                    formMap!![it] = prevList
+                                }
+                            }
+                            Log.d("look", "contains ket new list ${formMap!![patient]}")
+                        } else {
+                            patient?.let { formMap?.put(it, mutableListOf(formResponse)) }
+                            Log.d("look", "doesn't contain key new list ${formMap!![patient]}")
 
-                         }
-                     }
+                        }
+                    }
                 }
+            } else {
+                Log.d("look", "patient id is not null")
+                formList = viewModel.searchForSubmittedFormsByPatientId(patientId!!)
+                patient = viewModel.getPatientByPatientId(patientId!!)
+                patient?.let { formList?.let { it1 -> formMap?.put(it, it1) } }
             }
 
             Log.d(
@@ -101,13 +92,13 @@ class SavedFormsActivity : AppCompatActivity() {
                 "this is formList ${formList?.get(0)?.patientId} ${formList?.get(0)?.answers} $patient"
             )
 
-//            adapter = formList?.let { SavedFormAdapter(it) }
             adapter = formMap?.let { SavedFormAdapter(it) }
-            Log.d("look","this is adpter $adapter also attaching view")
+            Log.d("look", "this is adapter $adapter also attaching view")
             recyclerView.adapter = adapter
 
         }
-            val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+        val itemTouchHelper =
+            ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
                 override fun onMove(
                     recyclerView: RecyclerView,
                     source: RecyclerView.ViewHolder,
@@ -115,12 +106,14 @@ class SavedFormsActivity : AppCompatActivity() {
                 ): Boolean {
                     return false
                 }
+
                 override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                     val swipedPosition = viewHolder.absoluteAdapterPosition
                     val swipedFormResponse = formList?.get(swipedPosition)
                     // Show confirmation dialog before deletion
                     showDeleteConfirmationDialog(swipedFormResponse, swipedPosition)
                 }
+
                 override fun onChildDraw(
                     c: Canvas,
                     recyclerView: RecyclerView,
@@ -160,17 +153,10 @@ class SavedFormsActivity : AppCompatActivity() {
                     )
                 }
             })
-            // Populate the recyclerView with the list of saved forms, using SavedFormAdapter
+        // Populate the recyclerView with the list of saved forms, using SavedFormAdapter
 
-            itemTouchHelper.attachToRecyclerView(recyclerView)
-            // Add horizontal line between list items
-//            recyclerView.apply {
-//                addItemDecoration(
-//                    DividerItemDecoration(this@SavedFormsActivity, DividerItemDecoration.VERTICAL)
-//                )
-//                this.adapter = formList?.let { patient?.let { it1 -> SavedFormAdapter(it, it1) } }
-//            }
-        }
+        itemTouchHelper.attachToRecyclerView(recyclerView)
+    }
 
     private fun showDeleteConfirmationDialog(swipedFormResponse: FormResponse?, swipedPosition: Int) {
         AlertDialog.Builder(this@SavedFormsActivity)
