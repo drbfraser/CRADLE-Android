@@ -199,7 +199,6 @@ class RestApi constructor(
                 .put("password", password)
                 .toString()
                 .encodeToByteArray()
-            val requestBody = buildJsonRequestBody(body)
 
             val method = Http.Method.POST
             val url = urlManager.authentication
@@ -211,7 +210,7 @@ class RestApi constructor(
                         method = method,
                         url = url,
                         headers = headers,
-                        requestBody = requestBody,
+                        requestBody = buildJsonRequestBody(body),
                         inputStreamReader = {
                             JacksonMapper.createReader<LoginResponse>().readValue(it)
                         }
@@ -873,20 +872,40 @@ class RestApi constructor(
      * copy and use the server's version instead when working with this method.
      **
      * @param patient the patient to upload
+     * @param protocol the protocol being used for transmission over the network
      * @return the server's version of the uploaded patient and readings
      */
-    suspend fun postPatient(patient: PatientAndReadings): NetworkResult<PatientAndReadings> =
+    suspend fun postPatient(
+        patient: PatientAndReadings,
+        protocol: Protocol
+    ): NetworkResult<PatientAndReadings> =
         withContext(IO) {
-            val body = JacksonMapper.createWriter<PatientAndReadings>().writeValueAsBytes(patient)
-            http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.postPatient,
-                headers = headers,
-                requestBody = buildJsonRequestBody(body),
-                inputStreamReader = { input ->
-                    JacksonMapper.readerForPatientAndReadings.readValue(input)
-                },
-            )
+            val body = createWriter<PatientAndReadings>().writeValueAsBytes(patient)
+            val method = Http.Method.POST
+            val url = urlManager.postPatient
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        requestBody = buildJsonRequestBody(body),
+                        inputStreamReader = { input ->
+                            JacksonMapper.readerForPatientAndReadings.readValue(input)
+                        },
+                    )
+                }
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest<PatientAndReadings>(
+                        method,
+                        url,
+                        headers,
+                        body
+                    )
+                }
+            }
         }
 
     /**
@@ -905,39 +924,79 @@ class RestApi constructor(
      * copy and use the server's version instead when working with this method.
      **
      * @param patient the patient to upload
+     * @param protocol the protocol being used for transmission over the network
      * @return the server's version of the uploaded patient and referrals
      */
-    suspend fun postPatient(patient: PatientAndReferrals): NetworkResult<PatientAndReferrals> =
+    suspend fun postPatient(
+        patient: PatientAndReferrals,
+        protocol: Protocol
+    ): NetworkResult<PatientAndReferrals> =
         withContext(IO) {
-            val body = JacksonMapper.createWriter<PatientAndReferrals>().writeValueAsBytes(patient)
-            http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.postPatient,
-                headers = headers,
-                requestBody = buildJsonRequestBody(body),
-                inputStreamReader = { input ->
-                    JacksonMapper.readerForPatientAndReferrals.readValue(input)
-                },
-            )
+            val body = createWriter<PatientAndReferrals>().writeValueAsBytes(patient)
+            val method = Http.Method.POST
+            val url = urlManager.postPatient
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        requestBody = buildJsonRequestBody(body),
+                        inputStreamReader = { input ->
+                            JacksonMapper.readerForPatientAndReferrals.readValue(input)
+                        },
+                    )
+                }
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest(
+                        method,
+                        url,
+                        headers,
+                        body
+                    )
+                }
+            }
         }
 
     /**
      * Uploads form template with user's answers
      **
      * @param mFormTemplate : the form object to upload
+     * @param protocol the protocol being used for transmission over the network
      * @return whether the request was successful or not
      */
-    suspend fun postFormResponse(mFormResponse: FormResponse): NetworkResult<Unit> =
+    suspend fun postFormResponse(
+        mFormResponse: FormResponse,
+        protocol: Protocol
+    ): NetworkResult<Unit> =
         withContext(IO) {
             val gson = GsonBuilder().excludeFieldsWithoutExposeAnnotation().create()
             val body = gson.toJson(mFormResponse).toByteArray()
-            http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.uploadFormResponse,
-                headers = headers,
-                requestBody = buildJsonRequestBody(body),
-                inputStreamReader = {},
-            )
+            val method = Http.Method.POST
+            val url = urlManager.uploadFormResponse
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        requestBody = buildJsonRequestBody(body),
+                        inputStreamReader = {},
+                    )
+                }
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest(
+                        method,
+                        url,
+                        headers,
+                        body
+                    )
+                }
+            }
         }
 
     /**
@@ -946,18 +1005,35 @@ class RestApi constructor(
      * use [postPatient].
      **
      * @param patient the patient to upload
+     * @param protocol the protocol being used for transmission over the network
      * @return whether the request was successful or not
      */
-    suspend fun putPatient(patient: Patient): NetworkResult<Unit> =
+    suspend fun putPatient(patient: Patient, protocol: Protocol): NetworkResult<Unit> =
         withContext(IO) {
             val body = JacksonMapper.writerForPatient.writeValueAsBytes(patient)
-            http.makeRequest(
-                method = Http.Method.PUT,
-                url = urlManager.getPatientInfoOnly(patient.id),
-                headers = headers,
-                requestBody = buildJsonRequestBody(body),
-                inputStreamReader = {},
-            )
+            val method = Http.Method.PUT
+            val url = urlManager.getPatientInfoOnly(patient.id)
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        requestBody = buildJsonRequestBody(body),
+                        inputStreamReader = {},
+                    )
+                }
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest(
+                        method,
+                        url,
+                        headers,
+                        body
+                    )
+                }
+            }
         }
 
     /**
@@ -965,89 +1041,158 @@ class RestApi constructor(
      *
      * @param patient contains the record to be uploaded and the id for the url
      * @param isDrugRecord if it is a drug/medical record
+     * @param protocol the protocol being used for transmission over the network
      * @return whether the request was successful or not
      */
-    suspend fun postMedicalRecord(patient: Patient, isDrugRecord: Boolean): NetworkResult<Unit> =
+    suspend fun postMedicalRecord(
+        patient: Patient,
+        isDrugRecord: Boolean,
+        protocol: Protocol
+    ): NetworkResult<Unit> =
         withContext(IO) {
             val jsonObject = JSONObject()
+
             if (isDrugRecord) {
                 jsonObject.put("drugHistory", patient.drugHistory)
             } else {
                 jsonObject.put("medicalHistory", patient.medicalHistory)
             }
+
             val mediaType = "application/json; charset=utf-8".toMediaType()
             val requestBody = jsonObject.toString().toRequestBody(mediaType)
-            http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.postMedicalRecord(patient.id),
-                headers = headers,
-                requestBody = requestBody,
-                inputStreamReader = {},
-            )
+            val buffer = okio.Buffer()
+            requestBody.writeTo(buffer)
+            val body = buffer.readByteArray()
+            val method = Http.Method.POST
+            val url = urlManager.postMedicalRecord(patient.id)
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        requestBody = requestBody,
+                        inputStreamReader = {},
+                    )
+                }
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest(
+                        method,
+                        url,
+                        headers,
+                        body
+                    )
+                }
+            }
         }
 
     /**
      * Uploads a new reading for a patient which already exists on the server.
      *
      * @param reading the reading to upload
+     * @param protocol the protocol being used for transmission over the network
      * @return the server's version of the uploaded reading
      */
-    suspend fun postReading(reading: Reading): NetworkResult<Reading> =
+    suspend fun postReading(reading: Reading, protocol: Protocol): NetworkResult<Reading> =
         withContext(IO) {
-            val readingAsBytes = JacksonMapper.writerForReading.writeValueAsBytes(reading)
-            http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.postReading,
-                headers = headers,
-                requestBody = buildJsonRequestBody(readingAsBytes),
-                inputStreamReader = { input -> JacksonMapper.readerForReading.readValue(input) },
-            )
+            val body = JacksonMapper.writerForReading.writeValueAsBytes(reading)
+            val method = Http.Method.POST
+            val url = urlManager.postReading
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        requestBody = buildJsonRequestBody(body),
+                        inputStreamReader = { input -> JacksonMapper.readerForReading.readValue(input) },
+                    )
+                }
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest(
+                        method,
+                        url,
+                        headers,
+                        body
+                    )
+                }
+            }
         }
 
     /**
      * Uploads a new assessment for a patient which already exists on the server.
      *
      * @param assessment the referral to upload
+     * @param protocol the protocol being used for transmission over the network
      * @return the server's version of the uploaded assessment
      */
-    suspend fun postAssessment(assessment: Assessment): NetworkResult<Assessment> =
+    suspend fun postAssessment(assessment: Assessment, protocol: Protocol): NetworkResult<Assessment> =
         withContext(IO) {
-            val assessmentAsBytes = JacksonMapper.writerForAssessment.writeValueAsBytes(assessment)
-            http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.postAssessment,
-                headers = headers,
-                requestBody = buildJsonRequestBody(assessmentAsBytes),
-                inputStreamReader = { input -> JacksonMapper.readerForAssessment.readValue(input) },
-            )
+            val body = JacksonMapper.writerForAssessment.writeValueAsBytes(assessment)
+            val method = Http.Method.POST
+            val url = urlManager.postAssessment
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        requestBody = buildJsonRequestBody(body),
+                        inputStreamReader = { input -> JacksonMapper.readerForAssessment.readValue(input) },
+                    )
+                }
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest(
+                        method,
+                        url,
+                        headers,
+                        body
+                    )
+                }
+            }
         }
 
     /**
      * Uploads a new referral for a patient which already exists on the server.
      *
      * @param referral the referral to upload
+     * @param protocol the protocol being used for transmission over the network
      * @return the server's version of the uploaded referral
      */
-    suspend fun postReferral(referral: Referral): NetworkResult<Referral> =
+    suspend fun postReferral(referral: Referral, protocol: Protocol): NetworkResult<Referral> =
         withContext(IO) {
-            val referralAsBytes = JacksonMapper.writerForReferral.writeValueAsBytes(referral)
-            http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.postReferral,
-                headers = headers,
-                requestBody = buildJsonRequestBody(referralAsBytes),
-                inputStreamReader = { input -> JacksonMapper.readerForReferral.readValue(input) },
-            )
+            val body = JacksonMapper.writerForReferral.writeValueAsBytes(referral)
+            val method = Http.Method.POST
+            val url = urlManager.postReferral
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        requestBody = buildJsonRequestBody(body),
+                        inputStreamReader = { input -> JacksonMapper.readerForReferral.readValue(input) },
+                    )
+                }
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest(
+                        method,
+                        url,
+                        headers,
+                        body
+                    )
+                }
+            }
         }
 
-    /**
-     * Sends info for creating a pregnancy record for specific patient
-     * Has the ability to send record with pregnancy start AND end date if full record is being
-     * sent to server.
-     *
-     * @param patient the patient for gestationalAge, and id, and in some cases the end date
-     * @return whether the request was successful or not and response from server
-     */
     object PregnancyResponse {
         var id: Int? = null
         var gestationalAgeUnit: String? = null
@@ -1058,7 +1203,16 @@ class RestApi constructor(
         var pregnancyStartDate: Int? = null
     }
 
-    suspend fun postPregnancy(patient: Patient): NetworkResult<PregnancyResponse> =
+    /**
+     * Sends info for creating a pregnancy record for specific patient
+     * Has the ability to send record with pregnancy start AND end date if full record is being
+     * sent to server.
+     *
+     * @param patient the patient for gestationalAge, and id, and in some cases the end date
+     * @param protocol the protocol being used for transmission over the network
+     * @return whether the request was successful or not and response from server
+     */
+    suspend fun postPregnancy(patient: Patient, protocol: Protocol): NetworkResult<PregnancyResponse> =
         withContext(IO) {
             val jsonObject = JSONObject()
 
@@ -1069,22 +1223,41 @@ class RestApi constructor(
             }
 
             val startDate = patient.gestationalAge?.timestamp.toString()
+
             jsonObject.put("gestationalAgeUnit", units)
             jsonObject.put("pregnancyStartDate", startDate)
 
             val mediaType = "application/json; charset=utf-8".toMediaType()
             val requestBody = jsonObject.toString().toRequestBody(mediaType)
+            val buffer = okio.Buffer()
+            requestBody.writeTo(buffer)
+            val body = buffer.readByteArray()
+            val method = Http.Method.POST
+            val url = urlManager.postPregnancy(patient.id)
 
-            http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.postPregnancy(patient.id),
-                headers = headers,
-                requestBody = requestBody,
-                inputStreamReader = { JacksonMapper.mapper.readValue(it) }
-            )
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        requestBody = requestBody,
+                        inputStreamReader = { JacksonMapper.mapper.readValue(it) }
+                    )
+                }
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest(
+                        method,
+                        url,
+                        headers,
+                        body
+                    )
+                }
+            }
         }
 
-    suspend fun putPregnancy(patient: Patient): NetworkResult<PregnancyResponse> =
+    suspend fun putPregnancy(patient: Patient, protocol: Protocol): NetworkResult<PregnancyResponse> =
         withContext(IO) {
             val jsonObject = JSONObject()
 
@@ -1093,79 +1266,188 @@ class RestApi constructor(
 
             val mediaType = "application/json; charset=utf-8".toMediaType()
             val requestBody = jsonObject.toString().toRequestBody(mediaType)
+            val buffer = okio.Buffer()
+            requestBody.writeTo(buffer)
+            val body = buffer.readByteArray()
+            val method = Http.Method.PUT
+            val url = urlManager.putPregnancy(patient.pregnancyId.toString())
 
-            http.makeRequest(
-                method = Http.Method.PUT,
-                url = urlManager.putPregnancy(patient.pregnancyId.toString()),
-                headers = headers,
-                requestBody = requestBody,
-                inputStreamReader = { JacksonMapper.mapper.readValue(it) }
-            )
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        requestBody = requestBody,
+                        inputStreamReader = { JacksonMapper.mapper.readValue(it) }
+                    )
+                }
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest(
+                        method,
+                        url,
+                        headers,
+                        body
+                    )
+                }
+            }
         }
 
-    suspend fun postUserPhoneNumber(userID: Int, phoneNumber: String): NetworkResult<Unit> =
+    suspend fun postUserPhoneNumber(userID: Int, phoneNumber: String, protocol: Protocol): NetworkResult<Unit> =
         withContext(IO) {
             val jsonObject = JSONObject()
+
             jsonObject.put("newPhoneNumber", phoneNumber)
             jsonObject.put("currentPhoneNumber", "")
             jsonObject.put("oldPhoneNumber", "")
+
             val mediaType = "application/json; charset=utf-8".toMediaType()
             val requestBody = jsonObject.toString().toRequestBody(mediaType)
-            http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.postUserPhoneNumber(userID),
-                headers = headers,
-                requestBody = requestBody,
-                inputStreamReader = {}
-            )
+            val buffer = okio.Buffer()
+            requestBody.writeTo(buffer)
+            val body = buffer.readByteArray()
+            val method = Http.Method.POST
+            val url = urlManager.postUserPhoneNumber(userID)
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        requestBody = requestBody,
+                        inputStreamReader = {}
+                    )
+                }
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest(
+                        method,
+                        url,
+                        headers,
+                        body
+                    )
+                }
+            }
         }
 
-    suspend fun getAllRelayPhoneNumbers(): NetworkResult<RelayPhoneNumberResponse> =
+    suspend fun getAllRelayPhoneNumbers(protocol: Protocol): NetworkResult<RelayPhoneNumberResponse> =
         withContext(IO) {
-            http.makeRequest(
-                method = Http.Method.GET,
-                url = urlManager.getAllRelayPhoneNumbers(),
-                headers = headers,
-                inputStreamReader = { JacksonMapper.readerForRelayPhoneNumberResponse.readValue(it) }
-            )
+            val method = Http.Method.GET
+            val url = urlManager.getAllRelayPhoneNumbers()
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        inputStreamReader = { JacksonMapper.readerForRelayPhoneNumberResponse.readValue(it) }
+                    )
+                }
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest(
+                        method,
+                        url,
+                        headers
+                    )
+                }
+            }
         }
 
-    suspend fun getCurrentSmsKey(userID: Int): NetworkResult<SmsKeyResponse> =
+    suspend fun getCurrentSmsKey(userID: Int, protocol: Protocol): NetworkResult<SmsKeyResponse> =
         withContext(IO) {
-            http.makeRequest(
-                method = Http.Method.GET,
-                url = urlManager.smsKey(userID),
-                headers = headers,
-                inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) }
-            )
+            val method = Http.Method.GET
+            val url = urlManager.smsKey(userID)
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) }
+                    )
+                }
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest(
+                        method,
+                        url,
+                        headers
+                    )
+                }
+            }
         }
 
-    suspend fun refreshSmsKey(userID: Int): NetworkResult<SmsKeyResponse> =
+    suspend fun refreshSmsKey(userID: Int, protocol: Protocol): NetworkResult<SmsKeyResponse> =
         withContext(IO) {
             val jsonObject = JSONObject()
+
             val mediaType = "application/json; charset=utf-8".toMediaType()
             val requestBody = jsonObject.toString().toRequestBody(mediaType)
-            http.makeRequest(
-                method = Http.Method.PUT,
-                url = urlManager.smsKey(userID),
-                headers = headers,
-                requestBody = requestBody,
-                inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) }
-            )
+            val buffer = okio.Buffer()
+            requestBody.writeTo(buffer)
+            val body = buffer.readByteArray()
+            val method = Http.Method.PUT
+            val url = urlManager.smsKey(userID)
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        requestBody = requestBody,
+                        inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) }
+                    )
+                }
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest(
+                        method,
+                        url,
+                        headers,
+                        body
+                    )
+                }
+            }
         }
 
-    suspend fun getNewSmsKey(userID: Int): NetworkResult<SmsKeyResponse> =
+    suspend fun getNewSmsKey(userID: Int, protocol: Protocol): NetworkResult<SmsKeyResponse> =
         withContext(IO) {
             val jsonObject = JSONObject()
+
             val mediaType = "application/json; charset=utf-8".toMediaType()
             val requestBody = jsonObject.toString().toRequestBody(mediaType)
-            http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.smsKey(userID),
-                headers = headers,
-                requestBody = requestBody,
-                inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) }
-            )
+            val buffer = okio.Buffer()
+            requestBody.writeTo(buffer)
+            val body = buffer.readByteArray()
+            val method = Http.Method.POST
+            val url = urlManager.smsKey(userID)
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        requestBody = requestBody,
+                        inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) }
+                    )
+                }
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest(
+                        method,
+                        url,
+                        headers,
+                        body
+                    )
+                }
+            }
         }
 
     /**
@@ -1177,19 +1459,36 @@ class RestApi constructor(
      * the [getAllPatients] method.
      *
      * @param id id of the patient to associate
+     * @param protocol the protocol being used for transmission over the network
      * @return whether the request was successful or not
      */
-    suspend fun associatePatientToUser(patientId: String): NetworkResult<Unit> =
+    suspend fun associatePatientToUser(patientId: String, protocol: Protocol): NetworkResult<Unit> =
         withContext(IO) {
             // more efficient to just construct the bytes directly
             val body = "{\"patientId\":\"$patientId\"}".encodeToByteArray()
-            http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.userPatientAssociation,
-                headers = headers,
-                requestBody = buildJsonRequestBody(body),
-                inputStreamReader = {},
-            ).map { }
+            val method = Http.Method.POST
+            val url = urlManager.userPatientAssociation
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        requestBody = buildJsonRequestBody(body),
+                        inputStreamReader = {},
+                    ).map { }
+                }
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest(
+                        method,
+                        url,
+                        headers,
+                        body
+                    )
+                }
+            }
         }
 
     /**
